@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Create Booking Activities database tables
- * @version 1.9.2
+ * @version 1.10.0
  * @global wpdb $wpdb
  */
 function bookacti_create_tables() {
@@ -27,7 +27,6 @@ function bookacti_create_tables() {
 		id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, 
 		title TEXT, 
 		duration VARCHAR(12) NOT NULL DEFAULT "000.01:00:00", 
-		is_resizable TINYINT(1) UNSIGNED NOT NULL DEFAULT 0, 
 		color VARCHAR(9) NOT NULL DEFAULT "#3a87ad", 
 		availability MEDIUMINT(9) UNSIGNED NOT NULL DEFAULT 0, 
 		active TINYINT(1) NOT NULL DEFAULT 1,

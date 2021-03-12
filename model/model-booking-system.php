@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Fetch events by templates and / or activities
- * @version 1.9.0
+ * @version 1.10.0
  * @param array $raw_args {
  *  @type array $templates Array of template IDs
  *  @type array $activities Array of activity IDs
@@ -38,7 +38,7 @@ function bookacti_fetch_events( $raw_args = array() ) {
 	$variables					= array();
 
 	// Prepare the query
-	$query  = 'SELECT DISTINCT E.id as event_id, E.template_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_from, E.repeat_to, E.availability, A.color, A.id as activity_id, 0 as is_resizable, T.start_date as template_start,  T.end_date as template_end '
+	$query  = 'SELECT DISTINCT E.id as event_id, E.template_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_from, E.repeat_to, E.availability, A.color, A.id as activity_id, T.start_date as template_start,  T.end_date as template_end '
 			. ' FROM ' . BOOKACTI_TABLE_ACTIVITIES . ' as A, ' . BOOKACTI_TABLE_TEMPLATES . ' as T, ' . BOOKACTI_TABLE_EVENTS . ' as E '
 			. ' WHERE E.activity_id = A.id '
 			. ' AND E.template_id = T.id '
@@ -189,7 +189,7 @@ function bookacti_fetch_events( $raw_args = array() ) {
 
 /**
  * Fetch events by groups and / or group categories
- * @version 1.9.0
+ * @version 1.10.0
  * @global wpdb $wpdb
  * @param array $raw_args {
  *  @type array $templates Array of template IDs
@@ -224,7 +224,7 @@ function bookacti_fetch_grouped_events( $raw_args = array() ) {
 	$variables					= array();
 
 	// Prepare the query
-	$query  = 'SELECT DISTINCT GE.event_id, E.template_id, E.title, GE.event_start as start, GE.event_end as end, "none" as repeat_freq, E.repeat_from, E.repeat_to, E.availability, A.color, A.id as activity_id, 0 as is_resizable, T.start_date as template_start,  T.end_date as template_end '
+	$query  = 'SELECT DISTINCT GE.event_id, E.template_id, E.title, GE.event_start as start, GE.event_end as end, "none" as repeat_freq, E.repeat_from, E.repeat_to, E.availability, A.color, A.id as activity_id, T.start_date as template_start,  T.end_date as template_end '
 			. ' FROM ' . BOOKACTI_TABLE_GROUPS_EVENTS . ' as GE, ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as G, ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' as C, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A, ' . BOOKACTI_TABLE_TEMPLATES . ' as T, ' . BOOKACTI_TABLE_EVENTS . ' as E '
 			. ' WHERE GE.event_id = E.id '
 			. ' AND E.activity_id = A.id '
@@ -350,15 +350,18 @@ function bookacti_fetch_grouped_events( $raw_args = array() ) {
 /**
  * Fetch booked events only
  * @since 1.2.2
- * @version 1.8.0
+ * @version 1.10.0
  * @global wpdb $wpdb
  * @param array $raw_args {
  *  @type array $templates Array of template IDs
  *  @type array $activities Array of activity IDs
+ *  @type array events Array of event IDs
  *  @type array $status Array of groups of events IDs
+ *  @type int|false $active 0 or 1. False to ignore.
  *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
  *  @type int|string $users Array of user IDs
  *  @type boolean $past_events Whether to compute past events
+ *  @type boolean $skip_exceptions Whether to retrieve occurrence on exceptions
  *  @type boolean $bounding_events_only Whether to retrieve the first and the last events only
  * }
  * @return array
@@ -367,10 +370,13 @@ function bookacti_fetch_booked_events( $raw_args = array() ) {
 	$default_args = array(
 		'templates' => array(),
 		'activities' => array(),
+		'events' => array(),
 		'status' => array(),
+		'active' => false,
 		'users' => array(),
 		'interval' => array(),
 		'past_events' => 0,
+		'skip_exceptions' => 0,
 		'bounding_events_only' => 0
 	);
 	$args = wp_parse_args( $raw_args, $default_args );
@@ -386,7 +392,7 @@ function bookacti_fetch_booked_events( $raw_args = array() ) {
 	$variables					= array();
 
 	// Prepare the query
-	$query  = 'SELECT DISTINCT B.event_id, E.template_id, E.title, B.event_start as start, B.event_end as end, "none" as repeat_freq, E.repeat_from, E.repeat_to, E.availability, A.color, A.id as activity_id, 0 as is_resizable '
+	$query  = 'SELECT DISTINCT B.event_id, E.template_id, E.title, B.event_start as start, B.event_end as end, "none" as repeat_freq, E.repeat_from, E.repeat_to, E.availability, A.color, A.id as activity_id '
 			. ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A, ' . BOOKACTI_TABLE_TEMPLATES . ' as T, ' . BOOKACTI_TABLE_EVENTS . ' as E '
 			. ' WHERE B.event_id = E.id '
 			. ' AND E.activity_id = A.id '
@@ -412,6 +418,16 @@ function bookacti_fetch_booked_events( $raw_args = array() ) {
 		$variables = array_merge( $variables, $args[ 'activities' ] );
 	}
 
+	// Get events (occurrences) from desired events only
+	if( $args[ 'events' ] ) {
+		$query  .= ' AND B.event_id IN ( %d';
+		for( $i=1,$len=count( $args[ 'events' ] ); $i < $len; ++$i ) {
+			$query  .= ', %d';
+		}
+		$query  .= ' ) ';
+		$variables = array_merge( $variables, $args[ 'events' ] );
+	}
+
 	// Fetch events from desired booking status only
 	if( $args[ 'status' ] ) {
 		$query .= ' AND B.state IN ( %s';
@@ -420,6 +436,12 @@ function bookacti_fetch_booked_events( $raw_args = array() ) {
 		}
 		$query .= ' ) ';
 		$variables = array_merge( $variables, $args[ 'status' ] );
+	}
+	
+	// Filter bookings by active
+	if( $args[ 'active' ] !== false ) {
+		$query .= ' AND B.active = %d ';
+		$variables[] = $args[ 'active' ];
 	}
 
 	// Filter bookings by user
@@ -477,7 +499,7 @@ function bookacti_fetch_booked_events( $raw_args = array() ) {
 
 /**
  * Get event by id
- * @version 1.9.0
+ * @version 1.10.0
  * @global wpdb $wpdb
  * @param int $event_id
  * @return object
@@ -485,7 +507,7 @@ function bookacti_fetch_booked_events( $raw_args = array() ) {
 function bookacti_get_event_by_id( $event_id ) {
 	global $wpdb;
 
-	$query_event = 'SELECT E.id as event_id, E.template_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_from, E.repeat_to, E.availability, E.active as event_active, A.color, A.is_resizable, A.id as activity_id, A.active as activity_active, T.start_date as template_start, T.end_date as template_end, T.active as template_active ' 
+	$query_event = 'SELECT E.id as event_id, E.template_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_from, E.repeat_to, E.availability, E.active as event_active, A.color, A.id as activity_id, A.active as activity_active, T.start_date as template_start, T.end_date as template_end, T.active as template_active ' 
 					. ' FROM ' . BOOKACTI_TABLE_EVENTS . ' as E, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A, ' . BOOKACTI_TABLE_TEMPLATES . ' as T'
 					. ' WHERE E.activity_id = A.id '
 					. ' AND E.template_id = T.id '

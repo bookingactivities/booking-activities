@@ -266,13 +266,14 @@ add_filter( 'bookacti_notifications_tags_values', 'bookacti_wc_notifications_tag
 /**
  * Whether to send the BA refund notification when the order (item) is manually refunded
  * @since 1.8.3
+ * @version 1.10.0
  * @param string $recipients
- * @param int $booking_id
+ * @param object $booking
  * @param string $status
  * @param array $args
  * @return string
  */
-function bookacti_wc_refund_notification_recipients( $recipients, $booking_id, $status, $args ) {
+function bookacti_wc_refund_notification_recipients( $recipients, $booking, $status, $args ) {
 	if( ! empty( $args[ 'refund_action' ] ) && $args[ 'refund_action' ] === 'manual' ) {
 		$recipients = 'customer';
 		if( ! defined( 'BOOKACTI_NOTIFICATION_MANUAL_REFUND' ) ) { define( 'BOOKACTI_NOTIFICATION_MANUAL_REFUND', 1 ); }
@@ -303,6 +304,23 @@ function bookacti_allow_refund_notification_during_manual_refund( $sending_allow
 	return $sending_allowed;
 }
 add_filter( 'bookacti_notification_sending_allowed', 'bookacti_allow_refund_notification_during_manual_refund', 10, 7 );
+
+
+/**
+ * Do not send notifications for in_cart bookings when an event is updated in the calendar editor
+ * @since 1.10.0
+ * @param boolean $true
+ * @param object $booking
+ * @return boolean
+ */
+function bookacti_wc_disallow_event_notifications_for_in_cart_bookings( $true, $booking ) {
+	if( $booking->state === 'in_cart' ) { $true = false; }
+	return $true;
+}
+add_filter( 'bookacti_send_event_rescheduled_notification', 'bookacti_wc_disallow_event_notifications_for_in_cart_bookings', 10, 2 );
+add_filter( 'bookacti_send_event_rescheduled_notification_count', 'bookacti_wc_disallow_event_notifications_for_in_cart_bookings', 10, 2 );
+add_filter( 'bookacti_send_event_cancelled_notification_count', 'bookacti_wc_disallow_event_notifications_for_in_cart_bookings', 10, 2 );
+add_filter( 'bookacti_send_group_of_events_cancelled_notification_count', 'bookacti_wc_disallow_event_notifications_for_in_cart_bookings', 10, 2 );
 
 
 /**

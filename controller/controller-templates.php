@@ -63,84 +63,222 @@ add_action( 'wp_ajax_bookactiInsertEvent', 'bookacti_controller_insert_event' );
 
 
 /**
- * AJAX Controller - Move or resize an event, possibly while duplicating it
- * @since 1.2.2 (was bookacti_controller_update_event)
- * @version 1.9.0
+ * AJAX Controller - Update event dates (move or resize an event in the editor)
+ * @since 1.10.0 (was bookacti_controller_move_or_resize_event)
  */
-function bookacti_controller_move_or_resize_event() {
-	$event_id       = intval( $_POST[ 'event_id' ] );
-	$template_id	= bookacti_get_event_template_id( $event_id );
+function bookacti_controller_update_event_dates() {
+	$event_id = intval( $_POST[ 'event_id' ] );
 
-	// Check nonce and capabilities
+	// Get event data
+	$old_event = bookacti_get_event_by_id( $event_id );
+	if( ! $old_event ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'event_not_found' ), 'update_event_dates' ); }
+
+	// Check nonce
 	$is_nonce_valid = check_ajax_referer( 'bookacti_edit_template', 'nonce', false );
-	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'move_or_resize_event' ); }
+	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'update_event_dates' ); }
 
-	$is_allowed = current_user_can( 'bookacti_edit_templates' ) && bookacti_user_can_manage_template( $template_id );
-	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'move_or_resize_event' ); }
+	// Check capabilities
+	$is_allowed = current_user_can( 'bookacti_edit_templates' ) && bookacti_user_can_manage_template( $old_event->template_id );
+	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'update_event_dates' ); }
+	
+	// Sanitize update data
+	$forced_update		= ! empty( $_POST[ 'forced_update' ] ) ? true : false;
+	$send_notifications	= ! empty( $_POST[ 'send_notifications' ] ) ? true : false;
+	
+	$timezone = bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' );
+	$now_dt = new DateTime( 'now', new DateTimeZone( $timezone ) );
+	
+	// Sanitize new event data
+	$new_event_start	= bookacti_sanitize_datetime( $_POST[ 'event_start' ] );
+	$new_event_end		= bookacti_sanitize_datetime( $_POST[ 'event_end' ] );
+	
+	// Compute delta
+	$delta_days		= ! empty( $_POST[ 'delta_days' ] ) ? intval( $_POST[ 'delta_days' ] ) : 0;
+	$delta_days_di	= new DateInterval( 'P' . abs( $delta_days ). 'D' );
+	$delta_days_di->invert = $delta_days < 0 ? 1 : 0;
+	$old_event_start_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $old_event->start, new DateTimeZone( $timezone ) );
+	$new_event_start_dt = clone $old_event_start_dt;
+	$new_event_start_dt->add( $delta_days_di );
+	$new_event_start_dt->setTime( substr( $new_event_start, 11, 2 ), substr( $new_event_start, 14, 2 ), substr( $new_event_start, 17, 2 ) );
+	$delta_seconds = $new_event_start_dt->format( 'U' ) - $old_event_start_dt->format( 'U' );
+	
+	// Get the event's occurrences
+	$events_exceptions = bookacti_get_exceptions_by_event( array( 'events' => array( $event_id ), 'types'	=> array( 'date' ), 'only_values' => 1 ) );
+	$event_exceptions = isset( $events_exceptions[ $event_id ] ) ? $events_exceptions[ $event_id ] : array();
+	$occurrences = bookacti_get_occurrences_of_repeated_event( $old_event, array( 'exceptions_dates' => $event_exceptions, 'past_events' => 1 ) );
+	
+	// Get the bookings to reschedule
+	$filters = bookacti_format_booking_filters( array( 'event_id' => $event_id ) );
+	$old_bookings = bookacti_get_bookings( $filters );
+	$active_bookings_nb = 0;
+	$notifications_nb = 0;
+	$bookings_to_reschedule = array();
+	
+	foreach( $old_bookings as $booking_id => $old_booking ) {
+		// Check if the booking was made on one of the occurrences
+		$is_on_occurrence = false;
+		foreach( $occurrences as $occurrence ) {
+			if( intval( $old_booking->event_id ) === intval( $occurrence[ 'id' ] ) && $old_booking->event_start === $occurrence[ 'start' ] && $old_booking->event_end === $occurrence[ 'end' ] ) {
+				$is_on_occurrence = true;
+				$bookings_to_reschedule[ $booking_id ] = $old_booking;
+				break;
+			}
+		}
 
-	$is_duplicated  = ! empty( $_POST[ 'is_duplicated' ] ) ? intval( $_POST[ 'is_duplicated' ] ) : 0;
+		if( ! $is_on_occurrence || ! $old_booking->active ) { continue; }
+		++$active_bookings_nb;
 
-	// Check if the event is booked
-	$filters		= bookacti_format_booking_filters( array( 'event_id' => $event_id, 'active' => 1 ) );
-	$has_bookings	= bookacti_get_number_of_bookings( $filters );
-	if( ! $is_duplicated && is_numeric( $has_bookings ) && $has_bookings > 0 ) { 
-		bookacti_send_json( array( 'status' => 'failed', 'error' => 'has_bookings', 'message' => esc_html__( 'This event is booked, you cannot move it nor change its duration.', 'booking-activities' ) ), 'move_or_resize_event' );
+		// If the event is repeated, send notifications for future occurrences only
+		$send = true;
+		if( $old_event->repeat_freq && $old_event->repeat_freq !== 'none' ) {
+			// Compute new booking start
+			$new_booking_start_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $old_booking->event_start, new DateTimeZone( $timezone ) );
+			$new_booking_start_dt->add( $delta_days_di );
+			$new_booking_start_dt->setTime( substr( $new_event_start, 11, 2 ), substr( $new_event_start, 14, 2 ), substr( $new_event_start, 17, 2 ) );
+			if( $new_booking_start_dt <= $now_dt ) { $send = false; }
+		}
+		
+		$send = apply_filters( 'bookacti_send_event_rescheduled_notification_count', $send, $old_booking, $old_event, $delta_seconds );
+		if( $send ) { ++$notifications_nb; }
+	}
+	
+	// Check if the event has active bookings
+	if( ! $forced_update && $active_bookings_nb > 0 ) {
+		$bookings_nb = count( $bookings_to_reschedule ) . ' ' . esc_html( _n( 'booking', 'bookings', count( $bookings_to_reschedule ), 'booking-activities' ) );
+		$notifications_nb = $notifications_nb . ' ' . esc_html( _n( 'notification', 'notifications', $notifications_nb, 'booking-activities' ) );
+		bookacti_send_json( array( 'status' => 'failed', 'error' => 'has_bookings', 'bookings_nb' => $bookings_nb, 'notifications_nb' => $notifications_nb ), 'update_event_dates' );
 	}
 
-	$action			= $_POST[ 'action' ] === 'bookactiResizeEvent' ? 'resize' : 'move';
-	$event_start    = bookacti_sanitize_datetime( $_POST[ 'event_start' ] );
-	$event_end      = bookacti_sanitize_datetime( $_POST[ 'event_end' ] );
-	$delta_days     = intval( $_POST[ 'delta_days' ] );
-	$interval		= ! empty( $_POST[ 'interval' ] ) ? bookacti_sanitize_events_interval( $_POST[ 'interval' ] ) : array();
-
-	// Maybe update grouped events if the event belong to a group
-	if( ! $is_duplicated ) {
-		bookacti_update_grouped_event_dates( $event_id, $event_start, $event_end, $action, $delta_days );
+	// Delay by the same amount of time the repetion period
+	$repeat_from_dt	= $old_event->repeat_from && $old_event->repeat_freq && $old_event->repeat_freq !== 'none' ? DateTime::createFromFormat( 'Y-m-d', $old_event->repeat_from ) : false;
+	$repeat_to_dt	= $old_event->repeat_to && $old_event->repeat_freq && $old_event->repeat_freq !== 'none' ? DateTime::createFromFormat( 'Y-m-d', $old_event->repeat_to ) : false;
+	
+	if( $repeat_from_dt && $repeat_to_dt && $delta_days !== 0 ) { 
+		$repeat_from_dt->add( $delta_days_di ); 
+		$repeat_to_dt->add( $delta_days_di );
 	}
-
+	
+	$new_event_repeat_from	= $repeat_from_dt ? $repeat_from_dt->format( 'Y-m-d' ) : 'null';
+	$new_event_repeat_to	= $repeat_to_dt ? $repeat_to_dt->format( 'Y-m-d' ) : 'null';
+	
 	// Update the event
-	$updated = bookacti_move_or_resize_event( $event_id, $event_start, $event_end, $action, $delta_days, $is_duplicated );
+	$updated = bookacti_update_event_dates( $event_id, $new_event_start, $new_event_end, $new_event_repeat_from, $new_event_repeat_to );
 
-	if( $is_duplicated ) {
-		$new_event_id = $updated;
-		if( ! $new_event_id ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_updated' ), 'move_or_resize_event' ); }
+	if( $updated === false ){ bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_updated' ), 'update_event_dates' ); }
+	if( $updated === 0 )	{ bookacti_send_json( array( 'status' => 'no_changes' ), 'update_event_dates' ); }
+	
+	$new_event = bookacti_get_event_by_id( $event_id );
+	$new_event_start_time = substr( $new_event->start, 11, 8 );
+	$new_event_end_time	= substr( $new_event->end, 11, 8 );
+	
+	// Update exceptions
+	$event_data = bookacti_sanitize_event_data( array_merge( (array) $new_event, array( 'exceptions_dates' => $event_exceptions ) ) );
+	$updated_excep = bookacti_update_exceptions( $new_event->event_id, $event_data[ 'exceptions_dates' ] );
+	
+	// Maybe update grouped events if the event belong to a group
+	bookacti_shift_grouped_event_dates( $event_id, $delta_seconds, $new_event_start_time, $new_event_end_time );
 
-		$events		= bookacti_fetch_events_for_calendar_editor( array( 'events' => array( $new_event_id ), 'interval' => $interval ) );
-		$exceptions	= bookacti_get_exceptions_by_event( array( 'events' => array( $new_event_id ) ) );
-
-		do_action( 'bookacti_event_duplicated', $event_id, $new_event_id, $events );
-
-		bookacti_send_json( array( 
-			'status'		=> 'success', 
-			'event_id'		=> $new_event_id, 
-			'events'		=> $events[ 'events' ] ? $events[ 'events' ] : array(),
-			'event_data'	=> $events[ 'data' ][ $new_event_id ] ? $events[ 'data' ][ $new_event_id ] : array(),
-			'exceptions'	=> $exceptions ), 'move_or_resize_event'
-		);
-
-	} else {
-		if( $updated === false ){ bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_updated' ), 'move_or_resize_event' ); }
-		if( $updated === 0 )	{ bookacti_send_json( array( 'status' => 'no_changes' ), 'move_or_resize_event' ); }
-
-		$events = bookacti_fetch_events_for_calendar_editor( array( 'events' => array( $event_id ), 'interval' => $interval ) );
-
-		do_action( 'bookacti_event_moved_or_resized', $event_id, $events );
-
-		bookacti_send_json( array( 
-			'status' => 'success', 
-			'events' => $events[ 'events' ] ? $events[ 'events' ] : array(),
-			'event_data' => $events[ 'data' ][ $event_id ] ? $events[ 'data' ][ $event_id ] : array() 
-		), 'move_or_resize_event' ); 
+	// Maybe update bookings
+	if( $bookings_to_reschedule ) {
+		bookacti_shift_bookings_dates( array_keys( $bookings_to_reschedule ), $delta_seconds, $new_event_start_time, $new_event_end_time );
 	}
+	
+	// Maybe send notifications
+	if( $forced_update && $send_notifications && $bookings_to_reschedule ) {
+		bookacti_send_event_rescheduled_notifications( $old_event, $bookings_to_reschedule, $delta_seconds );
+	}
+
+	// Fetch new events
+	$interval = ! empty( $_POST[ 'interval' ] ) ? bookacti_sanitize_events_interval( $_POST[ 'interval' ] ) : array();
+	$events = bookacti_fetch_events_for_calendar_editor( array( 'events' => array( $event_id ), 'interval' => $interval ) );
+	$exceptions	= bookacti_get_exceptions_by_event( array( 'events' => array( $event_id ) ) );
+	
+	do_action( 'bookacti_event_dates_updated', $old_event, $new_event, $delta_days, $events, $exceptions );
+
+	bookacti_send_json( array( 
+		'status' => 'success', 
+		'events' => $events[ 'events' ] ? $events[ 'events' ] : array(),
+		'event_data' => $events[ 'data' ][ $event_id ] ? $events[ 'data' ][ $event_id ] : array(),
+		'exceptions' => $exceptions
+	), 'update_event_dates' );
 }
-add_action( 'wp_ajax_bookactiResizeEvent', 'bookacti_controller_move_or_resize_event' );
-add_action( 'wp_ajax_bookactiMoveEvent', 'bookacti_controller_move_or_resize_event' );
+add_action( 'wp_ajax_bookactiUpdateEventDates', 'bookacti_controller_update_event_dates' );
+
+
+/**
+ * AJAX Controller - Duplicate an event
+ * @since 1.10.0
+ */
+function bookacti_controller_duplicate_event() {
+	$event_id = intval( $_POST[ 'event_id' ] );
+
+	// Get event data
+	$event = bookacti_get_event_by_id( $event_id );
+	if( ! $event ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'event_not_found' ), 'duplicate_event' ); }
+
+	// Check nonce
+	$is_nonce_valid = check_ajax_referer( 'bookacti_edit_template', 'nonce', false );
+	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'duplicate_event' ); }
+
+	// Check capabilities
+	$is_allowed = current_user_can( 'bookacti_edit_templates' ) && bookacti_user_can_manage_template( $event->template_id );
+	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'duplicate_event' ); }
+	
+	// Compute new event repetition period
+	$repeat_from_dt	= $event->repeat_from ? DateTime::createFromFormat( 'Y-m-d', $event->repeat_from ) : false;
+	$repeat_to_dt	= $event->repeat_to ? DateTime::createFromFormat( 'Y-m-d', $event->repeat_to ) : false;
+	$delta_days		= ! empty( $_POST[ 'delta_days' ] ) ? intval( $_POST[ 'delta_days' ] ) : 0;
+	
+	// Delay by the same amount of time the repetion period
+	if( $event->repeat_freq !== 'none' && $repeat_from_dt && $repeat_to_dt && $delta_days !== 0 ) { 
+		$delta_days_di = new DateInterval( 'P' . abs( $delta_days ). 'D' );
+		$delta_days_di->invert = $delta_days < 0 ? 1 : 0;
+		$repeat_from_dt->add( $delta_days_di ); 
+		$repeat_to_dt->add( $delta_days_di );
+	}
+	
+	// Get new event dates
+	$new_event_start = bookacti_sanitize_datetime( $_POST[ 'event_start' ] );
+	$new_event_end = bookacti_sanitize_datetime( $_POST[ 'event_end' ] );
+	$new_event_repeat_from	= $repeat_from_dt ? $repeat_from_dt->format( 'Y-m-d' ) : 'null';
+	$new_event_repeat_to	= $repeat_to_dt ? $repeat_to_dt->format( 'Y-m-d' ) : 'null';
+
+	// Duplicate the event
+	$new_event_id = bookacti_duplicate_event( $event_id, $new_event_start, $new_event_end, $new_event_repeat_from, $new_event_repeat_to );
+	if( ! $new_event_id ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_updated' ), 'duplicate_event' ); }
+	
+	// Duplicate event metadata
+	bookacti_duplicate_metadata( 'event', $event_id, $new_event_id );
+	
+	// Update exceptions
+	$new_event = bookacti_get_event_by_id( $new_event_id );
+	$events_exceptions = bookacti_get_exceptions_by_event( array( 'events' => array( $event_id ), 'types'	=> array( 'date' ), 'only_values' => 1 ) );
+	$event_exceptions = isset( $events_exceptions[ $event_id ] ) ? $events_exceptions[ $event_id ] : array();
+	$event_data = bookacti_sanitize_event_data( array_merge( (array) $new_event, array( 'exceptions_dates' => $event_exceptions ) ) );
+	$updated_excep = bookacti_update_exceptions( $new_event_id, $event_data[ 'exceptions_dates' ] );
+	
+	// Fetch new events and exceptions
+	$interval	= ! empty( $_POST[ 'interval' ] ) ? bookacti_sanitize_events_interval( $_POST[ 'interval' ] ) : array();
+	$events		= bookacti_fetch_events_for_calendar_editor( array( 'events' => array( $new_event_id ), 'interval' => $interval ) );
+	$exceptions	= bookacti_get_exceptions_by_event( array( 'events' => array( $new_event_id ) ) );
+
+	do_action( 'bookacti_event_duplicated', $event_id, $new_event_id, $events, $exceptions );
+
+	bookacti_send_json( array( 
+		'status'		=> 'success', 
+		'event_id'		=> $new_event_id, 
+		'events'		=> $events[ 'events' ] ? $events[ 'events' ] : array(),
+		'event_data'	=> $events[ 'data' ][ $new_event_id ] ? $events[ 'data' ][ $new_event_id ] : array(),
+		'exceptions'	=> $exceptions 
+	), 'duplicate_event' );
+}
+add_action( 'wp_ajax_bookactiDuplicateEvent', 'bookacti_controller_duplicate_event' );
 
 
 /**
  * AJAX Controller - Update event
  * @since 1.2.2 (was bookacti_controller_update_event_data)
- * @version 1.9.0
+ * @version 1.10.0
  */
 function bookacti_controller_update_event() {
 	// Check nonce and capabilities
@@ -157,7 +295,12 @@ function bookacti_controller_update_event() {
 	// Check if input data are complete and consistent 
 	$event_validation = bookacti_validate_event_data( $sanitized_data );
 	if( $event_validation[ 'status' ] !== 'success' ) { bookacti_send_json( $event_validation, 'update_event' ); }
-
+	
+	if( $sanitized_data[ 'repeat_freq' ] === 'none' ) {
+		$sanitized_data[ 'repeat_from' ] = 'null';
+		$sanitized_data[ 'repeat_to' ] = 'null';
+	}
+	
 	// Update event data
 	$updated = bookacti_update_event( $sanitized_data );
 
@@ -194,98 +337,160 @@ add_action( 'wp_ajax_bookactiUpdateEvent', 'bookacti_controller_update_event' );
 
 
 /**
- * AJAX Controller - Delete an event if it doesn't have bookings
- * @version 1.9.0
+ * AJAX Controller - Check if the event is booked before deleting it
+ * @since 1.10.0
  */
-function bookacti_controller_delete_event() {
-	$event_id = intval( $_POST[ 'event_id' ] );
-	$cancel_bookings = intval( $_POST[ 'cancel_bookings' ] );
-	$event = bookacti_get_event_by_id( $event_id );
-	$template_id = $event->template_id;
-	$messages = array();
-
+function bookacti_controller_before_delete_event() {
 	// Check nonce and capabilities
 	$is_nonce_valid = check_ajax_referer( 'bookacti_delete_event', 'nonce', false );
-	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'deactivate_event' ); }
+	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'before_deactivate_event' ); }
+	
+	// Check if event exists
+	$event_id = intval( $_POST[ 'event_id' ] );
+	$event = bookacti_get_event_by_id( $event_id );
+	if( ! $event ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'event_not_found', 'message' => esc_html__( 'Invalid event ID.', 'booking-activities' ) ), 'before_deactivate_event' ); }
+	
+	// Check capabilities
+	$is_allowed = current_user_can( 'bookacti_edit_templates' ) && bookacti_user_can_manage_template( $event->template_id );
+	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'before_deactivate_event' ); }
+	
+	// For repeated event, cancel only future bookings
+	$bookings_to_cancel = bookacti_get_removed_event_bookings_to_cancel( $event );
+	$notifications_nb = 0;
+	
+	foreach( $bookings_to_cancel as $booking_id => $booking ) {
+		$send = apply_filters( 'bookacti_send_event_cancelled_notification_count', true, $booking, $event );
+		if( $send ) { ++$notifications_nb; }
+	}
+	
+	$bookings_nb		= count( $bookings_to_cancel ) . ' ' . esc_html( _n( 'booking', 'bookings', count( $bookings_to_cancel ), 'booking-activities' ) );
+	$notifications_nb	= $notifications_nb . ' ' . esc_html( _n( 'notification', 'notifications', $notifications_nb, 'booking-activities' ) );
+	$has_bookings		= count( $bookings_to_cancel );
+	$is_repeated		= $event->repeat_freq && $event->repeat_freq !== 'none' ? 1 : 0;
+	
+	bookacti_send_json( array( 'status' => 'success', 'bookings_nb' => $bookings_nb, 'notifications_nb' => $notifications_nb, 'has_bookings' => $has_bookings, 'is_repeated' => $is_repeated ), 'before_deactivate_event' );
+}
+add_action( 'wp_ajax_bookactiBeforeDeleteEvent', 'bookacti_controller_before_delete_event' );
 
-	$is_allowed = current_user_can( 'bookacti_edit_templates' ) && bookacti_user_can_manage_template( $template_id );
+
+/**
+ * AJAX Controller - Delete an event if it doesn't have bookings
+ * @version 1.10.0
+ */
+function bookacti_controller_delete_event() {
+	// Check nonce
+	$is_nonce_valid = check_ajax_referer( 'bookacti_delete_event', 'nonce_delete_event', false );
+	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'deactivate_event' ); }
+	
+	// Check if event exists
+	$event_id = intval( $_POST[ 'event_id' ] );
+	$event = bookacti_get_event_by_id( $event_id );
+	if( ! $event ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'event_not_found', 'message' => esc_html__( 'Invalid event ID.', 'booking-activities' ) ), 'deactivate_event' ); }
+	
+	// Check capabilities
+	$is_allowed = current_user_can( 'bookacti_edit_templates' ) && bookacti_user_can_manage_template( $event->template_id );
 	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'deactivate_event' ); }
 
-	// Check if the event is booked
-	$filters = bookacti_format_booking_filters( array( 'event_id' => $event_id, 'active' => 1 ) );
-	$has_bookings = bookacti_get_number_of_bookings( $filters );
-	if( is_numeric( $has_bookings ) && $has_bookings > 0 && $event->repeat_freq && $event->repeat_freq !== 'none' ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'has_booked_occurence' ), 'deactivate_event' ); }
+	// Sanitize update data
+	$cancel_bookings	= ! empty( $_POST[ 'cancel_bookings' ] ) ? true : false;
+	$send_notifications	= ! empty( $_POST[ 'send_notifications' ] ) ? true : false;
 	
-	do_action( 'bookacti_deactivate_event_before', $event, $cancel_bookings );
-	
-	// Cancel the bookings
-	if( $cancel_bookings ) { 
-		$cancelled = bookacti_cancel_event_bookings( $event_id );
-		if( $cancelled ) { $messages[] = esc_html__( 'The bookings attached to this event have been cancelled.', 'booking-activities' ); }
-	}
+	do_action( 'bookacti_deactivate_event_before', $event, $cancel_bookings, $send_notifications );
 	
 	// Deactivate the event
 	$deactivated = bookacti_deactivate_event( $event_id );
-	if( $deactivated ) { $messages[] = esc_html__( 'The event has been deleted.', 'booking-activities' ); }
-
+	if( ! $deactivated ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_deleted' ), 'deactivate_event' ); }
+	
 	// Delete the event from all groups
 	bookacti_delete_event_from_groups( $event_id );
+	
+	// Cancel the active bookings
+	if( $cancel_bookings ) {
+		$old_bookings = bookacti_get_removed_event_bookings_to_cancel( $event );
+		if( $old_bookings ) {
+			bookacti_cancel_event_bookings( $event_id, array( 'in__booking_id' => array_keys( $old_bookings ) ) );
 
-	if( ! $deactivated ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_deleted' ), 'deactivate_event' ); }
+			// Maybe send notifications
+			if( $send_notifications ) {
+				bookacti_send_event_cancelled_notifications( $event, $old_bookings );
+			}
+		}
+	}
+	
+	do_action( 'bookacti_event_deactivated', $event, $cancel_bookings, $send_notifications );
 
-	do_action( 'bookacti_event_deactivated', $event, $cancel_bookings );
-
-	bookacti_send_json( array( 'status' => 'success', 'message' => implode( '<li>', $messages ) ), 'deactivate_event' );
+	bookacti_send_json( array( 'status' => 'success' ), 'deactivate_event' );
 }
 add_action( 'wp_ajax_bookactiDeleteEvent', 'bookacti_controller_delete_event' );
 
 
 /**
  * AJAX Controller - Unbind occurrences of an event
- * @version 1.9.0
+ * @version 1.10.0
  */
 function bookacti_controller_unbind_occurrences() {
-	$event_id		= intval( $_POST[ 'event_id' ] );
-	$template_id	= bookacti_get_event_template_id( $event_id );
-
-	// Check nonce and capabilities
-	$is_nonce_valid = check_ajax_referer( 'bookacti_unbind_occurrences', 'nonce', false );
+	// Check nonce
+	$is_nonce_valid = check_ajax_referer( 'bookacti_unbind_occurrences', 'nonce_unbind_occurrences', false );
 	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'unbind_occurrences' ); }
-
-	$is_allowed = current_user_can( 'bookacti_edit_templates' ) && bookacti_user_can_manage_template( $template_id );
+	
+	// Check if event exists
+	$event_id = intval( $_POST[ 'event_id' ] );
+	$event = bookacti_get_event_by_id( $event_id );
+	$event_start = isset( $_POST[ 'event_start' ] ) ? bookacti_sanitize_datetime( $_POST[ 'event_start' ] ) : '';
+	$event_end	 = isset( $_POST[ 'event_end' ] ) ? bookacti_sanitize_datetime( $_POST[ 'event_end' ] ) : '';
+	if( ! $event || ! $event_start || ! $event_end ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'event_not_found', 'message' => esc_html__( 'Invalid event ID.', 'booking-activities' ) ), 'unbind_occurrences' ); }
+	
+	// Check capabilities
+	$is_allowed = current_user_can( 'bookacti_edit_templates' ) && bookacti_user_can_manage_template( $event->template_id );
 	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'unbind_occurrences' ); }
+	
+	$new_events_ids	= array();
+	$interval		= ! empty( $_POST[ 'interval' ] ) ? bookacti_sanitize_events_interval( $_POST[ 'interval' ] ) : array();
+	$unbind_action	= isset( $_POST[ 'unbind_action' ] ) ? sanitize_title_with_dashes( $_POST[ 'unbind_action' ] ) : '';
+	
+	do_action( 'bookacti_unbind_event_occurrences_before', $event, $unbind_action, $interval );
 
-	$interval			= ! empty( $_POST[ 'interval' ] ) ? bookacti_sanitize_events_interval( $_POST[ 'interval' ] ) : array();
-	$sanitized_unbind	= sanitize_title_with_dashes( $_POST[ 'unbind' ] );
-	$unbind				= in_array( $sanitized_unbind, array( 'selected', 'booked' ), true ) ? $sanitized_unbind : 'selected';
+	if( $unbind_action === 'selected' ) {
+		$new_event_id = bookacti_unbind_selected_occurrence( $event, $event_start, $event_end );
+		$new_events_ids = array( $event_id, $new_event_id );
 
-	if( $unbind === 'selected' ) {
-		$event_start	= bookacti_sanitize_datetime( $_POST[ 'event_start' ] );
-		$event_end		= bookacti_sanitize_datetime( $_POST[ 'event_end' ] );
-		$new_event_id	= bookacti_unbind_selected_occurrence( $event_id, $event_start, $event_end );
-		$events			= bookacti_fetch_events_for_calendar_editor( array( 'events' => array( $new_event_id ), 'interval' => $interval ) );
+	} else if( $unbind_action === 'booked' ) {
+		$new_event_id = bookacti_unbind_booked_occurrences( $event );
+		$new_events_ids = array( $event_id, $new_event_id );
 
-	} else if( $unbind === 'booked' ) {
-		$new_event_id	= bookacti_unbind_booked_occurrences( $event_id );
-		$events			= bookacti_fetch_events_for_calendar_editor( array( 'events' => array( $event_id, $new_event_id ), 'interval' => $interval ) );
+	} else if( $unbind_action === 'future' ) {
+		$unbind_from = substr( $event_start, 0, 10 );
+		$new_event_id = bookacti_unbind_future_occurrences( $event, $unbind_from );
+		$new_events_ids = array( $event_id, $new_event_id );
+		
+	} else if( $unbind_action === 'all' ) {
+		$new_events_ids = bookacti_unbind_all_occurrences( $event );
+	}
+
+	$new_events_ids = apply_filters( 'bookacti_unbind_event_occurrences_new_events_ids', $new_events_ids, $event, $event_start, $event_end, $unbind_action, $interval );
+	if( ! $new_events_ids ) {
+		bookacti_send_json( array( 'status' => 'failed', 'error' => 'unknown_error', 'message' => esc_html__( 'An error occurred while trying to unbind the event occurrence(s).', 'booking-activities' ) ), 'unbind_occurrences' );
 	}
 
 	// Retrieve affected data
-	$exceptions		= bookacti_get_exceptions_by_event( array( 'templates' => array( $template_id ) ) );
-	$groups_events	= bookacti_get_groups_events( $template_id );
-
-	do_action( 'bookacti_event_occurrences_unbound', $event_id, $new_event_id, $events );
-
-	bookacti_send_json( array( 
+	$events			= bookacti_fetch_events_for_calendar_editor( array( 'events' => $new_events_ids, 'interval' => $interval ) );
+	$exceptions		= bookacti_get_exceptions_by_event( array( 'events' => $new_events_ids ) );
+	$groups_events	= bookacti_get_groups_events( $event->template_id );
+	$booking_nb		= bookacti_get_number_of_bookings_for_booking_system( array( $event->template_id ), $new_events_ids );
+	
+	$return_data = apply_filters( 'bookacti_event_occurrences_unbound', array( 
 		'status'		=> 'success', 
-		'new_event_id'	=> $new_event_id,
+		'new_events_ids'=> $new_events_ids,
 		'events'		=> $events[ 'events' ] ? $events[ 'events' ] : array(),
 		'events_data'	=> $events[ 'data' ] ? $events[ 'data' ] : array(),
-		'groups_events' => $groups_events, 
-		'exceptions'	=> $exceptions 
-	), 'unbind_occurrences' );
+		'exceptions'	=> $exceptions,
+		'bookings'		=> $booking_nb,
+		'groups_events' => $groups_events
+	), $event, $event_start, $event_end, $unbind_action, $interval );
+	
+	bookacti_send_json( $return_data, 'unbind_occurrences' );
 }
-add_action( 'wp_ajax_bookactiUnbindOccurences', 'bookacti_controller_unbind_occurrences' );
+add_action( 'wp_ajax_bookactiUnbindOccurrences', 'bookacti_controller_unbind_occurrences' );
 
 
 
@@ -425,51 +630,109 @@ add_action( 'wp_ajax_bookactiUpdateGroupOfEvents', 'bookacti_controller_update_g
 
 
 /**
- * Delete a group of events with AJAX
- * @since 1.1.0
- * @version 1.9.0
+ * AJAX Controller - Check if the group of events is booked before deleting it
+ * @since 1.10.0
  */
-function bookacti_controller_delete_group_of_events() {
-	$event_group_id = intval( $_POST[ 'group_id' ] );
-	$cancel_bookings = intval( $_POST[ 'cancel_bookings' ] );
-	$template_id = bookacti_get_group_of_events_template_id( $event_group_id );
-
-	// Check nonce and capabilities
+function bookacti_controller_before_delete_group_of_events() {
+	// Check nonce
 	$is_nonce_valid = check_ajax_referer( 'bookacti_delete_group_of_events', 'nonce', false );
-	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'deactivate_group_of_events' ); }
-
-	$is_allowed = current_user_can( 'bookacti_edit_templates' ) && bookacti_user_can_manage_template( $template_id );
-	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'deactivate_group_of_events' ); }
-
-	// Check if the group has been booked
-	$filters = bookacti_format_booking_filters( array( 'event_group_id' => $event_group_id ) );
+	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'before_deactivate_group_of_events' ); }
+	
+	// Check if group exists
+	$event_group_id = intval( $_POST[ 'group_id' ] );
+	$groups_of_events = bookacti_get_groups_of_events( array( 'event_groups' => array( $event_group_id ) ) );
+	$group_of_events = isset( $groups_of_events[ $event_group_id ] ) ? $groups_of_events[ $event_group_id ] : false;
+	if( ! $group_of_events ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'group_of_events_not_found', 'message' => esc_html__( 'Invalid group of events ID.', 'booking-activities' ) ), 'before_deactivate_group_of_events' ); }
+	
+	// Check capabilities
+	$is_allowed = current_user_can( 'bookacti_edit_templates' ) && bookacti_user_can_manage_template( $group_of_events[ 'template_id' ] );
+	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'before_deactivate_group_of_events' ); }
+	
+	// Check if the group of events is booked
+	$timezone = bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' );
+	$now_dt = new DateTime( 'now', new DateTimeZone( $timezone ) );
+	$filters = bookacti_format_booking_filters( array( 'event_group_id' => $event_group_id, 'from' => $now_dt->format( 'Y-m-d H:i:s' ), 'active' => 1 ) );
 	$bookings = bookacti_get_bookings( $filters );
-	
-	// Get booked events ids
-	$booked_events_ids = array();
-	foreach( $bookings as $booking ) { $booked_events_ids[] = $booking->event_id; }
-	$booked_events_ids = array_unique( $booked_events_ids );
-	
-	do_action( 'bookacti_deactivate_group_of_events_before', $event_group_id, $cancel_bookings );
-	
-	// Cancel the bookings
-	if( $cancel_bookings ) { 
-		$cancelled = bookacti_cancel_group_of_events_bookings( $event_group_id );
-		if( $cancelled ) { $messages[] = esc_html__( 'The bookings attached to this group of events have been cancelled.', 'booking-activities' ); }
+	$booking_groups_ids = array();
+	$notifications_nb = 0;
+	if( $bookings ) {
+		$sent_booking_groups_ids = array();
+		foreach( $bookings as $booking ) {
+			if( ! in_array( $booking->group_id, $booking_groups_ids, true ) ) { $booking_groups_ids[] = $booking->group_id; }
+			
+			$send = apply_filters( 'bookacti_send_group_of_events_cancelled_notification_count', true, $booking, $group_of_events );
+			if( $send && ! in_array( $booking->group_id, $sent_booking_groups_ids, true ) ) { 
+				$sent_booking_groups_ids[] = $booking->group_id;
+				++$notifications_nb;
+			}
+		}
 	}
 	
-	// Delete groups with no bookings at all (even inactive)
-	if( ! $bookings ) { $deleted = bookacti_delete_group_of_events( $event_group_id ); } 
+	$bookings_nb		= count( $bookings ) . ' ' . esc_html( _n( 'booking', 'bookings', count( $bookings ), 'booking-activities' ) );
+	$booking_groups_nb	= count( $booking_groups_ids ) . ' ' . esc_html( _n( 'booking group', 'booking groups', count( $booking_groups_ids ), 'booking-activities' ) );
+	$notifications_nb	= $notifications_nb . ' ' . esc_html( _n( 'notification', 'notifications', $notifications_nb, 'booking-activities' ) );
+	$has_bookings		= count( $bookings );
 	
-	// Deactivate groups with bookings
-	else { $deleted = bookacti_deactivate_group_of_events( $event_group_id ); }
+	bookacti_send_json( array( 'status' => 'success', 'bookings_nb' => $bookings_nb, 'booking_groups_nb' => $booking_groups_nb, 'notifications_nb' => $notifications_nb, 'has_bookings' => $has_bookings ), 'before_deactivate_group_of_events' );
+}
+add_action( 'wp_ajax_bookactiBeforeDeleteGroupOfEvents', 'bookacti_controller_before_delete_group_of_events' );
 
-	if( ! $deleted ) { bookacti_send_json( array( 'status' => 'failed' ), 'deactivate_group_of_events' ); }
-	else { $messages[] = esc_html__( 'The group of events has been deleted.', 'booking-activities' ); }
 
-	do_action( 'bookacti_group_of_events_deactivated', $event_group_id, $cancel_bookings );
+/**
+ * Delete a group of events with AJAX
+ * @since 1.1.0
+ * @version 1.10.0
+ */
+function bookacti_controller_delete_group_of_events() {
+	// Check nonce
+	$is_nonce_valid = check_ajax_referer( 'bookacti_delete_group_of_events', 'nonce_delete_group_of_events', false );
+	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'deactivate_group_of_events' ); }
+	
+	// Check if group exists
+	$event_group_id = intval( $_POST[ 'group_id' ] );
+	$groups_of_events = bookacti_get_groups_of_events( array( 'event_groups' => array( $event_group_id ) ) );
+	$group_of_events = isset( $groups_of_events[ $event_group_id ] ) ? $groups_of_events[ $event_group_id ] : false;
+	if( ! $group_of_events ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'group_of_events_not_found', 'message' => esc_html__( 'Invalid group of events ID.', 'booking-activities' ) ), 'deactivate_group_of_events' ); }
+	
+	// Check capabilities
+	$is_allowed = current_user_can( 'bookacti_edit_templates' ) && bookacti_user_can_manage_template( $group_of_events[ 'template_id' ] );
+	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'deactivate_group_of_events' ); }
+	
+	// Sanitize update data
+	$cancel_bookings	= ! empty( $_POST[ 'cancel_bookings' ] ) ? true : false;
+	$send_notifications	= ! empty( $_POST[ 'send_notifications' ] ) ? true : false;
+	
+	do_action( 'bookacti_deactivate_group_of_events_before', $group_of_events, $cancel_bookings, $send_notifications );
+	
+	// Deactivate the group of events
+	bookacti_deactivate_group_of_events( $event_group_id );
+	
+	// Cancel the bookings
+	$bookings = array();
+	if( $cancel_bookings ) { 
+		// Get bookings before cancelling them
+		if( $send_notifications ) {
+			$filters = bookacti_format_booking_filters( array( 'event_group_id' => $event_group_id, 'active' => 1 ) );
+			$old_booking_groups = bookacti_get_booking_groups( $filters );
+			// It is not necessary to filter more the booking groups here because
+			// the notification will be sent only if the booking group is cancelled, 
+			// and the booking group is cancelled only if it has an active booking starting in the future
+		}
+		
+		// Cancel active and future grouped bookings belonging that (once) belong(ed) to that group of events
+		bookacti_cancel_group_of_events_bookings( $event_group_id );
+		
+		// Maybe send notifications
+		if( $send_notifications && $old_booking_groups ) {
+			bookacti_send_group_of_events_cancelled_notifications( $group_of_events, $old_booking_groups );
+		}
+		
+		$bookings = bookacti_get_number_of_bookings_for_booking_system( $group_of_events[ 'template_id' ] );
+	}
+	
+	do_action( 'bookacti_group_of_events_deactivated', $group_of_events, $cancel_bookings, $send_notifications );
 
-	bookacti_send_json( array( 'status' => 'success', 'message' => implode( '<li>', $messages ), 'booked_events_ids' => $booked_events_ids ), 'deactivate_group_of_events' );
+	bookacti_send_json( array( 'status' => 'success', 'bookings' => $bookings ), 'deactivate_group_of_events' );
 }
 add_action( 'wp_ajax_bookactiDeleteGroupOfEvents', 'bookacti_controller_delete_group_of_events' );
 
@@ -724,7 +987,7 @@ add_action( 'wp_ajax_bookactiSwitchTemplate', 'bookacti_controller_switch_templa
 
 /**
  * AJAX Controller - Create a new activity
- * @version 1.8.0
+ * @version 1.10.0
  */
 function bookacti_controller_insert_activity() {
 	// Check nonce and capabilities
@@ -740,7 +1003,6 @@ function bookacti_controller_insert_activity() {
 	$activity_availability	= intval( $_POST[ 'activity-availability' ] );
 	$sanitized_duration		= intval( $_POST[ 'activity-duration' ] );
 	$activity_duration		= $sanitized_duration ? bookacti_format_duration( $sanitized_duration, 'timespan' ) : '000.01:00:00';
-	$activity_resizable		= intval( $_POST[ 'activity-resizable' ] );
 	$managers_array			= isset( $_POST[ 'activity-managers' ] ) ? bookacti_ids_to_array( $_POST[ 'activity-managers' ] ) : array();
 	$options_array			= isset( $_POST[ 'activityOptions' ] ) && is_array( $_POST[ 'activityOptions' ] ) ? $_POST[ 'activityOptions' ] : array();
 
@@ -749,7 +1011,7 @@ function bookacti_controller_insert_activity() {
 	$activity_settings	= bookacti_format_activity_settings( $options_array );
 
 	// Insert the activity and its metadata
-	$activity_id = bookacti_insert_activity( $activity_title, $activity_color, $activity_availability, $activity_duration, $activity_resizable );
+	$activity_id = bookacti_insert_activity( $activity_title, $activity_color, $activity_availability, $activity_duration );
 
 	if( ! $activity_id ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_inserted' ), 'insert_activity' ); }
 
@@ -773,7 +1035,7 @@ add_action( 'wp_ajax_bookactiInsertActivity', 'bookacti_controller_insert_activi
 
 /**
  * AJAX Controller - Update an activity
- * @version 1.8.0
+ * @version 1.10.0
  */
 function bookacti_controller_update_activity() {
 	$activity_id	= intval( $_POST['activity-id'] );
@@ -791,7 +1053,6 @@ function bookacti_controller_update_activity() {
 	$activity_availability	= intval( $_POST['activity-availability'] );
 	$sanitized_duration		= intval( $_POST[ 'activity-duration' ] );
 	$activity_duration		= $sanitized_duration ? substr( bookacti_format_duration( $sanitized_duration, 'timespan' ), -12 ) : '000.01:00:00';
-	$activity_resizable		= intval( $_POST['activity-resizable'] );
 	$managers_array			= isset( $_POST['activity-managers'] ) ? bookacti_ids_to_array( $_POST['activity-managers'] ) : array();
 	$options_array			= isset( $_POST['activityOptions'] ) && is_array( $_POST['activityOptions'] ) ? $_POST['activityOptions'] : array();
 
@@ -803,7 +1064,7 @@ function bookacti_controller_update_activity() {
 	$updated_events		= bookacti_update_events_title( $activity_id, $activity_title );
 	
 	// Update the activity and its metadata
-	$updated_activity	= bookacti_update_activity( $activity_id, $activity_title, $activity_color, $activity_availability, $activity_duration, $activity_resizable );
+	$updated_activity	= bookacti_update_activity( $activity_id, $activity_title, $activity_color, $activity_availability, $activity_duration );
 	$updated_managers	= bookacti_update_managers( 'activity', $activity_id, $activity_managers );
 	$updated_metadata	= bookacti_update_metadata( 'activity', $activity_id, $activity_settings );
 

@@ -2,20 +2,21 @@
 	"admin-config":{
 		"bookacti_calendars":{
 			"pages":{ "admin.php":"" },
-			"anchors":{ "bookacti-settings-lang-switcher": { "where": "first" },
-						"bookacti-notification-global-settings": { "where": "after" }, 
-						"bookacti-notification-email-settings": { "where": "after" }, 
-						"bookacti-activity-dialog-lang-switcher": { "where": "first" }, 
-						"bookacti-event-dialog-lang-switcher": { "where": "first" }, 
-						"bookacti-group-of-events-dialog-lang-switcher": { "where": "first" },
-						"bookacti-group-category-dialog-lang-switcher": { "where": "first" },
-						"bookacti-form-editor-page-lang-switcher": { "where": "first" },
-						"bookacti-form-meta-dialog-lang-switcher": { "where": "first" },
-						"bookacti-form-field-dialog-login-lang-switcher": { "where": "first" },
-						"bookacti-form-field-dialog-quantity-lang-switcher": { "where": "first" },
-						"bookacti-form-field-dialog-submit-lang-switcher": { "where": "first" },
-						"bookacti-form-field-dialog-free_text-lang-switcher": { "where": "first" },
-						"bookacti-form-field-dialog-terms-lang-switcher": { "where": "first" }
+			"anchors":{ 
+				"bookacti-settings-lang-switcher": { "where": "first" },
+				"bookacti-notification-global-settings": { "where": "after" }, 
+				"bookacti-notification-email-settings": { "where": "after" }, 
+				"bookacti-activity-dialog-lang-switcher": { "where": "first" }, 
+				"bookacti-event-dialog-lang-switcher": { "where": "first" }, 
+				"bookacti-group-of-events-dialog-lang-switcher": { "where": "first" },
+				"bookacti-group-category-dialog-lang-switcher": { "where": "first" },
+				"bookacti-form-editor-page-lang-switcher": { "where": "first" },
+				"bookacti-form-meta-dialog-lang-switcher": { "where": "first" },
+				"bookacti-form-field-dialog-login-lang-switcher": { "where": "first" },
+				"bookacti-form-field-dialog-quantity-lang-switcher": { "where": "first" },
+				"bookacti-form-field-dialog-submit-lang-switcher": { "where": "first" },
+				"bookacti-form-field-dialog-free_text-lang-switcher": { "where": "first" },
+				"bookacti-form-field-dialog-terms-lang-switcher": { "where": "first" }
 			},
 			"forms":{
 				"bookacti-settings":{

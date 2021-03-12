@@ -1,7 +1,7 @@
 <?php 
 /**
  * Calendar editor dialogs
- * @version 1.9.3
+ * @version 1.10.0
  */
 
 // Exit if accessed directly
@@ -355,7 +355,7 @@ foreach( $templates as $template ) {
 			<?php
 			/**
 			 * Display the 'General' tab content of activity settings
-			 * @version 1.9.3
+			 * @version 1.10.0
 			 * @param array $params
 			 */
 			function bookacti_fill_activity_tab_general( $params = array() ) {
@@ -386,13 +386,6 @@ foreach( $templates as $template ) {
 						'title'	=> esc_html__( 'Default duration', 'booking-activities' ),
 						'label'	=> bookacti_help_tip( esc_html__( 'The default duration of an event when you drop this activity onto the calendar. For a better readability, try not to go over your working hours. Best practice for events of several days is to create one event per day and then group them.', 'booking-activities' ), false )
 								. '<br/><small><em>' . esc_html__( 'Used when an event is created only', 'booking-activities' ) . '</em></small>'
-					),
-					'activity-resizable' => array(
-						'type'	=> 'checkbox',
-						'name'	=> 'activity-resizable',
-						'id'	=> 'bookacti-activity-resizable',
-						'title'	=> esc_html__( 'Change duration on calendar', 'booking-activities' ),
-						'tip'	=> esc_html__( 'Allow to resize an event directly on calendar. Mouseover the event to see the handle at the bottom of the event.', 'booking-activities' )
 					),
 					'activity-color' => array(
 						'type'	=> 'color',
@@ -948,106 +941,231 @@ foreach( $templates as $template ) {
 </div>
 
 
-<!-- Locked event error -->
-<div id='bookacti-unbind-booked-event-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Locked event', 'booking-activities' ); ?>' style='display:none;' >
-	<?php wp_nonce_field( 'bookacti_unbind_occurrences', 'nonce_unbind_occurrences', false ); ?>
-	<div id='bookacti-unbind-booked-event-error-list-container' >
-		<?php 
-			/* translators: This is followed by "You can't:", and then a list of bans. */
-			esc_html_e( 'There are bookings on at least one of the occurrence of this event.', 'booking-activities' ); 
-			/* translators: This is preceded by 'There are bookings on at least one of the occurrence of this event.', and flollowed by a list of bans. */
-			echo '<br/><b>' . esc_html__( "You can't:", 'booking-activities' ) . '</b>'; 
-		?>
-		<ul>
-			<li id='bookacti-unbind-booked-event-error-move'><?php /* translators: In the context, it is one of the message following 'There are bookings on at least one of the occurrence of this event. You can't: ' */
-				esc_html_e( 'Move this occurrence because it will affect the complete event.', 'booking-activities' ); ?>
-			</li>
-			<li id='bookacti-unbind-booked-event-error-resize'><?php /* translators: In the context, it is one of the message following 'There are bookings on at least one of the occurrence of this event. You can't: ' */
-				esc_html_e( 'Resize this occurrence because it will affect the complete event.', 'booking-activities' ); ?>
-			</li>
-			<li id='bookacti-unbind-booked-event-error-delete'>
-				<?php /* translators: In the context, it is one of the message following 'There are bookings on at least one of the occurrence of this event. You can't: ' */
-				esc_html_e( 'Delete this occurrence because it will affect the complete event.', 'booking-activities' ); ?>
-			</li>
-		</ul>
-	</div>
-	<div>
-		<?php 
-			/* translators: This is preceded by 'There are bookings on at least one of the occurrence of this event. You can't: <list of bans>' and followed by "You can:", and then a list of capabilities. */
-			esc_html_e( 'If you want to edit independantly the occurrences of the event that are not booked:', 'booking-activities' );
-			/* translators: This is preceded by 'There are bookings on at least one of the occurrence of this event.', and flollowed by a list of capabilities. */
-			echo '<br/><b>' . esc_html__( 'You can:', 'booking-activities' ) . '</b><br/>';
-		?>
-		<ul>
+<!-- Unbind an occurrence of a repeated event -->
+<div id='bookacti-unbind-booked-event-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Make an occurrence of a repeated event independent', 'booking-activities' ); ?>' style='display:none;' >
+	<form id='bookacti-unbind-booked-event-form'>
+		<?php wp_nonce_field( 'bookacti_unbind_occurrences', 'nonce_unbind_occurrences', false ); ?>
+		<input type='hidden' name='action' id='bookacti-unbind-booked-event-form-action' value='bookactiUnbindOccurrences'/>
+		<input type='hidden' name='unbind_action' value='selected'/>
+		
+		<p class='bookacti-selected-event-dates'>
+			<strong><?php esc_html_e( 'Selected event:', 'booking-activities' ); ?></strong>
+			<span class='bookacti-selected-event-start'></span> - <span class='bookacti-selected-event-end'></span>
+		</p>
+		
+		<p><?php esc_html_e( 'In order to edit the occurrences of the event independently, you can:', 'booking-activities' ); ?></p>
+				
+		<div id='bookacti-unbind-actions'>
+			<div id='bookacti-unbind-action-selected-container' class='bookacti-unbind-action'>
+				<input type='radio' name='unbind_action' value='selected' id='bookacti-unbind-action-selected' checked='checked'/>
+				<label for='bookacti-unbind-action-selected'><?php esc_html_e( 'Unbind the selected occurrence', 'booking-activities' ); ?></label>
+				<br/><small><em><?php esc_html_e( 'This will result in two separate events: the selected occurrence, and the original event without the selected occurrence.', 'booking-activities' ); ?></em></small>
+			</div>
+			<div id='bookacti-unbind-action-future-container' class='bookacti-unbind-action'>
+				<input type='radio' name='unbind_action' value='future' id='bookacti-unbind-action-future'/>
+				<label for='bookacti-unbind-action-future'><?php esc_html_e( 'Unbind the next occurrences (including the selected one)', 'booking-activities' ); ?></label>
+				<br/><small><em><?php esc_html_e( 'This will result in two separate events: one with the occurrences prior to the selected one, the other with the occurrences subsequent to the selected one (included).', 'booking-activities' ); ?></em></small>
+			</div>
+			<div id='bookacti-unbind-action-booked-container' class='bookacti-unbind-action'>
+				<input type='radio' name='unbind_action' value='booked' id='bookacti-unbind-action-booked'/>
+				<label for='bookacti-unbind-action-booked'><?php esc_html_e( 'Unbind the booked occurrences', 'booking-activities' ); ?></label>
+				<br/><small><em><?php esc_html_e( 'This will result in two separate events: one with the booked occurrences, the other with the occurrences that don\'t have active bookings.', 'booking-activities' ); ?></em></small>
+			</div>
+			<div id='bookacti-unbind-action-all-container' class='bookacti-unbind-action'>
+				<input type='radio' name='unbind_action' value='all' id='bookacti-unbind-action-all'/>
+				<label for='bookacti-unbind-action-all'><?php esc_html_e( 'Unbind each occurrence', 'booking-activities' ); ?></label>
+				<br/><small><em><?php esc_html_e( 'This will result in one separate event per occurrence.', 'booking-activities' ); ?></em></small>
+			</div>
+			<?php do_action( 'bookacti_unbind_actions_after' ); ?>
+		</div>
+		<div class='bookacti-error'>
+			<span class='dashicons dashicons-warning'></span>
+			<span><?php esc_html_e( 'This action cannot be undone.', 'booking-activities' ); ?></span>
+		</div>
+	</form>
+</div>
+
+
+<!-- Dialog to move / resize an event -->
+<div id='bookacti-update-event-dates-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Change the event\'s dates', 'booking-activities' ); ?>' style='display:none;'>
+	<form id='bookacti-update-event-dates-form'>
+		<div class='bookacti-info'>
+			<span class='dashicons dashicons-info'></span>
+			<span>
+				<?php esc_html_e( 'You can also drag and drop the event on the calendar to move it, and drag the handle at the bottom of the event to resize it.', 'booking-activities' ); ?>
+			</span>
+		</div>
+		<p class='bookacti-selected-event-dates'>
+			<strong><?php esc_html_e( 'Selected event:', 'booking-activities' ); ?></strong>
+			<span class='bookacti-selected-event-start'></span> - <span class='bookacti-selected-event-end'></span>
+		</p>
+		<div class='bookacti-field-container' id='bookacti-update-event-dates-start-container'>
+			<label for='bookacti-update-event-dates-start_date'>
+				<?php esc_html_e( 'Start', 'booking-activities' ); ?>
+			</label>
 			<?php 
-						/* translators: This is one of the capabilities following the text 'There are bookings on at least one of the occurrence of this event. You can:'. */
-				echo  '<li>' . esc_html__( 'Unbind the selected occurrence only.', 'booking-activities' ) . '</li>'
-						/* translators: This is one of the capabilities following the text 'There are bookings on at least one of the occurrence of this event. You can:'. */
-					. '<li>' . esc_html__( 'Unbind all the booked occurrences.', 'booking-activities' ) . '</li>';
+				$start_date = array( 'type' => 'date', 'name' => 'start_date', 'id' => 'bookacti-update-event-dates-start_date' );
+				bookacti_display_field( $start_date );
+				$start_time = array( 'type' => 'time', 'name' => 'start_time', 'id' => 'bookacti-update-event-dates-start_time' );
+				bookacti_display_field( $start_time );
+				bookacti_help_tip( esc_html__( 'Set the new event start date and time. The event will be moved accordingly.', 'booking-activities' ) );
 			?>
-		</ul>
-	</div>
-	<div class='bookacti-error'>
-		<span class='dashicons dashicons-warning'></span>
-		<span><?php esc_html_e( 'This action cannot be undone.', 'booking-activities' ); ?></span>
-	</div>
+		</div>
+		<div class='bookacti-field-container' id='bookacti-update-event-dates-end-container'>
+			<label for='bookacti-update-event-dates-end_date'>
+				<?php esc_html_e( 'End', 'booking-activities' ); ?>
+			</label>
+			<?php 
+				$end_date = array( 'type' => 'date', 'name' => 'end_date', 'id' => 'bookacti-update-event-dates-end_date' );
+				bookacti_display_field( $end_date );
+				$end_time = array( 'type' => 'time', 'name' => 'end_time', 'id' => 'bookacti-update-event-dates-end_time' );
+				bookacti_display_field( $end_time );
+				bookacti_help_tip( esc_html__( 'Set the new event end date and time. The event will be resized accordingly.', 'booking-activities' ) );
+			?>
+		</div>
+		<?php do_action( 'bookacti_update_event_dates_options_after' ); ?>
+		<div class='bookacti-error bookacti-update-repeated-event-dates-warning'>
+			<span class='dashicons dashicons-warning'></span>
+			<span>
+				<?php esc_html_e( 'This is a repeated event, all the occurrences will be affected. If you want to apply these changes to only one occurrence, you need to unbind it first.', 'booking-activities' ); ?>
+			</span>
+		</div>
+	</form>
+</div>
+
+
+<!-- Warning before moving / resizing a booked event -->
+<div id='bookacti-update-booked-event-dates-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Move a booked event', 'booking-activities' ); ?>' style='display:none;'>
+	<form id='bookacti-update-booked-event-dates-form'>
+		<p id='bookacti-update-booked-event-dates-intro'><?php esc_html_e( 'You are about to change the dates of a booked event. The event\'s bookings will be rescheduled to match the new dates.', 'booking-activities' ); ?></p>
+		<?php 
+			$fields = array(
+				'send_notifications' => array(
+					'type'	=> 'checkbox',
+					'name'	=> 'send_notifications',
+					'id'	=> 'bookacti-update-booked-event-dates-send_notifications',
+					'title'	=> esc_html__( 'Send notifications', 'booking-activities' ),
+					'value'	=> 0,
+					/* translators: %1$s = title of the notification (E.g.: "Booking is rescheduled") */
+					'tip'	=> sprintf( esc_html__( 'Send the "%1$s" notification to your customer. No notification will be sent for past bookings and to administrators.', 'booking-activities' ), esc_html__( 'Booking is rescheduled', 'booking-activities' ) )
+				)
+			);
+			bookacti_display_fields( $fields );
+			
+			bookacti_display_banp_promo_admin_message();
+			
+			do_action( 'bookacti_update_booked_event_dates_options_after' );
+		?>
+		<div class='bookacti-error bookacti-update-booked-repeated-event-dates-warning'>
+			<span class='dashicons dashicons-warning'></span>
+			<span>
+				<?php esc_html_e( 'This is a repeated event, all the occurrences will be affected. If you want to apply these changes to only one occurrence, you need to unbind it first.', 'booking-activities' ); ?>
+			</span>
+		</div>
+	</form>
 </div>
 
 
 <!-- Delete event -->
 <div id='bookacti-delete-event-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Delete event', 'booking-activities' ); ?>' style='display:none;' >
-	<?php wp_nonce_field( 'bookacti_delete_event', 'nonce_delete_event', false ); ?>
-	<div><?php esc_html_e( 'Are you sure to delete this event permanently?', 'booking-activities' ); ?></div>
-	<div class='bookacti-error'>
-		<span class='dashicons dashicons-warning'></span>
-		<span><?php esc_html_e( 'This action cannot be undone.', 'booking-activities' ); ?></span>
-	</div>
-	<hr/>
-	<div>
-		<p><?php esc_html_e( 'You can also cancel the bookings made for this event.', 'booking-activities' ); ?></p>
-		<?php 
-			$fields = array(
-				'cancel_event_bookings' => array(
-					'type'	=> 'checkbox',
-					'name'	=> 'cancel_event_bookings',
-					'id'	=> 'bookacti-cancel-event-bookings',
-					'title'	=> esc_html__( 'Cancel the bookings', 'booking-activities' ),
-					'value'	=> 0,
-					'tip'	=> esc_html__( 'The bookings of this event will be cancelled.', 'booking-activities' )
-				)
-			);
-			bookacti_display_fields( $fields );
-		?>
-	</div>
+	<form id='bookacti-delete-event-form'>
+		<?php wp_nonce_field( 'bookacti_delete_event', 'nonce_delete_event', false ); ?>
+		<input type='hidden' name='action' id='bookacti-delete-event-form-action' value='bookactiDeleteEvent'/>
+		
+		<div><?php esc_html_e( 'Are you sure to delete this event permanently?', 'booking-activities' ); ?></div>
+		<div class='bookacti-error'>
+			<span class='dashicons dashicons-warning'></span>
+			<span><?php esc_html_e( 'This action cannot be undone.', 'booking-activities' ); ?></span>
+		</div>
+		<div class='bookacti-error bookacti-delete-booked-repeated-event-warning'>
+			<span class='dashicons dashicons-warning'></span>
+			<span>
+				<?php esc_html_e( 'This is a repeated event, all the occurrences will be affected. If you want to apply these changes to only one occurrence, you need to unbind it first.', 'booking-activities' ); ?>
+			</span>
+		</div>
+		
+		<hr/>
+		
+		<div id='bookacti-delete-booked-event-options'>
+			<p><?php esc_html_e( 'You can also cancel the bookings made for this event.', 'booking-activities' ); ?></p>
+			<?php 
+				$send_notifications_tip = sprintf( esc_html__( 'Send the "%1$s" notification to your customer. No notification will be sent for past bookings and to administrators.', 'booking-activities' ), sprintf( esc_html__( 'Booking status turns to "%s"', 'booking-activities' ), esc_html__( 'Cancelled', 'booking-activities' ) ) );
+				$fields = array(
+					'cancel_bookings' => array(
+						'type'	=> 'checkbox',
+						'name'	=> 'cancel_bookings',
+						'id'	=> 'bookacti-delete-event-cancel_bookings',
+						'title'	=> esc_html__( 'Cancel the bookings', 'booking-activities' ),
+						'value'	=> 0,
+						'tip'	=> esc_html__( 'The bookings of this event will be cancelled. For repeated events, only bookings for events that haven\'t yet started will be cancelled, bookings for past events won\'t be changed.', 'booking-activities' )
+					),
+					'send_notifications' => array(
+						'type'	=> 'checkbox',
+						'name'	=> 'send_notifications',
+						'id'	=> 'bookacti-delete-event-send_notifications',
+						'title'	=> esc_html__( 'Send notifications', 'booking-activities' ),
+						'value'	=> 0,
+						'tip'	=> $send_notifications_tip
+					)
+				);
+				bookacti_display_fields( $fields );
+				
+				bookacti_display_banp_promo_admin_message();
+				
+				do_action( 'bookacti_delete_booked_event_options_after' );
+			?>
+		</div>
+	</form>
 </div>
 
 
 <!-- Delete group of events -->
 <div id='bookacti-delete-group-of-events-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Delete a group of events', 'booking-activities' ); ?>' style='display:none;' >
-	<?php wp_nonce_field( 'bookacti_delete_group_of_events', 'nonce_delete_group_of_events', false ); ?>
-	<div><p><?php esc_html_e( 'Are you sure to delete this group of events permanently?', 'booking-activities' ); ?></p></div>
-	<div><p><em><?php esc_html_e( 'Events will NOT be deleted.', 'booking-activities' ); ?></em></p></div>
-	<div class='bookacti-error'>
-		<span class='dashicons dashicons-warning'></span>
-		<span><?php esc_html_e( 'This action cannot be undone.', 'booking-activities' ); ?></span>
-	</div>
-	<hr/>
-	<div>
-		<p><?php esc_html_e( 'You can also cancel the bookings made for this group of events.', 'booking-activities' ); ?></p>
-		<?php 
-			$fields = array(
-				'cancel_group_of_events_bookings' => array(
-					'type'	=> 'checkbox',
-					'name'	=> 'cancel_group_of_events_bookings',
-					'id'	=> 'bookacti-cancel-group-of-events-bookings',
-					'title'	=> esc_html__( 'Cancel the bookings', 'booking-activities' ),
-					'value'	=> 0,
-					'tip'	=> esc_html__( 'The bookings of this group of events will be cancelled.', 'booking-activities' )
-				)
-			);
-			bookacti_display_fields( $fields );
-		?>
-	</div>
+	<form id='bookacti-delete-group-of-events-form'>
+		<?php wp_nonce_field( 'bookacti_delete_group_of_events', 'nonce_delete_group_of_events', false ); ?>
+		<input type='hidden' name='action' id='bookacti-delete-group-of-events-form-action' value='bookactiDeleteGroupOfEvents'/>
+		
+		<div><p><?php esc_html_e( 'Are you sure to delete this group of events permanently?', 'booking-activities' ); ?></p></div>
+		<div class='bookacti-info'>
+			<span class='dashicons dashicons-info'></span>
+			<span><?php esc_html_e( 'Events will NOT be deleted.', 'booking-activities' ); ?></span>
+		</div>
+		<div class='bookacti-error'>
+			<span class='dashicons dashicons-warning'></span>
+			<span><?php esc_html_e( 'This action cannot be undone.', 'booking-activities' ); ?></span>
+		</div>
+		
+		<hr/>
+		
+		<div id='bookacti-delete-booked-group-of-events-options'>
+			<p><?php esc_html_e( 'You can also cancel the bookings made for this group of events.', 'booking-activities' ); ?></p>
+			<?php 
+				$fields = array(
+					'cancel_bookings' => array(
+						'type'	=> 'checkbox',
+						'name'	=> 'cancel_bookings',
+						'id'	=> 'bookacti-delete-group-of-events-cancel_bookings',
+						'title'	=> esc_html__( 'Cancel the bookings', 'booking-activities' ),
+						'value'	=> 0,
+						'tip'	=> esc_html__( 'The bookings of this group of events will be cancelled. Only bookings for events that haven\'t yet started will be cancelled, bookings for past events won\'t be changed.', 'booking-activities' )
+					),
+					'send_notifications' => array(
+						'type'	=> 'checkbox',
+						'name'	=> 'send_notifications',
+						'id'	=> 'bookacti-delete-group-of-events-send_notifications',
+						'title'	=> esc_html__( 'Send notifications', 'booking-activities' ),
+						'value'	=> 0,
+						'tip'	=> $send_notifications_tip
+					)
+				);
+				bookacti_display_fields( $fields );
+				
+				bookacti_display_banp_promo_admin_message();
+				
+				do_action( 'bookacti_delete_booked_group_of_events_options_after' );
+			?>
+		</div>
+	</form>
 </div>
 
 
@@ -1055,7 +1173,10 @@ foreach( $templates as $template ) {
 <div id='bookacti-delete-group-category-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Delete a group category', 'booking-activities' ); ?>' style='display:none;' >
 	<?php wp_nonce_field( 'bookacti_delete_group_category', 'nonce_delete_group_category', false ); ?>
 	<div><?php esc_html_e( 'Are you sure to delete this category and all its groups of events permanently?', 'booking-activities' ); ?></div>
-	<div><p><em><?php esc_html_e( 'Events will NOT be deleted.', 'booking-activities' ); ?></em></p></div>
+	<div class='bookacti-info'>
+		<span class='dashicons dashicons-info'></span>
+		<span><?php esc_html_e( 'Events will NOT be deleted.', 'booking-activities' ); ?></span>
+	</div>
 	<div class='bookacti-error'>
 		<span class='dashicons dashicons-warning'></span>
 		<span><?php esc_html_e( 'This action cannot be undone.', 'booking-activities' ); ?></span>

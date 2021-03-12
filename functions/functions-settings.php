@@ -1526,6 +1526,28 @@ function bookacti_display_banp_promo() {
 
 
 /**
+ * Display the admin message field to promote the Notification Pack add-on
+ * @since 1.10.0
+ */
+function bookacti_display_banp_promo_admin_message() {
+	$is_plugin_active = bookacti_is_plugin_active( 'ba-notification-pack/ba-notification-pack.php' );
+	if( $is_plugin_active ) { return; }
+	
+	$addon_link		= '<strong><a href="https://booking-activities.fr/en/downloads/notification-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=notification-pack&utm_content=admin-message" target="_blank" >Notification Pack</a></strong>';
+	/* translators: %s = the add-on name "Notification Pack" */
+	$label			= sprintf( esc_html__( 'Add a message for your customers thanks to the %s add-on', 'booking-activities' ), $addon_link );
+	$placeholder	= esc_html__( 'This message will be displayed in your notification where the {admin_message} tag will be.', 'booking-activities' );
+	
+	?>
+		<div class='bookacti-field-container bookacti-addon-promo bookacti-banp-promo-admin-message'>
+			<label class='bookacti-fullwidth-label'><?php echo $label; ?></label>
+			<textarea placeholder='<?php echo $placeholder; ?>'></textarea>
+		</div>
+	<?php
+}
+
+
+/**
  * Display a promotional area for Advanced Forms add-on
  * @since 1.5.4
  */

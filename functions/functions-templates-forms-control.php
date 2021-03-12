@@ -237,7 +237,7 @@ function bookacti_get_event_repeat_periods() {
 /**
  * Sanitize event data
  * @since 1.8.0
- * @version 1.8.4
+ * @version 1.10.0
  */
 function bookacti_sanitize_event_data( $raw_data ) {
 	$default_data = bookacti_get_event_default_data();
@@ -330,11 +330,24 @@ function bookacti_sanitize_event_data( $raw_data ) {
 			$data[ 'end' ] = $repeat_to_datetime->format( 'Y-m-d' ) . substr( $data[ 'end' ], 10 );
 		}
 		
-		// Remove exceptions out of the repeat period
+		// Remove exceptions out of the repeat period and if they are not on an occurrence
 		if( $data[ 'exceptions_dates' ] ) {
+			$occurrences = bookacti_get_occurrences_of_repeated_event( $dummy_event, array( 'past_events' => true ) );
 			foreach( $data[ 'exceptions_dates' ] as $i => $excep_date ) {
+				// Remove exceptions out of the repeat period
 				$excep_datetime = DateTime::createFromFormat( 'Y-m-d H:i:s', $excep_date . ' 00:00:00' );
 				if( $excep_datetime < $repeat_from_datetime || $excep_datetime > $repeat_to_datetime ) {
+					unset( $data[ 'exceptions_dates' ][ $i ] );
+					continue;
+				}
+				
+				// Remove exception if it is not on an occurrence
+				$is_on_occurrence = false;
+				foreach( $occurrences as $occurrence ) {
+					$occurrence_date = substr( $occurrence[ 'start' ], 0, 10 );
+					if( $excep_date === $occurrence_date ) { $is_on_occurrence = true; break; }
+				}
+				if( ! $is_on_occurrence ) {
 					unset( $data[ 'exceptions_dates' ][ $i ] );
 				}
 			}

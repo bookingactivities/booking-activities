@@ -251,7 +251,7 @@ add_action( 'wp_ajax_nopriv_bookactiRefundBooking', 'bookacti_controller_refund_
 
 /**
  * AJAX Controller - Change booking state
- * @version 1.9.0
+ * @version 1.10.0
  */
 function bookacti_controller_change_booking_state() {
 	$booking_id			= intval( $_POST[ 'booking_id' ] );
@@ -287,7 +287,7 @@ function bookacti_controller_change_booking_state() {
 			bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_allowed_to_update_booking_status', 'message' => esc_html__( 'The booking status cannot be changed.', 'booking-activities' ) ), 'change_booking_status' );
 		}
 
-		$was_active	= bookacti_is_booking_active( $booking_id ) ? 1 : 0;
+		$was_active	= ! empty( $booking->active ) ? 1 : 0;
 		$active		= in_array( $new_booking_state, bookacti_get_active_booking_states(), true ) ? 1 : 0;
 		if( $active !== $was_active ) { $active_changed = true; }
 
@@ -781,7 +781,7 @@ add_action( 'wp_ajax_nopriv_bookactiRefundBookingGroup', 'bookacti_controller_re
 /**
  * AJAX Controller - Change booking group state
  * @since 1.1.0
- * @version 1.9.0
+ * @version 1.10.0
  */
 function bookacti_controller_change_booking_group_state() {
 	$booking_group_id		= intval( $_POST[ 'booking_id' ] );
@@ -821,7 +821,7 @@ function bookacti_controller_change_booking_group_state() {
 		$active		= in_array( $new_booking_state, bookacti_get_active_booking_states(), true ) ? 1 : 0;
 		if( $active !== $was_active ) { $active_changed = true; }
 
-		$updated = bookacti_update_booking_group_state( $booking_group_id, $new_booking_state, $active, true, true );
+		$updated = bookacti_update_booking_group_state( $booking_group_id, $new_booking_state, $active, true, $bookings[ 0 ]->group_state );
 		if( ! $updated ) { 
 			bookacti_send_json( array( 'status' => 'failed', 'error' => 'error_update_booking_group_status', 'message' => esc_html__( 'An error occurred while trying to change the booking group status.', 'booking-activities' ) ), 'change_booking_group_status' );
 		}
@@ -831,7 +831,7 @@ function bookacti_controller_change_booking_group_state() {
 
 	// Change payment status
 	if( $new_payment_status && $bookings && $bookings[ 0 ]->group_payment_status !== $new_payment_status ) {
-		$updated = bookacti_update_booking_group_payment_status( $booking_group_id, $new_payment_status, true, true );
+		$updated = bookacti_update_booking_group_payment_status( $booking_group_id, $new_payment_status, true, $bookings[ 0 ]->group_payment_status );
 		if( ! $updated ) { 
 			bookacti_send_json( array( 'status' => 'failed', 'error' => 'error_update_booking_group_payment_status', 'message' => esc_html__( 'An error occurred while trying to change the booking group payment status.', 'booking-activities' ) ), 'change_booking_group_status' );
 		}
