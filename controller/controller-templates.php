@@ -103,7 +103,7 @@ function bookacti_controller_update_event_dates() {
 	$delta_seconds = $new_event_start_dt->format( 'U' ) - $old_event_start_dt->format( 'U' );
 	
 	// Get the event's occurrences
-	$events_exceptions = bookacti_get_exceptions_by_event( array( 'events' => array( $event_id ), 'types'	=> array( 'date' ), 'only_values' => 1 ) );
+	$events_exceptions = bookacti_get_exceptions_by_event( array( 'events' => array( $event_id ), 'types' => array( 'date' ), 'only_values' => 1 ) );
 	$event_exceptions = isset( $events_exceptions[ $event_id ] ) ? $events_exceptions[ $event_id ] : array();
 	$occurrences = bookacti_get_occurrences_of_repeated_event( $old_event, array( 'exceptions_dates' => $event_exceptions, 'past_events' => 1 ) );
 	
@@ -278,15 +278,18 @@ add_action( 'wp_ajax_bookactiDuplicateEvent', 'bookacti_controller_duplicate_eve
 /**
  * AJAX Controller - Update event
  * @since 1.2.2 (was bookacti_controller_update_event_data)
- * @version 1.10.0
+ * @version 1.11.0
  */
 function bookacti_controller_update_event() {
-	// Check nonce and capabilities
+	// Check nonce
 	$is_nonce_valid = check_ajax_referer( 'bookacti_update_event_data', 'nonce_update_event_data', false );
 	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'update_event' ); }
 
 	$event_id = intval( $_POST[ 'id' ] );
 	$old_event = bookacti_get_event_by_id( $event_id );
+	if( ! $old_event ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'event_not_found' ), 'update_event' ); }
+	
+	// Check capabilities
 	$is_allowed = current_user_can( 'bookacti_edit_templates' ) && $old_event && bookacti_user_can_manage_template( $old_event->template_id );
 	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'update_event' ); }
 	
@@ -1216,3 +1219,48 @@ function bookacti_controller_get_activities_by_template() {
 	bookacti_send_json( array( 'status' => 'failed', 'error' => 'invalid_activities', 'activities' => $new_activities ), 'get_activities_by_template' );
 }
 add_action( 'wp_ajax_bookactiGetActivitiesByTemplate', 'bookacti_controller_get_activities_by_template' );
+
+
+/**
+ * AJAX Controller - Save activities / group categories / groups of events order
+ * @version 1.11.0
+ */
+function bookacti_controller_save_template_items_order() {
+	// Check nonce
+	$is_nonce_valid = check_ajax_referer( 'bookacti_edit_template', 'nonce', false );
+	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'save_template_items_order' ); }
+
+	// Check capabilities
+	$template_id = ! empty( $_POST[ 'template_id' ] ) ? intval( $_POST[ 'template_id' ] ) : 0;
+	$is_allowed = current_user_can( 'bookacti_edit_templates' ) && bookacti_user_can_manage_template( $template_id );
+	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'save_template_items_order' ); }
+	
+	$item_type = ! empty( $_POST[ 'item_type' ] ) ? sanitize_title_with_dashes( $_POST[ 'item_type' ] ) : '';
+	$item_id = ! empty( $_POST[ 'item_id' ] ) ? intval( $_POST[ 'item_id' ] ) : 0;
+	$items_order = ! empty( $_POST[ 'items_order' ] ) ? bookacti_ids_to_array( $_POST[ 'items_order' ] ) : array();
+	
+	// Get the object and the key to update according to the item type
+	$object_type = 'template';
+	$object_id = $template_id;
+	$meta_key = '';
+	
+	if( $item_type === 'activities' ) {
+		$meta_key = 'activities_order';
+	} elseif ( $item_type === 'group_categories' ) {
+		$meta_key = 'group_categories_order';
+	} elseif ( $item_type === 'groups_of_events' && $item_id ) {
+		$object_type = 'group_category';
+		$object_id = $item_id;
+		$meta_key = 'groups_of_events_order';
+	}
+	
+	if( $meta_key ) {
+		if( $items_order ) { bookacti_update_metadata( $object_type, $object_id, array( $meta_key => $items_order ) ); }
+		else { bookacti_delete_metadata( $object_type, $object_id, array( $meta_key ) ); }
+	} else {
+		bookacti_send_json( array( 'status' => 'failed', 'error' => 'invalid_item' ), 'save_template_items_order' );
+	}
+	
+	bookacti_send_json( array( 'status' => 'success' ), 'save_template_items_order' );
+}
+add_action( 'wp_ajax_bookactiSaveTemplateItemsOrder', 'bookacti_controller_save_template_items_order' );

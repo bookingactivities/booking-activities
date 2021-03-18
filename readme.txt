@@ -321,6 +321,13 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.11.0 =
+* Feature - Repeat events: option to skip n day / week / month between each occurence (e.g.: repeat every 2 days)
+* Feature - Repeat events daily: select the days of the week on which the event should be repeated
+* Feature - Repeat events monthly: option to repeat the event on the nth / last day-of-the-week of the month (e.g.: 2nd / last Monday of the month)
+* Feature - You can manually reorder activities, group categories and groups of events in calendar editor (by drag and drop)
+* Dev - Store the activity_id and category_id in the bookings (groups) tables (part of removing dependencies between bookings and events (groups))
+
 = 1.10.0 - 2021/03/12 =
 * **[See the user-friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-10-cancel-or-reschedule-a-booked-event-and-notify-customers/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
 * Feature - Automatically reschedule the bookings when you move a booked event in the calendar editor

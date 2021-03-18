@@ -250,7 +250,7 @@ add_action( 'admin_enqueue_scripts','bookacti_enqueue_high_priority_backend_scri
 
 /**
  * Enqueue low priority scripts in backend only
- * @version 1.8.0
+ * @version 1.11.0
  */
 function bookacti_enqueue_backend_scripts() {
 	// Include WooCommerce scripts
@@ -270,7 +270,7 @@ function bookacti_enqueue_backend_scripts() {
 	
 	// INCLUDE JAVASCRIPT FILES
 	wp_enqueue_script( 'bookacti-js-templates-forms-control',	plugins_url( 'js/templates-forms-control.min.js', __FILE__ ),	array( 'jquery', 'moment', 'bookacti-js-global-var' ), BOOKACTI_VERSION, true );
-	wp_enqueue_script( 'bookacti-js-templates-functions',		plugins_url( 'js/templates-functions.min.js', __FILE__ ),		array( 'jquery', 'fullcalendar', 'jquery-touch-punch', 'jquery-effects-highlight', 'bookacti-js-global-var' ), BOOKACTI_VERSION, true );
+	wp_enqueue_script( 'bookacti-js-templates-functions',		plugins_url( 'js/templates-functions.min.js', __FILE__ ),		array( 'jquery', 'moment', 'fullcalendar', 'jquery-touch-punch', 'jquery-ui-sortable', 'jquery-effects-highlight', 'bookacti-js-global-var' ), BOOKACTI_VERSION, true );
 	wp_enqueue_script( 'bookacti-js-templates-dialogs',			plugins_url( 'js/templates-dialogs.min.js', __FILE__ ),			array( 'jquery', 'moment', 'jquery-ui-dialog', 'bookacti-js-global-var', 'bookacti-js-global-functions', 'bookacti-js-backend-functions', 'bookacti-js-templates-forms-control' ), BOOKACTI_VERSION, true );
 	wp_enqueue_script( 'bookacti-js-templates',					plugins_url( 'js/templates.min.js', __FILE__ ),					array( 'jquery', 'fullcalendar', 'bookacti-js-global-var', 'bookacti-js-global-functions', 'bookacti-js-templates-functions', 'bookacti-js-templates-dialogs' ), BOOKACTI_VERSION, true );
 	wp_enqueue_script( 'bookacti-js-settings',					plugins_url( 'js/settings.min.js', __FILE__ ),					array( 'jquery' ), BOOKACTI_VERSION, true );
@@ -534,7 +534,6 @@ add_action( 'bookacti_updated', 'bookacti_update_refactored_settings_in_1_8_0', 
  * Update changes to 1.9.0
  * This function is temporary
  * @since 1.9.0
- * @global wpdb $wpdb
  * @param string $old_version
  */
 function bookacti_clear_sessions_when_updating_to_1_9_0( $old_version ) {
@@ -558,6 +557,30 @@ function bookacti_clear_sessions_when_updating_to_1_9_0( $old_version ) {
 	}
 }
 add_action( 'bookacti_updated', 'bookacti_clear_sessions_when_updating_to_1_9_0', 40 );
+
+
+/**
+ * Update changes to 1.11.0
+ * This function is temporary
+ * @since 1.11.0
+ * @global wpdb $wpdb
+ * @param string $old_version
+ */
+function bookacti_fill_bookings_new_columns_when_updating_to_1_11_0( $old_version ) {
+	// Do it only once, when Booking Activities is updated for the first time after 1.9.0
+	if( version_compare( $old_version, '1.11.0', '>=' ) ) { return; }
+	
+	global $wpdb;
+	
+	// Update the bookings new activity_id column
+	$query_bookings_activity_id = 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS . ' as B LEFT JOIN ' . BOOKACTI_TABLE_EVENTS . ' as E ON B.event_id = E.id SET B.activity_id = E.activity_id WHERE B.activity_id IS NULL';
+	$wpdb->query( $query_bookings_activity_id );
+	
+	// Update the booking groups new category_id column
+	$query_booking_groups_category_id = 'UPDATE ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' as BG LEFT JOIN ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as EG ON BG.event_group_id = EG.id SET BG.category_id = EG.category_id WHERE BG.category_id IS NULL';
+	$wpdb->query( $query_booking_groups_category_id );
+}
+add_action( 'bookacti_updated', 'bookacti_fill_bookings_new_columns_when_updating_to_1_11_0', 50 );
 
 
 

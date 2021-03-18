@@ -132,7 +132,7 @@ function bookacti_get_activity_managers( $activity_ids ) {
 // TEMPLATE X ACTIVITIES
 /**
  * Retrieve template activities list
- * @version 1.7.17
+ * @version 1.11.0
  * @param int $template_id
  * @return boolean|string 
  */
@@ -140,14 +140,24 @@ function bookacti_get_template_activities_list( $template_id ) {
 	if( ! $template_id ) { return false; }
 
 	$activities = bookacti_get_activities_by_template( array( $template_id ) );
-
+	
+	// Sort the activities by custom order
+	$activities_order = bookacti_get_metadata( 'template', $template_id, 'activities_order', true );
+	if( $activities_order ) {
+		$ordered_activities = array();
+		foreach( $activities_order as $activity_id ) {
+			if( isset( $activities[ $activity_id ] ) ) { $ordered_activities[] = $activities[ $activity_id ]; unset( $activities[ $activity_id ] ); }
+		}
+		$activities = array_merge( $ordered_activities, $activities );
+	}
+	
 	ob_start();
-	foreach ( $activities as $activity ) {
+	foreach( $activities as $activity ) {
 		$title = apply_filters( 'bookacti_translate_text', $activity[ 'title' ] );
 		?>
-		<div class='activity-row'>
-			<div class='activity-show-hide dashicons dashicons-visibility' data-activity-id='<?php echo esc_attr( $activity[ 'id' ] ); ?>' data-activity-visible='1' ></div>
-			<div class='activity-container'>
+		<div class='bookacti-activity' data-activity-id='<?php echo esc_attr( $activity[ 'id' ] ); ?>'>
+			<div class='bookacti-activity-visibility dashicons dashicons-visibility' data-activity-visible='1'></div>
+			<div class='bookacti-activity-container'>
 				<div
 					class='fc-event ui-draggable ui-draggable-handle'
 					data-event='{"title": "<?php echo htmlentities( esc_attr( $title ), ENT_QUOTES ); ?>", "activity_id": "<?php echo esc_attr( $activity[ 'id' ] ); ?>", "color": "<?php echo esc_attr( $activity[ 'color' ] ); ?>", "stick":"true"}' 
@@ -162,7 +172,7 @@ function bookacti_get_template_activities_list( $template_id ) {
 		<?php
 		if( current_user_can( 'bookacti_edit_activities' ) && bookacti_user_can_manage_activity( $activity[ 'id' ] ) ) {
 		?>
-			<div class='activity-gear dashicons dashicons-admin-generic' data-activity-id='<?php echo esc_attr( $activity[ 'id' ] ); ?>' ></div>
+			<div class='bookacti-activity-settings dashicons dashicons-admin-generic'></div>
 		<?php
 		}
 		?>
@@ -971,57 +981,76 @@ function bookacti_update_events_of_group( $new_events, $group_id ) {
 /**
  * Retrieve template groups of events list
  * @since 1.1.0
- * @version 1.8.0
+ * @version 1.11.0
  * @param int $template_id
  * @return string|boolean
  */
 function bookacti_get_template_groups_of_events_list( $template_id ) {
-
 	if( ! $template_id ) { return false; }
 
 	$current_user_can_edit_template	= current_user_can( 'bookacti_edit_templates' );
-
-	$list =	"";
-
+	
 	// Retrieve groups by categories
 	$categories	= bookacti_get_group_categories( $template_id );
 	$groups		= bookacti_get_groups_of_events( array( 'templates' => array( $template_id ) ) );
+	
+	// Sort the group categories by custom order
+	$categories_order = bookacti_get_metadata( 'template', $template_id, 'group_categories_order', true );
+	if( $categories_order ) {
+		$ordered_categories = array();
+		foreach( $categories_order as $category_id ) {
+			if( isset( $categories[ $category_id ] ) ) { $ordered_categories[] = $categories[ $category_id ]; unset( $categories[ $category_id ] ); }
+		}
+		$categories = array_merge( $ordered_categories, $categories );
+	}
+	
+	ob_start();
+	
 	foreach( $categories as $category ) {
-
-		$category_title			= $category[ 'title' ];
-		$category_short_title	= strlen( $category_title ) > 16 ? substr( $category_title, 0, 16 ) . '&#8230;' : $category_title;
-
-		$list	.= "<div class='bookacti-group-category' data-group-category-id='" . $category[ 'id' ] . "' data-show-groups='0' data-visible='1' >
-						<div class='bookacti-group-category-title' title='" . $category_title . "' >
-							<span>
-								" . $category_short_title . "
-							</span>
-						</div>";
-
+		$category_short_title = strlen( $category[ 'title' ] ) > 16 ? substr( $category[ 'title' ], 0, 16 ) . '&#8230;' : $category[ 'title' ];
+	?>
+		<div class='bookacti-group-category' data-group-category-id='<?php echo $category[ 'id' ]; ?>' data-show-groups='0' data-visible='1'>
+			<div class='bookacti-group-category-title' title='<?php echo $category[ 'title' ]; ?>' >
+				<span><?php echo $category_short_title; ?></span>
+			</div>
+	<?php
 		if( $current_user_can_edit_template ) {
-			$list	.= "<div class='bookacti-update-group-category dashicons dashicons-admin-generic' ></div>";
+			?><div class='bookacti-update-group-category dashicons dashicons-admin-generic' ></div><?php
 		}
-
-		$list	.= 	   "<div class='bookacti-groups-of-events-editor-list bookacti-custom-scrollbar' >";
-
-		foreach( $groups as $group_id => $group ) {
-			if( $group[ 'category_id' ] === $category[ 'id' ] ) {
-				$group_title = strip_tags( $group[ 'title' ] );
-
-				$list	.=	   "<div class='bookacti-group-of-events' data-group-id='" . $group_id . "' >
-									<div class='bookacti-group-of-events-title' title='" . $group_title . "' >
-										" . $group_title . " 
-									</div>";
-				if( $current_user_can_edit_template ) {
-					$list	.=	   "<div class='bookacti-update-group-of-events dashicons dashicons-admin-generic' ></div>";
+	?>
+			<div class='bookacti-groups-of-events-editor-list bookacti-custom-scrollbar' >
+			<?php
+				// Sort the groups of events by custom order
+				$ordered_groups = $groups;
+				$groups_order = bookacti_get_metadata( 'group_category', $category[ 'id' ], 'groups_of_events_order', true );
+				if( $groups_order ) {
+					$sorted_groups = array();
+					foreach( $groups_order as $group_id ) {
+						if( isset( $ordered_groups[ $group_id ] ) ) { $sorted_groups[] = $ordered_groups[ $group_id ]; unset( $ordered_groups[ $group_id ] ); }
+					}
+					$ordered_groups = array_merge( $sorted_groups, $ordered_groups );
 				}
-				$list	.=	   "</div>";
-			}
-		}
-
-		$list	.=	   "</div>
-					</div>";
+			
+				foreach( $ordered_groups as $group ) {
+					if( $group[ 'category_id' ] === $category[ 'id' ] ) {
+						$group_title = strip_tags( $group[ 'title' ] );
+					?>
+						<div class='bookacti-group-of-events' data-group-id='<?php echo $group[ 'id' ]; ?>' >
+							<div class='bookacti-group-of-events-title' title='<?php echo $group_title; ?>' ><?php echo $group_title; ?></div>
+					<?php
+						if( $current_user_can_edit_template ) {
+							?><div class='bookacti-update-group-of-events dashicons dashicons-admin-generic' ></div><?php
+						}
+					?>
+						</div>
+					<?php
+					}
+				}
+			?>
+			</div>
+		</div>
+	<?php
 	}
 
-	return $list;
+	return ob_get_clean();
 }

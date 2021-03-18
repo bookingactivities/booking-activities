@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Book an event
- * @version 1.9.0
+ * @version 1.11.0
  * @global wpdb $wpdb
  * @param array $booking_data Sanitized with bookacti_sanitize_booking_data
  * @return int
@@ -12,12 +12,22 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 function bookacti_insert_booking( $booking_data ) {
 	global $wpdb;
 	
-	$query = 'INSERT INTO ' . BOOKACTI_TABLE_BOOKINGS 
-			. ' ( group_id, event_id, user_id, form_id, order_id, event_start, event_end, quantity, state, payment_status, creation_date, expiration_date, active ) ' 
-			. ' VALUES ( NULLIF( %d, 0 ), %d, %s, NULLIF( %d, 0 ), NULLIF( %d, 0 ), %s, %s, %d, %s, %s, %s, NULLIF( %s, "" ), %d )';
+	// Get the default activity_id
+	$activity_id = $booking_data[ 'activity_id' ];
+	if( ! $activity_id && $booking_data[ 'event_id' ] ) {
+		$query = 'SELECT activity_id FROM ' . BOOKACTI_TABLE_EVENTS . ' WHERE id = %d;';
+		$query = $wpdb->prepare( $query, $booking_data[ 'event_id' ] );
+		$activity_id = $wpdb->get_var( $query );
+		if( ! $activity_id ) { $activity_id = $booking_data[ 'activity_id' ]; }
+	}
+	
+	$query = 'INSERT INTO ' . BOOKACTI_TABLE_BOOKINGS
+			. ' ( group_id, activity_id, event_id, user_id, form_id, order_id, event_start, event_end, quantity, state, payment_status, creation_date, expiration_date, active ) ' 
+			. ' VALUES ( NULLIF( %d, 0 ), NULLIF( %d, 0 ), %d, %s, NULLIF( %d, 0 ), NULLIF( %d, 0 ), %s, %s, %d, %s, %s, %s, NULLIF( %s, "" ), %d ) ';
 	
 	$variables = array( 
 		$booking_data[ 'group_id' ],
+		$activity_id,
 		$booking_data[ 'event_id' ],
 		$booking_data[ 'user_id' ],
 		$booking_data[ 'form_id' ],
@@ -49,6 +59,7 @@ function bookacti_insert_booking( $booking_data ) {
 /**
  * Update a booking
  * @since 1.9.0
+ * @version 1.11.0
  * @global wpdb $wpdb
  * @param array $booking_data Sanitized with bookacti_sanitize_booking_data
  * @param array $where
@@ -63,6 +74,7 @@ function bookacti_update_booking( $booking_data, $where = array() ) {
 			. ' user_id = IFNULL( NULLIF( %s, "0" ), user_id ), '
 			. ' form_id = NULLIF( IFNULL( NULLIF( %d, 0 ), form_id ), -1 ), '
 			. ' order_id = NULLIF( IFNULL( NULLIF( %d, 0 ), order_id ), -1 ), '
+			. ' activity_id = IFNULL( NULLIF( %d, 0 ), activity_id ), '
 			. ' event_id = IFNULL( NULLIF( %d, 0 ), event_id ), '
 			. ' event_start = IFNULL( NULLIF( %s, "" ), event_start ), '
 			. ' event_end = IFNULL( NULLIF( %s, "" ), event_end ), '
@@ -78,6 +90,7 @@ function bookacti_update_booking( $booking_data, $where = array() ) {
 		$booking_data[ 'user_id' ],
 		! is_null( $booking_data[ 'form_id' ] ) ? $booking_data[ 'form_id' ] : -1,
 		! is_null( $booking_data[ 'order_id' ] ) ? $booking_data[ 'order_id' ] : -1,
+		$booking_data[ 'activity_id' ],
 		$booking_data[ 'event_id' ],
 		$booking_data[ 'event_start' ],
 		$booking_data[ 'event_end' ],
@@ -1732,19 +1745,29 @@ function bookacti_delete_booking( $booking_id ) {
 /**
  * Insert a booking group
  * @since 1.1.0
- * @version 1.9.0
+ * @version 1.11.0
  * @global wpdb $wpdb
  * @param array $booking_group_data Sanitized with bookacti_sanitize_booking_group_data
  * @return int
  */
 function bookacti_insert_booking_group( $booking_group_data ) {
 	global $wpdb;
+	
+	// Get the default category_id
+	$category_id = $booking_group_data[ 'category_id' ];
+	if( ! $category_id && $booking_group_data[ 'event_group_id' ] ) {
+		$query = 'SELECT category_id FROM ' . BOOKACTI_TABLE_EVENT_GROUPS . ' WHERE id = %d;';
+		$query = $wpdb->prepare( $query, $booking_group_data[ 'event_group_id' ] );
+		$category_id = $wpdb->get_var( $query );
+		if( ! $category_id ) { $category_id = $booking_group_data[ 'category_id' ]; }
+	}
 
-	$query = 'INSERT INTO ' . BOOKACTI_TABLE_BOOKING_GROUPS 
-			. ' ( event_group_id, user_id, form_id, order_id, state, payment_status, active ) ' 
-			. ' VALUES ( NULLIF( %d, 0 ), %s, NULLIF( %d, 0 ), NULLIF( %d, 0 ), %s, %s, %d )';
+	$query = 'INSERT INTO ' . BOOKACTI_TABLE_BOOKING_GROUPS
+			. ' ( category_id, event_group_id, user_id, form_id, order_id, state, payment_status, active ) ' 
+			. ' VALUES ( NULLIF( %d, 0 ), NULLIF( %d, 0 ), %s, NULLIF( %d, 0 ), NULLIF( %d, 0 ), %s, %s, %d )';
 
 	$variables = array( 
+		$category_id,
 		$booking_group_data[ 'event_group_id' ],
 		$booking_group_data[ 'user_id' ],
 		$booking_group_data[ 'form_id' ],
@@ -1769,7 +1792,7 @@ function bookacti_insert_booking_group( $booking_group_data ) {
 
 /**
  * Update booking group
- * @version 1.9.0
+ * @version 1.11.0
  * @global wpdb $wpdb
  * @param array $booking_group_data Sanitized with bookacti_sanitize_booking_group_data
  * @param array $where
@@ -1780,6 +1803,7 @@ function bookacti_update_booking_group( $booking_group_data, $where = array() ) 
 	
 	$query	= 'UPDATE ' . BOOKACTI_TABLE_BOOKING_GROUPS
 			. ' SET '
+			. ' category_id = NULLIF( IFNULL( NULLIF( %d, 0 ), category_id ), -1 ), '
 			. ' event_group_id = NULLIF( IFNULL( NULLIF( %d, 0 ), event_group_id ), -1 ), '
 			. ' user_id = IFNULL( NULLIF( %s, "0" ), user_id ), '
 			. ' form_id = NULLIF( IFNULL( NULLIF( %d, 0 ), form_id ), -1 ), '
@@ -1790,6 +1814,7 @@ function bookacti_update_booking_group( $booking_group_data, $where = array() ) 
 			. ' WHERE id = %d ';
 	
 	$variables = array( 
+		! is_null( $booking_group_data[ 'category_id' ] ) ? $booking_group_data[ 'category_id' ] : -1,
 		! is_null( $booking_group_data[ 'event_group_id' ] ) ? $booking_group_data[ 'event_group_id' ] : -1,
 		$booking_group_data[ 'user_id' ],
 		! is_null( $booking_group_data[ 'form_id' ] ) ? $booking_group_data[ 'form_id' ] : -1,

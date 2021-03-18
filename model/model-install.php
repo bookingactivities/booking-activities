@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Create Booking Activities database tables
- * @version 1.10.0
+ * @version 1.11.0
  * @global wpdb $wpdb
  */
 function bookacti_create_tables() {
@@ -46,7 +46,9 @@ function bookacti_create_tables() {
 		start DATETIME, 
 		end DATETIME, 
 		availability MEDIUMINT(9) UNSIGNED NOT NULL DEFAULT 0, 
-		repeat_freq VARCHAR(8) NOT NULL DEFAULT "none", 
+		repeat_freq VARCHAR(32) NOT NULL DEFAULT "none", 
+		repeat_next SMALLINT(4) UNSIGNED NOT NULL DEFAULT 1, 
+		repeat_on VARCHAR(32), 
 		repeat_from DATE, 
 		repeat_to DATE,
 		active TINYINT(1) NOT NULL DEFAULT 1,
@@ -113,7 +115,8 @@ function bookacti_create_tables() {
 		order_id BIGINT UNSIGNED, 
 		form_id BIGINT UNSIGNED, 
 		group_id BIGINT UNSIGNED, 
-		event_id BIGINT UNSIGNED NOT NULL, 
+		activity_id BIGINT UNSIGNED, 
+		event_id BIGINT UNSIGNED, 
 		event_start DATETIME, 
 		event_end DATETIME, 
 		state VARCHAR(32) NOT NULL DEFAULT "booked", 
@@ -126,6 +129,7 @@ function bookacti_create_tables() {
 
 	$table_booking_groups_query = 'CREATE TABLE ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' ( 
 		id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, 
+		category_id BIGINT UNSIGNED, 
 		event_group_id BIGINT UNSIGNED, 
 		user_id VARCHAR(64), 
 		order_id BIGINT UNSIGNED, 

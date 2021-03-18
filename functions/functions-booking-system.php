@@ -1158,7 +1158,7 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 
 /**
  * Check the selected event / group of events data before booking
- * @version 1.9.2
+ * @version 1.11.0
  * @param array $picked_events formatted with bookacti_format_picked_events with $one_entry_per_group = false
  * @param int $quantity Desired number of bookings
  * @param int $form_id Set your form id to validate the event against its form parameters. Default is 0: ignore form validation.
@@ -1237,7 +1237,7 @@ function bookacti_validate_booking_form( $picked_events, $quantity, $form_id = 0
 			} else {
 				$group = bookacti_get_group_of_events( $group_id );
 				if( $group ) {
-					$exists = bookacti_is_existing_group_of_events( $group );
+					$exists = true;
 					$title = apply_filters( 'bookacti_translate_text', $group->title );
 				}
 			}
@@ -1468,18 +1468,13 @@ function bookacti_get_picked_events_availability( $picked_events ) {
 
 /**
  * Check if an event or an occurrence exists
- * @version 1.8.4
+ * @version 1.11.0
  * @param object $event
  * @param string $event_start
  * @param string $event_end
  * @return boolean
  */
 function bookacti_is_existing_event( $event, $event_start = NULL, $event_end = NULL ) {
-	
-	if( is_numeric( $event ) ) {
-		$event = bookacti_get_event_by_id( $event );
-	}
-
 	$is_existing_event = false;
 	if( $event ) {
 		if( $event->repeat_freq && $event->repeat_freq !== 'none' ) {
@@ -1488,91 +1483,44 @@ function bookacti_is_existing_event( $event, $event_start = NULL, $event_end = N
 			$is_existing_event = bookacti_is_existing_single_event( $event->event_id, $event_start, $event_end );
 		}
 	}
-
-	return $is_existing_event;
+	return apply_filters( 'bookacti_is_existing_event', $is_existing_event, $event, $event_start, $event_end );
 }
 
 
 /**
  * Check if the occurrence exists
  * @since 1.8.4 (was bookacti_is_existing_occurence)
- * @param object|int $event
+ * @version 1.11.0
+ * @param object $event
  * @param string $event_start
  * @param string $event_end
  * @return boolean
  */
 function bookacti_is_existing_occurrence( $event, $event_start, $event_end = NULL ) {
-	// Get the event
-	if( is_numeric( $event ) ) {
-		$event = bookacti_get_event_by_id( $event );
-	}
-
-	// Check if the event is well repeated
-	if( ! $event 
-	||  ! $event_start
-	||  ! in_array( $event->repeat_freq, array( 'daily', 'weekly', 'monthly' ), true )
-	||  ! $event->repeat_from || $event->repeat_from === '0000-00-00' 
-	||  ! $event->repeat_to || $event->repeat_to === '0000-00-00' ) { return false; }
-
-	// Check if the times match
-	if( $event_start ) { if( substr( $event_start, -8 ) !== substr( $event->start, -8 ) ) { return false; } }
-	if( $event_end ) { if( substr( $event_end, -8 ) !== substr( $event->end, -8 ) ) { return false; } }
+	// Get the event's occurrences
+	$event_id = ! empty( $event->event_id ) ? intval( $event->event_id ) : ( ! empty( $event->id ) ? intval( $event->id ) : 0 );
+	$events_exceptions = bookacti_get_exceptions_by_event( array( 'events' => array( $event_id ), 'types' => array( 'date' ), 'only_values' => 1 ) );
+	$event_exceptions = isset( $events_exceptions[ $event_id ] ) ? $events_exceptions[ $event_id ] : array();
+	$interval = array( 'start' => substr( $event_start, 0, 10 ) . ' 00:00:00', 'end' => ( $event_end ? substr( $event_end, 0, 10 ) : substr( $event_start, 0, 10 ) ) . ' 23:59:59' );
+	$occurrences = bookacti_get_occurrences_of_repeated_event( $event, array( 'interval' => $interval, 'exceptions_dates' => $event_exceptions, 'past_events' => 1 ) );
 	
-	// Check if the days match
-	$repeat_from	= DateTime::createFromFormat( 'Y-m-d', substr( $event->repeat_from, 0, 10 ) );
-	$repeat_to		= DateTime::createFromFormat( 'Y-m-d', substr( $event->repeat_to, 0, 10 ) );
-	$event_datetime	= DateTime::createFromFormat( 'Y-m-d', substr( $event->start, 0, 10 ) );
-	$occurrence		= DateTime::createFromFormat( 'Y-m-d', substr( $event_start, 0, 10 ) );
-	$repeat_from_timestamp	= intval( $repeat_from->format( 'U' ) );
-	$repeat_to_timestamp	= intval( $repeat_to->format( 'U' ) );
-	$occurrence_timestamp	= intval( $occurrence->format( 'U' ) );
-	
-	// Check if occurrence is between repeat_from and repeat_to
-	if( $occurrence_timestamp < $repeat_from_timestamp || $occurrence_timestamp > $repeat_to_timestamp ) { return false; }
-	
-	// Check if the weekdays match
-	if( $event->repeat_freq === 'weekly' ) {
-		if( $occurrence->format( 'w' ) !== $event_datetime->format( 'w' ) ) { return false; }
+	// Check if the desired occurrence exists
+	$exists = false;
+	foreach( $occurrences as $occurrence ) {
+		if( $event_start && $event_start === $occurrence[ 'start' ] ) {
+			if( ! $event_end ) { $exists = true; break; }
+			else if( $event_end === $occurrence[ 'end' ] ) { $exists = true; break; }
+		}
 	}
 	
-	// Check if the monthdays match
-	if( $event->repeat_freq === 'monthly' ) {
-		$is_last_day_of_month = $event_datetime->format( 't' ) === $event_datetime->format( 'd' );
-		if( ! $is_last_day_of_month && $occurrence->format( 'd' ) !== $event_datetime->format( 'd' ) ) { return false; }
-		else if ( $is_last_day_of_month && $occurrence->format( 't' ) !== $occurrence->format( 'd' ) ) { return false; }
-	}
-	
-	// Check if the occurrence is on an exception date
-	if( bookacti_is_repeat_exception( $event->event_id, substr( $event_start, 0, 10 ) ) ) { return false; }
-	
-	return true;
-}
-
-
-/**
- * Check if the group of event exists
- * 
- * @since 1.1.0
- * @version 1.3.0
- * 
- * @param object|int $group
- * @return boolean
- */
-function bookacti_is_existing_group_of_events( $group ) {
-	
-	if( is_numeric( $group ) ) {
-		$group = bookacti_get_group_of_events( $group );
-	}
-	
-	// Try to retrieve the group and check the result
-	return ! empty( $group );
+	return $exists;
 }
 
 
 /**
  * Check if an event can be book with the given form
  * @since 1.5.0
- * @version 1.9.0
+ * @version 1.11.0
  * @param int $form_id
  * @param int|object $event_id
  * @param string $event_start
@@ -1595,7 +1543,12 @@ function bookacti_is_event_available_on_form( $form_id, $event_id, $event_start,
 	// Check if the event is displayed on the form
 	$belongs_to_form = true;
 	$event = is_object( $event_id ) ? $event_id : bookacti_get_event_by_id( $event_id );
-
+	
+	if( ! $event ) {
+		$validated[ 'error' ] = 'unknown_event';
+		return $validated;
+	}
+	
 	// If the form calendar doesn't have the event template or the event activity
 	if( ( $calendar_data[ 'calendars' ] && ! in_array( $event->template_id, $calendar_data[ 'calendars' ] ) )
 	||  ( $calendar_data[ 'activities' ] && ! in_array( $event->activity_id, $calendar_data[ 'activities' ] ) ) ) {
@@ -1702,7 +1655,7 @@ function bookacti_is_event_available_on_form( $form_id, $event_id, $event_start,
 /**
  * Check if a group of events can be book with the given form
  * @since 1.5.0
- * @version 1.9.0
+ * @version 1.11.0
  * @param int $form_id
  * @param int|object $group_id
  * @return array
@@ -1723,7 +1676,13 @@ function bookacti_is_group_of_events_available_on_form( $form_id, $group_id ) {
 	// Check if the group of events is displayed on the form
 	$belongs_to_form	= true;
 	$group				= is_object( $group_id ) ? $group_id : bookacti_get_group_of_events( $group_id );
-	$category			= bookacti_get_group_category( $group->category_id, ARRAY_A );
+	$category			= $group ? bookacti_get_group_category( $group->category_id, ARRAY_A ) : array();
+	
+	if( ! $group || ! $category ) {
+		$validated[ 'error' ] = ! $group ? 'unknown_group_of_events' : 'unknown_group_category';
+		$validated[ 'message' ] = esc_html__( 'Invalid group of events ID.', 'booking-activities' );
+		return $validated;
+	}
 	
 	// If the form calendar doesn't have the group of events' template
 	if( $calendar_data[ 'calendars' ] && ! in_array( $category[ 'template_id' ], $calendar_data[ 'calendars' ] ) ) {
@@ -1826,7 +1785,7 @@ function bookacti_is_group_of_events_available_on_form( $form_id, $group_id ) {
 /**
  * Get array of events from raw events from database
  * @since 1.2.2
- * @version 1.10.0
+ * @version 1.11.0
  * @param array $events Array of objects events from database
  * @param array $raw_args {
  *  @type boolean $skip_exceptions Whether to retrieve occurrence on exceptions
@@ -1882,6 +1841,8 @@ function bookacti_get_events_array_from_db_events( $events, $raw_args = array() 
 			'activity_id'		=> $event->activity_id,
 			'availability'		=> $event->availability,
 			'repeat_freq'		=> $event->repeat_freq,
+			'repeat_next'		=> $event->repeat_next,
+			'repeat_on'			=> $event->repeat_on,
 			'repeat_from'		=> $event->repeat_from,
 			'repeat_to'			=> $event->repeat_to,
 			'settings'			=> isset( $events_meta[ $event->event_id ] ) ? $events_meta[ $event->event_id ] : array()

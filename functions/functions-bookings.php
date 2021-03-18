@@ -7,6 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Sanitize booking data
  * @since 1.9.0
+ * @version 1.11.0
  * @param array $data_raw
  * @return array
  */
@@ -20,6 +21,7 @@ function bookacti_sanitize_booking_data( $data_raw ) {
 		'form_id'			=> 0,
 		'order_id'			=> 0,
 		'group_id'			=> 0,
+		'activity_id'		=> 0,
 		'event_id'			=> 0,
 		'event_start'		=> '',
 		'event_end'			=> '',
@@ -41,10 +43,10 @@ function bookacti_sanitize_booking_data( $data_raw ) {
 		if( in_array( $key, array( 'user_id' ), true ) ) {
 			$sanitized[ $key ] = is_numeric( $data_raw[ $key ] ) ? intval( $data_raw[ $key ] ) : ( is_email( $data_raw[ $key ] ) ? $data_raw[ $key ] : ( is_string( $data_raw[ $key ] ) && $data_raw[ $key ] ? sanitize_title_with_dashes( $data_raw[ $key ] ) : $value ) );
 		}
-		else if( in_array( $key, array( 'id', 'event_id', 'quantity' ), true ) ) {
+		else if( in_array( $key, array( 'id', 'activity_id', 'event_id', 'quantity' ), true ) ) {
 			$sanitized[ $key ] = is_numeric( $data_raw[ $key ] ) && intval( $data_raw[ $key ] ) >= 0 ? intval( $data_raw[ $key ] ) : $value;
 		}
-		else if( in_array( $key, array( 'form_id', 'order_id', 'group_id' ), true ) ) {
+		else if( in_array( $key, array( 'form_id', 'order_id', 'group_id' ), true ) ) { // -1 = NULL
 			$sanitized[ $key ] = is_numeric( $data_raw[ $key ] ) && intval( $data_raw[ $key ] ) >= -1 ? intval( $data_raw[ $key ] ) : $value;
 		}
 		else if( in_array( $key, array( 'event_start', 'event_end', 'creation_date', 'expiration_date' ), true ) ) {
@@ -72,6 +74,7 @@ function bookacti_sanitize_booking_data( $data_raw ) {
 /**
  * Sanitize booking group data
  * @since 1.9.0
+ * @version 1.11.0
  * @param array $data_raw
  * @return array
  */
@@ -84,6 +87,7 @@ function bookacti_sanitize_booking_group_data( $data_raw ) {
 		'user_id'			=> 0,
 		'form_id'			=> 0,
 		'order_id'			=> 0,
+		'category_id'		=> 0,
 		'event_group_id'	=> 0,
 		'grouped_events'	=> array(),
 		'quantity'			=> 0,
@@ -107,7 +111,7 @@ function bookacti_sanitize_booking_group_data( $data_raw ) {
 		else if( in_array( $key, array( 'id', 'quantity' ), true ) ) {
 			$sanitized[ $key ] = is_numeric( $data_raw[ $key ] ) && intval( $data_raw[ $key ] ) >= 0 ? intval( $data_raw[ $key ] ) : $value;
 		}
-		else if( in_array( $key, array( 'form_id', 'order_id', 'event_group_id' ), true ) ) {
+		else if( in_array( $key, array( 'form_id', 'order_id', 'event_group_id', 'category_id' ), true ) ) { // -1 = NULL
 			$sanitized[ $key ] = is_numeric( $data_raw[ $key ] ) && intval( $data_raw[ $key ] ) >= -1 ? intval( $data_raw[ $key ] ) : $value;
 		}
 		else if( in_array( $key, array( 'creation_date', 'expiration_date' ), true ) ) {
@@ -147,7 +151,7 @@ function bookacti_sanitize_booking_group_data( $data_raw ) {
 /**
  * Check if a booking is whithin the authorized delay as of now
  * @since 1.1.0
- * @version 1.9.0
+ * @version 1.11.0
  * @param object|int $booking
  * @param string $context
  * @return boolean
@@ -171,13 +175,13 @@ function bookacti_is_booking_in_delay( $booking, $context = '' ) {
 	if( $booking->group_id ) {
 		$booking_group	= bookacti_get_booking_group_by_id( $booking->group_id );
 		$event_group	= bookacti_get_group_of_events( $booking_group->event_group_id );
-		$category_data	= bookacti_get_metadata( 'group_category', $event_group->category_id );
+		$category_data	= $event_group ? bookacti_get_metadata( 'group_category', $event_group->category_id ) : array();
 		if( isset( $category_data[ 'booking_changes_deadline' ] ) && is_numeric( $category_data[ 'booking_changes_deadline' ] ) ) {
 			$delay_specific	= floatval( $category_data[ 'booking_changes_deadline' ] );
 		}
 	} else {
 		$event			= bookacti_get_event_by_id( $booking->event_id );
-		$activity_data	= bookacti_get_metadata( 'activity', $event->activity_id );
+		$activity_data	= $event ? bookacti_get_metadata( 'activity', $event->activity_id ) : array();
 		if( isset( $activity_data[ 'booking_changes_deadline' ] ) && is_numeric( $activity_data[ 'booking_changes_deadline' ] ) ) {
 			$delay_specific	= floatval( $activity_data[ 'booking_changes_deadline' ] );
 		}
@@ -675,7 +679,7 @@ function bookacti_booking_can_be_rescheduled( $booking, $context = '' ) {
 /**
  * Check if a booking can be rescheduled to another event
  * @since 1.1.0
- * @version 1.9.0
+ * @version 1.11.0
  * @param object|int $booking
  * @param int $event_id
  * @param string $event_start
@@ -711,7 +715,7 @@ function bookacti_booking_can_be_rescheduled_to( $booking, $event_id, $event_sta
 			$from_event	= bookacti_get_event_by_id( $booking->event_id );
 			$to_event	= bookacti_get_event_by_id( $event_id );
 
-			if( $from_event->activity_id !== $to_event->activity_id ) {
+			if( ! $from_event || ! $to_event || ( $from_event && $to_event && $from_event->activity_id !== $to_event->activity_id ) ) {
 				$return_array[ 'status' ] = 'failed';
 				$return_array[ 'error' ] = 'reschedule_to_different_activity';
 				$return_array[ 'message' ] = esc_html__( 'The desired event haven\'t the same activity as the booked event.', 'booking-activities' );

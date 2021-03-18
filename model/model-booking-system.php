@@ -670,28 +670,6 @@ function bookacti_get_exceptions( $raw_args = array() ) {
 }
 
 
-/**
- * Check if a date is a repeat exception of a given event
- * 
- * @global wpdb $wpdb
- * @param int $event_id
- * @param string $date Format "YYYY-MM-DD".
- * @return int
- */
-function bookacti_is_repeat_exception( $event_id, $date ) {
-	global $wpdb;
-
-	// Check if the date exists in exceptions database for this event
-	$is_excep_query = 'SELECT COUNT(*) FROM ' . BOOKACTI_TABLE_EXCEPTIONS
-					. ' WHERE exception_value = %s'
-					. ' AND event_id = %d';
-	$is_excep_prep = $wpdb->prepare( $is_excep_query, $date, $event_id );
-	$is_excep = $wpdb->get_var( $is_excep_prep );
-
-	return $is_excep;
-}
-
-
 
 
 // GROUPS OF EVENTS
