@@ -47,7 +47,7 @@ function bookacti_create_tables() {
 		end DATETIME, 
 		availability MEDIUMINT(9) UNSIGNED NOT NULL DEFAULT 0, 
 		repeat_freq VARCHAR(32) NOT NULL DEFAULT "none", 
-		repeat_next SMALLINT(4) UNSIGNED NOT NULL DEFAULT 1, 
+		repeat_step SMALLINT(4) UNSIGNED, 
 		repeat_on VARCHAR(32), 
 		repeat_from DATE, 
 		repeat_to DATE,

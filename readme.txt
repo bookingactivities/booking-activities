@@ -326,6 +326,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Feature - Repeat events daily: select the days of the week on which the event should be repeated
 * Feature - Repeat events monthly: option to repeat the event on the nth / last day-of-the-week of the month (e.g.: 2nd / last Monday of the month)
 * Feature - You can manually reorder activities, group categories and groups of events in calendar editor (by drag and drop)
+* Fix - The booking actions buttons were displayed in WC email when an order item was refunded from the backend WC order page
 * Dev - Store the activity_id and category_id in the bookings (groups) tables (part of removing dependencies between bookings and events (groups))
 
 = 1.10.0 - 2021/03/12 =

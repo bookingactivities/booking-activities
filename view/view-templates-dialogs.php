@@ -103,8 +103,8 @@ foreach( $templates as $template ) {
 			// Display the number input
 			bookacti_display_field( array(
 				'type'		=> 'number',
-				'name'		=> 'repeat_next',
-				'id'		=> 'bookacti-event-repeat-next',
+				'name'		=> 'repeat_step',
+				'id'		=> 'bookacti-event-repeat-step',
 				'options'	=> array( 'min' => 1, 'max' => 9999, 'step' => 1 ),
 				'value'		=> 1,
 			) ); 
@@ -114,12 +114,7 @@ foreach( $templates as $template ) {
 				'type'		=> 'select',
 				'name'		=> 'repeat_freq',
 				'id'		=> 'bookacti-event-repeat-freq',
-				'options'	=> array( 
-									'none' => esc_html__( 'Do not repeat', 'booking-activities' ),
-									'daily' => esc_html__( 'Day', 'booking-activities' ),
-									'weekly' => esc_html__( 'Week', 'booking-activities' ),
-									'monthly' => esc_html__( 'Month', 'booking-activities' )
-								),
+				'options'	=> bookacti_get_event_repeat_periods(),
 				'value'		=> 'none',
 				'tip'		=> esc_html__( 'Set the repetition frequency. This will create an occurrence of the event on each corresponding date.', 'booking-activities' )
 			) ); 
@@ -157,7 +152,7 @@ foreach( $templates as $template ) {
 						'nth_day_of_month'	=> 'nth_day_of_month',
 						'last_day_of_month'	=> 'last_day_of_month',
 						'nth_day_of_week'	=> 'nth_day_of_week',
-						'last_day_of_week'	=> 'last_day_of_week',
+						'last_day_of_week'	=> 'last_day_of_week'
 					),
 					'attr'	=> array( 
 						/* translators: Keep the {nth_day_of_month} tag as is. Selectbox option, comes after "Repeat on". E.g.: [Repeat on] on the 21st each month. */
@@ -167,7 +162,7 @@ foreach( $templates as $template ) {
 						/* translators: Keep the {nth_day_of_week} and {day_of_week} tags as is. Selectbox option, comes after by "Repeat on". E.g.: [Repeat on] on the 2nd Monday of each month. */
 						'nth_day_of_week'	=> 'data-default-label="' . esc_html__( 'on the {nth_day_of_week} {day_of_week} of each month', 'booking-activities' ) . '"',
 						/* translators: Keep the {day_of_week} tag as is. Selectbox option, comes after by "Repeat on". E.g.: [Repeat on] on the last Monday of each month. */
-						'last_day_of_week'	=> 'data-default-label="' . esc_html__( 'on the last {day_of_week} of each month', 'booking-activities' ) . '"',
+						'last_day_of_week'	=> 'data-default-label="' . esc_html__( 'on the last {day_of_week} of each month', 'booking-activities' ) . '"'
 					),
 					'tip'		=> esc_html__( 'Select the day of the month on which the event will be repeated.', 'booking-activities' )
 				),

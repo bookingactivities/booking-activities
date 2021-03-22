@@ -715,24 +715,6 @@ function bookacti_refresh_selected_events_display() {
 
 
 /**
- * Get the number of day_of_week (e.g.: mondays) in the desired month (e.g.: '2021-03')
- * @since 1.11.0
- * @param {String} month YYYY-MM
- * @param {Int} day_of_week 0 = Sunday, 1 = Monday, etc.
- * @returns {Int}
- */
-function bookacti_get_number_of_day_of_week_in_month( month, day_of_week ) {
-	var date = moment.utc( month + '-01' );
-	var count = 0;
-	while( date.format( 'YYYY-MM' ) === month ) {
-		if( parseInt( date.format( 'd' ) ) === parseInt( day_of_week ) ) { ++count; date.add( 7, 'days' ); } 
-		else { date.add( 1, 'days' ); }
-	}
-	return count;
-}
-
-
-/**
  * Get the position of day of week in the month of the desired date (e.g.: '2nd monday of the month')
  * @since 1.11.0
  * @param {String} date_str YYYY-MM-DD

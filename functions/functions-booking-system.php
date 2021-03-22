@@ -1474,13 +1474,17 @@ function bookacti_get_picked_events_availability( $picked_events ) {
  * @param string $event_end
  * @return boolean
  */
-function bookacti_is_existing_event( $event, $event_start = NULL, $event_end = NULL ) {
+function bookacti_is_existing_event( $event, $event_start, $event_end = '' ) {
 	$is_existing_event = false;
 	if( $event ) {
 		if( $event->repeat_freq && $event->repeat_freq !== 'none' ) {
 			$is_existing_event = bookacti_is_existing_occurrence( $event, $event_start, $event_end );
 		} else {
-			$is_existing_event = bookacti_is_existing_single_event( $event->event_id, $event_start, $event_end );
+			$is_existing_event = false;
+			if( $event_start && $event_start === $event->start ) {
+				if( ! $event_end ) { $is_existing_event = true; }
+				else if( $event_end === $event->end ) { $is_existing_event = true; }
+			}
 		}
 	}
 	return apply_filters( 'bookacti_is_existing_event', $is_existing_event, $event, $event_start, $event_end );
@@ -1496,7 +1500,7 @@ function bookacti_is_existing_event( $event, $event_start = NULL, $event_end = N
  * @param string $event_end
  * @return boolean
  */
-function bookacti_is_existing_occurrence( $event, $event_start, $event_end = NULL ) {
+function bookacti_is_existing_occurrence( $event, $event_start, $event_end = '' ) {
 	// Get the event's occurrences
 	$event_id = ! empty( $event->event_id ) ? intval( $event->event_id ) : ( ! empty( $event->id ) ? intval( $event->id ) : 0 );
 	$events_exceptions = bookacti_get_exceptions_by_event( array( 'events' => array( $event_id ), 'types' => array( 'date' ), 'only_values' => 1 ) );
@@ -1841,7 +1845,7 @@ function bookacti_get_events_array_from_db_events( $events, $raw_args = array() 
 			'activity_id'		=> $event->activity_id,
 			'availability'		=> $event->availability,
 			'repeat_freq'		=> $event->repeat_freq,
-			'repeat_next'		=> $event->repeat_next,
+			'repeat_step'		=> $event->repeat_step,
 			'repeat_on'			=> $event->repeat_on,
 			'repeat_from'		=> $event->repeat_from,
 			'repeat_to'			=> $event->repeat_to,
