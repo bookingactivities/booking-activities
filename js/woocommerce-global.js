@@ -13,7 +13,7 @@ $j( document ).ready( function() {
 /**
  * Perform WC form action
  * @since 1.7.19
- * @version 1.9.0
+ * @version 1.10.1
  * @param {HTMLElement} booking_system
  */
 function bookacti_wc_perform_form_action( booking_system ) {
@@ -31,7 +31,16 @@ function bookacti_wc_perform_form_action( booking_system ) {
 		return;
 	}
 	
-	if( typeof attributes[ 'picked_events' ][ 0 ] === 'undefined' ) { return; }
+	// Check if selected event is valid
+	var quantity = booking_system.closest( '.bookacti-form-fields' ).length ? ( booking_system.closest( '.bookacti-form-fields' ).find( '.bookacti-quantity' ).length ? parseInt( booking_system.closest( '.bookacti-form-fields' ).find( '.bookacti-quantity' ).val() ) : 1 ) : 1;
+	var wc_quantity = booking_system.closest( 'form.cart' ).length ? ( booking_system.closest( 'form.cart' ).find( 'input[name="quantity"]' ).length ? parseInt( booking_system.closest( 'form.cart' ).find( 'input[name="quantity"]' ).val() ) : 1 ) : 1;
+	var is_valid_event = bookacti_validate_picked_events( booking_system, Math.max( quantity, wc_quantity ) );
+	if( ! is_valid_event ) {
+		// Scroll to error message
+		bookacti_scroll_to( booking_system.siblings( '.bookacti-notices' ), 500, 'middle' );
+		return;
+	}
+	
 	var group_id = parseInt( attributes[ 'picked_events' ][ 0 ][ 'group_id' ] );
 	var event = attributes[ 'picked_events' ][ 0 ];
 	

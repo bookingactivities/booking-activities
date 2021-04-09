@@ -601,6 +601,7 @@ function bookacti_submit_booking_form( form ) {
 /**
  * Perform form action
  * @since 1.9.0
+ * @version 1.10.1
  * @param {HTMLElement} booking_system
  */
 function bookacti_perform_form_action( booking_system ) {
@@ -629,15 +630,22 @@ function bookacti_perform_form_action( booking_system ) {
 	
 	// Redirect to URL
 	else if( attributes[ 'form_action' ] === 'redirect_to_url' ) {
-		if( typeof attributes[ 'picked_events' ][ 0 ] !== 'undefined' ) {
-			var group_id = parseInt( attributes[ 'picked_events' ][ 0 ][ 'group_id' ] );
-			var event = attributes[ 'picked_events' ][ 0 ];
+		// Check if selected event is valid
+		var quantity = booking_system.closest( '.bookacti-form-fields' ).length ? ( booking_system.closest( '.bookacti-form-fields' ).find( '.bookacti-quantity' ).length ? booking_system.closest( '.bookacti-form-fields' ).find( '.bookacti-quantity' ).val() : 1 ) : 1;
+		var is_valid_event = bookacti_validate_picked_events( booking_system, quantity );
+		if( ! is_valid_event ) {
+			// Scroll to error message
+			bookacti_scroll_to( booking_system.siblings( '.bookacti-notices' ), 500, 'middle' );
+			return;
+		}
+		
+		var group_id = parseInt( attributes[ 'picked_events' ][ 0 ][ 'group_id' ] );
+		var event = attributes[ 'picked_events' ][ 0 ];
 
-			if( group_id > 0 ) {
-				bookacti_redirect_to_group_category_url( booking_system, group_id );
-			} else {
-				bookacti_redirect_to_activity_url( booking_system, event );
-			}
+		if( group_id > 0 ) {
+			bookacti_redirect_to_group_category_url( booking_system, group_id );
+		} else {
+			bookacti_redirect_to_activity_url( booking_system, event );
 		}
 	}
 	
