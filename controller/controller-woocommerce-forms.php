@@ -60,14 +60,20 @@ add_action( 'bookacti_form_editor_description_after', 'bookacti_form_editor_wc_d
 /**
  * Display a WC notice in the form editor, Calendar field settings, "Actions" tab
  * @since 1.7.15
- * @version 1.9.0
+ * @version 1.10.1
  * @param array $params
  */
 function bookacti_form_action_wc_notice( $params ) {
+	$docs = $links[ 'docs' ] = '<a href="' . esc_url( 'https://booking-activities.fr/en/docs/user-documentation/get-started-with-booking-activities/display-calendars-on-product-page/?utm_source=plugin&utm_medium=plugin&utm_content=form-action-notice' ) . '" title="' . esc_attr( __( 'View Booking Activities Documentation', 'booking-activities' ) ) . '" target="_blank" >' . esc_html__( 'Docs', 'booking-activities' ) . '</a>';
 	?>
 	<div class='bookacti-info'>
 		<span class='dashicons dashicons-info'></span>
-		<span><?php esc_html_e( 'The form action is not taken into account on WooCommerce product pages.', 'booking-activities' ); ?></span>
+		<span>
+		<?php 
+			/* translators: %1$s = "Form action" option label. %2$s = "Docs" (link to the documentation) */
+			echo sprintf( esc_html__( 'The "%1$s" option is not taken into account when the form is integrated to a WooCommerce product (%2$s).', 'booking-activities' ), '<strong>' . esc_html__( 'Form action', 'booking-activities' ) . '</strong>', $docs );
+		?>
+		</span>
 	</div>
 	<?php
 }

@@ -329,6 +329,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - The booking actions buttons were displayed in WC email when an order item was refunded from the backend WC order page
 * Dev - Store the activity_id and category_id in the bookings (groups) tables (part of removing dependencies between bookings and events (groups))
 
+= 1.10.1 - 2021/04/09 =
+* Fix - Prevent users from increasing cart item quantity to avoid overbooking when cart expiration is disabled
+* Fix - Display the error message if no events are selected when you submit a booking form with a non-default form action
+
 = 1.10.0 - 2021/03/12 =
 * **[See the user-friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-10-cancel-or-reschedule-a-booked-event-and-notify-customers/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
 * Feature - Automatically reschedule the bookings when you move a booked event in the calendar editor

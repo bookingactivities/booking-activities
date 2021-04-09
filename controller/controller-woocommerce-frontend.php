@@ -889,7 +889,7 @@ add_action( 'wp_loaded', 'bookacti_remove_expired_product_from_cart', 100, 0 );
 
 /**
  * If quantity changes in cart, temporarily book the extra quantity if possible
- * @version 1.9.0
+ * @version 1.10.1
  * @param int $new_quantity
  * @param string $cart_item_key
  */
@@ -915,22 +915,24 @@ function bookacti_update_quantity_in_cart( $new_quantity, $cart_item_key ) {
 	if( $is_in_cart ) {
 		$response = bookacti_wc_validate_cart_item_bookings_new_quantity( $cart_item_bookings, $new_quantity );
 		
-		// If the quantity > availability, change the $new_quantity to the available quantity
-		if( $response[ 'status' ] === 'failed' && ! empty( $response[ 'messages' ][ 'qty_sup_to_avail' ] ) && ! empty( $response[ 'availability' ] ) ) {
-			$new_quantity = intval( $response[ 'availability' ] ) + $old_quantity;
-			$response = bookacti_wc_validate_cart_item_bookings_new_quantity( $cart_item_bookings, $new_quantity );
-		}
-		
 		// Feedback the errors
-		if( $response[ 'status' ] !== 'success' ) { 
-			$restore_qty = true;
+		if( $response[ 'status' ] !== 'success' ) {
 			foreach( $response[ 'messages' ] as $message ) {
 				wc_add_notice( $message, 'error' );
 			}
-		} 
+		}
+		
+		// If the quantity > availability, change the $new_quantity to the available quantity
+		if( $response[ 'status' ] === 'failed' && ! empty( $response[ 'messages' ][ 'qty_sup_to_avail' ] ) && ! empty( $response[ 'availability' ] ) ) {
+			$new_quantity = $response[ 'availability' ] + $old_quantity;
+			$response = bookacti_wc_validate_cart_item_bookings_new_quantity( $cart_item_bookings, $new_quantity );
+		}
+		
+		// If the event is unavailable, restore to old quantity
+		if( $response[ 'status' ] !== 'success' ) { $restore_qty = true; }
 		
 		// Update the cart item bookings quantity
-		else {
+		if( $response[ 'status' ] === 'success' && $new_quantity !== $old_quantity ) {
 			$updated = $new_quantity ? bookacti_wc_update_cart_item_bookings_quantity( $cart_item_key, $new_quantity ) : bookacti_wc_update_cart_item_bookings_status( $cart_item_key, 'removed' );
 			if( ! $updated ) {
 				$restore_qty = true;
@@ -944,7 +946,7 @@ function bookacti_update_quantity_in_cart( $new_quantity, $cart_item_key ) {
 		$restore_qty = true;
 		wc_add_notice( esc_html__( 'You can\'t update quantity since this product is temporarily booked on an order pending payment. Please, first cancel the order or remove this product from cart.', 'booking-activities' ), 'error' );
 	}
-
+	
 	return $restore_qty ? $old_quantity : $new_quantity;
 }
 add_filter( 'woocommerce_stock_amount_cart_item', 'bookacti_update_quantity_in_cart', 40, 2 ); 
@@ -995,7 +997,7 @@ function bookacti_remove_cart_item_bookings( $cart_item_key ) {
 
 /**
  * Restore the booking if user change his mind after deleting one
- * @version 1.9.0
+ * @version 1.10.1
  * @global WooCommerce $woocommerce
  * @param string $cart_item_key
  */
@@ -1014,12 +1016,6 @@ function bookacti_restore_bookings_of_removed_cart_item( $cart_item_key ) {
 	// Check if the cart item bookings quantity can be "changed" to its own quantity
 	// is the same as checking if a cart item can be restored
 	$response = bookacti_wc_validate_cart_item_bookings_new_quantity( $cart_item_bookings, $quantity );
-
-	// If the quantity > availability, change the $quantity to the available quantity
-	if( $response[ 'status' ] === 'failed' && ! empty( $response[ 'messages' ][ 'qty_sup_to_avail' ] ) &&  ! empty( $response[ 'availability' ] ) ) {
-		$quantity = intval( $response[ 'availability' ] );
-		$response = bookacti_wc_validate_cart_item_bookings_new_quantity( $cart_item_bookings, $quantity );
-	}
 	
 	// Feedback the errors
 	if( $response[ 'status' ] !== 'success' ) {
@@ -1027,14 +1023,25 @@ function bookacti_restore_bookings_of_removed_cart_item( $cart_item_key ) {
 			wc_add_notice( $message, 'error' );
 		}
 	} 
+	
+	// If the quantity > availability, change the $quantity to the available quantity
+	if( $response[ 'status' ] === 'failed' && ! empty( $response[ 'messages' ][ 'qty_sup_to_avail' ] ) &&  ! empty( $response[ 'availability' ] ) ) {
+		$quantity = intval( $response[ 'availability' ] );
+		$response = bookacti_wc_validate_cart_item_bookings_new_quantity( $cart_item_bookings, $quantity );
+	}
+	
+	$restore_bookings = $response[ 'status' ] === 'success';
 
 	// Update the cart item bookings quantity
-	else if( $quantity !== $init_quantity ) { 
-		bookacti_wc_update_cart_item_bookings_quantity( $cart_item_key, $quantity );
+	if( $restore_bookings && $quantity !== $init_quantity ) { 
+		$updated = $quantity ? bookacti_wc_update_cart_item_bookings_quantity( $cart_item_key, $quantity ) : bookacti_wc_update_cart_item_bookings_status( $cart_item_key, 'removed' );
+		if( ! $updated ) { 
+			$restore_bookings = false;
+			wc_add_notice( esc_html__( 'An error occured while trying to change the quantity of the bookings attached to the item.', 'booking-activities' ), 'error' );
+		}
 	}
 	
 	// Update the cart item bookings status
-	$restore_bookings = $response[ 'status' ] === 'success';
 	if( $restore_bookings ) {
 		$cart_item_expiration_date = bookacti_wc_get_new_cart_item_expiration_date();
 		$status_updated = bookacti_wc_update_cart_item_bookings_status( $cart_item_key, 'in_cart', $cart_item_expiration_date );
@@ -1132,18 +1139,23 @@ add_filter( 'woocommerce_attribute_label', 'bookacti_define_label_of_item_data',
 
 
 /**
- * Change the query to get the number of bookings per user by events to get in_cart bookings for the current user too
- * @since 1.9.0
+ * Take into account the in_cart bookings to compute events availability
+ * @since 1.10.1 (was bookacti_wc_number_of_bookings_per_user_by_events_query)
+ * @global wpdb $wpdb
  * @param string $query
  * @param array $events
- * @param int $active
  * @return string
  */
-function bookacti_wc_number_of_bookings_per_user_by_events_query( $query, $events, $active = 1 ) {
-	$query = bookacti_wc_get_number_of_bookings_per_user_by_events_query( $events, $active );
+function bookacti_wc_number_of_bookings_per_event_per_user_query_include_current_user_in_cart_bookings( $query, $events ) {
+	global $wpdb;
+	$current_user_id = apply_filters( 'bookacti_current_user_id', get_current_user_id() );
+	$search		= 'LEFT JOIN ' . BOOKACTI_TABLE_BOOKINGS . ' as B ON B.event_id = E.id AND B.active = 1';
+	$replace	= 'LEFT JOIN ' . BOOKACTI_TABLE_BOOKINGS . ' as B ON B.event_id = E.id AND ( B.active = 1 OR ( B.state = "in_cart" AND B.user_id = %s ) )';
+	$replace	= $wpdb->prepare( $replace, $current_user_id );
+	$query		= str_replace( $search, $replace, $query );
 	return $query;
 }
-add_filter( 'bookacti_number_of_bookings_per_user_by_events_query', 'bookacti_wc_number_of_bookings_per_user_by_events_query', 10, 3 );
+add_filter( 'bookacti_number_of_bookings_per_event_per_user_query', 'bookacti_wc_number_of_bookings_per_event_per_user_query_include_current_user_in_cart_bookings', 10, 2 );
 
 
 /**
@@ -1213,7 +1225,7 @@ add_filter( 'woocommerce_cart_item_name', 'bookacti_add_timeout_to_cart_item_in_
 /**
  * Check bookings availability before validating checkout in case that "in_cart" state is not active
  * @since 1.3.0
- * @version 1.9.0
+ * @version 1.10.1
  * @global WooCommerce $woocommerce
  * @param array $posted_data An array of posted data.
  * @param WP_Error $errors
@@ -1230,16 +1242,17 @@ function bookacti_availability_check_before_checkout( $posted_data, $errors = nu
 	$nb_deleted_cart_item = 0;
 	
 	foreach( $cart_items_bookings as $cart_item_key => $cart_item_bookings ) {
-		// Check if the cart item bookings quantity can be "changed" to its own quantity
-		// is the same as checking if an inactive cart item can be turned to active
-		$quantity = $cart_item_bookings[ 0 ][ 'bookings' ][ 0 ]->quantity;
-		$response = bookacti_wc_validate_cart_item_bookings_new_quantity( $cart_item_bookings, $quantity );
-		
 		// Check booking status, they must be in_cart or any active status, else, remove cart item
 		if( ! in_array( $cart_item_bookings[ 0 ][ 'bookings' ][ 0 ]->state, $valid_status, true ) ) { 
 			$woocommerce->cart->remove_cart_item( $cart_item_key );
 			++$nb_deleted_cart_item;
+			continue;
 		}
+		
+		// Check if the cart item bookings quantity can be "changed" to its own quantity
+		// is the same as checking if an inactive cart item can be turned to active
+		$quantity = $cart_item_bookings[ 0 ][ 'bookings' ][ 0 ]->quantity;
+		$response = bookacti_wc_validate_cart_item_bookings_new_quantity( $cart_item_bookings, $quantity );
 		
 		// Display the error and stop checkout processing
 		if( $response[ 'status' ] !== 'success' ) {
