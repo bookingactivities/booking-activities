@@ -113,7 +113,7 @@ $j( document ).ready( function() {
 
 /**
  * Initialize and display the template calendar
- * @version 1.10.0
+ * @version 1.11.0
  * @param {HTMLElement} calendar
  */
 function bookacti_load_template_calendar( calendar ) {
@@ -206,7 +206,7 @@ function bookacti_load_template_calendar( calendar ) {
 		
 		/**
 		 * When an event is rendered
-		 * @version 1.8.5
+		 * @version 1.11.0
 		 * @param {object} event
 		 * @param {HTMLElement} element
 		 * @param {object} view
@@ -344,10 +344,8 @@ function bookacti_load_template_calendar( calendar ) {
 			
 			
 			// Add background to basic views
-			if( view.name === 'month' || view.name === 'basicWeek' || view.name === 'basicDay' ) {
-				var bg_div = $j( '<div></div>', {
-					'class': 'fc-bg'
-				});
+			if( view.hasOwnProperty( 'dayGrid' ) ) {
+				var bg_div = $j( '<div></div>', { 'class': 'fc-bg' } );
 				element.append( bg_div );
 			}
 			

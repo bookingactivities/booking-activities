@@ -137,6 +137,9 @@
 #bookacti-activity-duration-container .bookacti-duration-hint { display: none !important; }
 .bookacti-roles-notice { margin-top: 10px; margin-bottom: 20px; }
 
+/* Event dialog */
+#bookacti-event-repeat-freq-start-of-week-notice { display: none; margin-top: 10px; }
+
 /* Move an event dialog */
 .bookacti-selected-event-dates						{ margin: 25px 0; }
 .bookacti-update-repeated-event-dates-warning		{ margin-top: 25px; }

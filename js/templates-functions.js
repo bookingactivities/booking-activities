@@ -714,29 +714,6 @@ function bookacti_refresh_selected_events_display() {
 }
 
 
-/**
- * Get the position of day of week in the month of the desired date (e.g.: '2nd monday of the month')
- * @since 1.11.0
- * @param {String} date_str YYYY-MM-DD
- * @returns {Int}
- */
-function bookacti_get_date_nth_day_of_week_in_month( date_str ) {
-	var desired_date = moment.utc( date_str );
-	var month = desired_date.format( 'YYYY-MM' );
-	var date = moment.utc( month + '-01' );
-	var count = 0;
-	while( date.format( 'YYYY-MM' ) === month ) {
-		if( date.format( 'd' ) === desired_date.format( 'd' ) ) { 
-			++count; 
-			if( date.format( 'YYYY-MM-DD' ) === desired_date.format( 'YYYY-MM-DD' ) ) { break; } // break
-			date.add( 7, 'days' );
-		} 
-		else { date.add( 1, 'days' ); }
-	}
-	return count;
-}
-
-
 
 
 // CREATE FORM

@@ -161,6 +161,15 @@ function bookacti_init_template_dialogs() {
 	});
 	
 	/**
+	 * Toggle week starts on notice according to repeat_every option in event dialog
+	 * @since 1.11.0
+	 */
+	$j( '#bookacti-event-data-dialog' ).on( 'change', '#bookacti-event-repeat-step, #bookacti-event-repeat-freq', function() { 
+		var skip_weeks = parseInt( $j( '#bookacti-event-repeat-step' ).val() ) > 1 && $j( '#bookacti-event-repeat-freq' ).val() === 'weekly';
+		$j( '#bookacti-event-repeat-freq-start-of-week-notice' ).toggle( skip_weeks );
+	});
+	
+	/**
 	 * Toggle the "Send notifications" option according to the "Cancel bookings" option value - when an event is deleted
 	 * @since 1.10.0
 	 */
@@ -674,7 +683,7 @@ function bookacti_dialog_update_event( event ) {
 	if( event_data.repeat_to   && event_data.repeat_to   !== '0000-00-00' )	{ repeat_to = event_data.repeat_to; };
 	
 	var repeat_step = event_data.repeat_step && $j.isNumeric( event_data.repeat_step ) ? Math.max( 1, parseInt( event_data.repeat_step ) ) : 1;
-	var repeat_days = event_data.repeat_freq === 'daily' && event_data.repeat_on ? event_data.repeat_on.split( '_' ) : [ 0, 1, 2, 3, 4, 5, 6 ];
+	var repeat_days = event_data.repeat_freq === 'weekly' && event_data.repeat_on ? event_data.repeat_on.split( '_' ) : [ parseInt( event.start.format( 'd' ) ) ];
 	var repeat_monthly_type = event_data.repeat_freq === 'monthly' && event_data.repeat_on && $j.inArray( event_data.repeat_on, [ 'nth_day_of_month', 'nth_day_of_week', 'last_day_of_month', 'last_day_of_week' ] ) >= 0 ? event_data.repeat_on : 'nth_day_of_month';
 	
 	var exceptions_disabled = false;
@@ -687,8 +696,9 @@ function bookacti_dialog_update_event( event ) {
 	$j( '#bookacti-event-availability' ).val( event_data.availability );
 	$j( '#bookacti-event-availability' ).attr( 'min', bookings_number );
 	$j( '#bookacti-event-repeat-freq option[value="' + event_data.repeat_freq + '"]' ).prop( 'selected', true );
+	$j( '#bookacti-event-repeat-freq' ).trigger( 'change' );
 	$j( '#bookacti-event-repeat-monthly_type option[value="' + repeat_monthly_type + '"]' ).prop( 'selected', true );
-	$j( '#bookacti-event-repeat-step' ).val( repeat_step );
+	$j( '#bookacti-event-repeat-step' ).val( repeat_step ).trigger( 'change' );
 	$j( '#bookacti-event-repeat-from, #bookacti-event-repeat-to' ).attr( 'min', template_start );
 	$j( '#bookacti-event-repeat-from, #bookacti-event-repeat-to' ).attr( 'max', template_end );
 	$j( '#bookacti-event-repeat-from' ).val( repeat_from );
@@ -733,7 +743,7 @@ function bookacti_dialog_update_event( event ) {
 	var nth_day_of_month = event_start.format( 'Do' );
 	var day_of_week = event_start.format( 'dddd' );
 	event_start.locale( 'en' );
-	var nth_day_of_week_int = bookacti_get_date_nth_day_of_week_in_month( event_start.format( 'YYYY-MM-DD' ) );
+	var nth_day_of_week_int = Math.ceil( parseInt( event_start.format( 'DD' ) ) / 7 );
 	var nth_day_of_week = moment.utc( event_start.format( 'YYYY' ) + '-0' + nth_day_of_week_int + '-01' ).format( 'Mo' );
 	var is_last_day_of_month = parseInt( event_start.format( 'D' ) ) === parseInt( event_start.daysInMonth() ) ? true : false;
 	var is_last_day_of_week = parseInt( event_start.format( 'D' ) ) >= ( parseInt( event_start.daysInMonth() ) - 6 ) ? true : false;

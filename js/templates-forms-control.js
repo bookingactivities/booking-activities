@@ -481,7 +481,7 @@ function bookacti_validate_event_repetition_data() {
 		$j( '#bookacti-event-data-dialog #bookacti-event-repeat-from-container' ).show();
 		$j( '#bookacti-event-data-dialog #bookacti-event-repeat-to-container' ).show();
 		
-		if( repeat_freq === 'daily' ) {
+		if( repeat_freq === 'weekly' ) {
 			$j( '#bookacti-event-data-dialog #bookacti-event-repeat-days-container' ).show();
 		} else if( repeat_freq === 'monthly' ) {
 			$j( '#bookacti-event-data-dialog #bookacti-event-repeat-monthly_type-container' ).show();

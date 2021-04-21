@@ -939,7 +939,7 @@ add_action( 'wp_ajax_bookactiDismiss5StarsRatingNotice', 'bookacti_dismiss_5star
 
 /**
  * Display a custom message in the footer
- * @version 1.7.16
+ * @version 1.11.0
  * @param string $footer_text
  * @return string
  */
@@ -952,12 +952,9 @@ function bookacti_admin_footer_text( $footer_text ) {
 	$bookacti_pages	= bookacti_get_screen_ids();
 	
 	// Check to make sure we're on a BA admin page.
-	if ( isset( $current_screen->id ) && in_array( $current_screen->id, $bookacti_pages ) ) {
-		// Change the footer text
-		if ( ! get_option( 'woocommerce_admin_footer_text_rated' ) ) {
-			/* translators: %s: five stars */
-			$footer_text = sprintf( __( 'Does <strong>Booking Activities</strong> help you? Help us back leaving a %s rating. We need you too.', 'booking-activities' ), '<a href="https://wordpress.org/support/plugin/booking-activities/reviews?rate=5#new-post" target="_blank" >&#9733;&#9733;&#9733;&#9733;&#9733;</a>' );
-		}
+	if( isset( $current_screen->id ) && in_array( $current_screen->id, $bookacti_pages ) ) {
+		/* translators: %s: five stars */
+		$footer_text = sprintf( __( 'Does <strong>Booking Activities</strong> help you? Help us back leaving a %s rating. We need you too.', 'booking-activities' ), '<a href="https://wordpress.org/support/plugin/booking-activities/reviews?rate=5#new-post" target="_blank" >&#9733;&#9733;&#9733;&#9733;&#9733;</a>' );
 	}
 
 	return $footer_text;

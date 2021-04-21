@@ -198,10 +198,10 @@ function bookacti_format_activity_settings( $activity_settings ) {
  * @version 1.11.0
  */
 function bookacti_get_event_default_data() {
-	$datetime = new DateTime();
-	$start = $datetime->format( 'Y-m-d H:i:s' );
-	$datetime->add( new DateInterval( 'PT1H' ) );
-	$end = $datetime->format( 'Y-m-d H:i:s' );
+	$dt = new DateTime();
+	$start = $dt->format( 'Y-m-d H:i:s' );
+	$dt->add( new DateInterval( 'PT1H' ) );
+	$end = $dt->format( 'Y-m-d H:i:s' );
 	return apply_filters( 'bookacti_event_default_data', array(
 		'id' => 0,
 		'template_id' => 0,
@@ -285,8 +285,8 @@ function bookacti_sanitize_event_data( $raw_data ) {
 		$data[ 'end' ] = $start_dt->format( 'Y-m-d H:i:s' );
 	}
 	else if( $start_dt === $end_dt ) {
-		$start_dt->add( new DateInterval( 'PT1H' ) );
-		$data[ 'end' ] = $start_dt->format( 'Y-m-d H:i:s' );
+		$end_dt->add( new DateInterval( 'PT1H' ) );
+		$data[ 'end' ] = $end_dt->format( 'Y-m-d H:i:s' );
 	}
 	
 	// Make sure repeat period exists
@@ -298,22 +298,16 @@ function bookacti_sanitize_event_data( $raw_data ) {
 	if( $data[ 'repeat_freq' ] !== 'none' && ( ! $data[ 'repeat_from' ] || ! $data[ 'repeat_to' ] || ! $data[ 'repeat_step' ] ) ) {
 		$data[ 'repeat_freq' ] = 'none';
 	}
-	if( $data[ 'repeat_freq' ] === 'daily' && $data[ 'repeat_step' ] && ( $data[ 'repeat_step' ] % 7 === 0 ) ) {
-		$data[ 'repeat_freq' ] = 'weekly';
-		$data[ 'repeat_step' ] = $data[ 'repeat_step' ] / 7;
-	}
-	if( $data[ 'repeat_freq' ] === 'daily' && $data[ 'repeat_step' ] === 1 && strlen( $data[ 'repeat_on' ] ) === 1 ) {
-		$data[ 'repeat_freq' ] = 'weekly';
-	}
 	
 	// Sanitize repeat_on according to the repeat_freq
-	if( $data[ 'repeat_freq' ] === 'daily' && $data[ 'repeat_on' ] ) {
-		if( array_diff( explode( '_', $data[ 'repeat_on' ] ), array( 0, 1, 2, 3, 4, 5, 6 ) ) ) { $data[ 'repeat_on' ] = 'null'; }
+	if( $data[ 'repeat_freq' ] === 'weekly' && $data[ 'repeat_on' ] !== '' ) {
+		$repeat_on_array = explode( '_', $data[ 'repeat_on' ] );
+		if( array_diff( $repeat_on_array, array( 0, 1, 2, 3, 4, 5, 6 ) ) ) { $data[ 'repeat_on' ] = 'null'; }
 	}
 	if( $data[ 'repeat_freq' ] === 'monthly' && $data[ 'repeat_on' ] ) {
-		if( ! in_array( $data[ 'repeat_on' ], array( 'nth_day_of_month', 'last_day_of_month', 'nth_day_of_week', 'last_day_of_week', ), true ) ) { $data[ 'repeat_on' ] = 'null'; }
+		if( ! in_array( $data[ 'repeat_on' ], array( 'nth_day_of_month', 'last_day_of_month', 'nth_day_of_week', 'last_day_of_week' ), true ) ) { $data[ 'repeat_on' ] = 'null'; }
 	}
-	if( $data[ 'repeat_freq' ] === 'weekly' ) {
+	if( $data[ 'repeat_freq' ] === 'daily' ) {
 		$data[ 'repeat_on' ] = 'null';
 	}
 	
@@ -336,7 +330,18 @@ function bookacti_sanitize_event_data( $raw_data ) {
 			// Replace repeat period with events bounding dates
 			if( strtotime( $bounding_dates[ 'start' ] ) > strtotime( $data[ 'repeat_from' ] ) )	{ $data[ 'repeat_from' ] = $bounding_dates[ 'start' ]; }
 			if( strtotime( $bounding_dates[ 'end' ] ) < strtotime( $data[ 'repeat_to' ] ) )		{ $data[ 'repeat_to' ] = $bounding_dates[ 'end' ]; }
-		
+			
+			// Make the event starts on the first occurrence
+			$repeat_from_dt = DateTime::createFromFormat( 'Y-m-d', $data[ 'repeat_from' ] );
+			$start_date_dt = DateTime::createFromFormat( 'Y-m-d', substr( $data[ 'start' ], 0, 10 ) );
+			$offset_interval = $start_date_dt->diff( $repeat_from_dt );
+			$start_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $data[ 'start' ] );
+			$end_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $data[ 'end' ] );
+			$start_dt->add( $offset_interval );
+			$end_dt->add( $offset_interval );
+			$data[ 'start' ] = $start_dt->format( 'Y-m-d H:i:s' );
+			$data[ 'end' ] = $end_dt->format( 'Y-m-d H:i:s' );
+			
 			// The repeat period may have changed, so, check the consistency again between the event date and the new repeat period
 			$data = bookacti_sanitize_event_date_and_repeat_period( $data );
 		}
@@ -346,14 +351,14 @@ function bookacti_sanitize_event_data( $raw_data ) {
 		
 		// Remove exceptions out of the repeat period and if they are not on an occurrence
 		else if( $data[ 'exceptions_dates' ] ) {
-			$repeat_from_datetime = DateTime::createFromFormat( 'Y-m-d H:i:s', $data[ 'repeat_from' ] . ' 00:00:00' );
-			$repeat_to_datetime = DateTime::createFromFormat( 'Y-m-d H:i:s', $data[ 'repeat_to' ] . ' 23:59:59' );
+			$repeat_from_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $data[ 'repeat_from' ] . ' 00:00:00' );
+			$repeat_to_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $data[ 'repeat_to' ] . ' 23:59:59' );
 			
 			$occurrences = bookacti_get_occurrences_of_repeated_event( (object) $data, array( 'past_events' => true ) );
 			foreach( $data[ 'exceptions_dates' ] as $i => $excep_date ) {
 				// Remove exceptions out of the repeat period
-				$excep_datetime = DateTime::createFromFormat( 'Y-m-d H:i:s', $excep_date . ' 00:00:00' );
-				if( $excep_datetime < $repeat_from_datetime || $excep_datetime > $repeat_to_datetime ) {
+				$excep_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $excep_date . ' 00:00:00' );
+				if( $excep_dt < $repeat_from_dt || $excep_dt > $repeat_to_dt ) {
 					unset( $data[ 'exceptions_dates' ][ $i ] );
 					continue;
 				}
@@ -391,30 +396,32 @@ function bookacti_sanitize_event_data( $raw_data ) {
 function bookacti_sanitize_event_date_and_repeat_period( $data ) {
 	if( $data[ 'repeat_freq' ] !== 'none' && $data[ 'repeat_from' ] && $data[ 'repeat_to' ] ) {
 		// Make sure repeat from is before repeat to
-		$repeat_from_datetime = DateTime::createFromFormat( 'Y-m-d H:i:s', $data[ 'repeat_from' ] . ' 00:00:00' );
-		$repeat_to_datetime = DateTime::createFromFormat( 'Y-m-d H:i:s', $data[ 'repeat_to' ] . ' 23:59:59' );
-		if( $repeat_from_datetime > $repeat_to_datetime ) { 
+		$repeat_from_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $data[ 'repeat_from' ] . ' 00:00:00' );
+		$repeat_to_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $data[ 'repeat_to' ] . ' 23:59:59' );
+		if( $repeat_from_dt > $repeat_to_dt ) { 
 			$data[ 'repeat_from' ] = $data[ 'repeat_to' ]; 
-			$repeat_from_datetime = DateTime::createFromFormat( 'Y-m-d H:i:s', $data[ 'repeat_from' ] . ' 00:00:00' );
+			$repeat_from_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $data[ 'repeat_from' ] . ' 00:00:00' );
 		}
 
-		// Make sure the event is included in the repeat period
-		$start_datetime = DateTime::createFromFormat( 'Y-m-d H:i:s', $data[ 'start' ] );
-		if( $start_datetime < $repeat_from_datetime ) { 
-			$data[ 'start' ] = $repeat_from_datetime->format( 'Y-m-d' ) . substr( $data[ 'start' ], 10 );
-			$data[ 'end' ] = $repeat_from_datetime->format( 'Y-m-d' ) . substr( $data[ 'end' ], 10 );
-		}
-		if( $start_datetime > $repeat_to_datetime ) {
-			$data[ 'start' ] = $repeat_to_datetime->format( 'Y-m-d' ) . substr( $data[ 'start' ], 10 );
-			$data[ 'end' ] = $repeat_to_datetime->format( 'Y-m-d' ) . substr( $data[ 'end' ], 10 );
+		// Make sure the event starts in the repeat period (else, set the event date to the repeat_from date)
+		$start_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $data[ 'start' ] );
+		if( $start_dt < $repeat_from_dt || $start_dt > $repeat_to_dt ) { 
+			$end_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $data[ 'end' ] );
+			$repeat_from_date_dt = DateTime::createFromFormat( 'Y-m-d', $data[ 'repeat_from' ] );
+			$start_date_dt = DateTime::createFromFormat( 'Y-m-d', substr( $data[ 'start' ], 0, 10 ) );
+			$offset_interval = $start_date_dt->diff( $repeat_from_date_dt );
+			$start_dt->add( $offset_interval );
+			$end_dt->add( $offset_interval );
+			$data[ 'start' ] = $start_dt->format( 'Y-m-d H:i:s' );
+			$data[ 'end' ] = $end_dt->format( 'Y-m-d H:i:s' );
 		}
 	}
 
 	// Check if the monthly repetition type is valid
 	if( $data[ 'repeat_freq' ] === 'monthly' && $data[ 'repeat_on' ] ) {
-		$start_datetime = DateTime::createFromFormat( 'Y-m-d H:i:s', $data[ 'start' ] );
-		$nth_in_month = intval( $start_datetime->format( 'j' ) );
-		$days_in_month = intval( $start_datetime->format( 't' ) );
+		$start_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $data[ 'start' ] );
+		$nth_in_month = intval( $start_dt->format( 'j' ) );
+		$days_in_month = intval( $start_dt->format( 't' ) );
 		if( $data[ 'repeat_on' ] === 'last_day_of_month' && $nth_in_month !== $days_in_month )		{ $data[ 'repeat_on' ] = 'nth_day_of_month'; }
 		if( $data[ 'repeat_on' ] === 'last_day_of_week' && $nth_in_month < ( $days_in_month - 6 ) )	{ $data[ 'repeat_on' ] = 'nth_day_of_week'; }
 	}

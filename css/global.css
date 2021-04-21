@@ -181,7 +181,7 @@
 	text-align: right;
 	font-size: 0.85em;
 }
-.bookacti-availability-container span								{ -webkit-border-radius: 3px 0 0 3px; border-radius: 3px 0 0 3px; }
+.bookacti-availability-container > span								{ -webkit-border-radius: 3px 0 0 3px; border-radius: 3px 0 0 3px; }
 .bookacti-availability-container .bookacti-bookings					{ padding: 1px 0 1px 1px; }
 .bookacti-availability-container .bookacti-total-availability		{ padding: 1px 1px 1px 0; }
 .bookacti-availability-container .bookacti-active-bookings-number,
@@ -193,7 +193,7 @@
 .bookacti-available-places.bookacti-no-availability	{ background-color: rgba(255, 0, 0, 0.4); }
 
 .bookacti-events-overlap .bookacti-availability-container		{ right: auto; left: -2px; }
-.bookacti-events-overlap .bookacti-availability-container span	{ -webkit-border-radius: 0 3px 3px 0; border-radius: 0 3px 3px 0; }
+.bookacti-events-overlap .bookacti-availability-container > span{ -webkit-border-radius: 0 3px 3px 0; border-radius: 0 3px 3px 0; }
 
 /* Loading */
 .bookacti-loading-overlay	{ position: absolute; width: 100%; height: 100%; top: 0; left: 0; background: rgba( 0, 0, 0, 0.6 ); z-index: 10; overflow: hidden; }

@@ -314,14 +314,17 @@ function bookacti_controller_update_event() {
 	
 	// Sanitize repeat_monthly_type
 	$repeat_monthly_type_raw = ! empty( $_POST[ 'repeat_monthly_type' ] ) ? sanitize_title_with_dashes( $_POST[ 'repeat_monthly_type' ] ) : '';
-	$repeat_monthly_type = in_array( $repeat_monthly_type_raw, array( 'nth_day_of_month', 'last_day_of_month', 'nth_day_of_week', 'last_day_of_week', ), true ) ? $repeat_monthly_type_raw : '';
+	$repeat_monthly_type = in_array( $repeat_monthly_type_raw, array( 'nth_day_of_month', 'last_day_of_month', 'nth_day_of_week', 'last_day_of_week' ), true ) ? $repeat_monthly_type_raw : '';
 	
 	// Set repeat_on according to repeat_freq
 	$repeat_freq = ! empty( $_POST[ 'repeat_freq' ] ) ? sanitize_title_with_dashes( $_POST[ 'repeat_freq' ] ) : '';
-	$repeat_on = $repeat_freq === 'daily' ? $repeat_days : ( $repeat_freq === 'monthly' ? $repeat_monthly_type : '' );
+	$repeat_on = $repeat_freq === 'weekly' ? $repeat_days : ( $repeat_freq === 'monthly' ? $repeat_monthly_type : '' );
+	
+	// If the event is no longer repeated, update its dates to keep the current occurence
+	$event_dates = $old_event->repeat_freq && ( ! $repeat_freq || $repeat_freq === 'none' ) ? array() : array( 'start' => $old_event->start, 'end' => $old_event->end );
 	
 	// Get new event data
-	$event_data = bookacti_sanitize_event_data( array_merge( $_POST, array( 'start' => $old_event->start, 'end' => $old_event->end, 'repeat_on' => $repeat_on ) ) );
+	$event_data = bookacti_sanitize_event_data( array_merge( $_POST, $event_dates, array( 'repeat_on' => $repeat_on ) ) );
 	
 	// Check if input data are complete and consistent 
 	$event_validation = bookacti_validate_event_data( $event_data );
