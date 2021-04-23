@@ -2317,6 +2317,7 @@ function bookacti_format_booking_refunds( $refunds, $booking_id = 0, $booking_ty
 /**
  * Get formatted booking refunds
  * @since 1.9.0
+ * @version 1.11.0
  * @param array $refunds
  * @return string
  */
@@ -2325,8 +2326,8 @@ function bookacti_get_booking_refunds_html( $refunds ) {
 	if( ! $refunds ) { return $html; }
 	
 	$timezone = get_option( 'timezone_string' );
-	$timezone_obj = new DateTimeZone( $timezone );
 	$utc_timezone_obj = new DateTimeZone( 'UTC' );
+	$timezone_obj = $timezone ? new DateTimeZone( $timezone ) : $utc_timezone_obj;
 	
 	foreach( $refunds as $i => $refund ) {
 		$refund_id = $i;

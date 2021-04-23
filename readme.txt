@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 5.7
 Requires PHP: 5.3
-Stable tag: 1.11.0
+Stable tag: 1.10.1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -322,6 +322,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 == Changelog ==
 
 = 1.11.0 =
+* **[See the user-friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-11-advanced-options-to-repeat-events/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
 * Feature - Repeat events: option to skip n days / weeks / months between each occurence (e.g.: repeat every 2 days)
 * Feature - Repeat events weekly: select the days of the week on which the event should be repeated
 * Feature - Repeat events monthly: option to repeat the event on the nth / last day-of-the-week of the month (e.g.: 2nd / last Monday of the month)
@@ -331,6 +332,8 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - The booking actions buttons were displayed in WC email when an order item was refunded from the backend WC order page
 * Fix - Bookings of WC failed orders may not turn to Booked after a further successful payment
 * Fix - Transparent white background was missing on multiple months and flexible basic views (with Display Pack add-on)
+* Fix - Events not loaded if Groups only option was active
+* Fix - Booking data displayed in WC order item may not be fully translated in multilang sites
 * Dev - Improve compatibility with themes by selecting WC input.qty without container class restrictions
 * Dev - Store the activity_id and category_id in the bookings (groups) tables (part of removing dependencies between bookings and events (groups))
 

@@ -3,7 +3,7 @@
  * Plugin Name: Booking Activities
  * Plugin URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Description: Booking system specialized in activities (sports, cultural, leisure, events...). Works great with WooCommerce.
- * Version: 1.11.0
+ * Version: 1.11.0-beta1
  * Author: Booking Activities Team
  * Author URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Text Domain: booking-activities
@@ -40,7 +40,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 // GLOBALS AND CONSTANTS
-if( ! defined( 'BOOKACTI_VERSION' ) )		{ define( 'BOOKACTI_VERSION', '1.11.0' ); }
+if( ! defined( 'BOOKACTI_VERSION' ) )		{ define( 'BOOKACTI_VERSION', '1.11.0-beta1' ); }
 if( ! defined( 'BOOKACTI_PLUGIN_NAME' ) )	{ define( 'BOOKACTI_PLUGIN_NAME', 'booking-activities' ); }
 
 
@@ -567,8 +567,8 @@ add_action( 'bookacti_updated', 'bookacti_clear_sessions_when_updating_to_1_9_0'
  * @param string $old_version
  */
 function bookacti_fill_bookings_new_columns_when_updating_to_1_11_0( $old_version ) {
-	// Do it only once, when Booking Activities is updated for the first time after 1.9.0
-	if( version_compare( $old_version, '1.11.0', '>=' ) ) { return; }
+	// Do it only once, when Booking Activities is updated for the first time after 1.11.0-beta1
+	if( version_compare( $old_version, '1.11.0-beta1', '>=' ) ) { return; }
 	
 	global $wpdb;
 	

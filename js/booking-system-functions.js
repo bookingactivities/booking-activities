@@ -1,6 +1,6 @@
 /**
  * Retrieve the events to display on the booking system
- * @version 1.8.9
+ * @version 1.11.0
  * @param {HTMLElement} booking_system
  * @param {object} interval
  */
@@ -16,7 +16,7 @@ function bookacti_fetch_events( booking_system, interval ) {
 	delete attributes[ 'booking_lists' ];
 	delete attributes[ 'activities_data' ];
 	delete attributes[ 'groups_events' ];
-	delete attributes[ 'groups_data' ];
+	if( ! attributes[ 'groups_only' ] ) { delete attributes[ 'groups_data' ]; }
 	delete attributes[ 'group_categories_data' ];
 	delete attributes[ 'picked_events' ];
 	delete attributes[ 'rescheduled_booking_data' ];
