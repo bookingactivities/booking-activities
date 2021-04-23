@@ -2,7 +2,7 @@
 
 /**
  * Initialize calendar editor dialogs
- * @version 1.10.0
+ * @version 1.11.0
  */
 function bookacti_init_template_dialogs() {
 	// Common param
@@ -92,9 +92,12 @@ function bookacti_init_template_dialogs() {
 	});
 	
 	
-	// Init update activity dialog
-	$j( '#bookacti-template-activity-list' ).on( 'click', '.activity-gear', function() {
-		var activity_id = $j( this ).data( 'activity-id' );
+	/**
+	 * Init update activity dialog
+	 * @version 1.11.0
+	 */
+	$j( '#bookacti-template-activity-list' ).on( 'click', '.bookacti-activity-settings', function() {
+		var activity_id = $j( this ).closest( '.bookacti-activity' ).data( 'activity-id' );
 		bookacti_dialog_update_activity( activity_id ); 
 	});
 
@@ -155,6 +158,15 @@ function bookacti_init_template_dialogs() {
 		} else {
 			$j( '#bookacti-group-of-events-new-category-title' ).hide();
 		}
+	});
+	
+	/**
+	 * Toggle week starts on notice according to repeat_every option in event dialog
+	 * @since 1.11.0
+	 */
+	$j( '#bookacti-event-data-dialog' ).on( 'change', '#bookacti-event-repeat-step, #bookacti-event-repeat-freq', function() { 
+		var skip_weeks = parseInt( $j( '#bookacti-event-repeat-step' ).val() ) > 1 && $j( '#bookacti-event-repeat-freq' ).val() === 'weekly';
+		$j( '#bookacti-event-repeat-freq-start-of-week-notice' ).toggle( skip_weeks );
 	});
 	
 	/**
@@ -631,7 +643,7 @@ function bookacti_dialog_update_booked_event_dates( event, delta, revertFunc ) {
 
 /**
  * Dialog Update Event
- * @version 1.10.0
+ * @version 1.11.0
  * @param {object} event
  */
 function bookacti_dialog_update_event( event ) {
@@ -663,13 +675,16 @@ function bookacti_dialog_update_event( event ) {
 	var template_start  = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ][ 'start' ];
 	var template_end    = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ][ 'end' ];
 
-	var event_day		= moment.utc( event.start ).locale( 'en' );
-	var event_28_days	= moment.utc( event_day ).clone().add( 28, 'd' ).locale( 'en' );
-	var repeat_from     = event_day.format( 'YYYY-MM-DD' );
+	var event_28_days	= moment.utc( event.start ).clone().add( 28, 'd' ).locale( 'en' ); // The default repeat period duration is 28 days
+	var repeat_from     = moment.utc( event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD' );
 	var repeat_to       = event_28_days.isBefore( moment.utc( template_end ) ) ? event_28_days.format( 'YYYY-MM-DD' ) : template_end;
 
 	if( event_data.repeat_from && event_data.repeat_from !== '0000-00-00' )	{ repeat_from = event_data.repeat_from; };
 	if( event_data.repeat_to   && event_data.repeat_to   !== '0000-00-00' )	{ repeat_to = event_data.repeat_to; };
+	
+	var repeat_step = event_data.repeat_step && $j.isNumeric( event_data.repeat_step ) ? Math.max( 1, parseInt( event_data.repeat_step ) ) : 1;
+	var repeat_days = event_data.repeat_freq === 'weekly' && event_data.repeat_on ? event_data.repeat_on.split( '_' ) : [ parseInt( event.start.format( 'd' ) ) ];
+	var repeat_monthly_type = event_data.repeat_freq === 'monthly' && event_data.repeat_on && $j.inArray( event_data.repeat_on, [ 'nth_day_of_month', 'nth_day_of_week', 'last_day_of_month', 'last_day_of_week' ] ) >= 0 ? event_data.repeat_on : 'nth_day_of_month';
 	
 	var exceptions_disabled = false;
 	var exceptions_min = moment.utc( repeat_from ).add( 1, 'd' ).locale( 'en' );
@@ -681,6 +696,9 @@ function bookacti_dialog_update_event( event ) {
 	$j( '#bookacti-event-availability' ).val( event_data.availability );
 	$j( '#bookacti-event-availability' ).attr( 'min', bookings_number );
 	$j( '#bookacti-event-repeat-freq option[value="' + event_data.repeat_freq + '"]' ).prop( 'selected', true );
+	$j( '#bookacti-event-repeat-freq' ).trigger( 'change' );
+	$j( '#bookacti-event-repeat-monthly_type option[value="' + repeat_monthly_type + '"]' ).prop( 'selected', true );
+	$j( '#bookacti-event-repeat-step' ).val( repeat_step ).trigger( 'change' );
 	$j( '#bookacti-event-repeat-from, #bookacti-event-repeat-to' ).attr( 'min', template_start );
 	$j( '#bookacti-event-repeat-from, #bookacti-event-repeat-to' ).attr( 'max', template_end );
 	$j( '#bookacti-event-repeat-from' ).val( repeat_from );
@@ -712,10 +730,39 @@ function bookacti_dialog_update_event( event ) {
 			$j( '#bookacti-event-exceptions-selectbox' ).append( "<option class='bookacti-exception' value='" + value.exception_value + "' >" + value.exception_value + "</option>" );
 		});
 	}
-
+	
+	// Fill the repeat_days checkboxes
+	if( $j.isArray( repeat_days ) ){
+		$j.each( repeat_days, function( i, checkbox_value ) {
+			$j( '#bookacti-event-data-dialog input[type="checkbox"][name="repeat_days[]"][value="' + checkbox_value + '"]' ).prop( 'checked', true ).trigger( 'change' );
+		});
+	}
+	
+	// Fill the repeat_monthly_type options labels
+	var event_start = moment.utc( event.start ).clone();
+	var nth_day_of_month = event_start.format( 'Do' );
+	var day_of_week = event_start.format( 'dddd' );
+	event_start.locale( 'en' );
+	var nth_day_of_week_int = Math.ceil( parseInt( event_start.format( 'DD' ) ) / 7 );
+	var nth_day_of_week = moment.utc( event_start.format( 'YYYY' ) + '-0' + nth_day_of_week_int + '-01' ).format( 'Mo' );
+	var is_last_day_of_month = parseInt( event_start.format( 'D' ) ) === parseInt( event_start.daysInMonth() ) ? true : false;
+	var is_last_day_of_week = parseInt( event_start.format( 'D' ) ) >= ( parseInt( event_start.daysInMonth() ) - 6 ) ? true : false;
+	
+	$j( '#bookacti-event-repeat-monthly_type option' ).each( function() {
+		var default_label = $j( this ).data( 'default-label' );
+		if( default_label ) {
+			var custom_label = default_label.replace( '{nth_day_of_month}', nth_day_of_month ).replace( '{nth_day_of_week}', nth_day_of_week ).replace( '{day_of_week}', day_of_week );
+			$j( this ).html( custom_label );
+		}
+	});
+	
+	// Display the last day of... options if the selected event is on it
+	$j( '#bookacti-event-repeat-monthly_type_last_day_of_month' ).toggle( is_last_day_of_month );
+	$j( '#bookacti-event-repeat-monthly_type_last_day_of_week' ).toggle( is_last_day_of_week );
+	
 	// Fill additional settings
 	if( typeof event_data.settings !== 'undefined' ) {
-		bookacti_fill_fields_from_array( event_data.settings );
+		bookacti_fill_fields_from_array( event_data.settings, '', '#bookacti-event-data-dialog' );
 	}
 
 	$j( '#bookacti-event-data-dialog' ).trigger( 'bookacti_event_update_dialog', [ event ] );
@@ -727,11 +774,8 @@ function bookacti_dialog_update_event( event ) {
 		});
 	}
 
-	// Validate the title and availability fields
-	bookacti_validate_event_general_data();
-
-	// Enable or disable repetition and exception parts of the form
-	bookacti_validate_event_repetition_data();
+	// Validate the fields
+	bookacti_validate_event_form();
 
 	// Prepare buttons
 	var buttons = [];
@@ -1646,7 +1690,7 @@ function bookacti_dialog_update_activity( activity_id ) {
 
 /**
  * Dialog Delete Activity
- * @version 1.9.0
+ * @version 1.11.0
  * @param {int} activity_id
  */
 function bookacti_dialog_delete_activity( activity_id ) {
@@ -1689,7 +1733,7 @@ function bookacti_dialog_delete_activity( activity_id ) {
 							// Update activities data array
 							delete bookacti.booking_system[ 'bookacti-template-calendar' ][ 'activities_data' ][ activity_id ];
 
-							$j( '.fc-event[data-activity-id="' + activity_id + '"]' ).closest( '.activity-row' ).remove();
+							$j( '.bookacti-activity[data-activity-id="' + activity_id + '"]' ).remove();
 
 							// Refresh events if user chose to deleted them
 							if( data.delete_events ) { bookacti_refetch_events_on_template(); }

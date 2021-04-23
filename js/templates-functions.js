@@ -2,7 +2,7 @@
 
 /**
  * Change default template on change in the select box
- * @version 1.9.0
+ * @version 1.11.0
  * @param {int} selected_template_id
  */
 function bookacti_switch_template( selected_template_id ) {
@@ -14,7 +14,7 @@ function bookacti_switch_template( selected_template_id ) {
 		$j( '#bookacti-first-template-container' ).show();
 		$j( '#bookacti-template-sidebar, #bookacti-calendar-integration-tuto-container' ).addClass( 'bookacti-no-template' );
 		$j( '#bookacti-template-calendar' ).remove();
-		$j( '.activity-row' ).remove();
+		$j( '#bookacti-template-activity-list .bookacti-activity' ).remove();
 		
 		// Display tuto if there is no more activities available
 		bookacti_display_activity_tuto_if_no_activity_available();
@@ -91,7 +91,7 @@ function bookacti_switch_template( selected_template_id ) {
 
 				// ACTIVITIES
 					// Replace current activities with activities bound to the selected template
-					$j( '#bookacti-template-activity-list .activity-row' ).remove();
+					$j( '#bookacti-template-activity-list .bookacti-activity' ).remove();
 					$j( '#bookacti-template-activity-list' ).append( response.activities_list );
 
 					bookacti_init_activities();
@@ -123,6 +123,10 @@ function bookacti_switch_template( selected_template_id ) {
 							category_ids.push( $j( this ).data( 'group-category-id' ) );
 						}
 					});
+					
+					// Allow to sort group categories and group of events
+					bookacti_make_group_categories_sortable();
+					bookacti_make_groups_of_events_sortable();
 
 
 				// SHORTCODE GENERATOR
@@ -178,29 +182,27 @@ function bookacti_switch_template( selected_template_id ) {
 
 /**
  * Initialize draggable activities
- * @version 1.7.17
+ * @version 1.11.0
  */
 function bookacti_init_activities() {
-    $j( '#bookacti-template-activities-container .fc-event' ).each( function() {
-        // Make the event draggable using jQuery UI
-        $j( this ).draggable({
-            zIndex: 1000,
-            revert: true,
-            revertDuration: 100,
-			appendTo: 'parent',
-			helper: 'clone',
-            start: function( event, ui ) { 
-				bookacti.is_dragging = true; 
-				$j( this ).css( 'visibility', 'hidden' ); 
-				$j( this ).parent().css( 'overflow', 'visible' ); 
-			},
-            stop: function( event, ui ) { 
-				bookacti.is_dragging = false;
-				$j( this ).css( 'visibility', 'visible' );
-				$j( this ).parent().css( 'overflow', '' );
-            }
-        });
-    });
+	// Make the event draggable using jQuery UI
+	$j( '#bookacti-template-activity-list .fc-event' ).draggable({
+		zIndex: 1000,
+		revert: true,
+		revertDuration: 100,
+		appendTo: 'parent',
+		helper: 'clone',
+		start: function( event, ui ) { 
+			bookacti.is_dragging = true; 
+			$j( this ).css( 'visibility', 'hidden' ); 
+			$j( this ).parent().css( 'overflow', 'visible' ); 
+		},
+		stop: function( event, ui ) { 
+			bookacti.is_dragging = false;
+			$j( this ).css( 'visibility', 'visible' );
+			$j( this ).parent().css( 'overflow', '' );
+		}
+	});
 	if( bookacti.blocked_events === true ) {
 		$j( '#bookacti-template-activities-container .dashicons' ).addClass( 'bookacti-disabled' );
 		$j( '#bookacti-template-activities-container .fc-event' ).addClass( 'bookacti-event-unavailable' );
@@ -218,16 +220,19 @@ function bookacti_init_activities() {
 	
 	// Update the show / hide icons
 	bookacti_refresh_show_hide_activities_icons();
+	
+	// Allow to sort activities
+	bookacti_make_activities_sortable();
 }
 
 
 /**
  * Show / hide events when clicking the icon next to the activity
- * @version 1.7.17
+ * @version 1.11.0
  */
 function bookacti_init_show_hide_activities_switch() {
-	$j( 'body' ).on( 'click', '#bookacti-template-activity-list .activity-show-hide', function() { 
-		var activity_id = $j( this ).data( 'activity-id' );
+	$j( 'body' ).on( 'click', '#bookacti-template-activity-list .bookacti-activity-visibility', function() { 
+		var activity_id = $j( this ).closest( '.bookacti-activity' ).data( 'activity-id' );
 		var idx = $j.inArray( activity_id, bookacti.hidden_activities );
 
 		if( $j( this ).data( 'activity-visible' ) === 1 ) {
@@ -253,10 +258,11 @@ function bookacti_init_show_hide_activities_switch() {
 /**
  * Update the show / hide icon next to the activity to reflect its current state
  * @since 1.7.17
+ * @version 1.11.0
  */
 function bookacti_refresh_show_hide_activities_icons() {
 	// Make all icons "visible"
-	var icons = $j( '#bookacti-template-activity-list .activity-show-hide' );
+	var icons = $j( '#bookacti-template-activity-list .bookacti-activity-visibility' );
 	icons.addClass( 'dashicons-visibility' );
 	icons.removeClass( 'dashicons-hidden' );
 	icons.data( 'activity-visible', 1 );
@@ -264,13 +270,107 @@ function bookacti_refresh_show_hide_activities_icons() {
 	
 	// Set the hidden activities icons to "hidden"
 	$j.each( bookacti.hidden_activities, function( i, activity_id ) { 
-		if( $j( '#bookacti-template-activity-list .activity-show-hide[data-activity-id="' + activity_id + '"]' ).length ) {
-			var icon = $j( '#bookacti-template-activity-list .activity-show-hide[data-activity-id="' + activity_id + '"]' );
+		if( $j( '#bookacti-template-activity-list .bookacti-activity[data-activity-id="' + activity_id + '"] .bookacti-activity-visibility' ).length ) {
+			var icon = $j( '#bookacti-template-activity-list .bookacti-activity[data-activity-id="' + activity_id + '"] .bookacti-activity-visibility' );
 			icon.removeClass( 'dashicons-visibility' );
 			icon.addClass( 'dashicons-hidden' );
 			icon.data( 'activity-visible', 0 );
 			icon.attr( 'data-activity-visible', 0 );
 		}
+	});
+}
+
+
+/**
+ * Sort activities in editor by drag n' drop
+ * @since 1.11.0
+ */
+function bookacti_make_activities_sortable() {
+	$j( '#bookacti-template-activity-list' ).sortable( { 
+		items: '.bookacti-activity',
+		handle: '.bookacti-activity-visibility',
+		placeholder: 'bookacti-calendar-editor-sortable-placeholder',
+		update: function( e, ui ) { bookacti_save_template_items_order( 'activities' ); }
+	});
+	$j( '#bookacti-template-activity-list' ).disableSelection();
+}
+
+
+/**
+ * Save activities / group categories / groups of events order
+ * @since 1.11.0
+ * @param {String} item_type 'activities', 'groups_of_events' or 'group_categories'
+ * @param {Int} item_id
+ */
+function bookacti_save_template_items_order( item_type, item_id ) {
+	item_type = typeof item_type !== 'undefined' ? item_type : '';
+	item_id = typeof item_id !== 'undefined' ? parseInt( item_id ) : 0;
+	
+	var item_selector, data_name = '';
+	switch( item_type ) {
+		case 'activities':
+			item_selector = '#bookacti-template-activity-list .bookacti-activity';
+			data_name = 'activity-id';
+			break;
+		case 'group_categories':
+			item_selector = '#bookacti-group-categories .bookacti-group-category';
+			data_name = 'group-category-id';
+			break;
+		case 'groups_of_events':
+			item_selector = '.bookacti-group-category[data-group-category-id="' + item_id + '"] .bookacti-groups-of-events-editor-list .bookacti-group-of-events';
+			data_name = 'group-id';
+			break;
+	}
+	
+	// Get the items order
+	var items_order = [];
+	if( item_selector && data_name ) {
+		if( $j( item_selector ).length ) {
+			$j( item_selector ).each( function() {
+				if( typeof $j( this ).data( data_name ) !== 'undefined' ) { 
+					items_order.push( $j( this ).data( data_name ) );
+				}
+			});
+		}
+	}
+	
+	if( ! items_order.length ) { return; }
+	
+	var data = {
+		'action': 'bookactiSaveTemplateItemsOrder',
+		'template_id': bookacti.selected_template,
+		'item_type': item_type,
+		'item_id': item_id,
+		'items_order': items_order,
+		'nonce': $j( '#nonce_edit_template' ).val()
+	};
+	
+	$j( '#bookacti-template-container' ).trigger( 'bookacti_update_template_items_order_data', [ data, item_type, item_id ] );
+	
+	bookacti_start_template_loading();
+	
+	$j.ajax({
+		url: ajaxurl, 
+		data: data, 
+		type: 'POST',
+		dataType: 'json',
+		success: function( response ) {
+			if( response.status === 'success' ) {
+				$j( '#bookacti-template-container' ).trigger( 'bookacti_template_items_order_updated', [ response, data, item_type, item_id ] );
+				
+			} else if( response.status === 'failed' ) {
+				var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
+				console.log( error_message );
+				console.log( response );
+			}
+		},
+		error: function( e ){
+			var error_message = 'AJAX ' + bookacti_localized.error;
+
+			console.log( error_message );
+			console.log( e );
+		},
+		complete: function() { bookacti_stop_template_loading();  }
 	});
 }
 
@@ -319,6 +419,38 @@ function bookacti_init_groups_of_events() {
 			bookacti_refresh_selected_events_display();
 		}
 	});
+}
+
+/**
+ * Sort group categories in editor by drag n' drop
+ * @since 1.11.0
+ */
+function bookacti_make_group_categories_sortable() {
+	$j( '#bookacti-group-categories' ).sortable( { 
+		items: '.bookacti-group-category',
+		handle: '.bookacti-group-category-title',
+		placeholder: 'bookacti-calendar-editor-sortable-placeholder',
+		update: function( e, ui ) { bookacti_save_template_items_order( 'group_categories' ); }
+	});
+	$j( '#bookacti-group-categories' ).disableSelection();
+}
+
+
+/**
+ * Sort group categories in editor by drag n' drop
+ * @since 1.11.0
+ */
+function bookacti_make_groups_of_events_sortable() {
+	$j( '.bookacti-groups-of-events-editor-list' ).sortable( { 
+		items: '.bookacti-group-of-events',
+		handle: '.bookacti-group-of-events-title',
+		placeholder: 'bookacti-calendar-editor-sortable-placeholder',
+		update: function( e, ui ) { 
+			var category_id = $j( ui.item ).closest( '.bookacti-group-category' ).data( 'group-category-id' );
+			bookacti_save_template_items_order( 'groups_of_events', category_id );
+		}
+	});
+	$j( '.bookacti-groups-of-events-editor-list' ).disableSelection();
 }
 
 
@@ -418,7 +550,7 @@ function bookacti_select_events_of_group( group_id ) {
 
 /**
  * Select an event
- * @version 1.8.5
+ * @version 1.11.0
  * @param {Object} raw_event
  */
 function bookacti_select_event( raw_event ) {
@@ -433,8 +565,8 @@ function bookacti_select_event( raw_event ) {
 		var event_data = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ raw_event.id ];
 		if( event_data.title ) {
 			activity_title = event_data.title;
-		} else if( $j( '.activity-row .fc-event[data-activity-id="' + event_data.activity_id + '"]' ).length ) {
-			activity_title = $j( '.activity-row .fc-event[data-activity-id="' + event_data.activity_id + '"]' ).text();
+		} else if( $j( '.bookacti-activity[data-activity-id="' + event_data.activity_id + '"] .fc-event' ).length ) {
+			activity_title = $j( '.bookacti-activity[data-activity-id="' + event_data.activity_id + '"] .fc-event' ).text();
 		}
 	}
 	
@@ -1089,14 +1221,11 @@ function bookacti_exit_template_loading_state( force_exit ) {
 
 /**
  * Display tuto if there is no more activities available
+ * @version 1.11.0
  */
 function bookacti_display_activity_tuto_if_no_activity_available() {
 	if( $j( '#bookacti-template-first-activity-container' ).length ) {
-		if( ! $j( '.activity-row' ).length  ) {
-			$j( '#bookacti-template-first-activity-container' ).show();
-		} else {
-			$j( '#bookacti-template-first-activity-container' ).hide();
-		}
+		$j( '#bookacti-template-first-activity-container' ).toggle( $j( '.bookacti-activity' ).length <= 0 );
 	}
 }
 
@@ -1222,7 +1351,7 @@ function bookacti_expand_collapse_all_groups_of_events( action, exceptions ) {
 
 /**
  * Load activities bound to selected template
- * @version 1.8.0
+ * @version 1.11.0
  * @param {int} selected_template_id
  */
 function bookacti_load_activities_bound_to_template( selected_template_id ) {
@@ -1250,7 +1379,7 @@ function bookacti_load_activities_bound_to_template( selected_template_id ) {
 				// Fill the available activities select box
 				if( response.activities ) {
 					$j.each( response.activities, function( activity_id, activity ){
-						if( ! $j( '#bookacti-template-activity-list .activity-row .fc-event[data-activity-id="' + activity_id + '"]' ).length ) {
+						if( ! $j( '#bookacti-template-activity-list .bookacti-activity[data-activity-id="' + activity_id + '"]' ).length ) {
 							$j( 'select#activities-to-import' ).append( '<option value="' + activity_id + '" >' + activity.title + '</option>' );
 						}
 					});

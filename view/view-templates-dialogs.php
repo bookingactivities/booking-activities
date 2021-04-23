@@ -1,7 +1,7 @@
 <?php 
 /**
  * Calendar editor dialogs
- * @version 1.10.0
+ * @version 1.11.0
  */
 
 // Exit if accessed directly
@@ -86,26 +86,101 @@ foreach( $templates as $template ) {
 		
 		/**
 		 * Display the 'Repetition' tab content of event settings
-		 * @version 1.8.0
+		 * @version 1.11.0
 		 * @param array $params
 		 */
 		function bookacti_fill_event_tab_repetition( $params ) {
 			do_action( 'bookacti_event_tab_repetition_before', $params );
+		?>
+		<div class='bookacti-field-container' id='bookacti-event-repeat-freq-container'>
+			<label for='bookacti-event-repeat-freq'>
+			<?php 
+				/* translators: Followed by a number of days / weeks / months. E.g.: Repeat every 2 days / weeks / months. */ 
+				esc_html_e( 'Repeat every', 'booking-activities' );
+			?>
+			</label>
+		<?php
+			// Display the number input
+			bookacti_display_field( array(
+				'type'		=> 'number',
+				'name'		=> 'repeat_step',
+				'id'		=> 'bookacti-event-repeat-step',
+				'options'	=> array( 'min' => 1, 'max' => 9999, 'step' => 1 ),
+				'value'		=> 1,
+			) ); 
 			
+			// Display the selectbox
+			bookacti_display_field( array(
+				'type'		=> 'select',
+				'name'		=> 'repeat_freq',
+				'id'		=> 'bookacti-event-repeat-freq',
+				'options'	=> bookacti_get_event_repeat_periods(),
+				'value'		=> 'none',
+				'tip'		=> esc_html__( 'Set the repetition frequency. This will create an occurrence of the event on each corresponding date.', 'booking-activities' )
+			) );
+			
+			$start_of_week = intval( get_option( 'start_of_week' ) );
+			$weekdays = array( 0 => esc_html__( 'Sunday' ), 1 => esc_html__( 'Monday' ), 2 => esc_html__( 'Tuesday' ), 3 => esc_html__( 'Wednesday' ), 4 => esc_html__( 'Thursday' ), 5 => esc_html__( 'Friday' ), 6 => esc_html__( 'Saturday' ) );
+			$start_of_weekday = $weekdays[ $start_of_week ];
+		?>
+			<div id='bookacti-event-repeat-freq-start-of-week-notice' class='bookacti-info' data-start-of-week='<?php echo $start_of_week; ?>'>
+				<span class='dashicons dashicons-warning'></span>
+				<span>
+					<?php 
+						/* translators: %1$s = "Week Starts On" option label. %2$s = "Week Starts On" option value (e.g.: Monday). %3$s = link to "WordPress Settings > General" */
+						echo sprintf( esc_html__( 'You have set the "%1$s" option to "%2$s" in %3$s. This setting will be used to skip weeks.', 'booking-activities' ), 
+								'<strong>' . esc_html__( 'Week Starts On' ) . '</strong>', 
+								'<strong>' . $weekdays[ $start_of_week ] . '</strong>', 
+								'<a href="' . admin_url( 'options-general.php' ) . '">' . esc_html__( 'WordPress Settings > General', 'booking-activities' ) . '</a>' );
+					?>
+				</span>
+			</div>
+		</div>
+		<?php
 			$fields = array(
-				'repeat_freq' => array(
-					'type'		=> 'select',
-					'name'		=> 'repeat_freq',
-					'id'		=> 'bookacti-event-repeat-freq',
-					'title'		=> esc_html__( 'Repetition Frequency', 'booking-activities' ),
+				'repeat_days' => array( 
+					'name'		=> 'repeat_days',
+					'type'		=> 'checkboxes',
+					'id'		=> 'bookacti-event-repeat-days',
+					/* translators: followed by checkboxes having the names of the days of the week. E.g.: Repeat on Mondays, Tuesdays and Fridays. */
+					'title'		=> esc_html_x( 'Repeat on', 'weekly repetition', 'booking-activities' ),
+					'value'		=> array(
+						'1' => 1, '2' => 1, '3' => 1, '4' => 1, '5' => 1, '6' => 1, '0' => 1
+					), 
 					'options'	=> array( 
-										'none' => esc_html__( 'Do not repeat', 'booking-activities' ),
-										'daily' => esc_html__( 'Daily', 'booking-activities' ),
-										'weekly' => esc_html__( 'Weekly', 'booking-activities' ),
-										'monthly' => esc_html__( 'Monthly', 'booking-activities' )
-									),
-					'value'		=> 'none',
-					'tip'		=> esc_html__( 'Set the repetition frequency. This will create an occurrence of the event every day, week or month.', 'booking-activities' )
+						array( 'id' => '1', 'label' => esc_html__( 'Mondays', 'booking-activities' ) ),
+						array( 'id' => '2', 'label' => esc_html__( 'Tuesdays', 'booking-activities' ) ),
+						array( 'id' => '3', 'label' => esc_html__( 'Wednesdays', 'booking-activities' ) ),
+						array( 'id' => '4', 'label' => esc_html__( 'Thursdays', 'booking-activities' ) ),
+						array( 'id' => '5', 'label' => esc_html__( 'Fridays', 'booking-activities' ) ),
+						array( 'id' => '6', 'label' => esc_html__( 'Saturdays', 'booking-activities' ) ),
+						array( 'id' => '0', 'label' => esc_html__( 'Sundays', 'booking-activities' ) )
+					),
+					'tip'		=> esc_html__( 'Select the days of the week on which the event will be repeated.', 'booking-activities' )
+				),
+				'repeat_monthly_type' => array( 
+					'name'		=> 'repeat_monthly_type',
+					'type'		=> 'select',
+					'id'		=> 'bookacti-event-repeat-monthly_type',
+					/* translators: followed by a selectox with the following values. E.g.: Repeat on the 21st of each month / Repeat on the 2nd Monday of each month / Repeat on the last day of each month / Repeat on the last Monday of each month */
+					'title'		=> esc_html_x( 'Repeat on', 'monthly repetition', 'booking-activities' ),
+					'options'	=> array( 
+						'nth_day_of_month'	=> 'nth_day_of_month',
+						'last_day_of_month'	=> 'last_day_of_month',
+						'nth_day_of_week'	=> 'nth_day_of_week',
+						'last_day_of_week'	=> 'last_day_of_week'
+					),
+					'attr'	=> array( 
+						/* translators: Keep the {nth_day_of_month} tag as is. Selectbox option, comes after "Repeat on". E.g.: [Repeat on] on the 21st each month. */
+						'nth_day_of_month'	=> 'data-default-label="' . esc_html__( 'on the {nth_day_of_month} each month', 'booking-activities' ) . '"',
+						/* translators: Selectbox option, comes after by "Repeat on the". E.g.: [Repeat on] on the last day of each month. */
+						'last_day_of_month'	=> 'data-default-label="' . esc_html__( 'on the last day of each month', 'booking-activities' ) . '"',
+						/* translators: Keep the {nth_day_of_week} and {day_of_week} tags as is. Selectbox option, comes after by "Repeat on". E.g.: [Repeat on] on the 2nd Monday of each month. */
+						'nth_day_of_week'	=> 'data-default-label="' . esc_html__( 'on the {nth_day_of_week} {day_of_week} of each month', 'booking-activities' ) . '"',
+						/* translators: Keep the {day_of_week} tag as is. Selectbox option, comes after by "Repeat on". E.g.: [Repeat on] on the last Monday of each month. */
+						'last_day_of_week'	=> 'data-default-label="' . esc_html__( 'on the last {day_of_week} of each month', 'booking-activities' ) . '"'
+					),
+					'tip'		=> esc_html__( 'Select the day of the month on which the event will be repeated.', 'booking-activities' )
 				),
 				'repeat_from' => array(
 					'type'		=> 'date',
@@ -124,7 +199,6 @@ foreach( $templates as $template ) {
 					'tip'		=> esc_html__( 'Set the ending date of the repetition. The occurrences of the event will be added until this date.', 'booking-activities' )
 				)
 			);
-			
 			bookacti_display_fields( $fields );
 		?>
 			<div id='bookacti-event-exceptions-container'>

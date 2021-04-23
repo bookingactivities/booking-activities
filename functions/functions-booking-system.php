@@ -1158,7 +1158,7 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 
 /**
  * Check the selected event / group of events data before booking
- * @version 1.9.2
+ * @version 1.11.0
  * @param array $picked_events formatted with bookacti_format_picked_events with $one_entry_per_group = false
  * @param int $quantity Desired number of bookings
  * @param int $form_id Set your form id to validate the event against its form parameters. Default is 0: ignore form validation.
@@ -1237,7 +1237,7 @@ function bookacti_validate_booking_form( $picked_events, $quantity, $form_id = 0
 			} else {
 				$group = bookacti_get_group_of_events( $group_id );
 				if( $group ) {
-					$exists = bookacti_is_existing_group_of_events( $group );
+					$exists = true;
 					$title = apply_filters( 'bookacti_translate_text', $group->title );
 				}
 			}
@@ -1468,111 +1468,63 @@ function bookacti_get_picked_events_availability( $picked_events ) {
 
 /**
  * Check if an event or an occurrence exists
- * @version 1.8.4
+ * @version 1.11.0
  * @param object $event
  * @param string $event_start
  * @param string $event_end
  * @return boolean
  */
-function bookacti_is_existing_event( $event, $event_start = NULL, $event_end = NULL ) {
-	
-	if( is_numeric( $event ) ) {
-		$event = bookacti_get_event_by_id( $event );
-	}
-
+function bookacti_is_existing_event( $event, $event_start, $event_end = '' ) {
 	$is_existing_event = false;
 	if( $event ) {
 		if( $event->repeat_freq && $event->repeat_freq !== 'none' ) {
 			$is_existing_event = bookacti_is_existing_occurrence( $event, $event_start, $event_end );
 		} else {
-			$is_existing_event = bookacti_is_existing_single_event( $event->event_id, $event_start, $event_end );
+			$is_existing_event = false;
+			if( $event_start && $event_start === $event->start ) {
+				if( ! $event_end ) { $is_existing_event = true; }
+				else if( $event_end === $event->end ) { $is_existing_event = true; }
+			}
 		}
 	}
-
-	return $is_existing_event;
+	return apply_filters( 'bookacti_is_existing_event', $is_existing_event, $event, $event_start, $event_end );
 }
 
 
 /**
  * Check if the occurrence exists
  * @since 1.8.4 (was bookacti_is_existing_occurence)
- * @param object|int $event
+ * @version 1.11.0
+ * @param object $event
  * @param string $event_start
  * @param string $event_end
  * @return boolean
  */
-function bookacti_is_existing_occurrence( $event, $event_start, $event_end = NULL ) {
-	// Get the event
-	if( is_numeric( $event ) ) {
-		$event = bookacti_get_event_by_id( $event );
-	}
-
-	// Check if the event is well repeated
-	if( ! $event 
-	||  ! $event_start
-	||  ! in_array( $event->repeat_freq, array( 'daily', 'weekly', 'monthly' ), true )
-	||  ! $event->repeat_from || $event->repeat_from === '0000-00-00' 
-	||  ! $event->repeat_to || $event->repeat_to === '0000-00-00' ) { return false; }
-
-	// Check if the times match
-	if( $event_start ) { if( substr( $event_start, -8 ) !== substr( $event->start, -8 ) ) { return false; } }
-	if( $event_end ) { if( substr( $event_end, -8 ) !== substr( $event->end, -8 ) ) { return false; } }
+function bookacti_is_existing_occurrence( $event, $event_start, $event_end = '' ) {
+	// Get the event's occurrences
+	$event_id = ! empty( $event->event_id ) ? intval( $event->event_id ) : ( ! empty( $event->id ) ? intval( $event->id ) : 0 );
+	$events_exceptions = bookacti_get_exceptions_by_event( array( 'events' => array( $event_id ), 'types' => array( 'date' ), 'only_values' => 1 ) );
+	$event_exceptions = isset( $events_exceptions[ $event_id ] ) ? $events_exceptions[ $event_id ] : array();
+	$interval = array( 'start' => substr( $event_start, 0, 10 ) . ' 00:00:00', 'end' => ( $event_end ? substr( $event_end, 0, 10 ) : substr( $event_start, 0, 10 ) ) . ' 23:59:59' );
+	$occurrences = bookacti_get_occurrences_of_repeated_event( $event, array( 'interval' => $interval, 'exceptions_dates' => $event_exceptions, 'past_events' => 1 ) );
 	
-	// Check if the days match
-	$repeat_from	= DateTime::createFromFormat( 'Y-m-d', substr( $event->repeat_from, 0, 10 ) );
-	$repeat_to		= DateTime::createFromFormat( 'Y-m-d', substr( $event->repeat_to, 0, 10 ) );
-	$event_datetime	= DateTime::createFromFormat( 'Y-m-d', substr( $event->start, 0, 10 ) );
-	$occurrence		= DateTime::createFromFormat( 'Y-m-d', substr( $event_start, 0, 10 ) );
-	$repeat_from_timestamp	= intval( $repeat_from->format( 'U' ) );
-	$repeat_to_timestamp	= intval( $repeat_to->format( 'U' ) );
-	$occurrence_timestamp	= intval( $occurrence->format( 'U' ) );
-	
-	// Check if occurrence is between repeat_from and repeat_to
-	if( $occurrence_timestamp < $repeat_from_timestamp || $occurrence_timestamp > $repeat_to_timestamp ) { return false; }
-	
-	// Check if the weekdays match
-	if( $event->repeat_freq === 'weekly' ) {
-		if( $occurrence->format( 'w' ) !== $event_datetime->format( 'w' ) ) { return false; }
+	// Check if the desired occurrence exists
+	$exists = false;
+	foreach( $occurrences as $occurrence ) {
+		if( $event_start && $event_start === $occurrence[ 'start' ] ) {
+			if( ! $event_end ) { $exists = true; break; }
+			else if( $event_end === $occurrence[ 'end' ] ) { $exists = true; break; }
+		}
 	}
 	
-	// Check if the monthdays match
-	if( $event->repeat_freq === 'monthly' ) {
-		$is_last_day_of_month = $event_datetime->format( 't' ) === $event_datetime->format( 'd' );
-		if( ! $is_last_day_of_month && $occurrence->format( 'd' ) !== $event_datetime->format( 'd' ) ) { return false; }
-		else if ( $is_last_day_of_month && $occurrence->format( 't' ) !== $occurrence->format( 'd' ) ) { return false; }
-	}
-	
-	// Check if the occurrence is on an exception date
-	if( bookacti_is_repeat_exception( $event->event_id, substr( $event_start, 0, 10 ) ) ) { return false; }
-	
-	return true;
-}
-
-
-/**
- * Check if the group of event exists
- * 
- * @since 1.1.0
- * @version 1.3.0
- * 
- * @param object|int $group
- * @return boolean
- */
-function bookacti_is_existing_group_of_events( $group ) {
-	
-	if( is_numeric( $group ) ) {
-		$group = bookacti_get_group_of_events( $group );
-	}
-	
-	// Try to retrieve the group and check the result
-	return ! empty( $group );
+	return $exists;
 }
 
 
 /**
  * Check if an event can be book with the given form
  * @since 1.5.0
- * @version 1.9.0
+ * @version 1.11.0
  * @param int $form_id
  * @param int|object $event_id
  * @param string $event_start
@@ -1595,7 +1547,12 @@ function bookacti_is_event_available_on_form( $form_id, $event_id, $event_start,
 	// Check if the event is displayed on the form
 	$belongs_to_form = true;
 	$event = is_object( $event_id ) ? $event_id : bookacti_get_event_by_id( $event_id );
-
+	
+	if( ! $event ) {
+		$validated[ 'error' ] = 'unknown_event';
+		return $validated;
+	}
+	
 	// If the form calendar doesn't have the event template or the event activity
 	if( ( $calendar_data[ 'calendars' ] && ! in_array( $event->template_id, $calendar_data[ 'calendars' ] ) )
 	||  ( $calendar_data[ 'activities' ] && ! in_array( $event->activity_id, $calendar_data[ 'activities' ] ) ) ) {
@@ -1702,7 +1659,7 @@ function bookacti_is_event_available_on_form( $form_id, $event_id, $event_start,
 /**
  * Check if a group of events can be book with the given form
  * @since 1.5.0
- * @version 1.9.0
+ * @version 1.11.0
  * @param int $form_id
  * @param int|object $group_id
  * @return array
@@ -1723,7 +1680,13 @@ function bookacti_is_group_of_events_available_on_form( $form_id, $group_id ) {
 	// Check if the group of events is displayed on the form
 	$belongs_to_form	= true;
 	$group				= is_object( $group_id ) ? $group_id : bookacti_get_group_of_events( $group_id );
-	$category			= bookacti_get_group_category( $group->category_id, ARRAY_A );
+	$category			= $group ? bookacti_get_group_category( $group->category_id, ARRAY_A ) : array();
+	
+	if( ! $group || ! $category ) {
+		$validated[ 'error' ] = ! $group ? 'unknown_group_of_events' : 'unknown_group_category';
+		$validated[ 'message' ] = esc_html__( 'Invalid group of events ID.', 'booking-activities' );
+		return $validated;
+	}
 	
 	// If the form calendar doesn't have the group of events' template
 	if( $calendar_data[ 'calendars' ] && ! in_array( $category[ 'template_id' ], $calendar_data[ 'calendars' ] ) ) {
@@ -1826,7 +1789,7 @@ function bookacti_is_group_of_events_available_on_form( $form_id, $group_id ) {
 /**
  * Get array of events from raw events from database
  * @since 1.2.2
- * @version 1.10.0
+ * @version 1.11.0
  * @param array $events Array of objects events from database
  * @param array $raw_args {
  *  @type boolean $skip_exceptions Whether to retrieve occurrence on exceptions
@@ -1882,6 +1845,8 @@ function bookacti_get_events_array_from_db_events( $events, $raw_args = array() 
 			'activity_id'		=> $event->activity_id,
 			'availability'		=> $event->availability,
 			'repeat_freq'		=> $event->repeat_freq,
+			'repeat_step'		=> $event->repeat_step,
+			'repeat_on'			=> $event->repeat_on,
 			'repeat_from'		=> $event->repeat_from,
 			'repeat_to'			=> $event->repeat_to,
 			'settings'			=> isset( $events_meta[ $event->event_id ] ) ? $events_meta[ $event->event_id ] : array()
@@ -2100,7 +2065,7 @@ function bookacti_get_occurrences_of_repeated_event( $event, $raw_args = array()
 /**
  * Get the event repeat from and to DateTime, and the repeat interval DateInterval (or callable)
  * @since 1.8.0
- * @version 1.10.0
+ * @version 1.11.0
  * @param object $event
  * @param array $args See bookacti_get_occurrences_of_repeated_event documentation
  * @return array {
@@ -2114,16 +2079,14 @@ function bookacti_get_event_repeat_data( $event, $args ) {
 	$get_started_events	= bookacti_get_setting_value( 'bookacti_general_settings', 'started_events_bookable' );
 	$timezone			= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
 	$current_time		= new DateTime( 'now', $timezone );
-	$current_date		= $current_time->format( 'Y-m-d' );
 	$event_start		= new DateTime( $event->start, $timezone );
-	$event_end			= new DateTime( $event->end, $timezone );
-	$event_duration		= $event_start->diff( $event_end );
-	$event_start_time	= substr( $event->start, 11 );
-	$event_monthday		= $event_start->format( 'd' );
 	$repeat_from_date	= $event->repeat_from && $event->repeat_freq && $event->repeat_freq !== 'none' ? $event->repeat_from : substr( $event->start, 0, 10 );
 	$repeat_to_date		= $event->repeat_to && $event->repeat_freq && $event->repeat_freq !== 'none' ? $event->repeat_to : substr( $event->start, 0, 10 );
 	$repeat_from		= new DateTime( $repeat_from_date . ' 00:00:00', $timezone );
 	$repeat_to			= new DateTime( $repeat_to_date . ' 23:59:59', $timezone );
+	$repeat_step		= max( 1, intval( $event->repeat_step ) ); // Default to 1
+	$first_occurrence_date	= bookacti_get_event_first_occurrence_date( $event );
+	$first_occurrence_dt	= new DateTime( $first_occurrence_date . ' 00:00:00', $timezone );
 	
 	// Check if the repetition period is in the interval to be rendered
 	if( $args[ 'interval' ] ) {
@@ -2143,8 +2106,12 @@ function bookacti_get_event_repeat_data( $event, $args ) {
 	
 	// Make sure repeated events don't start in the past if not explicitly allowed
 	if( ! $args[ 'past_events' ] && $current_time > $repeat_from ) {
-		$repeat_from = new DateTime( $current_date . ' 00:00:00', $timezone );
-
+		$current_date		= $current_time->format( 'Y-m-d' );
+		$repeat_from		= new DateTime( $current_date . ' 00:00:00', $timezone );
+		$event_end			= new DateTime( $event->end, $timezone );
+		$event_duration		= $event_start->diff( $event_end );
+		$event_start_time	= substr( $event->start, 11 );
+		
 		$first_potential_event_start= new DateTime( $current_date . ' ' . $event_start_time, $timezone );
 		$first_potential_event_end	= clone $first_potential_event_start;
 		$first_potential_event_end->add( $event_duration );
@@ -2153,7 +2120,7 @@ function bookacti_get_event_repeat_data( $event, $args ) {
 		$first_potential_event_has_started	= $first_potential_event_start <= $current_time;
 		
 		// Set the repetition "from" date to tommorow if:
-		// - The first postential event is today but is already past
+		// - The first potential event is today but is already past
 		// - The first potential event is today but has already started and started event are not allowed
 		if(  $first_potential_event_is_past
 		|| ( $first_potential_event_has_started && ! $get_started_events ) ) {
@@ -2164,46 +2131,198 @@ function bookacti_get_event_repeat_data( $event, $args ) {
 	// Compute the repeat interval according to the repeat frequency
 	switch( $event->repeat_freq ) {
 		case 'daily':
-			$repeat_interval = new DateInterval( 'P1D' );
-			break;
-		case 'weekly':
-			$repeat_interval = new DateInterval( 'P7D' );
-			// We need to make sure the repetition start from the week day of the event
-			$event_weekday = $event_start->format( 'N' );
-			if( $repeat_from->format( 'N' ) !== $event_weekday ) { $repeat_from->modify( 'next ' . $event_start->format( 'l' ) ); }
-			if( $repeat_to->format( 'N' ) !== $event_weekday ) { $repeat_to->modify( 'previous ' . $event_start->format( 'l' ) ); }
-			break;
-		case 'monthly':
-			// We need to make sure the repetition starts and ends on the event month day
-			if( $repeat_from->format( 'd' ) !== $event_monthday ) {
-				// If the event_monthday is 31 (or 29, 30 or 31 for February)
-				if( $event_monthday > $repeat_from->format( 't' ) ) { 
-					$repeat_from->modify( 'last day of this month' );
-				} else if( $repeat_from->format( 'd' ) < $event_monthday ) {
-					$repeat_from->modify( 'first day of this month' )->modify( '+' . ( $event_monthday - 1 ) . ' day' );
-				} else { 
-					$repeat_from->modify( 'first day of next month' );
-					if( $event_monthday > $repeat_from->format( 't' ) ) { $repeat_from->modify( 'last day of this month' ); }
-					else { $repeat_from->modify( '+' . ( $event_monthday - 1 ) . ' day' ); }
-				}
+			$repeat_interval = new DateInterval( 'P' . $repeat_step . 'D' );
+			
+			// We need to make sure the repetition starts and ends on an occurrence date
+			if( $repeat_step > 1 ) {
+				$offset_days = abs( intval( $repeat_from->diff( $first_occurrence_dt )->format( '%a' ) ) );
+				$offset_days_to_add = $offset_days % $repeat_step ? $repeat_step - ( $offset_days % $repeat_step ) : 0;
+				if( $offset_days_to_add ) { $repeat_from->add( new DateInterval( 'P' . $offset_days_to_add . 'D' ) ); }
+				$days_in_repeat_period = abs( intval( $repeat_to->diff( $repeat_from )->format( '%a' ) ) );
+				$days_remainder = $days_in_repeat_period % $repeat_step;
+				if( $days_remainder ) { $repeat_to->sub( new DateInterval( 'P' . $days_remainder . 'D' ) ); }
 			}
-			if( $repeat_to->format( 'd' ) !== $event_monthday ) {
-				// If the event_monthday is 31 (or 29, 30 or 31 for February)
-				if( $event_monthday > $repeat_to->format( 't' ) ) {
-					// Keep the date if it is already the last day of the month, else change it to the last day of previous month
-					if( $repeat_to->format( 'd' ) !== $repeat_to->format( 't' ) ) { $repeat_to->modify( 'last day of previous month' ); }
-				} else if( $repeat_to->format( 'd' ) < $event_monthday ) {
-					$repeat_to->modify( 'first day of previous month' );
-					if( $event_monthday > $repeat_to->format( 't' ) ) { $repeat_to->modify( 'last day of this month' ); }
-					else { $repeat_to->modify( '+' . ( $event_monthday - 1 ) . ' day' ); }
-				} else { 
-					$repeat_to->modify( 'first day of this month' )->modify( '+' . ( $event_monthday - 1 ) . ' day' );
+			break;
+			
+		case 'weekly':
+			$repeat_on = $event->repeat_on ? array_unique( array_map( 'intval', explode( '_', $event->repeat_on ) ) ) : array();
+			if( $repeat_on && count( $repeat_on ) === 1 && in_array( intval( $event_start->format( 'w' ) ), $repeat_on, true ) ) { $repeat_on = array(); }
+			$repeat_interval = $repeat_on ? 'bookacti_get_interval_to_next_occurrence' : new DateInterval( 'P' . ( $repeat_step * 7 ) . 'D' );
+			
+			// We need to make sure the repetition starts and ends on an occurrence date
+			if( ! $repeat_on ) { $repeat_on = array( intval( $event_start->format( 'w' ) ) ); }
+			while( ! in_array( intval( $repeat_from->format( 'w' ) ), $repeat_on, true ) )	{ $repeat_from->add( new DateInterval( 'P1D' ) ); }
+			while( ! in_array( intval( $repeat_to->format( 'w' ) ), $repeat_on, true ) )	{ $repeat_to->sub( new DateInterval( 'P1D' ) ); }
+			
+			// Make sure the $repeat_from and $repeat_to weeks are not skipped (in that case, go to next / previous week)
+			if( $repeat_step > 1 ) {
+				// Get the first day of week
+				$start_of_week = intval( get_option( 'start_of_week' ) );
+				$end_of_week = $start_of_week ? $start_of_week - 1 : 0;
+				$weekdays = array( 0 => 'Sunday', 1 => 'Monday', 2 => 'Tuesday', 3 => 'Wednesday', 4 => 'Thursday', 5 => 'Friday', 6 => 'Saturday' );
+				$start_of_weekday = $weekdays[ $start_of_week ];
+				$end_of_weekday = $weekdays[ $end_of_week ];
+				
+				// We must set to same weekdays to compute the difference of weeks
+				$repeat_from_helper = clone $repeat_from;
+				$repeat_to_helper = clone $repeat_to;
+				if( $first_occurrence_dt->format( 'l' ) !== $start_of_weekday ){ $first_occurrence_dt->modify( 'previous ' . $start_of_weekday ); }
+				if( $repeat_from->format( 'l' ) !== $start_of_weekday )		{ $repeat_from_helper->modify( 'previous ' . $start_of_weekday ); }
+				if( $repeat_to->format( 'l' ) !== $start_of_weekday )		{ $repeat_to_helper->modify( 'previous ' . $start_of_weekday ); }
+				
+				$offset_interval = $repeat_from_helper->diff( $first_occurrence_dt );
+				$offset_weeks = ceil( abs( intval( $offset_interval->format( '%a' ) ) ) / 7 );
+				$offset_weeks_to_add = $offset_weeks % $repeat_step ? $repeat_step - ( $offset_weeks % $repeat_step ) : 0;
+				if( $offset_weeks_to_add ) { $repeat_from_helper->add( new DateInterval( 'P' . ( $offset_weeks_to_add * 7 ) . 'D' ) ); }
+				if( $repeat_from < $repeat_from_helper ) { $repeat_from = clone $repeat_from_helper; }
+				
+				$repeat_period_interval = $repeat_to_helper->diff( $repeat_from_helper );
+				$weeks_in_repeat_period = ceil( abs( intval( $repeat_period_interval->format( '%a' ) ) ) / 7 );
+				$weeks_remainder = $weeks_in_repeat_period % $repeat_step;
+				if( $weeks_remainder ) { $repeat_to_helper->sub( new DateInterval( 'P' . ( $weeks_remainder * 7 ) . 'D' ) ); }
+				$repeat_to_helper->modify( 'next ' . $end_of_weekday );
+				if( $repeat_to > $repeat_to_helper ) { $repeat_to = clone $repeat_to_helper; }
+				
+				while( ! in_array( intval( $repeat_from->format( 'w' ) ), $repeat_on, true ) ) { $repeat_from->add( new DateInterval( 'P1D' ) ); }
+				while( ! in_array( intval( $repeat_to->format( 'w' ) ), $repeat_on, true ) ) { $repeat_to->sub( new DateInterval( 'P1D' ) ); }
+			}
+			break;
+			
+		case 'monthly':
+			$repeat_interval = 'bookacti_get_interval_to_next_occurrence';
+			$repeat_on = $event->repeat_on && in_array( $event->repeat_on, array( 'nth_day_of_month', 'last_day_of_month', 'nth_day_of_week', 'last_day_of_week' ), true ) ? $event->repeat_on : '';
+			$event_weekday = $event_start->format( 'l' );
+			
+			// We need to make sure the repetition starts and ends on an occurrence date
+			
+			// FIRST
+			// Make sure that the repeat_from and repeat_to date are on a month where an occurrence should appear (just the month for now, not the date)
+			
+			// Repeat on nth day of week of each month (e.g.: on 2nd tuesday of each month)
+			if( $repeat_on === 'nth_day_of_week' ) {
+				$nth_day_of_week_int = ceil( intval( $event_start->format( 'd' ) ) / 7 );
+				$days_to_nth_day_of_week = ( $nth_day_of_week_int - 1 ) * 7;
+				
+				$first_occurrence_monthday = intval( $repeat_from->format( 'd' ) );
+				$repeat_from->modify( 'first ' . $event_weekday . ' of this month' );
+				$repeat_to_init_monthday = intval( $repeat_to->format( 'd' ) );
+				$repeat_to->modify( 'first ' . $event_weekday . ' of this month' );
+				
+				$repeat_from_desired_monthday = intval( $repeat_from->format( 'd' ) ) + $days_to_nth_day_of_week;
+				$repeat_to_desired_monthday = intval( $repeat_to->format( 'd' ) ) + $days_to_nth_day_of_week;
+				
+				if( $repeat_from_desired_monthday < $first_occurrence_monthday ){ 
+					$repeat_from->modify( 'first ' . $event_weekday . ' of next month' );
+					$repeat_from_desired_monthday = intval( $repeat_from->format( 'd' ) ) + $days_to_nth_day_of_week;
+				}
+				if( $repeat_to_desired_monthday > $repeat_to_init_monthday ) { 
+					$repeat_to->modify( 'first ' . $event_weekday . ' of previous month' );
+					$repeat_to_desired_monthday = intval( $repeat_to->format( 'd' ) ) + $days_to_nth_day_of_week;
+				}
+				
+				while( intval( $repeat_from->format( 't' ) ) < $repeat_from_desired_monthday ) {
+					$repeat_from->modify( 'first ' . $event_weekday . ' of next month' );
+					$repeat_from_desired_monthday = intval( $repeat_from->format( 'd' ) ) + $days_to_nth_day_of_week;
+				}
+				while( intval( $repeat_to->format( 't' ) ) < $repeat_to_desired_monthday ) {
+					$repeat_to->modify( 'first ' . $event_weekday . ' of previous month' );
+					$repeat_to_desired_monthday = intval( $repeat_to->format( 'd' ) ) + $days_to_nth_day_of_week;
 				}
 			}
 			
-			// Callback in the loop
-			$repeat_interval = 'bookacti_get_interval_to_next_occurrence';
+			// Repeat on last day of each month
+			else if( $repeat_on === 'last_day_of_month' ) {
+				if( intval( $repeat_to->format( 'd' ) ) < intval( $repeat_to->format( 't' ) ) ) { $repeat_to->modify( 'last day of previous month' ); }
+			}
+
+			// Repeat on last day of week of each month (e.g.: on last tuesday of each month)
+			else if( $repeat_on === 'last_day_of_week' ) {
+				$last_week_day_of_repeat_from_month = clone $repeat_from;
+				$last_week_day_of_repeat_from_month->modify( 'last ' . $event_weekday . ' of this month' );
+				$last_week_day_of_repeat_to_month = clone $repeat_to;
+				$last_week_day_of_repeat_to_month->modify( 'last ' . $event_weekday . ' of this month' );
+				
+				if( intval( $repeat_from->format( 'd' ) ) > intval( $last_week_day_of_repeat_from_month->format( 'd' ) ) ) { $repeat_from->modify( 'last ' . $event_weekday . ' of next month' ); }
+				if( intval( $repeat_to->format( 'd' ) ) < intval( $last_week_day_of_repeat_to_month->format( 'd' ) ) ) { $repeat_to->modify( 'last ' . $event_weekday . ' of previous month' ); }
+			}
+
+			// Repeat on nth day of each month (default) (e.g.: on the 23rd of each month)
+			else {
+				$event_monthday = intval( $event_start->format( 'd' ) );
+				while( intval( $repeat_from->format( 'd' ) ) > $event_monthday
+					|| intval( $repeat_from->format( 't' ) ) < $event_monthday ){ $repeat_from->modify( 'first day of next month' ); }
+				while( intval( $repeat_to->format( 'd' ) ) < $event_monthday )	{ $repeat_to->modify( 'last day of previous month' ); }
+			}
+			
+			// we need to reset to make sure that the date is below the 28th to successfully add / subtract months
+			$repeat_from->modify( 'first day of this month' );
+			$repeat_to->modify( 'first day of this month' );
+			
+			// THEN
+			// If the repeat step is not 1, make sure the repeat_from and repeat_to month are not skipped (in that case, go to next / previous month)
+			if( $repeat_step > 1 ) { 
+				// Compute the difference of months
+				$offset_months = abs( ( ( intval( $repeat_from->format( 'Y' ) ) - intval( $first_occurrence_dt->format( 'Y' ) ) ) * 12 ) + intval( $repeat_from->format( 'm' ) ) - intval( $first_occurrence_dt->format( 'm' ) ) );
+				$offset_months_to_add = $offset_months % $repeat_step ? $repeat_step - ( $offset_months % $repeat_step ) : 0;
+				if( $offset_months_to_add ) { $repeat_from->add( new DateInterval( 'P' . $offset_months_to_add . 'M' ) ); }
+				
+				$months_in_repeat_period = abs( ( ( intval( $repeat_to->format( 'Y' ) ) - intval( $repeat_from->format( 'Y' )  ) ) * 12 ) + intval( $repeat_to->format( 'm' ) ) - intval( $repeat_from->format( 'm' ) ) );
+				$months_remainder = $months_in_repeat_period % $repeat_step;
+				if( $months_remainder ) { $repeat_to->sub( new DateInterval( 'P' . $months_remainder . 'M' ) ); }
+			}
+			
+			// FINALLY
+			// Check if the repeat_from and repeat_to months are still correct, and set their date to the actual occurrence date
+			
+			// Repeat on nth day of week of each month (e.g.: on 2nd tuesday of each month)
+			if( $repeat_on === 'nth_day_of_week' ) {
+				// We must check again if the month has enough days, else, go to next / previous month
+				$repeat_from->modify( 'first ' . $event_weekday . ' of this month' );
+				$repeat_to->modify( 'first ' . $event_weekday . ' of this month' );
+				
+				$repeat_from_desired_monthday = intval( $repeat_from->format( 'd' ) ) + $days_to_nth_day_of_week;
+				$repeat_to_desired_monthday = intval( $repeat_to->format( 'd' ) ) + $days_to_nth_day_of_week;
+				
+				while( intval( $repeat_from->format( 't' ) ) < $repeat_from_desired_monthday ) {
+					$repeat_from->add( new DateInterval( 'P' . $repeat_step . 'M' ) );
+					$repeat_from->modify( 'first ' . $event_weekday . ' of this month' );
+					$repeat_from_desired_monthday = intval( $repeat_from->format( 'd' ) ) + $days_to_nth_day_of_week;
+				}
+				while( intval( $repeat_to->format( 't' ) ) < $repeat_to_desired_monthday ) {
+					$repeat_to->sub( new DateInterval( 'P' . $repeat_step . 'M' ) );
+					$repeat_to->modify( 'first ' . $event_weekday . ' of this month' );
+					$repeat_to_desired_monthday = intval( $repeat_to->format( 'd' ) ) + $days_to_nth_day_of_week;
+				}
+				
+				if( $days_to_nth_day_of_week ) {
+					$repeat_from->add( new DateInterval( 'P' . $days_to_nth_day_of_week . 'D' ) );
+					$repeat_to->add( new DateInterval( 'P' . $days_to_nth_day_of_week . 'D' ) );
+				}
+			}
+			
+			// Repeat on last day of each month
+			else if( $repeat_on === 'last_day_of_month' ) {
+				$repeat_from->modify( 'last day of this month' );
+				$repeat_to->modify( 'last day of this month' );
+			}
+			
+			// Repeat on last day of week of each month (e.g.: on last tuesday of each month)
+			else if( $repeat_on === 'last_day_of_week' ) {
+				$repeat_from->modify( 'last ' . $event_weekday . ' of this month' );
+				$repeat_to->modify( 'last ' . $event_weekday . ' of this month' );
+			}
+			
+			// Repeat on nth day of each month (default) (e.g.: on the 23rd of each month)
+			else {
+				// We must check again if the month has enough days, else, go to next / previous month
+				while( intval( $repeat_from->format( 't' ) ) < $event_monthday ){ $repeat_from->add( new DateInterval( 'P' . $repeat_step . 'M' ) ); }
+				while( intval( $repeat_to->format( 't' ) ) < $event_monthday )	{ $repeat_to->sub( new DateInterval( 'P' . $repeat_step . 'M' ) ); }
+				
+				$repeat_from->setDate( $repeat_from->format( 'Y' ), $repeat_from->format( 'm' ), $event_monthday );
+				$repeat_to->setDate( $repeat_to->format( 'Y' ), $repeat_to->format( 'm' ), $event_monthday );
+			}
 			break;
+			
 		default:
 			$repeat_interval = new DateInterval( 'P1D' );
 			break;
@@ -2219,7 +2338,8 @@ function bookacti_get_event_repeat_data( $event, $args ) {
 
 /**
  * Compute the interval to the next occurrence
- * @since 1.8.4 (was bookacti_get_interval_to_next_occurence)
+ * @since 1.8.4 (was bookacti_get_interval_to_next_occurence)*
+ * @version 1.11.0
  * @param object $event
  * @param array $args See bookacti_get_occurrences_of_repeated_event documentation
  * @param DateTime $current_loop
@@ -2227,28 +2347,232 @@ function bookacti_get_event_repeat_data( $event, $args ) {
  * @return DateInterval
  */
 function bookacti_get_interval_to_next_occurrence( $event, $args, $current_loop, $operation ) {
-	$repeat_interval = new DateInterval( 'P1D' ); // Default to daily to avoid unexpected behavior such as infinite loop
-	if( $event->repeat_freq === 'monthly' ) {
-		$timezone			= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
-		$event_start		= new DateTime( $event->start, $timezone );
-		$event_monthday		= $event_start->format( 'd' );
+	// Default interval is set to 1 day, to avoid unexpected behavior such as infinite loop
+	$repeat_interval = new DateInterval( 'P1D' );
+	$repeat_step = max( 1, intval( $event->repeat_step ) );
+	
+	$timezone = new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
+	$event_start = new DateTime( $event->start, $timezone );
+	$first_occurrence_date = bookacti_get_event_first_occurrence_date( $event );
+	$first_occurrence_dt = new DateTime( $first_occurrence_date . ' 00:00:00', $timezone );
+	
+	if( $event->repeat_freq === 'weekly' ) {
+		// Repeat only on certain days
+		$repeat_on = $event->repeat_on ? array_unique( array_map( 'intval', explode( '_', $event->repeat_on ) ) ) : array();
+		if( $repeat_on ) {
+			$next_day = clone $current_loop;
+			
+			// Add 1 day until it matches one of the allowed days
+			do { 
+				if( $operation === 'add' ) { $next_day->add( new DateInterval( 'P1D' ) ); } 
+				else { $next_day->sub( new DateInterval( 'P1D' ) ); }
+			} while( ! in_array( intval( $next_day->format( 'w' ) ), $repeat_on, true ) );
+			
+			// Make sure the $next_day is not skipped
+			if( $repeat_step > 1 ) {
+				// Get the first day of week
+				$start_of_week = intval( get_option( 'start_of_week' ) );
+				$end_of_week = $start_of_week ? $start_of_week - 1 : 0;
+				$weekdays = array( 0 => 'Sunday', 1 => 'Monday', 2 => 'Tuesday', 3 => 'Wednesday', 4 => 'Thursday', 5 => 'Friday', 6 => 'Saturday' );
+				$start_of_weekday = $weekdays[ $start_of_week ];
+				$end_of_weekday = $weekdays[ $end_of_week ];
+				
+				// We must set to same weekdays to compute the difference of weeks
+				$next_day_helper = clone $next_day;
+				if( $first_occurrence_dt->format( 'l' ) !== $start_of_weekday )	{ $first_occurrence_dt->modify( 'previous ' . $start_of_weekday ); }
+				if( $next_day->format( 'l' ) !== $start_of_weekday )			{ $next_day_helper->modify( 'previous ' . $start_of_weekday ); }
+
+				$offset_interval = $next_day_helper->diff( $first_occurrence_dt );
+				$offset_weeks = ceil( abs( intval( $offset_interval->format( '%a' ) ) ) / 7 );
+				$offset_weeks_remainder = $offset_weeks % $repeat_step;
+				$offset_weeks_to_add = $offset_weeks_remainder ? $repeat_step - $offset_weeks_remainder : 0;
+				if( $operation === 'add' && $offset_weeks_to_add ) { 
+					$next_day_helper->add( new DateInterval( 'P' . ( $offset_weeks_to_add * 7 ) . 'D' ) );
+				} 
+				else if( $operation === 'sub' ) { 
+					if( $offset_weeks_remainder ) { $next_day_helper->sub( new DateInterval( 'P' . ( $offset_weeks_remainder * 7 ) . 'D' ) ); }
+					$next_day_helper->modify( 'next ' . $end_of_weekday );
+				}
+				
+				if( ( $operation === 'add' && $next_day < $next_day_helper ) 
+				||  ( $operation === 'sub' && $next_day > $next_day_helper ) ) { $next_day = clone $next_day_helper; }
+				
+				while( ! in_array( intval( $next_day->format( 'w' ) ), $repeat_on, true ) ) { 
+					if( $operation === 'add' ) { $next_day->add( new DateInterval( 'P1D' ) ); } 
+					else { $next_day->sub( new DateInterval( 'P1D' ) ); }
+				}
+			}
+			
+			$repeat_interval = new DateInterval( 'P' . abs( intval( $next_day->diff( $current_loop )->format( '%a' ) ) ) . 'D' );
+		}
+	
+	} else if( $event->repeat_freq === 'monthly' ) {
+		$next_month	= clone $current_loop;
+		$repeat_on	= $event->repeat_on && in_array( $event->repeat_on, array( 'nth_day_of_month', 'last_day_of_month', 'nth_day_of_week', 'last_day_of_week' ), true ) ? $event->repeat_on : '';
 		
-		$next_month = clone $current_loop;
-		if( $operation === 'add' ) { $next_month->modify( 'first day of next month' ); } 
-		else { $next_month->modify( 'first day of previous month' ); }
-		if( $event_monthday > $next_month->format( 't' ) ) { $next_month->modify( 'last day of this month' ); }
-		else { $next_month->modify( '+' . ( $event_monthday - 1 ) . ' day' ); }
-		$days_to_next_month	= abs( $next_month->diff( $current_loop )->format( '%a' ) );
-		$repeat_interval = new DateInterval( 'P' . $days_to_next_month . 'D' );
+		// FIRST
+		// Place $next_month on the desired month (just the month for now, not the date)
+		
+		// Repeat on nth day of week of each month (e.g.: on 2nd tuesday of each month)
+		if( $repeat_on === 'nth_day_of_week' ) {
+			$nth_day_of_week_int = ceil( intval( $event_start->format( 'd' ) ) / 7 );
+			$days_to_nth_day_of_week = ( $nth_day_of_week_int - 1 ) * 7;
+			do {
+				if( $operation === 'add' ) { $next_month->modify( 'first ' . $event_start->format( 'l' ) . ' of next month' ); } 
+				else { $next_month->modify( 'first ' . $event_start->format( 'l' ) . ' of previous month' ); }
+				$desired_monthday = intval( $next_month->format( 'd' ) ) + $days_to_nth_day_of_week;
+			} while( $desired_monthday > intval( $next_month->format( 't' ) ) );
+		}
+		
+		else if( $repeat_on === 'last_day_of_month' || $repeat_on === 'last_day_of_week' ) {
+			if( $operation === 'add' ) { $next_month->modify( 'first day of next month' ); } 
+			else { $next_month->modify( 'first day of previous month' ); }
+		}
+		
+		// Repeat on nth day of each month (default) (e.g.: on the 23rd of each month)
+		else {
+			$event_monthday	= intval( $event_start->format( 'd' ) );
+			do {
+				if( $operation === 'add' ) { $next_month->modify( 'first day of next month' ); } 
+				else { $next_month->modify( 'first day of previous month' ); }
+			} while( $event_monthday > intval( $next_month->format( 't' ) ) );
+		}
+		
+		// We need to reset to make sure that the date is below the 28th to successfully add / subtract months
+		$next_month->modify( 'first day of this month' );
+		
+		// THEN
+		// If the repeat step is not 1, make sure the $next_month month is not skipped (in that case, go to next / previous month)
+		if( $repeat_step > 1 ) { 
+			// Compute the difference of months
+			$next_month_helper = clone $next_month;
+			$offset_months = abs( ( ( intval( $next_month_helper->format( 'Y' ) ) - intval( $first_occurrence_dt->format( 'Y' )  ) ) * 12 ) + intval( $next_month_helper->format( 'm' ) - intval( $first_occurrence_dt->format( 'm' ) ) ) );
+			$offset_months_remainder = $offset_months % $repeat_step;
+			$offset_months_to_add = $offset_months_remainder ? $repeat_step - $offset_months_remainder : 0;
+			
+			if( $operation === 'add' && $offset_months_to_add )		{ $next_month_helper->add( new DateInterval( 'P' . $offset_months_to_add . 'M' ) ); }
+			if( $operation === 'sub' && $offset_months_remainder )	{ $next_month_helper->sub( new DateInterval( 'P' . $offset_months_remainder . 'M' ) ); }
+			
+			if( ( $operation === 'add' && $next_month < $next_month_helper ) 
+			||  ( $operation === 'sub' && $next_month > $next_month_helper ) ) { $next_month = clone $next_month_helper; }
+		}
+		
+		// FINALLY
+		// Check if the $next_month month is still correct, and set its date to the actual occurrence date
+
+		// Repeat on nth day of week of each month (e.g.: on 2nd tuesday of each month)
+		if( $repeat_on === 'nth_day_of_week' ) {
+			$next_month->modify( 'first ' . $event_start->format( 'l' ) . ' of this month' );
+			$desired_monthday = intval( $next_month->format( 'd' ) ) + $days_to_nth_day_of_week;
+
+			while( $desired_monthday > intval( $next_month->format( 't' ) ) ) {
+				if( $operation === 'add' ) { $next_month->add( new DateInterval( 'P' . $repeat_step . 'M' ) ); } 
+				else { $next_month->sub( new DateInterval( 'P' . $repeat_step . 'M' ) ); }
+				$next_month->modify( 'first ' . $event_start->format( 'l' ) . ' of this month' );
+				$desired_monthday = intval( $next_month->format( 'd' ) ) + $days_to_nth_day_of_week;
+			}
+
+			if( $days_to_nth_day_of_week ) { $next_month->add( new DateInterval( 'P' . $days_to_nth_day_of_week . 'D' ) ); }
+		}
+
+		// Repeat on last day of each month
+		else if( $repeat_on === 'last_day_of_month' ) {
+			$next_month->modify( 'last day of this month' );
+		} 
+
+		// Repeat on last day of week of each month (e.g.: on last tuesday of each month)
+		else if( $repeat_on === 'last_day_of_week' ) {
+			$next_month->modify( 'last ' . $event_start->format( 'l' ) . ' of this month' );
+		}
+
+		// Repeat on nth day of each month (default) (e.g.: on the 23rd of each month)
+		else {
+			while( $event_monthday > intval( $next_month->format( 't' ) ) ) {
+				if( $operation === 'add' ) { $next_month->add( new DateInterval( 'P' . $repeat_step . 'M' ) ); } 
+				else { $next_month->sub( new DateInterval( 'P' . $repeat_step . 'M' ) ); }
+			}
+			$next_month->setDate( $next_month->format( 'Y' ), $next_month->format( 'm' ), $event_monthday );
+		}
+		
+		$days_to_next_month	= abs( intval( $next_month->diff( $current_loop )->format( '%a' ) ) );
+		if( $days_to_next_month ) { $repeat_interval = new DateInterval( 'P' . $days_to_next_month . 'D' ); }
 	}
-	return $repeat_interval;
+	
+	return apply_filters( 'bookacti_interval_to_next_occurrence', $repeat_interval, $event, $args, $current_loop, $operation );
+}
+
+
+/**
+ * Get a repeated event first occurrence date (the theorical repeat_from date)
+ * @since 1.11.0
+ * @param object $event
+ * @return string Y-m-d
+ */
+function bookacti_get_event_first_occurrence_date( $event ) {
+	// Get initial repeat from
+	$timezone = new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
+	$repeat_from_date = $event->repeat_from && $event->repeat_freq && $event->repeat_freq !== 'none' ? $event->repeat_from : substr( $event->start, 0, 10 );
+	$repeat_from_dt = new DateTime( $repeat_from_date . ' 00:00:00', $timezone );
+	
+	// Default to event_start
+	$event_start = new DateTime( $event->start, $timezone );
+	$first_occurrence_dt = clone $repeat_from_dt;
+	
+	if( $event->repeat_freq === 'weekly' ) {
+		$repeat_on = $event->repeat_on ? array_unique( array_map( 'intval', explode( '_', $event->repeat_on ) ) ) : array();
+		if( ! $repeat_on ) { $repeat_on = array( intval( $event_start->format( 'w' ) ) ); }
+		while( ! in_array( intval( $first_occurrence_dt->format( 'w' ) ), $repeat_on, true ) ) { $first_occurrence_dt->add( new DateInterval( 'P1D' ) ); }
+		
+	} else if( $event->repeat_freq === 'monthly' ) {
+		$repeat_on = $event->repeat_on && in_array( $event->repeat_on, array( 'nth_day_of_month', 'last_day_of_month', 'nth_day_of_week', 'last_day_of_week' ), true ) ? $event->repeat_on : '';
+		$event_weekday = $event_start->format( 'l' );
+		
+		// Repeat on nth day of week of each month (e.g.: on 2nd tuesday of each month)
+		if( $repeat_on === 'nth_day_of_week' ) {
+			$nth_day_of_week_int = ceil( intval( $event_start->format( 'd' ) ) / 7 );
+			$days_to_nth_day_of_week = ( $nth_day_of_week_int - 1 ) * 7;
+			$first_occurrence_dt->modify( 'first ' . $event_weekday . ' of this month' );
+			$desired_monthday = intval( $first_occurrence_dt->format( 'd' ) ) + $days_to_nth_day_of_week;
+			
+			// If the $desired_monthday is before $repeat_from, go to next month (increase $desired_monthday to enter the while loop)
+			if( $desired_monthday < intval( $repeat_from_dt->format( 'd' ) ) ) { $desired_monthday += 31; }
+			
+			while( $desired_monthday > intval( $first_occurrence_dt->format( 't' ) ) ) {
+				$first_occurrence_dt->modify( 'first ' . $event_weekday . ' of next month' );
+				$desired_monthday = intval( $first_occurrence_dt->format( 'd' ) ) + $days_to_nth_day_of_week;
+			}
+			if( $days_to_nth_day_of_week ) { $first_occurrence_dt->add( new DateInterval( 'P' . $days_to_nth_day_of_week . 'D' ) ); }
+		}
+
+		// Repeat on last day of each month
+		else if( $repeat_on === 'last_day_of_month' ) {
+			$first_occurrence_dt->modify( 'last day of this month' );
+		} 
+
+		// Repeat on last day of week of each month (e.g.: on last tuesday of each month)
+		else if( $repeat_on === 'last_day_of_week' ) {
+			$first_occurrence_dt->modify( 'last ' . $event_weekday . ' of this month' );
+			if( $first_occurrence_dt < $repeat_from_dt ) { $first_occurrence_dt->modify( 'last ' . $event_weekday . ' of next month' ); }
+		}
+
+		// Repeat on nth day of each month (default) (e.g.: on the 23rd of each month)
+		else {
+			$event_monthday	= intval( $event_start->format( 'd' ) );
+			while( $event_monthday > intval( $first_occurrence_dt->format( 't' ) ) ) {
+				$first_occurrence_dt->modify( 'first day of next month' );
+			}
+			$first_occurrence_dt->setDate( $first_occurrence_dt->format( 'Y' ), $first_occurrence_dt->format( 'm' ), $event_monthday );
+		}
+	}
+	
+	return apply_filters( 'bookacti_event_first_occurrence_date', $first_occurrence_dt->format( 'Y-m-d' ), $event );
 }
 
 
 /**
  * Get a new interval of events to load. Computed from the compulsory interval, or now's date and template interval.
  * @since 1.2.2
- * @version 1.8.0
+ * @version 1.11.0
  * @param array $availability_period array( 'start'=> 'Y-m-d H:i:s', 'end'=> 'Y-m-d H:i:s' ) 
  * @param array $min_interval array( 'start'=> 'Y-m-d', 'end'=> 'Y-m-d' )
  * @param int $interval_duration Number of days of the interval
@@ -2281,18 +2605,18 @@ function bookacti_get_new_interval_of_events( $availability_period, $min_interva
 	
 	$interval_start	= new DateTime( substr( $min_interval[ 'start' ], 0, 10 ) . ' 00:00:00', $timezone );
 	$interval_end	= new DateTime( substr( $min_interval[ 'end' ], 0, 10 ) . ' 23:59:59', $timezone );
-	$min_interval_duration = intval( abs( $interval_end->diff( $interval_start )->format( '%a' ) ) );
+	$min_interval_duration = abs( intval( $interval_end->diff( $interval_start )->format( '%a' ) ) );
 	
 	if( $min_interval_duration > $interval_duration ) { $interval_duration = $min_interval_duration; }
 	
-	$half_interval = abs( round( intval( $interval_duration - $min_interval_duration ) / 2 ) );
+	$half_interval = round( abs( $interval_duration - $min_interval_duration ) / 2 );
 	$interval_end_days_to_add = $half_interval;
 	
 	// Compute Interval start
 	if( $past_events ) {
 		$interval_start->sub( new DateInterval( 'P' . $half_interval . 'D' ) );
 		if( $calendar_start > $interval_start ) {
-			$interval_end_days_to_add += abs( $interval_start->diff( $calendar_start )->format( '%a' ) );
+			$interval_end_days_to_add += abs( intval( $interval_start->diff( $calendar_start )->format( '%a' ) ) );
 		}
 	} else {
 		$interval_end_days_to_add += $half_interval;

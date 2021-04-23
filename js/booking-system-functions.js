@@ -1,6 +1,6 @@
 /**
  * Retrieve the events to display on the booking system
- * @version 1.8.9
+ * @version 1.11.0
  * @param {HTMLElement} booking_system
  * @param {object} interval
  */
@@ -16,7 +16,7 @@ function bookacti_fetch_events( booking_system, interval ) {
 	delete attributes[ 'booking_lists' ];
 	delete attributes[ 'activities_data' ];
 	delete attributes[ 'groups_events' ];
-	delete attributes[ 'groups_data' ];
+	if( ! attributes[ 'groups_only' ] ) { delete attributes[ 'groups_data' ]; }
 	delete attributes[ 'group_categories_data' ];
 	delete attributes[ 'picked_events' ];
 	delete attributes[ 'rescheduled_booking_data' ];
@@ -1786,7 +1786,7 @@ function bookacti_redirect_to_group_category_url( booking_system, group_id ) {
 /**
  * Redirect to url with the booking form values as parameters
  * @since 1.7.10
- * @version 1.8.0
+ * @version 1.11.0
  * @param {HTMLElement} booking_system
  * @param {string} redirect_url
  */
@@ -1803,8 +1803,14 @@ function bookacti_redirect_booking_system_to_url( booking_system, redirect_url )
 		url_params	= booking_system.closest( 'form' ).serialize();
 	}
 	
-	var redirect = { 'url': redirect_url, 'params': url_params };
+	var redirect = { 'url': redirect_url, 'redirect_url': redirect_url, 'params': url_params, 'anchor': '' };
+	var anchor_pos = redirect.url.indexOf( '#' );
+	if( anchor_pos >= 0 ) {
+		redirect.anchor = redirect.url.substring( anchor_pos );
+		redirect.url = redirect.url.substring( 0, anchor_pos );
+	}
 	redirect.url += redirect.url.indexOf( '?' ) >= 0 ? '&' + url_params : '?' + url_params;
+	redirect.url += redirect.anchor;
 	
 	booking_system.trigger( 'bookacti_before_redirect', [ redirect ] );
 	

@@ -1297,7 +1297,7 @@ add_action( 'init', 'bookacti_export_user_booked_events_page', 10 );
 /**
  * Export events of a specific booking (group)
  * @since 1.6.0
- * @version 1.8.0
+ * @version 1.11.0
  */
 function bookacti_export_booked_events_page() {
 	if( empty( $_REQUEST[ 'action' ] ) ) { return; }
@@ -1329,8 +1329,8 @@ function bookacti_export_booked_events_page() {
 		if( ! $atts[ 'past_events' ] ) {
 			$timezone		= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
 			$current_time	= new DateTime( 'now', $timezone );
-			$start_datetime = new DateTime( $event->start, $timezone );
-			if( $start_datetime < $current_time ) { esc_html_e( 'No events found.', 'booking-activities' ); exit; }
+			$start_datetime = $event ? new DateTime( $event->start, $timezone ) : $current_time;
+			if( $start_datetime <= $current_time ) { esc_html_e( 'No events found.', 'booking-activities' ); exit; }
 		}
 
 		$events_args = array(

@@ -335,7 +335,7 @@ function bookacti_validate_event_general_data() {
 
 /**
  * Check event fields - Repetition tab
- * @version 1.9.0
+ * @version 1.11.0
  * @returns {boolean}
  */
 function bookacti_validate_event_repetition_data() {
@@ -347,8 +347,8 @@ function bookacti_validate_event_repetition_data() {
 
 	// Get params
 	var min_bookings    = parseInt( $j( '#bookacti-event-data-dialog #bookacti-event-availability' ).attr( 'min' ) );
-	var repeat_freq     = $j( '#bookacti-event-data-dialog #bookacti-event-repeat-freq').val() || bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ][ 'repeat_freq' ] + '';
 	var current_freq	= bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ][ 'repeat_freq' ] + '';
+	var repeat_freq     = $j( '#bookacti-event-data-dialog #bookacti-event-repeat-freq' ).val() ? $j( '#bookacti-event-data-dialog #bookacti-event-repeat-freq' ).val() : current_freq;
 	var repeat_from     = moment.utc( $j( '#bookacti-event-data-dialog #bookacti-event-repeat-from' ).val() ).locale( 'en' );
 	var repeat_from_max = moment.utc( $j( '#bookacti-event-data-dialog #bookacti-event-repeat-from' ).attr('max') ).locale( 'en' ).format( 'YYYY-MM-DD' );
 	var repeat_to       = moment.utc( $j( '#bookacti-event-data-dialog #bookacti-event-repeat-to' ).val() ).locale( 'en' );
@@ -410,6 +410,8 @@ function bookacti_validate_event_repetition_data() {
 	$j( '#bookacti-event-data-dialog #bookacti-event-exception-date-picker' ).prop( 'disabled', true );
 	$j( '#bookacti-event-data-dialog #bookacti-event-add-exception-button' ).prop( 'disabled', true );
 	$j( '#bookacti-event-data-dialog #bookacti-event-exceptions-selectbox' ).prop( 'disabled', true );
+	$j( '#bookacti-event-data-dialog #bookacti-event-repeat-days-container' ).hide();
+	$j( '#bookacti-event-data-dialog #bookacti-event-repeat-monthly_type-container' ).hide();
 	$j( '#bookacti-event-data-dialog #bookacti-event-repeat-from-container' ).hide();
 	$j( '#bookacti-event-data-dialog #bookacti-event-repeat-to-container' ).hide();
 	$j( '#bookacti-event-data-dialog #bookacti-event-exceptions-container' ).hide();
@@ -478,7 +480,13 @@ function bookacti_validate_event_repetition_data() {
 		$j( '#bookacti-event-data-dialog #bookacti-event-repeat-to' ).prop( 'disabled', false );
 		$j( '#bookacti-event-data-dialog #bookacti-event-repeat-from-container' ).show();
 		$j( '#bookacti-event-data-dialog #bookacti-event-repeat-to-container' ).show();
-
+		
+		if( repeat_freq === 'weekly' ) {
+			$j( '#bookacti-event-data-dialog #bookacti-event-repeat-days-container' ).show();
+		} else if( repeat_freq === 'monthly' ) {
+			$j( '#bookacti-event-data-dialog #bookacti-event-repeat-monthly_type-container' ).show();
+		}
+		
 		if( valid_form.isFromBeforeTo && valid_form.isEventBetweenFromAndTo ) {
 			// Enable the exception fields
 			$j( '#bookacti-event-data-dialog #bookacti-event-exception-date-picker' ).prop( 'disabled', exceptions_disabled );

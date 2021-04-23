@@ -93,7 +93,7 @@ $j( document ).ready( function() {
 	if( $j( '.woocommerce form.cart .single_add_to_cart_button' ).length ) {
 		/**
 		 * Add to cart dynamic check
-		 * @version 1.7.4
+		 * @version 1.11.0
 		 */
 		$j( '.woocommerce form.cart' ).on( 'submit', function() { 
 			var form = $j( this );
@@ -112,7 +112,7 @@ $j( document ).ready( function() {
 			if( proceed_to_validation ) {
 				if( form.find( '.bookacti-booking-system' ).length ) {
 					// Submit form if all is OK
-					var is_valid = bookacti_validate_picked_events( form.find( '.bookacti-booking-system' ), form.find( '.quantity input.qty' ).val() );
+					var is_valid = bookacti_validate_picked_events( form.find( '.bookacti-booking-system' ), form.find( 'input.qty' ).val() );
 					if( is_valid ) {
 						// Trigger action before sending form
 						form.trigger( 'bookacti_before_submit_booking_form' );
@@ -142,14 +142,14 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Set picked events list quantity according to the product form quantity - on bookacti_picked_events_list_data
-	 * @version 1.9.0
+	 * @version 1.11.0
 	 * @param {Event} e
 	 * @param {Object} event_data
 	 * @param {Object} event
 	 */
 	$j( '.woocommerce form.cart' ).on( 'bookacti_picked_events_list_data', '.bookacti-booking-system', function( e, event_data, event ) {
 		var booking_system = $j( this );
-		var qty_field = booking_system.closest( 'form' ).find( '.quantity .qty' );
+		var qty_field = booking_system.closest( 'form' ).find( 'input.qty' );
 		if( qty_field.length ) {
 			event_data.quantity = parseInt( qty_field.val() );
 		}
@@ -159,12 +159,13 @@ $j( document ).ready( function() {
 	/**
 	 * Set product form quantity field - on bookacti_update_quantity
 	 * @since 1.9.0
+	 * @version 1.11.0
 	 * @param {Event} e
 	 * @param {Object} qty_data
 	 */
 	$j( '.woocommerce form.cart' ).on( 'bookacti_update_quantity', '.bookacti-booking-system', function( e, qty_data ) {
 		var booking_system = $j( this );
-		var qty_field = booking_system.closest( 'form' ).find( '.quantity .qty' );
+		var qty_field = booking_system.closest( 'form' ).find( 'input.qty' );
 		if( qty_field.length ) {
 			qty_data.field = qty_field;
 		}

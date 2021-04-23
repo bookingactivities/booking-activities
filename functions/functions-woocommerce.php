@@ -670,9 +670,9 @@ function bookacti_wc_get_item_bookings_events_list_html( $item_bookings, $show_q
 /**
  * Get array of displayed attributes per booking
  * @since 1.9.0
+ * @version 1.11.0
  * @global boolean $bookacti_is_email
  * @param array $item_bookings
- * @param string $locale Optional. Default to site locale.
  * @return array
  */
 function bookacti_wc_get_item_bookings_attributes( $item_bookings ) {
@@ -733,7 +733,10 @@ function bookacti_wc_get_item_bookings_attributes( $item_bookings ) {
 		$booking_attributes = apply_filters( 'bookacti_wc_item_booking_attributes', $booking_attributes, $item_booking );
 		
 		// Display admin actions
-		$is_order_edit_page = ( ! empty( $_REQUEST[ 'action' ] ) && in_array( $_REQUEST[ 'action' ], array( 'edit', 'woocommerce_refund_line_items', 'woocommerce_load_order_items' ), true ) );
+		$is_order_edit_page = ( ! empty( $_REQUEST[ 'action' ] ) 
+		&& in_array( $_REQUEST[ 'action' ], array( 'edit', 'woocommerce_refund_line_items', 'woocommerce_load_order_items' ), true )
+		&& ! did_action( 'woocommerce_order_fully_refunded_notification' ) 
+		&& ! did_action( 'woocommerce_order_partially_refunded_notification' ) );
 		if( $is_order_edit_page ) {
 			$actions_html_array = bookacti_wc_get_item_booking_actions_html( $item_booking, true );
 			if( $actions_html_array ) {
@@ -772,6 +775,7 @@ function bookacti_wc_get_item_bookings_attributes( $item_bookings ) {
 /**
  * Get array of displayed attributes per item per booking
  * @since 1.9.0
+ * @version 1.11.0
  * @param array $item_bookings
  * @param string $locale Optional. Default to site locale.
  * @return array
@@ -783,10 +787,10 @@ function bookacti_wc_get_item_bookings_attributes_html( $item_bookings, $locale 
 	// Set default locale to site's locale
 	if( $locale === 'site' ) { $locale = bookacti_get_site_locale(); }
 	
-	$bookings_attributes = bookacti_wc_get_item_bookings_attributes( $item_bookings, $locale );
-	if( ! $bookings_attributes ) { return $html; }
-	
 	$switched = bookacti_switch_locale( $locale );
+	
+	$bookings_attributes = bookacti_wc_get_item_bookings_attributes( $item_bookings );
+	if( ! $bookings_attributes ) { if( $switched ) { bookacti_restore_locale(); } return $html; }
 	
 	$i = 0;
 	$last_i = count( $bookings_attributes );
