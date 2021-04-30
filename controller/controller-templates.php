@@ -3,6 +3,7 @@
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 // EVENTS
+
 /**
  * AJAX Controller - Fetch events in order to display them
  * @version 1.9.0
@@ -68,7 +69,7 @@ add_action( 'wp_ajax_bookactiInsertEvent', 'bookacti_controller_insert_event' );
 /**
  * AJAX Controller - Update event dates (move or resize an event in the editor)
  * @since 1.10.0 (was bookacti_controller_move_or_resize_event)
- * @version 1.11.0
+ * @version 1.12.0
  */
 function bookacti_controller_update_event_dates() {
 	// Check nonce
@@ -107,7 +108,7 @@ function bookacti_controller_update_event_dates() {
 	$delta_seconds = $new_event_start_dt->format( 'U' ) - $old_event_start_dt->format( 'U' );
 	
 	// Get the event's occurrences
-	$events_exceptions = bookacti_get_exceptions_by_event( array( 'events' => array( $event_id ), 'types' => array( 'date' ), 'only_values' => 1 ) );
+	$events_exceptions = bookacti_get_exceptions_by_event( array( 'events' => array( $event_id ) ) );
 	$event_exceptions = isset( $events_exceptions[ $event_id ] ) ? $events_exceptions[ $event_id ] : array();
 	$occurrences = bookacti_get_occurrences_of_repeated_event( $old_event, array( 'exceptions_dates' => $event_exceptions, 'past_events' => 1 ) );
 	
@@ -213,7 +214,7 @@ add_action( 'wp_ajax_bookactiUpdateEventDates', 'bookacti_controller_update_even
 /**
  * AJAX Controller - Duplicate an event
  * @since 1.10.0
- * @version 1.11.0
+ * @version 1.12.0
  */
 function bookacti_controller_duplicate_event() {
 	// Check nonce
@@ -249,7 +250,7 @@ function bookacti_controller_duplicate_event() {
 	$new_event_repeat_to	= $repeat_to_dt ? $repeat_to_dt->format( 'Y-m-d' ) : 'null';
 	
 	// Get event exceptions
-	$events_exceptions = bookacti_get_exceptions_by_event( array( 'events' => array( $event_id ), 'types'	=> array( 'date' ), 'only_values' => 1 ) );
+	$events_exceptions = bookacti_get_exceptions_by_event( array( 'events' => array( $event_id ) ) );
 	$event_exceptions = isset( $events_exceptions[ $event_id ] ) ? $events_exceptions[ $event_id ] : array();
 	
 	// Get new event data
@@ -287,7 +288,7 @@ add_action( 'wp_ajax_bookactiDuplicateEvent', 'bookacti_controller_duplicate_eve
 /**
  * AJAX Controller - Update event
  * @since 1.2.2 (was bookacti_controller_update_event_data)
- * @version 1.11.0
+ * @version 1.12.0
  */
 function bookacti_controller_update_event() {
 	// Check nonce
@@ -320,15 +321,18 @@ function bookacti_controller_update_event() {
 	$repeat_freq = ! empty( $_POST[ 'repeat_freq' ] ) ? sanitize_title_with_dashes( $_POST[ 'repeat_freq' ] ) : '';
 	$repeat_on = $repeat_freq === 'weekly' ? $repeat_days : ( $repeat_freq === 'monthly' ? $repeat_monthly_type : '' );
 	
-	// If the event is no longer repeated, update its dates to keep the current occurence
+	// If the event is no longer repeated, update its dates to keep the current occurrence
 	$event_dates = $old_event->repeat_freq && ( ! $repeat_freq || $repeat_freq === 'none' ) ? array() : array( 'start' => $old_event->start, 'end' => $old_event->end );
 	
 	// Get new event data
 	$event_data = bookacti_sanitize_event_data( array_merge( $_POST, $event_dates, array( 'repeat_on' => $repeat_on ) ) );
 	
 	// Check if input data are complete and consistent 
-	$event_validation = bookacti_validate_event_data( $event_data );
-	if( $event_validation[ 'status' ] !== 'success' ) { bookacti_send_json( $event_validation, 'update_event' ); }
+	$is_event_valid = bookacti_validate_event_data( $event_data );
+	if( $is_event_valid[ 'status' ] !== 'success' ) { 
+		$is_event_valid[ 'message' ] = implode( '</li><li>', $is_event_valid[ 'messages' ] );
+		bookacti_send_json( $is_event_valid, 'update_event' );
+	}
 
 	// Update event data
 	$updated = bookacti_update_event( $event_data );
@@ -347,40 +351,38 @@ function bookacti_controller_update_event() {
 	$meta = array_intersect_key( $event_data, bookacti_get_event_default_meta() );
 	if( $meta ) { 
 		$updated_meta = bookacti_update_metadata( 'event', $event_id, $meta );
-		if( is_numeric( $old_event ) && is_numeric( $updated_meta ) ) { $updated += $updated_meta; }
+		if( is_numeric( $updated ) && is_numeric( $updated_meta ) ) { $updated += $updated_meta; }
 	}
 	
 	// Update exceptions
 	$updated_excep = bookacti_update_exceptions( $event_id, $event_data[ 'exceptions_dates' ] );
 	if( is_numeric( $updated ) && is_numeric( $updated_excep ) ) { $updated += $updated_excep; }
 	
-	// if one of the elements has been updated, consider as success
-	if(	is_numeric( $updated ) && $updated > 0 ){
-		// Retrieve new events
-		$interval	= ! empty( $_POST[ 'interval' ] ) ? bookacti_sanitize_events_interval( $_POST[ 'interval' ] ) : array();
-		$events		= bookacti_fetch_events_for_calendar_editor( array( 'events' => array( $event_id ), 'interval' => $interval ) );
-
-		// Retrieve groups of events
-		$groups_events = bookacti_get_groups_events( $old_event->template_id );
-
-		do_action( 'bookacti_event_updated', $event_id, $events );
-
-		bookacti_send_json( array( 
-			'status'			=> 'success', 
-			'events'			=> $events[ 'events' ] ? $events[ 'events' ] : array(),
-			'events_data'		=> $events[ 'data' ] ? $events[ 'data' ] : array(),
-			'groups_events'		=> $groups_events,
-			'exceptions_dates'	=> $event_data[ 'exceptions_dates' ],
-			'updated'			=> $updated
-		), 'update_event' ); 
-
-	} else if( $updated === 0 ) { 
+	// Check if the data has been updated
+	if( $updated === 0 ) { 
 		bookacti_send_json( array( 'status' => 'nochanges' ), 'update_event' );
-
 	} else if( $updated === false ) { 
 		bookacti_send_json( array( 'status' => 'failed', 'updated' => $updated ), 'update_event' ); 
 	}
 
+	// Retrieve new events
+	$interval	= ! empty( $_POST[ 'interval' ] ) ? bookacti_sanitize_events_interval( $_POST[ 'interval' ] ) : array();
+	$events		= bookacti_fetch_events_for_calendar_editor( array( 'events' => array( $event_id ), 'interval' => $interval ) );
+
+	// Retrieve groups of events
+	$groups_events = bookacti_get_groups_events( $old_event->template_id );
+
+	do_action( 'bookacti_event_updated', $event_id, $events );
+
+	bookacti_send_json( array( 
+		'status'			=> 'success', 
+		'events'			=> $events[ 'events' ] ? $events[ 'events' ] : array(),
+		'events_data'		=> $events[ 'data' ] ? $events[ 'data' ] : array(),
+		'groups_events'		=> $groups_events,
+		'exceptions_dates'	=> $event_data[ 'exceptions_dates' ],
+		'updated'			=> $updated
+	), 'update_event' ); 
+	
 	bookacti_send_json( array( 'status' => 'failed', 'error' => 'unknown_error', 'updated' => $updated ), 'update_event' ); 
 }
 add_action( 'wp_ajax_bookactiUpdateEvent', 'bookacti_controller_update_event' );
@@ -550,7 +552,7 @@ add_action( 'wp_ajax_bookactiUnbindOccurrences', 'bookacti_controller_unbind_occ
 /**
  * Create a group of events with AJAX
  * @since 1.1.0
- * @version 1.9.0
+ * @version 1.12.0
  */
 function bookacti_controller_insert_group_of_events() {
 	$template_id	= intval( $_POST[ 'template_id' ] );
@@ -561,36 +563,55 @@ function bookacti_controller_insert_group_of_events() {
 
 	$is_allowed = current_user_can( 'bookacti_edit_templates' ) && bookacti_user_can_manage_template( $template_id );
 	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'insert_group_of_events' ); }
-
-	$category_id	= intval( $_POST[ 'group-of-events-category' ] );
-	$category_title	= sanitize_text_field( stripslashes( $_POST[ 'group-of-events-category-title' ] ) );
-	$group_title	= sanitize_text_field( stripslashes( $_POST[ 'group-of-events-title' ] ) );
-	$events			= bookacti_maybe_decode_json( stripslashes( $_POST[ 'events' ] ) );
-
-	// Validate input data
-	$is_group_of_events_valid = bookacti_validate_group_of_events_data( $group_title, $category_id, $category_title, $events );
-	if( $is_group_of_events_valid[ 'status' ] !== 'valid' ) {
-		bookacti_send_json( array( 'status' => 'not_valid', 'errors' => $is_group_of_events_valid[ 'errors' ] ), 'insert_group_of_events' );
+	
+	// Sanitize repeat_days
+	$repeat_days = '';
+	if( ! empty( $_POST[ 'repeat_days' ] ) && is_array( $_POST[ 'repeat_days' ] ) ) {
+		$repeat_days_array = array();
+		foreach( $_POST[ 'repeat_days' ] as $day ) {
+			if( is_numeric( $day ) && in_array( intval( $day ), array( 0, 1, 2, 3, 4, 5, 6 ), true ) ) { $repeat_days_array[] = intval( $day ); }
+		}
+		$repeat_days = implode( '_', array_unique( $repeat_days_array ) );
+	}
+	
+	// Sanitize repeat_monthly_type
+	$repeat_monthly_type_raw = ! empty( $_POST[ 'repeat_monthly_type' ] ) ? sanitize_title_with_dashes( $_POST[ 'repeat_monthly_type' ] ) : '';
+	$repeat_monthly_type = in_array( $repeat_monthly_type_raw, array( 'nth_day_of_month', 'last_day_of_month', 'nth_day_of_week', 'last_day_of_week' ), true ) ? $repeat_monthly_type_raw : '';
+	
+	// Set repeat_on according to repeat_freq
+	$repeat_freq = ! empty( $_POST[ 'repeat_freq' ] ) ? sanitize_title_with_dashes( $_POST[ 'repeat_freq' ] ) : '';
+	$repeat_on = $repeat_freq === 'weekly' ? $repeat_days : ( $repeat_freq === 'monthly' ? $repeat_monthly_type : '' );
+	
+	// Sanitize group of events data
+	$group_of_events_data = bookacti_sanitize_group_of_events_data( array_merge( $_POST, array( 'repeat_on' => $repeat_on ) ) );
+	
+	// Validate data
+	$is_group_of_events_valid = bookacti_validate_group_of_events_data( $group_of_events_data );
+	if( $is_group_of_events_valid[ 'status' ] !== 'success' ) {
+		$is_group_of_events_valid[ 'message' ] = implode( '</li><li>', $is_group_of_events_valid[ 'messages' ] );
+		bookacti_send_json( $is_group_of_events_valid, 'update_group_of_events' );
 	}
 
 	// Create category if it doesn't exists
+	$category_id = $group_of_events_data[ 'category_id' ];
 	$is_category = bookacti_group_category_exists( $category_id, $template_id );
-
 	if( ! $is_category ) {
-		$cat_options_array	= isset( $_POST[ 'groupCategoryOptions' ] ) && is_array( $_POST[ 'groupCategoryOptions' ] ) ? $_POST[ 'groupCategoryOptions' ] : array();
-		$category_settings	= bookacti_format_group_category_settings( $cat_options_array );
-		$category_id		= bookacti_insert_group_category( $category_title, $template_id, $category_settings );
+		$category_id = bookacti_insert_group_category( $group_of_events_data[ 'category_title' ], $template_id );
 	}
-
-	if( ! $category_id ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'invalid_category', 'category_id' => $category_id ), 'insert_group_of_events' ); }
+	if( ! $category_id ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'invalid_category', 'category_id' => $category_id ), 'update_group_of_events' ); }
 
 	// Insert the new group of event
-	$group_options_array	= isset( $_POST[ 'groupOfEventsOptions' ] ) && is_array( $_POST[ 'groupOfEventsOptions' ] ) ? $_POST[ 'groupOfEventsOptions' ] : array();
-	$group_settings			= bookacti_format_group_of_events_settings( $group_options_array );
-	$group_id				= bookacti_create_group_of_events( $events, $category_id, $group_title, $group_settings );
-
-	if( ! $group_id ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'invalid_events', 'events' => $events, 'group_id' => $group_id ), 'insert_group_of_events' ); }
-
+	$group_id = bookacti_insert_group_of_events( $group_of_events_data );
+	if( ! $group_id ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_inserted', 'group_id' => $group_id, 'group_data' => $group_of_events_data ), 'insert_group_of_events' ); }
+	
+	// Insert the events in the group
+	$inserted = bookacti_insert_events_into_group( $group_id, $group_of_events_data[ 'events' ] );
+	if( ! $inserted ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'invalid_events', 'group_id' => $group_id, 'group_data' => $group_of_events_data ), 'insert_group_of_events' ); }
+	
+	// Insert the metadata
+	$meta = array_intersect_key( $group_of_events_data, bookacti_get_group_of_events_default_meta() );
+	if( $meta ) { bookacti_insert_metadata( 'group_of_events', $group_id, $meta ); }
+	
 	$category_data	= bookacti_get_group_category( $category_id );
 	$group_data		= bookacti_get_group_of_events( $group_id );
 	$group_events	= bookacti_get_group_events( $group_id );
@@ -613,11 +634,11 @@ add_action( 'wp_ajax_bookactiInsertGroupOfEvents', 'bookacti_controller_insert_g
 /**
  * Update group of events data with AJAX
  * @since 1.1.0
- * @version 1.9.0
+ * @version 1.12.0
  */
 function bookacti_controller_update_group_of_events() {
-	$group_id		= intval( $_POST[ 'group_id' ] );
-	$template_id	= bookacti_get_group_of_events_template_id( $group_id );
+	$group_id = intval( $_POST[ 'group_id' ] );
+	$template_id = bookacti_get_group_of_events_template_id( $group_id );
 
 	// Check nonce and capabilities
 	$is_nonce_valid = check_ajax_referer( 'bookacti_insert_or_update_group_of_events', 'nonce_insert_or_update_group_of_events', false );
@@ -626,39 +647,61 @@ function bookacti_controller_update_group_of_events() {
 	$is_allowed = current_user_can( 'bookacti_edit_templates' ) && bookacti_user_can_manage_template( $template_id );
 	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'update_group_of_events' ); }
 
-	$category_id	= intval( $_POST[ 'group-of-events-category' ] );
-	$category_title	= sanitize_text_field( stripslashes( $_POST[ 'group-of-events-category-title' ] ) );
-	$group_title	= wp_kses_post( stripslashes( $_POST[ 'group-of-events-title' ] ) );
-	$events			= bookacti_maybe_decode_json( stripslashes( $_POST[ 'events' ] ) );
-
-	// Validate input data
-	$is_group_of_events_valid = bookacti_validate_group_of_events_data( $group_title, $category_id, $category_title, $events );
-	if( $is_group_of_events_valid[ 'status' ] !== 'valid' ) {
-		bookacti_send_json( array( 'status' => 'not_valid', 'errors' => $is_group_of_events_valid[ 'errors' ] ), 'update_group_of_events' );
+	// Sanitize repeat_days
+	$repeat_days = '';
+	if( ! empty( $_POST[ 'repeat_days' ] ) && is_array( $_POST[ 'repeat_days' ] ) ) {
+		$repeat_days_array = array();
+		foreach( $_POST[ 'repeat_days' ] as $day ) {
+			if( is_numeric( $day ) && in_array( intval( $day ), array( 0, 1, 2, 3, 4, 5, 6 ), true ) ) { $repeat_days_array[] = intval( $day ); }
+		}
+		$repeat_days = implode( '_', array_unique( $repeat_days_array ) );
+	}
+	
+	// Sanitize repeat_monthly_type
+	$repeat_monthly_type_raw = ! empty( $_POST[ 'repeat_monthly_type' ] ) ? sanitize_title_with_dashes( $_POST[ 'repeat_monthly_type' ] ) : '';
+	$repeat_monthly_type = in_array( $repeat_monthly_type_raw, array( 'nth_day_of_month', 'last_day_of_month', 'nth_day_of_week', 'last_day_of_week' ), true ) ? $repeat_monthly_type_raw : '';
+	
+	// Set repeat_on according to repeat_freq
+	$repeat_freq = ! empty( $_POST[ 'repeat_freq' ] ) ? sanitize_title_with_dashes( $_POST[ 'repeat_freq' ] ) : '';
+	$repeat_on = $repeat_freq === 'weekly' ? $repeat_days : ( $repeat_freq === 'monthly' ? $repeat_monthly_type : '' );
+	
+	// Sanitize group of events data
+	$group_of_events_data = bookacti_sanitize_group_of_events_data( array_merge( $_POST, array( 'repeat_on' => $repeat_on ) ) );
+	
+	// Validate data
+	$is_group_of_events_valid = bookacti_validate_group_of_events_data( $group_of_events_data );
+	if( $is_group_of_events_valid[ 'status' ] !== 'success' ) {
+		$is_group_of_events_valid[ 'message' ] = implode( '</li><li>', $is_group_of_events_valid[ 'messages' ] );
+		bookacti_send_json( $is_group_of_events_valid, 'update_group_of_events' );
 	}
 
 	// Create category if it doesn't exists
+	$category_id = $group_of_events_data[ 'category_id' ];
 	$is_category = bookacti_group_category_exists( $category_id, $template_id );
-
 	if( ! $is_category ) {
-		$cat_options_array	= isset( $_POST[ 'groupCategoryOptions' ] ) && is_array( $_POST[ 'groupCategoryOptions' ] ) ? $_POST[ 'groupCategoryOptions' ] : array();
-		$category_settings	= bookacti_format_group_category_settings( $cat_options_array );
-		$category_id		= bookacti_insert_group_category( $category_title, $template_id, $category_settings );
+		$category_id = bookacti_insert_group_category( $group_of_events_data[ 'category_title' ], $template_id );
 	}
-
 	if( ! $category_id ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'invalid_category', 'category_id' => $category_id ), 'update_group_of_events' ); }
 
-	// Insert the new group of event
-	$group_options_array	= isset( $_POST[ 'groupOfEventsOptions' ] ) && is_array( $_POST[ 'groupOfEventsOptions' ] ) ? $_POST[ 'groupOfEventsOptions' ] : array();
-	$group_settings			= bookacti_format_group_of_events_settings( $group_options_array );
-	$updated				= bookacti_edit_group_of_events( $group_id, $category_id, $group_title, $events, $group_settings );
-
+	// Update the group of event data
+	$updated = bookacti_update_group_of_events( $group_of_events_data );
+	
+	// Update the grouped events
+	$updated_events = bookacti_update_events_of_group( $group_id, $group_of_events_data[ 'events' ] );
+	if( is_numeric( $updated ) && is_numeric( $updated_events ) ) { $updated += $updated_events; }
+	
+	// Update the metadata
+	$meta = array_intersect_key( $group_of_events_data, bookacti_get_group_of_events_default_meta() );
+	if( $meta ) { 
+		$updated_meta = bookacti_update_metadata( 'group_of_events', $group_id, $meta ); 
+		if( is_numeric( $updated ) && is_numeric( $updated_meta ) ) { $updated += $updated_meta; }
+	}
+	
+	// Check if the data has been updated
 	if( $updated === false ) {
-		bookacti_send_json( array( 'status' => 'failed', 'error' => 'invalid_events', 'events' => $events, 'group_id' => $group_id ), 'update_group_of_events' );
+		bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_updated', 'group_id' => $group_id, 'group_data' => $group_of_events_data ), 'update_group_of_events' );
 	} else if( $updated === 0 ) {
 		bookacti_send_json( array( 'status' => 'nochanges' ), 'update_group_of_events' );
-	} else if( is_string( $updated ) ) {
-		bookacti_send_json( array( 'status' => 'failed', 'error' => $updated ), 'update_group_of_events' );
 	}
 
 	$category_data	= bookacti_get_group_category( $category_id );

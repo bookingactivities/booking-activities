@@ -1542,7 +1542,7 @@ add_filter( 'bookacti_user_booking_list_default_columns', 'bookacti_reorder_wooc
 /**
  * Add WC data to the user booking list
  * @since 1.7.12 (was bookacti_fill_wc_price_column_in_booking_list)
- * @version 1.9.0
+ * @version 1.12.0
  * @param array $booking_list_items
  * @param array $bookings
  * @param array $booking_groups
@@ -1649,9 +1649,14 @@ function bookacti_add_wc_data_to_user_booking_list_items( $booking_list_items, $
 			
 			// Specify refund method in status column
 			if( $bookings[ $booking_id ]->state === 'refunded' && $coupon_code && in_array( 'status', $columns, true ) ) {
-				/* translators: %s is the coupon code used for the refund */
-				$coupon_label = sprintf( esc_html__( 'Refunded with coupon %s', 'booking-activities' ), strtoupper( $coupon_code ) );
-				$booking_list_items[ $booking_id ][ 'status' ] = '<span class="bookacti-booking-state bookacti-booking-state-bad bookacti-booking-state-refunded bookacti-converted-to-coupon bookacti-tip" data-booking-state="refunded" data-tip="' . $coupon_label . '" >' . $coupon_label . '</span>';
+				// Check if the coupon code is valid
+				$coupon_valid = $coupon_code ? bookacti_wc_is_coupon_code_valid( $coupon_code ) : true;
+				$coupon_class = is_wp_error( $coupon_valid ) ? 'bookacti-refund-coupon-not-valid bookacti-refund-coupon-error-' . esc_attr( $coupon_valid->get_error_code() ) : 'bookacti-refund-coupon-valid';
+				$coupon_error_label = is_wp_error( $coupon_valid ) ? $coupon_valid->get_error_message() : '';
+				
+				$coupon_label = sprintf( esc_html__( 'Refunded with coupon %s', 'booking-activities' ), '<span class="bookacti-refund-coupon-code ' . esc_attr( $coupon_class ) . '">' . strtoupper( $coupon_code ) . '</span>' );
+				$coupon_tip = $coupon_error_label ? $coupon_label . '<br/>' . $coupon_error_label : $coupon_label;
+				$booking_list_items[ $booking_id ][ 'status' ] = '<span class="bookacti-booking-state bookacti-booking-state-bad bookacti-booking-state-refunded bookacti-converted-to-coupon bookacti-tip" data-booking-state="refunded" data-tip="' . esc_attr( $coupon_tip ) . '" >' . $coupon_label . '</span>';
 			}
 
 			// Filter refund actions

@@ -558,6 +558,7 @@ function bookacti_format_booking_system_attributes( $raw_atts = array() ) {
 /**
  * Format picked events array
  * @since 1.9.0
+ * @version 1.12.0
  * @param array $picked_events_raw
  * @param boolean $one_entry_per_group
  * @return array
@@ -570,6 +571,7 @@ function bookacti_format_picked_events( $picked_events_raw = array(), $one_entry
 		$picked_group_ids = array();
 		foreach( $picked_events_raw as $picked_event_raw ) {
 			$picked_event = bookacti_format_picked_event( $picked_event_raw );
+			if( ! $picked_event ) { continue; }
 			$group_id = $picked_event[ 'group_id' ];
 			
 			// For groups of events
@@ -642,6 +644,7 @@ function bookacti_format_picked_event( $picked_event_raw = array() ) {
  * Reconstruct picked events array with one entry per event. 
  * This is the opposite action as bookacti_format_picked_events with the $one_entry_per_group parameter set to true
  * @since 1.9.2
+ * @version 1.12.0
  * @param array $grouped_picked_events formatted with bookacti_format_picked_events with $one_entry_per_group = true
  * @return array
  */
@@ -651,10 +654,12 @@ function bookacti_reconstruct_picked_events_array( $grouped_picked_events ) {
 	foreach( $grouped_picked_events as $grouped_picked_event ) {
 		if( ! empty( $grouped_picked_event[ 'events' ] ) ) {
 			foreach( $grouped_picked_event[ 'events' ] as $picked_event ) {
-				$picked_events[] = bookacti_format_picked_event( $picked_event );
+				$sanitized_picked_event = bookacti_format_picked_event( $picked_event );
+				if( $sanitized_picked_event ) { $picked_events[] = $sanitized_picked_event; }
 			}
 		} else {
-			$picked_events[] = bookacti_format_picked_event( $grouped_picked_event );
+			$sanitized_picked_event = bookacti_format_picked_event( $grouped_picked_event );
+			if( $sanitized_picked_event ) { $picked_events[] = $sanitized_picked_event; }
 		}
 	}
 	
@@ -1494,7 +1499,7 @@ function bookacti_is_existing_event( $event, $event_start, $event_end = '' ) {
 /**
  * Check if the occurrence exists
  * @since 1.8.4 (was bookacti_is_existing_occurence)
- * @version 1.11.0
+ * @version 1.12.0
  * @param object $event
  * @param string $event_start
  * @param string $event_end
@@ -1503,7 +1508,7 @@ function bookacti_is_existing_event( $event, $event_start, $event_end = '' ) {
 function bookacti_is_existing_occurrence( $event, $event_start, $event_end = '' ) {
 	// Get the event's occurrences
 	$event_id = ! empty( $event->event_id ) ? intval( $event->event_id ) : ( ! empty( $event->id ) ? intval( $event->id ) : 0 );
-	$events_exceptions = bookacti_get_exceptions_by_event( array( 'events' => array( $event_id ), 'types' => array( 'date' ), 'only_values' => 1 ) );
+	$events_exceptions = bookacti_get_exceptions_by_event( array( 'events' => array( $event_id ) ) );
 	$event_exceptions = isset( $events_exceptions[ $event_id ] ) ? $events_exceptions[ $event_id ] : array();
 	$interval = array( 'start' => substr( $event_start, 0, 10 ) . ' 00:00:00', 'end' => ( $event_end ? substr( $event_end, 0, 10 ) : substr( $event_start, 0, 10 ) ) . ' 23:59:59' );
 	$occurrences = bookacti_get_occurrences_of_repeated_event( $event, array( 'interval' => $interval, 'exceptions_dates' => $event_exceptions, 'past_events' => 1 ) );
@@ -1789,7 +1794,7 @@ function bookacti_is_group_of_events_available_on_form( $form_id, $group_id ) {
 /**
  * Get array of events from raw events from database
  * @since 1.2.2
- * @version 1.11.0
+ * @version 1.12.0
  * @param array $events Array of objects events from database
  * @param array $raw_args {
  *  @type boolean $skip_exceptions Whether to retrieve occurrence on exceptions
@@ -1816,10 +1821,7 @@ function bookacti_get_events_array_from_db_events( $events, $raw_args = array() 
 	foreach( $events as $event ) { $event_ids[] = $event->event_id; }
 	
 	// Get event exceptions
-	$exceptions = array();
-	if( $args[ 'skip_exceptions' ] ) {
-		$exceptions = bookacti_get_exceptions_by_event( array( 'events' => $event_ids, 'types'	=> array( 'date' ), 'only_values' => true ) );
-	}
+	$exceptions = $args[ 'skip_exceptions' ] ? bookacti_get_exceptions_by_event( array( 'events' => $event_ids ) ) : array();
 	
 	// Keep only the events having the min start, and the max end
 	if( $args[ 'bounding_events_only' ] ) {
@@ -2741,12 +2743,12 @@ function bookacti_sanitize_events_interval( $interval_raw ) {
 /**
  * Get exceptions dates by event
  * @since 1.7.0
- * @version 1.10.0
+ * @version 1.12.0
  * @param array $raw_args {
  *  @type array $templates
  *  @type array $events
- *  @type array $types
- *  @type boolean $only_values
+ *  @type array $group_of_events
+ *  @type array $type "event" or "group_of_events"
  * }
  * @return array
  */
@@ -2754,22 +2756,21 @@ function bookacti_get_exceptions_by_event( $raw_args = array() ) {
 	$default_args = array(
 		'templates' => array(),
 		'events' => array(),
-		'types'	=> array( 'date' ),
-		'only_values' => 0
+		'group_of_events' => array(),
+		'types' => array()
 	);
 	$args = wp_parse_args( $raw_args, $default_args );
 	
-	$exceptions = bookacti_get_exceptions( $raw_args );
+	$exceptions = bookacti_get_exceptions( $args );
 	
 	// Order exceptions by event id
 	$exceptions_by_event = array();
 	if( $exceptions ) {
 		foreach( $exceptions as $exception ) {
 			if( ! $exception[ 'exception_value' ] ) { continue; }
-			$event_id = $exception[ 'event_id' ];
-			unset( $exception[ 'event_id' ] );
+			$event_id = $exception[ 'object_type' ] === 'group_of_events' ? 'G' . $exception[ 'object_id' ] : $exception[ 'object_id' ];
 			if( ! isset( $exceptions_by_event[ $event_id ] ) ) { $exceptions_by_event[ $event_id ] = array(); }
-			$exceptions_by_event[ $event_id ][] = $args[ 'only_values' ] ? $exception[ 'exception_value' ] : $exception;
+			$exceptions_by_event[ $event_id ][] = $exception[ 'exception_value' ];
 		}
 	}
 	

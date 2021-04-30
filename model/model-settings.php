@@ -61,6 +61,7 @@ function bookacti_get_events_prior_to( $date ) {
 /**
  * Get repeated events exceptions prior to a date
  * @since 1.7.0
+ * @version 1.12.0
  * @param string $date
  * @return int|false
  */
@@ -68,7 +69,7 @@ function bookacti_get_repeated_events_exceptions_prior_to( $date ) {
 	global $wpdb;
 	
 	$query	= ' SELECT id FROM ' . BOOKACTI_TABLE_EXCEPTIONS
-			. ' WHERE exception_type = "date" AND exception_value < %s'
+			. ' WHERE exception_value < %s'
 			. ' ORDER BY id DESC';
 	
 	$variables	= array( $date );
@@ -328,13 +329,14 @@ function bookacti_archive_events_prior_to( $date ) {
 /**
  * Create a .sql file to archive repeated events exceptions prior to a date
  * @since 1.7.0
+ * @version 1.12.0
  * @param string $date
  * @return int|false
  */
 function bookacti_archive_repeated_events_exceptions_prior_to( $date ) {
 	$filename	= $date . '-repeated-events-exceptions.sql';
 	$table		= BOOKACTI_TABLE_EXCEPTIONS;
-	$where		= sprintf( "exception_type = 'date' AND exception_value < '%s'", $date );
+	$where		= sprintf( "exception_value < '%s'", $date );
 	return bookacti_archive_database( $filename, $table, $where );
 }
 
@@ -574,6 +576,7 @@ function bookacti_delete_rows_from_table( $original_table, $where, $variables ) 
 /**
  * Delete repeated event exceptions prior to a date
  * @since 1.7.0
+ * @version 1.12.0
  * @global wpdb $wpdb
  * @param string $date
  * @return int|false
@@ -586,8 +589,7 @@ function bookacti_delete_repeated_events_exceptions_prior_to( $date ) {
 	$count_before	= intval( $wpdb->get_var( $count_query ) );
 	
 	// Remove repetead events exceptions
-	$where_exceptions = 'exception_type = "date" AND exception_value < %s';
-	$deleted = bookacti_delete_rows_from_table( BOOKACTI_TABLE_EXCEPTIONS, $where_exceptions, array( $date ) );
+	$deleted = bookacti_delete_rows_from_table( BOOKACTI_TABLE_EXCEPTIONS, 'exception_value < %s', array( $date ) );
 	
 	if( $deleted === false ) { return false; }
 	

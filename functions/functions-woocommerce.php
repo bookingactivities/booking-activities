@@ -2148,6 +2148,54 @@ function bookacti_refund_booking_with_coupon( $bookings, $booking_type, $refund_
 
 
 /**
+ * Check if a coupon code can be used
+ * @since 1.12.0
+ * @global boolean $bookacti_wc_return_coupon_error_code
+ * @param string $coupon_code
+ * @return \WP_Error|true
+ */
+function bookacti_wc_is_coupon_code_valid( $coupon_code ) {
+	global $bookacti_wc_return_coupon_error_code;
+	
+	$wc_discounts = class_exists( 'WC_Discounts' ) ? new WC_Discounts() : false;
+	$coupon = new WC_Coupon( $coupon_code );   
+
+	$bookacti_wc_return_coupon_error_code = true; // Get error code instead of error message
+	$valid = $wc_discounts ? $wc_discounts->is_coupon_valid( $coupon ) : true;
+	$bookacti_wc_return_coupon_error_code = false;
+
+	// Only check the following errors: does not exist, is expired, or is used
+	if( is_wp_error( $valid ) && is_numeric( $valid->get_error_message() ) ) {
+		$coupon_error_code = intval( $valid->get_error_message() );
+		if( in_array( $coupon_error_code, array( WC_Coupon::E_WC_COUPON_NOT_EXIST, WC_Coupon::E_WC_COUPON_EXPIRED, WC_Coupon::E_WC_COUPON_USAGE_LIMIT_REACHED, WC_Coupon::E_WC_COUPON_USAGE_LIMIT_COUPON_STUCK, WC_Coupon::E_WC_COUPON_USAGE_LIMIT_COUPON_STUCK_GUEST ), true ) ) {
+			$coupon_class = 'bookacti-refund-coupon-not-valid bookacti-refund-coupon-error-' . $coupon_error_code;
+			$coupon_error_message = apply_filters( 'woocommerce_coupon_error', $coupon->get_coupon_error( $coupon_error_code ), $coupon_error_code, $coupon );
+			return new WP_Error( $coupon_error_code, $coupon_error_message );
+		}
+	}
+	
+	return true;
+}
+
+
+/**
+ * Return the code of the coupon error instead of the message if the global $bookacti_return_coupon_error_code is set to true
+ * @since 1.12.0
+ * @global boolean $bookacti_wc_return_coupon_error_code
+ * @param string $message
+ * @param int $code
+ * @param WC_Coupon $coupon
+ * @return string|int
+ */
+function bookacti_wc_coupon_error_return_code( $message, $code, $coupon ) {
+	global $bookacti_wc_return_coupon_error_code;
+	if( ! empty( $bookacti_wc_return_coupon_error_code ) ) { return $code; }
+	return $message;
+}
+add_filter( 'woocommerce_coupon_error', 'bookacti_wc_coupon_error_return_code', 1000, 3 );
+
+
+/**
  * Auto refund (for supported gateway)
  * @version 1.9.0
  * @param array $bookings

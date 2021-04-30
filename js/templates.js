@@ -113,7 +113,7 @@ $j( document ).ready( function() {
 
 /**
  * Initialize and display the template calendar
- * @version 1.11.0
+ * @version 1.12.0
  * @param {HTMLElement} calendar
  */
 function bookacti_load_template_calendar( calendar ) {
@@ -206,7 +206,7 @@ function bookacti_load_template_calendar( calendar ) {
 		
 		/**
 		 * When an event is rendered
-		 * @version 1.11.0
+		 * @version 1.12.0
 		 * @param {object} event
 		 * @param {HTMLElement} element
 		 * @param {object} view
@@ -355,8 +355,8 @@ function bookacti_load_template_calendar( calendar ) {
 				if( event_data.repeat_freq !== 'none' ) {
 					if( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ] !== undefined 
 					&&  bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ][ event.id ] !== undefined ) {
-						$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ][ event.id ], function ( i, excep ) {
-							if( excep.exception_type === 'date' && excep.exception_value === event_start_date ) {
+						$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ][ event.id ], function ( i, exception_date ) {
+							if( exception_date === event_start_date ) {
 								event.render = 0;
 							}
 						});

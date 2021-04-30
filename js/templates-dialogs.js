@@ -163,10 +163,11 @@ function bookacti_init_template_dialogs() {
 	/**
 	 * Toggle week starts on notice according to repeat_every option in event dialog
 	 * @since 1.11.0
+	 * @version 1.12.0
 	 */
-	$j( '#bookacti-event-data-dialog' ).on( 'change', '#bookacti-event-repeat-step, #bookacti-event-repeat-freq', function() { 
-		var skip_weeks = parseInt( $j( '#bookacti-event-repeat-step' ).val() ) > 1 && $j( '#bookacti-event-repeat-freq' ).val() === 'weekly';
-		$j( '#bookacti-event-repeat-freq-start-of-week-notice' ).toggle( skip_weeks );
+	$j( 'body' ).on( 'change', 'input[name="repeat_step"], select[name="repeat_freq"]', function() { 
+		var skip_weeks = parseInt( $j( this ).closest( '.bookacti-field-container' ).find( 'input[name="repeat_step"]' ).val() ) > 1 && $j( this ).closest( '.bookacti-field-container' ).find( 'select[name="repeat_freq"]' ).val() === 'weekly';
+		$j( this ).closest( '.bookacti-field-container' ).find( '.bookacti-repeat-freq-start-of-week-notice' ).toggle( skip_weeks );
 	});
 	
 	/**
@@ -643,7 +644,7 @@ function bookacti_dialog_update_booked_event_dates( event, delta, revertFunc ) {
 
 /**
  * Dialog Update Event
- * @version 1.11.0
+ * @version 1.12.0
  * @param {object} event
  */
 function bookacti_dialog_update_event( event ) {
@@ -656,111 +657,18 @@ function bookacti_dialog_update_event( event ) {
 		title: dialog_title_raw + ' (' + bookacti_localized.edit_id + ': ' + event.id + ')'
 	});
 	
-	// Fill the form with known param
+	var event_data = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ];
+	
+	// General tab
 	$j( '#bookacti-event-data-dialog' ).data( 'event-id', event.id );
 	$j( '#bookacti-event-data-dialog' ).attr( 'data-event-id', event.id );
-
-	// Usefull var
-	var event_data		= bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ];
-	var event_bookings	= [];
-	if( typeof bookacti.booking_system[ 'bookacti-template-calendar' ][ 'bookings' ][ event.id ] !== 'undefined' ) {
-		// Convert to array to be sorted by date
-		if( $j.isPlainObject( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'bookings' ][ event.id ] ) ) {
-			event_bookings = $j.map( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'bookings' ][ event.id ], function( value, index ) { return [value]; } );
-		}
-	}
-	var event_exceptions= bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ][ event.id ];
-	var bookings_number	= bookacti_get_event_number_of_bookings( $j( '#bookacti-template-calendar' ), event );
-
-	var template_start  = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ][ 'start' ];
-	var template_end    = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ][ 'end' ];
-
-	var event_28_days	= moment.utc( event.start ).clone().add( 28, 'd' ).locale( 'en' ); // The default repeat period duration is 28 days
-	var repeat_from     = moment.utc( event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD' );
-	var repeat_to       = event_28_days.isBefore( moment.utc( template_end ) ) ? event_28_days.format( 'YYYY-MM-DD' ) : template_end;
-
-	if( event_data.repeat_from && event_data.repeat_from !== '0000-00-00' )	{ repeat_from = event_data.repeat_from; };
-	if( event_data.repeat_to   && event_data.repeat_to   !== '0000-00-00' )	{ repeat_to = event_data.repeat_to; };
-	
-	var repeat_step = event_data.repeat_step && $j.isNumeric( event_data.repeat_step ) ? Math.max( 1, parseInt( event_data.repeat_step ) ) : 1;
-	var repeat_days = event_data.repeat_freq === 'weekly' && event_data.repeat_on ? event_data.repeat_on.split( '_' ) : [ parseInt( event.start.format( 'd' ) ) ];
-	var repeat_monthly_type = event_data.repeat_freq === 'monthly' && event_data.repeat_on && $j.inArray( event_data.repeat_on, [ 'nth_day_of_month', 'nth_day_of_week', 'last_day_of_month', 'last_day_of_week' ] ) >= 0 ? event_data.repeat_on : 'nth_day_of_month';
-	
-	var exceptions_disabled = false;
-	var exceptions_min = moment.utc( repeat_from ).add( 1, 'd' ).locale( 'en' );
-	var exceptions_max = moment.utc( repeat_to ).subtract( 1, 'd' ).locale( 'en' );
-	if( exceptions_min.isAfter( exceptions_max ) ) { exceptions_disabled = true; };
-	
-	// Fill the form with database param
 	$j( '#bookacti-event-title' ).val( event_data.multilingual_title );
 	$j( '#bookacti-event-availability' ).val( event_data.availability );
-	$j( '#bookacti-event-availability' ).attr( 'min', bookings_number );
-	$j( '#bookacti-event-repeat-freq option[value="' + event_data.repeat_freq + '"]' ).prop( 'selected', true );
-	$j( '#bookacti-event-repeat-freq' ).trigger( 'change' );
-	$j( '#bookacti-event-repeat-monthly_type option[value="' + repeat_monthly_type + '"]' ).prop( 'selected', true );
-	$j( '#bookacti-event-repeat-step' ).val( repeat_step ).trigger( 'change' );
-	$j( '#bookacti-event-repeat-from, #bookacti-event-repeat-to' ).attr( 'min', template_start );
-	$j( '#bookacti-event-repeat-from, #bookacti-event-repeat-to' ).attr( 'max', template_end );
-	$j( '#bookacti-event-repeat-from' ).val( repeat_from );
-	$j( '#bookacti-event-repeat-to' ).val( repeat_to );
-	$j( '#bookacti-event-exceptions-selectbox' ).empty();
-	$j( '#bookacti-event-exception-date-picker' ).val( repeat_from );
-	if( ! exceptions_disabled ) {
-		$j( '#bookacti-event-exception-date-picker' ).attr( 'disabled', false );
-		$j( '#bookacti-event-exception-date-picker' ).attr( 'min', exceptions_min.format( 'YYYY-MM-DD' ) );
-		$j( '#bookacti-event-exception-date-picker' ).attr( 'max', exceptions_max.format( 'YYYY-MM-DD' ) );
-	} else {
-		$j( '#bookacti-event-exception-date-picker' ).attr( 'disabled', true );
-	}
-	
-	// Set the min repeat period (must contain all booked occurrences)
-	if( event_bookings.length ) {
-		event_bookings = bookacti_sort_events_array_by_dates( event_bookings, false, false, { 'start': 'event_start', 'end': 'event_end' } );
-		if( typeof event_bookings[ 0 ][ 'event_start' ] !== 'undefined' ) {
-			$j( '#bookacti-event-repeat-from' ).attr( 'max', event_bookings[ 0 ][ 'event_start' ].substr( 0, 10 ) );
-		}
-		if( typeof event_bookings[ event_bookings.length - 1 ][ 'event_start' ] !== 'undefined' ) {
-			$j( '#bookacti-event-repeat-to' ).attr( 'min', event_bookings[ event_bookings.length - 1 ][ 'event_start' ].substr( 0, 10 ) );
-		}
-	}
 
-	// Fill the exceptions field
-	if( typeof event_exceptions !== 'undefined' ) {
-		$j.each( event_exceptions, function( i, value ) {
-			$j( '#bookacti-event-exceptions-selectbox' ).append( "<option class='bookacti-exception' value='" + value.exception_value + "' >" + value.exception_value + "</option>" );
-		});
-	}
+	// Repetition tab
+	bookacti_fill_repetition_fields( event.id, 'event' );
 	
-	// Fill the repeat_days checkboxes
-	if( $j.isArray( repeat_days ) ){
-		$j.each( repeat_days, function( i, checkbox_value ) {
-			$j( '#bookacti-event-data-dialog input[type="checkbox"][name="repeat_days[]"][value="' + checkbox_value + '"]' ).prop( 'checked', true ).trigger( 'change' );
-		});
-	}
-	
-	// Fill the repeat_monthly_type options labels
-	var event_start = moment.utc( event.start ).clone();
-	var nth_day_of_month = event_start.format( 'Do' );
-	var day_of_week = event_start.format( 'dddd' );
-	event_start.locale( 'en' );
-	var nth_day_of_week_int = Math.ceil( parseInt( event_start.format( 'DD' ) ) / 7 );
-	var nth_day_of_week = moment.utc( event_start.format( 'YYYY' ) + '-0' + nth_day_of_week_int + '-01' ).format( 'Mo' );
-	var is_last_day_of_month = parseInt( event_start.format( 'D' ) ) === parseInt( event_start.daysInMonth() ) ? true : false;
-	var is_last_day_of_week = parseInt( event_start.format( 'D' ) ) >= ( parseInt( event_start.daysInMonth() ) - 6 ) ? true : false;
-	
-	$j( '#bookacti-event-repeat-monthly_type option' ).each( function() {
-		var default_label = $j( this ).data( 'default-label' );
-		if( default_label ) {
-			var custom_label = default_label.replace( '{nth_day_of_month}', nth_day_of_month ).replace( '{nth_day_of_week}', nth_day_of_week ).replace( '{day_of_week}', day_of_week );
-			$j( this ).html( custom_label );
-		}
-	});
-	
-	// Display the last day of... options if the selected event is on it
-	$j( '#bookacti-event-repeat-monthly_type_last_day_of_month' ).toggle( is_last_day_of_month );
-	$j( '#bookacti-event-repeat-monthly_type_last_day_of_week' ).toggle( is_last_day_of_week );
-	
-	// Fill additional settings
+	// Other settings
 	if( typeof event_data.settings !== 'undefined' ) {
 		bookacti_fill_fields_from_array( event_data.settings, '', '#bookacti-event-data-dialog' );
 	}
@@ -836,7 +744,7 @@ function bookacti_dialog_update_event( event ) {
 						// Update the exceptions list
 						bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ][ event_id ] = [];
 						$j.each( response.exceptions_dates, function( i, new_exception ) {
-							bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ][ event_id ].push( { 'exception_type': 'date', 'exception_value': new_exception } );
+							bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ][ event_id ].push( new_exception );
 						});
 						
 						// Delete old event
@@ -1302,6 +1210,100 @@ function bookacti_dialog_unbind_occurrences( event ) {
 	
 	// Open the modal dialog
 	$j( '#bookacti-unbind-booked-event-dialog' ).dialog( 'open' );
+}
+
+
+/**
+ * Fill the repetition fields of the (group of) events dialog
+ * @since 1.12.0
+ * @param {Int} object_id
+ * @param {String} object_type 'event' or 'group'
+ */
+function bookacti_fill_repetition_fields( object_id, object_type ) {
+	if( object_type !== 'group' && object_type !== 'event' ) { return; }
+	if( object_type === 'group' && typeof bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ][ 0 ] === 'undefined' ) { return; }
+	else if( object_type === 'event' && typeof bookacti.booking_system[ 'bookacti-template-calendar' ][ 'picked_events' ][ 0 ] === 'undefined' ) { return; }
+	
+	var event = object_type === 'group' ? bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ][ 0 ] : bookacti.booking_system[ 'bookacti-template-calendar' ][ 'picked_events' ][ 0 ];
+	var event_start = moment.utc( event.start ).clone();
+	var repeat_data = object_type === 'group' ? bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_data' ][ object_id ] : bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ object_id ];
+	
+	var exceptions_key	= object_type === 'group' ? 'G' + object_id : object_id;
+	var exception_dates	= bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ][ exceptions_key ];
+
+	var template_start  = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ][ 'start' ];
+	var template_end    = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ][ 'end' ];
+	
+	var event_28_days	= event_start.clone().add( 28, 'd' ).locale( 'en' ); // The default repeat period duration is 28 days
+	var repeat_from     = event_start.clone().locale( 'en' ).format( 'YYYY-MM-DD' );
+	var repeat_to       = event_28_days.isBefore( moment.utc( template_end ) ) ? event_28_days.format( 'YYYY-MM-DD' ) : template_end;
+
+	if( repeat_data.repeat_from && repeat_data.repeat_from !== '0000-00-00' )	{ repeat_from = repeat_data.repeat_from; };
+	if( repeat_data.repeat_to   && repeat_data.repeat_to   !== '0000-00-00' )	{ repeat_to = repeat_data.repeat_to; };
+	
+	var repeat_step = repeat_data.repeat_step && $j.isNumeric( repeat_data.repeat_step ) ? Math.max( 1, parseInt( repeat_data.repeat_step ) ) : 1;
+	var repeat_days = repeat_data.repeat_freq === 'weekly' && repeat_data.repeat_on ? repeat_data.repeat_on.split( '_' ) : [ parseInt( event_start.format( 'd' ) ) ];
+	var repeat_monthly_type = repeat_data.repeat_freq === 'monthly' && repeat_data.repeat_on && $j.inArray( repeat_data.repeat_on, [ 'nth_day_of_month', 'nth_day_of_week', 'last_day_of_month', 'last_day_of_week' ] ) >= 0 ? repeat_data.repeat_on : 'nth_day_of_month';
+	
+	var exceptions_disabled = false;
+	var exceptions_min = moment.utc( repeat_from ).add( 1, 'd' ).locale( 'en' );
+	var exceptions_max = moment.utc( repeat_to ).subtract( 1, 'd' ).locale( 'en' );
+	if( exceptions_min.isAfter( exceptions_max ) ) { exceptions_disabled = true; };
+	
+	var scope = object_type === 'group' ? '#bookacti-group-of-events-dialog' : '#bookacti-event-data-dialog';
+	
+	// Fill the form with database param
+	$j( scope + ' select[name="repeat_freq"] option[value="' + repeat_data.repeat_freq + '"]' ).prop( 'selected', true );
+	$j( scope + ' select[name="repeat_monthly_type"] option[value="' + repeat_monthly_type + '"]' ).prop( 'selected', true );
+	$j( scope + ' input[name="repeat_step"]' ).val( repeat_step ).trigger( 'change' );
+	$j( scope + ' input[name="repeat_from"],' + scope + ' input[name="repeat_to"]' ).attr( 'min', template_start );
+	$j( scope + ' input[name="repeat_from"],' + scope + ' input[name="repeat_to"]' ).attr( 'max', template_end );
+	$j( scope + ' input[name="repeat_from"]' ).val( repeat_from );
+	$j( scope + ' input[name="repeat_to"]' ).val( repeat_to );
+	$j( scope + ' input[name="exceptions_dates[]"]' ).empty();
+	$j( scope + ' .bookacti-repeat-exception-date-picker' ).val( repeat_from );
+	if( ! exceptions_disabled ) {
+		$j( scope + ' .bookacti-repeat-exception-date-picker' ).attr( 'disabled', false );
+		$j( scope + ' .bookacti-repeat-exception-date-picker' ).attr( 'min', exceptions_min.format( 'YYYY-MM-DD' ) );
+		$j( scope + ' .bookacti-repeat-exception-date-picker' ).attr( 'max', exceptions_max.format( 'YYYY-MM-DD' ) );
+	} else {
+		$j( scope + ' .bookacti-repeat-exception-date-picker' ).attr( 'disabled', true );
+	}
+	
+	// Fill the exceptions field
+	if( typeof exception_dates !== 'undefined' ) {
+		$j.each( exception_dates, function( i, value ) {
+			$j( scope + ' input[name="exceptions_dates[]"]' ).append( "<option class='bookacti-exception' value='" + value + "' >" + value + "</option>" );
+		});
+	}
+	
+	// Fill the repeat_days checkboxes
+	if( $j.isArray( repeat_days ) ){
+		$j.each( repeat_days, function( i, checkbox_value ) {
+			$j( scope + ' input[type="checkbox"][name="repeat_days[]"][value="' + checkbox_value + '"]' ).prop( 'checked', true ).trigger( 'change' );
+		});
+	}
+	
+	// Fill the repeat_monthly_type options labels
+	var nth_day_of_month = event_start.format( 'Do' );
+	var day_of_week = event_start.format( 'dddd' );
+	event_start.locale( 'en' );
+	var nth_day_of_week_int = Math.ceil( parseInt( event_start.format( 'DD' ) ) / 7 );
+	var nth_day_of_week = moment.utc( event_start.format( 'YYYY' ) + '-0' + nth_day_of_week_int + '-01' ).format( 'Mo' );
+	var is_last_day_of_month = parseInt( event_start.format( 'D' ) ) === parseInt( event_start.daysInMonth() ) ? true : false;
+	var is_last_day_of_week = parseInt( event_start.format( 'D' ) ) >= ( parseInt( event_start.daysInMonth() ) - 6 ) ? true : false;
+	
+	$j( scope + ' select[name="repeat_monthly_type"] option' ).each( function() {
+		var default_label = $j( this ).data( 'default-label' );
+		if( default_label ) {
+			var custom_label = default_label.replace( '{nth_day_of_month}', nth_day_of_month ).replace( '{nth_day_of_week}', nth_day_of_week ).replace( '{day_of_week}', day_of_week );
+			$j( this ).html( custom_label );
+		}
+	});
+	
+	// Display the last day of... options if the selected event is on it
+	$j( scope + ' select[name="repeat_monthly_type"] option[value="last_day_of_month"]' ).toggle( is_last_day_of_month );
+	$j( scope + ' select[name="repeat_monthly_type"] option[value="last_day_of_week"]' ).toggle( is_last_day_of_week );
 }
 
 
@@ -1782,7 +1784,7 @@ function bookacti_dialog_delete_activity( activity_id ) {
 
 /**
  * Create a group of events
- * @version 1.8.3
+ * @version 1.12.0
  * @param {int} category_id
  */
 function bookacti_dialog_create_group_of_events( category_id ) {
@@ -1884,6 +1886,9 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 								
 								$j( '#bookacti-group-of-events-dialog' ).trigger( 'bookacti_group_of_events_inserted', [ response, data ] );
 								
+								// Close the modal dialog
+								$j( '#bookacti-group-of-events-dialog' ).dialog( 'close' );
+								
 							// If error
 							} else {
 								var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
@@ -1899,9 +1904,6 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 							bookacti_stop_template_loading();
 						}
 					});
-
-					// Close the modal dialogs
-					$j( '#bookacti-group-of-events-dialog' ).dialog( 'close' );
 				}
 			}
 		}]
@@ -1914,7 +1916,7 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 
 /**
  * Update a group of events with selected events 
- * @version 1.10.0
+ * @version 1.12.0
  * @param {int} group_id
  */
 function bookacti_dialog_update_group_of_events( group_id ) {
@@ -1954,7 +1956,10 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 				
 	// General tab
 	$j( '#bookacti-group-of-events-title-field' ).val( group_data.multilingual_title ); 
-
+	
+	// Repetition tab
+	bookacti_fill_repetition_fields( group_id, 'group' );
+	
 	// Other settings
 	if( group_data.settings ) {
 		bookacti_fill_fields_from_array( group_data.settings, 'groupOfEventsOptions' );
@@ -1969,6 +1974,9 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 		});
 	}
 	
+	// Validate the fields
+	bookacti_validate_group_of_events_form();
+	
 	// Add the 'OK' button
 	$j( '#bookacti-group-of-events-dialog' ).dialog( 'option', 'buttons',
 		[{
@@ -1981,7 +1989,7 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 				$j( '#bookacti-group-of-events-action' ).val( 'bookactiUpdateGroupOfEvents' );
 				$j( '#bookacti-group-of-events-form select[multiple].bookacti-items-select-box option' ).prop( 'selected', true );
 				
-				//Get the data to save
+				// Get the data to save
 				var selected_category_id	= $j( '#bookacti-group-of-events-category-selectbox' ).val();
 				bookacti.selected_category	= selected_category_id;
 				
@@ -2040,12 +2048,16 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 								
 								$j( '#bookacti-group-of-events-dialog' ).trigger( 'bookacti_group_of_events_updated', [ response, data ] );
 								
-							// If error
 							} else {
 								var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
 								$j( '#bookacti-group-of-events-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + error_message + '</li></ul></div>' );
 								$j( '#bookacti-group-of-events-dialog .bookacti-notices' ).show();
 								console.log( response );
+							}
+							
+							// Close the dialog
+							if( response.status !== 'failed' ) {
+								$j( '#bookacti-group-of-events-dialog' ).dialog( 'close' );
 							}
 						},
 						error: function( e ) {
@@ -2056,9 +2068,6 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 							bookacti_stop_template_loading();
 						}
 					});
-
-					// Close the modal dialogs
-					$j( '#bookacti-group-of-events-dialog' ).dialog( 'close' );
 				}
 			}
 		},

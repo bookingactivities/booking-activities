@@ -550,7 +550,7 @@ function bookacti_select_events_of_group( group_id ) {
 
 /**
  * Select an event
- * @version 1.11.0
+ * @version 1.12.0
  * @param {Object} raw_event
  */
 function bookacti_select_event( raw_event ) {
@@ -560,19 +560,22 @@ function bookacti_select_event( raw_event ) {
 		return false;
 	}
 	
+	var event_data = typeof bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ raw_event.id ] !== 'undefined' ? bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ raw_event.id ] : [];
+	var activity_id = raw_event.activity_id ? raw_event.activity_id : ( event_data.activity_id ? event_data.activity_id : 0 );
+	
 	var activity_title = '';
-	if( ! raw_event.title && typeof bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ raw_event.id ] !== 'undefined' ) {
-		var event_data = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ raw_event.id ];
+	if( ! raw_event.title ) {
 		if( event_data.title ) {
 			activity_title = event_data.title;
-		} else if( $j( '.bookacti-activity[data-activity-id="' + event_data.activity_id + '"] .fc-event' ).length ) {
-			activity_title = $j( '.bookacti-activity[data-activity-id="' + event_data.activity_id + '"] .fc-event' ).text();
+		} else if( $j( '.bookacti-activity[data-activity-id="' + activity_id + '"] .fc-event' ).length ) {
+			activity_title = $j( '.bookacti-activity[data-activity-id="' + activity_id + '"] .fc-event' ).text();
 		}
 	}
 	
 	// Format event object
 	var event = {
 		'id': raw_event.id,
+		'activity_id': activity_id,
 		'title': raw_event.title ? raw_event.title : activity_title,
 		'start': moment.utc( raw_event.start ).clone().locale( 'en' ),
 		'end': moment.utc( raw_event.end ).clone().locale( 'en' )
@@ -592,10 +595,11 @@ function bookacti_select_event( raw_event ) {
 
 	// Keep picked events in memory 
 	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ].push({ 
-		'id'			: event.id,
-		'title'			: event.title, 
-		'start'			: event.start.format( 'YYYY-MM-DD HH:mm:ss' ), 
-		'end'			: event.end.format( 'YYYY-MM-DD HH:mm:ss' ) 
+		'id' : event.id,
+		'activity_id' : event.activity_id,
+		'title' : event.title, 
+		'start' : event.start.format( 'YYYY-MM-DD HH:mm:ss' ), 
+		'end' : event.end.format( 'YYYY-MM-DD HH:mm:ss' ) 
 	});
 
 	$j( '#bookacti-template-calendar' ).trigger( 'bookacti_select_event', [ event ] );

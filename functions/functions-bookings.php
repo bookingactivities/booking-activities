@@ -525,6 +525,7 @@ function bookacti_format_bookings_calendar_settings( $raw_settings = array() ) {
 /**
  * Get the bookings to be removed when an whole event is deleted / cancelled
  * @since 1.10.0
+ * @version 1.12.0
  * @param object $event
  * @return array
  */
@@ -535,7 +536,7 @@ function bookacti_get_removed_event_bookings_to_cancel( $event ) {
 	$from = $event->repeat_freq && $event->repeat_freq !== 'none' ? $now_dt->format( 'Y-m-d H:i:s' ) : '';
 
 	// Get the event future occurrences
-	$events_exceptions = bookacti_get_exceptions_by_event( array( 'events' => array( $event->event_id ), 'types'	=> array( 'date' ), 'only_values' => 1 ) );
+	$events_exceptions = bookacti_get_exceptions_by_event( array( 'events' => array( $event->event_id ) ) );
 	$event_exceptions = isset( $events_exceptions[ $event->event_id ] ) ? $events_exceptions[ $event->event_id ] : array();
 	$occurrences = bookacti_get_occurrences_of_repeated_event( $event, array( 'exceptions_dates' => $event_exceptions, 'past_events' => $from ? 0 : 1 ) );
 
@@ -2325,9 +2326,10 @@ function bookacti_get_booking_refunds_html( $refunds ) {
 	$html = '';
 	if( ! $refunds ) { return $html; }
 	
-	$timezone = get_option( 'timezone_string' );
 	$utc_timezone_obj = new DateTimeZone( 'UTC' );
-	$timezone_obj = $timezone ? new DateTimeZone( $timezone ) : $utc_timezone_obj;
+	$timezone = function_exists( 'wp_timezone_string' ) ? wp_timezone_string() : get_option( 'timezone_string' );
+	try { $timezone_obj = new DateTimeZone( $timezone ); }
+	catch ( Exception $ex ) { $timezone_obj = clone $utc_timezone_obj; }
 	
 	foreach( $refunds as $i => $refund ) {
 		$refund_id = $i;

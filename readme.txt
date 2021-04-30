@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 5.7
 Requires PHP: 5.3
-Stable tag: 1.10.1
+Stable tag: 1.11.0
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -321,9 +321,16 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.12.0 =
+* Tweak - The WC refund coupon codes are crossed out is in the booking lists if they are no longer valid
+* Tweak - Remove restrictions on event availability and repetition frequency, you can update them regardless of bookings made
+* Dev - Breaking change - the wp_bookacti_exceptions table was totally refactored and the API related to exceptions too
+* Dev - Move the legacy functions to controller-legacy.php
+* Dev - Store the activity_id in the wp_bookacti_groups_events table (part of removing dependencies between bookings and events (groups))
+
 = 1.11.0 =
 * **[See the user-friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-11-advanced-options-to-repeat-events/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
-* Feature - Repeat events: option to skip n days / weeks / months between each occurence (e.g.: repeat every 2 days)
+* Feature - Repeat events: option to skip n days / weeks / months between each occurrence (e.g.: repeat every 2 days)
 * Feature - Repeat events weekly: select the days of the week on which the event should be repeated
 * Feature - Repeat events monthly: option to repeat the event on the nth / last day-of-the-week of the month (e.g.: 2nd / last Monday of the month)
 * Feature - You can manually reorder activities, group categories and groups of events in calendar editor (by drag and drop)

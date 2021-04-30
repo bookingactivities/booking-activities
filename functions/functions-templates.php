@@ -413,7 +413,7 @@ function bookacti_bind_activities_to_template( $new_activities, $template_id ) {
 
 /**
  * Unbind selected occurrence of an event
- * @version 1.11.0
+ * @version 1.12.0
  * @param object $event
  * @param string $event_start Y-m-d H:i:s
  * @param string $event_end Y-m-d H:i:s
@@ -437,7 +437,7 @@ function bookacti_unbind_selected_occurrence( $event, $event_start, $event_end )
 	bookacti_update_bookings_event_id( $event_id, $duplicated_event_id, $event_start, $event_end );
 	
 	// Get original event exceptions and add the unbound event date to them
-	$events_exceptions = bookacti_get_exceptions_by_event( array( 'events' => array( $event_id ), 'types' => array( 'date' ), 'only_values' => 1 ) );
+	$events_exceptions = bookacti_get_exceptions_by_event( array( 'events' => array( $event_id ) ) );
 	$original_event_exceptions = isset( $events_exceptions[ $event_id ] ) ? $events_exceptions[ $event_id ] : array();
 	$unbound_event_date = substr( $event_start, 0, 10 );
 	
@@ -452,7 +452,7 @@ function bookacti_unbind_selected_occurrence( $event, $event_start, $event_end )
 
 /**
  * Unbind booked occurrences of an event
- * @version 1.11.0
+ * @version 1.12.0
  * @global wpdb $wpdb
  * @param object $event
  * @return int
@@ -476,7 +476,7 @@ function bookacti_unbind_booked_occurrences( $event ) {
 	
 	$max_repeat_from = $event->repeat_from;
 	$min_repeat_to = $event->repeat_to;
-	$events_exceptions = bookacti_get_exceptions_by_event( array( 'events' => array( $event_id ), 'types' => array( 'date' ), 'only_values' => 1 ) );
+	$events_exceptions = bookacti_get_exceptions_by_event( array( 'events' => array( $event_id ) ) );
 	$original_event_exceptions = isset( $events_exceptions[ $event_id ] ) ? $events_exceptions[ $event_id ] : array();
 	$booked_dates = array();
 	$not_booked_dates = array();
@@ -524,14 +524,14 @@ function bookacti_unbind_booked_occurrences( $event ) {
 /**
  * Unbind future occurrences of an event
  * @since 1.10.0
- * @version 1.11.0
+ * @version 1.12.0
  * @param object $event
  * @param string $unbind_from Y-m-d
  * @return int
  */
 function bookacti_unbind_future_occurrences( $event, $unbind_from ) {
 	// Get the original events exceptions
-	$events_exceptions = bookacti_get_exceptions_by_event( array( 'events' => array( $event->event_id ), 'types' => array( 'date' ), 'only_values' => 1 ) );
+	$events_exceptions = bookacti_get_exceptions_by_event( array( 'events' => array( $event->event_id ) ) );
 	$original_event_exceptions = isset( $events_exceptions[ $event->event_id ] ) ? $events_exceptions[ $event->event_id ] : array();
 	
 	// Duplicate the original event and make its repetition begins on the desired date
@@ -569,12 +569,12 @@ function bookacti_unbind_future_occurrences( $event, $unbind_from ) {
 /**
  * Unbind each occurrence of an event
  * @since 1.10.0
- * @version 1.11.0
+ * @version 1.12.0
  * @param object $event
  * @return array
  */
 function bookacti_unbind_all_occurrences( $event ) {
-	$events_exceptions = bookacti_get_exceptions_by_event( array( 'events' => array( $event->event_id ), 'types' => array( 'date' ), 'only_values' => 1 ) );
+	$events_exceptions = bookacti_get_exceptions_by_event( array( 'events' => array( $event->event_id ) ) );
 	$original_event_exceptions = isset( $events_exceptions[ $event->event_id ] ) ? $events_exceptions[ $event->event_id ] : array();
 	$occurrences = bookacti_get_occurrences_of_repeated_event( $event, array( 'exceptions_dates' => $original_event_exceptions, 'past_events' => 1 ) );
 	if( ! $occurrences ) { return array(); }
@@ -619,18 +619,23 @@ function bookacti_unbind_all_occurrences( $event ) {
 /**
  * Update event exceptions
  * @since 1.8.0
- * @version 1.10.0
- * @param int $event_id
+ * @version 1.12.0
+ * @param int $object_id
  * @param array $new_exceptions
+ * @param string $object_type 'event' or 'group_of_events'
  * @param array $delete_old Whether to delete the existing exceptions first
  * @return int|false
  */
-function bookacti_update_exceptions( $event_id, $new_exceptions, $delete_old = true ) {
+function bookacti_update_exceptions( $object_id, $new_exceptions, $object_type = 'event', $delete_old = true ) {
 	// Check if the exceptions already exist
-	$old_exceptions = bookacti_get_exceptions( array( 'events' => array( $event_id ), 'types' => array( 'date' ) ) );
+	$args = $object_type === 'group_of_events' ? array( 'group_of_events' => array( $object_id ) ) : array( 'events' => array( $object_id ) );
+	$old_exceptions = bookacti_get_exceptions( $args );
 	$exceptions_dates = array();
 	if( $old_exceptions ) {	
-		foreach( $old_exceptions as $old_exception ) { $exceptions_dates[] = $old_exception[ 'exception_value' ]; } 
+		foreach( $old_exceptions as $old_exception ) { 
+			if( ! $old_exception[ 'exception_value' ] ) { continue; }
+			$exceptions_dates[] = $old_exception[ 'exception_value' ];
+		} 
 	}
 	$dates_to_insert = array_values( array_diff( $new_exceptions, $exceptions_dates ) );
 	$dates_to_delete = array_values( array_diff( $exceptions_dates, $new_exceptions ) );
@@ -640,17 +645,17 @@ function bookacti_update_exceptions( $event_id, $new_exceptions, $delete_old = t
 	$updated_nb = 0;
 
 	// Insert new exceptions
-	$inserted = $dates_to_insert ? bookacti_insert_exceptions( $event_id, $dates_to_insert ) : 0;
-	if( $inserted && is_numeric( $inserted ) ) {
+	$inserted = $dates_to_insert ? bookacti_insert_exceptions( $object_id, $dates_to_insert ) : 0;
+	if( $inserted && is_numeric( $inserted ) && $object_type === 'event' ) {
 		// Delete the events on exceptions from groups of events
-		bookacti_delete_events_on_dates_from_group( $event_id, $dates_to_insert );
+		bookacti_delete_events_on_dates_from_group( $object_id, $dates_to_insert );
 		$updated_nb += $inserted;
 	}
 
 	// Delete old exceptions
 	$deleted = 0;
 	if( $delete_old && $dates_to_delete ) {
-		$deleted = bookacti_remove_exceptions( $event_id, $dates_to_delete );
+		$deleted = bookacti_remove_exceptions( $object_id, $dates_to_delete, $object_type );
 		if( $deleted && is_numeric( $deleted ) ) { $updated_nb += $deleted; }
 	}
 
@@ -814,106 +819,17 @@ function bookacti_group_category_exists( $category_id, $template_id = null ) {
 }
 
 
-/**
- * Insert a new group of events
- * 
- * @since 1.1.0
- * 
- * @param array $events
- * @param int $category_id
- * @param string $group_title
- * @param array $group_meta
- * @return boolean|int
- */
-function bookacti_create_group_of_events( $events, $category_id, $group_title = '', $group_meta = array() ) {
-	if( ! is_array( $events ) || empty( $events ) || empty( $category_id ) ) {
-		return false;
-	}
-
-	// First insert the group
-	$group_id = bookacti_insert_group_of_events( $category_id, $group_title, $group_meta );
-
-	if( empty( $group_id ) ) {
-		return false;
-	}
-
-	// Then, insert the events in the group
-	$inserted = bookacti_insert_events_into_group( $events, $group_id );
-
-	if( empty( $inserted ) && $inserted !== 0 ) {
-		return false;
-	}
-
-	return $group_id;
-}
-
-
-/**
- * Edit a group of events
- * 
- * @since 1.1.0
- * 
- * @param int $group_id
- * @param int $category_id
- * @param string $group_title
- * @param array $events
- * @param array $group_meta
- * @return boolean|int
- */
-function bookacti_edit_group_of_events( $group_id, $category_id, $group_title = '', $events = array(), $group_meta = array() ) {
-	if( empty( $group_id ) || ! is_array( $events ) || empty( $events ) || empty( $category_id ) ) {
-		return false;
-	}
-
-	$updated1 = $updated2 = $updated3 = 0;
-
-	// First update the group
-	$updated1 = bookacti_update_group_of_events( $group_id, $category_id, $group_title );
-
-	if( $updated1 === false ) {
-		return 'error_update_group_of_events_data';
-	}
-
-	// Then update group of events metadata
-	if( ! empty( $group_meta ) ) {
-		$updated2 = bookacti_update_metadata( 'group_of_events', $group_id, $group_meta );
-	}
-
-	if( $updated2 === false ) {
-		return 'error_update_group_metadata';
-	}
-
-	// Fially, update events of the group
-	$updated3 = bookacti_update_events_of_group( $events, $group_id );
-
-	if( $updated3 === false ) {
-		return 'error_update_events_of_group';
-	}
-
-	// Return the number of row affected
-	$updated = intval( $updated1 ) + intval( $updated2 ) + intval( $updated3 );
-
-	return $updated;
-}
-
 
 /**
  * Update events of a group
- * 
  * @since 1.1.0
- * 
+ * @version 1.12.0
  * @global wpdb $wpdb
- * @param array $new_events
  * @param int $group_id
+ * @param array $new_events [[id: int, start: "Y-m-d H:i:s", end: "Y-m-d H:i:s"], ...]
  * @return int|boolean
  */
-function bookacti_update_events_of_group( $new_events, $group_id ) {
-
-	$group_id = intval( $group_id );
-	if( ! is_array( $new_events ) || empty( $new_events ) || empty( $group_id ) ) {
-		return false;
-	}
-
+function bookacti_update_events_of_group( $group_id, $new_events ) {
 	// Get events currently in the group
 	$current_events = bookacti_get_group_events( $group_id );
 
@@ -922,11 +838,10 @@ function bookacti_update_events_of_group( $new_events, $group_id ) {
 	$to_delete = $current_events;
 	foreach( $new_events as $i => $new_event ) {
 		foreach( $current_events as $j => $current_event ) {
-			$current_event = (object) $current_event;
-			if( $current_event->id		== $new_event->id 
-			&&  $current_event->start	== $new_event->start 
-			&&  $current_event->end		== $new_event->end ) {
-				// If the event already exists, remove it from both arrays
+			// If the event already exists, remove it from both arrays
+			if( intval( $current_event[ 'id' ] ) === intval( $new_event[ 'id' ] )
+			&&  $current_event[ 'start' ] === $new_event[ 'start' ]
+			&&  $current_event[ 'end' ] === $new_event[ 'end' ] ) {
 				unset( $to_insert[ $i ] );
 				unset( $to_delete[ $j ] );
 				break;
@@ -934,27 +849,13 @@ function bookacti_update_events_of_group( $new_events, $group_id ) {
 		}
 	}
 
-	// Now $new_events contains only events to add
-	// and $current_events contains events to remove
-	$deleted = $inserted = 0;
-
 	// Delete old events
-	if( ! empty( $to_delete ) ) {
-		$deleted = bookacti_delete_events_from_group( $to_delete, $group_id );
-	}
+	$deleted = $to_delete ? bookacti_delete_events_from_group( $group_id, $to_delete ) : 0;
 
 	// Insert new events
-	if( ! empty( $to_insert ) ) {
-		$inserted = bookacti_insert_events_into_group( $to_insert, $group_id );
-	}
+	$inserted = $to_insert ? bookacti_insert_events_into_group( $group_id, $to_insert ) : 0;
 
-	if( $deleted === false && $inserted = false ) {
-		return false;
-	}
-
-	$updated = intval( $deleted ) + intval( $inserted );
-
-	return $updated;
+	return $deleted === false && $inserted = false ? false : intval( $deleted ) + intval( $inserted );
 }
 
 

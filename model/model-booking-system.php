@@ -553,16 +553,18 @@ function bookacti_get_event_availability( $event_id, $event_start, $event_end ) 
 
 
 // EXCEPTIONS
+
 /**
  * Get event repetition exceptions by templates or by events
- * @version 1.8.0
+ * @version 1.12.0
  * @global wpdb $wpdb
  * @param array $raw_args {
  *  @type array $templates
  *  @type array $events
- *  @type array $types
+ *  @type array $group_of_events
+ *  @type array $types "event" or "group_of_events"
  * }
- * @return array
+ * @return array of dates
  */
 function bookacti_get_exceptions( $raw_args = array() ) {
 	global $wpdb;
@@ -570,62 +572,85 @@ function bookacti_get_exceptions( $raw_args = array() ) {
 	$default_args = array(
 		'templates' => array(),
 		'events' => array(),
-		'types'	=> array( 'date' )
+		'group_of_events' => array(),
+		'types' => array()
 	);
 	$args = wp_parse_args( $raw_args, $default_args );
 
 	$variables = array();
 
-	// No no template id and event id are given, retrieve all exceptions
-	if( ! $args[ 'templates' ] && ! $args[ 'events' ] ) {
-		$query = 'SELECT event_id, exception_type, exception_value FROM ' . BOOKACTI_TABLE_EXCEPTIONS . 'WHERE true ';
+	// No parameters are given, retrieve all exceptions
+	if( ! $args[ 'templates' ] && ! $args[ 'events' ] && ! $args[ 'group_of_events' ] ) {
+		$query = 'SELECT X.object_type, X.object_id, X.exception_value, IF( X.object_type = "event", X.object_id, CONCAT( "G", X.object_id ) ) as unique_id FROM ' . BOOKACTI_TABLE_EXCEPTIONS . ' as X WHERE TRUE ';
 
-	// If event ids are given, retrieve exceptions for these events, regardless of template ids
-	} else if( $args[ 'events' ] ) {
-		$query = 'SELECT event_id, exception_type, exception_value FROM ' . BOOKACTI_TABLE_EXCEPTIONS . ' WHERE event_id IN ( ';
-		$i = 1;
-		foreach( $args[ 'events' ] as $event_id ){
-			$query .= ' %d';
-			if( $i < count( $args[ 'events' ] ) ) { $query .= ','; }
-			++$i;
+	// If (group of) events ids are given, retrieve exceptions for these (group of) events, regardless of template ids
+	} else if( $args[ 'events' ] || $args[ 'group_of_events' ] ) {
+		$query = 'SELECT X.object_type, X.object_id, X.exception_value, IF( X.object_type = "event", X.object_id, CONCAT( "G", X.object_id ) ) as unique_id FROM ' . BOOKACTI_TABLE_EXCEPTIONS . ' as X WHERE ';
+		
+		if( $args[ 'events' ] ) {
+			$query .= ' ( X.object_type = "event" AND X.object_id IN ( ';
+			$i = 1;
+			foreach( $args[ 'events' ] as $event_id ) {
+				$query .= ' %d';
+				if( $i < count( $args[ 'events' ] ) ) { $query .= ','; }
+				++$i;
+			}
+			$query .= ' ) )';
+			$variables = array_merge( $variables, $args[ 'events' ] );
 		}
-		$query .= ' )';
-		$variables = $args[ 'events' ];
+		
+		if( $args[ 'group_of_events' ] ) {
+			if( $args[ 'events' ] ) { $query .= ' OR '; }
+			$query .= ' ( X.object_type = "group_of_events" AND X.object_id IN ( ';
+			$i = 1;
+			foreach( $args[ 'group_of_events' ] as $group_of_events_id ) {
+				$query .= ' %d';
+				if( $i < count( $args[ 'group_of_events' ] ) ) { $query .= ','; }
+				++$i;
+			}
+			$query .= ' ) )';
+			$variables = array_merge( $variables, $args[ 'group_of_events' ] );
+		}
 
 	// If template ids are given, retrieve event exceptions from these templates
 	} else if( $args[ 'templates' ] ) {
-		$query = 'SELECT X.event_id, X.exception_type, X.exception_value '
-				. ' FROM ' . BOOKACTI_TABLE_EXCEPTIONS . ' as X, ' . BOOKACTI_TABLE_EVENTS . ' as E '
-				. ' WHERE X.event_id = E.id '
-				. ' AND E.template_id IN ( ';
+		$templates_placeholders = '';
 		$i = 1;
-		foreach( $args[ 'templates' ] as $template_id ){
-			$query .= ' %d';
-			if( $i < count( $args[ 'templates' ] ) ) { $query .= ','; }
+		foreach( $args[ 'templates' ] as $template_id ) {
+			$templates_placeholders .= ' %d';
+			if( $i < count( $args[ 'templates' ] ) ) { $templates_placeholders .= ','; }
 			++$i;
 		}
-		$query .= ' )';
-		$variables = $args[ 'templates' ];
+		
+		$query = 'SELECT X.object_type, X.object_id, X.exception_value, IF( X.object_type = "event", X.object_id, CONCAT( "G", X.object_id ) ) as unique_id '
+				. ' FROM ' . BOOKACTI_TABLE_EXCEPTIONS . ' as X ' 
+				. ' LEFT JOIN ' . BOOKACTI_TABLE_EVENTS . ' as E ON X.object_id = E.id AND X.object_type = "event" '
+				. ' LEFT JOIN ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as EG ON X.object_id = EG.id AND X.object_type = "group_of_events" '
+				. ' LEFT JOIN ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' as C ON EG.category_id = C.id '
+				. ' WHERE ( X.object_type = "event" AND E.template_id IN ( ' . $templates_placeholders . ' ) )'
+				. ' OR ( X.object_type = "group_of_events" AND C.template_id IN ( ' . $templates_placeholders . ' ) )';
+		
+		$variables = array_merge( $variables, $args[ 'templates' ], $args[ 'templates' ] );
 	}
-
-	// Filter by exception types
+	
+	// Retrieve only specifics types (events or group of events)
 	if( $args[ 'types' ] ) {
-		$query .= ' AND exception_type IN (';
+		$query .= ' AND X.object_type IN ( ';
 		$i = 1;
-		foreach( $args[ 'types' ] as $type ){
+		foreach( $args[ 'types' ] as $type ) {
 			$query .= ' %s';
-			if( $i < count( $args[ 'templates' ] ) ) { $query .= ','; }
+			if( $i < count( $args[ 'types' ] ) ) { $query .= ','; }
 			++$i;
-			$variables[] = $type;
 		}
 		$query .= ' )';
+		$variables = array_merge( $variables, $args[ 'types' ] );
 	}
 
-	$query .= ' ORDER BY exception_value ASC';
+	$query .= ' ORDER BY unique_id, X.exception_value ASC';
 
 	if( $variables ) { $query = $wpdb->prepare( $query, $variables ); }
 	$exceptions = $wpdb->get_results( $query, ARRAY_A );
-
+	
 	return $exceptions;
 }
 

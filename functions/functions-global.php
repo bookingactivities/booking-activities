@@ -445,7 +445,7 @@ function bookacti_generate_ical( $vevents, $vcalendar = array() ) {
 /**
  * Get the variables used with javascript
  * @since 1.8.0
- * @version 1.10.0
+ * @version 1.12.0
  * @return array
  */
 function bookacti_get_js_variables() {
@@ -580,8 +580,6 @@ function bookacti_get_js_variables() {
 				'error_hours_sup_to_23'             => esc_html__( 'The number of hours should be between 0 and 23.', 'booking-activities' ),
 				'error_minutes_sup_to_59'           => esc_html__( 'The number of minutes should be between 0 and 59.', 'booking-activities' ),
 				'error_activity_duration_is_null'	=> esc_html__( 'The activity duration should not be null.', 'booking-activities' ),
-				'error_less_avail_than_bookings'    => esc_html__( "You can't set less available bookings than it has already on one of the occurrence of this event.", 'booking-activities' ),
-				'error_booked_events_out_of_period' => esc_html__( 'The repetition period must include all booked occurrences.', 'booking-activities' ),
 				'error_event_not_btw_from_and_to'   => esc_html__( 'The selected event should be included in the period in which it will be repeated.', 'booking-activities' ),
 				'error_freq_not_allowed'            => esc_html__( 'Error: The repetition frequency is not a valid value.', 'booking-activities' ),
 				'error_excep_not_btw_from_and_to'   => esc_html__( 'Exception dates should be included in the repetition period.', 'booking-activities' ),
@@ -630,7 +628,7 @@ function bookacti_get_active_add_ons( $prefix = '', $exclude = array( 'balau' ) 
 /**
  * Get add-on data by prefix
  * @since 1.7.14
- * @version 1.11.0
+ * @version 1.12.0
  * @param string $prefix
  * @param array $exclude
  * @return array
@@ -643,7 +641,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name'	=> 'ba-display-pack', 
 			'end_of_life'	=> '', 
 			'download_id'	=> 482,
-			'min_version'	=> '1.4.11'
+			'min_version'	=> '1.4.19'
 		),
 		'banp'	=> array( 
 			'title'			=> 'Notification Pack', 
@@ -651,7 +649,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name'	=> 'ba-notification-pack', 
 			'end_of_life'	=> '', 
 			'download_id'	=> 1393,
-			'min_version'	=> '1.2.6'
+			'min_version'	=> '1.2.7'
 		),
 		'bapap' => array( 
 			'title'			=> 'Prices and Credits', 
@@ -659,7 +657,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name'	=> 'ba-prices-and-credits', 
 			'end_of_life'	=> '', 
 			'download_id'	=> 438,
-			'min_version'	=> '1.4.16'
+			'min_version'	=> '1.4.20'
 		),
 		'baaf' => array( 
 			'title'			=> 'Advanced Forms', 
