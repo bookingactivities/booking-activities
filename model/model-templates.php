@@ -278,7 +278,7 @@ function bookacti_get_event_template_id( $event_id ) {
 
 
 /**
- * Get the max number of bookings made on one of the occurences of the event
+ * Get the max number of bookings made on one of the occurrences of the event
  * @version 1.11.0
  * @global wpdb $wpdb
  * @param int $event_id

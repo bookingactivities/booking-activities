@@ -2325,9 +2325,10 @@ function bookacti_get_booking_refunds_html( $refunds ) {
 	$html = '';
 	if( ! $refunds ) { return $html; }
 	
-	$timezone = get_option( 'timezone_string' );
 	$utc_timezone_obj = new DateTimeZone( 'UTC' );
-	$timezone_obj = $timezone ? new DateTimeZone( $timezone ) : $utc_timezone_obj;
+	$timezone = function_exists( 'wp_timezone_string' ) ? wp_timezone_string() : get_option( 'timezone_string' );
+	try { $timezone_obj = new DateTimeZone( $timezone ); }
+	catch ( Exception $ex ) { $timezone_obj = clone $utc_timezone_obj; }
 	
 	foreach( $refunds as $i => $refund ) {
 		$refund_id = $i;

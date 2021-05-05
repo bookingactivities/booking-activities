@@ -316,7 +316,7 @@ function bookacti_sanitize_event_data( $raw_data ) {
 	
 	// If the event is repeated
 	if( $data[ 'repeat_freq' ] !== 'none' ) {
-		// Restrict the repeat period to the actual first and last occurences
+		// Restrict the repeat period to the actual first and last occurrences
 		$bounding_events = bookacti_get_occurrences_of_repeated_event( (object) $data, array( 'exceptions_dates' => $data[ 'exceptions_dates' ], 'past_events' => true, 'bounding_events_only' => true ) );
 		if( $bounding_events ) {
 			$bounding_events_keys = array_keys( $bounding_events );

@@ -320,7 +320,7 @@ function bookacti_controller_update_event() {
 	$repeat_freq = ! empty( $_POST[ 'repeat_freq' ] ) ? sanitize_title_with_dashes( $_POST[ 'repeat_freq' ] ) : '';
 	$repeat_on = $repeat_freq === 'weekly' ? $repeat_days : ( $repeat_freq === 'monthly' ? $repeat_monthly_type : '' );
 	
-	// If the event is no longer repeated, update its dates to keep the current occurence
+	// If the event is no longer repeated, update its dates to keep the current occurrence
 	$event_dates = $old_event->repeat_freq && ( ! $repeat_freq || $repeat_freq === 'none' ) ? array() : array( 'start' => $old_event->start, 'end' => $old_event->end );
 	
 	// Get new event data
@@ -347,7 +347,7 @@ function bookacti_controller_update_event() {
 	$meta = array_intersect_key( $event_data, bookacti_get_event_default_meta() );
 	if( $meta ) { 
 		$updated_meta = bookacti_update_metadata( 'event', $event_id, $meta );
-		if( is_numeric( $old_event ) && is_numeric( $updated_meta ) ) { $updated += $updated_meta; }
+		if( is_numeric( $updated ) && is_numeric( $updated_meta ) ) { $updated += $updated_meta; }
 	}
 	
 	// Update exceptions
