@@ -323,7 +323,7 @@ function bookacti_sanitize_repeat_data( $object_data, $object_type = 'event' ) {
 	
 	// Make sure repeat_step is positive
 	if( $data[ 'repeat_step' ] < 0 ) { $data[ 'repeat_step' ] = $default_data[ 'repeat_step' ]; }
-		
+	
 	// Make sure repeat period exists
 	if( ! in_array( $data[ 'repeat_freq' ], array_keys( bookacti_get_event_repeat_periods() ), true ) ) {
 		$data[ 'repeat_freq' ] = $default_data[ 'repeat_freq' ];
@@ -458,7 +458,7 @@ function bookacti_sanitize_event_date_and_repeat_period( $data, $object_type = '
 	}
 
 	// Check if the monthly repetition type is valid
-	if( $data[ 'repeat_freq' ] === 'monthly' && $data[ 'repeat_on' ] ) {
+	if( $data[ 'repeat_freq' ] === 'monthly' && $data[ 'repeat_on' ] && isset( $data[ 'start' ] ) ) {
 		$start_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $data[ 'start' ] );
 		$nth_in_month = intval( $start_dt->format( 'j' ) );
 		$days_in_month = intval( $start_dt->format( 't' ) );
@@ -554,6 +554,8 @@ function bookacti_sanitize_group_of_events_data( $raw_data ) {
 	);
 	$data = bookacti_sanitize_values( $default_data, $raw_data, $keys_by_type );
 	
+	if( ! $data[ 'id' ] && ! empty( $raw_data[ 'group_id' ] ) ) { $data[ 'id' ] = intval( $raw_data[ 'group_id' ] ); }
+	
 	// Make sure ints are positive
 	foreach( $keys_by_type[ 'int' ] as $int ) {
 		if( $data[ $int ] < 0 ) { $data[ $int ] = $default_data[ $int ]; }
@@ -572,6 +574,10 @@ function bookacti_sanitize_group_of_events_data( $raw_data ) {
 		$event = bookacti_sanitize_values( $event_default_data, $raw_event, $event_keys_by_type );
 		if( $event[ 'id' ] && $event[ 'start' ] && $event[ 'end' ] ) { $data[ 'events' ][] = $event; }
 	}
+	usort( $data[ 'events' ], 'bookacti_sort_array_by_start' );
+	
+	// Group start
+	$data[ 'start' ] = isset( $data[ 'events' ][ 0 ][ 'start' ] ) ? $data[ 'events' ][ 0 ][ 'start' ] : '';
 	
 	$data = bookacti_sanitize_repeat_data( $data, 'group_of_events' );
 	

@@ -238,88 +238,17 @@ function bookacti_update_event( $data ) {
 
 /**
  * Deactivate an event
+ * @version 1.12.0
  * @global wpdb $wpdb
  * @param int $event_id
  * @return int|false
  */
 function bookacti_deactivate_event( $event_id ) {
 	global $wpdb;
-
-	// Deactivate the event
-	$deactivated = $wpdb->update( 
-		BOOKACTI_TABLE_EVENTS, 
-		array( 
-			'active' => 0
-		),
-		array( 'id' => $event_id ),
-		array( '%d' ),
-		array( '%d' )
-	);
-
+	$query = ' UPDATE ' . BOOKACTI_TABLE_EVENTS . ' SET active = 0 WHERE id = %d ';
+	$query = $wpdb->prepare( $query, $event_id );
+	$deactivated = $wpdb->query( $query );
 	return $deactivated;
-}
-
-
-/**
- * Get event template id
- * @global wpdb $wpdb
- * @param int $event_id
- * @return int|false
- */
-function bookacti_get_event_template_id( $event_id ) {
-	global $wpdb;
-
-	$query			= 'SELECT template_id FROM ' . BOOKACTI_TABLE_EVENTS . ' WHERE id = %d';
-	$query_prep		= $wpdb->prepare( $query, $event_id );
-	$template_id	= $wpdb->get_var( $query_prep );
-
-	return $template_id;
-}
-
-
-/**
- * Get the max number of bookings made on one of the occurrences of the event
- * @version 1.11.0
- * @global wpdb $wpdb
- * @param int $event_id
- * @return int
- */
-function bookacti_get_min_availability( $event_id ) {
-	global $wpdb;
-
-	$query	= 'SELECT SUM( quantity ) '
-			. ' FROM ' . BOOKACTI_TABLE_BOOKINGS 
-			. ' WHERE active = 1 '
-			. '	AND event_id = %d '
-			. '	GROUP BY event_id, event_start, event_end '
-			. '	ORDER BY quantity '
-			. '	DESC LIMIT 1 ';
-	$query	= $wpdb->prepare( $query, $event_id );
-	$max_quantity = $wpdb->get_var( $query );
-
-	return $max_quantity ? $max_quantity : 0;
-}
-
-
-/**
- * Get the period of time between the first and the last booking of an event / a template
- * @version 1.11.0
- * @global wpdb $wpdb
- * @param int $event_id
- * @return array
- */
-function bookacti_get_min_period( $event_id = NULL ) {
-	global $wpdb;
-
-	$query	= 'SELECT MIN( DATE( event_start ) ) as from_date, MAX( DATE( event_start ) ) as to_date FROM ' . BOOKACTI_TABLE_BOOKINGS 
-			. ' WHERE active = 1 '
-			. ' AND event_id = %d ';
-	$query	= $wpdb->prepare( $query, $event_id );
-	$row	= $wpdb->get_row( $query, OBJECT );
-	
-	$period = $row && ! empty( $row->from_date ) && ! empty( $row->to_date ) ? array( 'from' => $row->from_date, 'to' => $row->to_date ) : array();
-	
-	return $period;
 }
 
 
@@ -494,7 +423,7 @@ function bookacti_insert_group_of_events( $data ) {
 function bookacti_update_group_of_events( $data ) {
 	global $wpdb;
 	
-	$query = ' UPDATE ' . BOOKACTI_TABLE_GROUPS_EVENTS . ' SET '
+	$query = ' UPDATE ' . BOOKACTI_TABLE_EVENT_GROUPS . ' SET '
 				. ' category_id = IFNULL( NULLIF( %d, 0 ), category_id ), '	
 				. ' title = IFNULL( NULLIF( %s, "" ), title ), '
 				. ' repeat_freq = IFNULL( NULLIF( %s, "" ), repeat_freq ), '
@@ -524,136 +453,83 @@ function bookacti_update_group_of_events( $data ) {
 
 /**
  * Delete a group of events
- * 
+ * @since 1.1.0
+ * @version 1.12.0
  * @global wpdb $wpdb
  * @param int $group_id
  * @return boolean
  */
 function bookacti_delete_group_of_events( $group_id ) {
-	if( empty( $group_id ) || ! is_numeric( $group_id ) ) {
-		return false;
-	}
-
 	global $wpdb;
 
 	// Delete events of the group
-	$query_events	= 'DELETE FROM ' . BOOKACTI_TABLE_GROUPS_EVENTS 
-					. ' WHERE group_id = %d ';
-	$prep_events	= $wpdb->prepare( $query_events, $group_id );
-	$deleted1		= $wpdb->query( $prep_events );
+	$query_events	= 'DELETE FROM ' . BOOKACTI_TABLE_GROUPS_EVENTS . ' WHERE group_id = %d ';
+	$query_events	= $wpdb->prepare( $query_events, $group_id );
+	$deleted1		= $wpdb->query( $query_events );
 
 	// Delete the group itself
-	$query_group	= 'DELETE FROM ' . BOOKACTI_TABLE_EVENT_GROUPS 
-					. ' WHERE id = %d ';
-	$prep_group		= $wpdb->prepare( $query_group, $group_id );
-	$deleted2		= $wpdb->query( $prep_group );
+	$query_group	= 'DELETE FROM ' . BOOKACTI_TABLE_EVENT_GROUPS . ' WHERE id = %d ';
+	$query_group	= $wpdb->prepare( $query_group, $group_id );
+	$deleted2		= $wpdb->query( $query_group );
 
-	if( $deleted1 === false && $deleted2 === false ) {
-		return false;
-	}
-
-	$deleted = intval( $deleted1 ) + intval( $deleted2 );
-
-	return $deleted;
+	return $deleted1 === false && $deleted2 === false ? false : intval( $deleted1 ) + intval( $deleted2 );
 }
 
 
 /**
  * Deactivate a group of events
- * 
+ * @since 1.1.0
+ * @version 1.12.0
  * @global wpdb $wpdb
  * @param int $group_id
  * @return boolean
  */
 function bookacti_deactivate_group_of_events( $group_id ) {
-	if( empty( $group_id ) || ! is_numeric( $group_id ) ) {
-		return false;
-	}
-
 	global $wpdb;
-
+	
 	// Deactivate events of the group
-	$updated1 = $wpdb->update( 
-		BOOKACTI_TABLE_GROUPS_EVENTS, 
-		array( 
-			'active' => 0
-		),
-		array( 'group_id' => $group_id ),
-		array( '%d' ),
-		array( '%d' )
-	);
+	$query_events	= 'UPDATE ' . BOOKACTI_TABLE_GROUPS_EVENTS . ' SET active = 0 WHERE group_id = %d ';
+	$query_events	= $wpdb->prepare( $query_events, $group_id );
+	$deactivated1	= $wpdb->query( $query_events );
 
 	// Deactivate the group itself
-	$updated2 = $wpdb->update( 
-		BOOKACTI_TABLE_EVENT_GROUPS, 
-		array( 
-			'active' => 0
-		),
-		array( 'id' => $group_id ),
-		array( '%d' ),
-		array( '%d' )
-	);
-
-	if( $updated1 === false && $updated2 === false ) {
-		return false;
-	}
-
-	$deactivated = intval( $updated1 ) + intval( $updated2 );
-
-	return $deactivated;
+	$query_group	= 'UPDATE ' . BOOKACTI_TABLE_EVENT_GROUPS . ' SET active = 0 WHERE id = %d ';
+	$query_group	= $wpdb->prepare( $query_group, $group_id );
+	$deactivated2	= $wpdb->query( $query_group );
+	
+	return $deactivated1 === false && $deactivated2 === false ? false : intval( $deactivated1 ) + intval( $deactivated2 );
 }
 
 
 /**
  * Get an array of all group of events ids bound to designated category
- * 
  * @since 1.1.0
- * @version 1.3.0
- * 
+ * @version 1.12.0
  * @global wpdb $wpdb
  * @param array $category_ids
  * @param boolean $fetch_inactive
  * @return array
  */
-function bookacti_get_groups_of_events_ids_by_category( $category_ids = array(), $fetch_inactive = false ) {
-
+function bookacti_get_groups_of_events_ids_by_category( $category_ids, $fetch_inactive = false ) {
 	global $wpdb;
 
-	// Convert numeric to array
-	if( ! is_array( $category_ids ) ){
-		$category_id = intval( $category_ids );
-		$category_ids = array();
-		if( $category_id ) {
-			$category_ids[] = $category_id;
-		}
-	}
-
 	$query	= 'SELECT G.id FROM ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as G '
-			. ' WHERE G.category_id IN (';
+			. ' WHERE G.category_id IN ( ';
 
 	$i = 1;
 	foreach( $category_ids as $category_id ){
-		$query .= ' %d';
-		if( $i < count( $category_ids ) ) { $query .= ','; }
+		$query .= $i < count( $category_ids ) ? '%d, ' : '%d';
 		$i++;
 	}
-
 	$query .= ' ) ';
 
-	if( ! $fetch_inactive ) {
-		$query .= ' AND G.active = 1 ';
-	}
+	if( ! $fetch_inactive ) { $query .= ' AND G.active = 1 '; }
 
-	if( $category_ids ) {
-		$query = $wpdb->prepare( $query, $category_ids );
-	}
-
+	$query = $wpdb->prepare( $query, $category_ids );
 	$groups	= $wpdb->get_results( $query, OBJECT );
 
 	$groups_ids = array();
-	foreach( $groups as $group ) {
-		$groups_ids[] = $group->id;
-	}
+	foreach( $groups as $group ) { $groups_ids[] = $group->id; }
 
 	return $groups_ids;
 }
@@ -661,28 +537,21 @@ function bookacti_get_groups_of_events_ids_by_category( $category_ids = array(),
 
 /**
  * Get the template id of a group of events
- * 
  * @since 1.1.0
- * 
+ * @version 1.12.0
  * @global wpdb $wpdb
  * @param int $group_id
- * @return int|boolean
+ * @return int
  */
 function bookacti_get_group_of_events_template_id( $group_id ) {
-	if( empty( $group_id ) || ! is_numeric( $group_id ) ) {
-		return false;
-	}
-
 	global $wpdb;
-
-	$query			= 'SELECT C.template_id '
-					. ' FROM ' . BOOKACTI_TABLE_GROUP_CATEGORIES  . ' as C, ' . BOOKACTI_TABLE_EVENT_GROUPS  . ' as G '
-					. ' WHERE C.id = G.category_id '
-					. ' AND G.id = %d ';
-	$query_prep		= $wpdb->prepare( $query, $group_id );
-	$template_id	= $wpdb->get_var( $query_prep );
-
-	return $template_id;
+	$query	= 'SELECT C.template_id '
+			. ' FROM ' . BOOKACTI_TABLE_GROUP_CATEGORIES  . ' as C, ' . BOOKACTI_TABLE_EVENT_GROUPS  . ' as G '
+			. ' WHERE C.id = G.category_id '
+			. ' AND G.id = %d ';
+	$query = $wpdb->prepare( $query, $group_id );
+	$template_id = $wpdb->get_var( $query );
+	return intval( $template_id );
 }
 
 
@@ -764,36 +633,27 @@ function bookacti_delete_events_from_group( $group_id, $events = array() ) {
 /**
  * Delete events starting on a specific date from a group 
  * @since 1.8.0
+ * @version 1.12.0
  * @global wpdb $wpdb
+ * @param int $group_id
  * @param array $events
- * @param int|string $group_id
  * @return int|boolean
  */
-function bookacti_delete_events_on_dates_from_group( $dates, $group_id = 0 ) {
-	if( ! $dates || ! is_array( $dates ) ) { return false; }
-
+function bookacti_delete_events_on_dates_from_group( $group_id, $dates ) {
 	global $wpdb;
 
-	$query = 'DELETE FROM ' . BOOKACTI_TABLE_GROUPS_EVENTS . ' WHERE ( ';
-	$variables = array();
-
-	$i = 0;
+	$query	= 'DELETE FROM ' . BOOKACTI_TABLE_GROUPS_EVENTS 
+			. ' WHERE group_id = %d '
+			. ' AND DATE( event_start ) IN ( ';
+	
+	$i = 1;
 	foreach( $dates as $date ) {
-		$event = (object) $event;
-		$query .= 'DATE( event_start ) = %s';
-		$variables[] = $date;
+		$query .= $i < count( $dates ) ? '%s, ' : '%s';
 		$i++;
-		if( $i < count( $dates ) ) { $query .= ' OR '; } 
 	}
-
-	$query .= ' ) ';
-
-	// Update only a specific group
-	if( $group_id ) {
-		$query .= 'AND group_id = %d';
-		$variables[] = $group_id;
-	}
-
+	$query .= ' )';
+	
+	$variables = array_merge( array( $group_id ), $dates );
 	$query = $wpdb->prepare( $query, $variables );
 	$deleted = $wpdb->query( $query );
 
@@ -804,20 +664,17 @@ function bookacti_delete_events_on_dates_from_group( $dates, $group_id = 0 ) {
 /**
  * Delete an event from all groups of events
  * @since 1.1.0
- * @version 1.8.0
+ * @version 1.12.0
  * @global wpdb $wpdb
  * @param int $event_id
  * @param string $event_start
  * @param string $event_end
- * @return int|boolean|null
+ * @return int|false
  */
 function bookacti_delete_event_from_groups( $event_id, $event_start = false, $event_end = false ) {
-	if( ! $event_id ) { return false; }
-
 	global $wpdb;
 
 	$query = 'DELETE FROM ' . BOOKACTI_TABLE_GROUPS_EVENTS . ' WHERE event_id = %d ';
-
 	$variables = array( $event_id );
 
 	if( $event_start ) {
@@ -839,51 +696,34 @@ function bookacti_delete_event_from_groups( $event_id, $event_start = false, $ev
 
 /**
  * Delete events from specific activiy and template from all groups of events
- * 
  * @since 1.1.4
- * @version 1.3.0
- * 
+ * @version 1.12.0
  * @global wpdb $wpdb
  * @param int $activity_id
  * @param int $template_id
- * @return int|boolean|null
+ * @return int|false
  */
-function bookacti_deactivate_activity_events_from_groups( $activity_id = 0, $template_id = 0 ){
-
-	$activity_id = intval( $activity_id );
-	$template_id = intval( $template_id );
-	if( ! $activity_id && ! $template_id ) {
-		return false;
-	}
-
+function bookacti_deactivate_activity_events_from_groups( $activity_id, $template_id = 0 ){
 	global $wpdb;
 
 	// Update grouped events to inactive
 	$query	= ' UPDATE ' . BOOKACTI_TABLE_GROUPS_EVENTS . ' as GE '
 			. ' LEFT JOIN ' . BOOKACTI_TABLE_EVENTS . ' as E ON GE.event_id = E.id '
 			. ' SET GE.active = 0 '
-			. ' WHERE TRUE ';
+			. ' WHERE GE.activity_id = %d ';
 
-	$variables = array();
+	$variables = array( $activity_id );
 
-	if( $activity_id ) {
-		$query .= ' AND E.activity_id = %d ';
-		$variables[] = $activity_id;
-	}
 	if( $template_id ) {
 		$query .= ' AND E.template_id = %d ';
 		$variables[] = $template_id;
 	}
 
-	if( $variables ) {
-		$query = $wpdb->prepare( $query, $variables );
-	}
-
+	$query = $wpdb->prepare( $query, $variables );
 	$deactivated = $wpdb->query( $query );
 
 	return $deactivated;
 }
-
 
 
 /**
@@ -954,42 +794,6 @@ function bookacti_shift_grouped_event_dates( $event_id, $delta_seconds = 0, $eve
 
 
 /**
- * Update specific bookings dates with a relative amount of days
- * @version 1.10.0
- * @global wpdb $wpdb
- * @param array $booking_ids
- * @param int $delta_seconds
- * @param string $event_start_time Set a fixed start time (H:i:s). Empty string to use the current start time.
- * @param string $event_end_time Set a fixed end time (H:i:s). Empty string to use the current end time.
- * @return int|false
- */
-function bookacti_shift_bookings_dates( $booking_ids, $delta_seconds = 0, $event_start_time = '', $event_end_time = '' ) {
-	global $wpdb;
-
-	$query	= 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS
-			. ' SET  event_start = IF( %s = "", DATE_ADD( event_start, INTERVAL %d SECOND ), CONCAT( DATE( DATE_ADD( event_start, INTERVAL %d SECOND ) ), " ", %s ) ), '
-				.  ' event_end = IF( %s = "", DATE_ADD( event_end, INTERVAL %d SECOND ), CONCAT( DATE( DATE_ADD( event_end, INTERVAL %d SECOND ) ), " ", %s ) ) '
-			. ' WHERE id IN ( ';
-	
-	$variables = array( $event_start_time, $delta_seconds, $delta_seconds, $event_start_time, $event_end_time, $delta_seconds, $delta_seconds, $event_end_time );
-	
-	if( $booking_ids ) {
-		$query .= '%d';
-		for( $i=1,$len=count($booking_ids); $i<$len; ++$i ) {
-			$query .= ', %d';
-		}
-		$variables = array_merge( $variables, $booking_ids );
-	}
-	$query .= ' ) ';
-	
-	$query	= $wpdb->prepare( $query, $variables );
-	$updated= $wpdb->query( $query );
-
-	return $updated;   
-}
-
-
-/**
  * Update id of an event bound to a group
  * @version 1.10.0
  * @global wpdb $wpdb
@@ -1053,36 +857,23 @@ function bookacti_update_grouped_event_id( $old_event_id, $new_event_id, $event_
 
 /**
  * Insert a group category
- * 
  * @since 1.1.0
- * 
+ * @version 1.12.0
  * @global wpdb $wpdb
  * @param string $category_title
  * @param int $template_id
- * @param array $category_meta
- * @return type
+ * @return int
  */
-function bookacti_insert_group_category( $category_title, $template_id, $category_meta = array() ) {
+function bookacti_insert_group_category( $category_title, $template_id ) {
 	global $wpdb;
-
-	// Insert the new category
-	$wpdb->insert( 
-		BOOKACTI_TABLE_GROUP_CATEGORIES, 
-		array( 
-			'template_id'	=> $template_id,
-			'title'			=> $category_title,
-			'active'		=> 1
-		),
-		array( '%d', '%s', '%d' )
-	);
-
-	$category_id = $wpdb->insert_id;
-
-	if( ! empty( $category_meta ) && ! empty( $category_id ) ) {
-		bookacti_insert_metadata( 'group_category', $category_id, $category_meta );
-	}
-
-	return $category_id;
+	
+	$query = ' INSERT INTO ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' ( template_id, title, active ) '
+			. ' VALUES ( %d, %s, 1 )';
+	
+	$query = $wpdb->prepare( $query, $template_id, $category_title );
+	$wpdb->query( $query );
+	
+	return $wpdb->insert_id;
 }
 
 
@@ -1270,25 +1061,18 @@ function bookacti_get_group_category( $category_id, $return_type = OBJECT ) {
 
 /**
  * Get the template id of a group category
- * 
  * @since 1.1.0
- * 
+ * @ersion 1.12.0
  * @global wpdb $wpdb
  * @param int $category_id
- * @return int|boolean
+ * @return int
  */
 function bookacti_get_group_category_template_id( $category_id ) {
-	if( empty( $category_id ) || ! is_numeric( $category_id ) ) {
-		return false;
-	}
-
 	global $wpdb;
-
-	$query			= 'SELECT template_id FROM ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' WHERE id = %d ';
-	$query_prep		= $wpdb->prepare( $query, $category_id );
-	$template_id	= $wpdb->get_var( $query_prep );
-
-	return $template_id;
+	$query = 'SELECT template_id FROM ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' WHERE id = %d ';
+	$query = $wpdb->prepare( $query, $category_id );
+	$template_id = $wpdb->get_var( $query );
+	return intval( $template_id );
 }
 
 

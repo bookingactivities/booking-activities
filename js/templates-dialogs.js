@@ -1261,13 +1261,13 @@ function bookacti_fill_repetition_fields( object_id, object_type ) {
 	$j( scope + ' input[name="repeat_from"]' ).val( repeat_from );
 	$j( scope + ' input[name="repeat_to"]' ).val( repeat_to );
 	$j( scope + ' input[name="exceptions_dates[]"]' ).empty();
-	$j( scope + ' .bookacti-repeat-exception-date-picker' ).val( repeat_from );
+	$j( scope + ' .bookacti-exception-date-picker' ).val( repeat_from );
 	if( ! exceptions_disabled ) {
-		$j( scope + ' .bookacti-repeat-exception-date-picker' ).attr( 'disabled', false );
-		$j( scope + ' .bookacti-repeat-exception-date-picker' ).attr( 'min', exceptions_min.format( 'YYYY-MM-DD' ) );
-		$j( scope + ' .bookacti-repeat-exception-date-picker' ).attr( 'max', exceptions_max.format( 'YYYY-MM-DD' ) );
+		$j( scope + ' .bookacti-exception-date-picker' ).attr( 'disabled', false );
+		$j( scope + ' .bookacti-exception-date-picker' ).attr( 'min', exceptions_min.format( 'YYYY-MM-DD' ) );
+		$j( scope + ' .bookacti-exception-date-picker' ).attr( 'max', exceptions_max.format( 'YYYY-MM-DD' ) );
 	} else {
-		$j( scope + ' .bookacti-repeat-exception-date-picker' ).attr( 'disabled', true );
+		$j( scope + ' .bookacti-exception-date-picker' ).attr( 'disabled', true );
 	}
 	
 	// Fill the exceptions field
@@ -1988,14 +1988,13 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 				// Prepare fields
 				$j( '#bookacti-group-of-events-action' ).val( 'bookactiUpdateGroupOfEvents' );
 				$j( '#bookacti-group-of-events-form select[multiple].bookacti-items-select-box option' ).prop( 'selected', true );
+				$j( '#bookacti-group-of-events-form select[multiple]#bookacti-group-of-events-exceptions-selectbox option' ).prop( 'selected', true );
 				
 				// Get the data to save
 				var selected_category_id	= $j( '#bookacti-group-of-events-category-selectbox' ).val();
 				bookacti.selected_category	= selected_category_id;
 				
-				if( typeof tinyMCE !== 'undefined' ) { 
-					if( tinyMCE ) { tinyMCE.triggerSave(); }
-				}
+				if( typeof tinyMCE !== 'undefined' ) { if( tinyMCE ) { tinyMCE.triggerSave(); } }
 				
 				var is_form_valid = bookacti_validate_group_of_events_form();
 				
@@ -2048,7 +2047,7 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 								
 								$j( '#bookacti-group-of-events-dialog' ).trigger( 'bookacti_group_of_events_updated', [ response, data ] );
 								
-							} else {
+							} else if( response.status === 'failed' ) {
 								var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
 								$j( '#bookacti-group-of-events-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + error_message + '</li></ul></div>' );
 								$j( '#bookacti-group-of-events-dialog .bookacti-notices' ).show();

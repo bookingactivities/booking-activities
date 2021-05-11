@@ -1584,7 +1584,7 @@ function bookacti_add_wc_data_to_user_booking_list_items( $booking_list_items, $
 
 	// Get WC orders by order item id
 	$orders = array();
-	$orders_array = wc_get_orders( array( 'post__in' => $order_ids ) );
+	$orders_array = wc_get_orders( array( 'post__in' => $order_ids, 'limit' => -1 ) );
 	foreach( $orders_array as $order ) {
 		$order_id = $order->get_id();
 		$orders[ $order_id ] = $order;

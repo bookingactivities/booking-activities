@@ -1237,6 +1237,7 @@ function bookacti_wc_remove_order_item_bookings( $item, $item_bookings_ids_to_de
 /**
  * Get order items holding one of the desired booking or booking group ID
  * @since 1.9.0
+ * @version 1.11.1
  * @param array $booking_ids
  * @param array $booking_group_ids
  * @param WC_Order[] $orders
@@ -1264,7 +1265,7 @@ function bookacti_wc_get_order_items_by_bookings( $booking_ids = array(), $booki
 		if( ! $order_ids ) { return $order_items; }
 
 		// Get WC orders
-		$orders = wc_get_orders( array( 'post__in' => $order_ids ) );
+		$orders = wc_get_orders( array( 'post__in' => $order_ids, 'limit' => -1 ) );
 	}
 	
 	if( ! $orders ) { return $order_items; }

@@ -211,17 +211,17 @@ foreach( $templates as $template ) {
 				?>
 				</label>
 				<div id='bookacti-event-add-exception-container' class='bookacti-add-exception-container'>
-					<input type='date' id='bookacti-event-exception-date-picker' class='bookacti-repeat-exception-date-picker' max='2037-12-31' >
+					<input type='date' id='bookacti-event-exception-date-picker' class='bookacti-exception-date-picker' max='2037-12-31' >
 					<button type='button' id='bookacti-event-add-exception-button' class='bookacti-add-exception-button'><?php esc_html_e( 'Add', 'booking-activities' ); ?></button>
 				</div>
 				<div>
-					<select multiple id='bookacti-event-exceptions-selectbox' name='exceptions_dates[]'></select>
+					<select multiple id='bookacti-event-exceptions-selectbox' class='bookacti-exceptions-selectbox' name='exceptions_dates[]'></select>
 					<button type='button' id='bookacti-event-delete-exceptions-button' class='bookacti-delete-exception-button'><?php esc_html_e( 'Delete selected', 'booking-activities' ); ?></button>
 				</div>
 			</div>
 		<?php 
 			do_action( 'bookacti_event_tab_repetition_after', $params );
-		} 
+		}
 		?>
 	</form>
 </div>
@@ -740,7 +740,7 @@ foreach( $templates as $template ) {
 
 		/**
 		 * Fill "General" tab of "Group of Events" dialog
-		 * @version 1.7.18
+		 * @version 1.12.0
 		 * @param array $params
 		 */
 		function bookacti_fill_group_of_events_tab_general( $params = array() ) {
@@ -751,7 +751,7 @@ foreach( $templates as $template ) {
 					$tip = esc_html__( 'Name this group of events. Your cutomers may see this name if they have several booking choices (if the event is in two groups, or if you also allow to book the event alone). Choose a short and relevant name.', 'booking-activities' );
 					$args = array(
 						'type'			=> 'textarea',
-						'name'			=> 'group-of-events-title',
+						'name'			=> 'title',
 						'id'			=> 'bookacti-group-of-events-title-field',
 						'placeholder'	=> $tip,
 						'value'			=> ''
@@ -769,7 +769,7 @@ foreach( $templates as $template ) {
 			</div>
 			<div>
 				<label for='bookacti-group-of-events-category-selectbox' ><?php esc_html_e( 'Group category', 'booking-activities' ); ?></label>
-				<select name='group-of-events-category' id='bookacti-group-of-events-category-selectbox' >
+				<select name='category_id' id='bookacti-group-of-events-category-selectbox' >
 					<option value='new' ><?php esc_html_e( 'New category', 'booking-activities' ); ?></option>
 					<?php
 						$template_id = get_user_meta( get_current_user_id(), 'bookacti_default_template', true );
@@ -789,7 +789,7 @@ foreach( $templates as $template ) {
 			</div>
 			<div id='bookacti-group-of-events-new-category-title' >
 				<label for='bookacti-group-of-events-category-title-field' ><?php esc_html_e( 'New category title', 'booking-activities' ); ?></label>
-				<input type='text' name='group-of-events-category-title' id='bookacti-group-of-events-category-title-field' />
+				<input type='text' name='category_title' id='bookacti-group-of-events-category-title-field' />
 				<?php
 					$tip = esc_html__( 'Name the group of events category.', 'booking-activities' );
 					$tip .= esc_html__( 'Thanks to categories, you will be able to choose what groups of events are available on what booking forms.', 'booking-activities' );
@@ -933,11 +933,11 @@ foreach( $templates as $template ) {
 				?>
 				</label>
 				<div id='bookacti-group-of-events-add-exception-container' class='bookacti-add-exception-container'>
-					<input type='date' id='bookacti-group-of-events-exception-date-picker' class='bookacti-repeat-exception-date-picker' max='2037-12-31'>
+					<input type='date' id='bookacti-group-of-events-exception-date-picker' class='bookacti-exception-date-picker' max='2037-12-31'>
 					<button type='button' id='bookacti-group-of-events-add-exception-button' class='bookacti-add-exception-button'><?php esc_html_e( 'Add', 'booking-activities' ); ?></button>
 				</div>
 				<div>
-					<select multiple id='bookacti-group-of-events-exceptions-selectbox' name='exceptions_dates[]'></select>
+					<select multiple id='bookacti-group-of-events-exceptions-selectbox' class='bookacti-exceptions-selectbox' name='exceptions_dates[]'></select>
 					<button type='button' id='bookacti-group-of-events-delete-exceptions-button' class='bookacti-delete-exception-button'><?php esc_html_e( 'Delete selected', 'booking-activities' ); ?></button>
 				</div>
 			</div>

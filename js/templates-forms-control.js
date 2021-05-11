@@ -14,38 +14,42 @@ $j( document ).ready( function() {
 	/**
 	 * Validate exception - on select
 	 * @since 1.9.0
+	 * @version 1.12.0
 	 */
-	$j( '#bookacti-event-exception-date-picker' ).on( 'change', function() { 
-		bookacti_validate_add_exception_form();
+	$j( '.bookacti-exception-date-picker' ).on( 'change', function() { 
+		bookacti_validate_add_exception_form( $j( this ).closest( '.bookacti-template-dialog' ) );
 	});
 	
 	
 	/**
 	 * Add exception - on click
-	 * @version 1.8.5
+	 * @version 1.12.0
 	 */
-	$j( '#bookacti-event-add-exception-button' ).on( 'click', function() { 
-		var isFormValid = bookacti_validate_add_exception_form();
+	$j( '.bookacti-add-exception-button' ).on( 'click', function() { 
+		var container = $j( this ).closest( '.bookacti-template-dialog' );
+		var isFormValid = bookacti_validate_add_exception_form( container );
 		if( isFormValid ) {
-			var exception_date = moment.utc( $j( '#bookacti-event-exception-date-picker' ).val() ).locale( 'en' ).format( 'YYYY-MM-DD' );
-			$j( '#bookacti-event-exceptions-selectbox' ).append( "<option class='exception' value='" + exception_date + "' >" + exception_date + "</option>" );
+			var exception_date = moment.utc( container.find( '.bookacti-exception-date-picker' ).val() ).locale( 'en' ).format( 'YYYY-MM-DD' );
+			container.find( 'select.bookacti-exceptions-selectbox' ).append( "<option class='exception' value='" + exception_date + "' >" + exception_date + "</option>" );
 		}
 	});
 
 
 	/**
 	 * Remove exception - on click
+	 * @version 1.12.0
 	 */
-	$j( '#bookacti-event-delete-exceptions-button' ).on( 'click', function() { 
-		$j( '#bookacti-event-exceptions-selectbox option:selected' ).remove();
+	$j( '.bookacti-delete-exception-button' ).on( 'click', function() { 
+		$j( this ).closest( '.bookacti-template-dialog' ).find( 'select.bookacti-exceptions-selectbox option:selected' ).remove();
 	});
 	
 
 	/**
 	 * Remove exception - on pressing 'Delete' key
+	 * @version 1.12.0
 	 * @param {Event} key
 	 */
-	$j( '#bookacti-event-exceptions-selectbox' ).on( 'keyup', function( key ) { 
+	$j( 'select.bookacti-exceptions-selectbox' ).on( 'keyup', function( key ) { 
 		if( key.which === 46 ) {
 			$j( this ).find( 'option:selected' ).remove();
 		}
@@ -375,9 +379,9 @@ function bookacti_validate_event_repetition_data( object_type ) {
 		$j( scope + ' input[name="repeat_from"]' ).prop( 'disabled', true );
 		$j( scope + ' input[name="repeat_to"]' ).prop( 'disabled', true );
 	}
-	$j( scope + ' input.bookacti-repeat-exception-date-picker' ).prop( 'disabled', true );
+	$j( scope + ' input.bookacti-exception-date-picker' ).prop( 'disabled', true );
 	$j( scope + ' input.bookacti-add-exception-button' ).prop( 'disabled', true );
-	$j( scope + ' select[name="exceptions_dates[]"]' ).prop( 'disabled', true );
+	$j( scope + ' select.bookacti-exceptions-selectbox' ).prop( 'disabled', true );
 	$j( scope + ' div[id$="-repeat-days-container"]' ).hide();
 	$j( scope + ' div[id$="-repeat-monthly_type-container"]' ).hide();
 	$j( scope + ' div[id$="-repeat-from-container"]' ).hide();
@@ -390,8 +394,8 @@ function bookacti_validate_event_repetition_data( object_type ) {
 	if( exceptions_min.isAfter( exceptions_max ) ) { exceptions_disabled = true; };
 	
 	if( ! exceptions_disabled ) {
-		if( valid_form.isRepeatFrom )	{ $j( scope + ' input.bookacti-repeat-exception-date-picker' ).attr( 'min', exceptions_min.format( 'YYYY-MM-DD' ) ); }
-		if( valid_form.isRepeatTo )		{ $j( scope + ' input.bookacti-repeat-exception-date-picker' ).attr( 'max', exceptions_max.format( 'YYYY-MM-DD' ) ); }
+		if( valid_form.isRepeatFrom )	{ $j( scope + ' input.bookacti-exception-date-picker' ).attr( 'min', exceptions_min.format( 'YYYY-MM-DD' ) ); }
+		if( valid_form.isRepeatTo )		{ $j( scope + ' input.bookacti-exception-date-picker' ).attr( 'max', exceptions_max.format( 'YYYY-MM-DD' ) ); }
 	}
 	
 	// When the repetition period change, detect out-of-the-repeat-period existing exceptions and alert user
@@ -406,7 +410,7 @@ function bookacti_validate_event_repetition_data( object_type ) {
 
 	// Clean the feedbacks before displaying new feedbacks
 	$j( scope + ' div[id$="-repeat-to-container"] .bookacti-form-error, ' + scope + ' .bookacti-add-exception-container .bookacti-form-error' ).remove();
-	$j( scope + ' input[name="repeat_from"], ' + scope + ' input[name="repeat_to"], ' + scope + ' select[name="exceptions_dates[]"]' ).removeClass( 'bookacti-input-error bookacti-input-warning' );
+	$j( scope + ' input[name="repeat_from"], ' + scope + ' input[name="repeat_to"], ' + scope + ' select.bookacti-exceptions-selectbox' ).removeClass( 'bookacti-input-error bookacti-input-warning' );
     
 	// Allow third party to change results
 	$j( scope ).trigger( 'bookacti_validate_event_repetition_data', [ valid_form ] );
@@ -427,9 +431,9 @@ function bookacti_validate_event_repetition_data( object_type ) {
 		
 		if( valid_form.isFromBeforeTo && valid_form.isEventBetweenFromAndTo ) {
 			// Enable the exception fields
-			$j( scope + ' input.bookacti-repeat-exception-date-picker' ).prop( 'disabled', exceptions_disabled );
+			$j( scope + ' input.bookacti-exception-date-picker' ).prop( 'disabled', exceptions_disabled );
 			$j( scope + ' input.bookacti-add-exception-button' ).prop( 'disabled', false );
-			$j( scope + ' select[name="exceptions_dates[]"]' ).prop( 'disabled', false );
+			$j( scope + ' select.bookacti-exceptions-selectbox' ).prop( 'disabled', false );
 			$j( scope + ' .bookacti-exceptions-container' ).show();
 
 		} else {
@@ -443,7 +447,7 @@ function bookacti_validate_event_repetition_data( object_type ) {
 	}
 
 	if( valid_form.areExcep && ! valid_form.areExcepBetweenFromAndTo ) { 
-		$j( scope + ' select[name="exceptions_dates[]"]' ).addClass( 'bookacti-input-warning' );
+		$j( scope + ' select.bookacti-exceptions-selectbox' ).addClass( 'bookacti-input-warning' );
 		$j( scope + ' .bookacti-add-exception-container' ).append( "<div class='bookacti-form-error'>" + bookacti_localized.error_excep_not_btw_from_and_to + "</div>" );
 	}
 
@@ -453,67 +457,61 @@ function bookacti_validate_event_repetition_data( object_type ) {
 
 /**
  * Check event date exceptions field
- * @version 1.8.5
+ * @version 1.12.0
+ * @param {HTMLElement} container
  * @returns {boolean}
  */
-function bookacti_validate_add_exception_form() {
-    //Get params
-    var event_id        = $j( '#bookacti-event-data-dialog' ).data( 'event-id' );
-    var exception_date  = moment.utc( $j( '#bookacti-event-data-dialog #bookacti-event-exception-date-picker' ).val() ).locale( 'en' );
-    var repeat_from     = moment.utc( $j( '#bookacti-event-data-dialog #bookacti-event-repeat-from' ).val() ).locale( 'en' );
-    var repeat_to       = moment.utc( $j( '#bookacti-event-data-dialog #bookacti-event-repeat-to' ).val() ).locale( 'en' );
-    
-    //Init boolean test variables
-    var isNewExcep                  = false;
-    var isNewExcepBetweenFromAndTo  = false;
-    var isNewExcepDifferent         = true;
-    var isNewExcepBooked            = false;
-    var sendForm                    = false;
-    
-    //Make the tests and change the booleans
-    if( ! isNaN( exception_date ) && exception_date  !== '' && exception_date !== null )    { isNewExcep = true; }
-    if( isNewExcep && (exception_date >= repeat_from) && (exception_date <= repeat_to ))    { isNewExcepBetweenFromAndTo = true; }
-    
-    //Detect duplicated exception
-    $j( '#bookacti-event-data-dialog .exception' ).each( function() {
-        if( exception_date.format( 'YYYY-MM-DD' ) === moment.utc( $j( this ).val() ).locale( 'en' ).format( 'YYYY-MM-DD' ) ) { 
-            isNewExcepDifferent = false;
-            $j( this ).effect( 'highlight', 'swing', { color: '#ffff99' }, 2000 );
-        }
-    });
-    
-    //Prevent from adding an exception on a day when the occurrence is booked
-	var exception_element = $j( '.fc-event[data-event-id="' + event_id + '"][data-event-start^="' + exception_date.format( 'YYYY-MM-DD' ) + '"]' );
-	if( exception_element.length ) {
-		if( parseInt( exception_element.find( '.bookacti-bookings' ).text() ) > 0 ) {
-			isNewExcepBooked = true;
-		}
+function bookacti_validate_add_exception_form( container ) {
+	var exception_date  = moment.utc( container.find( '.bookacti-exception-date-picker' ).val() ).locale( 'en' );
+	var repeat_from     = moment.utc( container.find( 'input[name="repeat_from"]' ).val() ).locale( 'en' );
+	var repeat_to       = moment.utc( container.find( 'input[name="repeat_to"]' ).val() ).locale( 'en' );
+
+	// Init boolean test variables
+	var valid_form = {
+		'isNewExcep'				: false,
+		'isNewExcepBetweenFromAndTo': false,
+		'isNewExcepDifferent'		: true,
+		'send'						: false
+	};
+
+	// Make the tests and change the booleans
+	if( ! isNaN( exception_date ) && exception_date !== '' && exception_date !== null )	{ valid_form.isNewExcep = true; }
+	if( valid_form.isNewExcep 
+	&&  exception_date.isSameOrAfter( repeat_from, 'day' ) 
+	&&  exception_date.isSameOrBefore( repeat_to, 'day' ) ) { valid_form.isNewExcepBetweenFromAndTo = true; }
+
+	// Detect duplicated exception
+	if( valid_form.isNewExcep ) {
+		container.find( '.exception' ).each( function() {
+			if( exception_date.format( 'YYYY-MM-DD' ) === moment.utc( $j( this ).val() ).locale( 'en' ).format( 'YYYY-MM-DD' ) ) { 
+				valid_form.isNewExcepDifferent = false;
+				$j( this ).effect( 'highlight', 'swing', { color: '#ffff99' }, 2000 );
+			}
+		});
 	}
-    
-    
-    if( isNewExcepBetweenFromAndTo && isNewExcepDifferent ) { sendForm = true; }
-    
-    //Clean the feedbacks before displaying new feedbacks
-    $j( '#bookacti-event-add-exception-container .bookacti-form-error, #bookacti-event-add-exception-container .bookacti-form-warning' ).remove();
-    $j( '#bookacti-event-add-exception-container input' ).removeClass( 'bookacti-input-error bookacti-input-warning' );
-    
-    //Check the results and show feedbacks
-    //ERROR
-    if( ! isNewExcepBetweenFromAndTo ) { 
-        $j( '#bookacti-event-exception-date-picker' ).addClass( 'bookacti-input-error' );
-        $j( '#bookacti-event-add-exception-container' ).append( "<div class='bookacti-form-error'>" + bookacti_localized.error_excep_not_btw_from_and_to + "</div>" );
-    }
-    if( ! isNewExcepDifferent ) { 
-        $j( '#bookacti-event-exception-date-picker' ).addClass( 'bookacti-input-error' );
-        $j( '#bookacti-event-add-exception-container' ).append( "<div class='bookacti-form-error'>" + bookacti_localized.error_excep_duplicated + "</div>" );
-    }
-    if( isNewExcepBooked ) { 
-        $j( '#bookacti-event-exception-date-picker' ).addClass( 'bookacti-input-warning' );
-        $j( '#bookacti-event-add-exception-container' ).append( "<div class='bookacti-form-warning'>" + bookacti_localized.error_set_excep_on_booked_occur + "</div>" );
-    }
-    
-    return sendForm;
+
+	if( valid_form.isNewExcep && valid_form.isNewExcepBetweenFromAndTo && valid_form.isNewExcepDifferent ) { valid_form.send = true; }
+	
+	// Allow third party to change results
+	container.trigger( 'bookacti_validate_add_exception', [ valid_form ] );
+	
+	// Clean old feedbacks
+	container.find( '.bookacti-add-exception-container .bookacti-form-error' ).remove();
+	container.find( '.bookacti-add-exception-container input' ).removeClass( 'bookacti-input-error' );
+
+	// Feedback errors
+	if( ! valid_form.isNewExcepBetweenFromAndTo ) { 
+		container.find( '.bookacti-exception-date-picker' ).addClass( 'bookacti-input-error' );
+		container.find( '.bookacti-add-exception-container' ).append( "<div class='bookacti-form-error'>" + bookacti_localized.error_excep_not_btw_from_and_to + "</div>" );
+	}
+	if( ! valid_form.isNewExcepDifferent ) { 
+		container.find( '.bookacti-exception-date-picker' ).addClass( 'bookacti-input-error' );
+		container.find( '.bookacti-add-exception-container' ).append( "<div class='bookacti-form-error'>" + bookacti_localized.error_excep_duplicated + "</div>" );
+	}
+
+	return valid_form.send;
 }
+
 
 
 

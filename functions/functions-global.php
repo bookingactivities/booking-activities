@@ -584,7 +584,6 @@ function bookacti_get_js_variables() {
 				'error_freq_not_allowed'            => esc_html__( 'Error: The repetition frequency is not a valid value.', 'booking-activities' ),
 				'error_excep_not_btw_from_and_to'   => esc_html__( 'Exception dates should be included in the repetition period.', 'booking-activities' ),
 				'error_excep_duplicated'            => esc_html__( 'Exceptions should all have a different date.', 'booking-activities' ),
-				'error_set_excep_on_booked_occur'   => esc_html__( 'Warning: this occurrence is booked.', 'booking-activities' ),
 				'error_no_templates_for_activity'	=> esc_html__( 'The activity must be bound to at least one calendar.', 'booking-activities' ),
 				'error_select_at_least_two_events'	=> esc_html__( 'You must select at least two events.', 'booking-activities' ),
 				'error_edit_locked_event'           => esc_html__( 'This event is booked, you cannot move it nor change its duration.', 'booking-activities' ),
@@ -1757,6 +1756,21 @@ function bookacti_substr( $string, $offset = 0, $length = null ) {
  */
 function bookacti_sort_array_by_order( $a, $b ) {
 	return $a['order'] - $b['order'];
+}
+
+
+/**
+ * Sort array of arrays with a ['start'] index
+ * @since 1.12.0
+ * @param array $a
+ * @param array $b
+ * @return array 
+ */
+function bookacti_sort_array_by_start( $a, $b ) {
+	if( $a[ 'start' ] === $b[ 'start' ] ) { return 0; }
+	$a_dt = new DateTime( $a[ 'start' ] );
+	$b_dt = new DateTime( $b[ 'start' ] );
+	return $a_dt < $b_dt ? -1 : 1;
 }
 
 
