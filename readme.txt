@@ -321,6 +321,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.11.1 =
+* Fix - Order data were blank in bookings lists and exports after the 10 first orders
+
 = 1.11.0 - 2021/05/05 =
 * **[See the user-friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-11-advanced-options-to-repeat-events/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
 * Feature - Repeat events: option to skip n days / weeks / months between each occurrence (e.g.: repeat every 2 days)
