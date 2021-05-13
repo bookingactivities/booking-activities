@@ -1647,7 +1647,7 @@ function bookacti_format_form_filters( $filters = array() ) {
 /**
  * Display 'managers' metabox content for forms
  * @since 1.5.0
- * @version 1.8.8
+ * @version 1.12.0
  */
 function bookacti_display_form_managers_meta_box( $form ) {
 	// Get current form managers option list
@@ -1658,7 +1658,7 @@ function bookacti_display_form_managers_meta_box( $form ) {
 	$form_managers_cap = array( 'bookacti_edit_forms' );
 	$form_managers_args = array(
 		'option_label' => array( 'display_name', ' (', 'user_login', ')' ), 
-		'id' => 'bapap-add-new-booking-pass-template-managers-select-box', 
+		'id' => 'bapap-add-new-form-managers-select-box', 
 		'name' => '', 
 		'class' => 'bookacti-add-new-items-select-box bookacti-managers-selectbox',
 		'role__in' => apply_filters( 'bookacti_managers_roles', array_merge( bookacti_get_roles_by_capabilities( $form_managers_cap ), $form_managers_cap ), 'form' ),

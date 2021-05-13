@@ -375,7 +375,7 @@ add_action( 'wp_ajax_bookactiChangeBookingQuantity', 'bookacti_controller_change
 /**
  * AJAX Controller - Get reschedule booking system data by booking ID
  * @since 1.8.0 (was bookacti_controller_get_booking_data)
- * @version 1.9.0
+ * @version 1.12.0
  */
 function bookacti_controller_get_reschedule_booking_system_data() {
 	$booking_id	= intval( $_POST[ 'booking_id' ] );
@@ -421,7 +421,7 @@ function bookacti_controller_get_reschedule_booking_system_data() {
 		if( $booking->activity_id ) {
 			$atts[ 'calendars' ] = bookacti_get_templates_by_activity( $atts[ 'activities' ], true );
 			if( count( $atts[ 'calendars' ] ) !== 1 ) {
-				$mixed_data = bookacti_get_mixed_template_data( $atts[ 'calendars' ], $atts[ 'past_events' ] );
+				$mixed_data = bookacti_get_mixed_template_data( $atts[ 'calendars' ] );
 				$atts[ 'display_data' ][ 'minTime' ] = ! empty( $mixed_data[ 'settings' ][ 'minTime' ] ) ? $mixed_data[ 'settings' ][ 'minTime' ] : '00:00';
 				$atts[ 'display_data' ][ 'maxTime' ] = ! empty( $mixed_data[ 'settings' ][ 'maxTime' ] ) ? $mixed_data[ 'settings' ][ 'maxTime' ] : '00:00';
 			}

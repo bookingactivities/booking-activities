@@ -322,6 +322,8 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 == Changelog ==
 
 = 1.12.0 =
+* Breaking change - Remove opening and closing dates from calendar settings in calendar editor
+* Feature - Add a button to jump to a specific date in calendar editor
 * Tweak - The WC refund coupon codes are crossed out is in the booking lists if they are no longer valid
 * Tweak - Remove restrictions on event availability and repetition frequency, you can update them regardless of bookings made
 * Dev - Breaking change - the wp_bookacti_exceptions table was totally refactored and the API related to exceptions too

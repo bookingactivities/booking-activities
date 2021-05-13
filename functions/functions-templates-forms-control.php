@@ -5,48 +5,102 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 // TEMPLATE
 
 /**
- * Validate template basic data
- * @since	1.0.6
- * @version	1.8.7
- * @param	string	$template_title
- * @param	string	$template_start Format 'YYYY-MM-DD'
- * @param	string	$template_end	Format 'YYYY-MM-DD'
- * @return	array
+ * Get template default data
+ * @since 1.12.0
  */
-function bookacti_validate_template_data( $template_title, $template_start, $template_end ) {
+function bookacti_get_template_default_data() {
+	return apply_filters( 'bookacti_template_default_data', array(
+		'id' => 0,
+		'title' => esc_html__( 'Calendar', 'booking-activities' ),
+		'active' => 1
+	));
+}
 
-    //Init var to check with worst case
-    $is_template_start_before_end	= false;
-	
-    //Prepare var that will be used to check the conditions
-    $start_date = strtotime( $template_start );
-    $end_date   = strtotime( $template_end );
-	
-    //Make the tests to validate the var
-    if( $start_date <= $end_date ) { $is_template_start_before_end = true; }
-	
-    $return_array = array();
-    $return_array['status'] = 'valid';
-    $return_array['errors'] = array();
-    if( ! $is_template_start_before_end ) {
-        $return_array['status'] = 'not_valid';
-		$return_array['errors'][] = 'error_closing_before_opening';
-    }
-    
-    return apply_filters( 'bookacti_validate_template_data', $return_array, $template_title, $template_start, $template_end );
+/**
+ * Get template default meta
+ * @since 1.12.0
+ */
+function bookacti_get_template_default_meta() {
+	return apply_filters( 'bookacti_template_default_meta', array(
+		'minTime'		=> '00:00',
+		'maxTime'		=> '00:00',
+		'snapDuration'	=> '00:05'
+	));
 }
 
 
 /**
- * Format template managers
- * @version 1.8.8
+ * Sanitize template settings
+ * @since 1.12.0 (was bookacti_sanitize_template_settings)
+ * @param array $raw_data
+ * @return array
+ */
+function bookacti_sanitize_template_data( $raw_data ) {
+	$default_data = bookacti_get_template_default_data();
+	$default_meta = bookacti_get_template_default_meta();
+	
+	// Sanitize common values
+	$keys_by_type = array( 
+		'int'	=> array( 'id', 'duplicated_template_id' ),
+		'str'	=> array( 'title', 'minTime', 'maxTime', 'snapDuration' ),
+		'array'	=> array( 'managers' ),
+		'bool'	=> array( 'active' )
+	);
+	$data = bookacti_sanitize_values( array_merge( $default_data, $default_meta, array( 'managers' => array() ) ), $raw_data, $keys_by_type );
+	
+	if( ! $data[ 'id' ] && ! empty( $raw_data[ 'template_id' ] ) ) { $data[ 'id' ] = intval( $raw_data[ 'template_id' ] ); }
+	if( ! empty( $raw_data[ 'duplicated_template_id' ] ) ) { $data[ 'duplicated_template_id' ] = intval( $raw_data[ 'duplicated_template_id' ] ); }
+	
+	// Make sure ints are positive
+	foreach( $keys_by_type[ 'int' ] as $int ) { if( $data[ $int ] < 0 ) { $data[ $int ] = $default_data[ $int ]; } }
+	
+	// Sanitize managers
+	$data[ 'managers' ] = bookacti_sanitize_template_managers( $data[ 'managers' ] );
+	
+	// Format 24-h times: minTime, maxTime, snapDuration
+	if( ! preg_match( '/^([0-1][0-9]|2[0-3]):([0-5][0-9])$/', $data[ 'minTime' ] ) )		{ $data[ 'minTime' ] = $default_meta[ 'minTime' ]; }
+	if( ! preg_match( '/^([0-1][0-9]|2[0-3]):([0-5][0-9])$/', $data[ 'maxTime' ] ) )		{ $data[ 'maxTime' ] = $default_meta[ 'maxTime' ]; }
+	if( ! preg_match( '/^([0-1][0-9]|2[0-3]):([0-5][0-9])$/', $data[ 'snapDuration' ] ) )	{ $data[ 'snapDuration' ] = $default_meta[ 'snapDuration' ]; }
+	
+	// If minTime >= maxTime, add one day to maxTime
+	if( intval( str_replace( ':', '', $data[ 'minTime' ] ) ) >= intval( str_replace( ':', '', $data[ 'maxTime' ] ) ) ) { 
+		$data[ 'maxTime' ] = str_pad( 24 + ( intval( substr( $data[ 'maxTime' ], 0, 2 ) ) % 24 ), 2, '0', STR_PAD_LEFT ) . substr( $data[ 'maxTime' ], 2 );
+	}
+	
+	// Make sure snapDuration is not null
+	if( $data[ 'snapDuration' ] === '00:00' ) { $data[ 'snapDuration' ] = '00:01'; }
+	
+	return apply_filters( 'bookacti_sanitized_template_data', $data, $raw_data );
+}
+
+
+/**
+ * Validate template data
+ * @since 1.0.6
+ * @version 1.12.0
+ * @param array $data
+ * @return array
+ */
+function bookacti_validate_template_data( $data ) {
+	$return_array = array(
+		'status' => 'success',
+		'errors' => array(),
+		'messages' => array()
+	);
+	return apply_filters( 'bookacti_validate_template_data', $return_array, $data ) ;
+}
+
+
+/**
+ * Sanitize template managers according to capabilities
+ * @since 1.12.0 (was bookacti_format_template_managers)
  * @param array $template_managers
  * @return array
  */
-function bookacti_format_template_managers( $template_managers = array() ) {
+function bookacti_sanitize_template_managers( $template_managers ) {
 	$template_managers = bookacti_ids_to_array( $template_managers );
 	
-	// If user is not super admin, add him automatically in the template managers list if he isn't already
+	// If the current user is not a super admin, add the current user id in the template managers list
 	$bypass_template_managers_check = apply_filters( 'bookacti_bypass_template_managers_check', false );
 	if( ! is_super_admin() && ! $bypass_template_managers_check ) {
 		$user_id = get_current_user_id();
@@ -69,47 +123,6 @@ function bookacti_format_template_managers( $template_managers = array() ) {
 	}
 	
 	return apply_filters( 'bookacti_template_managers', $template_managers );
-}
-
-
-/**
- * Sanitize template settings
- * @since 1.9.3 (was bookacti_format_template_settings)
- * @param array $raw_settings
- * @return array
- */
-function bookacti_sanitize_template_settings( $raw_settings ) {
-	if( empty( $raw_settings ) ) { $raw_settings = array(); }
-	
-	// Default settings
-	$default_settings = apply_filters( 'bookacti_template_default_settings', array(
-		'minTime'					=> '00:00',
-		'maxTime'					=> '00:00',
-		'snapDuration'				=> '00:05'
-	) );
-	
-	$settings = array();
-		
-	// Check if all templates settings are filled
-	foreach( $default_settings as $setting_key => $setting_default_value ){
-		if( isset( $raw_settings[ $setting_key ] ) && is_string( $raw_settings[ $setting_key ] ) ){ $raw_settings[ $setting_key ] = stripslashes( $raw_settings[ $setting_key ] ); }
-		$settings[ $setting_key ] = isset( $raw_settings[ $setting_key ] ) ? $raw_settings[ $setting_key ] : $setting_default_value;
-	}
-	
-	// Format 24-h times: minTime, maxTime, snapDuration
-	if( ! preg_match( '/^([0-1][0-9]|2[0-3]):([0-5][0-9])$/', $settings[ 'minTime' ] ) )		{ $settings[ 'minTime' ] = $default_settings[ 'minTime' ]; }
-	if( ! preg_match( '/^([0-1][0-9]|2[0-3]):([0-5][0-9])$/', $settings[ 'maxTime' ] ) )		{ $settings[ 'maxTime' ] = $default_settings[ 'maxTime' ]; }
-	if( ! preg_match( '/^([0-1][0-9]|2[0-3]):([0-5][0-9])$/', $settings[ 'snapDuration' ] ) )	{ $settings[ 'snapDuration' ] = $default_settings[ 'snapDuration' ]; }
-	
-	// If minTime >= maxTime, add one day to maxTime
-	if( intval( str_replace( ':', '', $settings[ 'minTime' ] ) ) >= intval( str_replace( ':', '', $settings[ 'maxTime' ] ) ) ) { 
-		$settings[ 'maxTime' ] = str_pad( 24 + ( intval( substr( $settings[ 'maxTime' ], 0, 2 ) ) % 24 ), 2, '0', STR_PAD_LEFT ) . substr( $settings[ 'maxTime' ], 2 );
-	}
-	
-	// Make sure snapDuration is not null
-	if( $settings[ 'snapDuration' ] === '00:00' ) { $settings[ 'snapDuration' ] = '00:01'; }
-	
-	return apply_filters( 'bookacti_template_settings_formatted', $settings, $raw_settings, $default_settings );
 }
 
 
@@ -259,6 +272,7 @@ function bookacti_get_event_repeat_periods() {
  */
 function bookacti_sanitize_event_data( $raw_data ) {
 	$default_data = bookacti_get_event_default_data();
+	$default_meta = bookacti_get_event_default_meta();
 	
 	// Sanitize common values
 	$keys_by_type = array( 
@@ -269,14 +283,12 @@ function bookacti_sanitize_event_data( $raw_data ) {
 		'date'		=> array( 'repeat_from', 'repeat_to' ),
 		'bool'		=> array( 'active' )
 	);
-	$data = bookacti_sanitize_values( $default_data, $raw_data, $keys_by_type );
+	$data = bookacti_sanitize_values( array_merge( $default_data, $default_meta ), $raw_data, $keys_by_type );
 	
 	if( ! $data[ 'id' ] && ! empty( $raw_data[ 'event_id' ] ) ) { $data[ 'id' ] = intval( $raw_data[ 'event_id' ] ); }
 	
 	// Make sure ints are positive
-	foreach( $keys_by_type[ 'int' ] as $int ) {
-		if( $data[ $int ] < 0 ) { $data[ $int ] = $default_data[ $int ]; }
-	}
+	foreach( $keys_by_type[ 'int' ] as $int ) { if( $data[ $int ] < 0 ) { $data[ $int ] = $default_data[ $int ]; } }
 	
 	// Make sure start AND end are set
 	if( ! $data[ 'start' ] || ! $data[ 'end' ] ) { 
@@ -541,7 +553,7 @@ function bookacti_get_group_of_events_repeat_periods() {
  */
 function bookacti_sanitize_group_of_events_data( $raw_data ) {
 	$default_data = bookacti_get_group_of_events_default_data();
-	$default_data[ 'category_title' ] = '';
+	$default_meta = bookacti_get_group_of_events_default_data();
 	
 	// Sanitize common values
 	$keys_by_type = array( 
@@ -552,14 +564,12 @@ function bookacti_sanitize_group_of_events_data( $raw_data ) {
 		'date'		=> array( 'repeat_from', 'repeat_to' ),
 		'bool'		=> array( 'active' )
 	);
-	$data = bookacti_sanitize_values( $default_data, $raw_data, $keys_by_type );
+	$data = bookacti_sanitize_values( array_merge( $default_data, $default_meta, array( 'category_title' => '' ) ), $raw_data, $keys_by_type );
 	
 	if( ! $data[ 'id' ] && ! empty( $raw_data[ 'group_id' ] ) ) { $data[ 'id' ] = intval( $raw_data[ 'group_id' ] ); }
 	
 	// Make sure ints are positive
-	foreach( $keys_by_type[ 'int' ] as $int ) {
-		if( $data[ $int ] < 0 ) { $data[ $int ] = $default_data[ $int ]; }
-	}
+	foreach( $keys_by_type[ 'int' ] as $int ) { if( $data[ $int ] < 0 ) { $data[ $int ] = $default_data[ $int ]; } }
 	
 	// Sanitize array of events
 	$raw_events = isset( $raw_data[ 'events' ] ) ? bookacti_maybe_decode_json( stripslashes( $raw_data[ 'events' ] ), true ) : array();
@@ -643,7 +653,7 @@ function bookacti_validate_group_category_data( $title ) {
 		$return_array['errors'][] = 'error_missing_title';
 	}
 	
-	return apply_filters( 'bookacti_validate_group_activity_data', $return_array, $title );
+	return apply_filters( 'bookacti_validate_group_category_data', $return_array, $title );
 }
 
 

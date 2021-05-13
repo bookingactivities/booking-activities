@@ -1355,15 +1355,20 @@ function bookacti_expand_collapse_all_groups_of_events( action, exceptions ) {
 
 /**
  * Load activities bound to selected template
- * @version 1.11.0
+ * @version 1.12.0
  * @param {int} selected_template_id
  */
 function bookacti_load_activities_bound_to_template( selected_template_id ) {
 	if( parseInt( selected_template_id ) === parseInt( bookacti.selected_template ) ) { return; }
 
-	$j( '#bookacti-activities-bound-to-template .bookacti-form-error' ).remove();
+	$j( '#bookacti-activity-import-dialog .bookacti-form-error' ).remove();
 
 	bookacti_start_template_loading();
+	var loading_div = '<div class="bookacti-loading-alt">' 
+						+ '<img class="bookacti-loader" src="' + bookacti_localized.plugin_path + '/img/ajax-loader.gif" title="' + bookacti_localized.loading + '" />'
+						+ '<span class="bookacti-loading-alt-text" >' + bookacti_localized.loading + '</span>'
+					+ '</div>';
+	$j( '#bookacti-activity-import-dialog' ).append( loading_div );
 
 	$j.ajax({
 		url: ajaxurl, 
@@ -1377,21 +1382,21 @@ function bookacti_load_activities_bound_to_template( selected_template_id ) {
 		dataType: 'json',
 		success: function( response ) {
 			// Empty current list of activity
-			$j( 'select#activities-to-import' ).empty();
+			$j( 'select#bookacti-activities-to-import option' ).remove();
 
 			if( response.status === 'success' ) {
 				// Fill the available activities select box
 				if( response.activities ) {
 					$j.each( response.activities, function( activity_id, activity ){
 						if( ! $j( '#bookacti-template-activity-list .bookacti-activity[data-activity-id="' + activity_id + '"]' ).length ) {
-							$j( 'select#activities-to-import' ).append( '<option value="' + activity_id + '" >' + activity.title + '</option>' );
+							$j( 'select#bookacti-activities-to-import' ).append( '<option value="' + activity_id + '" >' + activity.title + '</option>' );
 						}
 					});
 				}
 			} else {
 				var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
-				$j( '#bookacti-activities-bound-to-template' ).append( '<div class="bookacti-form-error">' + response.message + '</div>' );
-				console.log( error_message );
+				$j( '#bookacti-activity-import-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + error_message + '</li></ul></div>' );
+				$j( '#bookacti-activity-import-dialog .bookacti-notices' ).show();
 				console.log( response );
 			}
 		},
@@ -1400,7 +1405,8 @@ function bookacti_load_activities_bound_to_template( selected_template_id ) {
 			console.log( e );
 		},
 		complete: function() { 
-			bookacti_stop_template_loading(); 
+			bookacti_stop_template_loading();
+			$j( '#bookacti-activity-import-dialog .bookacti-loading-alt' ).remove();
 		}
 	});
 }

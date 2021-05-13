@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Fetch events by templates and / or activities
- * @version 1.11.0
+ * @version 1.12.0
  * @param array $raw_args {
  *  @type array $templates Array of template IDs
  *  @type array $activities Array of activity IDs
@@ -38,44 +38,13 @@ function bookacti_fetch_events( $raw_args = array() ) {
 	$variables					= array();
 
 	// Prepare the query
-	$query  = 'SELECT DISTINCT E.id as event_id, E.template_id, E.activity_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_step, E.repeat_on, E.repeat_from, E.repeat_to, E.availability, A.color, T.start_date as template_start,  T.end_date as template_end '
+	$query  = 'SELECT DISTINCT E.id as event_id, E.template_id, E.activity_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_step, E.repeat_on, E.repeat_from, E.repeat_to, E.availability, A.color '
 			. ' FROM ' . BOOKACTI_TABLE_ACTIVITIES . ' as A, ' . BOOKACTI_TABLE_TEMPLATES . ' as T, ' . BOOKACTI_TABLE_EVENTS . ' as E '
 			. ' WHERE E.activity_id = A.id '
 			. ' AND E.template_id = T.id '
 			. ' AND E.active = 1 '
 			. ' AND A.active = 1 '
 			. ' AND T.active = 1 ';
-
-	// Do not fetch events out of their respective template limits
-	$query  .= ' AND (	
-						( 	NULLIF( E.repeat_freq, "none" ) IS NULL 
-							AND (	UNIX_TIMESTAMP( CONVERT_TZ( E.start, %s, @@global.time_zone ) ) >= 
-									UNIX_TIMESTAMP( CONVERT_TZ( T.start_date, %s, @@global.time_zone ) ) 
-								AND
-									UNIX_TIMESTAMP( CONVERT_TZ( E.end, %s, @@global.time_zone ) ) <= 
-									UNIX_TIMESTAMP( CONVERT_TZ( ( T.end_date + INTERVAL 24 HOUR ), %s, @@global.time_zone ) ) 
-								) 
-						) 
-						OR
-						( 	E.repeat_freq IS NOT NULL
-							AND NOT (	UNIX_TIMESTAMP( CONVERT_TZ( E.repeat_from, %s, @@global.time_zone ) ) < 
-										UNIX_TIMESTAMP( CONVERT_TZ( T.start_date, %s, @@global.time_zone ) ) 
-									AND 
-										UNIX_TIMESTAMP( CONVERT_TZ( E.repeat_to, %s, @@global.time_zone ) ) < 
-										UNIX_TIMESTAMP( CONVERT_TZ( T.start_date, %s, @@global.time_zone ) ) 
-									)
-							AND NOT (	UNIX_TIMESTAMP( CONVERT_TZ( E.repeat_from, %s, @@global.time_zone ) ) > 
-										UNIX_TIMESTAMP( CONVERT_TZ( T.end_date, %s, @@global.time_zone ) ) 
-									AND 
-										UNIX_TIMESTAMP( CONVERT_TZ( E.repeat_to, %s, @@global.time_zone ) ) > 
-										UNIX_TIMESTAMP( CONVERT_TZ( T.end_date, %s, @@global.time_zone ) ) 
-									)
-						) 
-					)';
-
-	for( $i = 0; $i < 12; $i++ ) {
-		$variables[] = $user_timestamp_offset;
-	}
 
 	// Do not fetch events totally out of the desired interval
 	if( $args[ 'interval' ] ) {
@@ -128,7 +97,6 @@ function bookacti_fetch_events( $raw_args = array() ) {
 
 	// Whether to fetch past events
 	if( ! $args[ 'past_events' ] ) {
-
 		$started_events_bookable = bookacti_get_setting_value( 'bookacti_general_settings', 'started_events_bookable' );
 
 		$query .= ' AND (	UNIX_TIMESTAMP( CONVERT_TZ( E.start, %s, @@global.time_zone ) ) >= %d 
@@ -189,7 +157,7 @@ function bookacti_fetch_events( $raw_args = array() ) {
 
 /**
  * Fetch events by groups and / or group categories
- * @version 1.11.0
+ * @version 1.12.0
  * @global wpdb $wpdb
  * @param array $raw_args {
  *  @type array $templates Array of template IDs
@@ -224,7 +192,7 @@ function bookacti_fetch_grouped_events( $raw_args = array() ) {
 	$variables					= array();
 
 	// Prepare the query
-	$query  = 'SELECT DISTINCT GE.event_id, E.template_id, E.activity_id, E.title, GE.event_start as start, GE.event_end as end, "none" as repeat_freq, E.repeat_step, E.repeat_on, E.repeat_from, E.repeat_to, E.availability, A.color, T.start_date as template_start,  T.end_date as template_end '
+	$query  = 'SELECT DISTINCT GE.event_id, E.template_id, E.activity_id, E.title, GE.event_start as start, GE.event_end as end, "none" as repeat_freq, E.repeat_step, E.repeat_on, E.repeat_from, E.repeat_to, E.availability, A.color '
 			. ' FROM ' . BOOKACTI_TABLE_GROUPS_EVENTS . ' as GE, ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as G, ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' as C, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A, ' . BOOKACTI_TABLE_TEMPLATES . ' as T, ' . BOOKACTI_TABLE_EVENTS . ' as E '
 			. ' WHERE GE.event_id = E.id '
 			. ' AND E.activity_id = A.id '
@@ -279,19 +247,6 @@ function bookacti_fetch_grouped_events( $raw_args = array() ) {
 		$query .= ' ) ';
 		$variables = array_merge( $variables, $args[ 'group_categories' ] );
 	}
-
-	// Do not fetch events out of their respective template limits
-	$query  .= ' AND (	UNIX_TIMESTAMP( CONVERT_TZ( GE.event_start, %s, @@global.time_zone ) ) >= 
-						UNIX_TIMESTAMP( CONVERT_TZ( T.start_date, %s, @@global.time_zone ) ) 
-					AND
-						UNIX_TIMESTAMP( CONVERT_TZ( GE.event_end, %s, @@global.time_zone ) ) <= 
-						UNIX_TIMESTAMP( CONVERT_TZ( ( T.end_date + INTERVAL 24 HOUR ), %s, @@global.time_zone ) ) 
-					) ';
-
-	$variables[] = $user_timestamp_offset;
-	$variables[] = $user_timestamp_offset;
-	$variables[] = $user_timestamp_offset;
-	$variables[] = $user_timestamp_offset;
 
 	// Do not fetch events out of the desired interval
 	if( $args[ 'interval' ] ) {
@@ -499,7 +454,7 @@ function bookacti_fetch_booked_events( $raw_args = array() ) {
 
 /**
  * Get event by id
- * @version 1.11.0
+ * @version 1.12.0
  * @global wpdb $wpdb
  * @param int $event_id
  * @return object
@@ -507,7 +462,7 @@ function bookacti_fetch_booked_events( $raw_args = array() ) {
 function bookacti_get_event_by_id( $event_id ) {
 	global $wpdb;
 
-	$query	= 'SELECT E.id as event_id, E.template_id, E.activity_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_step, E.repeat_on, E.repeat_from, E.repeat_to, E.availability, E.active as event_active, A.color, A.active as activity_active, T.start_date as template_start, T.end_date as template_end, T.active as template_active ' 
+	$query	= 'SELECT E.id as event_id, E.template_id, E.activity_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_step, E.repeat_on, E.repeat_from, E.repeat_to, E.availability, E.active as event_active, A.color, A.active as activity_active, T.active as template_active ' 
 			. ' FROM ' . BOOKACTI_TABLE_EVENTS . ' as E '
 			. ' LEFT JOIN ' . BOOKACTI_TABLE_ACTIVITIES . ' as A ON E.activity_id = A.id '
 			. ' LEFT JOIN ' . BOOKACTI_TABLE_TEMPLATES . ' as T ON E.template_id = T.id '
@@ -713,7 +668,7 @@ function bookacti_get_group_of_events( $group_id, $return_type = OBJECT ) {
 /**
  * Get groups of events data by template ids
  * @since 1.4.0 (was bookacti_get_groups_of_events_by_template and bookacti_get_groups_of_events_by_category)
- * @version 1.8.6
+ * @version 1.12.0
  * @global wpdb $wpdb
  * @param array $raw_args {
  *  @param array|int $templates
@@ -806,10 +761,6 @@ function bookacti_get_groups_of_events( $raw_args ) {
 		$query .= ') ';
 		$variables = array_merge( $variables, $args[ 'event_groups' ] );
 	}
-
-	// Make sure groups are in their template range
-	$query .= ' AND CAST( GE.start AS DATE ) >= T.start_date ';
-	$query .= ' AND CAST( GE.end AS DATE ) <= T.end_date ';
 
 	// Make sure that the groups begin after availability period start and end before availability period end
 	// except if we want past groups or started groups (it also applies to future events out of the availability period)
@@ -1346,44 +1297,6 @@ function bookacti_get_group_category_ids_by_template( $template_ids = array(), $
 	return $category_ids;
 }
 
-
-
-
-// TEMPLATES
-
-/**
- * Get the lower opening date and the higher closing date from multiple templates
- * @since 1.0.6
- * @version 1.7.17
- * @param int|array $template_ids Array of template ids
- * @return array (start, end)
- */
-function bookacti_get_mixed_template_range( $template_ids = array() ) {
-	$template_ids = bookacti_ids_to_array( $template_ids );
-
-	global $wpdb;
-
-	$query	= 'SELECT MIN( start_date ) as start, MAX( end_date ) as end '
-			. ' FROM ' . BOOKACTI_TABLE_TEMPLATES
-			. ' WHERE active = 1 ';
-
-	if( $template_ids ) {
-		$len = count( $template_ids );
-		$query .= ' AND id IN ( %d';
-		for( $i=1; $i < $len; ++$i ) {
-			$query .= ', %d';
-		}
-		$query .= ')';
-
-		$query = $wpdb->prepare( $query, $template_ids );
-	}
-
-	$range = $wpdb->get_row( $query, ARRAY_A );
-
-	if( ! $range ) { $range = array(); }
-
-	return $range;
-}
 
 
 

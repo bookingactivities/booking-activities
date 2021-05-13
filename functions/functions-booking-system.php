@@ -1529,7 +1529,7 @@ function bookacti_is_existing_occurrence( $event, $event_start, $event_end = '' 
 /**
  * Check if an event can be book with the given form
  * @since 1.5.0
- * @version 1.11.0
+ * @version 1.12.0
  * @param int $form_id
  * @param int|object $event_id
  * @param string $event_start
@@ -1593,25 +1593,6 @@ function bookacti_is_event_available_on_form( $form_id, $event_id, $event_start,
 		}
 	}
 	
-	// Check if the groups of events is in its template range
-	if( $belongs_to_form ) {
-		$in_template_range = false;
-		$template_range = bookacti_get_mixed_template_range( $event->template_id );
-		if( $template_range ) {
-			$event_start_dt		= DateTime::createFromFormat( 'Y-m-d H:i:s', $event_start );
-			$event_end_dt		= DateTime::createFromFormat( 'Y-m-d H:i:s', $event_end );
-			$template_start_dt	= DateTime::createFromFormat( 'Y-m-d H:i:s', $template_range[ 'start' ] . ' 00:00:00' );
-			$template_end_dt	= DateTime::createFromFormat( 'Y-m-d H:i:s', $template_range[ 'end' ] . ' 23:59:59' );
-			if( $event_start_dt >= $template_start_dt && $event_end_dt <= $template_end_dt ) {
-				$in_template_range = true;
-			}
-		}
-		if( ! $in_template_range ) {
-			$belongs_to_form = false;
-			$validated[ 'message' ] = esc_html__( 'The event is out of its calendar range, please pick another event and try again.', 'booking-activities' );
-		}
-	}
-	
 	if( ! $belongs_to_form ) {
 		$validated[ 'error' ] = 'event_not_in_form';
 		return $validated;
@@ -1664,7 +1645,7 @@ function bookacti_is_event_available_on_form( $form_id, $event_id, $event_start,
 /**
  * Check if a group of events can be book with the given form
  * @since 1.5.0
- * @version 1.11.0
+ * @version 1.12.0
  * @param int $form_id
  * @param int|object $group_id
  * @return array
@@ -1716,25 +1697,6 @@ function bookacti_is_group_of_events_available_on_form( $form_id, $group_id ) {
 		if( ! in_array( $group->category_id, $calendar_data[ 'group_categories' ] ) ) {
 			$belongs_to_form = false;
 			$validated[ 'message' ] = esc_html__( 'The selected goup of events is not supposed to be available on this form.', 'booking-activities' );
-		}
-	}
-	
-	// Check if the groups of events is in its template range
-	if( $belongs_to_form ) {
-		$in_template_range = false;
-		$template_range = bookacti_get_mixed_template_range( $category[ 'template_id' ] );
-		if( $template_range ) {
-			$event_start_dt		= DateTime::createFromFormat( 'Y-m-d H:i:s', $group->start );
-			$event_end_dt		= DateTime::createFromFormat( 'Y-m-d H:i:s', $group->end );
-			$template_start_dt	= DateTime::createFromFormat( 'Y-m-d H:i:s', $template_range[ 'start' ] . ' 00:00:00' );
-			$template_end_dt	= DateTime::createFromFormat( 'Y-m-d H:i:s', $template_range[ 'end' ] . ' 23:59:59' );
-			if( $event_start_dt >= $template_start_dt && $event_end_dt <= $template_end_dt ) {
-				$in_template_range = true;
-			}
-		}
-		if( ! $in_template_range ) {
-			$belongs_to_form = false;
-			$validated[ 'message' ] = esc_html__( 'The group of events is out of its calendar range, please pick another event and try again.', 'booking-activities' );
 		}
 	}
 	
@@ -1951,7 +1913,7 @@ function bookacti_get_bounding_events_from_db_events( $events, $raw_args = array
 /**
  * Get occurrences of repeated events
  * @since 1.8.4 (was bookacti_get_occurences_of_repeated_event)
- * @version 1.10.0
+ * @version 1.12.0
  * @param object $event Event data 
  * @param array $raw_args {
  *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
@@ -1988,16 +1950,10 @@ function bookacti_get_occurrences_of_repeated_event( $event, $raw_args = array()
 	$timezone			= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
 	$interval_start		= ! empty( $args[ 'interval' ][ 'start' ] ) ? new DateTime( $args[ 'interval' ][ 'start' ], $timezone ) : '';
 	$interval_end		= ! empty( $args[ 'interval' ][ 'end' ] ) ? new DateTime( $args[ 'interval' ][ 'end' ], $timezone ) : '';
-	$template_start		= ! empty( $event->template_start ) ? new DateTime( $event->template_start . ' 00:00:00', $timezone ) : '';
-	$template_end		= ! empty( $event->template_end ) ? new DateTime( $event->template_end . ' 23:59:59', $timezone ) : '';
 	$event_start		= new DateTime( $event->start, $timezone );
 	$event_end			= new DateTime( $event->end, $timezone );
 	$event_duration		= $event_start->diff( $event_end );
 	$event_start_time	= substr( $event->start, 11 );
-	
-	// Restrict interval to template start and end
-	if( ! $interval_start || ( $template_start && $interval_start && $template_start > $interval_start ) )	{ $interval_start = $template_start ? clone $template_start : ''; }
-	if( ! $interval_end || ( $template_end && $interval_end && $template_end < $interval_end ) )			{ $interval_end = $template_end ? clone $template_end : ''; }
 	
 	// Permute start and end if start > end
 	if( $interval_start && $interval_end && $interval_start > $interval_end ) { $temp_interval_start = clone $interval_start; $interval_start = clone $interval_end; $interval_end = $temp_interval_start; }
@@ -2572,7 +2528,7 @@ function bookacti_get_event_first_occurrence_date( $event ) {
 
 
 /**
- * Get a new interval of events to load. Computed from the compulsory interval, or now's date and template interval.
+ * Get a new interval of events to load. Computed from the compulsory interval, or now's date
  * @since 1.2.2
  * @version 1.11.0
  * @param array $availability_period array( 'start'=> 'Y-m-d H:i:s', 'end'=> 'Y-m-d H:i:s' ) 

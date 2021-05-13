@@ -6,8 +6,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Fetch events to display on calendar editor
- * @since 1.1.0 (replace bookacti_fetch_events from 1.0.0)
- * @version 1.11.0
+ * @since 1.1.0 (replace bookacti_fetch_events)
+ * @version 1.12.0
  * @global wpdb $wpdb
  * @param array $raw_args {
  *  @type array $templates Array of template IDs
@@ -38,10 +38,9 @@ function bookacti_fetch_events_for_calendar_editor( $raw_args = array() ) {
 	$user_timestamp_offset		= $current_datetime_object->format( 'P' );
 
 	// Select events
-	$query  = 'SELECT E.id as event_id, E.template_id, E.activity_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_step, E.repeat_on, E.repeat_from, E.repeat_to, E.availability, A.color, T.start_date as template_start,  T.end_date as template_end ' 
-			. ' FROM ' . BOOKACTI_TABLE_EVENTS . ' as E, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A, ' . BOOKACTI_TABLE_TEMPLATES . ' as T'
+	$query  = 'SELECT E.id as event_id, E.template_id, E.activity_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_step, E.repeat_on, E.repeat_from, E.repeat_to, E.availability, A.color ' 
+			. ' FROM ' . BOOKACTI_TABLE_EVENTS . ' as E, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A '
 			. ' WHERE E.activity_id = A.id '
-			. ' AND E.template_id = T.id '
 			. ' AND E.active = 1 ';
 
 	$variables = array();
@@ -1082,7 +1081,7 @@ function bookacti_get_group_category_template_id( $category_id ) {
 
 /**
  * Get templates
- * @version 1.8.6
+ * @version 1.12.0
  * @global wpdb $wpdb
  * @param array $template_ids
  * @param boolean $ignore_permissions
@@ -1105,11 +1104,11 @@ function bookacti_fetch_templates( $template_ids = array(), $ignore_permissions 
 	$variables = array();
 
 	if( $ignore_permissions ) {
-		$query = 'SELECT T.id, T.title, T.start_date as start, T.end_date as end, T.active '
+		$query = 'SELECT T.id, T.title, T.active '
 			. ' FROM ' . BOOKACTI_TABLE_TEMPLATES . ' as T '
 			. ' WHERE T.active = 1 ';
 	} else {
-		$query = 'SELECT T.id, T.title, T.start_date as start, T.end_date as end, T.active '
+		$query = 'SELECT T.id, T.title, T.active '
 			. ' FROM ' . BOOKACTI_TABLE_TEMPLATES . ' as T, ' . BOOKACTI_TABLE_PERMISSIONS . ' as P '
 			. ' WHERE T.active = 1 '
 			. ' AND T.id = P.object_id '
@@ -1184,43 +1183,25 @@ function bookacti_get_template( $template_id, $return_type = OBJECT ) {
 
 /**
  * Create a new template
+ * @version 1.12.0
  * @global wpdb $wpdb
- * @param string $template_title
- * @param string $template_start
- * @param string $template_end
- * @param array $template_managers
- * @param array $template_meta
- * @param int $duplicated_template_id
+ * @param array $data Data sanitized with bookacti_sanitize_template_data
  * @return int
  */
-function bookacti_insert_template( $template_title, $template_start, $template_end, $template_managers, $template_meta, $duplicated_template_id = 0 ) { 
-   global $wpdb;
+function bookacti_insert_template( $data ) { 
+	global $wpdb;
 
-	//Add the new template and set it by default
-	$wpdb->insert( 
-		BOOKACTI_TABLE_TEMPLATES, 
-		array( 
-			'title'			=> $template_title,
-			'start_date'	=> $template_start,
-			'end_date'		=> $template_end
-		),
-		array( '%s', '%s', '%s' )
-	);
+	$query = ' INSERT INTO ' . BOOKACTI_TABLE_TEMPLATES . ' ( title, active ) '
+			. ' VALUES ( %s, 1 )';
 
-	$new_template_id = $wpdb->insert_id;
+	$variables = array( $data[ 'title' ] );
 
-	// Insert Managers
-	bookacti_insert_managers( 'template', $new_template_id, $template_managers );
+	$query = $wpdb->prepare( $query, $variables );
+	$wpdb->query( $query );
 
-	// Insert Meta
-	bookacti_insert_metadata( 'template', $new_template_id, $template_meta );
+	$template_id = $wpdb->insert_id;
 
-	// Duplicate events and activities connection if the template is duplicated
-	if( $duplicated_template_id > 0 ) {
-		bookacti_duplicate_template( $duplicated_template_id, $new_template_id );
-	}
-
-	return $new_template_id;
+	return $template_id;
 }
 
 
@@ -1232,11 +1213,9 @@ function bookacti_insert_template( $template_title, $template_start, $template_e
  * @param int $new_template_id
  */
 function bookacti_duplicate_template( $duplicated_template_id, $new_template_id ) {
-
 	global $wpdb;
 
 	if( $duplicated_template_id && $new_template_id ) {
-
 		// Duplicate events without exceptions and their metadata
 		$query_event_wo_excep	= ' SELECT id FROM ' . BOOKACTI_TABLE_EVENTS
 								. ' WHERE id NOT IN ( SELECT object_id FROM ' . BOOKACTI_TABLE_EXCEPTIONS . ' WHERE object_type = "event" ) ' 
@@ -1245,7 +1224,6 @@ function bookacti_duplicate_template( $duplicated_template_id, $new_template_id 
 		$events_wo_exceptions	= $wpdb->get_results( $prep_event_wo_excep, OBJECT );
 
 		foreach( $events_wo_exceptions as $event ) {
-
 			$old_event_id = $event->id;
 
 			// Duplicate the event and get its id 
@@ -1267,7 +1245,6 @@ function bookacti_duplicate_template( $duplicated_template_id, $new_template_id 
 		$events_with_exceptions	= $wpdb->get_results( $prep_event_w_excep, OBJECT );
 
 		foreach( $events_with_exceptions as $event ) {
-
 			$old_event_id = $event->id;
 
 			// Duplicate the event and get its id 
@@ -1294,51 +1271,38 @@ function bookacti_duplicate_template( $duplicated_template_id, $new_template_id 
 
 /**
  * Deactivate a template
+ * @version 1.12.0
  * @global wpdb $wpdb
  * @param int $template_id
  * @return int|false
  */
 function bookacti_deactivate_template( $template_id ) {
 	global $wpdb;
-
-	$deactivated = $wpdb->update( 
-		BOOKACTI_TABLE_TEMPLATES, 
-		array( 
-			'active' => 0
-		),
-		array( 'id' => $template_id ),
-		array( '%d' ),
-		array( '%d' )
-	);
-
+	$query = ' UPDATE ' . BOOKACTI_TABLE_TEMPLATES . ' SET active = 0 WHERE id = %d ';
+	$query = $wpdb->prepare( $query, $template_id );
+	$deactivated = $wpdb->query( $query );
 	return $deactivated;
 }
 
 
 /**
  * Update template
- * 
+ * @version 1.12.0
  * @global wpdb $wpdb
- * @param int $template_id
- * @param string $template_title
- * @param string $template_start
- * @param string $template_end
+ * @param array $data
  * @return int|false
  */
-function bookacti_update_template( $template_id, $template_title, $template_start, $template_end ) { 
+function bookacti_update_template( $data ) { 
 	global $wpdb;
-
-	$updated = $wpdb->update( 
-		BOOKACTI_TABLE_TEMPLATES, 
-		array( 
-			'title'         => $template_title,
-			'start_date'    => $template_start,
-			'end_date'      => $template_end,
-		),
-		array( 'id' => $template_id ),
-		array( '%s', '%s', '%s' ),
-		array( '%d' )
-	);
+	
+	$query = ' UPDATE ' . BOOKACTI_TABLE_TEMPLATES . ' SET '
+				. ' title = IFNULL( NULLIF( %s, "" ), title ) '
+			. ' WHERE id = %d ';
+	
+	$variables = array( $data[ 'title' ], $data[ 'id' ] );
+	
+	$query = $wpdb->prepare( $query, $variables );
+	$updated = $wpdb->query( $query );
 
 	return $updated;
 }

@@ -478,10 +478,12 @@ function bookacti_get_js_variables() {
 		'one_person_per_booking'			=> esc_html__( 'for one person', 'booking-activities' ),
 		/* translators: %1$s is the number of people who can enjoy the activity with one booking */
 		'n_people_per_booking'				=> esc_html__( 'for %1$s people', 'booking-activities' ),
-		/* translators: This particle is used right after the quantity of bookings. Put the singular here. E.g.: 1 booking . */
+		/* translators: This particle is used right after the quantity of bookings. Put the singular here. E.g.: 1 booking. */
 		'booking'							=> esc_html__( 'booking', 'booking-activities' ),
-		/* translators: This particle is used right after the quantity of bookings. Put the plural here. E.g.: 2 bookings . . */
+		/* translators: This particle is used right after the quantity of bookings. Put the plural here. E.g.: 2 bookings. */
 		'bookings'							=> esc_html__( 'bookings', 'booking-activities' ),
+		/* translators: Button label to go to a specific date in the calendar */
+		'go_to_button'						=> esc_html__( 'Go to', 'booking-activities' ),
 
 		// VARIABLES
 		'ajaxurl'							=> admin_url( 'admin-ajax.php' ),
@@ -1310,7 +1312,7 @@ function bookacti_display_field( $args ) {
 /**
  * Format arguments to display a proper field
  * @since 1.2.0
- * @version 1.8.7
+ * @version 1.12.0
  * @param array $args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'attr', 'value', 'multiple', 'tip', 'required']
  * @return array|false
  */
@@ -1358,8 +1360,7 @@ function bookacti_format_field_args( $args ) {
 	if( $args[ 'required' ] ) { $args[ 'class' ] .= ' bookacti-required-field'; }
 
 	// Make sure fields with multiple options have 'options' set
-	if( in_array( $args[ 'type' ], array( 'checkboxes', 'radio', 'select', 'user_id' ) ) ){
-		if( ! $args[ 'options' ] ) { return false; }
+	if( in_array( $args[ 'type' ], array( 'checkboxes', 'radio', 'select', 'user_id' ) ) ) {
 		if( ! is_array( $args[ 'attr' ] ) ) { $args[ 'attr' ] = array(); }
 	} else {
 		if( ! is_string( $args[ 'attr' ] ) ) { $args[ 'attr' ] = ''; }

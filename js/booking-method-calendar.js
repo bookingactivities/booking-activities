@@ -1,3 +1,18 @@
+$j( document ).ready( function() {
+	/**
+	 * Go to a specific date in calendar
+	 * @since 1.12.0
+	 */
+	$j( 'body' ).on( 'change', '.bookacti-go-to-datepicker', function() {
+		var date = $j( this ).val();
+		var calendar = $j( this ).closest( '.bookacti-calendar' );
+		if( ! date || ! calendar ) { return; }
+		if( ! calendar.hasClass( 'fc' ) ) { return; }
+		calendar.fullCalendar( 'gotoDate', date );
+	});
+});
+
+
 /**
  * Initialize the calendar
  * @version 1.9.3

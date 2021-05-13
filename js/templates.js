@@ -12,12 +12,6 @@ $j( document ).ready( function() {
 	bookacti.blocked_events		= false;
 	bookacti.load_events		= false;
 	
-	var template_start_date, template_end_date = '';
-	if( $j( '#bookacti-template-picker option[value="' + bookacti.selected_template + '"]' ).length ) {
-		template_start_date = $j( '#bookacti-template-picker option[value="' + bookacti.selected_template + '"]' ).data( 'template-start' );
-		template_end_date = $j( '#bookacti-template-picker option[value="' + bookacti.selected_template + '"]' ).data( 'template-end' );
-	}
-	
 	// Init globals
 	bookacti.booking_system[ 'bookacti-template-calendar' ]								= {};
 	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'calendars' ]				= bookacti.selected_template ? [ bookacti.selected_template ] : [];
@@ -29,14 +23,10 @@ $j( document ).ready( function() {
 	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ]			= [];
 	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_interval' ]		= [];
 	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'group_categories_data' ]	= [];
-	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'start' ]					= template_start_date ? template_start_date + ' 00:00:00' : '';
-	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'end' ]					= template_end_date ? template_end_date + ' 23:59:59' : '';
+	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'start' ]					= '1970-02-01 00:00:00';
+	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'end' ]					= '2037-12-31 23:59:59';
 	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'display_data' ]			= [];
 	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ]			= [];
-	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ]			= { 
-		'start' : template_start_date,
-		'end' : template_end_date
-	};
 
 	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ]		= [];
 	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'picked_events' ]			= [];
@@ -118,19 +108,19 @@ $j( document ).ready( function() {
  */
 function bookacti_load_template_calendar( calendar ) {
 	calendar = calendar || $j( '#bookacti-template-calendar' );
-	
+
 	// Get calendar settings
 	var availability_period	= bookacti_get_availability_period( calendar );
 	var display_data		= typeof bookacti.booking_system[ 'bookacti-template-calendar' ][ 'display_data' ] !== 'undefined' ? bookacti.booking_system[ 'bookacti-template-calendar' ][ 'display_data' ] : {};
 	var min_time			= typeof display_data.minTime !== 'undefined' ? display_data.minTime : '00:00';
 	var max_time			= typeof display_data.maxTime !== 'undefined' ? display_data.maxTime : '24:00';
 	var snap_duration		= typeof display_data.snapDuration !== 'undefined' ? display_data.snapDuration : '00:05';
-	
+
 	// See https://fullcalendar.io/docs/
 	var init_data = {
 		// OPTIONS
 		locale:					bookacti_localized.fullcalendar_locale,
-
+		
 		defaultView:            'agendaWeek',
 		minTime:                min_time,
 		maxTime:                max_time,
@@ -141,8 +131,8 @@ function bookacti_load_template_calendar( calendar ) {
 		aspectRatio:			'auto',
 		
 		validRange: {
-            start: availability_period.start ? moment.utc( availability_period.start.substr( 0, 10 ) ) : moment.utc( $j( '#bookacti-template-picker :selected' ).data( 'template-start' ) ),
-            end: availability_period.end ? moment.utc( availability_period.end.substr( 0, 10 ) ).add( 1, 'days' ) : moment.utc( $j( '#bookacti-template-picker :selected' ).data( 'template-end' ) ).add( 1, 'days' )
+            start: availability_period.start ? moment.utc( availability_period.start.substr( 0, 10 ) ) : moment.utc( '1970-02-01 00:00:00' ),
+            end: availability_period.end ? moment.utc( availability_period.end.substr( 0, 10 ) ).add( 1, 'days' ) : moment.utc( '2037-12-31 23:59:59' )
         },
 		
 		nowIndicator:           false,
@@ -168,8 +158,20 @@ function bookacti_load_template_calendar( calendar ) {
 		
 		
 		// Header : Functionnality to Display above the calendar
+		customButtons: {
+			goTo: {
+				text: bookacti_localized.go_to_button,
+				click: function() {
+					if( ! $j( '.bookacti-go-to-datepicker' ).length ) {
+						$j( '.fc-goTo-button' ).after( '<input type="date" class="bookacti-go-to-datepicker"/>' );
+						$j( '.bookacti-go-to-datepicker' ).hide();
+					}
+					$j( '.bookacti-go-to-datepicker' ).toggle( 200 );
+				}
+			}
+		},
 		header: {
-			left: 'prev,next today',
+			left: 'prevYear,prev,next,nextYear today goTo',
 			center: 'title',
 			right: 'month,agendaWeek,agendaDay'
 		},

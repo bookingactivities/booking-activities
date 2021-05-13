@@ -9,10 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 // Templates options list
 $templates = bookacti_fetch_templates();
-$templates_options = '';
-foreach( $templates as $template ) {
-	$templates_options .= '<option value="' . esc_attr( $template[ 'id' ] ) . '" >' . esc_html( $template[ 'title' ] ) . '</option>';
-}
+$templates_options = array();
+foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = esc_html( $template[ 'title' ] ); }
 ?>
 
 <!-- Edit event dialog -->
@@ -231,7 +229,7 @@ foreach( $templates as $template ) {
 <div id='bookacti-template-data-dialog' class='bookacti-backend-dialog bookacti-template-dialog tabs' title='<?php esc_html_e( 'Calendar parameters', 'booking-activities' ); ?>' style='display:none;' >
 	<form id='bookacti-template-data-form' >
 		<?php wp_nonce_field( 'bookacti_insert_or_update_template', 'nonce_insert_or_update_template' ); ?>
-		<input type='hidden' name='template-id' id='bookacti-template-data-form-template-id' value='' />
+		<input type='hidden' name='template_id' id='bookacti-template-data-form-template-id' value='' />
 		<input type='hidden' name='action' id='bookacti-template-data-form-action' value='' />
 		<div id='bookacti-template-dialog-lang-switcher' class='bookacti-lang-switcher' ></div>
 		
@@ -240,7 +238,7 @@ foreach( $templates as $template ) {
 			$template_tabs = apply_filters( 'bookacti_template_dialog_tabs', array (
 				array(	'label'			=> esc_html__( 'General', 'booking-activities' ),
 						'callback'		=> 'bookacti_fill_template_tab_general',
-						'parameters'	=> array( 'template_options' => $templates_options ),
+						'parameters'	=> array( 'templates_options' => $templates_options ),
 						'order'			=> 10 ),
 				array(	'label'			=> esc_html__( 'Editor', 'booking-activities' ),
 						'callback'		=> 'bookacti_fill_template_tab_editor',
@@ -258,49 +256,34 @@ foreach( $templates as $template ) {
 			
 			/**
 			 * Display the 'General' tab content of template settings
-			 * @version 1.8.0
+			 * @version 1.12.0
 			 * @param array $params
 			 */
 			function bookacti_fill_template_tab_general( $params = array() ) {
-				$templates_options = $params[ 'template_options' ];
+				$templates_options = isset( $params[ 'templates_options' ] ) ? $params[ 'templates_options' ] : array();
 				do_action( 'bookacti_template_tab_general_before', $params );
-			?>
-				<div>
-					<label for='bookacti-template-title' ><?php esc_html_e( 'Title', 'booking-activities' ); ?></label>
-					<input type='text' name='template-title' id='bookacti-template-title' />
-					<?php
-						bookacti_help_tip( esc_html__( 'Give your calendar a title to easily recognize it in a list.', 'booking-activities' ) );
-					?>
-				</div>
-				<div id='bookacti-duplicate-template-fields'>
-					<label for='bookacti-template-duplicated-template-id' ><?php esc_html_e( 'Duplicate from', 'booking-activities' ); ?></label>
-					<select name='duplicated-template-id' id='bookacti-template-duplicated-template-id' class='bookacti-template-select-box' >
-						<option value='0' ><?php esc_html_e( 'Don\'t duplicate', 'booking-activities' ); ?></option>
-						<?php echo $templates_options; ?>
-					</select>
-					<?php
-						bookacti_help_tip( esc_html__( 'If you want to duplicate a calendar, select it in the list. It will copy its events, activities list, and its settings but not the bookings made on it.', 'booking-activities' ) );
-					?>
-				</div>
-				<div>
-					<label for='bookacti-template-opening' ><?php esc_html_e( 'Opening', 'booking-activities' ); ?></label>
-					<input type='date' name='template-opening' id='bookacti-template-opening' max='2037-12-31' >
-					<?php
-						bookacti_help_tip( esc_html__( 'The starting date of your calendar. Basically it should be the date of your first event.', 'booking-activities' ) );
-					?>
-				</div>
-				<div>
-					<label for='bookacti-template-closing' ><?php esc_html_e( 'Closing', 'booking-activities' ); ?></label>
-					<input type='date' name='template-closing' id='bookacti-template-closing' max='2037-12-31' >
-					<?php
-						bookacti_help_tip( esc_html__( 'The ending date of your calendar. Basically it should be the date of your last event.', 'booking-activities' ) );
-					?>
-				</div>
-				<div class='bookacti-calendar-opening-closing-notice bookacti-info'>
-					<span class='dashicons dashicons-info'></span>
-					<span><?php esc_html_e( 'Events prior to the opening date, or subsequent to the closing date won\'t be displayed on your booking forms.', 'booking-activities' ); ?></span>
-				</div>
-			<?php 
+				
+				$fields = array(
+					'title' => array(
+						'type'	=> 'text',
+						'name'	=> 'title',
+						'id'	=> 'bookacti-template-title',
+						'title'	=> esc_html__( 'Title', 'booking-activities' ),
+						'tip'	=> esc_html__( 'Give your calendar a title to easily recognize it in a list.', 'booking-activities' )
+					),
+					'duplicated_template_id' => array(
+						'type'		=> 'select',
+						'name'		=> 'duplicated_template_id',
+						'id'		=> 'bookacti-template-duplicated-template-id',
+						'class'		=> 'bookacti-template-select-box',
+						'title'		=> esc_html__( 'Duplicate from', 'booking-activities' ),
+						'options'	=> array( 0 => esc_html__( 'Don\'t duplicate', 'booking-activities' ) ) + $templates_options,
+						'tip'		=> esc_html__( 'If you want to duplicate a calendar, select it in the list. It will copy its events, activities list, and its settings but not the bookings made on it.', 'booking-activities' )
+					)
+				);
+				
+				bookacti_display_fields( $fields );
+				
 				do_action( 'bookacti_template_tab_general_after', $params );
 			} 
 			
@@ -308,7 +291,7 @@ foreach( $templates as $template ) {
 			/**
 			 * Fill the "Editor" tab in calendar settings
 			 * @since 1.7.18 (was bookacti_fill_template_tab_agenda)
-			 * @version 1.8.0
+			 * @version 1.12.0
 			 * @param array $params
 			 */
 			function bookacti_fill_template_tab_editor( $params = array() ) {
@@ -330,7 +313,7 @@ foreach( $templates as $template ) {
 					<?php
 						$agenda_fields = array( 'minTime', 'maxTime', 'snapDuration' );
 						$fields = apply_filters( 'bookacti_template_tab_editor_agenda_fields', bookacti_get_calendar_fields_default_data( $agenda_fields ) );
-						bookacti_display_fields( $fields, array( 'prefix' => 'templateOptions' ) );
+						bookacti_display_fields( $fields );
 					?>
 				</fieldset>
 			<?php
@@ -342,7 +325,7 @@ foreach( $templates as $template ) {
 			
 			/**
 			 * Display the 'Permission' tab content of calendar settings
-			 * @version 1.8.8
+			 * @version 1.12.0
 			 * @param array $params
 			 */
 			function bookacti_fill_template_tab_permissions( $params = array() ) {
@@ -381,8 +364,7 @@ foreach( $templates as $template ) {
 						<button type='button' id='bookacti-add-template-managers' class='bookacti-add-items' ><?php esc_html_e( 'Add manager', 'booking-activities' ); ?></button>
 					</div>
 					<div id='bookacti-template-managers-list-container' class='bookacti-items-list-container' >
-						<select name='template-managers[]' id='bookacti-template-managers-select-box' class='bookacti-items-select-box' multiple >
-						</select>
+						<select name='managers[]' id='bookacti-template-managers-select-box' class='bookacti-items-select-box' multiple></select>
 						<button type='button' id='bookacti-remove-template-managers' class='bookacti-remove-items' ><?php esc_html_e( 'Remove selected', 'booking-activities' ); ?></button>
 					</div>
 				</div>
@@ -420,7 +402,7 @@ foreach( $templates as $template ) {
 							'order'			=> 30 ),
 					array(	'label'			=> esc_html__( 'Permissions', 'booking-activities' ),
 							'callback'		=> 'bookacti_fill_activity_tab_permissions',
-							'parameters'	=> array( 'templates_options' => $templates_options ),
+							'parameters'	=> array(),
 							'order'			=> 100 )
 				) );
 				
@@ -431,7 +413,7 @@ foreach( $templates as $template ) {
 			<?php
 			/**
 			 * Display the 'General' tab content of activity settings
-			 * @version 1.10.0
+			 * @version 1.12.0
 			 * @param array $params
 			 */
 			function bookacti_fill_activity_tab_general( $params = array() ) {
@@ -442,7 +424,6 @@ foreach( $templates as $template ) {
 						'type'	=> 'text',
 						'name'	=> 'activity-title',
 						'id'	=> 'bookacti-activity-title',
-						'class'	=> 'bookacti-translate-input',
 						'title'	=> esc_html__( 'Title', 'booking-activities' ),
 						'tip'	=> esc_html__( 'Choose a short and relevant title for your activity. It will be shown on each events.', 'booking-activities' )
 					),
@@ -685,30 +666,34 @@ foreach( $templates as $template ) {
 <!-- Import an existing activity -->
 <div id='bookacti-activity-import-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Import existing activity', 'booking-activities' ); ?>' style='display:none;' >
     <div id='bookacti-activity-import-container' >
-		<?php wp_nonce_field( 'bookacti_import_activity', 'nonce_import_activity', false ); ?>
 		<div>
 			<?php esc_html_e( 'Import an activity that you have already created on an other calendar:', 'booking-activities' ); ?>
 		</div>
-        <div id='bookacti-template-import-bound-activities' >
-			<label for='template-import-bound-activities' >
-			<?php 
-				/* translators: the user is asked to select a calendar to display its bound activities. This is the label of the select box. */
-				esc_html_e( 'From calendar', 'booking-activities' ); 
-			?>
-			</label>
-			<select name='template-import-bound-activities' id='template-import-bound-activities' class='bookacti-template-select-box' >
-				<?php echo $templates_options; ?>
-			</select>
-		</div>
-        <div id='bookacti-activities-bound-to-template' >
-			<label for='activities-to-import' >
-			<?php 
-				/* translators: the user is asked to select an activity he already created on an other calendar in order to use it on the current calendar. This is the label of the select box. */
-				esc_html_e( 'Activities to import', 'booking-activities' ); 
-			?>
-			</label>
-			<select name='activities-to-import' id='activities-to-import' multiple ></select>
-		</div>
+		<?php 
+			wp_nonce_field( 'bookacti_import_activity', 'nonce_import_activity', false );
+			
+			$fields = array(
+				'duplicated_template_id' => array(
+					'type'		=> 'select',
+					'name'		=> 'template-import-bound-activities',
+					'id'		=> 'template-import-bound-activities',
+					'class'		=> 'bookacti-template-select-box',
+					/* translators: the user is asked to select a calendar to display its bound activities. This is the label of the select box. */
+					'title'		=> esc_html__( 'From calendar', 'booking-activities' ),
+					'options'	=> $templates_options
+				),
+				'activities_to_import' => array(
+					'type'		=> 'select',
+					'multiple'	=> 1,
+					'name'		=> 'activities_to_import',
+					'id'		=> 'bookacti-activities-to-import',
+					/* translators: the user is asked to select an activity he already created on an other calendar in order to use it on the current calendar. This is the label of the select box. */
+					'title'		=> esc_html__( 'Activities to import', 'booking-activities' ),
+					'options'	=> array()
+				)
+			);
+			bookacti_display_fields( $fields );
+		?>
     </div>
 </div>
 

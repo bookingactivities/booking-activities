@@ -7,32 +7,27 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Get booking system data
  * @since 1.7.4
- * @version 1.9.2
+ * @version 1.12.0
  * @param array $atts (see bookacti_format_booking_system_attributes())
  * @param int $template_id
  * @return array
  */
 function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 	$booking_system_data = $atts;
-	
-	$templates_data		= bookacti_get_templates_data( $template_id, true );
-	$availability_period= array( 'start' => $templates_data[ $template_id ][ 'start' ] . ' 00:00:00', 'end' => $templates_data[ $template_id ][ 'end' ] . ' 23:59:59' );
-	$events_interval	= bookacti_get_new_interval_of_events( $availability_period, array(), false, true );
-	$events_args		= array( 'templates' => array( $template_id ), 'interval' => $events_interval );
-	$events				= $events_interval ? bookacti_fetch_events_for_calendar_editor( $events_args ) : array();
+	$templates_data = bookacti_get_templates_data( $template_id, true );
 	
 	$booking_system_data[ 'calendars' ]				= array( $template_id );
-	$booking_system_data[ 'events' ]				= $events[ 'events' ] ? $events[ 'events' ] : array();
-	$booking_system_data[ 'events_data' ]			= $events[ 'data' ] ? $events[ 'data' ] : array();
-	$booking_system_data[ 'events_interval' ]		= array( 'start' => substr( $events_interval[ 'start' ], 0, 10 ), 'end' => substr( $events_interval[ 'end' ], 0, 10 ) );
+	$booking_system_data[ 'events' ]				= array();
+	$booking_system_data[ 'events_data' ]			= array();
+	$booking_system_data[ 'events_interval' ]		= array();
 	$booking_system_data[ 'bookings' ]				= bookacti_get_number_of_bookings_for_booking_system( $template_id );
 	$booking_system_data[ 'exceptions' ]			= bookacti_get_exceptions_by_event( array( 'templates' => array( $template_id ) ) );
 	$booking_system_data[ 'activities_data' ]		= bookacti_get_activities_by_template( $template_id, false, true );
 	$booking_system_data[ 'groups_events' ]			= bookacti_get_groups_events( $template_id );
 	$booking_system_data[ 'groups_data' ]			= bookacti_get_groups_of_events( array( 'templates' => array( $template_id ) ) );
 	$booking_system_data[ 'group_categories_data' ]	= bookacti_get_group_categories( $template_id );
-	$booking_system_data[ 'start' ]					= $availability_period[ 'start' ];
-	$booking_system_data[ 'end' ]					= $availability_period[ 'end' ];
+	$booking_system_data[ 'start' ]					= '1970-02-01 00:00:00';
+	$booking_system_data[ 'end' ]					= '2037-12-31 23:59:59';
 	$booking_system_data[ 'display_data' ]			= $templates_data[ $template_id ][ 'settings' ];
 	$booking_system_data[ 'template_data' ]			= $templates_data[ $template_id ];
 
@@ -269,34 +264,17 @@ function bookacti_get_calendar_fields_default_data( $fields = array() ) {
 /**
  * Get a unique template setting made from a combination of multiple template settings
  * @since	1.2.2 (was bookacti_get_mixed_template_settings)
- * @version 1.9.3
- * @param	array|int $template_ids Array of template ids or single template id
- * @param	boolean $past_events Whether to allow past events
+ * @version 1.12.0
+ * @param	arrayr|int $template_ids Array of template ids or single template id
  * @return	array
  */
-function bookacti_get_mixed_template_data( $template_ids, $past_events = false ) {
+function bookacti_get_mixed_template_data( $template_ids ) {
 	$templates_data = bookacti_get_templates_data( $template_ids, true );
 	$mixed_data = array();
 	$mixed_settings	= array();
 
 	foreach( $templates_data as $template_data ){
 		$settings = $template_data[ 'settings' ];
-		if( isset( $template_data[ 'start' ] ) ) {
-			// Keep the lower value
-			if(  ! isset( $mixed_data[ 'start' ] ) 
-				|| isset( $mixed_data[ 'start' ] ) && strtotime( $template_data[ 'start' ] ) < strtotime( $mixed_data[ 'start' ] ) ) {
-
-				$mixed_data[ 'start' ] = $template_data[ 'start' ];
-			} 
-		}
-		if( isset( $template_data[ 'end' ] ) ) {
-			// Keep the higher value
-			if(  ! isset( $mixed_data[ 'end' ] ) 
-				|| isset( $mixed_data[ 'end' ] ) && strtotime( $template_data[ 'end' ] ) < strtotime( $mixed_data[ 'end' ] ) ) {
-
-				$mixed_data[ 'end' ] = $template_data[ 'end' ];
-			} 
-		}
 		if( isset( $settings[ 'minTime' ] ) ) {
 			// Keep the lower value
 			if(  ! isset( $mixed_settings[ 'minTime' ] ) 
@@ -323,20 +301,10 @@ function bookacti_get_mixed_template_data( $template_ids, $past_events = false )
 		}
 	}
 
-	// Limit the template range to future events
-	if( ! $past_events ) {
-		$timezone			= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
-		$current_time		= new DateTime( 'now', $timezone );
-		$template_start		= new DateTime( $mixed_data[ 'start' ], $timezone );
-		if( $template_start < $current_time ) {
-			$mixed_data[ 'start' ] = $current_time->format( 'Y-m-d' );
-		}
-	}
-
 	// Add mixed settings
 	$mixed_data[ 'settings' ] = $mixed_settings;
 
-	return apply_filters( 'bookacti_mixed_template_settings', $mixed_data, $templates_data, $template_ids, $past_events );
+	return apply_filters( 'bookacti_mixed_template_settings', $mixed_data, $templates_data, $template_ids );
 }
 
 

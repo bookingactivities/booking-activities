@@ -1055,7 +1055,7 @@ add_action( 'admin_footer-booking-activities_page_bookacti_forms', 'bookacti_pri
 /**
  * Create a booking form from REQUEST parameters
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.12.0
  */
 function bookacti_controller_create_form() {
 	if( empty( $_REQUEST[ 'action' ] ) || $_REQUEST[ 'action' ] !== 'new' ) { return; }
@@ -1074,7 +1074,7 @@ function bookacti_controller_create_form() {
 		$default_calendar_meta = array();
 		if( ! empty( $_REQUEST[ 'calendar_field' ][ 'calendars' ] ) ) {
 			$calendar_ids = bookacti_ids_to_array( $_REQUEST[ 'calendar_field' ][ 'calendars' ] );
-			$template_data = bookacti_get_mixed_template_data( $calendar_ids, false );
+			$template_data = bookacti_get_mixed_template_data( $calendar_ids );
 			$default_calendar_meta = $template_data[ 'settings' ];
 		}
 		$raw_calendar_meta = array_merge( $default_calendar_meta, $_REQUEST[ 'calendar_field' ] );

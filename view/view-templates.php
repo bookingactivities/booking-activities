@@ -1,7 +1,7 @@
 <?php
 /**
  * Calendar editor page
- * @version 1.8.7
+ * @version 1.12.0
  */
 
 // Exit if accessed directly
@@ -51,20 +51,11 @@ $default_template = false;
 					<?php
 						if( $templates ) {
 							$default_template = get_user_meta( get_current_user_id(), 'bookacti_default_template', true );
-
 							$default_template_found = false;
 							foreach ( $templates as $template ) {
-
 								$selected = selected( $default_template, $template[ 'id' ], false );
-
-								if( ! empty( $selected ) ) { $default_template_found = true; }
-
-								echo "<option value='"			. esc_attr( $template[ 'id' ] )
-									. "' data-template-start='" . esc_attr( $template[ 'start' ] )
-									. "' data-template-end='"   . esc_attr( $template[ 'end' ] )
-									. "' " . $selected . " >"
-									. esc_html( $template[ 'title' ] )
-									. "</option>";
+								if( $selected ) { $default_template_found = true; }
+								echo '<option value="' . esc_attr( $template[ 'id' ] ) . '" ' . $selected . '>' . esc_html( $template[ 'title' ] ) . '</option>';
 							}
 
 							if ( ! $default_template_found ) { 
