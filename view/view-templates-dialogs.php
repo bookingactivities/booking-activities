@@ -379,9 +379,9 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 <div id='bookacti-activity-data-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Activity parameters', 'booking-activities' ); ?>' style='display:none;' >
 	<form id='bookacti-activity-data-form' >
 		<?php wp_nonce_field( 'bookacti_insert_or_update_activity', 'nonce_insert_or_update_activity' ); ?>
-		<input type='hidden' name='activity-id' id='bookacti-activity-activity-id' />
+		<input type='hidden' name='template_id' id='bookacti-activity-template-id' />
+		<input type='hidden' name='activity_id' id='bookacti-activity-activity-id' />
 		<input type='hidden' name='action'		id='bookacti-activity-action' />
-		<input type='hidden' name='template-id' id='bookacti-activity-template-id' />
 		
 		<div id='bookacti-activity-dialog-lang-switcher' class='bookacti-lang-switcher' ></div>
 			
@@ -422,14 +422,14 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 				$fields = array(
 					'activity-title' => array(
 						'type'	=> 'text',
-						'name'	=> 'activity-title',
+						'name'	=> 'title',
 						'id'	=> 'bookacti-activity-title',
 						'title'	=> esc_html__( 'Title', 'booking-activities' ),
 						'tip'	=> esc_html__( 'Choose a short and relevant title for your activity. It will be shown on each events.', 'booking-activities' )
 					),
 					'activity-availability' => array(
 						'type'	=> 'number',
-						'name'	=> 'activity-availability',
+						'name'	=> 'availability',
 						'id'	=> 'bookacti-activity-availability',
 						'title'	=> esc_html__( 'Default availability', 'booking-activities' ),
 						'label'	=> bookacti_help_tip( esc_html__( 'The default amount of bookings that can be made on each event of this activity. This can be overriden on each event independantly.', 'booking-activities' ), false ) 
@@ -438,7 +438,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 					),
 					'activity-duration' => array(
 						'type'	=> 'duration',
-						'name'	=> 'activity-duration',
+						'name'	=> 'duration',
 						'id'	=> 'bookacti-activity-duration',
 						'title'	=> esc_html__( 'Default duration', 'booking-activities' ),
 						'label'	=> bookacti_help_tip( esc_html__( 'The default duration of an event when you drop this activity onto the calendar. For a better readability, try not to go over your working hours. Best practice for events of several days is to create one event per day and then group them.', 'booking-activities' ), false )
@@ -446,7 +446,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 					),
 					'activity-color' => array(
 						'type'	=> 'color',
-						'name'	=> 'activity-color',
+						'name'	=> 'color',
 						'id'	=> 'bookacti-activity-color',
 						'value' => '#3a87ad',
 						'title'	=> esc_html__( 'Color', 'booking-activities' ),
@@ -463,43 +463,43 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			/**
 			 * Display the fields in the "Availability" tab of the Activity dialog
 			 * @since 1.4.0
-			 * @version 1.9.3
+			 * @version 1.12.0
 			 * @param array $params
 			 */
 			function bookacti_fill_activity_tab_availability( $params = array() ) {
 				do_action( 'bookacti_activity_tab_availability_before', $params );
 				
 				$fields = array(
-					'activityOptions[min_bookings_per_user]' => array(
+					'min_bookings_per_user' => array(
 						'type'	=> 'number',
-						'name'	=> 'activityOptions[min_bookings_per_user]',
+						'name'	=> 'min_bookings_per_user',
 						'id'	=> 'bookacti-activity-min-bookings-per-user',
 						'title'	=> esc_html__( 'Min bookings per user', 'booking-activities' ),
 						'options'=> array( 'min' => 0, 'step' => 1 ),
 						'tip'	=> esc_html__( 'The minimum booking quantity a user has to make on an event of this activity. E.g.: "3", the customer must book at least 3 places of the desired event.', 'booking-activities' )
 								. '<br/>' . esc_html__( 'Set it to "0" to ignore this parameter.', 'booking-activities' )
 					),
-					'activityOptions[max_bookings_per_user]' => array(
+					'max_bookings_per_user' => array(
 						'type'	=> 'number',
-						'name'	=> 'activityOptions[max_bookings_per_user]',
+						'name'	=> 'max_bookings_per_user',
 						'id'	=> 'bookacti-activity-max-bookings-per-user',
 						'title'	=> esc_html__( 'Max bookings per user', 'booking-activities' ),
 						'options'=> array( 'min' => 0, 'step' => 1 ),
 						'tip'	=> esc_html__( 'The maximum booking quantity a user can make on an event of this activity. E.g.: "1", the customer can only book one place of the desired event, and he / she won\'t be allowed to book it twice.', 'booking-activities' )
 								. '<br/>' . esc_html__( 'Set it to "0" to ignore this parameter.', 'booking-activities' )
 					),
-					'activityOptions[max_users_per_event]' => array(
+					'max_users_per_event' => array(
 						'type'	=> 'number',
-						'name'	=> 'activityOptions[max_users_per_event]',
+						'name'	=> 'max_users_per_event',
 						'id'	=> 'bookacti-activity-max-users-per-event',
 						'title'	=> esc_html__( 'Max users per event', 'booking-activities' ),
 						'options'=> array( 'min' => 0, 'step' => 1 ),
 						'tip'	=> esc_html__( 'Set how many different users can book the same event. E.g.: "1", only one user can book a specific event; once he / she has booked it, the event won\'t be available for anyone else anymore, even if it isn\'t full. Useful for private events.', 'booking-activities' )
 								. '<br/>' . esc_html__( 'Set it to "0" to ignore this parameter.', 'booking-activities' )
 					),
-					'activityOptions[booking_changes_deadline]' => array(
+					'booking_changes_deadline' => array(
 						'type'	=> 'duration',
-						'name'	=> 'activityOptions[booking_changes_deadline]',
+						'name'	=> 'booking_changes_deadline',
 						'id'	=> 'bookacti-activity-booking-changes-deadline',
 								/* translators: Followed by a field indicating a number of days, hours and minutes from now. E.g.: "Changes are allowed for bookings starting in at least 2 days, 12 hours, 25 minutes". */
 						'title'	=> esc_html__( 'Changes are allowed for bookings starting in at least', 'booking-activities' ),
@@ -520,63 +520,95 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			/**
 			 * Display the fields in the "Text" tab of the Activity dialog
 			 * @since 1.7.4 (was bookacti_fill_activity_tab_terminology)
-			 * @version 1.7.20
+			 * @version 1.12.0
 			 * @param array $params
 			 */
 			function bookacti_fill_activity_tab_text( $params = array() ) {
 				do_action( 'bookacti_activity_tab_text_before', $params );
-			?>
-				<div>
-					<label for='bookacti-activity-unit-name-singular' ><?php esc_html_e( 'Unit name (singular)', 'booking-activities' ); ?></label>
-					<input type='text' name='activityOptions[unit_name_singular]' id='bookacti-activity-unit-name-singular' />
-					<?php
-						$unit = '<strong><em>' . esc_html( _n( 'unit', 'units', 1, 'booking-activities' ) ) . '</em></strong>';
+			
+				$unit = '<strong><em>' . esc_html( _n( 'unit', 'units', 1, 'booking-activities' ) ) . '</em></strong>';
+				$units = '<strong><em>' . esc_html( _n( 'unit', 'units', 2, 'booking-activities' ) ) . '</em></strong>';
+				
+				$fields = array(
+					'unit_name_singular' => array(
+						'type'	=> 'text',
+						'name'	=> 'unit_name_singular',
+						'id'	=> 'bookacti-activity-unit-name-singular',
+						'title'	=> esc_html__( 'Unit name (singular)', 'booking-activities' ),
 						/* translators: %s is the singular for "unit" */
-						$tip = sprintf( esc_html__( 'Name of the unit the customers will actually book for this activity. Set the singular here. Leave blank to hide this piece of information. E.g.: "You have booked 1 %s".', 'booking-activities' ), $unit );
-						bookacti_help_tip( $tip );
-					?>
-				</div>
-				<div>
-					<label for='bookacti-activity-unit-name-plural' ><?php esc_html_e( 'Unit name (plural)', 'booking-activities' ); ?></label>
-					<input type='text' name='activityOptions[unit_name_plural]' id='bookacti-activity-unit-name-plural' />
-					<?php
-						$units = '<strong><em>' . esc_html( _n( 'unit', 'units', 2, 'booking-activities' ) ) . '</em></strong>';
+						'tip'	=> sprintf( esc_html__( 'Name of the unit the customers will actually book for this activity. Set the singular here. Leave blank to hide this piece of information. E.g.: "You have booked 1 %s".', 'booking-activities' ), $unit )
+					),
+					'unit_name_plural' => array(
+						'type'	=> 'text',
+						'name'	=> 'unit_name_plural',
+						'id'	=> 'bookacti-activity-unit-name-plural',
+						'title'	=> esc_html__( 'Unit name (plural)', 'booking-activities' ),
+						/* translators: %s is the plural for "unit" */
+						'tip'	=> sprintf( esc_html__( 'Name of the unit the customers will actually book for this activity. Set the plural here. Leave blank to hide this piece of information. E.g.: "You have booked 2 %s".', 'booking-activities' ), $units )
+					),
+					'show_unit_in_availability' => array(
+						'type'	=> 'checkbox',
+						'name'	=> 'show_unit_in_availability',
+						'id'	=> 'bookacti-activity-show-unit-in-availability',
+						'title'	=> esc_html__( 'Show unit in availability', 'booking-activities' ),
 						/* translators: %s is the plural for "units" */
-						$tip = sprintf( esc_html__( 'Name of the unit the customers will actually book for this activity. Set the plural here. Leave blank to hide this piece of information. E.g.: "You have booked 2 %s".', 'booking-activities' ), $units );
-						bookacti_help_tip( $tip );
-					?>
-				</div>
-				<div>
-					<?php /* translators: We are asking here if the user want to display the unit next to the total availability on the event. E.g.: '14 units' instead of '14' */ ?>
-					<label for='bookacti-activity-show-unit-in-availability' ><?php esc_html_e( 'Show unit in availability', 'booking-activities' ); ?></label>
-					<?php
-						bookacti_onoffswitch( 'activityOptions[show_unit_in_availability]', 0, 'bookacti-activity-show-unit-in-availability' );
-						/* translators: %s is the plural for "units" */
-						$tip = sprintf( esc_html__( 'Show the unit in the availability boxes. E.g.: "2 %s available" instead of "2".', 'booking-activities' ), '<strong><em>' . esc_html( _n( 'unit', 'units', 2, 'booking-activities' ) ) . '</em></strong>' );
-						bookacti_help_tip( $tip );
-					?>
-				</div>
-				<div>
-					<label for='bookacti-activity-places-number' ><?php esc_html_e( 'Number of places per booking', 'booking-activities' ); ?></label>
-					<input type='number' name='activityOptions[places_number]' id='bookacti-activity-places-number' min='0' />
-					<?php
+						'tip'	=> sprintf( esc_html__( 'Show the unit in the availability boxes. E.g.: "2 %s available" instead of "2".', 'booking-activities' ), $units )
+					),
+					'places_number' => array(
+						'type'		=> 'number',
+						'name'		=> 'places_number',
+						'id'		=> 'bookacti-activity-places-number',
+						'title'		=> esc_html__( 'Number of places per booking', 'booking-activities' ),
+						'options'	=> array( 'min' => 0 ),
 						/* translators: %s is a number superior than or equal to 2. E.g.: 2. */
-						$tip = sprintf( esc_html__( 'The number of people who can do the activity with 1 booking. Set 0 to hide this piece of information. E.g.: "You have booked 1 unit for %s people".', 'booking-activities' ), '<strong><em>2</em></strong>' );
-						bookacti_help_tip( $tip );
-					?>
-				</div>
-			<?php
+						'tip'		=> sprintf( esc_html__( 'The number of people who can do the activity with 1 booking. Set 0 to hide this piece of information. E.g.: "You have booked 1 unit for %s people".', 'booking-activities' ), '<strong><em>2</em></strong>' )
+					)
+				);
+				
+				bookacti_display_fields( $fields );
+				
 				do_action( 'bookacti_activity_tab_text_after', $params );
 			}
 			
 			/**
 			 * Display the fields in the "Permissions" tab of the Activity dialog
-			 * @version 1.9.0
+			 * @version 1.12.0
 			 * @param array $params
 			 */
 			function bookacti_fill_activity_tab_permissions( $params = array() ) {
 				do_action( 'bookacti_activity_tab_permissions_before', $params );
 				
+				// Allowed roles field
+				$roles = get_editable_roles();
+				$roles_options = array();
+				foreach( $roles as $role_id => $role ) { $roles_options[ $role_id ] = $role[ 'name' ]; }
+				
+				$allowed_roles = array( 
+					'type'		=> 'select',
+					'multiple'	=> 1,
+					'name'		=> 'allowed_roles',
+					'id'		=> 'bookacti-activity-roles',
+					'title'		=> esc_html__( 'Who can book this activity?', 'booking-activities' ),
+					'fullwidth'	=> 1,
+					'options'	=> array_merge( $roles_options, array( 'all' => esc_html__( 'Everybody', 'booking-activities' ) ) ),
+					'tip'		=> esc_html__( 'Choose who is allowed to book the events of this activity.', 'booking-activities' )
+								. '<br/>' . esc_html__( 'Use CTRL+Click to pick or unpick a role.', 'booking-activities' ) 
+								. ' ' . esc_html__( 'Don\'t pick any role to allow everybody.', 'booking-activities' )
+				);
+				bookacti_display_fields( array( 'allowed_roles' => $allowed_roles ) );
+				?>
+				
+				<div class='bookacti-roles-notice bookacti-warning' style='margin-bottom:0;'>
+					<span class='dashicons dashicons-info'></span>
+					<span><?php esc_html_e( 'Don\'t pick any role to allow everybody.', 'booking-activities' ); ?></span>
+				</div>
+				<div class='bookacti-roles-notice bookacti-info'>
+					<span class='dashicons dashicons-info'></span>
+					<span><?php esc_html_e( 'Use CTRL+Click to pick or unpick a role.', 'booking-activities' ); ?></span>
+				</div>
+				
+				<?php
+				// Managers
 				$activity_managers_cap = array( 'bookacti_edit_bookings', 'bookacti_edit_templates', 'bookacti_read_templates' );
 				$activity_managers_args = array(
 					'option_label' => array( 'display_name', ' (', 'user_login', ')' ), 
@@ -588,37 +620,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 					'meta' => false,
 					'ajax' => 0
 				);
-			?>
-				<div>
-					<label for='bookacti-activity-roles' class='bookacti-fullwidth-label' >
-						<?php 
-						esc_html_e( 'Who can book this activity?', 'booking-activities' );
-						
-						$tip  = esc_html__( 'Choose who is allowed to book the events of this activity.', 'booking-activities' );
-						$tip  .= '<br/>' . esc_html__( 'Use CTRL+Click to pick or unpick a role.', 'booking-activities' ) . ' ' . esc_html__( 'Don\'t pick any role to allow everybody.', 'booking-activities' );
-						bookacti_help_tip( $tip );
-					?>
-					</label>
-					<div>
-						<select name='activityOptions[allowed_roles][]'  id='bookacti-activity-roles' class='bookacti-select' multiple>
-						<?php 
-							$roles = get_editable_roles();
-							foreach( $roles as $role_id => $role ) {
-								echo '<option value="' . esc_attr( $role_id ) . '" >' . esc_html( $role[ 'name' ] ) . '</option>'; 
-							}
-						?>
-							<option value='all' ><?php esc_html_e( 'Everybody', 'booking-activities' ); ?></option>
-						</select>
-					</div>
-					<div class='bookacti-roles-notice bookacti-warning' style='margin-bottom:0;'>
-						<span class='dashicons dashicons-info'></span>
-						<span><?php esc_html_e( 'Don\'t pick any role to allow everybody.', 'booking-activities' ); ?></span>
-					</div>
-					<div class='bookacti-roles-notice bookacti-info'>
-						<span class='dashicons dashicons-info'></span>
-						<span><?php esc_html_e( 'Use CTRL+Click to pick or unpick a role.', 'booking-activities' ); ?></span>
-					</div>
-				</div>
+				?>
 				<div id='bookacti-activity-managers-container' class='bookacti-items-container' data-type='users' >
 					<label id='bookacti-activity-managers-title' class='bookacti-fullwidth-label' >
 					<?php 
@@ -640,7 +642,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 						<button type='button' id='bookacti-add-activity-managers' class='bookacti-add-items' ><?php esc_html_e( 'Add manager', 'booking-activities' ); ?></button>
 					</div>
 					<div id='bookacti-activity-managers-list-container' class='bookacti-items-list-container' >
-						<select name='activity-managers[]' id='bookacti-activity-managers-select-box' class='bookacti-items-select-box' multiple></select>
+						<select name='managers[]' id='bookacti-activity-managers-select-box' class='bookacti-items-select-box' multiple></select>
 						<button type='button' id='bookacti-remove-activity-managers' class='bookacti-remove-items' ><?php esc_html_e( 'Remove selected', 'booking-activities' ); ?></button>
 					</div>
 				</div>
@@ -947,6 +949,8 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 <!-- Group category -->
 <div id='bookacti-group-category-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Group category parameters', 'booking-activities' ); ?>' style='display:none;' >
 	<form id='bookacti-group-category-form' >
+		<input type='hidden' name='template_id' id='bookacti-group-category-template-id'/>
+		<input type='hidden' name='category_id' id='bookacti-group-category-category-id'/>
 		<input type='hidden' name='action' id='bookacti-group-category-action' />
 		<?php wp_nonce_field( 'bookacti_insert_or_update_group_category', 'nonce_insert_or_update_group_category' ); ?>
 		
@@ -974,7 +978,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			
 			/**
 			 * Fill "General" tab of "Group category" dialog
-			 * @version 1.7.18
+			 * @version 1.12.0
 			 * @param array $params
 			 */
 			function bookacti_fill_group_category_tab_general( $params = array() ) {
@@ -982,7 +986,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 				?>
 				<div>
 					<label for='bookacti-group-category-title-field' ><?php esc_html_e( 'Category title', 'booking-activities' ); ?></label>
-					<input type='text' name='group-category-title' id='bookacti-group-category-title-field' />
+					<input type='text' name='title' id='bookacti-group-category-title-field' />
 					<?php
 						$tip = esc_html__( 'Name the group of events category.', 'booking-activities' );
 						bookacti_help_tip( $tip );
@@ -995,43 +999,43 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			/**
 			 * Display the fields in the "Availability" tab of the Group Category dialog
 			 * @since 1.4.0
-			 * @version 1.9.3
+			 * @version 1.12.0
 			 * @param array $params
 			 */
 			function bookacti_fill_group_category_tab_availability( $params = array() ) {
 				do_action( 'bookacti_group_category_tab_availability_before', $params );
 				
 				$fields = array(
-					'groupCategoryOptions[min_bookings_per_user]' => array(
+					'min_bookings_per_user' => array(
 						'type'	=> 'number',
-						'name'	=> 'groupCategoryOptions[min_bookings_per_user]',
+						'name'	=> 'min_bookings_per_user',
 						'id'	=> 'bookacti-group-category-min-bookings-per-user',
 						'title'	=> esc_html__( 'Min bookings per user', 'booking-activities' ),
 						'options'=> array( 'min' => 0, 'step' => 1 ),
 						'tip'	=> esc_html__( 'The minimum booking quantity a user has to make on a group of events of this category. E.g.: "3", the customer must book at least 3 places of the desired group of events.', 'booking-activities' )
 								. '<br/>' . esc_html__( 'Set it to "0" to ignore this parameter.', 'booking-activities' )
 					),
-					'groupCategoryOptions[max_bookings_per_user]' => array(
+					'max_bookings_per_user' => array(
 						'type'	=> 'number',
-						'name'	=> 'groupCategoryOptions[max_bookings_per_user]',
+						'name'	=> 'max_bookings_per_user',
 						'id'	=> 'bookacti-group-category-max-bookings-per-user',
 						'title'	=> esc_html__( 'Max bookings per user', 'booking-activities' ),
 						'options'=> array( 'min' => 0, 'step' => 1 ),
 						'tip'	=> esc_html__( 'The maximum booking quantity a user can make on a group of events of this category. E.g.: "1", the customer can only book one place of the desired group of events, and he / she won\'t be allowed to book it twice.', 'booking-activities' )
 								. '<br/>' . esc_html__( 'Set it to "0" to ignore this parameter.', 'booking-activities' )
 					),
-					'groupCategoryOptions[max_users_per_event]' => array(
+					'max_users_per_event' => array(
 						'type'	=> 'number',
-						'name'	=> 'groupCategoryOptions[max_users_per_event]',
+						'name'	=> 'max_users_per_event',
 						'id'	=> 'bookacti-group-category-max-users-per-event',
 						'title'	=> esc_html__( 'Max users per event', 'booking-activities' ),
 						'options'=> array( 'min' => 0, 'step' => 1 ),
 						'tip'	=> esc_html__( 'Set how many different users can book the same group of events. E.g.: "1", only one user can book a specific group of events; once he / she has booked it, the group of events won\'t be available for anyone else anymore, even if it isn\'t full. Useful for private events.', 'booking-activities' )
 								. '<br/>' . esc_html__( 'Set it to "0" to ignore this parameter.', 'booking-activities' )
 					),
-					'groupCategoryOptions[booking_changes_deadline]' => array(
+					'booking_changes_deadline' => array(
 						'type'	=> 'duration',
-						'name'	=> 'groupCategoryOptions[booking_changes_deadline]',
+						'name'	=> 'booking_changes_deadline',
 						'id'	=> 'bookacti-group-category-booking-changes-deadline',
 								/* translators: Followed by a field indicating a number of days, hours and minutes from now. E.g.: "Changes are allowed for bookings starting in at least 2 days, 12 hours, 25 minutes". */
 						'title'	=> esc_html__( 'Changes are allowed for bookings starting in at least', 'booking-activities' ),
@@ -1040,9 +1044,9 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 								. ' ' . esc_html__( 'Leave it empty to use the global value.', 'booking-activities' ), false )
 								. '<br/><small><em>' . sprintf( esc_html__( 'Bookings can be changed from the booking list only (%s)', 'booking-activities' ), '<a href="https://booking-activities.fr/en/docs/user-documentation/get-started-with-booking-activities/display-customers-bookings-list-on-the-frontend/" target="_blank"><code style="font-size: inherit;">[bookingactivities_list]</code></a>' ) . '</em></small>'
 					),
-					'groupCategoryOptions[started_groups_bookable]' => array(
+					'started_groups_bookable' => array(
 						'type'	=> 'select',
-						'name'	=> 'groupCategoryOptions[started_groups_bookable]',
+						'name'	=> 'started_groups_bookable',
 						'id'	=> 'bookacti-group-category-started-groups-bookable',
 						'title'	=> esc_html__( 'Are started groups bookable?', 'booking-activities' ),
 						'options' => array( 
@@ -1064,7 +1068,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			
 			/**
 			 * Display the fields in the "Permissions" tab of the Group Category dialog
-			 * @version 1.9.0
+			 * @version 1.12.0
 			 * @param array $params
 			 */
 			function bookacti_fill_group_category_tab_permissions( $params = array() ) {
@@ -1081,7 +1085,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 					?>
 					</label>
 					<div>
-						<select name='groupCategoryOptions[allowed_roles][]' id='bookacti-group-category-roles' class='bookacti-select' multiple>
+						<select name='allowed_roles[]' id='bookacti-group-category-roles' class='bookacti-select' multiple>
 							<?php 
 								$roles = get_editable_roles();
 								foreach( $roles as $role_id => $role ) {

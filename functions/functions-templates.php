@@ -312,64 +312,22 @@ function bookacti_get_mixed_template_data( $template_ids ) {
 
 // TEMPLATES X ACTIVITIES ASSOCIATION
 
-// UPDATE THE LIST OF TEMPLATES ASSOCIATED TO AN ACTIVITY ID
-function bookacti_update_templates_list_by_activity_id( $new_templates, $activity_id ) {
-	$old_templates = bookacti_get_templates_by_activity( $activity_id );
-
-	// Unset templates already added
-	foreach( $new_templates as $i => $new_template ) {
-		foreach( $old_templates as $j => $old_template ) {
-			if( $new_template === $old_template ) {
-				unset( $new_templates[ $i ] );
-				unset( $old_templates[ $j ] );
-			}
-		}
-	}
-
-	// Insert new templates
-	$inserted = 0;
-	if( count( $new_templates ) > 0 ) {
-		$inserted = bookacti_insert_templates_x_activities( $new_templates, array( $activity_id ) );
-	}
-
-	// Delete old templates
-	$deleted = 0;
-	if( count( $old_templates ) > 0 ) {
-		$deleted = bookacti_delete_templates_x_activities( $old_templates, array( $activity_id ) );
-	}
-
-	return $inserted + $deleted;
-}
-
-
 /**
- * Update the list of activities associated to a template id
- * 
- * @version 1.2.2
+ * Bind activities to a template
+ * @version 1.12.0
  * @param array $new_activities
  * @param int $template_id
  * @return int|false
  */
 function bookacti_bind_activities_to_template( $new_activities, $template_id ) {
+	$new_activities = bookacti_ids_to_array( $new_activities );
 
-	if( is_numeric( $new_activities ) ) { $new_activities = array( $new_activities ); }
-
+	// Keep only new activities
 	$old_activities = bookacti_get_activity_ids_by_template( $template_id, false );
+	$new_activities = array_diff( $new_activities, $old_activities );
 
-	// Unset templates already added
-	foreach( $new_activities as $i => $new_activity ) {
-		foreach( $old_activities as $j => $old_activity ) {
-			if( $new_activity === $old_activity ) {
-				unset( $new_activities[ $i ] );
-			}
-		}
-	}
-
-	// Insert new activity bounds
-	$inserted = 0;
-	if( count( $new_activities ) > 0 ) {
-		$inserted = bookacti_insert_templates_x_activities( array( $template_id ), $new_activities );
-	}
+	// Insert new activities
+	$inserted = $new_activities ? bookacti_insert_templates_x_activities( array( $template_id ), $new_activities ) : 0;
 
 	return $inserted;
 }

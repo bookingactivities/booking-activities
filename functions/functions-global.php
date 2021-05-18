@@ -1882,13 +1882,13 @@ function bookacti_format_datetime( $datetime, $format = '' ) {
 
 /**
  * Check if a string is in a correct datetime format
- * @version 1.9.0
+ * @version 1.12.0
  * @param string $datetime Date format "Y-m-d H:i:s" is expected
  * @return string
  */
 function bookacti_sanitize_datetime( $datetime ) {
-	if( preg_match( '/^\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d$/', $datetime ) 
-	||  preg_match( '/^\d{4}-[01]\d-[0-3]\d [0-2]\d:[0-5]\d:[0-5]\d$/', $datetime ) ) {
+	if( preg_match( '/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])T([01]\d|2[0-3]):[0-5]\d:[0-5]\d$/', $datetime ) 
+	||  preg_match( '/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]) ([01]\d|2[0-3]):[0-5]\d:[0-5]\d$/', $datetime ) ) {
 		$datetime_object = new DateTime( $datetime );
 
 		// Do not allow to set a date after 2037 because of the year 2038 problem
@@ -1920,12 +1920,12 @@ if( ! function_exists( 'wp_date' ) ) {
 
 /**
  * Check if a string is in a correct date format
- * @version 1.8.0
+ * @version 1.12.0
  * @param string $date Date format Y-m-d is expected
  * @return string 
  */
 function bookacti_sanitize_date( $date ) {
-	if( preg_match( '/^\d{4}-[01]\d-[0-3]\d$/', $date ) ) {
+	if( preg_match( '/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/', $date ) ) {
 		$datetime_object = new DateTime( $date );
 
 		// Do not allow to set a date after 2037 because of the year 2038 problem
@@ -2073,7 +2073,7 @@ function bookacti_maybe_decode_json( $string, $assoc = false ) {
 /**
  * Sanitize the values of an array
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.12.0
  * @param array $default_data
  * @param array $raw_data
  * @param array $keys_by_type
@@ -2082,7 +2082,7 @@ function bookacti_maybe_decode_json( $string, $assoc = false ) {
  */
 function bookacti_sanitize_values( $default_data, $raw_data, $keys_by_type, $sanitized_data = array() ) {
 	// Sanitize the keys-by-type array
-	$allowed_types = array( 'int', 'float', 'numeric', 'bool', 'str', 'str_id', 'str_html', 'array', 'datetime', 'date' );
+	$allowed_types = array( 'int', 'absint', 'float', 'absfloat', 'numeric', 'bool', 'str', 'str_id', 'str_html', 'color', 'array', 'datetime', 'date' );
 	foreach( $allowed_types as $allowed_type ) {
 		if( ! isset( $keys_by_type[ $allowed_type ] ) ) { $keys_by_type[ $allowed_type ] = array(); }
 	}
@@ -2110,10 +2110,20 @@ function bookacti_sanitize_values( $default_data, $raw_data, $keys_by_type, $san
 		if( in_array( $key, $keys_by_type[ 'int' ], true ) ) { 
 			$sanitized_data[ $key ] = is_numeric( $raw_data[ $key ] ) ? intval( $raw_data[ $key ] ) : $default_value;
 		}
+		
+		// Sanitize absolute integers
+		if( in_array( $key, $keys_by_type[ 'absint' ], true ) ) { 
+			$sanitized_data[ $key ] = is_numeric( $raw_data[ $key ] ) ? abs( intval( $raw_data[ $key ] ) ) : $default_value;
+		}
 
 		// Sanitize floats
 		if( in_array( $key, $keys_by_type[ 'float' ], true ) ) { 
 			$sanitized_data[ $key ] = is_numeric( $raw_data[ $key ] ) ? foatval( $raw_data[ $key ] ) : $default_value;
+		}
+
+		// Sanitize absolute floats
+		if( in_array( $key, $keys_by_type[ 'absfloat' ], true ) ) { 
+			$sanitized_data[ $key ] = is_numeric( $raw_data[ $key ] ) ? abs( foatval( $raw_data[ $key ] ) ) : $default_value;
 		}
 
 		// Sanitize numeric
@@ -2135,6 +2145,11 @@ function bookacti_sanitize_values( $default_data, $raw_data, $keys_by_type, $san
 		else if( in_array( $key, $keys_by_type[ 'str_html' ], true ) ) { 
 			$sanitized_data[ $key ] = is_string( $raw_data[ $key ] ) ? wp_kses_post( stripslashes( $raw_data[ $key ] ) ) : $default_value;
 		}
+		
+		// Sanitize hex color
+		else if( in_array( $key, $keys_by_type[ 'color' ], true ) ) { 
+			$sanitized_data[ $key ] = is_string( $raw_data[ $key ] ) ? sanitize_hex_color( stripslashes( $raw_data[ $key ] ) ) : $default_value;
+		}
 
 		// Sanitize array
 		else if( in_array( $key, $keys_by_type[ 'array' ], true ) ) { 
@@ -2143,18 +2158,18 @@ function bookacti_sanitize_values( $default_data, $raw_data, $keys_by_type, $san
 
 		// Sanitize boolean
 		else if( in_array( $key, $keys_by_type[ 'bool' ], true ) ) { 
-			$sanitized_data[ $key ] = in_array( $raw_data[ $key ], array( 1, '1', true, 'true' ), true ) ? 1 : 0;
+			$sanitized_data[ $key ] = in_array( $raw_data[ $key ], array( 1, '1', true, 'true' ), true ) ? 1 : ( in_array( $raw_data[ $key ], array( 0, '0', false, 'false' ), true ) ? 0 : $default_value );
 		}
 
 		// Sanitize datetime
 		else if( in_array( $key, $keys_by_type[ 'datetime' ], true ) ) { 
-			$sanitized_data[ $key ] = bookacti_sanitize_datetime( $raw_data[ $key ] );
+			$sanitized_data[ $key ] = is_string( $raw_data[ $key ] ) ? bookacti_sanitize_datetime( stripslashes( $raw_data[ $key ] ) ) : '';
 			if( ! $sanitized_data[ $key ] ) { $sanitized_data[ $key ] = $default_value; }
 		}
 
 		// Sanitize date
 		else if( in_array( $key, $keys_by_type[ 'date' ], true ) ) { 
-			$sanitized_data[ $key ] = bookacti_sanitize_date( $raw_data[ $key ] );
+			$sanitized_data[ $key ] = is_string( $raw_data[ $key ] ) ? bookacti_sanitize_date( stripslashes( $raw_data[ $key ] ) ) : '';
 			if( ! $sanitized_data[ $key ] ) { $sanitized_data[ $key ] = $default_value; }
 		}
 	}

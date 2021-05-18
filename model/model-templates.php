@@ -389,7 +389,7 @@ function bookacti_remove_exceptions( $object_id, $dates = array(), $object_type 
 function bookacti_insert_group_of_events( $data ) {
 	global $wpdb;
 	
-	$query = ' INSERT INTO ' . BOOKACTI_TABLE_EVENTS . ' ( category_id, title, repeat_freq, repeat_step, repeat_on, repeat_from, repeat_to, active ) '
+	$query = ' INSERT INTO ' . BOOKACTI_TABLE_EVENT_GROUPS . ' ( category_id, title, repeat_freq, repeat_step, repeat_on, repeat_from, repeat_to, active ) '
 			. ' VALUES ( %d, %s, %s, NULLIF( NULLIF( %d, -1 ), 0 ), NULLIF( NULLIF( %s, "null" ), "" ), NULLIF( NULLIF( %s, "null" ), "" ), NULLIF( NULLIF( %s, "null" ), "" ), 1 )';
 	
 	$variables = array( 
@@ -570,7 +570,7 @@ function bookacti_get_group_of_events_template_id( $group_id ) {
 function bookacti_insert_events_into_group( $group_id, $events ) {
 	global $wpdb;
 
-	$query = 'INSERT INTO ' . BOOKACTI_TABLE_GROUPS_EVENTS . ' ( group_id, activity_id, event_id, event_start, event_end, active ) ' . ' VALUES ';
+	$query = 'INSERT INTO ' . BOOKACTI_TABLE_GROUPS_EVENTS . ' ( group_id, activity_id, event_id, event_start, event_end, active ) VALUES ';
 
 	$i = 0;
 	$variables = array();
@@ -878,142 +878,58 @@ function bookacti_insert_group_category( $category_title, $template_id ) {
 
 /**
  * Update a group category
- * 
  * @since 1.1.0
- * 
+ * @version 1.12.0
  * @global wpdb $wpdb
- * @param int $category_id
- * @param string $category_title
- * @param array $category_meta
- * @return int|boolean
+ * @param array $data
+ * @return int|false
  */
-function bookacti_update_group_category( $category_id, $category_title, $category_meta ) {
+function bookacti_update_group_category( $data ) {
 	global $wpdb;
-
-	$updated = 0;
-
-	$updated1 = $wpdb->update( 
-		BOOKACTI_TABLE_GROUP_CATEGORIES, 
-		array( 
-			'title' => $category_title
-		),
-		array( 'id' => $category_id ),
-		array( '%s' ),
-		array( '%d' )
-	);
-
-	// Insert Meta
-	$updated2 = 0;
-	if( ! empty( $category_meta ) ) {
-		$updated2 = bookacti_update_metadata( 'group_category', $category_id, $category_meta );
-	}
-
-	if( is_int( $updated1 ) && is_int( $updated2 ) ) {
-		$updated = $updated1 + $updated2;
-	}
-
-	if( $updated1 === false || $updated2 === false ) {
-		$updated = false;
-	}
+	
+	$query = ' UPDATE ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' SET '
+				. ' title = IFNULL( NULLIF( %s, "" ), title ) '
+			. ' WHERE id = %d ';
+	
+	$variables = array( $data[ 'title' ], $data[ 'id' ] );
+	
+	$query = $wpdb->prepare( $query, $variables );
+	$updated = $wpdb->query( $query );
 
 	return $updated;
 }
 
 
 /**
- * Delete a group category and its groups of events
- * 
+ * Delete a group category
+ * @since 1.1.0
+ * @version 1.12.0
  * @global wpdb $wpdb
  * @param type $category_id
- * @return boolean
- */
-function bookacti_delete_group_category_and_its_groups_of_events( $category_id ) {
-	if( empty( $category_id ) || ! is_numeric( $category_id ) ) {
-		return false;
-	}
-
-	global $wpdb;
-
-	// Delete the category's groups events
-	$query_events	= 'DELETE GE.* '
-					. ' FROM ' . BOOKACTI_TABLE_GROUPS_EVENTS . ' as GE '
-					. ' LEFT JOIN ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as G '
-					. ' ON GE.group_id = G.id '
-					. ' WHERE G.category_id = %d ';
-	$prep_events	= $wpdb->prepare( $query_events, $category_id );
-	$deleted1		= $wpdb->query( $prep_events );
-
-	// Delete the category's groups
-	$query_group	= 'DELETE FROM ' . BOOKACTI_TABLE_EVENT_GROUPS 
-					. ' WHERE category_id = %d ';
-	$prep_group		= $wpdb->prepare( $query_group, $category_id );
-	$deleted2		= $wpdb->query( $prep_group );
-
-	// Delete the category itself
-	$query_category	= 'DELETE FROM ' . BOOKACTI_TABLE_GROUP_CATEGORIES 
-					. ' WHERE id = %d ';
-	$prep_category	= $wpdb->prepare( $query_category, $category_id );
-	$deleted3		= $wpdb->query( $prep_category );
-
-	if( $deleted1 === false && $deleted2 === false && $deleted3 === false ) {
-		return false;
-	}
-
-	$deleted = intval( $deleted1 ) + intval( $deleted2 ) + intval( $deleted3 );
-
-	return $deleted;
-}
-
-
-/**
- * Delete a group category 
- * 
- * @global wpdb $wpdb
- * @param type $category_id
- * @return boolean
+ * @return int|false
  */
 function bookacti_delete_group_category( $category_id ) {
-	if( empty( $category_id ) || ! is_numeric( $category_id ) ) {
-		return false;
-	}
-
 	global $wpdb;
-
-	// Delete the category
-	$query_category	= 'DELETE FROM ' . BOOKACTI_TABLE_GROUP_CATEGORIES 
-					. ' WHERE id = %d ';
-	$prep_category	= $wpdb->prepare( $query_category, $category_id );
-	$deleted		= $wpdb->query( $prep_category );
-
+	$query = 'DELETE FROM ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' WHERE id = %d ';
+	$query = $wpdb->prepare( $query, $category_id );
+	$deleted = $wpdb->query( $query );
 	return $deleted;
 }
 
 
 /**
  * Deactivate a group category 
- * 
+ * @since 1.1.0
+ * @version 1.12.0
  * @global wpdb $wpdb
- * @param type $category_id
- * @return boolean
+ * @param int $category_id
+ * @return int|false
  */
 function bookacti_deactivate_group_category( $category_id ) {
-	if( empty( $category_id ) || ! is_numeric( $category_id ) ) {
-		return false;
-	}
-
 	global $wpdb;
-
-	// Deactivate the group category
-	$deactivated = $wpdb->update( 
-		BOOKACTI_TABLE_GROUP_CATEGORIES, 
-		array( 
-			'active' => 0
-		),
-		array( 'id' => $category_id ),
-		array( '%d' ),
-		array( '%d' )
-	);
-
+	$query = ' UPDATE ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' SET active = 0 WHERE id = %d ';
+	$query = $wpdb->prepare( $query, $category_id );
+	$deactivated = $wpdb->query( $query );
 	return $deactivated;
 }
 
@@ -1347,28 +1263,21 @@ function bookacti_get_activity( $activity_id ) {
 
 /**
  * Insert an activity
- * @version 1.10.0
+ * @version 1.12.0
  * @global wpdb $wpdb
- * @param string $activity_title
- * @param string $activity_color
- * @param int $activity_availability
- * @param string $activity_duration
+ * @param array $data
  * @return int|false
  */
-function bookacti_insert_activity( $activity_title, $activity_color, $activity_availability, $activity_duration ) {
+function bookacti_insert_activity( $data ) {
 	global $wpdb;
 
-	$wpdb->insert( 
-		BOOKACTI_TABLE_ACTIVITIES, 
-		array( 
-			'title'         => $activity_title,
-			'color'         => $activity_color,
-			'availability'	=> $activity_availability,
-			'duration'      => $activity_duration,
-			'active'        => 1
-		),
-		array( '%s', '%s', '%d', '%s', '%d' )
-	);
+	$query = ' INSERT INTO ' . BOOKACTI_TABLE_ACTIVITIES . ' ( title, color, availability, duration, active ) '
+			. ' VALUES ( %s, %s, %d, %s, 1 )';
+
+	$variables = array( $data[ 'title' ], $data[ 'color' ], $data[ 'availability' ], $data[ 'duration' ] );
+
+	$query = $wpdb->prepare( $query, $variables );
+	$wpdb->query( $query );
 
 	$activity_id = $wpdb->insert_id;
 
@@ -1378,30 +1287,25 @@ function bookacti_insert_activity( $activity_title, $activity_color, $activity_a
 
 /**
  * Update an activity
- * @version 1.10.0
+ * @version 1.12.0
  * @global wpdb $wpdb
- * @param int $activity_id
- * @param string $activity_title
- * @param string $activity_color
- * @param int $activity_availability
- * @param string $activity_duration
+ * @param array $data
  * @return int|false
  */
-function bookacti_update_activity( $activity_id, $activity_title, $activity_color, $activity_availability, $activity_duration ) {
+function bookacti_update_activity( $data ) {
 	global $wpdb;
-
-	$updated = $wpdb->update( 
-		BOOKACTI_TABLE_ACTIVITIES, 
-		array( 
-			'title'         => $activity_title,
-			'color'         => $activity_color,
-			'availability'  => $activity_availability,
-			'duration'      => $activity_duration
-		),
-		array( 'id' => $activity_id ),
-		array( '%s', '%s', '%d', '%s' ),
-		array( '%d' )
-	);
+	
+	$query = ' UPDATE ' . BOOKACTI_TABLE_ACTIVITIES . ' SET '
+				. ' title = IFNULL( NULLIF( %s, "" ), title ), '
+				. ' color = IFNULL( NULLIF( %s, "" ), color ), '
+				. ' availability = IFNULL( NULLIF( %d, "-1" ), availability ), '
+				. ' duration = IFNULL( NULLIF( %s, "000.00:00:00" ), duration ) '
+			. ' WHERE id = %d ';
+	
+	$variables = array( $data[ 'title' ], $data[ 'color' ], $data[ 'availability' ], $data[ 'duration' ], $data[ 'id' ] );
+	
+	$query = $wpdb->prepare( $query, $variables );
+	$updated = $wpdb->query( $query );
 
 	return $updated;
 }
@@ -1433,51 +1337,42 @@ function bookacti_update_events_title( $activity_id, $new_title ) {
 
 /**
  * Deactivate an activity
+ * @version 1.12.0
  * @global wpdb $wpdb
  * @param int $activity_id
  * @return int|false
  */
 function bookacti_deactivate_activity( $activity_id ) {
 	global $wpdb;
-
-	$deactivated = $wpdb->update( 
-		BOOKACTI_TABLE_ACTIVITIES, 
-		array( 
-			'active' => 0
-		),
-		array( 'id' => $activity_id ),
-		array( '%d' ),
-		array( '%d' )
-	);
-
+	$query = ' UPDATE ' . BOOKACTI_TABLE_ACTIVITIES . ' SET active = 0 WHERE id = %d ';
+	$query = $wpdb->prepare( $query, $activity_id );
+	$deactivated = $wpdb->query( $query );
 	return $deactivated;
 }
 
 
 /**
  * Deactivate all events of a specific activity from a specific template
+ * @version 1.12.0
  * @global wpdb $wpdb
  * @param int $activity_id
  * @param int $template_id
  * @return int|false
  */
-function bookacti_deactivate_activity_events( $activity_id, $template_id ) {
+function bookacti_deactivate_activity_events( $activity_id, $template_id = 0 ) {
 	global $wpdb;
-
-	//Remove the event
-	$deactivated = $wpdb->update( 
-		BOOKACTI_TABLE_EVENTS, 
-		array( 
-			'active' => 0
-		),
-		array( 
-			'activity_id' => $activity_id,
-			'template_id' => $template_id
-		),
-		array( '%d' ),
-		array( '%d', '%d' )
-	);
-
+	
+	$query = ' UPDATE ' . BOOKACTI_TABLE_EVENTS . ' SET active = 0 WHERE activity_id = %d ';
+	$variables = array( $activity_id );
+	
+	if( $template_id ) { 
+		$query .= ' AND template_id = %d ';
+		$variables[] = $template_id;
+	}
+	
+	$query = $wpdb->prepare( $query, $variables );
+	$deactivated = $wpdb->query( $query );
+	
 	return $deactivated;
 }
 
@@ -1488,18 +1383,13 @@ function bookacti_deactivate_activity_events( $activity_id, $template_id ) {
 
 /**
  * Insert a template x activity association
+ * @version 1.12.0
  * @global wpdb $wpdb
  * @param array $template_ids
  * @param array $activity_ids
  * @return int|false
  */
 function bookacti_insert_templates_x_activities( $template_ids, $activity_ids ) {
-
-	if( ! is_array( $template_ids ) || empty( $template_ids )
-	||  ! is_array( $activity_ids ) || empty( $activity_ids ) ) {
-		return false;
-	}
-
 	global $wpdb;
 
 	$query = 'INSERT INTO ' . BOOKACTI_TABLE_TEMP_ACTI . ' ( template_id, activity_id ) ' . ' VALUES ';
@@ -1516,8 +1406,8 @@ function bookacti_insert_templates_x_activities( $template_ids, $activity_ids ) 
 		}
 	}
 
-	$prep		= $wpdb->prepare( $query, $variables_array );
-	$inserted	= $wpdb->query( $prep );
+	$query = $wpdb->prepare( $query, $variables_array );
+	$inserted = $wpdb->query( $query );
 
 	return $inserted;
 }
@@ -1525,18 +1415,13 @@ function bookacti_insert_templates_x_activities( $template_ids, $activity_ids ) 
 
 /**
  * Delete a template x activity association
+ * @version 1.12.0
  * @global wpdb $wpdb
  * @param array $template_ids
  * @param array $activity_ids
  * @return int|false
  */
 function bookacti_delete_templates_x_activities( $template_ids, $activity_ids ) {
-
-	if( ! is_array( $template_ids ) || empty( $template_ids )
-	||  ! is_array( $activity_ids ) || empty( $activity_ids ) ) {
-		return false;
-	}
-
 	global $wpdb;
 
 	// Prepare query
@@ -1558,8 +1443,8 @@ function bookacti_delete_templates_x_activities( $template_ids, $activity_ids ) 
 
 	$variables_array = array_merge( $template_ids, $activity_ids );
 
-	$prep		= $wpdb->prepare( $query, $variables_array );
-	$deleted	= $wpdb->query( $prep );
+	$query = $wpdb->prepare( $query, $variables_array );
+	$deleted = $wpdb->query( $query );
 
 	return $deleted;
 }

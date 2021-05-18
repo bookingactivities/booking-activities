@@ -197,6 +197,9 @@ function bookacti_dialog_add_new_template() {
 	$j( '#bookacti-template-data-dialog' ).dialog({ 
 		title: dialog_title_raw + ' (' + bookacti_localized.create_new + ')'
 	});
+	
+	// Remove old feedback
+	$j( '#bookacti-template-data-dialog .bookacti-notices' ).remove();
 
 	// Set default values
 	$j( '#bookacti-mintime' ).val( '00:00' );
@@ -223,8 +226,6 @@ function bookacti_dialog_add_new_template() {
 	$j( '#bookacti-template-data-dialog' ).dialog( 'option', 'buttons',
 		[{
 			text: bookacti_localized.dialog_button_ok,
-
-			// On click on the OK Button, new values are send to a script that update the database
 			click: function() {
 				// Remove old feedback
 				$j( '#bookacti-template-data-dialog .bookacti-notices' ).remove();
@@ -310,7 +311,7 @@ function bookacti_dialog_add_new_template() {
 							}
 						},
 						error: function( e ){
-							alert( 'AJAX ' + bookacti_localized.error );        
+							alert( 'AJAX ' + bookacti_localized.error );
 							console.log( e );
 						},
 						complete: function() {
@@ -341,6 +342,9 @@ function bookacti_dialog_update_template( template_id ) {
 	$j( '#bookacti-template-data-dialog' ).dialog({ 
 		title: dialog_title_raw + ' (' + bookacti_localized.edit_id + ': ' + template_id + ')'
 	});
+	
+	// Remove old feedback
+	$j( '#bookacti-template-data-dialog .bookacti-notices' ).remove();
 
 	// Hide and deactivate duplicate fields
 	$j( '#bookacti-template-duplicated-template-id-container' ).hide();
@@ -430,7 +434,7 @@ function bookacti_dialog_update_template( template_id ) {
 						}
 					},
 					error: function( e ) {
-						alert( 'AJAX ' + bookacti_localized.error );        
+						alert( 'AJAX ' + bookacti_localized.error );
 						console.log( e );
 					},
 					complete: function() { 
@@ -465,13 +469,14 @@ function bookacti_dialog_update_template( template_id ) {
 function bookacti_dialog_deactivate_template( template_id ) {
 	if( ! template_id ) { return false; }
 
+	// Remove old feedback
+	$j( '#bookacti-delete-template-dialog .bookacti-notices' ).remove();
+	
 	// Add the 'OK' button
 	$j( '#bookacti-delete-template-dialog' ).dialog( 'option', 'buttons',
 		[{
 			text: bookacti_localized.dialog_button_delete,
 			'class': 'bookacti-dialog-delete-button',
-
-			// On click on the OK Button, new values are send to a script that update the database
 			click: function() {
 				// Remove old feedback
 				$j( '#bookacti-delete-template-dialog .bookacti-notices' ).remove();
@@ -761,7 +766,7 @@ function bookacti_dialog_update_event( event ) {
 					}
 				},
 				error: function( e ) {
-					alert( 'AJAX ' + bookacti_localized.error );        
+					alert( 'AJAX ' + bookacti_localized.error );
 					console.log( e );
 				},
 				complete: function() { 
@@ -826,7 +831,7 @@ function bookacti_dialog_update_event( event ) {
 					}
 				},
 				error: function( e ) {
-					alert( 'AJAX ' + bookacti_localized.error );        
+					alert( 'AJAX ' + bookacti_localized.error );
 					console.log( e );
 				},
 				complete: function() { 
@@ -1349,6 +1354,9 @@ function bookacti_dialog_choose_activity_creation_type() {
 function bookacti_dialog_import_activity() {
 	if( ! bookacti.selected_template ) { return; }
 	
+	// Remove old feedback
+	$j( '#bookacti-activity-import-dialog .bookacti-notices' ).remove();
+	
 	// Deactivate current template in template selector
 	$j( '#template-import-bound-activities option' ).attr( 'disabled', false );
 	$j( '#template-import-bound-activities option[value="' + bookacti.selected_template + '"]' ).attr( 'disabled', true );
@@ -1451,7 +1459,7 @@ function bookacti_dialog_import_activity() {
 
 /**
  * Dialog Create Activity
- * @version 1.8.0
+ * @version 1.12.0
  */
 function bookacti_dialog_create_activity() {
 	if( ! bookacti.selected_template ) { return; }
@@ -1461,6 +1469,9 @@ function bookacti_dialog_create_activity() {
 	$j( '#bookacti-activity-data-dialog' ).dialog({ 
 		title: dialog_title_raw + ' (' + bookacti_localized.create_new + ')'
 	});
+	
+	// Remove old feedback
+	$j( '#bookacti-activity-data-dialog .bookacti-notices' ).remove();
 
 	// Set init value
 	$j( '#bookacti-activity-template-id' ).val( bookacti.selected_template );
@@ -1473,12 +1484,13 @@ function bookacti_dialog_create_activity() {
 		[{
 			text: bookacti_localized.dialog_button_ok,
 			click: function() {
+				// Remove old feedback
+				$j( '#bookacti-activity-data-dialog .bookacti-notices' ).remove();
+				
 				// Prepare fields
 				$j( '#bookacti-activity-data-form select[multiple].bookacti-items-select-box option' ).prop( 'selected', true );
 				
-				if( typeof tinyMCE !== 'undefined' ) { 
-					if( tinyMCE ) { tinyMCE.triggerSave(); }
-				}
+				if( typeof tinyMCE !== 'undefined' ) { if( tinyMCE ) { tinyMCE.triggerSave(); } }
 				
 				var is_form_valid = bookacti_validate_activity_form();
 				if( ! is_form_valid ) { return; }
@@ -1488,6 +1500,11 @@ function bookacti_dialog_create_activity() {
 				$j( '#bookacti-activity-data-dialog' ).trigger( 'bookacti_insert_activity_before', [ data ] );
 
 				bookacti_start_template_loading();
+				var loading_div = '<div class="bookacti-loading-alt">' 
+									+ '<img class="bookacti-loader" src="' + bookacti_localized.plugin_path + '/img/ajax-loader.gif" title="' + bookacti_localized.loading + '" />'
+									+ '<span class="bookacti-loading-alt-text" >' + bookacti_localized.loading + '</span>'
+								+ '</div>';
+				$j( '#bookacti-activity-data-dialog' ).append( loading_div );
 
 				// Save the new activity in database
 				$j.ajax({
@@ -1510,27 +1527,28 @@ function bookacti_dialog_create_activity() {
 							bookacti_init_activities();
 
 							$j( '#bookacti-activity-data-dialog' ).trigger( 'bookacti_activity_inserted', [ response, data ] );
-
+							
+							// Close the modal dialogs
+							$j( '#bookacti-activity-data-dialog' ).dialog( 'close' );
+							$j( '#bookacti-activity-create-method-dialog' ).dialog( 'close' );
+							
 						// If error
 						} else if( response.status === 'failed' ) {
 							var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
-							alert( error_message );
-							console.log( error_message );
+							$j( '#bookacti-activity-data-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + error_message + '</li></ul></div>' );
+							$j( '#bookacti-activity-data-dialog .bookacti-notices' ).show();
 							console.log( response );
 						}
 					},
 					error: function( e ) {
-						alert( 'AJAX ' + bookacti_localized.error );        
+						alert( 'AJAX ' + bookacti_localized.error );
 						console.log( e );
 					},
 					complete: function() { 
 						bookacti_stop_template_loading();
+						$j( '#bookacti-activity-data-dialog .bookacti-loading-alt' ).remove();
 					}
 				});
-
-				// Close the modal dialogs
-				$j( '#bookacti-activity-data-dialog' ).dialog( 'close' );
-				$j( '#bookacti-activity-create-method-dialog' ).dialog( 'close' );
 			}
 		}]
 	);
@@ -1542,7 +1560,7 @@ function bookacti_dialog_create_activity() {
 
 /**
  * Open a dialog to update an activity
- * @version 1.10.0
+ * @version 1.12.0
  * @param {Int} activity_id
  */
 function bookacti_dialog_update_activity( activity_id ) {
@@ -1555,7 +1573,10 @@ function bookacti_dialog_update_activity( activity_id ) {
 	});
 
 	var activity_data = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'activities_data' ][ activity_id ];
-								
+	
+	// Remove old feedback
+	$j( '#bookacti-activity-data-dialog .bookacti-notices' ).remove();
+	
 	// Set init value
 	$j( '#bookacti-activity-template-id' ).val( bookacti.selected_template );
 	$j( '#bookacti-activity-activity-id' ).val( activity_id );
@@ -1580,7 +1601,7 @@ function bookacti_dialog_update_activity( activity_id ) {
 
 	// Settings tabs
 	if( activity_data.settings ) {
-		bookacti_fill_fields_from_array( activity_data.settings, 'activityOptions' );
+		bookacti_fill_fields_from_array( activity_data.settings );
 		$j( '#bookacti-activity-unit-name-singular' ).val( activity_data.settings.multilingual_unit_name_singular ); 
 		$j( '#bookacti-activity-unit-name-plural' ).val( activity_data.settings.multilingual_unit_name_plural ); 
 	}
@@ -1596,16 +1617,17 @@ function bookacti_dialog_update_activity( activity_id ) {
 	
 	// Add buttons
 	$j( '#bookacti-activity-data-dialog' ).dialog( 'option', 'buttons',
-		//Add the 'OK' button
+		// Add the 'OK' button
 		[{
 			text: bookacti_localized.dialog_button_ok,
 			click: function() {
+				// Remove old feedback
+				$j( '#bookacti-activity-data-dialog .bookacti-notices' ).remove();
+				
 				// Prepare fields
 				$j( '#bookacti-activity-data-form select[multiple].bookacti-items-select-box option' ).prop( 'selected', true );
 				
-				if( typeof tinyMCE !== 'undefined' ) { 
-					if( tinyMCE ) { tinyMCE.triggerSave(); }
-				}
+				if( typeof tinyMCE !== 'undefined' ) { if( tinyMCE ) { tinyMCE.triggerSave(); } }
 				
 				var is_form_valid = bookacti_validate_activity_form();
 				if( ! is_form_valid ) { return; }
@@ -1615,6 +1637,11 @@ function bookacti_dialog_update_activity( activity_id ) {
 				$j( '#bookacti-activity-data-dialog' ).trigger( 'bookacti_update_activity_before', [ data ] );
 
 				bookacti_start_template_loading();
+				var loading_div = '<div class="bookacti-loading-alt">' 
+									+ '<img class="bookacti-loader" src="' + bookacti_localized.plugin_path + '/img/ajax-loader.gif" title="' + bookacti_localized.loading + '" />'
+									+ '<span class="bookacti-loading-alt-text" >' + bookacti_localized.loading + '</span>'
+								+ '</div>';
+				$j( '#bookacti-activity-data-dialog' ).append( loading_div );
 
 				// Save updated values in database
 				$j.ajax({
@@ -1640,26 +1667,27 @@ function bookacti_dialog_update_activity( activity_id ) {
 							bookacti_refetch_events_on_template();
 
 							$j( '#bookacti-activity-data-dialog' ).trigger( 'bookacti_activity_updated', [ response, data ] );
-
+							
+							// Close the modal dialog
+							$j( '#bookacti-activity-data-dialog' ).dialog( 'close' );
+							
 						// If error
 						} else if( response.status === 'failed' ) {
 							var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
-							alert( error_message );
-							console.log( error_message );
+							$j( '#bookacti-activity-data-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + error_message + '</li></ul></div>' );
+							$j( '#bookacti-activity-data-dialog .bookacti-notices' ).show();
 							console.log( response );
 						}
 					},
 					error: function( e ){
-						alert( 'AJAX ' + bookacti_localized.error );        
+						alert( 'AJAX ' + bookacti_localized.error );
 						console.log( e );
 					},
 					complete: function() { 
-						bookacti_stop_template_loading(); 
+						bookacti_stop_template_loading();
+						$j( '#bookacti-activity-data-dialog .bookacti-loading-alt' ).remove();
 					}
 				});
-
-				// Close the modal dialog
-				$j( this ).dialog( 'close' );
 			}
 		},
 		// Add the 'delete' button
@@ -1679,12 +1707,15 @@ function bookacti_dialog_update_activity( activity_id ) {
 
 /**
  * Dialog Delete Activity
- * @version 1.11.0
+ * @version 1.12.0
  * @param {int} activity_id
  */
 function bookacti_dialog_delete_activity( activity_id ) {
 	if( ! activity_id ) { return; }
-
+	
+	// Remove old feedback
+	$j( '#bookacti-delete-activity-dialog .bookacti-notices' ).remove();
+	
 	// Check default option
 	$j( '#bookacti-delete-activity-events' ).prop( 'checked', false );
 
@@ -1696,9 +1727,10 @@ function bookacti_dialog_delete_activity( activity_id ) {
 		[{
 			text: bookacti_localized.dialog_button_delete,
 			'class': 'bookacti-dialog-delete-button',
-
-			//On click on the OK Button, new values are send to a script that update the database
 			click: function() {
+				// Remove old feedback
+				$j( '#bookacti-delete-activity-dialog .bookacti-notices' ).remove();
+				
 				// Check if events must be deleted too
 				var data = { 
 					'action': 'bookactiDeactivateActivity', 
@@ -1711,6 +1743,11 @@ function bookacti_dialog_delete_activity( activity_id ) {
 				$j( '#bookacti-delete-activity-dialog' ).trigger( 'bookacti_deactivate_activity_before', [ data ] );
 				
 				bookacti_start_template_loading();
+				var loading_div = '<div class="bookacti-loading-alt">' 
+									+ '<img class="bookacti-loader" src="' + bookacti_localized.plugin_path + '/img/ajax-loader.gif" title="' + bookacti_localized.loading + '" />'
+									+ '<span class="bookacti-loading-alt-text" >' + bookacti_localized.loading + '</span>'
+								+ '</div>';
+				$j( '#bookacti-delete-activity-dialog' ).append( loading_div );
 
 				$j.ajax({
 					url: ajaxurl, 
@@ -1732,9 +1769,15 @@ function bookacti_dialog_delete_activity( activity_id ) {
 							
 							$j( '#bookacti-delete-activity-dialog' ).trigger( 'bookacti_activity_deactivated', [ response, data ] );
 							
+							// Close the modal dialog
+							$j( '#bookacti-delete-activity-dialog' ).dialog( 'close' );
+							$j( '#bookacti-activity-data-dialog' ).dialog( 'close' );
+							$j( '#bookacti-activity-create-method-dialog' ).dialog( 'close' );
+							
 						} else {
 							var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
-							alert( error_message );
+							$j( '#bookacti-delete-activity-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + error_message + '</li></ul></div>' );
+							$j( '#bookacti-delete-activity-dialog .bookacti-notices' ).show();
 							console.log( response );
 						}
 					},
@@ -1743,22 +1786,16 @@ function bookacti_dialog_delete_activity( activity_id ) {
 						console.log( e );
 					},
 					complete: function() { 
-						bookacti_stop_template_loading(); 
+						bookacti_stop_template_loading();
+						$j( '#bookacti-delete-activity-dialog .bookacti-loading-alt' ).remove();
 					}
 				});
-
-				// Close the modal dialog
-				$j( this ).dialog( 'close' );
-				$j( '#bookacti-activity-data-dialog' ).dialog( 'close' );
-				$j( '#bookacti-activity-create-method-dialog' ).dialog( 'close' );
 			}
 		},
 		{
 			text: bookacti_localized.dialog_button_cancel,
-
 			click: function() {
-				//Close the modal dialog
-				$j( this ).dialog( 'close' );
+				$j( '#bookacti-delete-activity-dialog' ).dialog( 'close' );
 			}
 		}]
 	);
@@ -1782,6 +1819,9 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 	$j( '#bookacti-group-of-events-dialog' ).dialog({ 
 		title: dialog_title_raw + ' (' + bookacti_localized.create_new + ')'
 	});
+	
+	// Remove old feedback
+	$j( '#bookacti-group-of-events-dialog .bookacti-notices' ).remove();
 	
 	// Disable the "New category title" field if a category as been chosen
 	if( $j( '#bookacti-group-of-events-category-selectbox option' ).length > 1 ) {
@@ -1816,6 +1856,9 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 		[{
 			text: bookacti_localized.dialog_button_ok,
 			click: function() {
+				// Remove old feedback
+				$j( '#bookacti-group-of-events-dialog .bookacti-notices' ).remove();
+
 				// Prepare fields
 				$j( '#bookacti-group-of-events-action' ).val( 'bookactiInsertGroupOfEvents' );
 				$j( '#bookacti-group-of-events-form select[multiple].bookacti-items-select-box option' ).prop( 'selected', true );
@@ -1838,6 +1881,11 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 					$j( '#bookacti-group-of-events-dialog' ).trigger( 'bookacti_insert_group_of_events_before', [ data ] );
 					
 					bookacti_start_template_loading();
+					var loading_div = '<div class="bookacti-loading-alt">' 
+										+ '<img class="bookacti-loader" src="' + bookacti_localized.plugin_path + '/img/ajax-loader.gif" title="' + bookacti_localized.loading + '" />'
+										+ '<span class="bookacti-loading-alt-text" >' + bookacti_localized.loading + '</span>'
+									+ '</div>';
+					$j( '#bookacti-group-of-events-dialog' ).append( loading_div );
 					
 					// Save the new group of events in database
 					$j.ajax({
@@ -1879,16 +1927,18 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 							// If error
 							} else {
 								var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
-								alert( error_message );
+								$j( '#bookacti-group-of-events-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + error_message + '</li></ul></div>' );
+								$j( '#bookacti-group-of-events-dialog .bookacti-notices' ).show();
 								console.log( response );
 							}
 						},
 						error: function( e ){
-							alert( 'AJAX ' + bookacti_localized.error );        
+							alert( 'AJAX ' + bookacti_localized.error );
 							console.log( e );
 						},
-						complete: function() { 
+						complete: function() {
 							bookacti_stop_template_loading();
+							$j( '#bookacti-group-of-events-dialog .bookacti-loading-alt' ).remove();
 						}
 					});
 				}
@@ -1993,6 +2043,11 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 					$j( '#bookacti-group-of-events-dialog' ).trigger( 'bookacti_update_group_of_events_before', [ data ] );
 					
 					bookacti_start_template_loading();
+					var loading_div = '<div class="bookacti-loading-alt">' 
+										+ '<img class="bookacti-loader" src="' + bookacti_localized.plugin_path + '/img/ajax-loader.gif" title="' + bookacti_localized.loading + '" />'
+										+ '<span class="bookacti-loading-alt-text" >' + bookacti_localized.loading + '</span>'
+									+ '</div>';
+					$j( '#bookacti-group-of-events-dialog' ).append( loading_div );
 					
 					// Save the new group of events in database
 					$j.ajax({
@@ -2047,11 +2102,12 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 							}
 						},
 						error: function( e ) {
-							alert( 'AJAX ' + bookacti_localized.error );        
+							alert( 'AJAX ' + bookacti_localized.error );
 							console.log( e );
 						},
-						complete: function() { 
+						complete: function() {
 							bookacti_stop_template_loading();
+							$j( '#bookacti-group-of-events-dialog .bookacti-loading-alt' ).remove();
 						}
 					});
 				}
@@ -2110,12 +2166,12 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 						}
 					},
 					error: function( e ) {
-						alert( 'AJAX ' + bookacti_localized.error );        
+						alert( 'AJAX ' + bookacti_localized.error );
 						console.log( e );
 					},
-					complete: function() { 
-						$j( '#bookacti-group-of-events-dialog .bookacti-loading-alt' ).remove();
+					complete: function() {
 						bookacti_stop_template_loading();
+						$j( '#bookacti-group-of-events-dialog .bookacti-loading-alt' ).remove();
 					}
 				});
 			}
@@ -2232,7 +2288,7 @@ function bookacti_dialog_delete_group_of_events( group_id ) {
 
 /**
  * Update a group category
- * @version 1.8.0
+ * @version 1.12.0
  * @param {int} category_id
  */
 function bookacti_dialog_update_group_category( category_id ) {
@@ -2242,14 +2298,19 @@ function bookacti_dialog_update_group_category( category_id ) {
 		title: dialog_title_raw + ' (' + bookacti_localized.edit_id + ': ' + category_id + ')'
 	});
 	
+	// Remove old feedbacks
+	$j( '#bookacti-group-category-dialog .bookacti-notices' ).remove();
+	
 	var category_data = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'group_categories_data' ][ category_id ];
 	
 	// General tab
+	$j( '#bookacti-group-category-template-id' ).val( bookacti.selected_template );
+	$j( '#bookacti-group-category-category-id' ).val( category_id );
 	$j( '#bookacti-group-category-title-field' ).val( category_data.multilingual_title ); 
 
 	// Other settings
 	if( category_data.settings ) {
-		bookacti_fill_fields_from_array( category_data.settings, 'groupCategoryOptions' );
+		bookacti_fill_fields_from_array( category_data.settings );
 	}
 	
 	$j( '#bookacti-group-category-dialog' ).trigger( 'bookacti_group_category_update_dialog', [ category_id ] );
@@ -2266,23 +2327,28 @@ function bookacti_dialog_update_group_category( category_id ) {
 		[{
 			text: bookacti_localized.dialog_button_ok,
 			click: function() {
+				// Remove old feedbacks
+				$j( '#bookacti-group-category-dialog .bookacti-notices' ).remove();
+				
 				// Prepare fields
 				$j( '#bookacti-group-category-action' ).val( 'bookactiUpdateGroupCategory' );
 				$j( '#bookacti-group-category-form select[multiple].bookacti-items-select-box option' ).prop( 'selected', true );
 				
-				if( typeof tinyMCE !== 'undefined' ) { 
-					if( tinyMCE ) { tinyMCE.triggerSave(); }
-				}
+				if( typeof tinyMCE !== 'undefined' ) { if( tinyMCE ) { tinyMCE.triggerSave(); } }
 				
 				var is_form_valid = bookacti_validate_group_category_form();
 
 				if( is_form_valid ) {
 					var data = $j( '#bookacti-group-category-form' ).serializeObject();
-					data.category_id = category_id;
 					
 					$j( '#bookacti-group-category-dialog' ).trigger( 'bookacti_update_group_category_before', [ data ] );
 					
 					bookacti_start_template_loading();
+					var loading_div = '<div class="bookacti-loading-alt">' 
+										+ '<img class="bookacti-loader" src="' + bookacti_localized.plugin_path + '/img/ajax-loader.gif" title="' + bookacti_localized.loading + '" />'
+										+ '<span class="bookacti-loading-alt-text" >' + bookacti_localized.loading + '</span>'
+									+ '</div>';
+					$j( '#bookacti-group-category-dialog' ).append( loading_div );
 
 					// Save the new activity in database
 					$j.ajax({
@@ -2306,24 +2372,26 @@ function bookacti_dialog_update_group_category( category_id ) {
 								
 								$j( '#bookacti-group-category-dialog' ).trigger( 'bookacti_group_category_updated', [ response, data ] );
 								
+								// Close the modal dialog
+								$j( '#bookacti-group-category-dialog' ).dialog( 'close' );
+								
 							// If error
 							} else if( response.status === 'failed' ) {
 								var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
-								alert( error_message );
+								$j( '#bookacti-group-category-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + error_message + '</li></ul></div>' );
+								$j( '#bookacti-group-category-dialog .bookacti-notices' ).show();
 								console.log( response );
 							}
 						},
 						error: function( e ) {
-							alert( 'AJAX ' + bookacti_localized.error );        
+							alert( 'AJAX ' + bookacti_localized.error );
 							console.log( e );
 						},
 						complete: function() { 
 							bookacti_stop_template_loading();
+							$j( '#bookacti-group-category-dialog .bookacti-loading-alt' ).remove();
 						}
 					});
-
-					// Close the modal dialog
-					$j( '#bookacti-group-category-dialog' ).dialog( 'close' );
 				}
 			}
 		},
@@ -2344,10 +2412,13 @@ function bookacti_dialog_update_group_category( category_id ) {
 
 /**
  * Delete a group category
- * @version 1.8.0
+ * @version 1.12.0
  * @param {int} category_id
  */
 function bookacti_dialog_delete_group_category( category_id ) {
+	// Remove old feedbacks
+	$j( '#bookacti-delete-group-category-dialog .bookacti-notices' ).remove();
+	
 	// Add the 'OK' button
 	$j( '#bookacti-delete-group-category-dialog' ).dialog( 'option', 'buttons',
 		[{
@@ -2355,6 +2426,9 @@ function bookacti_dialog_delete_group_category( category_id ) {
 			'class': 'bookacti-dialog-delete-button',
 			
 			click: function() {
+				// Remove old feedbacks
+				$j( '#bookacti-delete-group-category-dialog .bookacti-notices' ).remove();
+				
 				var data = { 
 					'action': 'bookactiDeleteGroupCategory', 
 					'category_id': category_id,
@@ -2364,6 +2438,11 @@ function bookacti_dialog_delete_group_category( category_id ) {
 				$j( '#bookacti-delete-group-category-dialog' ).trigger( 'bookacti_deactivate_group_category_before', [ data ] );
 				
 				bookacti_start_template_loading();
+				var loading_div = '<div class="bookacti-loading-alt">' 
+									+ '<img class="bookacti-loader" src="' + bookacti_localized.plugin_path + '/img/ajax-loader.gif" title="' + bookacti_localized.loading + '" />'
+									+ '<span class="bookacti-loading-alt-text" >' + bookacti_localized.loading + '</span>'
+								+ '</div>';
+				$j( '#bookacti-delete-group-category-dialog' ).append( loading_div );
 
 				$j.ajax({
 					url: ajaxurl, 
@@ -2404,9 +2483,14 @@ function bookacti_dialog_delete_group_category( category_id ) {
 							
 							$j( '#bookacti-delete-group-category-dialog' ).trigger( 'bookacti_group_category_deactivated', [ response, data ] );
 							
+							// Close the modal dialogs
+							$j( '#bookacti-delete-group-category-dialog' ).dialog( 'close' );
+							$j( '#bookacti-group-category-dialog' ).dialog( 'close' );
+							
 						} else {
 							var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
-							alert( error_message );
+							$j( '#bookacti-delete-group-category-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + error_message + '</li></ul></div>' );
+							$j( '#bookacti-delete-group-category-dialog .bookacti-notices' ).show();
 							console.log( response );
 						}
 					},
@@ -2415,19 +2499,16 @@ function bookacti_dialog_delete_group_category( category_id ) {
 						console.log( e );
 					},
 					complete: function() { 
-						bookacti_stop_template_loading(); 
+						bookacti_stop_template_loading();
+						$j( '#bookacti-delete-group-category-dialog .bookacti-loading-alt' ).remove();
 					}
 				});
-
-				// Close the modal dialogs
-				$j( this ).dialog( 'close' );
-				$j( '#bookacti-group-category-dialog' ).dialog( 'close' );
 			}
 		},
 		{
 			text: bookacti_localized.dialog_button_cancel,
 			click: function() {
-				$j( this ).dialog( 'close' );
+				$j( '#bookacti-delete-group-category-dialog' ).dialog( 'close' );
 			}
 		}]
 	);
