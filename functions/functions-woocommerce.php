@@ -372,15 +372,12 @@ function bookacti_wc_update_cart_item_bookings_status( $cart_item_key, $new_stat
 
 /**
  * Check if the booking has expired
- * @version 1.9.0
- * @param int|object $booking
+ * @version 1.12.0
+ * @param object $booking
  * @return boolean
  */
 function bookacti_is_expired_booking( $booking ) {
-	if( is_numeric( $booking ) ) { $booking = bookacti_get_booking_by_id( $booking ); }
-	
-	if( ! $booking ) { return true; }
-	if( ! $booking->expiration_date || ! $booking->active ) { return true; }
+	if( empty( $booking->expiration_date ) || empty( $booking->active ) ) { return true; }
 	
 	$expired = false;
 	$now_dt = new DateTime();

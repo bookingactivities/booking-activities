@@ -382,7 +382,7 @@ register_uninstall_hook( __FILE__, 'bookacti_uninstall' );
 
 /**
  * Update Booking Activities
- * @version 1.8.0
+ * @version 1.12.0
  */
 function bookacti_check_version() {
 	if( defined( 'IFRAME_REQUEST' ) ) { return; }
@@ -390,6 +390,13 @@ function bookacti_check_version() {
 	if( $old_version !== BOOKACTI_VERSION ) {
 		bookacti_activate();
 		do_action( 'bookacti_updated', $old_version );
+		
+		// Update database version
+		$db_version = get_option( 'bookacti_db_version', $old_version );
+		if( version_compare( $db_version, BOOKACTI_VERSION, '<' ) ) {
+			delete_option( 'bookacti_db_version' );
+			add_option( 'bookacti_db_version', BOOKACTI_VERSION );
+		}
 	}
 }
 add_action( 'init', 'bookacti_check_version', 5 );

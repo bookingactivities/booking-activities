@@ -463,7 +463,7 @@ function bookacti_get_notifications_tags( $notification_id = '' ) {
 /**
  * Get notifications tags and values corresponding to given booking
  * @since 1.2.0
- * @version 1.10.0
+ * @version 1.12.0
  * @param object $booking
  * @param string $booking_type 'group' or 'single'
  * @param array $notification
@@ -489,7 +489,7 @@ function bookacti_get_notifications_tags_values( $booking, $booking_type, $notif
 		$datetime_format = apply_filters( 'bookacti_translate_text', bookacti_get_message( 'date_format_long', true ), $locale );
 		
 		if( $booking_type === 'group' ) {
-			$bookings = bookacti_get_bookings_by_booking_group_id( $booking->id );
+			$bookings = bookacti_get_booking_group_bookings_by_id( $booking->id );
 			
 			$booking_data[ '{booking_total_qty}' ]	= 0;
 			foreach( $bookings as $grouped_booking ) { $booking_data[ '{booking_total_qty}' ] += intval( $grouped_booking->quantity ); }
@@ -588,9 +588,8 @@ function bookacti_get_notifications_tags_values( $booking, $booking_type, $notif
 
 /**
  * Send a notification according to its settings
- * 
  * @since 1.2.1 (was bookacti_send_email in 1.2.0)
- * @version 1.9.0
+ * @version 1.12.0
  * @param string $notification_id Must exists in "bookacti_notifications_default_settings"
  * @param int $booking_id
  * @param string $booking_type "single" or "group"
@@ -628,12 +627,8 @@ function bookacti_send_notification( $notification_id, $booking_id, $booking_typ
 	
 	if( ! $notification || empty( $notification[ 'active' ] ) ) { return array(); }
 	
-	// Get the booking (group data)
-	$id_filters = $booking_type === 'group' ? array( 'in__booking_group_id' => array( $booking_id ) ) : array( 'in__booking_id' => array( $booking_id ) );
-	$filters = bookacti_format_booking_filters( array_merge( array( 'fetch_meta' => true ), $id_filters ) );
-	$booking_array = $booking_type === 'group' ? bookacti_get_booking_groups( $filters ) : bookacti_get_bookings( $filters );
-	$booking = ! empty( $booking_array[ $booking_id ] ) ? $booking_array[ $booking_id ] : null;
-	
+	// Get the booking (group)
+	$booking = $booking_type === 'group' ? bookacti_get_booking_group_by_id( $booking_id, true ) : bookacti_get_booking_by_id( $booking_id, true );
 	if( ! $booking ) { return array(); }
 	
 	// Change params according to recipients

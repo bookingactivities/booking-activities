@@ -38,10 +38,11 @@ function bookacti_get_default_settings() {
 
 /**
  * Delete settings
- * @version 1.7.1
+ * @version 1.12.0
  */
 function bookacti_delete_settings() {
 	delete_option( 'bookacti_version' );
+	delete_option( 'bookacti_db_version' );
 	delete_option( 'bookacti_template_settings' ); // Deprecated
 	delete_option( 'bookacti_bookings_settings' ); // Deprecated
 	delete_option( 'bookacti_general_settings' );

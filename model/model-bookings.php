@@ -1338,45 +1338,6 @@ function bookacti_get_number_of_bookings_per_user_by_group_of_events( $group_of_
 
 
 /**
- * Get booking by id
- * @version 1.10.0
- * @global wpdb $wpdb
- * @param int $booking_id
- * @return object|null
- */
-function bookacti_get_booking_by_id( $booking_id ) {
-	global $wpdb;
-
-	$query	= 'SELECT B.*, E.title, E.activity_id, E.template_id '
-			. ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B '
-			. ' LEFT JOIN ' . BOOKACTI_TABLE_EVENTS . ' as E ON B.event_id = E.id '
-			. ' WHERE B.id = %d';
-	$prep		= $wpdb->prepare( $query, $booking_id );
-	$booking	= $wpdb->get_row( $prep, OBJECT );
-
-	return $booking;
-}
-
-
-/**
- * Get booking form id
- * @since 1.5.4
- * @global wpdb $wpdb
- * @param int $booking_id
- * @return string|null
- */
-function bookacti_get_booking_form_id( $booking_id ) {
-	global $wpdb;
-
-	$query	= 'SELECT form_id FROM ' . BOOKACTI_TABLE_BOOKINGS . ' WHERE id = %d';
-	$prep	= $wpdb->prepare( $query, $booking_id );
-	$form_id= $wpdb->get_var( $prep );
-
-	return intval( $form_id );
-}
-
-
-/**
  * Cancel a booking
  * @version 1.9.0
  * @global wpdb $wpdb
@@ -2377,70 +2338,6 @@ function bookacti_get_booking_groups( $filters ) {
 
 
 /**
- * Get a booking group by its id
- * 
- * @since 1.1.0
- * 
- * @global wpdb $wpdb
- * @param int $booking_group_id
- * @return object
- */
-function bookacti_get_booking_group_by_id( $booking_group_id ) {
-	global $wpdb;
-
-	$query	= 'SELECT G.* FROM ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' as G '
-			. ' WHERE G.id = %d';
-	$prep	= $wpdb->prepare( $query, $booking_group_id );
-	$group	= $wpdb->get_row( $prep, OBJECT );
-
-	return $group;
-}
-
-
-/**
- * Get booking group's form id
- * @since 1.5.4
- * @global wpdb $wpdb
- * @param int $booking_group_id
- * @return int
- */
-function bookacti_get_booking_group_form_id( $booking_group_id ) {
-	global $wpdb;
-
-	$query	= 'SELECT form_id FROM ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' WHERE id = %d';
-	$prep	= $wpdb->prepare( $query, $booking_group_id );
-	$form_id= $wpdb->get_var( $prep );
-
-	return intval( $form_id );
-}
-
-
-/**
- * Get bookings by booking group id
- * 
- * @since 1.1.0
- * 
- * @global wpdb $wpdb
- * @param int $booking_group_id
- * @return array
- */
-function bookacti_get_bookings_by_booking_group_id( $booking_group_id ) {
-	global $wpdb;
-
-	$query		= 'SELECT B.*, E.title, E.activity_id, E.template_id FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B '
-				. ' LEFT JOIN (
-						SELECT id, title, activity_id, template_id FROM ' . BOOKACTI_TABLE_EVENTS . '
-					) as E ON B.event_id = E.id'
-				. ' WHERE B.group_id = %d '
-				. ' ORDER BY B.event_start, B.event_id, E.activity_id DESC';
-	$prep		= $wpdb->prepare( $query, $booking_group_id );
-	$bookings	= $wpdb->get_results( $prep, OBJECT );
-
-	return $bookings;
-}
-
-
-/**
  * Get ids of bookings included in a booking group
  * 
  * @since 1.1.0
@@ -2464,31 +2361,6 @@ function bookacti_get_booking_group_bookings_ids( $booking_group_id ) {
 	}
 
 	return $booking_ids;
-}
-
-
-/**
- * Get booking group quantity (= max quantity of its bookings)
- * 
- * @since 1.1.0
- * 
- * @global wpdb $wpdb
- * @param int $booking_group_id
- * @return int 
- */
-function bookacti_get_booking_group_quantity( $booking_group_id ) {
-	global $wpdb;
-
-	$query		= 'SELECT MAX( quantity ) as max_quantity FROM ' . BOOKACTI_TABLE_BOOKINGS
-				. ' WHERE group_id = %d ';
-	$prep		= $wpdb->prepare( $query, $booking_group_id );
-	$max_qty	= $wpdb->get_var( $prep );
-
-	if( empty( $max_qty ) ) {
-		return 0;
-	}
-
-	return $max_qty;
 }
 
 
