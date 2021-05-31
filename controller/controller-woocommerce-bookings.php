@@ -519,7 +519,7 @@ add_filter( 'woocommerce_email_order_items_table', 'bookacti_order_items_unset_e
 /**
  * Add WC data to the booking list
  * @since 1.6.0 (was bookacti_woocommerce_fill_booking_list_custom_columns before)
- * @version 1.11.1
+ * @version 1.11.2
  * @param array $booking_list_items
  * @param array $bookings
  * @param array $booking_groups
@@ -577,7 +577,7 @@ function bookacti_add_wc_data_to_booking_list_items( $booking_list_items, $booki
 
 	// Get WC orders
 	$orders = array();
-	$orders_array = wc_get_orders( array( 'post__in' => $order_ids, 'limit' => -1 ) );
+	$orders_array = $order_ids ? wc_get_orders( array( 'post__in' => $order_ids, 'limit' => -1 ) ) : array();
 	foreach( $orders_array as $order ) {
 		$order_id = $order->get_id();
 		$orders[ $order_id ] = $order;

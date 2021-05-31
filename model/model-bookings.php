@@ -1106,14 +1106,15 @@ function bookacti_get_number_of_bookings( $filters ) {
 /**
  * Get number of bookings ordered by events
  * @since 1.9.2 (was bookacti_get_number_of_bookings_by_events)
- * @version 1.10.0
+ * @version 1.11.2
  * @global wpdb $wpdb
  * @param array $template_ids
  * @param array $event_ids
  * @param array $user_ids
+ * @param array $status
  * @return array
  */
-function bookacti_get_number_of_bookings_for_booking_system( $template_ids = array(), $event_ids = array(), $user_ids = array() ) {
+function bookacti_get_number_of_bookings_for_booking_system( $template_ids = array(), $event_ids = array(), $user_ids = array(), $status = array() ) {
 	global $wpdb;
 	
 	// Convert ids to array
@@ -1166,6 +1167,19 @@ function bookacti_get_number_of_bookings_for_booking_system( $template_ids = arr
 		}
 		$query .= ') ';
 		$variables = array_merge( $variables, $user_ids );
+	}
+	
+	// Filter by status
+	if( $status ) {
+		$query	.= ' AND B.state IN ( %s ';
+		$array_count = count( $status );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %s ';
+			}
+		}
+		$query .= ') ';
+		$variables = array_merge( $variables, $status );
 	}
 	
 	$query .= ' GROUP BY B.event_id, B.event_start, B.event_end '

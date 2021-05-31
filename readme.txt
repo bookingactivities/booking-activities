@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 5.7
 Requires PHP: 5.3
-Stable tag: 1.11.1
+Stable tag: 1.11.2
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -320,6 +320,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.11.2 - 2021/05/31 =
+* Tweak - Show the active bookings number of the selected status only on calendars showing booked events only
+* Tweak - Show the bookings list of the selected user and status only on calendars showing booked events only
+* Fix - Fix a bug introduced in 1.11.1 where Bookings page may timeout if WooCommerce is active and has a lot of orders
 
 = 1.11.1 - 2021/05/24 =
 * Fix - Order data were blank in bookings lists and exports after the 10 first orders

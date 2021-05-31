@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * AJAX Controller - Fetch events in order to display them
- * @version	1.9.0
+ * @version	1.11.2
  */
 function bookacti_controller_fetch_events() {
 	// Check nonce
@@ -55,6 +55,10 @@ function bookacti_controller_fetch_events() {
 			'to'			=> ! empty( $interval[ 'end' ] ) ? $interval[ 'end' ] : '',
 			'in__event_id'	=> array_keys( $events[ 'data' ] ),
 		);
+		if( $atts[ 'bookings_only' ] ) {
+			$booking_filters[ 'status' ] = $atts[ 'status' ];
+			$booking_filters[ 'in__user_id' ] = $atts[ 'user_id' ] ? array( $atts[ 'user_id' ] ) : array();
+		}
 		$booking_lists = bookacti_get_events_booking_lists( $booking_filters, $atts[ 'tooltip_booking_list_columns' ], $atts );
 	}
 	

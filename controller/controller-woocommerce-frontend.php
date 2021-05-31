@@ -1542,7 +1542,7 @@ add_filter( 'bookacti_user_booking_list_default_columns', 'bookacti_reorder_wooc
 /**
  * Add WC data to the user booking list
  * @since 1.7.12 (was bookacti_fill_wc_price_column_in_booking_list)
- * @version 1.11.1
+ * @version 1.11.2
  * @param array $booking_list_items
  * @param array $bookings
  * @param array $booking_groups
@@ -1584,7 +1584,7 @@ function bookacti_add_wc_data_to_user_booking_list_items( $booking_list_items, $
 
 	// Get WC orders by order item id
 	$orders = array();
-	$orders_array = wc_get_orders( array( 'post__in' => $order_ids, 'limit' => -1 ) );
+	$orders_array = $order_ids ? wc_get_orders( array( 'post__in' => $order_ids, 'limit' => -1 ) ) : array();
 	foreach( $orders_array as $order ) {
 		$order_id = $order->get_id();
 		$orders[ $order_id ] = $order;

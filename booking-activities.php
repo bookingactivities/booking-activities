@@ -3,13 +3,13 @@
  * Plugin Name: Booking Activities
  * Plugin URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Description: Booking system specialized in activities (sports, cultural, leisure, events...). Works great with WooCommerce.
- * Version: 1.11.1
+ * Version: 1.11.2
  * Author: Booking Activities Team
  * Author URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Text Domain: booking-activities
  * Domain Path: /languages/
  * WC requires at least: 3.0
- * WC tested up to: 5.3
+ * WC tested up to: 5.4
  * License: GPL3
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  * 
@@ -40,7 +40,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 // GLOBALS AND CONSTANTS
-if( ! defined( 'BOOKACTI_VERSION' ) )		{ define( 'BOOKACTI_VERSION', '1.11.1' ); }
+if( ! defined( 'BOOKACTI_VERSION' ) )		{ define( 'BOOKACTI_VERSION', '1.11.2' ); }
 if( ! defined( 'BOOKACTI_PLUGIN_NAME' ) )	{ define( 'BOOKACTI_PLUGIN_NAME', 'booking-activities' ); }
 
 
@@ -381,7 +381,7 @@ register_uninstall_hook( __FILE__, 'bookacti_uninstall' );
 
 /**
  * Update Booking Activities
- * @version 1.8.0
+ * @version 1.11.2
  */
 function bookacti_check_version() {
 	if( defined( 'IFRAME_REQUEST' ) ) { return; }
@@ -389,6 +389,13 @@ function bookacti_check_version() {
 	if( $old_version !== BOOKACTI_VERSION ) {
 		bookacti_activate();
 		do_action( 'bookacti_updated', $old_version );
+		
+		// Update database version
+		$db_version = get_option( 'bookacti_db_version', $old_version );
+		if( version_compare( $db_version, BOOKACTI_VERSION, '<' ) ) {
+			delete_option( 'bookacti_db_version' );
+			add_option( 'bookacti_db_version', BOOKACTI_VERSION );
+		}
 	}
 }
 add_action( 'init', 'bookacti_check_version', 5 );
