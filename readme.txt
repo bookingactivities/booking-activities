@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 5.7
 Requires PHP: 5.3
-Stable tag: 1.11.0
+Stable tag: 1.11.2
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -332,10 +332,15 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Dev - Move the legacy functions to controller-legacy.php
 * Dev - Store the activity_id in the wp_bookacti_groups_events table (part of removing dependencies between bookings and events (groups))
 
-= 1.11.1 =
+= 1.11.2 - 2021/05/31 =
+* Tweak - Show the active bookings number of the selected status only on calendars showing booked events only
+* Tweak - Show the bookings list of the selected user and status only on calendars showing booked events only
+* Fix - Fix a bug introduced in 1.11.1 where Bookings page may timeout if WooCommerce is active and has a lot of orders
+
+= 1.11.1 – 2021/05/24 =
 * Fix - Order data were blank in bookings lists and exports after the 10 first orders
 
-= 1.11.0 =
+= 1.11.0 – 2021/05/05 =
 * **[See the user-friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-11-advanced-options-to-repeat-events/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
 * Feature - Repeat events: option to skip n days / weeks / months between each occurrence (e.g.: repeat every 2 days)
 * Feature - Repeat events weekly: select the days of the week on which the event should be repeated
@@ -1201,10 +1206,16 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Upgrade Notice ==
 
+= 1.12.0 =
+Major changes in code:
+* If you have purchased add-ons, you need to update them too.
+* If you have custom code, you may need to adapt it. No support can be provided for your custom code.
+* You won't be able to restore your previous backups of the wp_bookacti_exceptions table after the update
+
 = 1.9.0 =
 Major changes in code:
 * If you have purchased add-ons, you need to update them too.
-* If you have custom code, you probably need to adapt it. No support can be provided for your custom code.
+* If you have custom code, you may need to adapt it. No support can be provided for your custom code.
 
 = 1.1.0 =
 Major update with breaking changes. To be safe, make a backup of your database. 

@@ -2552,7 +2552,7 @@ function bookacti_get_user_booking_list_private_columns() {
 /**
  * Get booking list items
  * @since 1.7.4
- * @version 1.9.0
+ * @version 1.11.2
  * @param array $filters
  * @param array $columns
  * @return string
@@ -2689,6 +2689,12 @@ function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
 			$booking_type	= 'single';
 		}
 		
+		// Format creation date
+		$creation_date_raw = ! empty( $booking->creation_date ) ? bookacti_sanitize_datetime( $booking->creation_date ) : '';
+		/* translators: Datetime format. Must be adapted to each country. Use wp date_i18n documentation to find the appropriated combinaison https://wordpress.org/support/article/formatting-date-and-time/ */
+		$creation_date = $creation_date_raw ? bookacti_format_datetime( $creation_date_raw, __( 'F d, Y', BOOKACTI_PLUGIN_NAME ) ) : '';
+		$creation_date = $creation_date ? '<span title="' . $booking->creation_date . '">' . $creation_date . '</span>' : '';
+
 		// Format customer column
 		// If the customer has an account
 		if( ! empty( $users[ $user_id ] ) ) {
@@ -2738,8 +2744,7 @@ function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
 			'status'				=> bookacti_format_booking_state( $status ),
 			'payment_status'		=> bookacti_format_payment_status( $paid ),
 			'quantity'				=> $quantity,
-			/* translators: Datetime format. Must be adapted to each country. Use wp date_i18n documentation to find the appropriated combinaison https://wordpress.org/support/article/formatting-date-and-time/ */
-			'creation_date'			=> bookacti_format_datetime( $booking->creation_date, esc_html__( 'F d, Y', 'booking-activities' ) ),
+			'creation_date'			=> $creation_date,
 			'customer_id'			=> $user_id,
 			'customer_display_name'	=> $customer,
 			'customer_first_name'	=> $first_name,

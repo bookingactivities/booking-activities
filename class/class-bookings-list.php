@@ -10,7 +10,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 	
 	/**
 	 * Bookings WP_List_Table
-	 * @version 1.9.0
+	 * @version 1.11.2
 	 */
 	class Bookings_List_Table extends WP_List_Table {
 		
@@ -223,7 +223,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		
 		/**
 		 * Get booking list items. Parameters can be passed in the URL.
-		 * @version 1.9.0
+		 * @version 1.11.2
 		 * @access public
 		 * @return array
 		 */
@@ -343,6 +343,12 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					}
 				}
 				
+				// Format creation date
+				$creation_date_raw = ! empty( $booking->creation_date ) ? bookacti_sanitize_datetime( $booking->creation_date ) : '';
+				/* translators: Datetime format. Must be adapted to each country. Use wp date_i18n documentation to find the appropriated combinaison https://wordpress.org/support/article/formatting-date-and-time/ */
+				$creation_date = $creation_date_raw ? bookacti_format_datetime( $creation_date_raw, __( 'F d, Y', BOOKACTI_PLUGIN_NAME ) ) : '';
+				$creation_date = $creation_date ? '<span title="' . $booking->creation_date . '">' . $creation_date . '</span>' : '';
+				
 				// Format customer column
 				// If the customer has an account
 				if( ! empty( $users[ $user_id ] ) ) {
@@ -420,8 +426,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					'end_date'		=> bookacti_format_datetime( $end, $datetime_format ),
 					'template_title'=> apply_filters( 'bookacti_translate_text', $booking->template_title ),
 					'activity_title'=> apply_filters( 'bookacti_translate_text', $activity_title ),
-					/* translators: Datetime format. Must be adapted to each country. Use wp date_i18n documentation to find the appropriated combinaison https://wordpress.org/support/article/formatting-date-and-time/ */
-					'creation_date'	=> bookacti_format_datetime( $booking->creation_date, __( 'F d, Y', BOOKACTI_PLUGIN_NAME ) ),
+					'creation_date'	=> $creation_date,
 					'actions'		=> $actions,
 					'refund_actions'=> array(),
 					'order_id'		=> $order_id,

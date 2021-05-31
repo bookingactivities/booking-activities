@@ -9,7 +9,7 @@
  * Text Domain: booking-activities
  * Domain Path: /languages/
  * WC requires at least: 3.0
- * WC tested up to: 5.3
+ * WC tested up to: 5.4
  * License: GPL3
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  * 
@@ -110,9 +110,15 @@ if( is_admin() ) {
 	require_once( 'class/class-forms-list.php' );
 }
 
+// Get active plugins
+$active_plugins = (array) get_option( 'active_plugins', array() );
+if( is_multisite() ) {
+	$network_active_plugins	= array_keys( (array) get_site_option( 'active_sitewide_plugins', array() ) );
+	$active_plugins			= array_merge( $active_plugins, $network_active_plugins );
+}
 
 // If woocommerce is active, include functions
-if( bookacti_is_plugin_active( 'woocommerce/woocommerce.php' ) ) {
+if( in_array( 'woocommerce/woocommerce.php', $active_plugins, true ) ) {
 	include_once( 'controller/controller-woocommerce-bookings.php' );
 	include_once( 'controller/controller-woocommerce-backend.php' );
 	include_once( 'controller/controller-woocommerce-frontend.php' );
@@ -382,7 +388,7 @@ register_uninstall_hook( __FILE__, 'bookacti_uninstall' );
 
 /**
  * Update Booking Activities
- * @version 1.12.0
+ * @version 1.11.2
  */
 function bookacti_check_version() {
 	if( defined( 'IFRAME_REQUEST' ) ) { return; }
