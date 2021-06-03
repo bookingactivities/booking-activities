@@ -10,12 +10,79 @@ $j( document ).ready( function() {
 		if( ! calendar.hasClass( 'fc' ) ) { return; }
 		calendar.fullCalendar( 'gotoDate', date );
 	});
+	
+	
+	/**
+	 * Refresh the display of selected events when you click on the View More link
+	 * @since 1.12.0
+	 */
+	$j( 'body' ).on( 'click', '.bookacti-booking-system .bookacti-calendar .fc-more', function(){
+		bookacti_refresh_picked_events_on_calendar( booking_system );
+	});
+	
+	
+	/**
+	 * Trigger an event when the user start touching an event
+	 * @since 1.12.0
+	 * @param {Event} e
+	 */
+	$j( 'body' ).on( 'touchstart', '.bookacti-booking-system .bookacti-calendar .fc-event, .bookacti-booking-system .bookacti-calendar .fc-list-item', function( e ){
+		var booking_system = $j( this ).closest( '.bookacti-booking-system' );
+		var element = $j( this );
+		var event = {
+			'id': parseInt( element.data( 'event-id' ) ),
+			'start': moment.utc( element.data( 'event-start' ) ),
+			'end': moment.utc( element.data( 'event-end' ) )
+		};
+		booking_system.trigger( 'bookacti_event_touch_start', [ event, element, e ] );
+	});
+	
+	
+	/**
+	 * Trigger an event when the user stop touching an event
+	 * @since 1.12.0
+	 * @param {Event} e
+	 */
+	$j( 'body' ).on( 'touchend', '.bookacti-booking-system .bookacti-calendar .fc-event, .bookacti-booking-system .bookacti-calendar .fc-list-item', function( e ){
+		var booking_system = $j( this ).closest( '.bookacti-booking-system' );
+		var element = $j( this );
+		var event = {
+			'id': parseInt( element.data( 'event-id' ) ),
+			'start': moment.utc( element.data( 'event-start' ) ),
+			'end': moment.utc( element.data( 'event-end' ) )
+		};
+		booking_system.trigger( 'bookacti_event_touch_end', [ event, element, e ] );
+	});
+	
+	
+	/**
+	 * Refresh the picked events on the calendar - on bookacti_pick_event
+	 * @since 1.12.0
+	 * @param {Event} e
+	 * @param {Object} picked_event
+	 * @param {Int} group_id
+	 * @param {String} group_date
+	 */
+	$j( 'body' ).on( 'bookacti_pick_event', '.bookacti-booking-system', function( e, picked_event, group_id, group_date ){
+		if( ! $j( this ).find( '.bookacti-calendar' ).length ) { return; }
+		bookacti_refresh_picked_events_on_calendar( $j( this ) );
+	});
+	
+	
+	/**
+	 * Visually unpick all events of the calendar - on bookacti_unpick_all_events
+	 * @since 1.12.0
+	 */
+	$j( 'body' ).on( 'bookacti_unpick_all_events', '.bookacti-booking-system', function() {
+		if( ! $j( this ).find( '.bookacti-calendar' ).length ) { return; }
+		bookacti_unpick_all_events_on_calendar( $j( this ) );
+	});
 });
 
 
 /**
  * Initialize the calendar
- * @version 1.9.3
+ * @version 1.12.0
  * @param {HTMLElement} booking_system
  * @param {boolean} reload_events
  */
@@ -230,65 +297,6 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		// Fetch events from database
 		bookacti_fetch_events_from_interval( booking_system, interval );
 	}
-	
-	
-	/**
-	 * Refresh the display of selected events when you click on the View More link
-	 */
-	calendar.off( 'click', '.fc-more' ).on( 'click', '.fc-more', function(){
-		bookacti_refresh_picked_events_on_calendar( booking_system );
-	});
-	
-	
-	/**
-	 * Trigger an event when the user start touching an event
-	 * @since 1.8.0
-	 * @param {Event} e
-	 */
-	calendar.off( 'touchstart', '.fc-event, .fc-list-item' ).on( 'touchstart', '.fc-event, .fc-list-item', function( e ){
-		var element = $j( this );
-		var event = {
-			'id': parseInt( element.data( 'event-id' ) ),
-			'start': moment.utc( element.data( 'event-start' ) ),
-			'end': moment.utc( element.data( 'event-end' ) )
-		};
-		booking_system.trigger( 'bookacti_event_touch_start', [ event, element, e ] );
-	});
-	
-	
-	/**
-	 * Trigger an event when the user stop touching an event
-	 * @since 1.8.0
-	 * @param {Event} e
-	 */
-	calendar.off( 'touchend', '.fc-event, .fc-list-item' ).on( 'touchend', '.fc-event, .fc-list-item', function( e ){
-		var element = $j( this );
-		var event = {
-			'id': parseInt( element.data( 'event-id' ) ),
-			'start': moment.utc( element.data( 'event-start' ) ),
-			'end': moment.utc( element.data( 'event-end' ) )
-		};
-		booking_system.trigger( 'bookacti_event_touch_end', [ event, element, e ] );
-	});
-	
-	
-	/**
-	 * Refresh the picked events on the calendar - on bookacti_pick_event
-	 * @version 1.8.9
-	 * @param {Event} e
-	 * @param {Object} picked_event
-	 */
-	booking_system.off( 'bookacti_pick_event' ).on( 'bookacti_pick_event', function( e, picked_event ){
-		bookacti_refresh_picked_events_on_calendar( $j( this ) );
-	});
-	
-	
-	/**
-	 * Visually unpick all events of the calendar - on bookacti_unpick_all_events
-	 */
-	booking_system.off( 'bookacti_unpick_all_events' ).on( 'bookacti_unpick_all_events', function(){
-		bookacti_unpick_all_events_on_calendar( $j( this ) );
-	});
 	
 	bookacti.booking_system[ booking_system_id ][ 'load_events' ] = true;
 	

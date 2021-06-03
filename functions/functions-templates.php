@@ -14,18 +14,20 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  */
 function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 	$booking_system_data = $atts;
+	$groups = bookacti_get_groups_of_events( array( 'templates' => array( $template_id ), 'past_events' => 1 ) );
 	$templates_data = bookacti_get_templates_data( $template_id, true );
 	
 	$booking_system_data[ 'calendars' ]				= array( $template_id );
 	$booking_system_data[ 'events' ]				= array();
 	$booking_system_data[ 'events_data' ]			= array();
 	$booking_system_data[ 'events_interval' ]		= array();
-	$booking_system_data[ 'bookings' ]				= bookacti_get_number_of_bookings_for_booking_system( $template_id );
+	$booking_system_data[ 'bookings' ]				= bookacti_get_number_of_bookings_per_event( array( 'templates' => array( $template_id ) ) );
+	$booking_system_data[ 'groups_bookings' ]		= bookacti_get_number_of_bookings_per_group_of_events( $groups[ 'groups' ], $booking_system_data[ 'bookings' ] );
 	$booking_system_data[ 'exceptions' ]			= bookacti_get_exceptions_by_event( array( 'templates' => array( $template_id ) ) );
 	$booking_system_data[ 'activities_data' ]		= bookacti_get_activities_by_template( $template_id, false, true );
-	$booking_system_data[ 'groups_events' ]			= bookacti_get_groups_events( $template_id );
-	$booking_system_data[ 'groups_data' ]			= bookacti_get_groups_of_events( array( 'templates' => array( $template_id ) ) );
-	$booking_system_data[ 'group_categories_data' ]	= bookacti_get_group_categories( $template_id );
+	$booking_system_data[ 'groups_events' ]			= $groups[ 'groups' ];
+	$booking_system_data[ 'groups_data' ]			= $groups[ 'data' ];
+	$booking_system_data[ 'group_categories_data' ]	= bookacti_get_group_categories( array( 'templates' => array( $template_id ) ) );
 	$booking_system_data[ 'start' ]					= '1970-02-01 00:00:00';
 	$booking_system_data[ 'end' ]					= '2037-12-31 23:59:59';
 	$booking_system_data[ 'display_data' ]			= $templates_data[ $template_id ][ 'settings' ];
@@ -125,9 +127,10 @@ function bookacti_get_activity_managers( $activity_ids ) {
 
 
 // TEMPLATE X ACTIVITIES
+
 /**
  * Retrieve template activities list
- * @version 1.11.0
+ * @version 1.12.0
  * @param int $template_id
  * @return boolean|string 
  */
@@ -137,17 +140,18 @@ function bookacti_get_template_activities_list( $template_id ) {
 	$activities = bookacti_get_activities_by_template( array( $template_id ) );
 	
 	// Sort the activities by custom order
+	$ordered_activities = $activities;
 	$activities_order = bookacti_get_metadata( 'template', $template_id, 'activities_order', true );
 	if( $activities_order ) {
-		$ordered_activities = array();
+		$sorted_activities = array();
 		foreach( $activities_order as $activity_id ) {
-			if( isset( $activities[ $activity_id ] ) ) { $ordered_activities[] = $activities[ $activity_id ]; unset( $activities[ $activity_id ] ); }
+			if( isset( $activities[ $activity_id ] ) ) { $sorted_activities[] = $activities[ $activity_id ]; }
 		}
-		$activities = array_merge( $ordered_activities, $activities );
+		$ordered_activities = array_merge( $sorted_activities, array_diff_key( $activities, array_flip( $activities_order ) ) );
 	}
 	
 	ob_start();
-	foreach( $activities as $activity ) {
+	foreach( $ordered_activities as $activity ) {
 		$title = apply_filters( 'bookacti_translate_text', $activity[ 'title' ] );
 		?>
 		<div class='bookacti-activity' data-activity-id='<?php echo esc_attr( $activity[ 'id' ] ); ?>'>
@@ -554,7 +558,7 @@ function bookacti_unbind_all_occurrences( $event ) {
  */
 function bookacti_update_exceptions( $object_id, $new_exceptions, $object_type = 'event', $delete_old = true ) {
 	// Check if the exceptions already exist
-	$args = $object_type === 'group_of_events' ? array( 'group_of_events' => array( $object_id ) ) : array( 'events' => array( $object_id ) );
+	$args = $object_type === 'group_of_events' ? array( 'event_groups' => array( $object_id ) ) : array( 'events' => array( $object_id ) );
 	$old_exceptions = bookacti_get_exceptions( $args );
 	$exceptions_dates = array();
 	if( $old_exceptions ) {	
@@ -722,28 +726,18 @@ function bookacti_promo_for_bapap_addon( $type = 'event' ) {
 
 /**
  * Check if a group category exists
- * 
  * @since 1.1.0
- * 
+ * @version 1.12.0
  * @param int $category_id
  * @param int $template_id
  * @return boolean
  */
-function bookacti_group_category_exists( $category_id, $template_id = null ) {
-	if( empty( $category_id ) || ! is_numeric( $category_id ) ) {
-		return false;
-	}
-
-	$available_category_ids = bookacti_get_group_category_ids_by_template( $template_id );
-	foreach( $available_category_ids as $available_category_id ) {
-		if( intval( $category_id ) === intval( $available_category_id ) ) {
-			return true;
-		}
-	}
-
-	return false;
+function bookacti_group_category_exists( $category_id, $template_id = 0 ) {
+	if( ! $category_id || ! is_numeric( $category_id ) ) { return false; }
+	$template_ids = $template_id ? array( $template_id ) : array();
+	$available_category_ids = array_map( 'intval', bookacti_get_group_category_ids_by_template( $template_ids ) );
+	return in_array( intval( $category_id ), $available_category_ids, true );
 }
-
 
 
 /**
@@ -786,34 +780,35 @@ function bookacti_update_events_of_group( $group_id, $new_events ) {
 
 
 /**
- * Retrieve template groups of events list
+ * Get the groups of events list for the desired template
  * @since 1.1.0
- * @version 1.11.0
+ * @version 1.12.0
  * @param int $template_id
- * @return string|boolean
+ * @return string
  */
 function bookacti_get_template_groups_of_events_list( $template_id ) {
-	if( ! $template_id ) { return false; }
+	if( ! $template_id ) { return ''; }
 
 	$current_user_can_edit_template	= current_user_can( 'bookacti_edit_templates' );
 	
 	// Retrieve groups by categories
-	$categories	= bookacti_get_group_categories( $template_id );
-	$groups		= bookacti_get_groups_of_events( array( 'templates' => array( $template_id ) ) );
+	$categories = bookacti_get_group_categories( array( 'templates' => array( $template_id ) ) );
+	$groups = bookacti_get_groups_of_events( array( 'templates' => array( $template_id ), 'past_events' => 1 ) );
 	
 	// Sort the group categories by custom order
+	$ordered_categories = $categories;
 	$categories_order = bookacti_get_metadata( 'template', $template_id, 'group_categories_order', true );
 	if( $categories_order ) {
-		$ordered_categories = array();
+		$sorted_categories = array();
 		foreach( $categories_order as $category_id ) {
-			if( isset( $categories[ $category_id ] ) ) { $ordered_categories[] = $categories[ $category_id ]; unset( $categories[ $category_id ] ); }
+			if( isset( $categories[ $category_id ] ) ) { $sorted_categories[] = $categories[ $category_id ]; }
 		}
-		$categories = array_merge( $ordered_categories, $categories );
+		$ordered_categories = array_merge( $sorted_categories, array_diff_key( $categories, array_flip( $categories_order ) ) );
 	}
 	
 	ob_start();
 	
-	foreach( $categories as $category ) {
+	foreach( $ordered_categories as $category ) {
 		$category_short_title = strlen( $category[ 'title' ] ) > 16 ? substr( $category[ 'title' ], 0, 16 ) . '&#8230;' : $category[ 'title' ];
 	?>
 		<div class='bookacti-group-category' data-group-category-id='<?php echo $category[ 'id' ]; ?>' data-show-groups='0' data-visible='1'>
@@ -828,14 +823,14 @@ function bookacti_get_template_groups_of_events_list( $template_id ) {
 			<div class='bookacti-groups-of-events-editor-list bookacti-custom-scrollbar' >
 			<?php
 				// Sort the groups of events by custom order
-				$ordered_groups = $groups;
-				$groups_order = bookacti_get_metadata( 'group_category', $category[ 'id' ], 'groups_of_events_order', true );
+				$ordered_groups = $groups[ 'data' ];
+				$groups_order = ! empty( $categories[ $category[ 'id' ] ][ 'settings' ][ 'groups_of_events_order' ] ) ? $categories[ $category[ 'id' ] ][ 'settings' ][ 'groups_of_events_order' ] : array();
 				if( $groups_order ) {
 					$sorted_groups = array();
 					foreach( $groups_order as $group_id ) {
-						if( isset( $ordered_groups[ $group_id ] ) ) { $sorted_groups[] = $ordered_groups[ $group_id ]; unset( $ordered_groups[ $group_id ] ); }
+						if( isset( $ordered_groups[ $group_id ] ) ) { $sorted_groups[] = $groups[ 'data' ][ $group_id ]; }
 					}
-					$ordered_groups = array_merge( $sorted_groups, $ordered_groups );
+					$ordered_groups = array_merge( $sorted_groups, array_diff_key( $groups[ 'data' ], array_flip( $groups_order ) ) );
 				}
 			
 				foreach( $ordered_groups as $group ) {

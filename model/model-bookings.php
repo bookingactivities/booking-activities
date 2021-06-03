@@ -1105,21 +1105,25 @@ function bookacti_get_number_of_bookings( $filters ) {
 
 /**
  * Get number of bookings ordered by events
- * @since 1.9.2 (was bookacti_get_number_of_bookings_by_events)
- * @version 1.10.0
+ * @since 1.12.0 (was bookacti_get_number_of_bookings_for_booking_system)
  * @global wpdb $wpdb
- * @param array $template_ids
- * @param array $event_ids
- * @param array $user_ids
+ * @param array $raw_args {
+ *  @param array $templates Array of template IDs
+ *  @param array $events Array of events IDs
+ *  @param array $users Array of users IDs
+ * }
  * @return array
  */
-function bookacti_get_number_of_bookings_for_booking_system( $template_ids = array(), $event_ids = array(), $user_ids = array() ) {
-	global $wpdb;
+function bookacti_get_number_of_bookings_per_event( $raw_args = array() ) {
+	$default_args = array(
+		'templates' => array(),
+		'events' => array(),
+		'users' => array(),
+		'status' => array()
+	);
+	$args = wp_parse_args( $raw_args, $default_args );
 	
-	// Convert ids to array
-	$template_ids	= bookacti_ids_to_array( $template_ids );
-	$event_ids		= bookacti_ids_to_array( $event_ids );
-	$user_ids		= bookacti_ids_to_array( $user_ids );
+	global $wpdb;
 
 	$query	= 'SELECT B.event_id, B.event_start, B.event_end, E.availability as total_availability, SUM( B.quantity ) as quantity, COUNT( DISTINCT B.user_id ) as distinct_users, SUM( IF( B.user_id = %s, B.quantity, 0 ) ) as current_user_bookings '
 			. ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B '
@@ -1130,52 +1134,63 @@ function bookacti_get_number_of_bookings_for_booking_system( $template_ids = arr
 	$variables = array( $current_user_id );
 	
 	// Filter by template
-	if( $template_ids ) {
+	if( $args[ 'templates' ] ) {
 		$query	.= ' AND E.template_id IN ( %d ';
-		$array_count = count( $template_ids );
+		$array_count = count( $args[ 'templates' ] );
 		if( $array_count >= 2 ) {
 			for( $i=1; $i<$array_count; ++$i ) {
 				$query .= ', %d ';
 			}
 		}
 		$query .= ') ';
-		$variables = array_merge( $variables, $template_ids );
+		$variables = array_merge( $variables, $args[ 'templates' ] );
 	}
 	
 	// Filter by event
-	if( $event_ids ) {
+	if( $args[ 'events' ] ) {
 		$query	.= ' AND B.event_id IN ( %d ';
-		$array_count = count( $event_ids );
+		$array_count = count( $args[ 'events' ] );
 		if( $array_count >= 2 ) {
 			for( $i=1; $i<$array_count; ++$i ) {
 				$query .= ', %d ';
 			}
 		}
 		$query .= ') ';
-		$variables = array_merge( $variables, $event_ids );
+		$variables = array_merge( $variables, $args[ 'events' ] );
 	}
 	
 	// Filter by user
-	if( $user_ids ) {
+	if( $args[ 'users' ] ) {
 		$query	.= ' AND B.user_id IN ( %s ';
-		$array_count = count( $user_ids );
+		$array_count = count( $args[ 'users' ] );
 		if( $array_count >= 2 ) {
 			for( $i=1; $i<$array_count; ++$i ) {
 				$query .= ', %s ';
 			}
 		}
 		$query .= ') ';
-		$variables = array_merge( $variables, $user_ids );
+		$variables = array_merge( $variables, $args[ 'users' ] );
+	}
+	
+	// Filter by status
+	if( $args[ 'status' ] ) {
+		$query	.= ' AND B.state IN ( %s ';
+		$array_count = count( $args[ 'status' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %s ';
+			}
+		}
+		$query .= ') ';
+		$variables = array_merge( $variables, $args[ 'status' ] );
 	}
 	
 	$query .= ' GROUP BY B.event_id, B.event_start, B.event_end '
 			. ' ORDER BY B.event_id, B.event_start, B.event_end ';
 	
-	if( $variables ) {
-		$query = $wpdb->prepare( $query, $variables );
-	}
+	if( $variables ) { $query = $wpdb->prepare( $query, $variables ); }
 	
-	$query = apply_filters( 'bookacti_number_of_bookings_for_booking_system_query', $query, $template_ids, $event_ids, $user_ids );
+	$query = apply_filters( 'bookacti_number_of_bookings_for_booking_system_query', $query, $args );
 	
 	$events_booking_data = $wpdb->get_results( $query );
 	
@@ -1192,13 +1207,14 @@ function bookacti_get_number_of_bookings_for_booking_system( $template_ids = arr
 		);
 	}
 	
-	return apply_filters( 'bookacti_number_of_bookings_for_booking_system', $return_array, $template_ids, $event_ids, $user_ids, $query );
+	return apply_filters( 'bookacti_number_of_bookings_for_booking_system', $return_array, $args, $query );
 }
 
 
 /**
  * Get number of bookings for the desired events, per event and per user, with the total availability
  * @since 1.9.2
+ * @version 1.12.0
  * @global wpdb $wpdb
  * @param array $events [ [ 'id' => int, 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' ], ... ]
  * @return array
@@ -1235,14 +1251,13 @@ function bookacti_get_number_of_bookings_per_event_per_user( $events ) {
 			. ' GROUP BY E.id, B.event_start, B.event_end, B.user_id  '
 			. ' ORDER BY E.id, B.event_start, B.event_end, B.user_id  ';
 	
-	if( $variables ) {
-		$query = $wpdb->prepare( $query, $variables );
-	}
+	if( $variables ) { $query = $wpdb->prepare( $query, $variables ); }
 	
 	$query = apply_filters( 'bookacti_number_of_bookings_per_event_per_user_query', $query, $events );
 	$events_booking_data = $wpdb->get_results( $query );
 	
 	// Order the array by event id
+	$return_events = array();
 	foreach( $events as $i => $event ) {
 		// Default values
 		$return_event = $event;
@@ -1265,10 +1280,10 @@ function bookacti_get_number_of_bookings_per_event_per_user( $events ) {
 			}
 		}
 		
-		$return_array[ $i ] = $return_event;
+		$return_events[ $i ] = $return_event;
 	}
 	
-	return apply_filters( 'bookacti_number_of_bookings_per_event_per_user', $return_array, $events );
+	return apply_filters( 'bookacti_number_of_bookings_per_event_per_user', $return_events, $events );
 }
 
 

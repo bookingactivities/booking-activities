@@ -214,8 +214,5 @@ $default_template = false;
 	</ol>
 </div>
 
-<?php 
-//Include dialogs
-include_once( 'view-templates-dialogs.php' );
-?>
+<?php include_once( 'view-templates-dialogs.php' ); ?>
 </div>

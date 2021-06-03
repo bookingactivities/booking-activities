@@ -760,8 +760,8 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 					<option value='new' ><?php esc_html_e( 'New category', 'booking-activities' ); ?></option>
 					<?php
 						$template_id = get_user_meta( get_current_user_id(), 'bookacti_default_template', true );
-						if( ! empty( $template_id ) ) {
-							$categories	= bookacti_get_group_categories( $template_id );
+						if( $template_id ) {
+							$categories	= bookacti_get_group_categories( array( 'templates' => array( $template_id ) ) );
 							foreach( $categories as $category ) {
 								echo "<option value='" . $category[ 'id' ] . "' >" . $category[ 'title' ] . "</option>";
 							}
@@ -784,8 +784,16 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 				?>
 			</div>
 			<div>
+				<div id='bookacti-group-of-events-summary-label-container'>
+					<label id='bookacti-group-of-events-summary-label' for='bookacti-group-of-events-summary'><?php esc_html_e( 'Events list', 'booking-activities' ); ?></label>
+					<div id='bookacti-group-of-events-occurrences-navigation'>
+						<span id='bookacti-group-of-events-occurrences-undo' class='button' title='<?php esc_html_e( 'Selected events', 'booking-activities' ) ?>'><span class='dashicons dashicons-undo'></span></span>
+						<span id='bookacti-group-of-events-occurrences-prev' class='button' title='<?php esc_html_e( 'Previous occurrence', 'booking-activities' ) ?>'>&#8249;</span>
+						<span id='bookacti-group-of-events-occurrences-reset' class='button' title='<?php esc_html_e( 'Saved events', 'booking-activities' ) ?>'>&#8226;</span>
+						<span id='bookacti-group-of-events-occurrences-next' class='button' title='<?php esc_html_e( 'Next occurrence', 'booking-activities' ) ?>'>&#8250;</span>
+					</div>
+				</div>
 				<!-- This field is only used for feedback, it is not used to pass any AJAX data, events list is passed through an array made with JS -->
-				<label for='bookacti-group-of-events-summary' ><?php esc_html_e( 'Events list', 'booking-activities' ); ?></label>
 				<select multiple id='bookacti-group-of-events-summary' class='bookacti-custom-scrollbar' ></select>
 			</div>
 		<?php
@@ -820,7 +828,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 						'type'		=> 'select',
 						'name'		=> 'repeat_freq',
 						'id'		=> 'bookacti-group-of-events-repeat-freq',
-						'options'	=> bookacti_get_group_of_events_repeat_periods(),
+						'options'	=> bookacti_get_event_repeat_periods(),
 						'value'		=> 'none',
 						'tip'		=> esc_html__( 'Set the repetition frequency. The occurrences of the group of events starting on the corresponding dates will be generated.', 'booking-activities' )
 					) );
@@ -840,6 +848,11 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 						?>
 					</span>
 				</div>
+			</div>
+		
+			<div id='bookacti-group-of-events-repetition-first-event-notice' class='bookacti-backend-settings-only-notice bookacti-info'>
+				<span class='dashicons dashicons-info'></span>
+				<span><?php esc_html_e( 'The following options are based on the first event of the group.', 'booking-activities' ); ?></span>
 			</div>
 		
 			<?php

@@ -378,6 +378,7 @@ function bookacti_controller_get_reschedule_booking_system_data() {
 	$atts[ 'id' ]						= 'bookacti-booking-system-reschedule';
 	$atts[ 'form_action' ]				= 'default';
 	$atts[ 'when_perform_form_action' ]	= 'on_submit';
+	$atts[ 'multiple_bookings' ]		= 0;
 	$atts[ 'auto_load' ]				= 0;
 
 	// Load only the events from the same activity as the booked event

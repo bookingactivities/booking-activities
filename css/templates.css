@@ -165,7 +165,11 @@
 
 /* Group of events dialog */
 #bookacti-group-of-events-new-category-title { display: none; }
+#bookacti-group-of-events-summary-label-container { display: flex; justify-content: space-between; }
+#bookacti-group-of-events-summary-label { padding: 8px 0; }
 #bookacti-group-of-events-summary { width: 100%; max-width: 100%; overflow: auto; }
+#bookacti-group-of-events-occurrences-navigation > * { user-select: none; font-size: 1.5em; line-height: 1em; padding: 4px 10px; }
+#bookacti-group-of-events-occurrences-undo .dashicons, .dashicons-before:before { display: inline; font-size: 1em; vertical-align: middle; }
 
 
 /***** RESPONSIVE DESIGN *****/

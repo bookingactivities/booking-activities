@@ -19,11 +19,15 @@ function bookacti_fill_bookings_new_columns_when_updating_to_1_12_0( $old_versio
 	$query_bookings_activity_id = 'UPDATE ' . BOOKACTI_TABLE_GROUPS_EVENTS . ' as GE LEFT JOIN ' . BOOKACTI_TABLE_EVENTS . ' as E ON GE.event_id = E.id SET GE.activity_id = E.activity_id WHERE GE.activity_id IS NULL;';
 	$wpdb->query( $query_bookings_activity_id );
 	
+	// Delete inactive grouped events
+	$query_delete_inactive_grouped_events = 'DELETE FROM ' . BOOKACTI_TABLE_GROUPS_EVENTS . ' WHERE active = 0;';
+	$wpdb->query( $query_delete_inactive_grouped_events );
+	
 	// Check if the event_id column exists in exceptions table
-	$query_event_id_column_exists = 'SHOW COLUMNS FROM ' . BOOKACTI_TABLE_EXCEPTIONS . ' LIKE "event_id";';
+	$query_event_id_column_exists = 'SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = ' . BOOKACTI_TABLE_EXCEPTIONS . ' AND column_name = "event_id";';
 	$event_id_column_exists = $wpdb->get_results( $query_event_id_column_exists );
 	
-	if( $event_id_column_exists ) {
+	if( ! empty( $event_id_column_exists ) ) {
 		// Rename event_id column to object_id and fill object_type column in exceptions table
 		$query_update_exceptions = 'UPDATE ' . BOOKACTI_TABLE_EXCEPTIONS . ' SET object_type = "event", object_id = event_id;';
 		$wpdb->query( $query_update_exceptions );

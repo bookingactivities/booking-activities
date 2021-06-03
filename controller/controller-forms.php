@@ -1338,7 +1338,7 @@ add_action( 'wp_ajax_bookactiUpdateFormMeta', 'bookacti_controller_update_form_m
 /**
  * AJAX Controller - Insert a form field
  * @since 1.5.0
- * @version 1.9.2
+ * @version 1.12.0
  */
 function bookacti_controller_insert_form_field() {
 	// Check nonce
@@ -1394,7 +1394,7 @@ function bookacti_controller_insert_form_field() {
 	}
 
 	// Update field order
-	$field_order	= bookacti_get_metadata( 'form', $form_id, 'field_order', true );
+	$field_order	= bookacti_get_form_fields_order( $form_id );
 	$field_order[]	= $field_id;
 	bookacti_update_metadata( 'form', $form_id, array( 'field_order' => $field_order ) );
 
@@ -1417,7 +1417,7 @@ add_action( 'wp_ajax_bookactiInsertFormField', 'bookacti_controller_insert_form_
 /**
  * AJAX Controller - Remove a form field
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.12.0
  */
 function bookacti_controller_remove_form_field() {
 	$field_id	= intval( $_POST[ 'field_id' ] );
@@ -1438,7 +1438,7 @@ function bookacti_controller_remove_form_field() {
 	do_action( 'bookacti_form_field_removed', $field );
 
 	// Update field order
-	$field_order = bookacti_get_metadata( 'form', $field[ 'form_id' ], 'field_order', true );
+	$field_order = bookacti_get_form_fields_order( $field[ 'form_id' ] );
 	if( $field_order ) {
 		$order_index = array_search( $field_id, $field_order );
 

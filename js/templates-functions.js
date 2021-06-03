@@ -2,7 +2,7 @@
 
 /**
  * Change default template on change in the select box
- * @version 1.11.0
+ * @version 1.12.0
  * @param {int} selected_template_id
  */
 function bookacti_switch_template( selected_template_id ) {
@@ -41,6 +41,7 @@ function bookacti_switch_template( selected_template_id ) {
 	delete attributes[ 'events_data' ];
 	delete attributes[ 'events_interval' ];
 	delete attributes[ 'bookings' ];
+	delete attributes[ 'groups_bookings' ];
 	delete attributes[ 'exceptions' ];
 	delete attributes[ 'activities_data' ];
 	delete attributes[ 'groups_events' ];
@@ -514,10 +515,13 @@ function bookacti_add_group_of_events( id, title, category_id ) {
 
 /**
  * Select all events of a group onto the calendar
- * @param {int} group_id
+ * @version 1.12.0
+ * @param {Int} group_id
+ * @param {String} group_date
  */
-function bookacti_select_events_of_group( group_id ) {
-	
+function bookacti_select_events_of_group( group_id, group_date ) {
+	group_id = group_id ? parseInt( group_id ) : 0;
+	group_date = group_date ? group_date : '';
 	if( ! group_id ) { return false; }
 	
 	// Unselect the events
@@ -527,15 +531,34 @@ function bookacti_select_events_of_group( group_id ) {
 	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ] = [];
 	$j( '#bookacti-template-calendar' ).fullCalendar( 'rerenderEvents' );
 	
+	// select the events of the desired occurrence if specified...
+	var group_events = [];
+	if( group_date ) {
+		if( typeof bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ][ group_id ] !== 'undefined' ) {
+			if( typeof bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ][ group_id ][ group_date ] !== 'undefined' ) {
+				group_events = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ][ group_id ][ group_date ].slice();
+			}
+		}
+	}
+	
+	// ...else select the events by default
+	if( ! group_events.length ) {
+		if( typeof bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_data' ][ group_id ] !== 'undefined' ) {
+			if( typeof bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_data' ][ group_id ][ 'events' ] !== 'undefined' ) {
+				group_events = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_data' ][ group_id ][ 'events' ].slice();
+			}
+		}
+	}
+	
 	// Change view to the 1st event selected to make sure that at least 1 event is in the view
-	if( typeof bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ][ group_id ] !== 'undefined' ) {
-		$j( '#bookacti-template-calendar' ).fullCalendar( 'gotoDate', bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ][ group_id ][0]['start'] );
+	if( group_events.length ) {
+		$j( '#bookacti-template-calendar' ).fullCalendar( 'gotoDate', group_events[ 0 ][ 'start' ] );
 	}
 
 	// Select the events of the group
 	var are_selected = true;
-	$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ][ group_id ], function( i, event ){
-		var is_selected = bookacti_select_event( event );
+	$j.each( group_events, function( i, group_event ){
+		var is_selected = bookacti_select_event( group_event );
 		if( is_selected === false ) { are_selected = false; }
 	});
 	
@@ -552,6 +575,7 @@ function bookacti_select_events_of_group( group_id ) {
  * Select an event
  * @version 1.12.0
  * @param {Object} raw_event
+ * @return {Boolean}
  */
 function bookacti_select_event( raw_event ) {
 	// Return false if we don't have both event id and event start
@@ -581,7 +605,7 @@ function bookacti_select_event( raw_event ) {
 		'end': moment.utc( raw_event.end ).clone().locale( 'en' )
 	};
 	
-	// Because of popover and long events (spreading on multiple days), 
+	// Because of popover and long events (spreading over multiple days), 
 	// the same event can appears twice, so we need to apply changes on each
 	var elements = $j( '.fc-event[data-event-id="' + event.id + '"][data-event-start="' + event.start.format( 'YYYY-MM-DD HH:mm:ss' ) + '"]' );
 	
@@ -601,7 +625,13 @@ function bookacti_select_event( raw_event ) {
 		'start' : event.start.format( 'YYYY-MM-DD HH:mm:ss' ), 
 		'end' : event.end.format( 'YYYY-MM-DD HH:mm:ss' ) 
 	});
-
+	
+	// Sort the selected events
+	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ].sort( function ( a, b ) {
+		var x = moment.utc( a[ 'start' ] ); var y = moment.utc( b[ 'start' ] );
+		return ( ( x.isBefore( y ) ) ? -1 : ( ( x.isAfter( y ) ) ? 1 : 0 ) );
+	});
+	
 	$j( '#bookacti-template-calendar' ).trigger( 'bookacti_select_event', [ event ] );
 	
 	return true;
@@ -835,6 +865,7 @@ function bookacti_refetch_events_on_template( event ) {
 
 /**
  * Delete event on the calendar
+ * @version 1.12.0
  * @param {object} event
  */
 function bookacti_delete_event( event ) {
@@ -842,17 +873,27 @@ function bookacti_delete_event( event ) {
 	bookacti_unselect_event( event );
 
 	// Delete this event from all groups
-	$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ], function( group_id, group_events ){
-		var remaining_group_events = $j.grep( group_events, function( group_event ){
-			if( group_event && group_event.id == event.id ) {
-				return false;
-			}
-			return true;
+	var occurrences_to_delete = [];
+	$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ], function( group_id, group_occurrences ) {
+		var occurrences_dates = Object.keys( group_occurrences );
+		$j.each( group_occurrences, function( group_date, group_events ){
+			var delete_group = occurrences_dates.length > 1;
+			var remaining_group_events = $j.grep( group_events, function( group_event ) {
+				if( group_event && group_event.id == event.id ) { delete_group = true; return false; }
+				return true;
+			});
+			bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ][ group_id ][ group_date ] = remaining_group_events;
+			if( delete_group ) { occurrences_to_delete.push( group_date ); }
 		});
-
-		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ][ group_id ] = remaining_group_events;
 	});
-
+	
+	// Delete the whole group occurrence if the group is repeated, because the group occurrence is not generated if an event is missing
+	if( occurrences_to_delete.length ) {
+		$j.each( occurrences_to_delete, function( i, group_date ) {
+			delete bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ][ group_id ][ group_date ];
+		});
+	}
+	
 	// We use both event._id and event.id to make sure both existing and newly added event are deleted
 	if( event._id !== undefined ) {
 		if( event._id.indexOf('_') >= 0 ) {
@@ -867,6 +908,7 @@ function bookacti_delete_event( event ) {
 /**
  * Update event dates (move or resize an event)
  * @since 1.10.0
+ * @version 1.12.0
  * @param {object} event
  * @param {object} delta
  * @param {callable} revertFunc
@@ -955,12 +997,14 @@ function bookacti_update_event_dates( event, delta, revertFunc, is_dialog ) {
 				});
 
 				// Update groups of events if the event belong to one of them
-				$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ], function( group_id, group_events ) {
-					$j.each( group_events, function( i, group_event ){
-						if( group_event.id == event.id ) {
-							group_event.start	= moment.utc( group_event.start ).clone().locale( 'en' ).add( delta_days, 'days' ).format( 'YYYY-MM-DD' ) + ' ' + start_time;
-							group_event.end		= moment.utc( group_event.end ).clone().locale( 'en' ).add( delta_days, 'days' ).format( 'YYYY-MM-DD' ) + ' ' + end_time;
-						}
+				$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ], function( group_id, group_occurrences ) {
+					$j.each( group_occurrences, function( group_date, group_events ) {
+						$j.each( group_events, function( i, group_event ){
+							if( group_event.id == event.id ) {
+								group_event.start	= moment.utc( group_event.start ).clone().locale( 'en' ).add( delta_days, 'days' ).format( 'YYYY-MM-DD' ) + ' ' + start_time;
+								group_event.end		= moment.utc( group_event.end ).clone().locale( 'en' ).add( delta_days, 'days' ).format( 'YYYY-MM-DD' ) + ' ' + end_time;
+							}
+						});
 					});
 				});
 				

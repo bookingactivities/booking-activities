@@ -804,7 +804,7 @@ function bookacti_action_links_in_plugins_table( $links ) {
    $links = array( 'settings' => '<a href="' . admin_url( 'admin.php?page=bookacti_settings' ) . '" title="' . esc_attr( __( 'Manage Booking Activities Settings', 'booking-activities' ) ) . '">' . __( 'Settings', 'booking-activities' ) . '</a>' ) + $links;
    return $links;
 }
-add_filter( 'plugin_action_links_' . BOOKACTI_PLUGIN_NAME . '/' . BOOKACTI_PLUGIN_NAME . '.php', 'bookacti_action_links_in_plugins_table', 10, 1 );
+add_filter( 'plugin_action_links_booking-activities/booking-activities.php', 'bookacti_action_links_in_plugins_table', 10, 1 );
 
 
 /** 

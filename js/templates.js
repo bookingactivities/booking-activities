@@ -16,6 +16,7 @@ $j( document ).ready( function() {
 	bookacti.booking_system[ 'bookacti-template-calendar' ]								= {};
 	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'calendars' ]				= bookacti.selected_template ? [ bookacti.selected_template ] : [];
 	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'bookings' ]				= [];
+	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_bookings' ]		= [];
 	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ]				= [];
 	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ]			= [];
 	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_data' ]			= [];
@@ -380,14 +381,22 @@ function bookacti_load_template_calendar( calendar ) {
 		},
 
 
+		/**
+		 * After an event is rendered in the view
+		 * @version 1.12.0
+		 * @param {object} view
+		 * @param {HTMLElement} element
+		 * @param {object} view
+		 */
 		eventAfterRender: function( event, element, view ) { 
 			bookacti_add_class_according_to_event_size( element );
+			calendar.trigger( 'bookacti_calendar_editor_event_after_render', [ event, element, view ] );
 		},
 
 		
 		/**
 		 * After all events are rendered in the view
-		 * @version 1.9.0
+		 * @version 1.12.0
 		 * @param {object} view
 		 */
 		eventAfterAllRender: function( view ) {
@@ -413,6 +422,8 @@ function bookacti_load_template_calendar( calendar ) {
 			});
 			
 			bookacti_refresh_selected_events_display();
+			
+			calendar.trigger( 'bookacti_calendar_editor_event_after_all_render', [ view ] );
 		},
 
 		
@@ -518,7 +529,7 @@ function bookacti_load_template_calendar( calendar ) {
 		
 		/**
 		 * eventDrop : When an event is moved to an other day / hour
-		 * @version 1.10.0
+		 * @version 1.12.0
 		 * @param {object} event
 		 * @param {object} delta
 		 * @param {callable} revertFunc
@@ -533,73 +544,94 @@ function bookacti_load_template_calendar( calendar ) {
 			if( is_alt_key_pressed ) {
 				revertFunc();
 				bookacti_duplicate_event( event, delta, revertFunc );
-			} 
-			
+			}
 			// The event is moved
 			else {
 				bookacti_update_event_dates( event, delta, revertFunc );
 			}
-			
 		},
 		
 		
 		/**
 		 * When the user drag an event
 		 * @since 1.7.14
+		 * @version 1.12.0
 		 * @param {object} event
 		 * @param {object} jsEvent
 		 * @param {object} ui - deprecated
 		 * @param {object} view
 		 */
 		eventDragStart: function ( event, jsEvent, ui, view ) {
+			var element = $j( this );
 			bookacti.is_dragging = true;
 			
 			// Add a class to all events having this ID
 			var elements = $j( '.fc-event[data-event-id="' + event.id + '"]' );
 			elements.addClass( 'bookacti-event-dragged' );
+			calendar.trigger( 'bookacti_calendar_editor_drag_start', [ event, element ] );
 		},
 
 		
 		/**
 		 * When the user drop an event, even if it is not on the calendar or if there is no change of date / hour
 		 * @since 1.7.14
+		 * @version 1.12.0
 		 * @param {object} event
 		 * @param {object} jsEvent
 		 * @param {object} ui - deprecated
 		 * @param {object} view
 		 */
 		eventDragStop: function ( event, jsEvent, ui, view ) {
+			var element = $j( this );
 			bookacti.is_dragging = false;
 			
-			// Add a class to all events having this ID
+			// Remove the class from all events having this ID
 			var elements = $j( '.fc-event[data-event-id="' + event.id + '"]' );
 			elements.removeClass( 'bookacti-event-dragged' );
+			calendar.trigger( 'bookacti_calendar_editor_drag_stop', [ event, element ] );
 		},
 
-		// When the user resize an event
+
+		/**
+		 * When the user resize an event
+		 * @version 1.12.0
+		 * @param {object} event
+		 * @param {object} jsEvent
+		 * @param {object} ui - deprecated
+		 * @param {object} view
+		 */
 		eventResizeStart: function ( event, jsEvent, ui, view ) {
+			var element = $j( this );
 			bookacti.is_resizing = true;
+			calendar.trigger( 'bookacti_calendar_editor_resize_start', [ event, element ] );
 		},
 
 
-		// When the user re an event, even if it is not on the calendar or if there is no change of date / hour
+		/**
+		 * When the user re an event, even if it is not on the calendar or if there is no change of date / hour
+		 * @version 1.12.0
+		 * @param {object} event
+		 * @param {object} jsEvent
+		 * @param {object} ui - deprecated
+		 * @param {object} view
+		 */
 		eventResizeStop: function ( event, jsEvent, ui, view ) {
+			var element = $j( this );
 			bookacti.is_resizing = false;
+			calendar.trigger( 'bookacti_calendar_editor_resize_stop', [ event, element ] );
 		},
 
 
 		/**
 		 * When an event is clicked
-		 * @version 1.9.0
+		 * @version 1.12.0
 		 * @param {object} event
 		 * @param {object} jsEvent
 		 * @param {object} view
 		 */
 		eventClick: function( event, jsEvent, view ) {
 			var element = $j( this );
-			
 			var event_start_formatted = moment.utc( event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
-			var event_end_formatted = moment.utc( event.end ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
 			
 			// Because of popover and long events (spreading on multiple days), 
 			// the same event can appears twice, so we need to apply changes on each
@@ -620,16 +652,10 @@ function bookacti_load_template_calendar( calendar ) {
 			elements.addClass( 'bookacti-picked-event' );
 
 			// Keep picked events in memory 
-			bookacti.booking_system[ 'bookacti-template-calendar' ][ 'picked_events' ] = [];
-			bookacti.booking_system[ 'bookacti-template-calendar' ][ 'picked_events' ].push({ 
-				'id'			: event.id,
-				'start'			: event_start_formatted, 
-				'end'			: event_end_formatted
-			});
+			bookacti_pick_event( $j( '#bookacti-template-calendar' ), event );
 			
 			// If the user click on an event action, execute it
 			if( $j( jsEvent.target ).closest( '.bookacti-event-actions' ).length ) {
-				
 				// EDIT ACTION
 				if( $j( jsEvent.target ).is( '.bookacti-event-action-edit' ) 
 				||  $j( jsEvent.target ).closest( '.bookacti-event-action-edit' ).length ) {
@@ -653,13 +679,13 @@ function bookacti_load_template_calendar( calendar ) {
 				}
 			}
 			
-			calendar.trigger( 'bookacti_pick_event', [ event, jsEvent, view ] );
+			calendar.trigger( 'bookacti_calendar_editor_event_click', [ event, jsEvent, view ] );
 		},
 		
 		
 		/**
 		 * eventMouseover : When your mouse get over an event
-		 * @version 1.7.14
+		 * @version 1.12.0
 		 * @param {object} event
 		 * @param {object} jsEvent
 		 * @param {object} view
@@ -670,12 +696,13 @@ function bookacti_load_template_calendar( calendar ) {
 			bookacti_show_event_actions( element );
 			
 			bookacti.is_hovering = true;
+			calendar.trigger( 'bookacti_calendar_editor_event_mouse_over', [ event, element ] );
 		},
 		
 		
 		/**
 		 * eventMouseover : When your mouse move out an event
-		 * @version 1.7.14
+		 * @version 1.12.0
 		 * @param {object} event
 		 * @param {object} jsEvent
 		 * @param {object} view
@@ -686,6 +713,7 @@ function bookacti_load_template_calendar( calendar ) {
 			bookacti_hide_event_actions( element, event );
 			
 			bookacti.is_hovering = false;
+			calendar.trigger( 'bookacti_calendar_editor_event_mouse_out', [ event, element ] );
 		},
 		
 		
@@ -713,4 +741,6 @@ function bookacti_load_template_calendar( calendar ) {
 	
 	// Load the calendar
 	calendar.fullCalendar( init_data );
+	
+	calendar.trigger( 'bookacti_after_calendar_editor_set_up' );
 }

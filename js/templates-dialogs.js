@@ -113,6 +113,36 @@ function bookacti_init_template_dialogs() {
 		}
 		if( are_selected ) { bookacti_dialog_update_group_of_events( group_id ); };
 	});
+	
+	
+	/**
+	 * Select events of the previous group occurrence
+	 * @since 1.12.0
+	 */
+	$j( '#bookacti-group-of-events-occurrences-prev' ).on( 'click', function() { 
+		var group_id = $j( '#bookacti-group-categories' ).find( '.bookacti-group-of-events.bookacti-selected-group' ).data( 'group-id' );
+		if( group_id ) { bookacti_navigate_through_group_occurrences( group_id, 'prev' ); }
+	});
+	
+	
+	/**
+	 * Select events of the next group occurrence
+	 * @since 1.12.0
+	 */
+	$j( '#bookacti-group-of-events-occurrences-next' ).on( 'click', function() { 
+		var group_id = $j( '#bookacti-group-categories' ).find( '.bookacti-group-of-events.bookacti-selected-group' ).data( 'group-id' );
+		if( group_id ) { bookacti_navigate_through_group_occurrences( group_id, 'next' ); }
+	});
+	
+	
+	/**
+	 * Select events of the initial group occurrence
+	 * @since 1.12.0
+	 */
+	$j( '#bookacti-group-of-events-occurrences-reset' ).on( 'click', function() { 
+		var group_id = $j( '#bookacti-group-categories' ).find( '.bookacti-group-of-events.bookacti-selected-group' ).data( 'group-id' );
+		if( group_id ) { bookacti_navigate_through_group_occurrences( group_id, 'reset' ); }
+	});
 
 	
 	/**
@@ -566,6 +596,7 @@ function bookacti_dialog_deactivate_template( template_id ) {
 /**
  * Warning Dialog when trying to update a booked event dates (move or resize an event)
  * @since 1.10.0
+ * @version 1.12.0
  * @param {object} event
  * @param {object} delta
  * @param {callable} revertFunc
@@ -625,7 +656,7 @@ function bookacti_dialog_update_booked_event_dates( event, delta, revertFunc ) {
 	}
 	
 	// Revert the event if the dialog is closed
-	$j( '#bookacti-update-booked-event-dates-dialog' ).on( 'dialogbeforeclose', function() { if( revertFunc !== false ) { revertFunc(); } } );
+	$j( '#bookacti-update-booked-event-dates-dialog' ).off( 'dialogbeforeclose' ).on( 'dialogbeforeclose', function() { if( revertFunc !== false ) { revertFunc(); } } );
 	
 	// Add the buttons
 	$j( '#bookacti-update-booked-event-dates-dialog' ).dialog( 'option', 'buttons', buttons );
@@ -732,6 +763,7 @@ function bookacti_dialog_update_event( event ) {
 						bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event_id ] = response.events_data[ event_id ];
 
 						// Update groups events
+						bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_data' ] = response.groups_data;
 						bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ] = response.groups_events;
 
 						// Update the exceptions list
@@ -1073,7 +1105,7 @@ function bookacti_dialog_delete_event( event ) {
 /**
  * Dialog Unbind occurrence of a locked repeating event
  * @since 1.8.4 (was bookacti_dialog_unbind_occurences)
- * @version 1.10.0
+ * @version 1.12.0
  * @param {object} event
  */
 function bookacti_dialog_unbind_occurrences( event ) {
@@ -1137,7 +1169,10 @@ function bookacti_dialog_unbind_occurrences( event ) {
 							bookacti_unselect_event( event, true );
 
 							// Update grouped events
-							bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ] = response.groups_events;
+							bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_data' ]	= response.groups_data;
+							bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ]	= response.groups_events;
+							bookacti.booking_system[ 'bookacti-template-calendar' ][ 'bookings' ]		= response.bookings;
+							bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_bookings' ]= response.groups_bookings;
 							
 							// Update new events data
 							var new_events_ids = response.new_events_ids;
@@ -1153,12 +1188,6 @@ function bookacti_dialog_unbind_occurrences( event ) {
 									bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ][ new_event_id ] = response.exceptions[ new_event_id ];
 								} else if( typeof bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ][ new_event_id ] !== 'undefined' ) {
 									delete bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ][ new_event_id ];
-								}
-								// Update new event bookings
-								if( typeof response.bookings[ new_event_id ] !== 'undefined' ) {
-									bookacti.booking_system[ 'bookacti-template-calendar' ][ 'bookings' ][ new_event_id ] = response.bookings[ new_event_id ];
-								} else if( typeof bookacti.booking_system[ 'bookacti-template-calendar' ][ 'bookings' ][ new_event_id ] !== 'undefined' ) {
-									delete bookacti.booking_system[ 'bookacti-template-calendar' ][ 'bookings' ][ new_event_id ];
 								}
 							});
 							
@@ -1219,10 +1248,11 @@ function bookacti_fill_repetition_fields( object_id, object_type ) {
 	
 	var event = object_type === 'group' ? bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ][ 0 ] : bookacti.booking_system[ 'bookacti-template-calendar' ][ 'picked_events' ][ 0 ];
 	var event_start = moment.utc( event.start ).clone();
-	var repeat_data = object_type === 'group' ? bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_data' ][ object_id ] : bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ object_id ];
+	var repeat_data = { 'repeat_freq': 'none', 'repeat_step': 1, 'repeat_from': '', 'repeat_to': '', 'repeat_on': '' };
+	if( object_id ) { repeat_data = object_type === 'group' ? bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_data' ][ object_id ] : bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ object_id ]; }
 	
 	var exceptions_key	= object_type === 'group' ? 'G' + object_id : object_id;
-	var exception_dates	= bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ][ exceptions_key ];
+	var exception_dates	= object_id ? bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ][ exceptions_key ] : [];
 
 	var event_28_days	= event_start.clone().add( 28, 'd' ).locale( 'en' ); // The default repeat period duration is 28 days
 	var repeat_from     = event_start.clone().locale( 'en' ).format( 'YYYY-MM-DD' );
@@ -1246,6 +1276,7 @@ function bookacti_fill_repetition_fields( object_id, object_type ) {
 	$j( scope + ' select[name="repeat_freq"] option[value="' + repeat_data.repeat_freq + '"]' ).prop( 'selected', true );
 	$j( scope + ' select[name="repeat_monthly_type"] option[value="' + repeat_monthly_type + '"]' ).prop( 'selected', true );
 	$j( scope + ' input[name="repeat_step"]' ).val( repeat_step ).trigger( 'change' );
+	$j( scope + ' input[name="repeat_freq"]' ).trigger( 'change' );
 	$j( scope + ' input[name="repeat_from"]' ).val( repeat_from );
 	$j( scope + ' input[name="repeat_to"]' ).val( repeat_to );
 	$j( scope + ' input[name="exceptions_dates[]"]' ).empty();
@@ -1292,6 +1323,70 @@ function bookacti_fill_repetition_fields( object_id, object_type ) {
 	// Display the last day of... options if the selected event is on it
 	$j( scope + ' select[name="repeat_monthly_type"] option[value="last_day_of_month"]' ).toggle( is_last_day_of_month );
 	$j( scope + ' select[name="repeat_monthly_type"] option[value="last_day_of_week"]' ).toggle( is_last_day_of_week );
+}
+
+
+/**
+ * Fill the group of events list field as a feedback for the user
+ * @since 1.12.0
+ */
+function bookacti_fill_group_of_events_list_field() {
+	$j( '#bookacti-group-of-events-summary' ).empty();
+	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ] = bookacti_sort_events_array_by_dates( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ] );
+	$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ], function( i, event ){
+		var event_start = moment.utc( event.start );
+		var event_end = moment.utc( event.end );
+		var event_duration = event_start.formatPHP( bookacti_localized.date_format ) + bookacti_localized.dates_separator + event_end.formatPHP( bookacti_localized.date_format );
+		if( event.start.substr( 0, 10 ) === event.end.substr( 0, 10 ) ) {
+			event_duration = event_start.formatPHP( bookacti_localized.date_format ) + bookacti_localized.date_time_separator + event_end.formatPHP( bookacti_localized.time_format );
+		}
+		var option = $j( '<option></option>', { 'html': event_duration + ' - ' + event.title } );
+		option.appendTo( '#bookacti-group-of-events-summary' );
+	});
+}
+
+
+/**
+ * Select the events of another occurrence of the group
+ * @since 1.12.0
+ * @param {Int} group_id
+ * @param {String} nav
+ */
+function bookacti_navigate_through_group_occurrences( group_id, nav ) {
+	nav = $j.inArray( nav, [ 'prev', 'next', 'reset' ] ) >= 0 ? nav : 'reset';
+	
+	// Find the current group date
+	var current_date = '';
+	if( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ].length ) {
+		current_date = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ][ 0 ][ 'start' ].substr( 0, 10 );
+	} else if( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_data' ][ group_id ][ 'events' ].length ) {
+		current_date = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_data' ][ group_id ][ 'events' ][ 0 ][ 'start' ].substr( 0, 10 );
+	}
+	
+	// Find the desired group date
+	var group_date = '';
+	if( nav !== 'reset' && current_date ) {
+		var current_date_utc = moment.utc( current_date );
+		var prev_date = '';
+		$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ][ group_id ], function( occurrence_date, occurrence_events ){
+			group_date = occurrence_date;
+			var prev_date_utc = prev_date ? moment.utc( prev_date ) : moment.utc( occurrence_date );
+			var occurrence_date_utc = moment.utc( occurrence_date );
+			
+			// Break if the previous / next occurrence was found
+			if( nav === 'next' && prev_date && prev_date_utc.isSameOrAfter( current_date_utc ) ) { return false; }
+			if( nav === 'prev' && occurrence_date_utc.isSameOrAfter( current_date_utc ) ) { if( prev_date ) { group_date = prev_date; } return false; }
+			
+			prev_date = occurrence_date;
+		});
+	}
+	
+	// Switch the desired group date
+	if( group_date !== current_date ) { 
+		bookacti_select_events_of_group( group_id, group_date );
+		bookacti_fill_group_of_events_list_field();
+		bookacti_refresh_selected_events_display();
+	}
 }
 
 
@@ -1833,23 +1928,14 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 		$j( '#bookacti-group-of-events-new-category-title' ).show();
 	}
 	
+	// Repetition tab
+	bookacti_fill_repetition_fields( 0, 'group' );
+	
 	// Fill the events list as a feedback for user
-	$j( '#bookacti-group-of-events-summary' ).empty();
-	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ] = bookacti_sort_events_array_by_dates( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ] );
-	$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ], function( i, event ){
-		
-		var event_start = moment.utc( event.start );
-		var event_end = moment.utc( event.end );
-		
-		var event_duration = event_start.formatPHP( bookacti_localized.date_format ) + bookacti_localized.dates_separator + event_end.formatPHP( bookacti_localized.date_format );
-		if( event.start.substr( 0, 10 ) === event.end.substr( 0, 10 ) ) {
-			event_duration = event_start.formatPHP( bookacti_localized.date_format ) + bookacti_localized.date_time_separator + event_end.formatPHP( bookacti_localized.time_format );
-		}
-		var option = $j( '<option></option>', {
-						'html': event_duration + ' - ' + event.title
-					} );
-		option.appendTo( '#bookacti-group-of-events-summary' );
-	});
+	bookacti_fill_group_of_events_list_field();
+	
+	// Validate the fields
+	bookacti_validate_group_of_events_form();
 	
 	// Add the 'OK' button
 	$j( '#bookacti-group-of-events-dialog' ).dialog( 'option', 'buttons',
@@ -1972,35 +2058,22 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 	$j( '#bookacti-group-of-events-category-selectbox' ).val( category_id ).trigger( 'change' );
 
 	// Fill the events list as a feedback for user
-	$j( '#bookacti-group-of-events-summary' ).empty();
-	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ] = bookacti_sort_events_array_by_dates( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ] );
-	$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ], function( i, event ){
-		var event_start = moment.utc( event.start );
-		var event_end = moment.utc( event.end );
-		
-		var event_duration = event_start.formatPHP( bookacti_localized.date_format ) + bookacti_localized.dates_separator + event_end.formatPHP( bookacti_localized.date_format );
-		if( event.start.substr( 0, 10 ) === event.end.substr( 0, 10 ) ) {
-			event_duration = event_start.formatPHP( bookacti_localized.date_format ) + bookacti_localized.date_time_separator + event_end.formatPHP( bookacti_localized.time_format );
-		}
-		var option = $j( '<option></option>', {
-						'html': event_duration + ' - ' + event.title
-					} );
-		option.appendTo( '#bookacti-group-of-events-summary' );
-	});
-	
+	var init_selected_events = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ].slice();
+	bookacti_fill_group_of_events_list_field();
 	
 	var group_data = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_data' ][ group_id ];
-				
+	var group_events = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ][ group_id ];
+	var group_events_dates = Object.keys( group_events );
+	
 	// General tab
-	$j( '#bookacti-group-of-events-title-field' ).val( group_data.multilingual_title ); 
+	$j( '#bookacti-group-of-events-title-field' ).val( group_data.multilingual_title );
+	$j( '#bookacti-group-of-events-occurrences-navigation' ).toggle( group_events_dates.length > 1 );
 	
 	// Repetition tab
 	bookacti_fill_repetition_fields( group_id, 'group' );
 	
 	// Other settings
-	if( group_data.settings ) {
-		bookacti_fill_fields_from_array( group_data.settings, 'groupOfEventsOptions' );
-	}
+	if( group_data.settings ) { bookacti_fill_fields_from_array( group_data.settings ); }
 	
 	$j( '#bookacti-group-of-events-dialog' ).trigger( 'bookacti_group_of_events_update_dialog', [ group_id ] );
 
@@ -2027,9 +2100,15 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 				$j( '#bookacti-group-of-events-form select[multiple].bookacti-items-select-box option' ).prop( 'selected', true );
 				$j( '#bookacti-group-of-events-form select[multiple]#bookacti-group-of-events-exceptions-selectbox option' ).prop( 'selected', true );
 				
+				// Use the initially selected events
+				bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ] = init_selected_events.slice();
+				bookacti_fill_group_of_events_list_field();
+				bookacti_refresh_selected_events_display();
+				$j( '#bookacti-template-calendar' ).fullCalendar( 'gotoDate', init_selected_events[ 0 ][ 'start' ] );
+				
 				// Get the data to save
-				var selected_category_id	= $j( '#bookacti-group-of-events-category-selectbox' ).val();
-				bookacti.selected_category	= selected_category_id;
+				var selected_category_id = $j( '#bookacti-group-of-events-category-selectbox' ).val();
+				bookacti.selected_category = selected_category_id;
 				
 				if( typeof tinyMCE !== 'undefined' ) { if( tinyMCE ) { tinyMCE.triggerSave(); } }
 				
@@ -2120,7 +2199,13 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 			click: function() {
 				// Remove old feedback
 				$j( '#bookacti-group-of-events-dialog .bookacti-notices' ).remove();
-
+				
+				// Use the initially selected events
+				bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ] = init_selected_events.slice();
+				bookacti_fill_group_of_events_list_field();
+				bookacti_refresh_selected_events_display();
+				$j( '#bookacti-template-calendar' ).fullCalendar( 'gotoDate', init_selected_events[ 0 ][ 'start' ] );
+				
 				// Display a loader
 				bookacti_start_template_loading();
 				var loading_div = '<div class="bookacti-loading-alt">' 
@@ -2178,6 +2263,19 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 		}]
 	);
 	
+	// Reset the selected events - when the dialog is closed
+	$j( '#bookacti-group-of-events-dialog' ).off( 'dialogbeforeclose' ).on( 'dialogbeforeclose', function() { 
+		$j( '.bookacti-group-of-events[data-group-id="' + group_id + '"]' ).removeClass( 'bookacti-selected-group' );
+	});
+	
+	// Reset the selected events - when the button is clicked
+	$j( '#bookacti-group-of-events-occurrences-undo' ).off( 'click' ).on( 'click', function() { 
+		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ] = init_selected_events.slice();
+		bookacti_fill_group_of_events_list_field();
+		bookacti_refresh_selected_events_display();
+		$j( '#bookacti-template-calendar' ).fullCalendar( 'gotoDate', init_selected_events[ 0 ][ 'start' ] );
+	});
+	
 	// Open the modal dialog
 	$j( '#bookacti-group-of-events-dialog' ).dialog( 'open' );
 }
@@ -2185,7 +2283,7 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 
 /**
  * Dialog Delete a group of events
- * @version 1.10.0
+ * @version 1.12.0
  * @param {int} group_id
  */
 function bookacti_dialog_delete_group_of_events( group_id ) {
@@ -2238,8 +2336,8 @@ function bookacti_dialog_delete_group_of_events( group_id ) {
 							
 							// Refresh events
 							if( data.cancel_bookings && typeof response.bookings !== 'undefined' ) {
-								bookacti.booking_system[ 'bookacti-template-calendar' ][ 'bookings' ] = [];
 								bookacti.booking_system[ 'bookacti-template-calendar' ][ 'bookings' ] = response.bookings;
+								bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_bookings' ] = response.groups_bookings;
 							}
 							
 							$j( '#bookacti-template-calendar' ).fullCalendar( 'rerenderEvents' );
@@ -2455,15 +2553,12 @@ function bookacti_dialog_delete_group_category( category_id ) {
 							delete bookacti.booking_system[ 'bookacti-template-calendar' ][ 'group_categories_data' ][ category_id ];
 							bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ] = [];
 							
-							var groups_to_delete = [];
+							// Delete groups
 							$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_data' ], function( i, group_data ) {
 								if( group_data.category_id == category_id ) {
-									groups_to_delete.push( group_data.id );
+									delete bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ][ group_data.id ];
+									delete bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_data' ][ group_data.id ];
 								}
-							});
-							$j.each( groups_to_delete, function( i, group_to_delete ) {
-								delete bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ][ group_to_delete ];
-								delete bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_data' ][ group_to_delete ];
 							});
 							
 							// Remove the group category and all its groups

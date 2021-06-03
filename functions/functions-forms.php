@@ -1383,42 +1383,61 @@ function bookacti_sanitize_form_field_order( $form_id, $field_order ) {
 
 
 /**
+ * Get form fields order
+ * @since 1.12.0
+ * @param int $form_id
+ * @return array
+ */
+function bookacti_get_form_fields_order( $form_id ) {
+	$form_id = intval( $form_id );
+	$fields_order = wp_cache_get( 'form_fields_order_' . $form_id, 'bookacti' );
+	if( $form_id && ! $fields_order ) {
+		$fields_order = bookacti_get_metadata( 'form', $form_id, 'field_order', true );
+		wp_cache_set( 'form_fields_order_' . $form_id, $fields_order, 'bookacti' );
+	}
+	return $fields_order ? $fields_order : array();
+}
+
+
+/**
  * Sort fields array by field order
  * @since 1.5.0
+ * @version 1.12.0
  * @param int $form_id
  * @param array $fields
  * @param boolean $remove_unordered_fields Whether to remove the fields that are not in the field order array 
+ * @param boolean $keep_keys Whether to keep the keys
  * @return array
  */
-function bookacti_sort_form_fields_array( $form_id, $fields, $remove_unordered_fields = false ) {
+function bookacti_sort_form_fields_array( $form_id, $fields, $remove_unordered_fields = false, $keep_keys = false ) {
 	// Sort form fields by customer custom order
-	$field_order = bookacti_get_metadata( 'form', $form_id, 'field_order', true );
+	$field_order = bookacti_get_form_fields_order( $form_id );
 	
 	if( $field_order ) { 
-		$ordered_fields		= array();
-		$remaining_fields	= $fields;
+		$ordered_fields = array();
+		$remaining_fields = $fields;
 		foreach( $field_order as $field_id ) {
 			foreach( $fields as $i => $field ) {
 				if( $field[ 'field_id' ] !== $field_id ) { continue; }
-
-				$ordered_fields[] = $fields[ $i ];
+				if( $keep_keys ) { $ordered_fields[ $i ] = $fields[ $i ]; }
+				else { $ordered_fields[] = $fields[ $i ]; }
 				unset( $remaining_fields[ $i ] );
-
 				break;
 			}
 		}
 
 		// Add the remaining unordered fields (if any)
 		if( ! $remove_unordered_fields && $remaining_fields ) {
-			foreach( $remaining_fields as $remaining_field ) {
-				$ordered_fields[] = $remaining_field;
+			foreach( $remaining_fields as $i => $remaining_field ) {
+				if( $keep_keys ) { $ordered_fields[ $i ] = $remaining_field; }
+				else { $ordered_fields[] = $remaining_field; }
 			}
 		}
 	} else {
-		$ordered_fields = array_values( $fields );
+		$ordered_fields = $keep_keys ? $fields : array_values( $fields );
 	}
 	
-	return apply_filters( 'bookacti_ordered_form_fields', $ordered_fields, $form_id, $fields, $remove_unordered_fields );
+	return apply_filters( 'bookacti_ordered_form_fields', $ordered_fields, $form_id, $fields, $remove_unordered_fields, $keep_keys );
 }
 
 
