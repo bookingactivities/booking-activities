@@ -530,7 +530,7 @@ function bookacti_controller_unbind_occurrences() {
 	$exceptions		= bookacti_get_exceptions_by_event( array( 'events' => $new_events_ids ) );
 	$groups			= bookacti_get_groups_of_events( array( 'templates' => array( $event->template_id ), 'past_events' => 1 ) );
 	$bookings_nb_per_event = bookacti_get_number_of_bookings_per_event( array( 'templates' => array( $event->template_id ) ) );
-	$bookings_nb_per_group = bookacti_get_number_of_bookings_per_group_of_events( $groups[ 'groups' ], $bookings_nb_per_event );
+	$bookings_nb_per_group = bookacti_get_number_of_bookings_per_group_of_events( $groups );
 	
 	$return_data = apply_filters( 'bookacti_event_occurrences_unbound', array( 
 		'status'		=> 'success', 
@@ -839,7 +839,7 @@ function bookacti_controller_delete_group_of_events() {
 		}
 		
 		$bookings_nb_per_event = bookacti_get_number_of_bookings_per_event( array( 'templates' => array( $group[ 'template_id' ] ) ) );
-		$bookings_nb_per_group = bookacti_get_number_of_bookings_per_group_of_events( $groups[ 'groups' ], $bookings_nb_per_event );
+		$bookings_nb_per_group = bookacti_get_number_of_bookings_per_group_of_events( $groups );
 	}
 	
 	do_action( 'bookacti_group_of_events_deactivated', $group, $cancel_bookings, $send_notifications );
@@ -1082,7 +1082,7 @@ add_action( 'wp_ajax_bookactiDeactivateTemplate', 'bookacti_controller_deactivat
 
 /**
  * AJAX Controller - Change default template
- * @version	1.9.0
+ * @version	1.12.0
  */
 function bookacti_controller_switch_template() {
 	$template_id = intval( $_POST[ 'template_id' ] );
@@ -1094,13 +1094,16 @@ function bookacti_controller_switch_template() {
 	$is_allowed = current_user_can( 'bookacti_edit_templates' ) && bookacti_user_can_manage_template( $template_id );
 	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'switch_template' ); }
 
-	$updated		= update_user_meta( get_current_user_id(), 'bookacti_default_template', $template_id );
-	$activities_list= bookacti_get_template_activities_list( $template_id );
-	$groups_list	= bookacti_get_template_groups_of_events_list( $template_id );
-
 	$atts = bookacti_maybe_decode_json( stripslashes( $_POST[ 'attributes' ] ), true );
 	$booking_system_data = bookacti_get_editor_booking_system_data( $atts, $template_id );
-
+	
+	$groups			= array( 'data' => $booking_system_data[ 'groups_data' ], 'groups' => $booking_system_data[ 'groups_events' ] );
+	$groups_list	= bookacti_get_template_groups_of_events_list( $booking_system_data[ 'group_categories_data' ], $groups, $template_id );
+	$activities_list= bookacti_get_template_activities_list( $booking_system_data[ 'activities_data' ], $template_id );
+	
+	// Update default template
+	update_user_meta( get_current_user_id(), 'bookacti_default_template', $template_id );
+	
 	bookacti_send_json( array(
 		'status'				=> 'success',
 		'activities_list'		=> $activities_list, 

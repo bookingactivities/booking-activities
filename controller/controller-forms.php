@@ -704,7 +704,7 @@ add_action( 'wp_ajax_nopriv_bookactiSubmitLoginForm', 'bookacti_controller_valid
 /**
  * Check if booking form is correct and then book the event, or send the error message
  * @since 1.5.0
- * @version 1.9.1
+ * @version 1.12.0
  */
 function bookacti_controller_validate_booking_form() {
 	// Check nonce
@@ -918,6 +918,7 @@ function bookacti_controller_validate_booking_form() {
 				'user_id'			=> $booking_form_values[ 'user_id' ],
 				'form_id'			=> $booking_form_values[ 'form_id' ],
 				'event_group_id'	=> $picked_event[ 'group_id' ],
+				'group_date'		=> $picked_event[ 'group_date' ],
 				'grouped_events'	=> $picked_event[ 'events' ],
 				'quantity'			=> $booking_form_values[ 'quantity' ],
 				'status'			=> $booking_form_values[ 'status' ],

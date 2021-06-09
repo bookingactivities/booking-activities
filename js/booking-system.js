@@ -36,8 +36,8 @@ $j( document ).ready( function() {
 		// Perform form action for single events only (for groups, see bookacti_group_of_events_chosen)
 		if( ! group_id && attributes[ 'when_perform_form_action' ] === 'on_event_click' ) {
 			var groups = bookacti_get_event_groups( booking_system, picked_event );
-			var group_ids = Object.keys( groups );
-			var open_dialog = group_ids.length > 1 || ( group_ids.length === 1 && attributes[ 'groups_single_events' ] ) ? true : false;
+			var groups_nb = bookacti_get_event_groups_nb( groups );
+			var open_dialog = groups_nb > 1 || ( groups_nb === 1 && attributes[ 'groups_single_events' ] ) ? true : false;
 			if( ! open_dialog ) {
 				bookacti_perform_form_action( booking_system );
 			}
@@ -82,7 +82,7 @@ $j( document ).ready( function() {
 		// Groups
 		var group_id = $j( this ).closest( 'li' ).data( 'group-id' );
 		var group_date = $j( this ).closest( 'li' ).data( 'group-date' );
-		if( group_id ) { bookacti_unpick_events( booking_system, false, group_id, group_date ); return; }
+		if( group_id ) { bookacti_unpick_events( booking_system, 0, group_id, group_date ); return; }
 		
 		// Single events
 		var event_row = $j( this ).closest( 'li' );
@@ -96,7 +96,7 @@ $j( document ).ready( function() {
 	
 	
 	/**
-	 * Refresh the picked events list and display on calendar - on bookacti_unpick_event
+	 * Refresh the picked events list and display on calendar - on bookacti_events_unpicked
 	 * @since 1.9.0
 	 * @version 1.12.0
 	 * @param {Event} e
@@ -104,7 +104,7 @@ $j( document ).ready( function() {
 	 * @param {Int} group_id
 	 * @param {String} group_date
 	 */
-	$j( 'body' ).on( 'bookacti_unpick_event', '.bookacti-booking-system', function( e, event, group_id, group_date ) {
+	$j( 'body' ).on( 'bookacti_events_unpicked', '.bookacti-booking-system', function( e, event, group_id, group_date ) {
 		var booking_system		= $j( this );
 		var booking_system_id	= booking_system.attr( 'id' );
 		var booking_method		= bookacti.booking_system[ booking_system_id ][ 'method' ];

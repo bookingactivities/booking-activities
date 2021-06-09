@@ -873,24 +873,29 @@ function bookacti_delete_event( event ) {
 	bookacti_unselect_event( event );
 
 	// Delete this event from all groups
-	var occurrences_to_delete = [];
-	$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ], function( group_id, group_occurrences ) {
-		var occurrences_dates = Object.keys( group_occurrences );
-		$j.each( group_occurrences, function( group_date, group_events ){
+	var occurrences_to_delete = {};
+	$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ], function( group_id, groups_per_date ) {
+		var occurrences_dates = Object.keys( groups_per_date );
+		$j.each( groups_per_date, function( group_date, group_events ) {
 			var delete_group = occurrences_dates.length > 1;
 			var remaining_group_events = $j.grep( group_events, function( group_event ) {
 				if( group_event && group_event.id == event.id ) { delete_group = true; return false; }
 				return true;
 			});
 			bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ][ group_id ][ group_date ] = remaining_group_events;
-			if( delete_group ) { occurrences_to_delete.push( group_date ); }
+			if( delete_group ) { 
+				if( typeof occurrences_to_delete[ group_id ] === 'undefined' ) { occurrences_to_delete[ group_id ] = []; }
+				occurrences_to_delete[ group_id ].push( group_date );
+			}
 		});
 	});
 	
 	// Delete the whole group occurrence if the group is repeated, because the group occurrence is not generated if an event is missing
 	if( occurrences_to_delete.length ) {
-		$j.each( occurrences_to_delete, function( i, group_date ) {
-			delete bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ][ group_id ][ group_date ];
+		$j.each( occurrences_to_delete, function( group_id, group_dates ) {
+			$j.each( group_dates, function( i, group_date ) {
+				delete bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ][ group_id ][ group_date ];
+			});
 		});
 	}
 	
@@ -1020,7 +1025,7 @@ function bookacti_update_event_dates( event, delta, revertFunc, is_dialog ) {
 				if( ! $j.isEmptyObject( event_bookings ) ) { bookacti.booking_system[ 'bookacti-template-calendar' ][ 'bookings' ][ event_id ] = event_bookings; }
 				
 				// Render updated event to make sure it fits in events interval
-				if( response.events.length > 0 ) {
+				if( response.events.length ) {
 					$j( '#bookacti-template-calendar' ).fullCalendar( 'removeEvents', event_id );
 					$j( '#bookacti-template-calendar' ).fullCalendar( 'addEventSource', response.events );
 				}

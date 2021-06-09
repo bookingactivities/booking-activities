@@ -133,6 +133,7 @@ function bookacti_create_tables() {
 
 	$table_booking_groups_query = 'CREATE TABLE ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' ( 
 		id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, 
+		group_date DATE, 
 		category_id BIGINT UNSIGNED, 
 		event_group_id BIGINT UNSIGNED, 
 		user_id VARCHAR(64), 

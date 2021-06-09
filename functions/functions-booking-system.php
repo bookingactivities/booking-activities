@@ -225,7 +225,7 @@ function bookacti_get_booking_system_data( $atts ) {
 			$booking_system_data[ 'events_data' ]			= $events[ 'data' ] ? $events[ 'data' ] : array();
 			$booking_system_data[ 'events_interval' ]		= $events_interval;
 			$booking_system_data[ 'bookings' ]				= bookacti_get_number_of_bookings_per_event( array( 'templates' => $atts[ 'calendars' ], 'users' => $user_ids, 'status' => $status ) );
-			$booking_system_data[ 'groups_bookings' ]		= bookacti_get_number_of_bookings_per_group_of_events( $groups[ 'groups' ], $booking_system_data[ 'bookings' ] );
+			$booking_system_data[ 'groups_bookings' ]		= bookacti_get_number_of_bookings_per_group_of_events( $groups, array( 'users' => $user_ids, 'status' => $status ) );
 			$booking_system_data[ 'booking_lists' ]			= $booking_lists;
 			$booking_system_data[ 'activities_data' ]		= bookacti_get_activities_by_template( $atts[ 'calendars' ], true );
 			$booking_system_data[ 'groups_events' ]			= $groups[ 'groups' ];
@@ -1791,7 +1791,10 @@ function bookacti_get_events_array_from_db_events( $events, $raw_args = array() 
 	
 	// Get event ids
 	$event_ids = array();
-	foreach( $events as $event ) { $event_ids[] = $event->event_id; }
+	foreach( $events as $event ) { 
+		$event_id = ! empty( $event->event_id ) ? intval( $event->event_id ) : ( ! empty( $event->id ) ? intval( $event->id ) : 0 );
+		if( $event_id ) { $event_ids[] = $event_id; }
+	}
 	
 	// Get event exceptions
 	$exceptions = $args[ 'skip_exceptions' ] ? bookacti_get_exceptions_by_event( array( 'events' => $event_ids ) ) : array();
@@ -1806,8 +1809,9 @@ function bookacti_get_events_array_from_db_events( $events, $raw_args = array() 
 	$events_meta = bookacti_get_metadata( 'event', $event_ids );
 	
 	foreach( $events as $event ) {
+		$event_id = ! empty( $event->event_id ) ? intval( $event->event_id ) : ( ! empty( $event->id ) ? intval( $event->id ) : 0 );
 		$event_fc_data = array(
-			'id'				=> $event->event_id,
+			'id'				=> $event_id,
 			'title'				=> apply_filters( 'bookacti_translate_text', $event->title ),
 			'start'				=> $event->start,
 			'end'				=> $event->end,
@@ -1816,25 +1820,25 @@ function bookacti_get_events_array_from_db_events( $events, $raw_args = array() 
 
 		$event_bookacti_data = array(
 			'multilingual_title'=> $event->title,
-			'template_id'		=> $event->template_id,
-			'activity_id'		=> $event->activity_id,
-			'availability'		=> $event->availability,
+			'template_id'		=> intval( $event->template_id ),
+			'activity_id'		=> intval( $event->activity_id ),
+			'availability'		=> intval( $event->availability ),
 			'repeat_freq'		=> $event->repeat_freq,
 			'repeat_step'		=> $event->repeat_step,
 			'repeat_on'			=> $event->repeat_on,
 			'repeat_from'		=> $event->repeat_from,
 			'repeat_to'			=> $event->repeat_to,
-			'settings'			=> isset( $events_meta[ $event->event_id ] ) ? $events_meta[ $event->event_id ] : array()
+			'settings'			=> isset( $events_meta[ $event_id ] ) ? $events_meta[ $event_id ] : array()
 		);
 		
 		// Build events data array
-		$events_array[ 'data' ][ $event->event_id ] = array_merge( $event_fc_data, $event_bookacti_data );
+		$events_array[ 'data' ][ $event_id ] = array_merge( $event_fc_data, $event_bookacti_data );
 
 		// Build events array
 		if( $event->repeat_freq === 'none' ) {
 			$events_array[ 'events' ][] = $event_fc_data;
 		} else {
-			$args[ 'exceptions_dates' ]	= $args[ 'skip_exceptions' ] && ! empty( $exceptions[ $event->event_id ] ) ? $exceptions[ $event->event_id ] : array();
+			$args[ 'exceptions_dates' ]	= $args[ 'skip_exceptions' ] && ! empty( $exceptions[ $event_id ] ) ? $exceptions[ $event_id ] : array();
 			$new_occurrences			= bookacti_get_occurrences_of_repeated_event( $event, $args );
 			$events_array[ 'events' ]	= array_merge( $events_array[ 'events' ], $new_occurrences );
 		}
@@ -1875,6 +1879,7 @@ function bookacti_get_bounding_events_from_db_events( $events, $raw_args = array
 	$max_event = false;
 	
 	foreach( $events as $event ) {
+		$event_id = ! empty( $event->event_id ) ? intval( $event->event_id ) : ( ! empty( $event->id ) ? intval( $event->id ) : 0 );
 		$single_events = array();
 		
 		// For repeated events, generate the first and the last occurrence of the interval
@@ -1891,7 +1896,7 @@ function bookacti_get_bounding_events_from_db_events( $events, $raw_args = array
 			 && ! empty( $bounding_dates[ 'last' ] ) && $to_dt <= $bounding_dates[ 'last' ] ) { continue; }
 			
 			// Get bounding occurrences
-			$args[ 'exceptions_dates' ] = $args[ 'skip_exceptions' ] && ! empty( $args[ 'exceptions' ][ $event->event_id ] ) ? $args[ 'exceptions' ][ $event->event_id ] : array();
+			$args[ 'exceptions_dates' ] = $args[ 'skip_exceptions' ] && ! empty( $args[ 'exceptions' ][ $event_id ] ) ? $args[ 'exceptions' ][ $event_id ] : array();
 			$occurrences = bookacti_get_occurrences_of_repeated_event( $event, $args );
 			
 			// Add occurrences as single events
@@ -1911,6 +1916,7 @@ function bookacti_get_bounding_events_from_db_events( $events, $raw_args = array
 		else { $single_events[] = clone $event; }
 		
 		foreach( $single_events as $single_event ) {
+			$single_event->id = $single_event->event_id = $event_id;
 			$start_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $single_event->start );
 			$end_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $single_event->end );
 			if( empty( $bounding_dates[ 'first' ] ) || ( ! empty( $bounding_dates[ 'first' ] ) && $start_dt < $bounding_dates[ 'first' ] ) ){ $bounding_dates[ 'first' ] = clone $start_dt; $min_event = clone $single_event; }
@@ -2698,24 +2704,25 @@ function bookacti_get_availability_period( $absolute_period = array(), $relative
  * @return array
  */
 function bookacti_sanitize_events_interval( $interval_raw ) {
-	if( ! $interval_raw || ! is_array( $interval_raw ) ) { return array(); }
-	if( empty( $interval_raw[ 'start' ] ) && empty( $interval_raw[ 'end' ] ) ) { return array(); }
-	
 	$interval = array( 'start' => '', 'end' => '' );
 	
 	if( ! empty( $interval_raw[ 'start' ] ) ) {
-		$date_start = bookacti_sanitize_date( $interval_raw[ 'start' ] );
-		if( $date_start ) { $interval_raw[ 'start' ] = $date_start . ' 00:00:00'; }
-		$interval[ 'start' ] = bookacti_sanitize_datetime( $interval_raw[ 'start' ] );
+		$interval_start = $interval_raw[ 'start' ];
+		$date_start = bookacti_sanitize_date( $interval_start );
+		if( $date_start ) { $interval_start = $date_start . ' 00:00:00'; }
+		$interval[ 'start' ] = bookacti_sanitize_datetime( $interval_start );
 	}
 	
 	if( ! empty( $interval_raw[ 'end' ] ) ) {
-		$date_end = bookacti_sanitize_date( $interval_raw[ 'end' ] );
-		if( $date_end ) { $interval_raw[ 'end' ] = $date_end . ' 23:59:59'; }
-		$interval[ 'end' ] = bookacti_sanitize_datetime( $interval_raw[ 'end' ] );
+		$interval_end = $interval_raw[ 'end' ];
+		$date_end = bookacti_sanitize_date( $interval_end );
+		if( $date_end ) { $interval_end = $date_end . ' 23:59:59'; }
+		$interval[ 'end' ] = bookacti_sanitize_datetime( $interval_end );
 	}
 	
-	return $interval;
+	if( empty( $interval[ 'start' ] ) && empty( $interval[ 'end' ] ) ) { $interval = array(); }
+	
+	return apply_filters( 'bookacti_events_interval_sanitized', $interval, $interval_raw );
 }
 
 
@@ -3127,21 +3134,22 @@ function bookacti_get_groups_of_events_array_from_db_groups_of_events( $groups, 
 	
 	// Build groups data array
 	foreach( $groups as $group ) {
-		$groups_array[ 'data' ][ $group->id ] = array(
-			'id'				=> $group->id,
+		$group_id = intval( $group->id );
+		$groups_array[ 'data' ][ $group_id ] = array(
+			'id'				=> $group_id,
 			'multilingual_title'=> $group->title,
 			'title'				=> apply_filters( 'bookacti_translate_text', $group->title ),
 			'start'				=> $group->start,
 			'end'				=> $group->end,
-			'template_id'		=> $group->template_id,
-			'category_id'		=> $group->category_id,
+			'template_id'		=> intval( $group->template_id ),
+			'category_id'		=> intval( $group->category_id ),
 			'repeat_freq'		=> $group->repeat_freq,
-			'repeat_step'		=> $group->repeat_step,
+			'repeat_step'		=> intval( $group->repeat_step ),
 			'repeat_on'			=> $group->repeat_on,
 			'repeat_from'		=> $group->repeat_from,
 			'repeat_to'			=> $group->repeat_to,
-			'events'			=> isset( $groups_events[ $group->id ] ) ? $groups_events[ $group->id ] : array(),
-			'settings'			=> isset( $groups_meta[ $group->id ] ) ? $groups_meta[ $group->id ] : array()
+			'events'			=> isset( $groups_events[ $group_id ] ) ? $groups_events[ $group_id ] : array(),
+			'settings'			=> isset( $groups_meta[ $group_id ] ) ? $groups_meta[ $group_id ] : array()
 		);
 	}
 	
@@ -3207,6 +3215,7 @@ function bookacti_get_occurrences_of_repeated_groups_of_events( $groups, $raw_ar
 	$default_args = array(
 		'interval' => array(),
 		'exceptions_dates' => array(),
+		'skip_exceptions' => 1,
 		'past_events' => 0
 	);
 	$args = array_intersect_key( wp_parse_args( $raw_args, $default_args ), $default_args );
@@ -3286,9 +3295,6 @@ function bookacti_get_occurrences_of_repeated_groups_of_events( $groups, $raw_ar
 		$possibly_grouped_events[ $index ][ $event[ 'id' ] ] = $event;
 	}
 	
-//	bookacti_log( '$repeated_args' );
-//	bookacti_log( $repeated_args );
-	
 	// Compute the groups occurrences
 	foreach( $groups as $group_id => $group ) {
 		// The occurrences of the groups are based on its first event, so compute the occurrences of the first event
@@ -3308,9 +3314,6 @@ function bookacti_get_occurrences_of_repeated_groups_of_events( $groups, $raw_ar
 			'exceptions_dates' => $args[ 'skip_exceptions' ] && ! empty( $args[ 'exceptions_dates' ][ 'G' . $group_id ] ) ? $args[ 'exceptions_dates' ][ 'G' . $group_id ] : array()
 		);
 		$first_event_occurrences = bookacti_get_occurrences_of_repeated_event( (object) $dummy_event, $dummy_args );
-		
-//		bookacti_log( '$first_event_occurrences' );
-//		bookacti_log( end( $first_event_occurrences ) );
 		
 		// Compute the theorical (expected) events of each occurrence
 		$first_event_start_dt = new DateTime( $first_event[ 'start' ] );
@@ -3338,22 +3341,22 @@ function bookacti_get_occurrences_of_repeated_groups_of_events( $groups, $raw_ar
 				$grouped_event = ! empty( $possibly_grouped_events[ $desired_index ][ $group_event[ 'id' ] ] ) ? $possibly_grouped_events[ $desired_index ][ $group_event[ 'id' ] ] : reset( $possibly_grouped_events[ $desired_index ] );
 				
 				$occurrence_events[] = array(
-					'id'	=> $grouped_event[ 'id' ],
+					'id'	=> intval( $grouped_event[ 'id' ] ),
 					'title'	=> $grouped_event[ 'title' ],
 					'color'	=> $grouped_event[ 'color' ],
 					'start'	=> $grouped_event[ 'start' ],
 					'end'	=> $grouped_event[ 'end' ]
 				);
 			}
-			if( $is_incomplete ) { bookacti_log( $group_id . ' is incomplete' ); continue; }
+			if( $is_incomplete ) { continue; }
 			
 			// Check if the group is past or has started and include it accordingly
 			$last_event = end( $occurrence_events );
 			$first_event = reset( $occurrence_events );
 			$first_event_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $first_event[ 'start' ], $timezone );
 			$last_event_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $last_event[ 'end' ], $timezone );
-			if( ! $args[ 'past_events' ] && $first_event_dt < $now_dt ) { bookacti_log( $group_id . ' is past' ); continue; }
-			if( ! $args[ 'past_events' ] && empty( $group[ 'settings' ][ 'started_groups_bookable' ] ) && $first_event_dt < $now_dt && $last_event_dt > $now_dt ) { bookacti_log( $group_id . ' is started' ); continue; }
+			if( ! $args[ 'past_events' ] && $first_event_dt < $now_dt ) { continue; }
+			if( ! $args[ 'past_events' ] && empty( $group[ 'settings' ][ 'started_groups_bookable' ] ) && $first_event_dt < $now_dt && $last_event_dt > $now_dt ) { continue; }
 			
 			if( ! isset( $group_occurrences[ $group_id ] ) ) { $group_occurrences[ $group_id ] = array(); }
 			$group_occurrences[ $group_id ][ $first_event_occurrence_dt->format( 'Y-m-d' ) ] = $occurrence_events;
@@ -3362,9 +3365,6 @@ function bookacti_get_occurrences_of_repeated_groups_of_events( $groups, $raw_ar
 	
 	// Set cache
 	wp_cache_set( 'groups_occurrences_' . $args_hash, $group_occurrences, 'bookacti' );
-	
-//	bookacti_log( '$group_occurrences ' );
-//	bookacti_log( end( $group_occurrences[ $group_id ] ) );
 	
 	return $group_occurrences;
 }
@@ -3421,38 +3421,163 @@ function bookacti_get_group_events( $group_id ) {
 
 
 /**
- * Get number of bookings per group of events according to the number of bookings of the grouped events
+ * Get number of bookings per group of events
  * @since 1.12.0
- * @param array $groups_occurrences Occurrences of groups of events (see bookacti_get_occurrences_of_repeated_groups_of_events)
- * @param array $bookings_nb_per_event Number of booking sper events (see bookacti_get_number_of_bookings_per_event)
+ * @param array $groups Groups of events (see bookacti_get_groups_of_events)
+ * @param array $raw_bookings_args {
+ *  @param array $users Array of users IDs
+ *  @param array $status Array of booking status
+ * }
  * @return array
  */
-function bookacti_get_number_of_bookings_per_group_of_events( $groups_occurrences, $bookings_nb_per_event ) {
-	if( ! $groups_occurrences || ! $bookings_nb_per_event ) { return array(); }
-	
-	$bookings_nb_per_group = array();
-	foreach( $groups_occurrences as $group_id => $group_occurrences ) {
-		foreach( $group_occurrences as $date => $group_events ) {
-			if( ! isset( $bookings_nb_per_group[ $group_id ] ) ) { $bookings_nb_per_group[ $group_id ] = array(); }
-			if( ! isset( $bookings_nb_per_group[ $group_id ][ $date ] ) ) {
-				$bookings_nb_per_group[ $group_id ][ $date ] = array(
-					'quantity' => 0,
-					'availability' => 999999999,
-					'distinct_users' => 0,
-					'current_user_bookings' => 0
-				);
-			}
-
+function bookacti_get_number_of_bookings_per_group_of_events( $groups, $raw_bookings_args = array() ) {
+	$default_args = array(
+		'users' => array(),
+		'status' => array()
+	);
+	$bookings_args = wp_parse_args( $raw_bookings_args, $default_args );
+		
+	// Get the grouped event IDs and the min interval containing all the grouped events in order to retrieve only the necessary events / bookings
+	$events_ids = array();
+	$interval_dt = array();
+	foreach( $groups[ 'groups' ] as $group_id => $groups_per_dates ) {
+		foreach( $groups_per_dates as $date => $group_events ) {
 			foreach( $group_events as $group_event ) {
-				$group_event_booking_nb = isset( $bookings_nb_per_event[ $group_event[ 'id' ] ][ $group_event[ 'start' ] ] ) ? $bookings_nb_per_event[ $group_event[ 'id' ] ][ $group_event[ 'start' ] ] : array();
-				if( ! $group_event_booking_nb ) { continue; }
-				if( $group_event_booking_nb[ 'quantity' ] > $bookings_nb_per_group[ $group_id ][ $date ][ 'quantity' ] ) { $bookings_nb_per_group[ $group_id ][ $date ][ 'quantity' ] = $group_event_booking_nb[ 'quantity' ]; }
-				if( $group_event_booking_nb[ 'availability' ] < $bookings_nb_per_group[ $group_id ][ $date ][ 'availability' ] ) { $bookings_nb_per_group[ $group_id ][ $date ][ 'availability' ] = $group_event_booking_nb[ 'availability' ]; }
-				if( $group_event_booking_nb[ 'distinct_users' ] > $bookings_nb_per_group[ $group_id ][ $date ][ 'distinct_users' ] ) { $bookings_nb_per_group[ $group_id ][ $date ][ 'distinct_users' ] = $group_event_booking_nb[ 'distinct_users' ]; }
-				if( $group_event_booking_nb[ 'current_user_bookings' ] > $bookings_nb_per_group[ $group_id ][ $date ][ 'current_user_bookings' ] ) { $bookings_nb_per_group[ $group_id ][ $date ][ 'current_user_bookings' ] = $group_event_booking_nb[ 'current_user_bookings' ]; }
+				$event_id = intval( $group_event[ 'id' ] );
+				$group_event_start_dt = new DateTime( $group_event[ 'start' ] );
+				$group_event_end_dt = new DateTime( $group_event[ 'end' ] );
+				if( ! in_array( $event_id, $events_ids, true ) ) { $events_ids[] = $event_id; }
+				if( empty( $interval_dt[ 'start' ] ) || ( isset( $interval_dt[ 'start' ] ) && $interval_dt[ 'start' ] > $group_event_start_dt ) ) { $interval_dt[ 'start' ] = $group_event_start_dt; }
+				if( empty( $interval_dt[ 'end' ] ) || ( isset( $interval_dt[ 'end' ] ) && $interval_dt[ 'end' ] < $group_event_end_dt ) ) { $interval_dt[ 'end' ] = $group_event_end_dt; }
 			}
 		}
 	}
 	
-	return $bookings_nb_per_group;
+	// Sanitize the min interval of events containing all the grouped events
+	$interval = bookacti_sanitize_events_interval( array( 
+		'start' => ! empty( $interval_dt[ 'start' ] ) ? $interval_dt[ 'start' ]->format( 'Y-m-d H:i:s' ) : '',
+		'end' => ! empty( $interval_dt[ 'end' ] ) ? $interval_dt[ 'end' ]->format( 'Y-m-d H:i:s' ) : ''
+	) );
+	
+	// Get the grouped events to compute their total availability
+	$events_filters = array( 'events' => $events_ids, 'interval' => $interval, 'skip_exceptions' => 0, 'past_events' => 1 );
+	$events = $events_ids ? bookacti_fetch_events( $events_filters ) : array();
+	
+	// Get the grouped events bookings to compute their quantity booked, the number of distinct users and the number of bookings of the current user
+	$bookings_filters = bookacti_format_booking_filters( array(
+		'in__event_id' => $events_ids,
+		'from' => ! empty( $interval[ 'start' ] ) ? $interval[ 'start' ] : '',
+		'to' => ! empty( $interval[ 'end' ] ) ? $interval[ 'end' ] : '',
+		'in__user_id' => $bookings_args[ 'users' ],
+		'status' => $bookings_args[ 'status' ],
+		'active' => 1,
+		'fecth_meta' => 0
+	) );
+	$bookings = $events_ids ? bookacti_get_bookings( $bookings_filters ) : array();
+	
+	// Compute the number of bookings per group per event
+	$current_user_id = apply_filters( 'bookacti_current_user_id', get_current_user_id() );
+	$bookings_nb_per_event = array();
+	$bookings_qty_per_group_per_event = array();
+	foreach( $bookings as $booking ) {
+		$event_identifier = $booking->event_id . '_' . $booking->event_start . '_' . $booking->event_end;
+		$user_id = $booking->user_id;
+		
+		// Set the default values per event
+		if( ! isset( $bookings_nb_per_event[ $event_identifier ] ) ) { 
+			$bookings_nb_per_event[ $event_identifier ] = array(
+				'quantity' => 0,
+				'current_user_bookings' => 0,
+				'user_ids' => array()
+			);
+		}
+		
+		// Quantity booked per event
+		$bookings_nb_per_event[ $event_identifier ][ 'quantity' ] += intval( $booking->quantity );
+		
+		// Quantity booked by the current user per event
+		if( $user_id == $current_user_id ) { $bookings_nb_per_event[ $event_identifier ][ 'current_user_bookings' ] += intval( $booking->quantity ); }
+		
+		// Distinct users who have booked each event
+		if( ! in_array( $user_id, $bookings_nb_per_event[ $event_identifier ][ 'user_ids' ], true ) ) { $bookings_nb_per_event[ $event_identifier ][ 'user_ids' ][] = $user_id; }
+		
+		// For the following, make sure the booking was part of a group, else, skip it
+		$group_id = ! empty( $booking->event_group_id ) ? intval( $booking->event_group_id ) : 0;
+		if( ! $group_id ) { continue; }
+		
+		$group_date = ! empty( $booking->group_date ) ? $booking->group_date : 0;
+		// If the date was not set, take the first event date as reference // BACKWARD COMPATIBILITY
+		if( ! $group_date && ! empty( $groups[ 'data' ][ $group_id ][ 'events' ][ 0 ][ 'start' ] ) ) { $group_date = substr( $groups[ 'data' ][ $group_id ][ 'events' ][ 0 ][ 'start' ], 0, 10 ); }
+		if( ! $group_date ) { continue; }
+		
+		$group_identifier = $group_id . '_' . $group_date;
+		
+		if( ! isset( $bookings_qty_per_group_per_event[ $group_identifier ] ) ) { $bookings_qty_per_group_per_event[ $group_identifier ] = array(); }
+		if( ! isset( $bookings_qty_per_group_per_event[ $group_identifier ][ $event_identifier ] ) ) { $bookings_qty_per_group_per_event[ $group_identifier ][ $event_identifier ] = 0; }
+		
+		// We also want to know how many bookings per event were part of each groups
+		// Quantity booked per group per event
+		$bookings_qty_per_group_per_event[ $group_identifier ][ $event_identifier ] += intval( $booking->quantity );
+	}
+	
+	
+	// Compute total availability per group of events
+	$user_ids_per_group = array();
+	$bookings_nb_per_group = array();
+	foreach( $groups[ 'groups' ] as $group_id => $groups_per_date ) {
+		foreach( $groups_per_date as $group_date => $group_events ) {
+			$group_identifier = $group_id . '_' . $group_date;
+			
+			// Set the default values
+			if( ! isset( $user_ids_per_group[ $group_identifier ] ) ) { $user_ids_per_group[ $group_identifier ] = array(); }
+			if( ! isset( $bookings_nb_per_group[ $group_id ] ) ) { $bookings_nb_per_group[ $group_id ] = array(); }
+			if( ! isset( $bookings_nb_per_group[ $group_id ][ $group_date ] ) ) {
+				$bookings_nb_per_group[ $group_id ][ $group_date ] = array(
+					'total_availability' => false,
+					'availability' => false,
+					'quantity' => 0,
+					'distinct_users' => 0,
+					'current_user_bookings' => 0,
+				);
+			}
+			
+			foreach( $group_events as $group_event ) {
+				$event_identifier = $group_event[ 'id' ] . '_' . $group_event[ 'start' ] . '_' . $group_event[ 'end' ];
+				
+				// Total availability per group (the min total availability among all the event of the group)
+				$total_availability = ! empty( $events[ 'data' ][ $group_event[ 'id' ] ][ 'availability' ] ) ? intval( $events[ 'data' ][ $group_event[ 'id' ] ][ 'availability' ] ) : 0;
+				if( $bookings_nb_per_group[ $group_id ][ $group_date ][ 'total_availability' ] === false
+				|| ( isset( $bookings_nb_per_group[ $group_id ][ $group_date ][ 'total_availability' ] ) 
+					&& $bookings_nb_per_group[ $group_id ][ $group_date ][ 'total_availability' ] > $total_availability ) ) { 
+					$bookings_nb_per_group[ $group_id ][ $group_date ][ 'total_availability' ] = $total_availability;
+				}
+				
+				// Remaining availability per group (the min remaining availability among all the event of the group)
+				$event_bookings_qty = isset( $bookings_nb_per_event[ $event_identifier ][ 'quantity' ] ) ? $bookings_nb_per_event[ $event_identifier ][ 'quantity' ] : 0;
+				$availability = $total_availability - $event_bookings_qty;
+				if( $bookings_nb_per_group[ $group_id ][ $group_date ][ 'availability' ] === false
+				|| ( isset( $bookings_nb_per_group[ $group_id ][ $group_date ][ 'availability' ] ) 
+					&& $bookings_nb_per_group[ $group_id ][ $group_date ][ 'availability' ] > $availability ) ) { 
+					$bookings_nb_per_group[ $group_id ][ $group_date ][ 'availability' ] = $availability;
+				}
+				
+				// Quantity booked per group (the max quantity booked for one of the event of the group)
+				$quantity = isset( $bookings_qty_per_group_per_event[ $group_identifier ][ $event_identifier ] ) ? $bookings_qty_per_group_per_event[ $group_identifier ][ $event_identifier ] : 0;
+				if( $bookings_nb_per_group[ $group_id ][ $group_date ][ 'quantity' ] < $quantity ) { $bookings_nb_per_group[ $group_id ][ $group_date ][ 'quantity' ] = $quantity; }
+				
+				// Quantity booked per group by the current user (the max quantity booked by the current user for one of the event of the group)
+				$current_user_bookings = isset( $bookings_nb_per_event[ $event_identifier ][ 'current_user_bookings' ] ) ? $bookings_nb_per_event[ $event_identifier ][ 'current_user_bookings' ] : 0;
+				if( $bookings_nb_per_group[ $group_id ][ $group_date ][ 'current_user_bookings' ] < $current_user_bookings ) { $bookings_nb_per_group[ $group_id ][ $group_date ][ 'current_user_bookings' ] = $current_user_bookings; }
+				
+				// Merge the users of each event of the group
+				if( isset( $bookings_nb_per_event[ $event_identifier ][ 'user_ids' ] ) ) { $user_ids_per_group[ $group_identifier ] = array_merge( $user_ids_per_group[ $group_identifier ], $bookings_nb_per_event[ $event_identifier ][ 'user_ids' ] ); }
+			}
+			
+			// Number of distinct users per group (the number of distinct users among all the event of the group)
+			$user_ids_per_group[ $group_identifier ] = array_unique( $user_ids_per_group[ $group_identifier ] );
+			$bookings_nb_per_group[ $group_id ][ $group_date ][ 'distinct_users' ] = count( $user_ids_per_group[ $group_identifier ] );
+		}
+	}
+	
+	return apply_filters( 'bookacti_number_of_bookings_per_group_of_events', $bookings_nb_per_group, $groups, $raw_bookings_args );
 }

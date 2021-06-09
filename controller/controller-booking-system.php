@@ -135,12 +135,14 @@ add_action( 'wp_ajax_nopriv_bookactiReloadBookingSystem', 'bookacti_controller_r
  */
 function bookacti_controller_get_booking_numbers() {
 	$template_ids	= isset( $_POST[ 'template_ids' ] ) ? bookacti_ids_to_array( $_POST[ 'template_ids' ] ) : array();
+	$groups_data	= isset( $_POST[ 'groups_data' ] ) && is_array( $_POST[ 'groups_data' ] ) ? $_POST[ 'groups_data' ] : array();
 	$groups_events	= isset( $_POST[ 'groups_events' ] ) && is_array( $_POST[ 'groups_events' ] ) ? $_POST[ 'groups_events' ] : array();
+	$groups			= array( 'data' => $groups_data, 'groups' => $groups_events );
 	
 	$bookings_nb_per_event = bookacti_get_number_of_bookings_per_event( array( 'templates' => $template_ids ) );
 	if( ! $bookings_nb_per_event ) { bookacti_send_json( array( 'status' => 'no_bookings' ), 'get_booking_numbers' ); }
 	
-	$bookings_nb_per_group = bookacti_get_number_of_bookings_per_group_of_events( $groups_events, $bookings_nb_per_event );
+	$bookings_nb_per_group = bookacti_get_number_of_bookings_per_group_of_events( $groups );
 	
 	bookacti_send_json( array( 'status' => 'success', 'bookings' => $bookings_nb_per_event, 'groups_bookings' => $bookings_nb_per_group ), 'get_booking_numbers' );
 }

@@ -191,7 +191,7 @@ function bookacti_duplicate_event( $event_id ) {
 /**
  * Update event data
  * @since 1.2.2 (was bookacti_set_event_data)
- * @version 1.11.0
+ * @version 1.12.0
  * @global wpdb $wpdb
  * @param array $data Data sanitized with bookacti_sanitize_event_data
  * @return int|false
@@ -203,7 +203,7 @@ function bookacti_update_event( $data ) {
 				. ' template_id = IFNULL( NULLIF( %d, 0 ), template_id ), '	
 				. ' activity_id = IFNULL( NULLIF( %d, 0 ), activity_id ), '	
 				. ' title = IFNULL( NULLIF( %s, "" ), title ), '
-				. ' availability = IFNULL( NULLIF( %d, 0 ), availability ), '
+				. ' availability = IFNULL( NULLIF( %d, -1 ), availability ), '
 				. ' start = IFNULL( NULLIF( %s, "" ), start ), '
 				. ' end = IFNULL( NULLIF( %s, "" ), end ), '
 				. ' repeat_freq = IFNULL( NULLIF( %s, "" ), repeat_freq ), '
@@ -217,14 +217,14 @@ function bookacti_update_event( $data ) {
 		$data[ 'template_id' ],
 		$data[ 'activity_id' ],
 		$data[ 'title' ],
-		$data[ 'availability' ], 
-		$data[ 'start' ], 
-		$data[ 'end' ], 
-		$data[ 'repeat_freq' ], 
-		! is_null( $data[ 'repeat_step' ] ) ? $data[ 'repeat_step' ] : -1, 
-		! is_null( $data[ 'repeat_on' ] ) ? $data[ 'repeat_on' ] : 'null', 
-		! is_null( $data[ 'repeat_from' ] ) ? $data[ 'repeat_from' ] : 'null', 
-		! is_null( $data[ 'repeat_to' ] ) ? $data[ 'repeat_to' ] : 'null', 
+		! is_null( $data[ 'availability' ] ) ? $data[ 'availability' ] : -1,
+		$data[ 'start' ],
+		$data[ 'end' ],
+		$data[ 'repeat_freq' ],
+		! is_null( $data[ 'repeat_step' ] ) ? $data[ 'repeat_step' ] : -1,
+		! is_null( $data[ 'repeat_on' ] ) ? $data[ 'repeat_on' ] : 'null',
+		! is_null( $data[ 'repeat_from' ] ) ? $data[ 'repeat_from' ] : 'null',
+		! is_null( $data[ 'repeat_to' ] ) ? $data[ 'repeat_to' ] : 'null',
 		$data[ 'id' ]
 	);
 	
@@ -1276,7 +1276,7 @@ function bookacti_update_activity( $data ) {
 	$query = ' UPDATE ' . BOOKACTI_TABLE_ACTIVITIES . ' SET '
 				. ' title = IFNULL( NULLIF( %s, "" ), title ), '
 				. ' color = IFNULL( NULLIF( %s, "" ), color ), '
-				. ' availability = IFNULL( NULLIF( %d, "-1" ), availability ), '
+				. ' availability = IFNULL( NULLIF( %d, -1 ), availability ), '
 				. ' duration = IFNULL( NULLIF( %s, "000.00:00:00" ), duration ) '
 			. ' WHERE id = %d ';
 	

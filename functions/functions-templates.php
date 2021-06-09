@@ -22,11 +22,11 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 	$booking_system_data[ 'events_data' ]			= array();
 	$booking_system_data[ 'events_interval' ]		= array();
 	$booking_system_data[ 'bookings' ]				= bookacti_get_number_of_bookings_per_event( array( 'templates' => array( $template_id ) ) );
-	$booking_system_data[ 'groups_bookings' ]		= bookacti_get_number_of_bookings_per_group_of_events( $groups[ 'groups' ], $booking_system_data[ 'bookings' ] );
+	$booking_system_data[ 'groups_bookings' ]		= bookacti_get_number_of_bookings_per_group_of_events( $groups );
 	$booking_system_data[ 'exceptions' ]			= bookacti_get_exceptions_by_event( array( 'templates' => array( $template_id ) ) );
 	$booking_system_data[ 'activities_data' ]		= bookacti_get_activities_by_template( $template_id, false, true );
-	$booking_system_data[ 'groups_events' ]			= $groups[ 'groups' ];
 	$booking_system_data[ 'groups_data' ]			= $groups[ 'data' ];
+	$booking_system_data[ 'groups_events' ]			= $groups[ 'groups' ];
 	$booking_system_data[ 'group_categories_data' ]	= bookacti_get_group_categories( array( 'templates' => array( $template_id ) ) );
 	$booking_system_data[ 'start' ]					= '1970-02-01 00:00:00';
 	$booking_system_data[ 'end' ]					= '2037-12-31 23:59:59';
@@ -131,17 +131,16 @@ function bookacti_get_activity_managers( $activity_ids ) {
 /**
  * Retrieve template activities list
  * @version 1.12.0
+ * @param array $activities see bookacti_get_activities_by_template
  * @param int $template_id
- * @return boolean|string 
+ * @return string 
  */
-function bookacti_get_template_activities_list( $template_id ) {
-	if( ! $template_id ) { return false; }
-
-	$activities = bookacti_get_activities_by_template( array( $template_id ) );
+function bookacti_get_template_activities_list( $activities, $template_id = 0 ) {
+	if( ! $activities ) { return ''; }
 	
 	// Sort the activities by custom order
 	$ordered_activities = $activities;
-	$activities_order = bookacti_get_metadata( 'template', $template_id, 'activities_order', true );
+	$activities_order = $template_id ? bookacti_get_metadata( 'template', $template_id, 'activities_order', true ) : array();
 	if( $activities_order ) {
 		$sorted_activities = array();
 		foreach( $activities_order as $activity_id ) {
@@ -597,7 +596,7 @@ function bookacti_update_exceptions( $object_id, $new_exceptions, $object_type =
 
 /**
  * Display a promo area of Prices and Credits add-on
- * @version 1.8.0
+ * @version 1.12.0
  * @param string $type
  */
 function bookacti_promo_for_bapap_addon( $type = 'event' ) {
@@ -607,7 +606,7 @@ function bookacti_promo_for_bapap_addon( $type = 'event' ) {
 	// If the plugin is activated but the license is not active yet
 	if( $is_plugin_active && ( empty( $license_status ) || $license_status !== 'valid' ) ) {
 		?>
-		<div class='bookacti-addon-promo' >
+		<div class='bookacti-addon-promo'>
 			<p>
 			<?php 
 				/* translators: %s = add-on name */
@@ -617,7 +616,7 @@ function bookacti_promo_for_bapap_addon( $type = 'event' ) {
 				<?php esc_html_e( 'It seems you didn\'t activate your license yet. Please follow these instructions to activate your license:', 'booking-activities' ); ?>
 			</p><p>
 				<strong>
-					<a href='https://booking-activities.fr/en/docs/user-documentation/get-started-with-prices-and-credits-add-on/prerequisite-installation-license-activation-of-prices-and-credits-add-on/?utm_source=plugin&utm_medium=plugin&utm_content=encart-promo-<?php echo esc_attr( $type ); ?>' target='_blank' >
+					<a href='https://booking-activities.fr/en/docs/user-documentation/get-started-with-prices-and-credits-add-on/prerequisite-installation-license-activation-of-prices-and-credits-add-on/?utm_source=plugin&utm_medium=plugin&utm_content=encart-promo-<?php echo esc_attr( $type ); ?>' target='_blank'>
 						<?php 
 						/* translators: %s = add-on name */
 							echo sprintf( esc_html__( 'How to activate %s license?', 'booking-activities' ), 'Prices and Credits' ); 
@@ -631,7 +630,7 @@ function bookacti_promo_for_bapap_addon( $type = 'event' ) {
 
 	else if( empty( $license_status ) || $license_status !== 'valid' ) {
 		?>
-		<div class='bookacti-addon-promo' >
+		<div class='bookacti-addon-promo'>
 			<?php 
 			$addon_link = '<a href="https://booking-activities.fr/en/downloads/prices-and-credits/?utm_source=plugin&utm_medium=plugin&utm_medium=plugin&utm_campaign=prices-and-credits&utm_content=encart-promo-' . $type . '" target="_blank" >Prices and Credits</a>';
 			$message = '';
@@ -649,7 +648,7 @@ function bookacti_promo_for_bapap_addon( $type = 'event' ) {
 			$price_div_style = 'display: block; width: fit-content; white-space: nowrap; margin: 4px auto; padding: 5px; font-weight: bolder; font-size: 1.2em; border: 1px solid #fff; -webkit-border-radius: 3px;  border-radius: 3px;  background-color: rgba(0,0,0,0.3); color: #fff;';
 			?>
 			<div class='bookacti-promo-events-examples'>
-				<a class='fc-time-grid-event fc-v-event fc-event fc-start fc-end bookacti-event-has-price bookacti-narrow-event' >
+				<a class='fc-time-grid-event fc-v-event fc-event fc-start fc-end bookacti-event-has-price bookacti-narrow-event'>
 					<div class='fc-content'>
 						<div class='fc-time' data-start='7:00' data-full='7:00 AM - 8:30 AM'>
 							<span>7:00 - 8:30</span>
@@ -668,7 +667,7 @@ function bookacti_promo_for_bapap_addon( $type = 'event' ) {
 						<span class='bookacti-price bookacti-promo'>$30</span>
 					</div>
 				</a>
-				<a class='fc-time-grid-event fc-v-event fc-event fc-start fc-end bookacti-event-has-price bookacti-narrow-event' >
+				<a class='fc-time-grid-event fc-v-event fc-event fc-start fc-end bookacti-event-has-price bookacti-narrow-event'>
 					<div class='fc-content'>
 						<div class='fc-time' data-start='7:00' data-full='7:00 AM - 8:30 AM'>
 							<span>7:00 - 8:30</span>
@@ -687,7 +686,7 @@ function bookacti_promo_for_bapap_addon( $type = 'event' ) {
 						<span class='bookacti-price bookacti-promo'>- 20%</span>
 					</div>
 				</a>
-				<a class='fc-time-grid-event fc-v-event fc-event fc-start fc-end bookacti-event-has-price bookacti-narrow-event' >
+				<a class='fc-time-grid-event fc-v-event fc-event fc-start fc-end bookacti-event-has-price bookacti-narrow-event'>
 					<div class='fc-content'>
 						<div class='fc-time' data-start='7:00' data-full='7:00 AM - 8:30 AM'>
 							<span>7:00 - 8:30</span>
@@ -713,7 +712,7 @@ function bookacti_promo_for_bapap_addon( $type = 'event' ) {
 					</div>
 				</a>
 			</div>
-			<div><a href='https://booking-activities.fr/en/downloads/prices-and-credits/?utm_source=plugin&utm_medium=plugin&utm_medium=plugin&utm_campaign=prices-and-credits&utm_content=encart-promo-<?php echo $type; ?>' class='button' target='_blank' ><?php esc_html_e( 'Learn more', 'booking-activities' ); ?></a></div>
+			<div><a href='https://booking-activities.fr/en/downloads/prices-and-credits/?utm_source=plugin&utm_medium=plugin&utm_medium=plugin&utm_campaign=prices-and-credits&utm_content=encart-promo-<?php echo $type; ?>' class='button' target='_blank'><?php esc_html_e( 'Learn more', 'booking-activities' ); ?></a></div>
 		</div>
 		<?php
 	}
@@ -783,17 +782,15 @@ function bookacti_update_events_of_group( $group_id, $new_events ) {
  * Get the groups of events list for the desired template
  * @since 1.1.0
  * @version 1.12.0
+ * @param array $categories see bookacti_get_group_categories
+ * @param array $groups see bookacti_get_groups_of_events
  * @param int $template_id
  * @return string
  */
-function bookacti_get_template_groups_of_events_list( $template_id ) {
-	if( ! $template_id ) { return ''; }
+function bookacti_get_template_groups_of_events_list( $categories, $groups, $template_id = 0 ) {
+	if( ! $categories || ! $groups ) { return ''; }
 
 	$current_user_can_edit_template	= current_user_can( 'bookacti_edit_templates' );
-	
-	// Retrieve groups by categories
-	$categories = bookacti_get_group_categories( array( 'templates' => array( $template_id ) ) );
-	$groups = bookacti_get_groups_of_events( array( 'templates' => array( $template_id ), 'past_events' => 1 ) );
 	
 	// Sort the group categories by custom order
 	$ordered_categories = $categories;
@@ -812,15 +809,15 @@ function bookacti_get_template_groups_of_events_list( $template_id ) {
 		$category_short_title = strlen( $category[ 'title' ] ) > 16 ? substr( $category[ 'title' ], 0, 16 ) . '&#8230;' : $category[ 'title' ];
 	?>
 		<div class='bookacti-group-category' data-group-category-id='<?php echo $category[ 'id' ]; ?>' data-show-groups='0' data-visible='1'>
-			<div class='bookacti-group-category-title' title='<?php echo $category[ 'title' ]; ?>' >
+			<div class='bookacti-group-category-title' title='<?php echo $category[ 'title' ]; ?>'>
 				<span><?php echo $category_short_title; ?></span>
 			</div>
 	<?php
 		if( $current_user_can_edit_template ) {
-			?><div class='bookacti-update-group-category dashicons dashicons-admin-generic' ></div><?php
+			?><div class='bookacti-update-group-category dashicons dashicons-admin-generic'></div><?php
 		}
 	?>
-			<div class='bookacti-groups-of-events-editor-list bookacti-custom-scrollbar' >
+			<div class='bookacti-groups-of-events-editor-list bookacti-custom-scrollbar'>
 			<?php
 				// Sort the groups of events by custom order
 				$ordered_groups = $groups[ 'data' ];
@@ -832,21 +829,20 @@ function bookacti_get_template_groups_of_events_list( $template_id ) {
 					}
 					$ordered_groups = array_merge( $sorted_groups, array_diff_key( $groups[ 'data' ], array_flip( $groups_order ) ) );
 				}
-			
+				
 				foreach( $ordered_groups as $group ) {
-					if( $group[ 'category_id' ] === $category[ 'id' ] ) {
+					if( intval( $group[ 'category_id' ] ) !== intval( $category[ 'id' ] ) ) { continue; }
 						$group_title = strip_tags( $group[ 'title' ] );
 					?>
-						<div class='bookacti-group-of-events' data-group-id='<?php echo $group[ 'id' ]; ?>' >
-							<div class='bookacti-group-of-events-title' title='<?php echo $group_title; ?>' ><?php echo $group_title; ?></div>
+						<div class='bookacti-group-of-events' data-group-id='<?php echo $group[ 'id' ]; ?>'>
+							<div class='bookacti-group-of-events-title' title='<?php echo $group_title; ?>'><?php echo $group_title; ?></div>
 					<?php
 						if( $current_user_can_edit_template ) {
-							?><div class='bookacti-update-group-of-events dashicons dashicons-admin-generic' ></div><?php
+							?><div class='bookacti-update-group-of-events dashicons dashicons-admin-generic'></div><?php
 						}
 					?>
 						</div>
 					<?php
-					}
 				}
 			?>
 			</div>

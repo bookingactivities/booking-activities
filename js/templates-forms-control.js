@@ -70,7 +70,7 @@ $j( document ).ready( function() {
 	 * @version 1.12.0
 	 */
 	$j( 'select[name="repeat_freq"], input[name="repeat_from"], input[name="repeat_to"]' ).on( 'keyup mouseup change', function() { 
-		var object_type = $j( this ).closest( '#bookacti-group-of-events-dialog' ).length > 0 ? 'group' : 'event';
+		var object_type = $j( this ).closest( '#bookacti-group-of-events-dialog' ).length ? 'group' : 'event';
 		bookacti_validate_event_repetition_data( object_type );
 	});
 });
@@ -353,7 +353,7 @@ function bookacti_validate_event_repetition_data( object_type ) {
 	if( valid_form.isRepeated 
 	&& repeat_from.isSameOrBefore( event_start, 'day' )
 	&& repeat_to.isSameOrAfter( event_start, 'day' ) )									{ valid_form.isEventBetweenFromAndTo = true; }
-	if( $j( scope + ' .exception' ).length > 0 )										{ valid_form.areExcep = true; }
+	if( $j( scope + ' .exception' ).length )											{ valid_form.areExcep = true; }
 	
 	if( ! valid_form.isRepeated || ( valid_form.isRepeated && valid_form.isRepeatFrom && valid_form.isRepeatTo && valid_form.isFromBeforeTo && valid_form.isEventBetweenFromAndTo ) ) {
 		valid_form.send = true;

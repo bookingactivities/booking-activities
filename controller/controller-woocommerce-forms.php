@@ -5,15 +5,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Add a description how to embbed calendars to woocommerce products
  * @since 1.5.0
+ * @version 1.12.0
  * @param string $step
  * @param int $template_id
  */
 function bookacti_display_wc_calendar_integration_description( $step, $template_id ) {
 	$description = '<ul><li>';
 	$description .= '<strong>' . esc_html__( 'Without WooCommerce:', 'booking-activities' ) . '</strong> ' . $step;
-	$description .= '</li><li>';
+	$description .= '<li>';
 	$description .= '<strong>' . esc_html__( 'With WooCommerce:', 'booking-activities' ) . '</strong> ' . esc_html__( 'Bind the booking form to the desired product in the product data', 'booking-activities' );
-	$description .= '</li></ul>';
+	$description .= '</ul>';
 	return $description;
 }
 add_filter( 'bookacti_calendar_integration_tuto', 'bookacti_display_wc_calendar_integration_description', 10, 2 );

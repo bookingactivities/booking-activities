@@ -183,29 +183,27 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 			element.find( '.fc-time' ).html( '<span class="bookacti-event-time-start">' + event.start.format( time_format ) + '</span><span class="bookacti-event-time-separator"> - </span><span class="bookacti-event-time-end">' + event.end.format( time_format ) + '</span>' );
 			
 			// Add availability div
-			if( bookacti_get_event_number_of_bookings( booking_system, event ) != null ) {
-				var bookings_only = bookacti.booking_system[ booking_system_id ][ 'bookings_only' ] == 1 ? true : false;
-				var avail_div = '';
-				
-				// If the event or its group is not available, disable the event
-				if( bookings_only ) {
-					avail_div = bookacti_get_event_number_of_bookings_div( booking_system, event );
-				} else {
-					var is_available = bookacti_is_event_available( booking_system, event );
-					if( ! is_available ) { element.addClass( 'bookacti-event-unavailable' ); }
-					avail_div = bookacti_get_event_availability_div( booking_system, event );
-				}
-				
-				// Add a class if the current user has booked this event
-				if( typeof bookacti.booking_system[ booking_system_id ][ 'bookings' ][ event.id ] !== 'undefined' ) {
-					if( typeof bookacti.booking_system[ booking_system_id ][ 'bookings' ][ event.id ][ event_start_formatted ] !== 'undefined' ) {
-						var current_user_bookings = parseInt( bookacti.booking_system[ booking_system_id ][ 'bookings' ][ event.id ][ event_start_formatted ][ 'current_user_bookings' ] );
-						if( current_user_bookings ) { element.addClass( 'bookacti-event-booked-by-current-user' ); }
-					}
-				}
-		
-				element.append( avail_div );
+			var bookings_only = bookacti.booking_system[ booking_system_id ][ 'bookings_only' ] == 1 ? true : false;
+			var avail_div = '';
+
+			// If the event or its group is not available, disable the event
+			if( bookings_only ) {
+				avail_div = bookacti_get_event_number_of_bookings_div( booking_system, event );
+			} else {
+				var is_available = bookacti_is_event_available( booking_system, event );
+				if( ! is_available ) { element.addClass( 'bookacti-event-unavailable' ); }
+				avail_div = bookacti_get_event_availability_div( booking_system, event );
 			}
+
+			// Add a class if the current user has booked this event
+			if( typeof bookacti.booking_system[ booking_system_id ][ 'bookings' ][ event.id ] !== 'undefined' ) {
+				if( typeof bookacti.booking_system[ booking_system_id ][ 'bookings' ][ event.id ][ event_start_formatted ] !== 'undefined' ) {
+					var current_user_bookings = parseInt( bookacti.booking_system[ booking_system_id ][ 'bookings' ][ event.id ][ event_start_formatted ][ 'current_user_bookings' ] );
+					if( current_user_bookings ) { element.addClass( 'bookacti-event-booked-by-current-user' ); }
+				}
+			}
+
+			if( avail_div ) { element.append( avail_div ); }
 			
 			// Add background to basic views
 			if( view.hasOwnProperty( 'dayGrid' ) ) {

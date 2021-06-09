@@ -1332,6 +1332,9 @@ function bookacti_fill_repetition_fields( object_id, object_type ) {
  */
 function bookacti_fill_group_of_events_list_field() {
 	$j( '#bookacti-group-of-events-summary' ).empty();
+	$j( '#bookacti-group-of-events-summary' ).removeClass( 'bookacti-input-warning' );
+	$j( '#bookacti-group-of-events-summary-preview-notice' ).hide();
+	
 	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ] = bookacti_sort_events_array_by_dates( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ] );
 	$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ], function( i, event ){
 		var event_start = moment.utc( event.start );
@@ -1386,6 +1389,8 @@ function bookacti_navigate_through_group_occurrences( group_id, nav ) {
 		bookacti_select_events_of_group( group_id, group_date );
 		bookacti_fill_group_of_events_list_field();
 		bookacti_refresh_selected_events_display();
+		$j( '#bookacti-group-of-events-summary' ).addClass( 'bookacti-input-warning' );
+		$j( '#bookacti-group-of-events-summary-preview-notice' ).show();
 	}
 }
 

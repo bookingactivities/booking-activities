@@ -10,6 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  * @param array $raw_args {
  *  @param array $templates Array of template IDs
  *  @param array $activities Array of activity IDs
+ *  @param array $events Array of event IDs
  *  @param array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
  *  @param boolean $skip_exceptions Whether to retrieve occurrence on exceptions
  *  @param boolean $past_events Whether to compute past events
@@ -21,6 +22,7 @@ function bookacti_fetch_events( $raw_args = array() ) {
 	$default_args = array(
 		'templates' => array(),
 		'activities' => array(),
+		'events' => array(),
 		'interval' => array(),
 		'skip_exceptions' => 1,
 		'past_events' => 0,
@@ -136,6 +138,16 @@ function bookacti_fetch_events( $raw_args = array() ) {
 		}
 		$query  .= ' ) ';
 		$variables = array_merge( $variables, $args[ 'activities' ] );
+	}
+
+	// Get events from desired event IDs only
+	if( $args[ 'events' ] ) {
+		$query  .= ' AND E.id IN ( %d';
+		for( $i=1,$len=count( $args[ 'events' ] ); $i < $len; ++$i ) {
+			$query  .= ', %d';
+		}
+		$query  .= ' ) ';
+		$variables = array_merge( $variables, $args[ 'events' ] );
 	}
 
 	$query  .= ' ORDER BY E.start ASC ';

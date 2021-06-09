@@ -74,7 +74,7 @@ function bookacti_sanitize_booking_data( $data_raw ) {
 /**
  * Sanitize booking group data
  * @since 1.9.0
- * @version 1.11.0
+ * @version 1.12.0
  * @param array $data_raw
  * @return array
  */
@@ -84,6 +84,7 @@ function bookacti_sanitize_booking_group_data( $data_raw ) {
 	$active_status = bookacti_get_active_booking_states();
 	$default = array( 
 		'id'				=> 0,
+		'group_date'		=> '',
 		'user_id'			=> 0,
 		'form_id'			=> 0,
 		'order_id'			=> 0,
@@ -113,6 +114,10 @@ function bookacti_sanitize_booking_group_data( $data_raw ) {
 		}
 		else if( in_array( $key, array( 'form_id', 'order_id', 'event_group_id', 'category_id' ), true ) ) { // -1 = NULL
 			$sanitized[ $key ] = is_numeric( $data_raw[ $key ] ) && intval( $data_raw[ $key ] ) >= -1 ? intval( $data_raw[ $key ] ) : $value;
+		}
+		else if( in_array( $key, array( 'group_date' ), true ) ) {
+			$date = is_string( $data_raw[ $key ] ) ? bookacti_sanitize_date( $data_raw[ $key ] ) : $value;
+			$sanitized[ $key ] = $date ? $date : $value;
 		}
 		else if( in_array( $key, array( 'creation_date', 'expiration_date' ), true ) ) {
 			$datetime = is_string( $data_raw[ $key ] ) ? bookacti_sanitize_datetime( $data_raw[ $key ] ) : $value;

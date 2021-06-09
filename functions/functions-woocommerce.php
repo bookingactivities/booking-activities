@@ -7,6 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Add bookings to cart item or merge the bookings to an existing cart item
  * @since 1.9.0
+ * @version 1.12.0
  * @global woocommerce $woocommerce
  * @param array $product_bookings_data
  * @return array
@@ -77,6 +78,7 @@ function bookacti_wc_add_bookings_to_cart( $product_bookings_data ) {
 				'user_id'			=> $product_bookings_data[ 'user_id' ],
 				'form_id'			=> $product_bookings_data[ 'form_id' ],
 				'event_group_id'	=> $picked_event[ 'group_id' ],
+				'group_date'		=> $picked_event[ 'group_date' ],
 				'grouped_events'	=> $picked_event[ 'events' ],
 				'quantity'			=> $product_bookings_data[ 'quantity' ],
 				'status'			=> $product_bookings_data[ 'status' ],

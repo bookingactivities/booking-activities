@@ -192,13 +192,13 @@ function bookacti_dialog_choose_group_of_events( booking_system, groups, event )
 
 	// Add each available group of events as a radio option
 	$j.each( groups, function( group_id, groups_per_date ) {
-		if( typeof attributes[ 'groups_data' ][ group_id ] !== 'undefined' ) { return true; } // Skip
+		if( typeof attributes[ 'groups_data' ][ group_id ] === 'undefined' ) { return true; } // Skip
 
 		var group = attributes[ 'groups_data' ][ group_id ];
 		var category_id = parseInt( group[ 'category_id' ] );
 		var category_data = attributes[ 'group_categories_data' ][ category_id ][ 'settings' ];
 		var started_groups_bookable = typeof category_data[ 'started_groups_bookable' ] !== 'undefined' ? parseInt( category_data[ 'started_groups_bookable' ] ) : parseInt( bookacti_localized.started_groups_bookable );
-
+		
 		$j.each( groups_per_date, function( group_date, group_events ) {
 			// Get group bookings data
 			var group_availability, group_bookings, current_user_bookings, distinct_users;
@@ -206,7 +206,7 @@ function bookacti_dialog_choose_group_of_events( booking_system, groups, event )
 			if( typeof attributes[ 'groups_bookings' ][ group_id ] !== 'undefined' ) {
 				if( typeof attributes[ 'groups_bookings' ][ group_id ][ group_date ] !== 'undefined' ) {
 					group_availability		= attributes[ 'groups_bookings' ][ group_id ][ group_date ][ 'availability' ];
-					group_bookings			= attributes[ 'groups_bookings' ][ group_id ][ group_date ][ 'bookings' ];
+					group_bookings			= attributes[ 'groups_bookings' ][ group_id ][ group_date ][ 'quantity' ];
 					current_user_bookings	= attributes[ 'groups_bookings' ][ group_id ][ group_date ][ 'current_user_bookings' ];
 					distinct_users			= attributes[ 'groups_bookings' ][ group_id ][ group_date ][ 'distinct_users' ];
 				}
@@ -308,12 +308,12 @@ function bookacti_dialog_choose_group_of_events( booking_system, groups, event )
 
 				event_list.append( list_element );
 			});
-
+			
 			option_container.append( radio );
 			option_container.append( label );
 			container.append( option_container );
 			container.append( event_list );
-
+			
 			groups_of_events_list.append( container );
 		});
 	});
@@ -342,17 +342,8 @@ function bookacti_dialog_choose_group_of_events( booking_system, groups, event )
 
 		if( trigger.click ) {
 			// If the event is picked, just unpick it (or its group)
-			if( multiple_bookings ) {
-				var picked_event = bookacti_is_event_picked( booking_system, event );
-				if( picked_event ) {
-					var picked_group_id = picked_event.group_id ? picked_event.group_id : 0;
-					var picked_group_date = picked_event.group_date ? picked_event.group_date : '';
-					bookacti_unpick_events( booking_system, event, picked_group_id, picked_group_date );
-				}
-			}
-
+			if( multiple_bookings ) { bookacti_unpick_events( booking_system, event ); }
 			// Pick events and fill form inputs
-			if( multiple_bookings ) { bookacti_unpick_events( booking_system, event, group_id, group_date ); }
 			else { bookacti_unpick_all_events( booking_system ); }
 			bookacti_pick_events( booking_system, event, group_id, group_date );
 
@@ -394,17 +385,8 @@ function bookacti_dialog_choose_group_of_events( booking_system, groups, event )
 
 					if( trigger.click ) {
 						// If the event is picked, just unpick it (or its group)
-						if( multiple_bookings ) {
-							var picked_event = bookacti_is_event_picked( booking_system, event );
-							if( picked_event ) {
-								var picked_group_id = picked_event.group_id ? picked_event.group_id : 0;
-								var picked_group_date = picked_event.group_date ? picked_event.group_date : '';
-								bookacti_unpick_events( booking_system, event, picked_group_id, picked_group_date );
-							}
-						}
-
+						if( multiple_bookings ) { bookacti_unpick_events( booking_system, event ); }
 						// Pick events and fill form inputs
-						if( multiple_bookings ) { bookacti_unpick_events( booking_system, event, group_id, group_date ); }
 						else { bookacti_unpick_all_events( booking_system ); }
 						bookacti_pick_events( booking_system, event, group_id, group_date );
 

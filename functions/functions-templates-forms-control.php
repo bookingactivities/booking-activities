@@ -348,11 +348,11 @@ function bookacti_sanitize_event_data( $raw_data ) {
  * Sanitize (group of) events repeat data
  * @since 1.12.0
  * @param array $object_data see bookacti_get_group_of_events_default_data or bookacti_get_event_default_data
- * @param string $object_type "event" or "group_of_events"
+ * @param string $object_type "event" or "group"
  * @return array
  */
 function bookacti_sanitize_repeat_data( $object_data, $object_type = 'event' ) {
-	$default_data = $object_type === 'group_of_events' ? bookacti_get_group_of_events_default_data() : bookacti_get_event_default_data();
+	$default_data = $object_type === 'group' ? bookacti_get_group_of_events_default_data() : bookacti_get_event_default_data();
 	
 	// Sanitize common values
 	$keys_by_type = array( 
@@ -394,21 +394,23 @@ function bookacti_sanitize_repeat_data( $object_data, $object_type = 'event' ) {
 	
 	// If the event is repeated
 	if( $data[ 'repeat_freq' ] !== 'none' ) {
-		// Get the occurrences
-		$group_i = $data[ 'id' ] ? $data[ 'id' ] : 999999999;
-		$groups_occurrences = bookacti_get_occurrences_of_repeated_groups_of_events( array( $group_i => $data ), array( 'past_events' => true ) );
-		$group_occurrences = ! empty( $groups_occurrences[ $group_i ] ) ? $groups_occurrences[ $group_i ] : array();
-		
-		// Get the first events of each group occurrence
-		$group_occurrences_events = array();
-		$group_occurrences_bounding_events = array();
-		foreach( $group_occurrences as $group_date => $group_events ) {
-			if( empty( $group_events[ 0 ] ) ) { continue; }
-			$group_occurrences_events[ $group_date ] = $group_events[ 0 ];
-			if( ! in_array( $group_date, $data[ 'exceptions_dates' ], true ) ) { $group_occurrences_bounding_events[ $group_date ] = $group_events[ 0 ]; }
+		if( $object_type === 'group' ) {
+			// Get the occurrences
+			$group_i = $data[ 'id' ] ? $data[ 'id' ] : 999999999;
+			$groups_occurrences = bookacti_get_occurrences_of_repeated_groups_of_events( array( $group_i => $data ), array( 'past_events' => true ) );
+			$group_occurrences = ! empty( $groups_occurrences[ $group_i ] ) ? $groups_occurrences[ $group_i ] : array();
+
+			// Get the first events of each group occurrence
+			$group_occurrences_events = array();
+			$group_occurrences_bounding_events = array();
+			foreach( $group_occurrences as $group_date => $group_events ) {
+				if( empty( $group_events[ 0 ] ) ) { continue; }
+				$group_occurrences_events[ $group_date ] = $group_events[ 0 ];
+				if( ! in_array( $group_date, $data[ 'exceptions_dates' ], true ) ) { $group_occurrences_bounding_events[ $group_date ] = $group_events[ 0 ]; }
+			}
+			ksort( $group_occurrences_events );
+			ksort( $group_occurrences_bounding_events );
 		}
-		ksort( $group_occurrences_events );
-		ksort( $group_occurrences_bounding_events );
 		
 		// Restrict the repeat period to the actual first and last occurrences
 		$bounding_events = $object_type === 'event' ? bookacti_get_occurrences_of_repeated_event( (object) $data, array( 'exceptions_dates' => $data[ 'exceptions_dates' ], 'past_events' => true, 'bounding_only' => true ) ) : $group_occurrences_bounding_events;
@@ -489,6 +491,9 @@ function bookacti_sanitize_repeat_data( $object_data, $object_type = 'event' ) {
  * Make sure the event date and its repeat period are consistent
  * @since 1.11.0
  * @version 1.12.0
+ * @param array $data see bookacti_get_group_of_events_default_data or bookacti_get_event_default_data
+ * @param string $object_type "event" or "group"
+ * @return array
  */
 function bookacti_sanitize_event_date_and_repeat_period( $data, $object_type = 'event' ) {
 	if( $data[ 'repeat_freq' ] !== 'none' && $data[ 'repeat_from' ] && $data[ 'repeat_to' ] ) {
@@ -619,7 +624,7 @@ function bookacti_sanitize_group_of_events_data( $raw_data ) {
 	// Group start (used for sanitizing repeat data)
 	$data[ 'start' ] = isset( $data[ 'events' ][ 0 ][ 'start' ] ) ? $data[ 'events' ][ 0 ][ 'start' ] : '';
 	
-	$data = bookacti_sanitize_repeat_data( $data, 'group_of_events' );
+	$data = bookacti_sanitize_repeat_data( $data, 'group' );
 	
 	return apply_filters( 'bookacti_sanitized_group_of_events_data', $data, $raw_data );
 }
