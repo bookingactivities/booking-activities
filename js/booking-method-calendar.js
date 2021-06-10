@@ -1,5 +1,32 @@
 $j( document ).ready( function() {
 	/**
+	 * Refetch events on calendar
+	 * @since 1.12.0
+	 * @param {Event} e
+	 * @param {String} booking_method
+	 */
+	$j( 'body' ).on( 'bookacti_refetch_events', '.bookacti-booking-system', function( e, booking_method ) {
+		if( booking_method === 'calendar' && $j( this ).find( '.bookacti-calendar' ).length ) {
+			$j( this ).find( '.bookacti-calendar' ).fullCalendar( 'removeEvents' );
+			bookacti_fetch_events( $j( this ) );
+		}
+	});
+	
+	
+	/**
+	 * Rerender events on calendar
+	 * @since 1.12.0
+	 * @param {Event} e
+	 * @param {String} booking_method
+	 */
+	$j( 'body' ).on( 'bookacti_refetch_events', '.bookacti-booking-system', function( e, booking_method ) {
+		if( booking_method === 'calendar' && $j( this ).find( '.bookacti-calendar' ).length ) {
+			$j( this ).find( '.bookacti-calendar' ).fullCalendar( 'rerenderEvents' );
+		}
+	});
+	
+	
+	/**
 	 * Go to a specific date in calendar
 	 * @since 1.12.0
 	 */

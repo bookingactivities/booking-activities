@@ -328,6 +328,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Tweak - Remove restrictions on event availability and repetition frequency, you can update them regardless of bookings made
 * Tweak - Improve feedback when a non-default form action is selected and WC is installed
 * Fix - Reschedule booking form must prevents from selecting multiple events
+* Fix - Missing js dependencies in backend non Booking Activities screens
 * Dev - Breaking change - the wp_bookacti_exceptions table was totally refactored and the API related to exceptions too
 * Dev - Refactor the events, activities, group of events and group categories data sanitization when updating them from the calendar editor
 * Dev - Move the legacy functions to controller-legacy.php

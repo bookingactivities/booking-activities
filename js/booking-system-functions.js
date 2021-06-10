@@ -398,7 +398,6 @@ function bookacti_get_availability_period( booking_system ) {
  * Refresh booking numbers
  * @version 1.12.0
  * @param {HTMLElement} booking_system
- * @param {array} event_ids
  */
 function bookacti_refresh_booking_numbers( booking_system ) {
 	var booking_system_id	= booking_system.attr( 'id' );
@@ -1639,18 +1638,15 @@ function bookacti_booking_method_display_events( booking_system, events ) {
 
 /**
  * Refetch events according to booking method
- * @version 1.8.0
+ * @version 1.12.0
  * @param {HTMLElement} booking_system
  */
 function bookacti_booking_method_refetch_events( booking_system ) {
 	var booking_system_id = booking_system.attr( 'id' );
 	booking_method = bookacti.booking_system[ booking_system_id ][ 'method' ];
-	if( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {
-		booking_system.find( '.bookacti-calendar' ).fullCalendar( 'removeEvents' );
-		bookacti_fetch_events( booking_system );
-	} else {
-		booking_system.trigger( 'bookacti_refetch_events', [ booking_method ] );
-	}
+	if( $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) { booking_method = 'calendar'; }
+	
+	booking_system.trigger( 'bookacti_refetch_events', [ booking_method ] );
 }
 
 
@@ -1662,11 +1658,9 @@ function bookacti_booking_method_refetch_events( booking_system ) {
 function bookacti_booking_method_rerender_events( booking_system ) {
 	var booking_system_id = booking_system.attr( 'id' );
 	booking_method = bookacti.booking_system[ booking_system_id ][ 'method' ];
-	if( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {
-		booking_system.find( '.bookacti-calendar' ).fullCalendar( 'rerenderEvents' );
-	} else {
-		booking_system.trigger( 'bookacti_rerender_events', [ booking_method ] );
-	}
+	if( $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) { booking_method = 'calendar'; }
+	
+	booking_system.trigger( 'bookacti_rerender_events', [ booking_method ] );
 }
 
 
