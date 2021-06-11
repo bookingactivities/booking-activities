@@ -321,7 +321,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.11.3 =
+= 1.11.3 - 2021/06/11 =
 * Tweak - Improve feedback when a non-default form action is selected and WC is installed
 * Tweak - The WC refund coupon codes are crossed out is in the booking lists if they are no longer valid
 * Fix - Cannot update event availability to 0
