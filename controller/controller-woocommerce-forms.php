@@ -61,7 +61,7 @@ add_action( 'bookacti_form_editor_description_after', 'bookacti_form_editor_wc_d
 /**
  * Display a WC notice in the form editor, Calendar field settings, "Actions" tab
  * @since 1.7.15
- * @version 1.12.0
+ * @version 1.11.3
  * @param array $params
  */
 function bookacti_form_action_wc_notice( $params ) {

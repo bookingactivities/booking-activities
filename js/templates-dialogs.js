@@ -1279,7 +1279,7 @@ function bookacti_fill_repetition_fields( object_id, object_type ) {
 	$j( scope + ' input[name="repeat_freq"]' ).trigger( 'change' );
 	$j( scope + ' input[name="repeat_from"]' ).val( repeat_from );
 	$j( scope + ' input[name="repeat_to"]' ).val( repeat_to );
-	$j( scope + ' input[name="exceptions_dates[]"]' ).empty();
+	$j( scope + ' select[name="exceptions_dates[]"]' ).empty();
 	$j( scope + ' .bookacti-exception-date-picker' ).val( repeat_from );
 	if( ! exceptions_disabled ) {
 		$j( scope + ' .bookacti-exception-date-picker' ).attr( 'disabled', false );
@@ -1292,7 +1292,7 @@ function bookacti_fill_repetition_fields( object_id, object_type ) {
 	// Fill the exceptions field
 	if( typeof exception_dates !== 'undefined' ) {
 		$j.each( exception_dates, function( i, value ) {
-			$j( scope + ' input[name="exceptions_dates[]"]' ).append( "<option class='bookacti-exception' value='" + value + "' >" + value + "</option>" );
+			$j( scope + ' select[name="exceptions_dates[]"]' ).append( "<option class='bookacti-exception' value='" + value + "' >" + value + "</option>" );
 		});
 	}
 	
@@ -1991,6 +1991,7 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 								bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ][ response.group_id ]				= response.group_events;
 								bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_data' ][ response.group_id ]				= response.group;
 								bookacti.booking_system[ 'bookacti-template-calendar' ][ 'group_categories_data' ][ response.category_id ]	= response.category;
+								bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ][ 'G' + response.group_id ]			= response.exceptions_dates;
 								bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ]								= [];
 								
 								// If it is the first group of events, hide tuto and show groups list
@@ -2146,6 +2147,7 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 								bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ][ group_id ]						= response.group_events;
 								bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_data' ][ group_id ]						= response.group;
 								bookacti.booking_system[ 'bookacti-template-calendar' ][ 'group_categories_data' ][ response.category_id ]	= response.category;
+								bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ][ 'G' + group_id ]					= response.exceptions_dates;
 								bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ]								= [];
 								
 								// If the user has created a group category

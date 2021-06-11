@@ -85,7 +85,7 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Calendar field settings: Toggle the WC form actions notices - on change
-	 * @since 1.12.0
+	 * @since 1.11.3
 	 */
 	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'select#bookacti-form_action', function() {
 		var form_action = $j( this ).val();

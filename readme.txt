@@ -326,13 +326,18 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Feature - Add a button to jump to a specific date in calendar editor
 * Tweak - The WC refund coupon codes are crossed out is in the booking lists if they are no longer valid
 * Tweak - Remove restrictions on event availability and repetition frequency, you can update them regardless of bookings made
-* Tweak - Improve feedback when a non-default form action is selected and WC is installed
-* Fix - Reschedule booking form must prevents from selecting multiple events
 * Fix - Missing js dependencies in backend non Booking Activities screens
 * Dev - Breaking change - the wp_bookacti_exceptions table was totally refactored and the API related to exceptions too
 * Dev - Refactor the events, activities, group of events and group categories data sanitization when updating them from the calendar editor
 * Dev - Move the legacy functions to controller-legacy.php
 * Dev - Store the activity_id in the wp_bookacti_groups_events table (part of removing dependencies between bookings and events (groups))
+
+= 1.11.3 =
+* Tweak - Improve feedback when a non-default form action is selected and WC is installed
+* Fix - Cannot update event availability to 0
+* Fix - Reschedule booking form must prevents from selecting multiple events
+* Fix - Prevent users from changing quantity beyond selected events' availability
+* Fix - PHP notice undefined variable $true in bookacti_booking_can_be_refunded
 
 = 1.11.2 - 2021/05/31 =
 * Tweak - Show the active bookings number of the selected status only on calendars showing booked events only

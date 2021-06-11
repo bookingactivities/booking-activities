@@ -1542,7 +1542,7 @@ add_filter( 'bookacti_user_booking_list_default_columns', 'bookacti_reorder_wooc
 /**
  * Add WC data to the user booking list
  * @since 1.7.12 (was bookacti_fill_wc_price_column_in_booking_list)
- * @version 1.12.0
+ * @version 1.11.3
  * @param array $booking_list_items
  * @param array $bookings
  * @param array $booking_groups

@@ -2148,7 +2148,7 @@ function bookacti_refund_booking_with_coupon( $bookings, $booking_type, $refund_
 
 /**
  * Check if a coupon code can be used
- * @since 1.12.0
+ * @since 1.11.3
  * @global boolean $bookacti_wc_return_coupon_error_code
  * @param string $coupon_code
  * @return \WP_Error|true
@@ -2179,7 +2179,7 @@ function bookacti_wc_is_coupon_code_valid( $coupon_code ) {
 
 /**
  * Return the code of the coupon error instead of the message if the global $bookacti_return_coupon_error_code is set to true
- * @since 1.12.0
+ * @since 1.11.3
  * @global boolean $bookacti_wc_return_coupon_error_code
  * @param string $message
  * @param int $code

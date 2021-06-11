@@ -54,15 +54,7 @@ $j( document ).ready( function() {
 			$j( this ).find( 'option:selected' ).remove();
 		}
 	});
-
-
-	/**
-	 * Validate the title and availability fields
-	 */
-	$j( '#bookacti-event-title, #bookacti-event-availability' ).on( 'keyup mouseup change', function() { 
-		bookacti_validate_event_general_data();
-	});
-
+	
 
 	/**
 	 * Validate the repetition fields
@@ -108,9 +100,13 @@ function bookacti_validate_template_form() {
 	&&  valid_form.isSnapFreqFormatted ) { valid_form.send = true; }
 
 	// Clean the feedbacks before displaying new feedbacks
-	$j( '#bookacti-template-data-dialog .bookacti-form-error' ).remove();
+	$j( '#bookacti-template-data-dialog .bookacti-form-error, #bookacti-template-data-dialog .bookacti-notices' ).remove();
 	$j( '#bookacti-template-data-dialog input, #bookacti-template-data-dialog select' ).removeClass( 'bookacti-input-error' );
-
+	if( ! valid_form.send ) { 
+		$j( '#bookacti-template-data-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + bookacti_localized.error_on_a_form_field + '</li></ul></div>' );
+		$j( '#bookacti-template-data-dialog .bookacti-notices' ).show();
+	}
+	
 	// Allow third-party to change the results
 	$j( '#bookacti-template-data-dialog' ).trigger( 'bookacti_validate_template_form', [ valid_form ] );
 
@@ -137,19 +133,19 @@ function bookacti_validate_template_form() {
 
 /**
  * Check activity form
- * @version 1.8.0
+ * @version 1.12.0
  * @returns {Boolean}
  */
 function bookacti_validate_activity_form() {
-    // Get template params
-    var title       = $j( '#bookacti-activity-title' ).val();
-    var color       = $j( '#bookacti-activity-color' ).val();
-    var avail		= $j( '#bookacti-activity-availability' ).val();
-    var days        = $j( '#bookacti-activity-duration-days' ).val();
-    var hours       = $j( '#bookacti-activity-duration-hours' ).val();
-    var minutes     = $j( '#bookacti-activity-duration-minutes' ).val();
-    
-    // Init boolean test variables
+	// Get template params
+	var title       = $j( '#bookacti-activity-title' ).val();
+	var color       = $j( '#bookacti-activity-color' ).val();
+	var avail		= $j( '#bookacti-activity-availability' ).val();
+	var days        = $j( '#bookacti-activity-duration-days' ).val();
+	var hours       = $j( '#bookacti-activity-duration-hours' ).val();
+	var minutes     = $j( '#bookacti-activity-duration-minutes' ).val();
+
+	// Init boolean test variables
 	var valid_form = {
 		'isTitle'			: false,
 		'isColor'			: false,
@@ -165,85 +161,89 @@ function bookacti_validate_activity_form() {
 		'isSupToZero'		: false,
 		'send'				: false
 	};
-    
-    // Make the tests and change the booleans
-    if( title.length > 0  )											{ valid_form.isTitle           = true; }
-    if( color.length > 0  )											{ valid_form.isColor           = true; }
-    if( valid_form.isColor && color === '#ffffff' )					{ valid_form.isColorWhite      = true; }
-    if( avail.length > 0  )											{ valid_form.isAvail           = true; }
-    if( valid_form.isAvail && parseInt( avail ) >= 0 )				{ valid_form.isAvailPositive	= true; }
-    if( days.length > 0  )											{ valid_form.isDays            = true; }
-    if( hours.length > 0  )											{ valid_form.isHours           = true; }
-    if( minutes.length > 0  )										{ valid_form.isMinutes         = true; }
-    if( valid_form.isDays      && days <= 365   && days >= 0 )		{ valid_form.isDaysInfTo365    = true; }
-    if( valid_form.isHours     && hours <= 23   && hours >= 0 )		{ valid_form.isHoursInfTo23    = true; }
-    if( valid_form.isMinutes   && minutes <= 59 && minutes >= 0 )	{ valid_form.isMinutesInfTo59  = true; }
-    if( days > 0 || hours > 0 || minutes > 0 )						{ valid_form.isSupToZero		= true; }
-    
-    if( valid_form.isTitle 
+
+	// Make the tests and change the booleans
+	if( title.length  )												{ valid_form.isTitle			= true; }
+	if( color.length  )												{ valid_form.isColor			= true; }
+	if( valid_form.isColor && color === '#ffffff' )					{ valid_form.isColorWhite		= true; }
+	if( avail.length  )												{ valid_form.isAvail			= true; }
+	if( valid_form.isAvail && parseInt( avail ) >= 0 )				{ valid_form.isAvailPositive	= true; }
+	if( days.length  )												{ valid_form.isDays				= true; }
+	if( hours.length  )												{ valid_form.isHours			= true; }
+	if( minutes.length )											{ valid_form.isMinutes			= true; }
+	if( valid_form.isDays      && days <= 365   && days >= 0 )		{ valid_form.isDaysInfTo365		= true; }
+	if( valid_form.isHours     && hours <= 23   && hours >= 0 )		{ valid_form.isHoursInfTo23		= true; }
+	if( valid_form.isMinutes   && minutes <= 59 && minutes >= 0 )	{ valid_form.isMinutesInfTo59	= true; }
+	if( days > 0 || hours > 0 || minutes > 0 )						{ valid_form.isSupToZero		= true; }
+
+	if( valid_form.isTitle 
 	&&  valid_form.isColor 
 	&&  valid_form.isAvailPositive 
 	&&  valid_form.isDaysInfTo365 
 	&&  valid_form.isHoursInfTo23 
 	&&  valid_form.isMinutesInfTo59 
 	&&  valid_form.isSupToZero ) { valid_form.send = true; }
+
+	// Clean the feedbacks before displaying new feedbacks
+	$j( '#bookacti-activity-data-dialog .bookacti-form-error, #bookacti-activity-data-dialog .bookacti-notices' ).remove();
+	$j( '#bookacti-activity-data-dialog *' ).removeClass( 'bookacti-input-error bookacti-input-warning' );
+	if( ! valid_form.send ) {
+		$j( '#bookacti-activity-data-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + bookacti_localized.error_on_a_form_field + '</li></ul></div>' );
+		$j( '#bookacti-activity-data-dialog .bookacti-notices' ).show();
+	}
 	
-    // Clean the feedbacks before displaying new feedbacks
-    $j( '#bookacti-activity-data-dialog .bookacti-form-error' ).remove();
-    $j( '#bookacti-activity-data-dialog *' ).removeClass( 'bookacti-input-error bookacti-input-warning' );
-    
 	// Allow third-party to change the results
 	$j( '#bookacti-activity-data-dialog' ).trigger( 'bookacti_validate_activity_form', [ valid_form ] );
-	
-    // Check the results and show feedbacks
-    // ERRORS
-    if( ! valid_form.isTitle ){ 
-        $j( '#bookacti-activity-title' ).addClass( 'bookacti-input-error' ); 
-        $j( '#bookacti-activity-title' ).parent().append( "<div class='bookacti-form-error'>" + bookacti_localized.error_fill_field + "</div>" ); 
-    }
-    if( ! valid_form.isColor ) { 
-        $j( '#bookacti-activity-color' ).addClass( 'bookacti-input-error' );
-        $j( '#bookacti-activity-color' ).parent().append( "<div class='bookacti-form-error'>" + bookacti_localized.error_fill_field + "</div>" );
-    }
-    if( ! valid_form.isAvail || ! valid_form.isAvailPositive ) { 
-        $j( '#bookacti-activity-availability' ).addClass( 'bookacti-input-error' );
-        $j( '#bookacti-activity-availability' ).parent().append( "<div class='bookacti-form-error'>" + bookacti_localized.error_fill_field + "</div>" );
-    }
-    if( valid_form.isDays && ! valid_form.isDaysInfTo365 ) { 
-        $j( '#bookacti-activity-duration-days' ).addClass( 'bookacti-input-error' );
-        $j( '#bookacti-activity-duration-container' ).append( "<div class='bookacti-form-error'>" + bookacti_localized.error_days_sup_to_365 + "</div>" );
-    }
-    if( valid_form.isHours && ! valid_form.isHoursInfTo23 ) { 
-        $j( '#bookacti-activity-duration-hours' ).addClass( 'bookacti-input-error' );
-        $j( '#bookacti-activity-duration-container' ).append( "<div class='bookacti-form-error'>" + bookacti_localized.error_hours_sup_to_23 + "</div>" );
-    }
-    if( valid_form.isMinutes && ! valid_form.isMinutesInfTo59 ) { 
-        $j( '#bookacti-activity-duration-minutes' ).addClass( 'bookacti-input-error' );
-        $j( '#bookacti-activity-duration-container' ).append( "<div class='bookacti-form-error'>" + bookacti_localized.error_minutes_sup_to_59 + "</div>" );
-    }
-    if( ! valid_form.isSupToZero ) { 
-        $j( '#bookacti-activity-duration-days, #bookacti-activity-duration-hours, #bookacti-activity-duration-minutes' ).addClass( 'bookacti-input-error' );
-        $j( '#bookacti-activity-duration-container' ).append( "<div class='bookacti-form-error'>" + bookacti_localized.error_activity_duration_is_null + "</div>" );
-    }
-    
-    // WARNINGS
-    if( valid_form.isColorWhite ) { 
-        $j( '#bookacti-activity-color' ).addClass( 'bookacti-input-warning' );
-    }
-    if( ! valid_form.isDays ){ 
-        $j( '#bookacti-activity-duration-days' ).addClass( 'bookacti-input-warning' );
+
+	// Check the results and show feedbacks
+	// ERRORS
+	if( ! valid_form.isTitle ){ 
+		$j( '#bookacti-activity-title' ).addClass( 'bookacti-input-error' ); 
+		$j( '#bookacti-activity-title' ).parent().append( "<div class='bookacti-form-error'>" + bookacti_localized.error_fill_field + "</div>" ); 
+	}
+	if( ! valid_form.isColor ) { 
+		$j( '#bookacti-activity-color' ).addClass( 'bookacti-input-error' );
+		$j( '#bookacti-activity-color' ).parent().append( "<div class='bookacti-form-error'>" + bookacti_localized.error_fill_field + "</div>" );
+	}
+	if( ! valid_form.isAvail || ! valid_form.isAvailPositive ) { 
+		$j( '#bookacti-activity-availability' ).addClass( 'bookacti-input-error' );
+		$j( '#bookacti-activity-availability' ).parent().append( "<div class='bookacti-form-error'>" + bookacti_localized.error_fill_field + "</div>" );
+	}
+	if( valid_form.isDays && ! valid_form.isDaysInfTo365 ) { 
+		$j( '#bookacti-activity-duration-days' ).addClass( 'bookacti-input-error' );
+		$j( '#bookacti-activity-duration-container' ).append( "<div class='bookacti-form-error'>" + bookacti_localized.error_days_sup_to_365 + "</div>" );
+	}
+	if( valid_form.isHours && ! valid_form.isHoursInfTo23 ) { 
+		$j( '#bookacti-activity-duration-hours' ).addClass( 'bookacti-input-error' );
+		$j( '#bookacti-activity-duration-container' ).append( "<div class='bookacti-form-error'>" + bookacti_localized.error_hours_sup_to_23 + "</div>" );
+	}
+	if( valid_form.isMinutes && ! valid_form.isMinutesInfTo59 ) { 
+		$j( '#bookacti-activity-duration-minutes' ).addClass( 'bookacti-input-error' );
+		$j( '#bookacti-activity-duration-container' ).append( "<div class='bookacti-form-error'>" + bookacti_localized.error_minutes_sup_to_59 + "</div>" );
+	}
+	if( ! valid_form.isSupToZero ) { 
+		$j( '#bookacti-activity-duration-days, #bookacti-activity-duration-hours, #bookacti-activity-duration-minutes' ).addClass( 'bookacti-input-error' );
+		$j( '#bookacti-activity-duration-container' ).append( "<div class='bookacti-form-error'>" + bookacti_localized.error_activity_duration_is_null + "</div>" );
+	}
+
+	// WARNINGS
+	if( valid_form.isColorWhite ) { 
+		$j( '#bookacti-activity-color' ).addClass( 'bookacti-input-warning' );
+	}
+	if( ! valid_form.isDays ){ 
+		$j( '#bookacti-activity-duration-days' ).addClass( 'bookacti-input-warning' );
 		$j( '#bookacti-activity-duration-days' ).val( 0 );
-    }
-    if( ! valid_form.isHours ){ 
-        $j( '#bookacti-activity-duration-hours' ).addClass( 'bookacti-input-warning' );
+	}
+	if( ! valid_form.isHours ){ 
+		$j( '#bookacti-activity-duration-hours' ).addClass( 'bookacti-input-warning' );
 		$j( '#bookacti-activity-duration-hours' ).val( 0 );
-    }
-    if( ! valid_form.isMinutes ){ 
-        $j( '#bookacti-activity-duration-minutes' ).addClass( 'bookacti-input-warning' );
-        $j( '#bookacti-activity-duration-minutes' ).val( 0 );
-    }
-	
-    return valid_form.send;
+	}
+	if( ! valid_form.isMinutes ){ 
+		$j( '#bookacti-activity-duration-minutes' ).addClass( 'bookacti-input-warning' );
+		$j( '#bookacti-activity-duration-minutes' ).val( 0 );
+	}
+
+	return valid_form.send;
 }
 
 
@@ -255,9 +255,11 @@ function bookacti_validate_activity_form() {
  * @returns {Boolean}
  */
 function bookacti_validate_event_form() {
+	$j( '#bookacti-event-data-dialog .bookacti-notices' ).remove();
+	
 	var valid_form = {
-		'isRepetitionValid'	: bookacti_validate_event_repetition_data( 'event' ),
 		'isGeneralValid'	: bookacti_validate_event_general_data(),
+		'isRepetitionValid'	: bookacti_validate_event_repetition_data( 'event' ),
 		'send'				: false
 	};
     
@@ -293,9 +295,16 @@ function bookacti_validate_event_general_data() {
 	if( valid_form.isTitle && valid_form.isAvailPositive ) { valid_form.send = true; }
 
 	// Clean the feedbacks before displaying new feedbacks
-	$j( '#bookacti-event-title-container .bookacti-form-error, #bookacti-event-availability-container .bookacti-form-error' ).remove();
+	$j( '#bookacti-event-title-container .bookacti-form-error, #bookacti-event-availability-container .bookacti-form-error, #bookacti-event-data-dialog .bookacti-form-field-error' ).remove();
 	$j( '#bookacti-event-title, #bookacti-event-availability' ).removeClass( 'bookacti-input-error' );
-
+	if( ! valid_form.send ) { 
+		if( ! $j( '#bookacti-event-data-dialog .bookacti-error-list' ).length ) {
+			$j( '#bookacti-event-data-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"></ul></div>' );
+		}
+		$j( '#bookacti-event-data-dialog .bookacti-error-list' ).append( '<li class="bookacti-form-field-error">' + bookacti_localized.error_on_a_form_field + '</li>' );
+		$j( '#bookacti-event-data-dialog .bookacti-notices' ).show();
+	}
+	
 	// Allow third party to change results
 	$j( '#bookacti-event-data-dialog' ).trigger( 'bookacti_validate_event_general_data', [ valid_form ] );
 
@@ -385,7 +394,7 @@ function bookacti_validate_event_repetition_data( object_type ) {
 		if( valid_form.isRepeatTo )		{ $j( scope + ' input.bookacti-exception-date-picker' ).attr( 'max', exceptions_max.format( 'YYYY-MM-DD' ) ); }
 	}
 	
-	// When the repetition period change, detect out-of-the-repeat-period existing exceptions and alert user
+	// Detect out-of-the-repeat-period existing exceptions and alert user
 	$j( scope + ' .exception' ).removeClass( 'bookacti-error-exception bookacti-out-of-period-exception' );
 	$j( scope + ' .exception' ).each( function() {
 		var exception_date = moment.utc( $j( this ).val() );
@@ -396,9 +405,13 @@ function bookacti_validate_event_repetition_data( object_type ) {
 	});
 
 	// Clean the feedbacks before displaying new feedbacks
-	$j( scope + ' div[id$="-repeat-to-container"] .bookacti-form-error, ' + scope + ' .bookacti-add-exception-container .bookacti-form-error' ).remove();
-	$j( scope + ' input[name="repeat_from"], ' + scope + ' input[name="repeat_to"], ' + scope + ' select.bookacti-exceptions-selectbox' ).removeClass( 'bookacti-input-error bookacti-input-warning' );
-    
+	$j( scope + ' .bookacti-input-error, ' + scope + ' .bookacti-input-warning' ).removeClass( 'bookacti-input-error bookacti-input-warning' );
+	$j( scope + ' .bookacti-repeat-error' ).remove();
+	
+	if( ! valid_form.send && ! $j( scope + ' .bookacti-error-list' ).length ) { 
+		$j( scope ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"></ul></div>' );
+	}
+	
 	// Allow third party to change results
 	$j( scope ).trigger( 'bookacti_validate_event_repetition_data', [ valid_form ] );
 
@@ -428,18 +441,20 @@ function bookacti_validate_event_repetition_data( object_type ) {
 		} else {
 			$j( scope + ' input[name="repeat_from"], ' + scope + ' input[name="repeat_to"]' ).addClass( 'bookacti-input-error' );
 			if( ! valid_form.isFromBeforeTo ) {
-				$j( scope + ' div[id$="-repeat-to-container"]' ).append( "<div class='bookacti-form-error'>" + bookacti_localized.error_repeat_end_before_begin + "</div>" );
+				$j( scope + ' .bookacti-error-list' ).append( '<li class="bookacti-repeat-error">' + bookacti_localized.error_repeat_end_before_begin + '</li>' );
 			} else if( ! valid_form.isEventBetweenFromAndTo ) {
-				$j( scope + ' div[id$="-repeat-to-container"]' ).append( "<div class='bookacti-form-error'>" + bookacti_localized.error_event_not_btw_from_and_to + "</div>" );
+				$j( scope + ' .bookacti-error-list' ).append( '<li class="bookacti-repeat-error">' + bookacti_localized.error_event_not_btw_from_and_to + '</li>' );
 			}
 		}
 	}
 
 	if( valid_form.areExcep && ! valid_form.areExcepBetweenFromAndTo ) { 
 		$j( scope + ' select.bookacti-exceptions-selectbox' ).addClass( 'bookacti-input-warning' );
-		$j( scope + ' .bookacti-add-exception-container' ).append( "<div class='bookacti-form-error'>" + bookacti_localized.error_excep_not_btw_from_and_to + "</div>" );
+		$j( scope + ' .bookacti-error-list' ).append( '<li class="bookacti-repeat-error">' + bookacti_localized.error_excep_not_btw_from_and_to + '</li>' );
 	}
-
+	
+	$j( scope + ' .bookacti-notices' ).toggle( $j( scope + ' .bookacti-notices li' ).length > 0 );
+	
 	return valid_form.send;
 }
 
@@ -512,9 +527,11 @@ function bookacti_validate_add_exception_form( container ) {
  * @returns {Boolean}
  */
 function bookacti_validate_group_of_events_form() {
+	$j( '#bookacti-group-of-events-dialog .bookacti-notices' ).remove();
+	
 	var valid_form = {
-		'isRepetitionValid'	: bookacti_validate_event_repetition_data( 'group' ),
 		'isGeneralValid'	: bookacti_validate_group_of_events_general_data(),
+		'isRepetitionValid'	: bookacti_validate_event_repetition_data( 'group' ),
 		'send'				: false
 	};
     
@@ -558,9 +575,17 @@ function bookacti_validate_group_of_events_general_data() {
 	&&  valid_form.isSelectedEvents ) { valid_form.send = true; }
 
 	// Clean the feedbacks before displaying new feedbacks
-	$j( '#bookacti-group-of-events-dialog .bookacti-form-error' ).remove();
+	$j( '#bookacti-group-of-events-dialog .bookacti-form-error, #bookacti-group-of-events-dialog .bookacti-form-field-error' ).remove();
 	$j( '#bookacti-group-of-events-dialog input, #bookacti-group-of-events-dialog select' ).removeClass( 'bookacti-input-error' );
-
+	
+	if( ! valid_form.send ) { 
+		if( ! $j( '#bookacti-group-of-events-dialog .bookacti-error-list' ).length ) {
+			$j( '#bookacti-group-of-events-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"></ul></div>' );
+		}
+		$j( '#bookacti-group-of-events-dialog .bookacti-error-list' ).append( '<li class="bookacti-form-field-error">' + bookacti_localized.error_on_a_form_field + '</li>' );
+		$j( '#bookacti-group-of-events-dialog .bookacti-notices' ).show();
+	}
+	
 	// Allow third-party to change the results
 	$j( '#bookacti-group-of-events-dialog' ).trigger( 'bookacti_validate_group_of_events_general_data', [ valid_form ] );
 
@@ -584,38 +609,40 @@ function bookacti_validate_group_of_events_general_data() {
 
 /**
  * Check group category form fields
+ * @version 1.12.0
  * @returns {Boolean}
  */
 function bookacti_validate_group_category_form() {
 	// Get group params
-	var title		= $j( '#bookacti-group-category-title-field' ).val();
-	
+	var title = $j( '#bookacti-group-category-title-field' ).val();
+
 	// Init boolean test variables
 	var valid_form = {
-		'isTitle'			: false,
-		'send'				: false
+		'isTitle': false,
+		'send': false
 	};
 
-
 	// Make the tests and change the booleans
-	if( typeof title		=== 'string' && title		!== '')		{ valid_form.isTitle = true; }
+	if( typeof title === 'string' && title !== '' ) { valid_form.isTitle = true; }
 
 	if( valid_form.isTitle ) { valid_form.send = true; }
 
 	// Clean the feedbacks before displaying new feedbacks
-	$j( '#bookacti-group-category-dialog .bookacti-form-error' ).remove();
+	$j( '#bookacti-group-category-dialog .bookacti-form-error, #bookacti-group-category-dialog .bookacti-notices' ).remove();
 	$j( '#bookacti-group-category-dialog input, #bookacti-template-data-dialog select' ).removeClass( 'bookacti-input-error' );
-
-
+	if( ! valid_form.send ) { 
+		$j( '#bookacti-group-category-dialog' ).append( '<div class="bookacti-notices"><ul><li>' + bookacti_localized.error_on_a_form_field + '</li></ul></div>' );
+		$j( '#bookacti-group-category-dialog .bookacti-notices' ).show();
+	}
+	
 	// Allow third-party to change the results
 	$j( '#bookacti-group-category-dialog' ).trigger( 'bookacti_validate_group_category_form', [ valid_form ] );
-
 
 	// Check the results and show feedbacks
 	if( ! valid_form.isTitle ){ 
 		$j( '#bookacti-group-category-title-field' ).addClass( 'bookacti-input-error' ); 
 		$j( '#bookacti-group-category-title-field' ).parent().append( "<div class='bookacti-form-error'>" + bookacti_localized.error_fill_field + "</div>" ); 
 	}
-	
+
 	return valid_form.send;
 }

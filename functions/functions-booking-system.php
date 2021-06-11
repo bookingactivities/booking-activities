@@ -3124,7 +3124,7 @@ function bookacti_get_groups_of_events_array_from_db_groups_of_events( $groups, 
 	foreach( $groups as $group ) { $group_ids[] = $group->id; }
 	
 	// Get group exceptions
-	$exceptions = $args[ 'skip_exceptions' ] ? bookacti_get_exceptions_by_event( array( 'event_groups' => $group_ids, 'types' => array( 'group_of_events' ) ) ) : array();
+	$exceptions_per_group = $args[ 'skip_exceptions' ] ? bookacti_get_exceptions_by_event( array( 'event_groups' => $group_ids, 'types' => array( 'group_of_events' ) ) ) : array();
 	
 	// Get groups meta
 	$groups_meta = bookacti_get_metadata( 'group_of_events', $group_ids );
@@ -3153,7 +3153,7 @@ function bookacti_get_groups_of_events_array_from_db_groups_of_events( $groups, 
 		);
 	}
 	
-	$args[ 'exceptions_dates' ] = $exceptions;
+	$args[ 'exceptions_dates' ] = $exceptions_per_group;
 	$groups_array[ 'groups' ] = bookacti_get_occurrences_of_repeated_groups_of_events( $groups_array[ 'data' ], $args );
 	
 	// Keep only the first and the last groups
@@ -3220,7 +3220,6 @@ function bookacti_get_occurrences_of_repeated_groups_of_events( $groups, $raw_ar
 	);
 	$args = array_intersect_key( wp_parse_args( $raw_args, $default_args ), $default_args );
 	$args[ 'interval' ] = bookacti_sanitize_events_interval( $args[ 'interval' ] );
-	$args[ 'exceptions_dates' ] = array_filter( array_map( 'bookacti_sanitize_date', $args[ 'exceptions_dates' ] ) );
 	$args[ 'past_events' ] = intval( $args[ 'past_events' ] );
 	
 	$timezone = new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
@@ -3311,7 +3310,7 @@ function bookacti_get_occurrences_of_repeated_groups_of_events( $groups, $raw_ar
 		$dummy_args = array( 
 			'interval' => $args[ 'interval' ],
 			'past_events' => 1, // Get past occurrences too, we need to make the past / started groups check later to take the whole group into account
-			'exceptions_dates' => $args[ 'skip_exceptions' ] && ! empty( $args[ 'exceptions_dates' ][ 'G' . $group_id ] ) ? $args[ 'exceptions_dates' ][ 'G' . $group_id ] : array()
+			'exceptions_dates' => $args[ 'skip_exceptions' ] && ! empty( $args[ 'exceptions_dates' ][ 'G' . $group_id ] ) ? array_filter( array_map( 'bookacti_sanitize_date', $args[ 'exceptions_dates' ][ 'G' . $group_id ] ) ) : array()
 		);
 		$first_event_occurrences = bookacti_get_occurrences_of_repeated_event( (object) $dummy_event, $dummy_args );
 		

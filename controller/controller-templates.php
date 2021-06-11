@@ -593,7 +593,7 @@ function bookacti_controller_insert_group_of_events() {
 	$is_group_of_events_valid = bookacti_validate_group_of_events_data( $group_of_events_data );
 	if( $is_group_of_events_valid[ 'status' ] !== 'success' ) {
 		$is_group_of_events_valid[ 'message' ] = implode( '</li><li>', $is_group_of_events_valid[ 'messages' ] );
-		bookacti_send_json( $is_group_of_events_valid, 'update_group_of_events' );
+		bookacti_send_json( $is_group_of_events_valid, 'insert_group_of_events' );
 	}
 
 	// Create category if it doesn't exists
@@ -602,7 +602,7 @@ function bookacti_controller_insert_group_of_events() {
 	if( ! $is_category ) {
 		$category_id = bookacti_insert_group_category( $group_of_events_data[ 'category_title' ], $template_id );
 	}
-	if( ! $category_id ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'invalid_category', 'category_id' => $category_id ), 'update_group_of_events' ); }
+	if( ! $category_id ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'invalid_category', 'category_id' => $category_id ), 'insert_group_of_events' ); }
 
 	// Insert the new group of event
 	$group_of_events_data[ 'category_id' ] = $category_id;
@@ -626,12 +626,16 @@ function bookacti_controller_insert_group_of_events() {
 	$group_events	= isset( $groups[ 'groups' ][ $group_id ] ) ? $groups[ 'groups' ][ $group_id ] : array();
 	$group_title_raw= strip_tags( $group_data[ 'title' ] );
 	
+	$exceptions = bookacti_get_exceptions_by_event( array( 'event_groups' => array( $group_id ), 'types' => array( 'group_of_events' ) ) );
+	$exceptions_dates = ! empty( $exceptions[ 'G' . $group_id ] ) ? $exceptions[ 'G' . $group_id ] : array();
+	
 	do_action( 'bookacti_group_of_events_inserted', $group_id, $group_data, $group_events, $category_data );
 
 	bookacti_send_json( array( 
 		'status' => 'success', 
 		'group_id' => $group_id, 
 		'group' => $group_data, 
+		'exceptions_dates' => $exceptions_dates, 
 		'group_title_raw' => $group_title_raw, 
 		'group_events' => $group_events, 
 		'category_id' => $category_id, 
@@ -723,12 +727,16 @@ function bookacti_controller_update_group_of_events() {
 	$group_data		= isset( $groups[ 'data' ][ $group_id ] ) ? $groups[ 'data' ][ $group_id ] : array();
 	$group_events	= isset( $groups[ 'groups' ][ $group_id ] ) ? $groups[ 'groups' ][ $group_id ] : array();
 	$group_title_raw= strip_tags( $group_data[ 'title' ] );
-
+	
+	$exceptions = bookacti_get_exceptions_by_event( array( 'event_groups' => array( $group_id ), 'types' => array( 'group_of_events' ) ) );
+	$exceptions_dates = ! empty( $exceptions[ 'G' . $group_id ] ) ? $exceptions[ 'G' . $group_id ] : array();
+	
 	do_action( 'bookacti_group_of_events_updated', $group_id, $group_data, $group_events, $category_data );
 
 	bookacti_send_json( array(
 		'status' => 'success', 
 		'group' => $group_data, 
+		'exceptions_dates' => $exceptions_dates, 
 		'group_title_raw' => $group_title_raw, 
 		'group_events' => $group_events, 
 		'category_id' => $category_id, 

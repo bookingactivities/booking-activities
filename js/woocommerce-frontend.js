@@ -130,11 +130,12 @@ $j( document ).ready( function() {
 
 	/**
 	 * Change activity summary on qty change
-	 * @version 1.9.0
+	 * @version 1.11.3
 	 */
 	$j( '.woocommerce form.cart' ).on( 'keyup mouseup change', 'input.qty', function() {
 		var booking_system = $j( this ).closest( 'form.cart' ).find( '.bookacti-booking-system' );
 		if( booking_system.length ) {
+			bookacti_set_min_and_max_quantity( booking_system );
 			bookacti_fill_picked_events_list( booking_system );
 		}
 	});

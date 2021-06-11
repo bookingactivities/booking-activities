@@ -719,7 +719,7 @@ function bookacti_booking_can_be_rescheduled_to( $booking, $event_id, $event_sta
 
 /**
  * Check if a booking can be refunded
- * @version 1.9.0
+ * @version 1.11.3
  * @param object|int $booking
  * @param string $context
  * @param string $refund_action
@@ -729,6 +729,7 @@ function bookacti_booking_can_be_refunded( $booking, $context = '', $refund_acti
 	// Get booking
 	if( is_numeric( $booking ) ) { $booking = bookacti_get_booking_by_id( $booking, true ); }
 	
+	$true = true;
 	if( ! $booking ) { $true = false; }
 	else {
 		$refund_actions = bookacti_get_booking_refund_actions( array( $booking ), 'single', $context );

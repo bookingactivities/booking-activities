@@ -191,7 +191,7 @@ function bookacti_duplicate_event( $event_id ) {
 /**
  * Update event data
  * @since 1.2.2 (was bookacti_set_event_data)
- * @version 1.12.0
+ * @version 1.11.3
  * @global wpdb $wpdb
  * @param array $data Data sanitized with bookacti_sanitize_event_data
  * @return int|false
@@ -605,7 +605,6 @@ function bookacti_delete_events_from_group( $group_id, $events = array() ) {
 		$query .= ' AND ( ';
 		$i = 0;
 		foreach( $events as $event ) {
-			$event = (object) $event;
 			$query .= ' ( event_id = %d AND event_start = %s AND event_end = %s ) ';
 			$variables[] = ! empty( $event[ 'event_id' ] ) ? $event[ 'event_id' ] : ( isset( $event[ 'id' ] ) ? $event[ 'id' ] : 0 );
 			$variables[] = $event[ 'start' ];

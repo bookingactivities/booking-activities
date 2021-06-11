@@ -123,11 +123,12 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Change activity summary on qty change
-	 * @version 1.7.6
+	 * @version 1.11.3
 	 */
 	$j( 'body' ).on( 'keyup mouseup change', '.bookacti-booking-form input.bookacti-quantity, .bookacti-form-fields input.bookacti-quantity', function() {
 		var booking_system = $j( this ).closest( '.bookacti-booking-form, .bookacti-form-fields' ).find( '.bookacti-booking-system' );
 		if( booking_system.length ) {
+			bookacti_set_min_and_max_quantity( booking_system );
 			bookacti_fill_picked_events_list( booking_system );
 		}
 	});

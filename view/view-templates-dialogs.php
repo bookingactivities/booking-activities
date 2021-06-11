@@ -951,7 +951,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 		
 			<div class='bookacti-backend-settings-only-notice bookacti-info'>
 				<span class='dashicons dashicons-info'></span>
-				<span><?php esc_html_e( 'You must create all the events first. If an event is missing to generate an occurrence of the group, that group will be skipped.', 'booking-activities' ); ?></span>
+				<span><?php esc_html_e( 'You must create all the events first. If an event is missing to generate an occurrence of the group, that occurrence will be skipped.', 'booking-activities' ); ?></span>
 			</div>
 			<div class='bookacti-backend-settings-only-notice bookacti-info'>
 				<span class='dashicons dashicons-info'></span>

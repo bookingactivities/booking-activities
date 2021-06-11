@@ -574,7 +574,7 @@ function bookacti_update_exceptions( $object_id, $new_exceptions, $object_type =
 	$updated_nb = 0;
 
 	// Insert new exceptions
-	$inserted = $dates_to_insert ? bookacti_insert_exceptions( $object_id, $dates_to_insert ) : 0;
+	$inserted = $dates_to_insert ? bookacti_insert_exceptions( $object_id, $dates_to_insert, $object_type ) : 0;
 	if( $inserted && is_numeric( $inserted ) && $object_type === 'event' ) {
 		// Delete the events on exceptions from groups of events
 		bookacti_delete_events_on_dates_from_group( $object_id, $dates_to_insert );

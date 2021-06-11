@@ -319,6 +319,7 @@ function bookacti_sanitize_event_data( $raw_data ) {
 	$data = bookacti_sanitize_values( array_merge( $default_data, $default_meta ), $raw_data, $keys_by_type );
 	
 	if( ! $data[ 'id' ] && ! empty( $raw_data[ 'event_id' ] ) ) { $data[ 'id' ] = intval( $raw_data[ 'event_id' ] ); }
+	$data[ 'exceptions_dates' ] = ! empty( $raw_data[ 'exceptions_dates' ] ) ? $raw_data[ 'exceptions_dates' ] : array();
 	
 	// Make sure start AND end are set
 	if( ! $data[ 'start' ] || ! $data[ 'end' ] ) { 
@@ -602,6 +603,7 @@ function bookacti_sanitize_group_of_events_data( $raw_data ) {
 	
 	if( ! $data[ 'id' ] && ! empty( $raw_data[ 'group_id' ] ) ) { $data[ 'id' ] = intval( $raw_data[ 'group_id' ] ); }
 	$data[ 'template_id' ] = ! empty( $raw_data[ 'template_id' ] ) ? abs( intval( $raw_data[ 'template_id' ] ) ) : 0;
+	$data[ 'exceptions_dates' ] = ! empty( $raw_data[ 'exceptions_dates' ] ) ? $raw_data[ 'exceptions_dates' ] : array();
 	
 	// Sanitize array of events
 	$raw_events = isset( $raw_data[ 'events' ] ) ? bookacti_maybe_decode_json( stripslashes( $raw_data[ 'events' ] ), true ) : array();
@@ -644,6 +646,17 @@ function bookacti_validate_group_of_events_data( $data ) {
 	if( ! $data[ 'title' ] ) { $missing_fields[] = esc_html__( 'Group title', 'booking-activities' ); }
 	if( ! $data[ 'category_id' ] && ! $data[ 'category_title' ] ) { $missing_fields[] = esc_html__( 'Category title', 'booking-activities' ); }
 	
+	// The saved events must be part of the repeat interval
+	if( $data[ 'repeat_from' ] && $data[ 'events' ] ) {
+		$repeat_from_dt = new DateTime( $data[ 'repeat_from' ] . ' 00:00:00' );
+		$first_event_dt = new DateTime( $data[ 'events' ][ 0 ][ 'start' ] );
+		if( $first_event_dt < $repeat_from_dt ) {
+			$return_array[ 'status' ] = 'failed';
+			$return_array[ 'errors' ][] = 'event_not_btw_from_and_to';
+			$return_array[ 'messages' ][ 'event_not_btw_from_and_to' ] = esc_html__( 'The selected event should be included in the period in which it will be repeated.', 'booking-activities' );
+		}
+	}
+	
 	if( $missing_fields ) {
 		$return_array[ 'status' ] = 'failed';
 		$return_array[ 'errors' ][] = 'missing_fields';
@@ -652,8 +665,8 @@ function bookacti_validate_group_of_events_data( $data ) {
 	}
 	if( count( $data[ 'events' ] ) < 2 ) {
 		$return_array[ 'status' ] = 'failed';
-		$return_array[ 'errors' ][] = 'error_select_at_least_two_events';
-		$return_array[ 'messages' ][ 'error_select_at_least_two_events' ] = esc_html__( 'You must select at least two events.', 'booking-activities' );
+		$return_array[ 'errors' ][] = 'select_at_least_two_events';
+		$return_array[ 'messages' ][ 'select_at_least_two_events' ] = esc_html__( 'You must select at least two events.', 'booking-activities' );
 	}
 	
 	return apply_filters( 'bookacti_validate_group_of_events_data', $return_array, $data );
