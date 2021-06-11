@@ -152,7 +152,7 @@ add_action( 'wp_enqueue_scripts',	'bookacti_enqueue_js_variables', 5 );
 
 /**
  * Enqueue librairies (as high priority scripts)
- * @since 1.12.0 (was part of bookacti_enqueue_high_priority_global_scripts)
+ * @since 1.11.3 (was part of bookacti_enqueue_high_priority_global_scripts)
  */
 function bookacti_enqueue_libraries_scripts() {
 	// On backend, only include these scripts on Booking Activities pages
@@ -180,7 +180,7 @@ add_action( 'wp_enqueue_scripts',	'bookacti_enqueue_libraries_scripts', 9 );
 
 /**
  * Enqueue high priority scripts
- * @version 1.12.0
+ * @version 1.11.3
  */
 function bookacti_enqueue_high_priority_global_scripts() {
 	// Chck if we are on a WC page that needs Booking Activities scripts
@@ -203,7 +203,7 @@ add_action( 'wp_enqueue_scripts',	'bookacti_enqueue_high_priority_global_scripts
 
 /**
  * Enqueue normal priority scripts
- * @version 1.12.0
+ * @version 1.11.3
  */
 function bookacti_enqueue_global_scripts() {
 	// Include WooCommerce style and scripts

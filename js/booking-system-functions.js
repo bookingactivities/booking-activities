@@ -1647,7 +1647,7 @@ function bookacti_booking_method_display_events( booking_system, events ) {
 
 /**
  * Refetch events according to booking method
- * @version 1.12.0
+ * @version 1.11.3
  * @param {HTMLElement} booking_system
  */
 function bookacti_booking_method_refetch_events( booking_system ) {
@@ -1661,7 +1661,7 @@ function bookacti_booking_method_refetch_events( booking_system ) {
 
 /**
  * Rerender events according to booking method
- * @version 1.8.0
+ * @version 1.11.3
  * @param {HTMLElement} booking_system
  */
 function bookacti_booking_method_rerender_events( booking_system ) {

@@ -80,8 +80,9 @@ function bookacti_form_action_wc_notice( $params ) {
 		<span class='dashicons dashicons-info'></span>
 		<span>
 		<?php 
+			$activity_label = '<strong>' . esc_html__( 'Activity', 'booking-activities' ) . '</strong>';
 			/* translators: %1$s = "Activity" option label. %2$s = "Docs" (link to the documentation) */
-			echo sprintf( esc_html__( 'The products must be configured as "%1$s" in the product data (%2$s).', 'booking-activities' ), '<strong>' . esc_html__( 'Activity', 'booking-activities' ) . '</strong>', $docs );
+			echo sprintf( esc_html__( 'The products must be configured as "%1$s" in the product data (%2$s).', 'booking-activities' ), $activity_label, $docs );
 		?>
 		</span>
 	</div>

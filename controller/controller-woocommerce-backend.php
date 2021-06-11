@@ -260,7 +260,7 @@ add_filter( 'bookacti_bypass_form_managers_check', 'bookacti_bypass_checks_for_s
 
 /**
  * Add 'Activity' custom product type option
- * @version 1.5.2
+ * @version 1.12.0
  * @param array $options_array
  * @return array
  */
@@ -268,10 +268,9 @@ function bookacti_add_product_type_option( $options_array ) {
 	$options_array[ 'bookacti_is_activity' ] = array(
 			'id'            => '_bookacti_is_activity',
 			'wrapper_class' => 'show_if_simple',
-			/* translators: 'Activity' is the new type of product in WooCommerce */
-			'label'         => __( 'Activity', 'booking-activities' ),
+			'label'         => esc_html__( 'Activity', 'booking-activities' ),
 			/* translators: Description of the 'Activity' type of product in WooCommerce */
-			'description'   => __( 'Activities are bookable according to the defined calendar, and expire in cart.', 'booking-activities' ),
+			'description'   => esc_html__( 'Activities are bookable according to the defined calendar, and expire in cart.', 'booking-activities' ),
 			'default'       => 'no'
 		);
 
@@ -282,12 +281,13 @@ add_filter( 'product_type_options', 'bookacti_add_product_type_option', 100, 1 )
 
 /**
  * Add 'Activity' custom product tab
+ * @version 1.12.0
  * @param array $tabs
  * @return array
  */
 function bookacti_create_activity_tab( $tabs ) {
 	$tabs[ 'activity' ] = array(
-		'label'     => __( 'Activity', 'booking-activities' ),
+		'label'     => esc_html__( 'Activity', 'booking-activities' ),
 		'target'    => 'bookacti_activity_options',
 		'class'     => array( 'bookacti_show_if_activity', 'hide_if_grouped', 'hide_if_external' ),
 		'priority'  => 20

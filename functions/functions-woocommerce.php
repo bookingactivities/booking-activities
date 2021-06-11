@@ -2151,7 +2151,7 @@ function bookacti_refund_booking_with_coupon( $bookings, $booking_type, $refund_
  * @since 1.11.3
  * @global boolean $bookacti_wc_return_coupon_error_code
  * @param string $coupon_code
- * @return \WP_Error|true
+ * @return WP_Error|true
  */
 function bookacti_wc_is_coupon_code_valid( $coupon_code ) {
 	global $bookacti_wc_return_coupon_error_code;

@@ -1200,16 +1200,26 @@ add_filter( 'bookacti_booking_refunds_formatted', 'bookacti_wc_format_booking_re
 /**
  * Display additional booking refund data
  * @since 1.9.0
+ * @version 1.11.3
  * @param array $data
  * @param array $refund
  * @param int|string $refund_id
  * @return array
  */
 function bookacti_wc_booking_refund_displayed_data( $data, $refund, $refund_id ) {
-	if( isset( $refund[ 'coupon' ] ) )	{ 
+	if( isset( $refund[ 'coupon' ] ) ) {
+		// Check if the coupon code is valid
+		$coupon_code = strtoupper( $refund[ 'coupon' ] );
+		$coupon_valid = $coupon_code ? bookacti_wc_is_coupon_code_valid( $coupon_code ) : true;
+		$coupon_class = is_wp_error( $coupon_valid ) ? 'bookacti-refund-coupon-not-valid bookacti-refund-coupon-error-' . esc_attr( $coupon_valid->get_error_code() ) : 'bookacti-refund-coupon-valid';
+		$coupon_error_label = is_wp_error( $coupon_valid ) ? $coupon_valid->get_error_message() : '';
+
+		$coupon_tip = $coupon_error_label ? esc_attr( $coupon_error_label ) : $coupon_code;
+		$coupon_label = '<span class="bookacti-refund-coupon-code ' . esc_attr( $coupon_class ) . '" title="' . $coupon_tip . '">' . $coupon_code . '</span>';
+		
 		$data[ 'coupon' ] = array(
 			'label' => esc_html__( 'Coupon code', 'booking-activities' ),
-			'value' => strtoupper( $refund[ 'coupon' ] )
+			'value' => $coupon_label
 		);
 	}
 	if( isset( $refund[ 'amount' ] ) )	{ 

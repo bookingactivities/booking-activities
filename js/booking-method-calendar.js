@@ -1,7 +1,7 @@
 $j( document ).ready( function() {
 	/**
 	 * Refetch events on calendar
-	 * @since 1.12.0
+	 * @since 1.11.3
 	 * @param {Event} e
 	 * @param {String} booking_method
 	 */
@@ -15,7 +15,7 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Rerender events on calendar
-	 * @since 1.12.0
+	 * @since 1.11.3
 	 * @param {Event} e
 	 * @param {String} booking_method
 	 */

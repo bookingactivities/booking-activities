@@ -719,7 +719,7 @@ function bookacti_booking_can_be_rescheduled_to( $booking, $event_id, $event_sta
 
 /**
  * Check if a booking can be refunded
- * @version 1.11.3
+ * @version 1.12.0
  * @param object|int $booking
  * @param string $context
  * @param string $refund_action
