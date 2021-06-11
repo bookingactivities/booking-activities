@@ -212,7 +212,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 		/**
 		 * Display the content of the "Actions" tab of the "Calendar" dialog
 		 * @since 1.7.0
-		 * @version 1.7.19
+		 * @version 1.11.3
 		 * @param array $params
 		 */
 		function bookacti_fill_calendar_dialog_actions_tab( $params ) {
@@ -250,6 +250,9 @@ foreach( $fields_data as $field_name => $field_data ) {
 				bookacti_display_field( $args );
 			?>
 		</div>
+		<?php 
+			do_action( 'bookacti_calendar_dialog_actions_tab_before_tables', $params );
+		?>
 		<div class='bookacti-activities-actions-options-table bookacti-custom-scrollbar'>
 			<h4><?php esc_html_e( 'Activities', 'booking-activities' ); ?></h4>
 			<?php

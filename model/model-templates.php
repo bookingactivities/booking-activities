@@ -192,7 +192,7 @@ function bookacti_duplicate_event( $event_id ) {
 /**
  * Update event data
  * @since 1.2.2 (was bookacti_set_event_data)
- * @version 1.11.0
+ * @version 1.11.3
  * @global wpdb $wpdb
  * @param array $data Data sanitized with bookacti_sanitize_event_data
  * @return int|false
@@ -204,7 +204,7 @@ function bookacti_update_event( $data ) {
 				. ' template_id = IFNULL( NULLIF( %d, 0 ), template_id ), '	
 				. ' activity_id = IFNULL( NULLIF( %d, 0 ), activity_id ), '	
 				. ' title = IFNULL( NULLIF( %s, "" ), title ), '
-				. ' availability = IFNULL( NULLIF( %d, 0 ), availability ), '
+				. ' availability = IFNULL( NULLIF( %d, -1 ), availability ), '
 				. ' start = IFNULL( NULLIF( %s, "" ), start ), '
 				. ' end = IFNULL( NULLIF( %s, "" ), end ), '
 				. ' repeat_freq = IFNULL( NULLIF( %s, "" ), repeat_freq ), '
@@ -218,7 +218,7 @@ function bookacti_update_event( $data ) {
 		$data[ 'template_id' ],
 		$data[ 'activity_id' ],
 		$data[ 'title' ],
-		$data[ 'availability' ], 
+		! is_null( $data[ 'availability' ] ) ? $data[ 'availability' ] : -1,
 		$data[ 'start' ], 
 		$data[ 'end' ], 
 		$data[ 'repeat_freq' ], 

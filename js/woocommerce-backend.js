@@ -83,6 +83,17 @@ $j( document ).ready( function() {
 	});
 	
 	
+	/**
+	 * Calendar field settings: Toggle the WC form actions notices - on change
+	 * @since 1.11.3
+	 */
+	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'select#bookacti-form_action', function() {
+		var form_action = $j( this ).val();
+		$j( '.bookacti-form-action-with-wc-notice' ).toggle( form_action !== 'default' );
+		$j( '.bookacti-add-product-to-cart-form-action-notice' ).toggle( form_action === 'add_product_to_cart' );
+	});
+	
+	
 	
 	
 	// Empty price notice

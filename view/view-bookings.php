@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking list page
- * @version 1.9.2
+ * @version 1.11.3
  */
 
 // Exit if accessed directly
@@ -35,11 +35,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	$available_template_ids = array_map( 'intval', array_keys( $templates ) );
 	$desired_templates	= isset( $_REQUEST[ 'templates' ] ) && is_array( $_REQUEST[ 'templates' ] ) ? array_filter( array_map( 'intval', $_REQUEST[ 'templates' ] ) ) : array();
 
-	$had_templates = ! empty( $desired_templates );
 	$bypass_template_managers_check = apply_filters( 'bookacti_bypass_template_managers_check', false );
-	$all_templates = $bypass_template_managers_check || is_super_admin();
-	$allowed_templates = ! $all_templates ? array_values( array_intersect( $desired_templates, $available_template_ids ) ) : $desired_templates;
-	$selected_templates = ! empty( $allowed_templates ) ? $allowed_templates : ( ! $had_templates && $available_template_ids ? $available_template_ids : array( 'none' ) );
+	$allowed_templates = ! empty( $desired_templates ) ? array_values( array_intersect( $desired_templates, $available_template_ids ) ) : $available_template_ids;
+	$selected_templates = ! empty( $allowed_templates ) ? $allowed_templates : array( 'none' );
 
 	$templates_select_options = array();
 	foreach( $templates as $template_id => $template ) {
@@ -90,7 +88,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							'name'		=> 'templates',
 							'id'		=> 'bookacti-booking-filter-templates',
 							'options'	=> $templates_select_options,
-							'value'		=> $all_templates ? array() : $selected_templates,
+							'value'		=> count( $selected_templates ) === count( $templates ) ? array() : $selected_templates,
 							'multiple'	=> true
 						);
 						bookacti_display_field( $args );

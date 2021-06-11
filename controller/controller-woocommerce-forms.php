@@ -60,24 +60,34 @@ add_action( 'bookacti_form_editor_description_after', 'bookacti_form_editor_wc_d
 /**
  * Display a WC notice in the form editor, Calendar field settings, "Actions" tab
  * @since 1.7.15
- * @version 1.10.1
+ * @version 1.11.3
  * @param array $params
  */
 function bookacti_form_action_wc_notice( $params ) {
 	$docs = $links[ 'docs' ] = '<a href="' . esc_url( 'https://booking-activities.fr/en/docs/user-documentation/get-started-with-booking-activities/display-calendars-on-product-page/?utm_source=plugin&utm_medium=plugin&utm_content=form-action-notice' ) . '" title="' . esc_attr( __( 'View Booking Activities Documentation', 'booking-activities' ) ) . '" target="_blank" >' . esc_html__( 'Docs', 'booking-activities' ) . '</a>';
 	?>
-	<div class='bookacti-info'>
+	<div class='bookacti-info bookacti-form-action-with-wc-notice' style='display:none;'>
 		<span class='dashicons dashicons-info'></span>
 		<span>
 		<?php 
-			/* translators: %1$s = "Form action" option label. %2$s = "Docs" (link to the documentation) */
-			echo sprintf( esc_html__( 'The "%1$s" option is not taken into account when the form is integrated to a WooCommerce product (%2$s).', 'booking-activities' ), '<strong>' . esc_html__( 'Form action', 'booking-activities' ) . '</strong>', $docs );
+			/* translators: %1$s = "Form action" option label. %2$s = the shortcode (e.g.: [bookingactivities_form form="21"]) */
+			echo sprintf( esc_html__( 'The "%1$s" option is taken into account only if the form is displayed with its shortcode (%2$s).', 'booking-activities' ), '<strong>' . esc_html__( 'Form action', 'booking-activities' ) . '</strong>', '<code>[bookingactivities_form form="' . $params[ 'form' ][ 'form_id' ] . '"]</code>' );
+		?>
+		</span>
+	</div>
+	<div class='bookacti-info bookacti-add-product-to-cart-form-action-notice' style='display:none;'>
+		<span class='dashicons dashicons-info'></span>
+		<span>
+		<?php 
+			$activity_label = '<strong>' . esc_html__( 'Activity', 'booking-activities' ) . '</strong>';
+			/* translators: %1$s = "Activity" option label. %2$s = "Docs" (link to the documentation) */
+			echo sprintf( esc_html__( 'The products must be configured as "%1$s" in the product data (%2$s).', 'booking-activities' ), $activity_label, $docs );
 		?>
 		</span>
 	</div>
 	<?php
 }
-add_action( 'bookacti_calendar_dialog_actions_tab_after', 'bookacti_form_action_wc_notice', 10, 1 );
+add_action( 'bookacti_calendar_dialog_actions_tab_before_tables', 'bookacti_form_action_wc_notice', 10, 1 );
 
 
 /**

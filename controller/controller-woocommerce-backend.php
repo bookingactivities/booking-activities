@@ -260,7 +260,7 @@ add_filter( 'bookacti_bypass_form_managers_check', 'bookacti_bypass_checks_for_s
 
 /**
  * Add 'Activity' custom product type option
- * @version 1.5.2
+ * @version 1.11.3
  * @param array $options_array
  * @return array
  */
@@ -268,7 +268,6 @@ function bookacti_add_product_type_option( $options_array ) {
 	$options_array[ 'bookacti_is_activity' ] = array(
 			'id'            => '_bookacti_is_activity',
 			'wrapper_class' => 'show_if_simple',
-			/* translators: 'Activity' is the new type of product in WooCommerce */
 			'label'         => __( 'Activity', 'booking-activities' ),
 			/* translators: Description of the 'Activity' type of product in WooCommerce */
 			'description'   => __( 'Activities are bookable according to the defined calendar, and expire in cart.', 'booking-activities' ),

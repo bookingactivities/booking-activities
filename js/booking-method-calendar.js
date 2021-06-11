@@ -1,3 +1,32 @@
+$j( document ).ready( function() {
+	/**
+	 * Refetch events on calendar
+	 * @since 1.11.3
+	 * @param {Event} e
+	 * @param {String} booking_method
+	 */
+	$j( 'body' ).on( 'bookacti_refetch_events', '.bookacti-booking-system', function( e, booking_method ) {
+		if( booking_method === 'calendar' && $j( this ).find( '.bookacti-calendar' ).length ) {
+			$j( this ).find( '.bookacti-calendar' ).fullCalendar( 'removeEvents' );
+			bookacti_fetch_events( $j( this ) );
+		}
+	});
+	
+	
+	/**
+	 * Rerender events on calendar
+	 * @since 1.11.3
+	 * @param {Event} e
+	 * @param {String} booking_method
+	 */
+	$j( 'body' ).on( 'bookacti_refetch_events', '.bookacti-booking-system', function( e, booking_method ) {
+		if( booking_method === 'calendar' && $j( this ).find( '.bookacti-calendar' ).length ) {
+			$j( this ).find( '.bookacti-calendar' ).fullCalendar( 'rerenderEvents' );
+		}
+	});
+});
+
+
 /**
  * Initialize the calendar
  * @version 1.9.3

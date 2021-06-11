@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 5.7
 Requires PHP: 5.3
-Stable tag: 1.11.2
+Stable tag: 1.11.3
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -320,6 +320,15 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.11.3 =
+* Tweak - Improve feedback when a non-default form action is selected and WC is installed
+* Tweak - The WC refund coupon codes are crossed out is in the booking lists if they are no longer valid
+* Fix - Cannot update event availability to 0
+* Fix - Missing js dependencies in backend non Booking Activities screens
+* Fix - Reschedule booking form must prevents from selecting multiple events
+* Fix - Prevent users from changing quantity beyond selected events' availability in booking forms
+* Fix - Calendars filter in backend bookings page may no longer be taken into account after a few manipulations
 
 = 1.11.2 - 2021/05/31 =
 * Tweak - Show the active bookings number of the selected status only on calendars showing booked events only

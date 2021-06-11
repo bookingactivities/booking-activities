@@ -375,7 +375,7 @@ add_action( 'wp_ajax_bookactiChangeBookingQuantity', 'bookacti_controller_change
 /**
  * AJAX Controller - Get reschedule booking system data by booking ID
  * @since 1.8.0 (was bookacti_controller_get_booking_data)
- * @version 1.9.0
+ * @version 1.11.3
  */
 function bookacti_controller_get_reschedule_booking_system_data() {
 	$booking_id	= intval( $_POST[ 'booking_id' ] );
@@ -402,6 +402,7 @@ function bookacti_controller_get_reschedule_booking_system_data() {
 	$atts[ 'id' ]						= 'bookacti-booking-system-reschedule';
 	$atts[ 'form_action' ]				= 'default';
 	$atts[ 'when_perform_form_action' ]	= 'on_submit';
+	$atts[ 'multiple_bookings' ]		= 0;
 	$atts[ 'auto_load' ]				= 0;
 
 	// Load only the events from the same activity as the booked event

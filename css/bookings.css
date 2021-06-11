@@ -194,7 +194,8 @@ label[for="bookacti-booking-filter-dates-to"] + input#bookacti-booking-filter-da
 .bookacti-booking-state[data-booking-state="refunded"]::before			{ content:'\0041  '; font-family: 'booking_activities_icons'; }
 .bookacti-booking-state[data-booking-state="refund_requested"]::before	{ content:'\0042  '; font-family: 'booking_activities_icons'; }
 .bookacti-booking-state[data-booking-state="delivered"]::before			{ content:'\2605  '; }
-.bookacti-refund-coupon-code			{ display:block; font-size: 0.8em; font-style: italic; white-space: nowrap; overflow-x: auto; }
+#bookacti-booking-list .bookacti-refund-coupon-code		{ display: block; font-size: 0.8em; font-style: italic; white-space: nowrap; overflow-x: auto; }
+.bookacti-refund-coupon-not-valid						{ text-decoration: line-through; }
 
 .wp-admin a.bookacti-booking-action, 
 .wp-admin a.bookacti-booking-group-action				{ width: 2em; height: 2em; padding: 0; text-align: center; }
