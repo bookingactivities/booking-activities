@@ -785,7 +785,7 @@ function bookacti_booking_state_can_be_changed_to( $booking, $new_state, $contex
 /**
  * Check if a booking quantity can be changed
  * @since 1.9.0
- * @version 1.10.1
+ * @version 1.12.0
  * @param object $booking
  * @param int $new_quantity 
  * @return boolean
@@ -793,7 +793,7 @@ function bookacti_booking_state_can_be_changed_to( $booking, $new_state, $contex
 function bookacti_booking_quantity_can_be_changed( $booking, $new_quantity = 'current' ) {
 	if( $new_quantity === 'current' ) { $new_quantity = $booking->quantity; }
 	
-	$events			= array( array( 'group_id' => 0, 'id' => $booking->event_id, 'start' => $booking->event_start, 'end' => $booking->event_end ) );
+	$events			= array( array( 'group_id' => 0, 'group_date' => '', 'events' => array( 'group_id' => 0, 'group_date' => '', 'id' => $booking->event_id, 'start' => $booking->event_start, 'end' => $booking->event_end ) ) );
 	$picked_events	= bookacti_get_picked_events_availability( $events );
 	$picked_event	= $picked_events[ 0 ];
 	$activity_data	= bookacti_get_metadata( 'activity', $booking->activity_id );
@@ -1097,7 +1097,7 @@ function bookacti_booking_group_state_can_be_changed_to( $bookings, $new_state, 
 /**
  * Check if a booking group quantity can be changed
  * @since 1.9.0
- * @version 1.10.1
+ * @version 1.12.0
  * @param array $bookings
  * @param int $new_quantity
  * @param string $context
@@ -1111,21 +1111,21 @@ function bookacti_booking_group_quantity_can_be_changed( $bookings, $new_quantit
 		$group_end_dt = new DateTime( $group_end );
 		$event_start_dt = new DateTime( $booking->event_start );
 		$event_end_dt = new DateTime( $booking->event_end );
-		$events[] = array( 'group_id' => 1, 'id' => $booking->event_id, 'start' => $booking->event_start, 'end' => $booking->event_end );
-		if( ! $group_start || $event_start_dt < $group_start_dt )		{ $group_start = $booking->event_start; }
-		if( ! $group_end || $event_end_dt < $group_end_dt )				{ $group_end = $booking->event_end; }
-		if( ! $group_id && ! empty( $booking->group_id ) )				{ $group_id = $booking->group_id; }
-		if( ! $title && ! empty( $booking->group_title ) )				{ $title = apply_filters( 'bookacti_translate_text', $booking->group_title ); }
-		if( ! $category_id && ! empty( $booking->category_id ) )		{ $category_id = $booking->category_id; }
-		if( ! $user_id && ! empty( $booking->group_user_id ) )			{ $user_id = $booking->group_user_id; }
-		if( ! $quantity || $booking->quantity > $quantity )				{ $quantity = $booking->quantity; }
-		if( ! $is_active )												{ $is_active = apply_filters( 'bookacti_booking_quantity_check_is_active', $booking->active, $booking, $new_quantity ); }
+		$events[] = array( 'group_id' => 1, 'group_date' => '1970-02-01', 'id' => $booking->event_id, 'start' => $booking->event_start, 'end' => $booking->event_end );
+		if( ! $group_start || $event_start_dt < $group_start_dt )	{ $group_start = $booking->event_start; }
+		if( ! $group_end || $event_end_dt < $group_end_dt )			{ $group_end = $booking->event_end; }
+		if( ! $group_id && ! empty( $booking->group_id ) )			{ $group_id = $booking->group_id; }
+		if( ! $title && ! empty( $booking->group_title ) )			{ $title = apply_filters( 'bookacti_translate_text', $booking->group_title ); }
+		if( ! $category_id && ! empty( $booking->category_id ) )	{ $category_id = $booking->category_id; }
+		if( ! $user_id && ! empty( $booking->group_user_id ) )		{ $user_id = $booking->group_user_id; }
+		if( ! $quantity || $booking->quantity > $quantity )			{ $quantity = $booking->quantity; }
+		if( ! $is_active )											{ $is_active = apply_filters( 'bookacti_booking_quantity_check_is_active', $booking->active, $booking, $new_quantity ); }
 	}
 	if( $new_quantity === 'current' ) { $new_quantity = $quantity; }
 	if( ! $title ) { $title = sprintf( esc_html__( 'Booking group #%d', 'booking-activities' ), $group_id ); }
 	$dates = bookacti_get_formatted_event_dates( $group_start, $group_end, false );
 	
-	$picked_events = bookacti_get_picked_events_availability( array( array( 'group_id' => 1, 'events' => $events ) ) );
+	$picked_events = bookacti_get_picked_events_availability( array( array( 'group_id' => 1, 'group_date' => '1970-02-01', 'events' => $events ) ) );
 	$picked_event = $picked_events[ 0 ];
 	$category_data	= bookacti_get_metadata( 'group_category', $category_id );
 

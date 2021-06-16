@@ -55,9 +55,9 @@ function bookacti_wc_add_bookings_to_cart( $product_bookings_data ) {
 			$booking_data = bookacti_sanitize_booking_data( array( 
 				'user_id'			=> $product_bookings_data[ 'user_id' ],
 				'form_id'			=> $product_bookings_data[ 'form_id' ],
-				'event_id'			=> $picked_event[ 'id' ],
-				'event_start'		=> $picked_event[ 'start' ],
-				'event_end'			=> $picked_event[ 'end' ],
+				'event_id'			=> $picked_event[ 'events' ][ 0 ][ 'id' ],
+				'event_start'		=> $picked_event[ 'events' ][ 0 ][ 'start' ],
+				'event_end'			=> $picked_event[ 'events' ][ 0 ][ 'end' ],
 				'quantity'			=> $product_bookings_data[ 'quantity' ],
 				'status'			=> $product_bookings_data[ 'status' ],
 				'payment_status'	=> $product_bookings_data[ 'payment_status' ],
@@ -67,7 +67,7 @@ function bookacti_wc_add_bookings_to_cart( $product_bookings_data ) {
 			$booking_id = bookacti_insert_booking( $booking_data );
 			if( $booking_id ) {
 				do_action( 'bookacti_wc_product_booking_form_booking_inserted', $booking_id, 'single', $picked_event, $product_bookings_data );
-				$return_array[ 'bookings' ][] = array( 'id' => $booking_id, 'type' => 'single' );
+				$return_array[ 'bookings' ][] = array( 'id' => $booking_id, 'type' => 'single', 'picked_event' => $picked_event );
 				$return_array[ 'booking_ids' ][] = $booking_id;
 			}
 
@@ -89,7 +89,7 @@ function bookacti_wc_add_bookings_to_cart( $product_bookings_data ) {
 			$booking_group_id = bookacti_book_group_of_events( $booking_group_data );
 			if( $booking_group_id ) {
 				do_action( 'bookacti_wc_product_booking_form_booking_inserted', $booking_group_id, 'group', $picked_event, $product_bookings_data );
-				$return_array[ 'bookings' ][] = array( 'id' => $booking_group_id, 'type' => 'group' );
+				$return_array[ 'bookings' ][] = array( 'id' => $booking_group_id, 'type' => 'group', 'picked_event' => $picked_event );
 				$return_array[ 'booking_group_ids' ][] = $booking_group_id;
 			}
 		}
@@ -113,6 +113,7 @@ function bookacti_wc_add_bookings_to_cart( $product_bookings_data ) {
 /**
  * Get in cart bookings per cart item
  * @since 1.9.0
+ * @version 1.12.0
  * @global woocommerce $woocommerce
  * @param array $cart_items
  * @param array $filters
@@ -141,7 +142,9 @@ function bookacti_wc_get_cart_items_bookings( $cart_items = array(), $filters = 
 		$filters = apply_filters( 'bookacti_wc_cart_items_bookings_filters', bookacti_format_booking_filters( array_merge( $filters, array( 
 			'in__booking_id' => array_keys( $cart_item_keys_by_booking_id ), 
 			'in__booking_group_id' => array_keys( $cart_item_keys_by_booking_group_id ), 
-			'booking_group_id_operator' => 'OR' ) ) ) );
+			'booking_group_id_operator' => 'OR',
+			'order_by' => array( 'event_start' ),
+			'order' => 'asc' ) ) ) );
 		$bookings = bookacti_get_bookings( $filters );
 	}
 	
@@ -203,6 +206,7 @@ function bookacti_wc_get_cart_item_bookings( $cart_item_key, $filters = array() 
 /**
  * Format cart item booked events like a picked events array
  * @since 1.9.0
+ * @version 1.12.0
  * @global woocommerce $woocommerce
  * @param string $cart_item_key
  * @param boolean $one_entry_per_group
@@ -222,6 +226,7 @@ function bookacti_wc_get_cart_item_picked_events( $cart_item_key, $one_entry_per
 		foreach( $cart_item_booking[ 'bookings' ] as $booking ) {
 			$events[] = array(
 				'group_id' => $cart_item_booking[ 'type' ] === 'group' && ! empty( $booking->event_group_id ) ? $booking->event_group_id : 0,
+				'group_date' => $cart_item_booking[ 'type' ] === 'group' && ! empty( $booking->group_date ) ? $booking->group_date : '',
 				'id' => ! empty( $booking->event_id ) ? $booking->event_id : 0,
 				'start' => ! empty( $booking->event_start ) ? $booking->event_start : '',
 				'end' => ! empty( $booking->event_end ) ? $booking->event_end : '',

@@ -577,32 +577,33 @@ function bookacti_format_picked_events( $picked_events_raw = array(), $one_entry
 	
 	if( is_array( $picked_events_raw ) ) {
 		$i = 0;
-		$picked_group_ids = array();
+		$picked_group_uids = array();
 		foreach( $picked_events_raw as $picked_event_raw ) {
 			$picked_event = bookacti_format_picked_event( $picked_event_raw );
 			if( ! $picked_event ) { continue; }
-			$group_id = $picked_event[ 'group_id' ];
+			$group_uid = $picked_event[ 'group_id' ] ? $picked_event[ 'group_id' ] . '_' . $picked_event[ 'group_date' ] : '';
 			
 			// For groups of events
-			if( $group_id && $one_entry_per_group ) {
+			if( $group_uid && $one_entry_per_group ) {
 				// If the group of events is already in the array, add the picked event to the corresponding group and skip
-				$array_i = array_search( $group_id, $picked_group_ids );
+				$array_i = array_search( $group_uid, $picked_group_uids );
 				if( $array_i !== false ) { 
-					if( $picked_event ) { $picked_events[ $array_i ][ 'events' ][] = $picked_event; }
+					$picked_events[ $array_i ][ 'events' ][] = $picked_event;
 					continue;
 				}
-				$picked_group_ids[ $i ] = $group_id;
+				$picked_group_uids[ $i ] = $group_uid;
 				
 				// Add the group to the array and start listing its picked events
 				$picked_events[ $i ] = array(
-					'group_id' => $group_id,
-					'events' => $picked_event ? array( $picked_event ) : array()
+					'group_id' => $picked_event[ 'group_id' ],
+					'group_date' => $picked_event[ 'group_date' ],
+					'events' => array( $picked_event )
 				);
 			} 
 			
 			// For single event, add the event to the array
 			else if( $picked_event ) {
-				$picked_events[ $i ] = $picked_event;
+				$picked_events[ $i ] = $one_entry_per_group ? array( 'group_id' => 0, 'group_date' => '', 'events' => array( $picked_event ) ) : $picked_event;
 			} 
 			
 			// If the picked event could not be identified as an event or a group, skip it
@@ -641,9 +642,11 @@ function bookacti_format_picked_event( $picked_event_raw = array() ) {
 			'start'		=> isset( $picked_event_raw[ 'start' ] ) ? bookacti_sanitize_datetime( $picked_event_raw[ 'start' ] ) : '',
 			'end'		=> isset( $picked_event_raw[ 'end' ] ) ? bookacti_sanitize_datetime( $picked_event_raw[ 'end' ] ) : '',
 		);
-		// If the event is not a group and one of its value is empty, return an empty array
-		foreach( $picked_event as $key => $value ) {
-			if( ! $value && $key !== 'group_id' && ! $picked_event[ 'group_id' ] ) { $picked_event = array(); break; }
+		// If group_id is not empty, then group_date must be filled
+		// If group_id is empty, then id, start and end must be filled
+		if( ( $picked_event[ 'group_id' ] && ! $picked_event[ 'group_date' ] )
+		||  ( ! $picked_event[ 'group_id' ] && ( ! $picked_event[ 'id' ] || ! $picked_event[ 'start' ] || ! $picked_event[ 'end' ] ) ) ) { 
+			$picked_event = array();
 		}
 	}
 	
@@ -708,6 +711,7 @@ function bookacti_diff_picked_events( $picked_events1, $picked_events2, $one_ent
 /**
  * Check if two picked events are the same
  * @since 1.9.0
+ * @version 1.12.0
  * @param array $picked_event1
  * @param array $picked_event2
  * @return boolean
@@ -720,6 +724,7 @@ function bookacti_is_same_picked_event( $picked_event1, $picked_event2 ) {
 		foreach( $picked_event1[ 'events' ] as $i => $event1 ) {
 			foreach( $picked_event2[ 'events' ] as $event2 ) {
 				if( $event1[ 'group_id' ] === $event2[ 'group_id' ]
+				&&  $event1[ 'group_date' ] === $event2[ 'group_date' ]
 				&&  $event1[ 'id' ] === $event2[ 'id' ]
 				&&  $event1[ 'start' ] === $event2[ 'start' ]
 				&&  $event1[ 'end' ] === $event2[ 'end' ] ) {
@@ -732,6 +737,7 @@ function bookacti_is_same_picked_event( $picked_event1, $picked_event2 ) {
 		
 	} else if( empty( $picked_event1[ 'events' ] ) && empty( $picked_event2[ 'events' ] ) ) {
 		if( $picked_event1[ 'group_id' ] !== $picked_event2[ 'group_id' ]
+		||	$picked_event1[ 'group_date' ] !== $picked_event2[ 'group_date' ]
 		||  $picked_event1[ 'id' ] !== $picked_event2[ 'id' ]
 		||  $picked_event1[ 'start' ] !== $picked_event2[ 'start' ]
 		||  $picked_event1[ 'end' ] !== $picked_event2[ 'end' ] ) {
@@ -1174,7 +1180,7 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 
 /**
  * Check the selected event / group of events data before booking
- * @version 1.11.0
+ * @version 1.12.0
  * @param array $picked_events formatted with bookacti_format_picked_events with $one_entry_per_group = false
  * @param int $quantity Desired number of bookings
  * @param int $form_id Set your form id to validate the event against its form parameters. Default is 0: ignore form validation.
@@ -1227,55 +1233,85 @@ function bookacti_validate_booking_form( $picked_events, $quantity, $form_id = 0
 		}
 		$user_id = apply_filters( 'bookacti_current_user_id', ! empty( $user_id ) ? $user_id : get_current_user_id() );
 		
+		// Get events and groups of events data
+		$event_ids = $group_ids = $events_interval_dt = $groups_interval_dt = array();
+		foreach( $picked_events as $i => $picked_event ) {
+			$start_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $picked_event[ 'events' ][ 0 ][ 'start' ] );
+			if( $picked_event[ 'group_id' ] ) { 
+				$group_ids[] = $picked_event[ 'group_id' ];
+				if( ! isset( $groups_interval_dt[ 'start' ] ) || ( isset( $groups_interval_dt[ 'start' ] ) && $groups_interval_dt[ 'start' ] > $start_dt ) ) { $groups_interval_dt[ 'start' ] = clone $start_dt; }
+				if( ! isset( $groups_interval_dt[ 'end' ] ) || ( isset( $groups_interval_dt[ 'end' ] ) && $groups_interval_dt[ 'end' ] < $start_dt ) ) { $groups_interval_dt[ 'end' ] = clone $start_dt; }
+			} else { 
+				$event_ids[] = $picked_event[ 'events' ][ 0 ][ 'id' ];
+				if( ! isset( $events_interval_dt[ 'start' ] ) || ( isset( $events_interval_dt[ 'start' ] ) && $events_interval_dt[ 'start' ] > $start_dt ) ) { $events_interval_dt[ 'start' ] = clone $start_dt; }
+				if( ! isset( $events_interval_dt[ 'end' ] ) || ( isset( $events_interval_dt[ 'end' ] ) && $events_interval_dt[ 'end' ] < $start_dt ) ) { $events_interval_dt[ 'end' ] = clone $start_dt; }
+			}
+		}
+		$event_ids = bookacti_ids_to_array( $event_ids );
+		$group_ids = bookacti_ids_to_array( $group_ids );
+		$events_interval = $events_interval_dt ? array( 'start' => $events_interval_dt[ 'start' ]->format( 'Y-m-d H:i:s' ), 'end' => $events_interval_dt[ 'end' ]->format( 'Y-m-d H:i:s' ) ) : array();
+		$groups_interval = $groups_interval_dt ? array( 'start' => $groups_interval_dt[ 'start' ]->format( 'Y-m-d H:i:s' ), 'end' => $groups_interval_dt[ 'end' ]->format( 'Y-m-d H:i:s' ) ) : array();
+		$events = $event_ids ? bookacti_fetch_events( array( 'events' => $event_ids, 'interval' => $events_interval, 'past_events' => 1 ) ) : array();
+		$groups = $group_ids ? bookacti_get_groups_of_events( array( 'event_groups' => $group_ids, 'interval' => $groups_interval, 'past_events' => 1 ) ) : array();
+		
+		// Get activity and group category meta
+		$activity_ids = $category_ids = array();
+		foreach( $picked_events as $i => $picked_event ) {
+			$group_id = $picked_event[ 'group_id' ];
+			$event_id = isset( $picked_event[ 'events' ][ 0 ][ 'id' ] ) ? $picked_event[ 'events' ][ 0 ][ 'id' ] : 0;
+			if( $group_id && ! empty( $groups[ 'data' ][ $group_id ][ 'category_id' ] ) ) { $category_ids[] = $groups[ 'data' ][ $group_id ][ 'category_id' ]; }
+			if( $event_id && ! empty( $events[ 'data' ][ $event_id ][ 'activity_id' ] ) ) { $activity_ids[] = $events[ 'data' ][ $event_id ][ 'activity_id' ]; }
+		}
+		$activity_ids = bookacti_ids_to_array( $activity_ids );
+		$category_ids = bookacti_ids_to_array( $category_ids );
+		$activities_meta = $activity_ids ? bookacti_get_metadata( 'activity', $activity_ids ) : array();
+		$categories_meta = $category_ids ? bookacti_get_metadata( 'group_category', $category_ids ) : array();
+		
 		// Add availability data to the picked events
 		$picked_events = bookacti_get_picked_events_availability( $picked_events );
 		
 		foreach( $picked_events as $i => $picked_event ) {
-			$grouped_events_keys = isset( $picked_event[ 'events' ] ) ? array_keys( $picked_event[ 'events' ] ) : array();
-			$last_key = end( $grouped_events_keys );
+			$last_picked_event = end( $picked_event[ 'events' ] );
+			$first_picked_event = reset( $picked_event[ 'events' ] );
 			
 			$group_id = $picked_event[ 'group_id' ];
-			$event_id = isset( $picked_event[ 'id' ] ) ? $picked_event[ 'id' ] : ( isset( $picked_event[ 'events' ][ 0 ][ 'id' ] ) ? $picked_event[ 'events' ][ 0 ][ 'id' ] : 0 );
-			$event_start = isset( $picked_event[ 'start' ] ) ? $picked_event[ 'start' ] : ( isset( $picked_event[ 'events' ][ 0 ][ 'start' ] ) ? $picked_event[ 'events' ][ 0 ][ 'start' ] : 0 );
-			$event_end = isset( $picked_event[ 'end' ] ) ? $picked_event[ 'end' ] : ( isset( $picked_event[ 'events' ][ $last_key ][ 'end' ] ) ? $picked_event[ 'events' ][ $last_key ][ 'end' ] : 0 );
+			$event_id = isset( $first_picked_event[ 'id' ] ) ? $first_picked_event[ 'id' ] : 0;
+			$event_start = isset( $first_picked_event[ 'start' ] ) ? $first_picked_event[ 'start' ] : '';
+			$event_end = isset( $last_picked_event[ 'end' ] ) ? $last_picked_event[ 'end' ] : '';
 			
-			$title = '';
+			$group = ! empty( $groups[ 'data' ][ $group_id ] ) ? $groups[ 'data' ][ $group_id ] : array();
+			$event = ! empty( $events[ 'data' ][ $event_id ] ) ? $events[ 'data' ][ $event_id ] : array();
+			$activity_meta = $group_id && isset( $group[ 'category_id' ] ) && isset( $categories_meta[ $group[ 'category_id' ] ] ) ? $categories_meta[ $group[ 'category_id' ] ] : ( isset( $event[ 'activity_id' ] ) && isset( $activities_meta[ $event[ 'activity_id' ] ] ) ? $activities_meta[ $event[ 'activity_id' ] ] : array() );
+			
+			$title = $group ? $group[ 'title' ] : ( $event ? $event[ 'title' ] : '' );
 			$dates = bookacti_get_formatted_event_dates( $event_start, $event_end, false );
-
-			// Check if the event / group exists before everything
+			
+			// Check if the event / group exists
 			$exists = false;
-			if( $group_id <= 0 ) {
-				$event = bookacti_get_event_by_id( $event_id );
-				if( $event ) {
-					$exists = bookacti_is_existing_event( $event, $event_start, $event_end );
-					$title = apply_filters( 'bookacti_translate_text', $event->title );
-				}
-			} else {
-				$group = bookacti_get_group_of_events( $group_id );
-				if( $group ) {
-					$exists = true;
-					$title = apply_filters( 'bookacti_translate_text', $group->title );
-				}
+			if( $group_id && ! empty( $groups[ 'groups' ][ $group_id ] ) ) {
+				$exists = bookacti_picked_group_of_events_exists( $picked_event, $groups[ 'groups' ][ $group_id ] );
+			} else if( ! $group_id && ! empty( $events[ 'events' ] ) ) {
+				$exists = bookacti_picked_event_exists( $picked_event[ 'events' ][ 0 ], $events[ 'events' ] );
 			}
+			
 			if( ! $exists ) {
-				if( $group_id <= 0 ) {
-					/* translators: %s = The event title and dates. E.g.: The event "Basketball (Sep, 22nd - 3:00 PM to 6:00 PM)" doesn't exist. */
-					$validated[ 'messages' ][ 'do_not_exist' ] = sprintf( esc_html__( 'The event "%s" doesn\'t exist, please pick an event and try again.', 'booking-activities' ), $title ? $title . ' (' . $dates . ')' : $dates );
-				} else {
+				if( $group_id ) {
 					/* translators: %s = The group of events title and dates. E.g.: The group of events "Basketball (Sep, 22nd - 3:00 PM to Sep, 29nd - 6:00 PM)" doesn't exist. */
 					$validated[ 'messages' ][ 'do_not_exist' ] = sprintf( esc_html__( 'The group of events "%s" doesn\'t exist, please pick an event and try again.', 'booking-activities' ), $title ? $title . ' (' . $dates . ')' : $dates );
+				} else {
+					/* translators: %s = The event title and dates. E.g.: The event "Basketball (Sep, 22nd - 3:00 PM to 6:00 PM)" doesn't exist. */
+					$validated[ 'messages' ][ 'do_not_exist' ] = sprintf( esc_html__( 'The event "%s" doesn\'t exist, please pick an event and try again.', 'booking-activities' ), $title ? $title . ' (' . $dates . ')' : $dates );
 				}
 				continue;
 			}
-
-
+			
 			// Form checks
 			if( $form_id ) { 
 				// Check if the event can be booked on the given form
-				if( $group_id <= 0 ) {
-					$form_validated = bookacti_is_event_available_on_form( $form_id, $event_id, $event_start, $event_end );
+				if( $group_id ) {
+					$form_validated = bookacti_is_picked_group_of_events_available_on_form( $picked_event, $group, $form_id );
 				} else if( is_numeric( $group_id ) ) {
-					$form_validated = bookacti_is_group_of_events_available_on_form( $form_id, $group_id );
+					$form_validated = bookacti_is_picked_event_available_on_form( $picked_event[ 'events' ][ 0 ], $event, $form_id );
 				}
 
 				// If the event doesn't match the form parameters, stop the validation here and return the error
@@ -1290,8 +1326,7 @@ function bookacti_validate_booking_form( $picked_events, $quantity, $form_id = 0
 			$quantity_already_booked = isset( $picked_event[ 'args' ][ 'bookings_nb_per_user' ][ $user_id ] ) ? $picked_event[ 'args' ][ 'bookings_nb_per_user' ][ $user_id ] : 0;
 			$number_of_users = count( $picked_event[ 'args' ][ 'bookings_nb_per_user' ] );
 			
-			// Get Activity / Category meta
-			$activity_meta	= $group_id <= 0 ? bookacti_get_metadata( 'activity', $event->activity_id ) : bookacti_get_metadata( 'group_category', $group->category_id );
+			// Sanitize Activity / Category meta
 			$min_quantity	= isset( $activity_meta[ 'min_bookings_per_user' ] ) ? intval( $activity_meta[ 'min_bookings_per_user' ] ) : 0;
 			$max_quantity	= isset( $activity_meta[ 'max_bookings_per_user' ] ) ? intval( $activity_meta[ 'max_bookings_per_user' ] ) : 0;
 			$max_users		= isset( $activity_meta[ 'max_users_per_event' ] ) ? intval( $activity_meta[ 'max_users_per_event' ] ) : 0;
@@ -1385,7 +1420,7 @@ function bookacti_validate_booking_form( $picked_events, $quantity, $form_id = 0
 				'start' => $event_start,
 				'end' => $event_end,
 				'quantity' => $quantity,
-				'event' => $group_id <= 0 ? $event : $group,
+				'event' => $group_id ? $group : $event,
 				'activity_meta' => $activity_meta
 			) );
 			$validated = apply_filters( 'bookacti_validate_booking_form_picked_event', $validated, $picked_events[ $i ], $quantity, $form_id );
@@ -1397,6 +1432,9 @@ function bookacti_validate_booking_form( $picked_events, $quantity, $form_id = 0
 		$validated[ 'status' ] = 'success';
 		$validated[ 'error' ] = '';
 	}
+	
+	// Return picked events with enhanced data too
+	$validated[ 'picked_events' ] = $picked_events;
 	
 	return apply_filters( 'bookacti_validate_booking_form', $validated, $picked_events, $quantity, $form_id );
 }
@@ -1420,7 +1458,7 @@ function bookacti_get_picked_events_availability( $picked_events ) {
 	// Compute availability (once per group)
 	$picked_events_availability_data = array();
 	foreach( $single_picked_events as $i => $single_picked_event ) {
-		$index = $single_picked_event[ 'group_id' ] <= 0 ? 'E' . $single_picked_event[ 'id' ] . $single_picked_event[ 'start' ] . $single_picked_event[ 'end' ] : 'G' . $single_picked_event[ 'group_id' ];
+		$index = $single_picked_event[ 'group_id' ] <= 0 ? 'E' . $single_picked_event[ 'id' ] . $single_picked_event[ 'start' ] . $single_picked_event[ 'end' ] : 'G' . $single_picked_event[ 'group_id' ] . $single_picked_event[ 'group_date' ];
 		
 		if( ! isset( $picked_events_availability_data[ $index ] ) ) {
 			$picked_events_availability_data[ $index ] = array(
@@ -1469,13 +1507,27 @@ function bookacti_get_picked_events_availability( $picked_events ) {
 	}
 	
 	// Fill each picked events with the corresponding availaibilities values 
-	foreach( $picked_events as $i => $picked_event ) {
-		$index = $picked_event[ 'group_id' ] <= 0 ? 'E' . $picked_event[ 'id' ] . $picked_event[ 'start' ] . $picked_event[ 'end' ] : 'G' . $picked_event[ 'group_id' ];
-		
-		if( ! isset( $picked_events[ $i ][ 'args' ] ) ) { $picked_events[ $i ][ 'args' ] = array(); }
-		$picked_events[ $i ][ 'args' ][ 'total_availability' ]	= isset( $picked_events_availability_data[ $index ] ) ? $picked_events_availability_data[ $index ][ 'total_availability' ] : 0;
-		$picked_events[ $i ][ 'args' ][ 'availability' ]		= isset( $picked_events_availability_data[ $index ] ) ? intval( $picked_events_availability_data[ $index ][ 'availability' ] ) : 0;
-		$picked_events[ $i ][ 'args' ][ 'bookings_nb_per_user' ]= isset( $picked_events_availability_data[ $index ] ) ? $picked_events_availability_data[ $index ][ 'bookings_nb_per_user' ] : array();
+	foreach( $single_picked_events as $single_picked_event ) {
+		$index = $single_picked_event[ 'group_id' ] <= 0 ? 'E' . $single_picked_event[ 'id' ] . $single_picked_event[ 'start' ] . $single_picked_event[ 'end' ] : 'G' . $single_picked_event[ 'group_id' ] . $single_picked_event[ 'group_date' ];
+		foreach( $picked_events as $i => $picked_event ) {
+			// Make it work for both grouped picked events and single picked events format
+			$picked_event_index = '';
+			if( $picked_event[ 'group_id' ] ) {
+				$picked_event_index = 'G' . $picked_event[ 'group_id' ] . $picked_event[ 'group_date' ];
+			} else if( ! empty( $picked_event[ 'events' ] ) ) {
+				$picked_event_index = 'E' . $picked_event[ 'events' ][ 0 ][ 'id' ] . $picked_event[ 'events' ][ 0 ][ 'start' ] . $picked_event[ 'events' ][ 0 ][ 'end' ];
+			} else if( ! empty( $picked_event[ 'id' ] ) ) {
+				$picked_event_index = 'E' . $picked_event[ 'id' ] . $picked_event[ 'start' ] . $picked_event[ 'end' ];
+			}
+			
+			if( $picked_event_index === $index ) {
+				if( ! isset( $picked_events[ $i ][ 'args' ] ) ) { $picked_events[ $i ][ 'args' ] = array(); }
+				$picked_events[ $i ][ 'args' ][ 'total_availability' ]	= isset( $picked_events_availability_data[ $index ] ) ? $picked_events_availability_data[ $index ][ 'total_availability' ] : 0;
+				$picked_events[ $i ][ 'args' ][ 'availability' ]		= isset( $picked_events_availability_data[ $index ] ) ? intval( $picked_events_availability_data[ $index ][ 'availability' ] ) : 0;
+				$picked_events[ $i ][ 'args' ][ 'bookings_nb_per_user' ]= isset( $picked_events_availability_data[ $index ] ) ? $picked_events_availability_data[ $index ][ 'bookings_nb_per_user' ] : array();
+				break;
+			}
+		}
 	}
 	
 	return $picked_events;
@@ -1483,95 +1535,92 @@ function bookacti_get_picked_events_availability( $picked_events ) {
 
 
 /**
- * Check if an event or an occurrence exists
- * @version 1.11.0
- * @param object $event
- * @param string $event_start
- * @param string $event_end
+ * Check if a picked event exists in an array of events
+ * @since 1.12.0 (was bookacti_is_existing_event)
+ * @param array $picked_event
+ * @param array $occurrences
  * @return boolean
  */
-function bookacti_is_existing_event( $event, $event_start, $event_end = '' ) {
-	$is_existing_event = false;
-	if( $event ) {
-		if( $event->repeat_freq && $event->repeat_freq !== 'none' ) {
-			$is_existing_event = bookacti_is_existing_occurrence( $event, $event_start, $event_end );
-		} else {
-			$is_existing_event = false;
-			if( $event_start && $event_start === $event->start ) {
-				if( ! $event_end ) { $is_existing_event = true; }
-				else if( $event_end === $event->end ) { $is_existing_event = true; }
-			}
+function bookacti_picked_event_exists( $picked_event, $occurrences ) {
+	$event_exists = false;
+	foreach( $occurrences as $occurrence ) {
+		if( intval( $picked_event[ 'id' ] ) === intval( $occurrence[ 'id' ] )
+		&&  $picked_event[ 'start' ] === $occurrence[ 'start' ]
+		&&  $picked_event[ 'end' ] === $occurrence[ 'end' ] ) {
+			$event_exists = true;
+			break;
 		}
 	}
-	return apply_filters( 'bookacti_is_existing_event', $is_existing_event, $event, $event_start, $event_end );
+	return apply_filters( 'bookacti_picked_event_exists', $event_exists, $picked_event, $occurrences );
 }
 
 
 /**
- * Check if the occurrence exists
- * @since 1.8.4 (was bookacti_is_existing_occurence)
- * @version 1.12.0
- * @param object $event
- * @param string $event_start
- * @param string $event_end
+ * Check if a picked group of events exists in an array of group of events
+ * @since 1.12.0
+ * @param array $picked_event_group
+ * @param array $occurrences
  * @return boolean
  */
-function bookacti_is_existing_occurrence( $event, $event_start, $event_end = '' ) {
-	// Get the event's occurrences
-	$event_id = ! empty( $event->event_id ) ? intval( $event->event_id ) : ( ! empty( $event->id ) ? intval( $event->id ) : 0 );
-	$events_exceptions = bookacti_get_exceptions_by_event( array( 'events' => array( $event_id ) ) );
-	$event_exceptions = isset( $events_exceptions[ $event_id ] ) ? $events_exceptions[ $event_id ] : array();
-	$interval = array( 'start' => substr( $event_start, 0, 10 ) . ' 00:00:00', 'end' => ( $event_end ? substr( $event_end, 0, 10 ) : substr( $event_start, 0, 10 ) ) . ' 23:59:59' );
-	$occurrences = bookacti_get_occurrences_of_repeated_event( $event, array( 'interval' => $interval, 'exceptions_dates' => $event_exceptions, 'past_events' => 1 ) );
-	
-	// Check if the desired occurrence exists
-	$exists = false;
-	foreach( $occurrences as $occurrence ) {
-		if( $event_start && $event_start === $occurrence[ 'start' ] ) {
-			if( ! $event_end ) { $exists = true; break; }
-			else if( $event_end === $occurrence[ 'end' ] ) { $exists = true; break; }
+function bookacti_picked_group_of_events_exists( $picked_event_group, $occurrences ) {
+	$group_exists = false;
+	$group_date = $picked_event_group[ 'group_date' ];
+	if( isset( $occurrences[ $group_date ] ) ) {
+		// Check if there are the same number of picked events as in the group
+		if( count( $occurrences[ $group_date ] ) === count( $picked_event_group[ 'events' ] ) ) {
+			// Check if all the events of the group are picked
+			$are_picked = true;
+			foreach( $occurrences[ $group_date ] as $group_event ) {
+				$is_picked = false;
+				foreach( $picked_event_group[ 'events' ] as $picked_event ) {
+					if( $picked_event[ 'id' ] === $group_event[ 'id' ] 
+					&&  $picked_event[ 'start' ] === $group_event[ 'start' ]
+					&&  $picked_event[ 'end' ] === $group_event[ 'end' ] ) {
+						$is_picked = true; break;
+					}
+				}
+				if( ! $is_picked ) { $are_picked = false; break; }
+			}
+			$group_exists = $are_picked;
 		}
 	}
-	
-	return $exists;
+	return apply_filters( 'bookacti_picked_group_of_events_exists', $group_exists, $picked_event_group, $occurrences );
 }
 
 
 /**
  * Check if an event can be book with the given form
- * @since 1.5.0
- * @version 1.12.0
+ * @since 1.12.0 (was bookacti_is_event_available_on_form)
+ * @param array $picked_event
+ * @param array $event_data
  * @param int $form_id
- * @param int|object $event_id
- * @param string $event_start
- * @param string $event_end
  * @return array
  */
-function bookacti_is_event_available_on_form( $form_id, $event_id, $event_start, $event_end ) {
-	$validated		= array( 'status' => 'failed' );
-	$calendar_data	= bookacti_get_form_field_data_by_name( $form_id, 'calendar' );
-
+function bookacti_is_picked_event_available_on_form( $picked_event, $event_data, $form_id ) {
+	$validated = array( 'status' => 'failed' );
+	
+	// Check if the event exists
+	if( ! $event_data ) {
+		$validated[ 'error' ] = 'unknown_event';
+		$validated[ 'message' ] = esc_html__( 'Invalid event ID.', 'booking-activities' );
+		return $validated;
+	}
+	
 	// Check if the form exists and if it has a calendar field (compulsory)
-	$form_exists = ! empty( $calendar_data );
-	if( ! $form_exists ) {
+	$calendar_data = bookacti_get_form_field_data_by_name( $form_id, 'calendar' );
+	if( ! $calendar_data ) {
 		$validated[ 'error' ] = 'invalid_form';
 		$validated[ 'message' ] = esc_html__( 'Failed to retrieve the requested form data.', 'booking-activities' );
 		return $validated;
 	}
 	
-	
-	// Check if the event is displayed on the form
 	$belongs_to_form = true;
-	$event = is_object( $event_id ) ? $event_id : bookacti_get_event_by_id( $event_id );
-	
-	if( ! $event ) {
-		$validated[ 'error' ] = 'unknown_event';
-		return $validated;
-	}
+	$past_events_bookable = isset( $calendar_data[ 'past_events_bookable' ] ) ? $calendar_data[ 'past_events_bookable' ] : 0;
+	$availability_period = bookacti_get_calendar_field_availability_period( $calendar_data );
 	
 	// If the form calendar doesn't have the event template or the event activity
-	if( ( $calendar_data[ 'calendars' ] && ! in_array( $event->template_id, $calendar_data[ 'calendars' ] ) )
-	||  ( $calendar_data[ 'activities' ] && ! in_array( $event->activity_id, $calendar_data[ 'activities' ] ) ) ) {
+	if( ( $calendar_data[ 'calendars' ] && ! in_array( intval( $event_data[ 'template_id' ] ), bookacti_ids_to_array( $calendar_data[ 'calendars' ] ), true ) )
+	||  ( $calendar_data[ 'activities' ] && ! in_array( intval( $event_data[ 'activity_id' ] ), bookacti_ids_to_array( $calendar_data[ 'activities' ] ), true ) ) ) {
 		$belongs_to_form = false;
 		$validated[ 'message' ] = esc_html__( 'The selected event is not supposed to be available on this form.', 'booking-activities' );
 	}
@@ -1582,22 +1631,22 @@ function bookacti_is_event_available_on_form( $form_id, $event_id, $event_start,
 			$belongs_to_form = false;
 			$validated[ 'message' ] = esc_html__( 'You cannot book single events with this form, you must select a group of events.', 'booking-activities' );
 		} else {
-			// Check if the event belong to a group
-			$event_groups = bookacti_get_event_groups( $event->event_id, $event_start, $event_end ); // TO BE REPLACED IN 1.12
-			$event_categories = array();
-			foreach( $event_groups as $event_group ) {
-				if( ! in_array( $event_group->category_id, $event_categories ) ) {
-					$event_categories[] = $event_group->category_id;
+			// Get the event template's groups
+			$groups = bookacti_get_groups_of_events( array( 'templates' => array( $event_data[ 'template_id' ] ), 'group_categories' => $calendar_data[ 'group_categories' ], 'interval' => $past_events_bookable ? array() : $availability_period, 'past_events' => 1 ) );
+			
+			// Check if the event belongs to a group
+			$is_in_group = false;
+			foreach( $groups[ 'groups' ] as $group_id => $groups_per_date ) {
+				foreach( $groups_per_date as $group_date => $group_events ) {
+					if( bookacti_picked_event_exists( $picked_event, $group_events ) ) {
+						$is_in_group = true;
+						break;
+					}
 				}
 			}
-
-			// If the categories array is empty, it means "take all categories"
-			if( empty( $calendar_data[ 'group_categories' ] ) ) {
-				$calendar_data[ 'group_categories' ] = bookacti_get_group_category_ids_by_template( array( $event->template_id ) );
-			}
-
-			// Check if the event belong to a group available on the calendar
-			if( array_intersect( $event_categories, $calendar_data[ 'group_categories' ] ) ) {
+			
+			// If the event is part of a group, it should not be selected alone
+			if( $is_in_group ) {
 				$belongs_to_form = false;
 				$validated[ 'message' ] = esc_html__( 'The selected event is part of a group and cannot be booked alone.', 'booking-activities' );
 			}
@@ -1609,15 +1658,13 @@ function bookacti_is_event_available_on_form( $form_id, $event_id, $event_start,
 		return $validated;
 	}
 	
-	$past_events_bookable = isset( $calendar_data[ 'past_events_bookable' ] ) ? $calendar_data[ 'past_events_bookable' ] : 0;
-	
 	if( ! $past_events_bookable ) {
 		// Check if the event is past
 		$timezone					= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
 		$started_events_bookable	= bookacti_get_setting_value( 'bookacti_general_settings', 'started_events_bookable' );
 		$date_format				= bookacti_get_message( 'date_format_long' );
-		$event_start_obj			= new DateTime( $event_start, $timezone );
-		$event_end_obj				= new DateTime( $event_end, $timezone );
+		$event_start_obj			= new DateTime( $picked_event[ 'start' ], $timezone );
+		$event_end_obj				= new DateTime( $picked_event[ 'end' ], $timezone );
 		$current_time				= new DateTime( 'now', $timezone );
 		if( ( $event_start_obj < $current_time )
 		&& ! ( $started_events_bookable && $event_end_obj > $current_time ) ) {
@@ -1627,10 +1674,9 @@ function bookacti_is_event_available_on_form( $form_id, $event_id, $event_start,
 		}
 	
 		// Check if the event is in the availability period
-		$availability_period = bookacti_get_calendar_field_availability_period( $calendar_data );
 		$calendar_start	= new DateTime( $availability_period[ 'start' ], $timezone );
 		$calendar_end	= new DateTime( $availability_period[ 'end' ], $timezone );
-			
+		
 		if( $event_start_obj < $calendar_start ) {
 			$validated[ 'error' ] = 'event_starts_before_availability_period';
 			$datetime_formatted = bookacti_format_datetime( $calendar_start->format( 'Y-m-d H:i:s' ), $date_format );
@@ -1655,38 +1701,36 @@ function bookacti_is_event_available_on_form( $form_id, $event_id, $event_start,
 
 /**
  * Check if a group of events can be book with the given form
- * @since 1.5.0
- * @version 1.12.0
+ * @since 1.12.0 (was bookacti_is_group_of_events_available_on_form)
+ * @param array $picked_event_group
+ * @param array $group_data
  * @param int $form_id
- * @param int|object $group_id
  * @return array
  */
-function bookacti_is_group_of_events_available_on_form( $form_id, $group_id ) {
-	$validated		= array( 'status' => 'failed' );
-	$calendar_data	= bookacti_get_form_field_data_by_name( $form_id, 'calendar' );
+function bookacti_is_picked_group_of_events_available_on_form( $picked_event_group, $group_data, $form_id ) {
+	$validated = array( 'status' => 'failed' );
+	
+	// Check if the group exists
+	if( ! $group_data ) {
+		$validated[ 'error' ] = 'unknown_group_of_events';
+		$validated[ 'message' ] = esc_html__( 'Invalid group of events ID.', 'booking-activities' );
+		return $validated;
+	}
 	
 	// Check if the form exists and if it has a calendar field (compulsory)
-	$form_exists = ! empty( $calendar_data );
-	if( ! $form_exists ) {
+	$calendar_data = bookacti_get_form_field_data_by_name( $form_id, 'calendar' );
+	if( ! $calendar_data ) {
 		$validated[ 'error' ] = 'invalid_form';
 		$validated[ 'message' ] = esc_html__( 'Failed to retrieve the requested form data.', 'booking-activities' );
 		return $validated;
 	}
 	
-	
 	// Check if the group of events is displayed on the form
-	$belongs_to_form	= true;
-	$group				= is_object( $group_id ) ? $group_id : bookacti_get_group_of_events( $group_id );
-	$category			= $group ? bookacti_get_group_category( $group->category_id ) : array();
-	
-	if( ! $group || ! $category ) {
-		$validated[ 'error' ] = ! $group ? 'unknown_group_of_events' : 'unknown_group_category';
-		$validated[ 'message' ] = esc_html__( 'Invalid group of events ID.', 'booking-activities' );
-		return $validated;
-	}
+	$belongs_to_form = true;
+	$past_events_bookable = isset( $calendar_data[ 'past_events_bookable' ] ) ? $calendar_data[ 'past_events_bookable' ] : 0;
 	
 	// If the form calendar doesn't have the group of events' template
-	if( $calendar_data[ 'calendars' ] && ! in_array( $category[ 'template_id' ], $calendar_data[ 'calendars' ] ) ) {
+	if( $calendar_data[ 'calendars' ] && ! in_array( intval( $group_data[ 'template_id' ] ), bookacti_ids_to_array( $calendar_data[ 'calendars' ] ), true ) ) {
 		$belongs_to_form = false;
 		$validated[ 'message' ] = esc_html__( 'The selected events are not supposed to be available on this form.', 'booking-activities' );
 	}
@@ -1701,11 +1745,11 @@ function bookacti_is_group_of_events_available_on_form( $form_id, $group_id ) {
 	if( $belongs_to_form && ! in_array( 'none', $calendar_data[ 'group_categories' ], true ) ) {
 		// If the categories array is empty, it means "take all categories"
 		if( empty( $calendar_data[ 'group_categories' ] ) ) {
-			$calendar_data[ 'group_categories' ] = bookacti_get_group_category_ids_by_template( array( $category[ 'template_id' ] ) );
+			$calendar_data[ 'group_categories' ] = bookacti_get_group_category_ids_by_template( array( $group_data[ 'template_id' ] ) );
 		}
 
 		// Check if the group of event category is available on this form
-		if( ! in_array( $group->category_id, $calendar_data[ 'group_categories' ] ) ) {
+		if( ! in_array( intval( $group_data[ 'category_id' ] ), bookacti_ids_to_array( $calendar_data[ 'group_categories' ] ), true ) ) {
 			$belongs_to_form = false;
 			$validated[ 'message' ] = esc_html__( 'The selected goup of events is not supposed to be available on this form.', 'booking-activities' );
 		}
@@ -1716,15 +1760,15 @@ function bookacti_is_group_of_events_available_on_form( $form_id, $group_id ) {
 		return $validated;
 	}
 	
-	$past_events_bookable = isset( $calendar_data[ 'past_events_bookable' ] ) ? $calendar_data[ 'past_events_bookable' ] : 0;
-	
 	if( ! $past_events_bookable ) {
 		// Check if the event is past
 		$timezone					= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
-		$started_groups_bookable	= isset( $category[ 'settings' ][ 'started_groups_bookable' ] ) && in_array( $category[ 'settings' ][ 'started_groups_bookable' ], array( 0, 1, '0', '1', true, false ), true ) ? intval( $category[ 'settings' ][ 'started_groups_bookable' ] ) : bookacti_get_setting_value( 'bookacti_general_settings', 'started_groups_bookable' );
+		$started_groups_bookable	= isset( $group_data[ 'settings' ][ 'started_groups_bookable' ] ) && in_array( $group_data[ 'settings' ][ 'started_groups_bookable' ], array( 0, 1, '0', '1', true, false ), true ) ? intval( $group_data[ 'settings' ][ 'started_groups_bookable' ] ) : bookacti_get_setting_value( 'bookacti_general_settings', 'started_groups_bookable' );
 		$date_format				= bookacti_get_message( 'date_format_long' );
-		$group_start				= new DateTime( $group->start, $timezone );
-		$group_end					= new DateTime( $group->end, $timezone );
+		$last_picked_event			= end( $picked_event_group[ 'events' ] );
+		$first_picked_event			= end( $picked_event_group[ 'events' ] );
+		$group_start				= new DateTime( $first_picked_event[ 'start' ], $timezone );
+		$group_end					= new DateTime( $last_picked_event[ 'end' ], $timezone );
 		$current_time				= new DateTime( 'now', $timezone );
 		if( ( $group_start < $current_time )
 		&& ! ( $started_groups_bookable && $group_end > $current_time ) ) {
@@ -3148,9 +3192,11 @@ function bookacti_get_groups_of_events_array_from_db_groups_of_events( $groups, 
 			'repeat_on'			=> $group->repeat_on,
 			'repeat_from'		=> $group->repeat_from,
 			'repeat_to'			=> $group->repeat_to,
+			'repeat_to'			=> $group->repeat_to,
 			'events'			=> isset( $groups_events[ $group_id ] ) ? $groups_events[ $group_id ] : array(),
 			'settings'			=> isset( $groups_meta[ $group_id ] ) ? $groups_meta[ $group_id ] : array()
 		);
+		$groups_array[ 'data' ][ $group_id ][ 'settings' ][ 'started_groups_bookable' ] = ! empty( $group->started_groups_bookable ) ? 1 : 0;
 	}
 	
 	$args[ 'exceptions_dates' ] = $exceptions_per_group;

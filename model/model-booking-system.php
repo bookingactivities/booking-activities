@@ -678,9 +678,9 @@ function bookacti_get_group_of_events( $group_id, $return_type = OBJECT ) {
  * @version 1.12.0
  * @global wpdb $wpdb
  * @param array $raw_args {
- *  @param array|int $templates
- *  @param array|int $group_categories
- *  @param array|int event_groups
+ *  @param array $templates
+ *  @param array $group_categories
+ *  @param array $event_groups
  *  @param array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
  *  @param boolean $skip_exceptions Whether to retrieve occurrence on exceptions
  *  @param boolean $past_events Whether to get past groups of events
@@ -709,7 +709,7 @@ function bookacti_get_groups_of_events( $raw_args = array() ) {
 	$user_timestamp_offset		= $current_datetime_object->format( 'P' );
 	$variables					= array();
 
-	$query	= 'SELECT DISTINCT G.id, G.category_id, G.title, G.repeat_freq, G.repeat_step, G.repeat_on, G.repeat_from, G.repeat_to, GE.start, GE.end, C.template_id '
+	$query	= 'SELECT DISTINCT G.id, G.category_id, G.title, G.repeat_freq, G.repeat_step, G.repeat_on, G.repeat_from, G.repeat_to, GE.start, GE.end, C.template_id, M.started_groups_bookable '
 			. ' FROM ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as G ' 
 			. ' LEFT JOIN ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' as C ON C.id = G.category_id '
 			. ' LEFT JOIN ' . BOOKACTI_TABLE_TEMPLATES . ' as T ON T.id = C.template_id ';

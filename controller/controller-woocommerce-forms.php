@@ -382,7 +382,7 @@ add_action( 'wp_ajax_bookactiSelect2Query_products', 'bookacti_controller_search
 /**
  * Add products bound to the selected events to cart
  * @since 1.7.0
- * @version 1.9.0
+ * @version 1.12.0
  */
 function bookacti_controller_add_bound_product_to_cart() {
 	// Check nonce
@@ -429,50 +429,30 @@ function bookacti_controller_add_bound_product_to_cart() {
 	unset( $_POST[ 'selected_events' ] );
 	
 	// Keep one entry per group
-	$picked_events = bookacti_format_picked_events( $picked_events, true );
+	$picked_events = $response[ 'picked_events' ];
 	
 	// Check if the products can be added to cart
 	foreach( $picked_events as $i => $picked_event ) {
-		$grouped_events_keys = isset( $picked_event[ 'events' ] ) ? array_keys( $picked_event[ 'events' ] ) : array();
-		$last_key = end( $grouped_events_keys );
+		$last_picked_event = end( $picked_event[ 'events' ] );
+		$first_picked_event = reset( $picked_event[ 'events' ] );
 
 		$group_id = $picked_event[ 'group_id' ];
-		$event_id = isset( $picked_event[ 'id' ] ) ? $picked_event[ 'id' ] : ( isset( $picked_event[ 'events' ][ 0 ][ 'id' ] ) ? $picked_event[ 'events' ][ 0 ][ 'id' ] : 0 );
-		$event_start = isset( $picked_event[ 'start' ] ) ? $picked_event[ 'start' ] : ( isset( $picked_event[ 'events' ][ 0 ][ 'start' ] ) ? $picked_event[ 'events' ][ 0 ][ 'start' ] : 0 );
-		$event_end = isset( $picked_event[ 'end' ] ) ? $picked_event[ 'end' ] : ( isset( $picked_event[ 'events' ][ $last_key ][ 'end' ] ) ? $picked_event[ 'events' ][ $last_key ][ 'end' ] : 0 );
+		$event_id = isset( $first_picked_event[ 'id' ] ) ? $first_picked_event[ 'id' ] : 0;
+		$event_start = isset( $first_picked_event[ 'start' ] ) ? $first_picked_event[ 'start' ] : '';
+		$event_end = isset( $last_picked_event[ 'end' ] ) ? $last_picked_event[ 'end' ] : '';
 
-		$title = '';
+		$group = $group_id && ! empty( $picked_event[ 'args' ][ 'event' ] ) ? $picked_event[ 'args' ][ 'event' ] : array();
+		$event = ! $group_id && ! empty( $picked_event[ 'args' ][ 'event' ] ) ? $picked_event[ 'args' ][ 'event' ] : array();
+		
+		$title = $group ? $group[ 'title' ] : ( $event ? $event[ 'title' ] : '' );
 		$dates = bookacti_get_formatted_event_dates( $event_start, $event_end, false );
 		
-		// Single Booking
-		if( ! $picked_event[ 'group_id' ] ) {
-			// Get the event
-			$event = bookacti_get_event_by_id( $picked_event[ 'id' ] );
-			if( ! $event ) { 
-				$return_array[ 'error' ] = 'unknown_event'; 
-				$return_array[ 'messages' ][] = sprintf( esc_html__( 'The event "%s" doesn\'t exist, please pick an event and try again.', 'booking-activities' ), $dates );
-				continue;
-			}
-			
-			$title = apply_filters( 'bookacti_translate_text', $event->title );
-			
-			// Find the product bound to the activity
-			$product_id = ! empty( $field[ 'product_by_activity' ][ $event->activity_id ] ) ? intval( $field[ 'product_by_activity' ][ $event->activity_id ] ) : 0;
-			
-		// Booking group
-		} else {
-			// Get the event
-			$group = bookacti_get_group_of_events( $picked_event[ 'group_id' ] );
-			if( ! $group ) { 
-				$return_array[ 'error' ] = 'unknown_event'; 
-				$return_array[ 'messages' ][] = sprintf( esc_html__( 'The group of events "%s" doesn\'t exist, please pick an event and try again.', 'booking-activities' ), $dates );
-				continue;
-			}
-			
-			$title = apply_filters( 'bookacti_translate_text', $group->title );
-			
+		if( $group_id ) {
 			// Find the product bound to the group category
-			$product_id = ! empty( $field[ 'product_by_group_category' ][ $group->category_id ] ) ? intval( $field[ 'product_by_group_category' ][ $group->category_id ] ) : 0;
+			$product_id = ! empty( $field[ 'product_by_group_category' ][ $group[ 'category_id' ] ] ) ? intval( $field[ 'product_by_group_category' ][ $group[ 'category_id' ] ] ) : 0;
+		} else {
+			// Find the product bound to the activity
+			$product_id = ! empty( $field[ 'product_by_activity' ][ $event[ 'activity_id' ] ] ) ? intval( $field[ 'product_by_activity' ][ $event[ 'activity_id' ] ] ) : 0;
 		}
 		
 		// Check if the event is bound to a product
@@ -495,8 +475,8 @@ function bookacti_controller_add_bound_product_to_cart() {
 		// Reset posted data
 		$_POST = $init_post;
 		$_REQUEST = $init_request;
-		$_POST[ 'selected_events' ]		= ! empty( $picked_event[ 'events' ] ) ? $picked_event[ 'events' ] : array( $picked_event );
-		$_REQUEST[ 'selected_events' ]	= ! empty( $picked_event[ 'events' ] ) ? $picked_event[ 'events' ] : array( $picked_event );
+		$_POST[ 'selected_events' ]		= $picked_event[ 'events' ];
+		$_REQUEST[ 'selected_events' ]	= $picked_event[ 'events' ];
 		
 		// If the product is a variation, add the corresponding attributes to $_REQUEST
 		if( $product->get_type() === 'variation' ) {

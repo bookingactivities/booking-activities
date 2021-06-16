@@ -418,7 +418,7 @@ add_filter( 'woocommerce_quantity_input_args', 'bookacti_set_wc_quantity_via_url
 
 /**
  * Validate add to cart form and temporarily book the event
- * @version 1.9.0
+ * @version 1.12.0
  * @global WooCommerce $woocommerce
  * @global array $global_bookacti_wc
  * @param boolean $true
@@ -503,7 +503,7 @@ function bookacti_validate_add_to_cart_and_book_temporarily( $true, $product_id,
 		$global_bookacti_wc = array();
 		
 		// Book picked events one by one
-		$product_bookings_data[ 'picked_events' ] = ! $picked_event[ 'group_id' ] ? array( $picked_event ) : $picked_event[ 'events' ];
+		$product_bookings_data[ 'picked_events' ] = $picked_event[ 'events' ];
 		
 		// Book temporarily
 		$response = bookacti_wc_add_bookings_to_cart( $product_bookings_data );
@@ -537,6 +537,7 @@ add_filter( 'woocommerce_add_to_cart_validation', 'bookacti_validate_add_to_cart
 /**
  * Add cart item data (all sent in one array)
  * @since 1.9.0 (was bookacti_add_item_data)
+ * @version 1.12.0
  * @global array $global_bookacti_wc
  * @param array $cart_item_data
  * @param int $product_id
@@ -548,7 +549,19 @@ function bookacti_wc_add_cart_item_data( $cart_item_data, $product_id, $variatio
 	if( empty( $global_bookacti_wc[ 'bookings' ] ) ) { return $cart_item_data; }
 
 	if( ! isset( $cart_item_data[ '_bookacti_options' ] ) ) { $cart_item_data[ '_bookacti_options' ] = array(); }
-	$cart_item_data[ '_bookacti_options' ][ 'bookings' ] = json_encode( $global_bookacti_wc[ 'bookings' ] );
+	
+	// Sanitize cart item bookings
+	$cart_item_bookings = array();
+	foreach( $global_bookacti_wc[ 'bookings' ] as $cart_item_booking ) {
+		if( empty( $cart_item_booking[ 'id' ] ) || empty( $cart_item_booking[ 'type' ] ) ) { continue; }
+		if( ! intval( $cart_item_booking[ 'id' ] ) || ! in_array( $cart_item_booking[ 'type' ], array( 'single', 'group' ), true ) ) { continue; }
+		$cart_item_bookings[] = array(
+			'id' => intval( $cart_item_booking[ 'id' ] ),
+			'type' => $cart_item_booking[ 'type' ]
+		);
+	}
+	
+	$cart_item_data[ '_bookacti_options' ][ 'bookings' ] = json_encode( $cart_item_bookings );
 
 	// Add the cart item key to be merged to the cart item data for two reasons: 
 	// - identify the cart item to be merged later, 

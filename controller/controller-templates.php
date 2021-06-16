@@ -1164,8 +1164,9 @@ function bookacti_controller_insert_activity() {
 		if( ! $bound ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'cannot_bind_to_template' ), 'insert_activity' ); }
 	}
 	
-	$activity_data	= bookacti_get_activity( $activity_id );
-	$activity_list	= bookacti_get_template_activities_list( $template_id );
+	$activities_data= bookacti_get_activities_by_template( $template_id, false, true );
+	$activity_data	= ! empty( $activities_data[ $activity_id ] ) ? $activities_data[ $activity_id ] : array();
+	$activity_list	= bookacti_get_template_activities_list( $activities_data, $template_id );
 
 	do_action( 'bookacti_activity_inserted', $activity_id, $activity_data );
 
@@ -1220,8 +1221,9 @@ function bookacti_controller_update_activity() {
 		bookacti_send_json( array( 'status' => 'nochanges' ), 'update_activity' );
 	}
 	
-	$activity_data	= bookacti_get_activity( $activity_id );
-	$activity_list	= bookacti_get_template_activities_list( $template_id );
+	$activities_data= bookacti_get_activities_by_template( $template_id, false, true );
+	$activity_data	= ! empty( $activities_data[ $activity_id ] ) ? $activities_data[ $activity_id ] : array();
+	$activity_list	= bookacti_get_template_activities_list( $activities_data, $template_id );
 
 	do_action( 'bookacti_activity_updated', $activity_id, $activity_data );
 
@@ -1232,7 +1234,7 @@ add_action( 'wp_ajax_bookactiUpdateActivity', 'bookacti_controller_update_activi
 
 /**
  * AJAX Controller - Create an association between existing activities (on various templates) and current template
- * @version 1.8.0
+ * @version 1.12.0
  */
 function bookacti_controller_import_activities() {
 	$template_id = intval( $_POST[ 'template_id' ] );
@@ -1261,7 +1263,7 @@ function bookacti_controller_import_activities() {
 	if( ! $inserted ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_inserted', 'activity_ids' => $activity_ids, 'template_id' => $template_id, 'inserted' => $inserted ), 'import_activities' ); }
 
 	$activities_data= bookacti_get_activities_by_template( $template_id, false, true );
-	$activity_list	= bookacti_get_template_activities_list( $template_id );
+	$activity_list	= bookacti_get_template_activities_list( $activities_data, $template_id );
 
 	do_action( 'bookacti_activities_imported', $template_id, $activity_ids, $activities_data );
 

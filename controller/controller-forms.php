@@ -896,9 +896,9 @@ function bookacti_controller_validate_booking_form() {
 			$booking_data = bookacti_sanitize_booking_data( array( 
 				'user_id'			=> $booking_form_values[ 'user_id' ],
 				'form_id'			=> $booking_form_values[ 'form_id' ],
-				'event_id'			=> $picked_event[ 'id' ],
-				'event_start'		=> $picked_event[ 'start' ],
-				'event_end'			=> $picked_event[ 'end' ],
+				'event_id'			=> $picked_event[ 'events' ][ 0 ][ 'id' ],
+				'event_start'		=> $picked_event[ 'events' ][ 0 ][ 'start' ],
+				'event_end'			=> $picked_event[ 'events' ][ 0 ][ 'end' ],
 				'quantity'			=> $booking_form_values[ 'quantity' ],
 				'status'			=> $booking_form_values[ 'status' ],
 				'payment_status'	=> $booking_form_values[ 'payment_status' ],
