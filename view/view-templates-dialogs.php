@@ -785,20 +785,20 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			</div>
 			<div>
 				<div id='bookacti-group-of-events-summary-label-container'>
-					<label id='bookacti-group-of-events-summary-label' for='bookacti-group-of-events-summary'><?php esc_html_e( 'Events list', 'booking-activities' ); ?></label>
+					<label id='bookacti-group-of-events-summary-label' for='bookacti-group-of-events-summary'><?php esc_html_e( 'Selected events', 'booking-activities' ); ?></label>
 					<div id='bookacti-group-of-events-occurrences-navigation'>
 						<span id='bookacti-group-of-events-occurrences-undo' class='button' title='<?php esc_html_e( 'Events that will be saved', 'booking-activities' ) ?>'><span class='dashicons dashicons-undo'></span></span>
+						<span id='bookacti-group-of-events-occurrences-reset' class='button' title='<?php esc_html_e( 'Currently saved events', 'booking-activities' ) ?>'>&#11123;</span>
 						<span id='bookacti-group-of-events-occurrences-prev' class='button' title='<?php esc_html_e( 'Previous occurrence', 'booking-activities' ) ?>'>&#8249;</span>
-						<span id='bookacti-group-of-events-occurrences-reset' class='button' title='<?php esc_html_e( 'Currently saved events', 'booking-activities' ) ?>'>&#8226;</span>
 						<span id='bookacti-group-of-events-occurrences-next' class='button' title='<?php esc_html_e( 'Next occurrence', 'booking-activities' ) ?>'>&#8250;</span>
 					</div>
 				</div>
 				<!-- This field is only used for feedback, it is not used to pass any AJAX data, events list is passed through an array made with JS -->
-				<select multiple id='bookacti-group-of-events-summary' class='bookacti-custom-scrollbar' ></select>
+				<select multiple id='bookacti-group-of-events-summary' class='bookacti-custom-scrollbar bookacti-selected-events-list'></select>
 				
 				<div id='bookacti-group-of-events-summary-preview-notice' class='bookacti-backend-settings-only-notice bookacti-warning'>
 					<span class='dashicons dashicons-warning'></span>
-					<span><?php echo sprintf( esc_html__( 'This is a preview of an occurrence of the group, click the "%s" button to see the events that will be actually saved.', 'booking-activities' ), '<span class="dashicons dashicons-undo" title="' . esc_html__( 'Events that will be saved', 'booking-activities' ) . '"></span>' ); ?></span>
+					<span><?php echo sprintf( esc_html__( 'This is a preview of a currently saved occurrence of the group, click the "%s" button to see the events that will be actually saved.', 'booking-activities' ), '<span class="dashicons dashicons-undo" title="' . esc_html__( 'Events that will be saved', 'booking-activities' ) . '"></span>' ); ?></span>
 				</div>
 			</div>
 		<?php

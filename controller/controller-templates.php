@@ -530,7 +530,6 @@ function bookacti_controller_unbind_occurrences() {
 	$exceptions		= bookacti_get_exceptions_by_event( array( 'events' => $new_events_ids ) );
 	$groups			= bookacti_get_groups_of_events( array( 'templates' => array( $event->template_id ), 'past_events' => 1 ) );
 	$bookings_nb_per_event = bookacti_get_number_of_bookings_per_event( array( 'templates' => array( $event->template_id ) ) );
-	$bookings_nb_per_group = bookacti_get_number_of_bookings_per_group_of_events( $groups );
 	
 	$return_data = apply_filters( 'bookacti_event_occurrences_unbound', array( 
 		'status'		=> 'success', 
@@ -539,7 +538,6 @@ function bookacti_controller_unbind_occurrences() {
 		'events_data'	=> $events[ 'data' ] ? $events[ 'data' ] : array(),
 		'exceptions'	=> $exceptions,
 		'bookings'		=> $bookings_nb_per_event,
-		'groups_bookings'=> $bookings_nb_per_group,
 		'groups_data'	=> $groups[ 'data' ],
 		'groups_events' => $groups[ 'groups' ]
 	), $event, $event_start, $event_end, $unbind_action, $interval );
@@ -827,7 +825,7 @@ function bookacti_controller_delete_group_of_events() {
 	bookacti_deactivate_group_of_events( $group_id );
 	
 	// Cancel the bookings
-	$bookings_nb_per_event = $bookings_nb_per_group = array();
+	$bookings_nb_per_event = array();
 	if( $cancel_bookings ) { 
 		// Get bookings before cancelling them
 		if( $send_notifications ) {
@@ -847,12 +845,11 @@ function bookacti_controller_delete_group_of_events() {
 		}
 		
 		$bookings_nb_per_event = bookacti_get_number_of_bookings_per_event( array( 'templates' => array( $group[ 'template_id' ] ) ) );
-		$bookings_nb_per_group = bookacti_get_number_of_bookings_per_group_of_events( $groups );
 	}
 	
 	do_action( 'bookacti_group_of_events_deactivated', $group, $cancel_bookings, $send_notifications );
 
-	bookacti_send_json( array( 'status' => 'success', 'bookings' => $bookings_nb_per_event, 'groups_bookings' => $bookings_nb_per_group ), 'deactivate_group_of_events' );
+	bookacti_send_json( array( 'status' => 'success', 'bookings' => $bookings_nb_per_event ), 'deactivate_group_of_events' );
 }
 add_action( 'wp_ajax_bookactiDeleteGroupOfEvents', 'bookacti_controller_delete_group_of_events' );
 

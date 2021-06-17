@@ -22,7 +22,7 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 	$booking_system_data[ 'events_data' ]			= array();
 	$booking_system_data[ 'events_interval' ]		= array();
 	$booking_system_data[ 'bookings' ]				= bookacti_get_number_of_bookings_per_event( array( 'templates' => array( $template_id ) ) );
-	$booking_system_data[ 'groups_bookings' ]		= bookacti_get_number_of_bookings_per_group_of_events( $groups );
+	$booking_system_data[ 'groups_bookings' ]		= array(); // Not used in calendar editor
 	$booking_system_data[ 'exceptions' ]			= bookacti_get_exceptions_by_event( array( 'templates' => array( $template_id ) ) );
 	$booking_system_data[ 'activities_data' ]		= bookacti_get_activities_by_template( $template_id, false, true );
 	$booking_system_data[ 'groups_data' ]			= $groups[ 'data' ];
@@ -569,28 +569,23 @@ function bookacti_update_exceptions( $object_id, $new_exceptions, $object_type =
 	$dates_to_insert = array_values( array_diff( $new_exceptions, $exceptions_dates ) );
 	$dates_to_delete = array_values( array_diff( $exceptions_dates, $new_exceptions ) );
 	
-	if( ! $dates_to_insert && ! $dates_to_delete ) { return 0; }
-	
 	$updated_nb = 0;
+	if( ! $dates_to_insert && ! $dates_to_delete ) { return $updated_nb; }
 
 	// Insert new exceptions
 	$inserted = $dates_to_insert ? bookacti_insert_exceptions( $object_id, $dates_to_insert, $object_type ) : 0;
-	if( $inserted && is_numeric( $inserted ) && $object_type === 'event' ) {
-		// Delete the events on exceptions from groups of events
+	if( $inserted && is_numeric( $inserted ) ) { $updated_nb += $inserted; }
+	
+	// Delete the events on exceptions from groups of events
+	if( $inserted && $object_type === 'event' ) {
 		bookacti_delete_events_on_dates_from_group( $object_id, $dates_to_insert );
-		$updated_nb += $inserted;
 	}
-
+	
 	// Delete old exceptions
-	$deleted = 0;
-	if( $delete_old && $dates_to_delete ) {
-		$deleted = bookacti_remove_exceptions( $object_id, $dates_to_delete, $object_type );
-		if( $deleted && is_numeric( $deleted ) ) { $updated_nb += $deleted; }
-	}
+	$deleted = $delete_old && $dates_to_delete ? bookacti_remove_exceptions( $object_id, $dates_to_delete, $object_type ) : 0;
+	if( $deleted && is_numeric( $deleted ) ) { $updated_nb += $deleted; }
 
-	if( $inserted === false || $deleted === false ) { return false; }
-
-	return $updated_nb;
+	return $inserted === false && $deleted === false ? false : $updated_nb;
 }
 
 
@@ -774,7 +769,7 @@ function bookacti_update_events_of_group( $group_id, $new_events ) {
 	// Insert new events
 	$inserted = $to_insert ? bookacti_insert_events_into_group( $group_id, $to_insert ) : 0;
 
-	return $deleted === false && $inserted = false ? false : intval( $deleted ) + intval( $inserted );
+	return $deleted === false && $inserted === false ? false : intval( $deleted ) + intval( $inserted );
 }
 
 

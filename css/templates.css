@@ -167,9 +167,9 @@
 #bookacti-group-of-events-new-category-title { display: none; }
 #bookacti-group-of-events-summary-label-container { display: flex; justify-content: space-between; }
 #bookacti-group-of-events-summary-label { padding: 8px 0; }
-#bookacti-group-of-events-summary { width: 100%; max-width: 100%; overflow: auto; }
+.bookacti-backend-dialog .bookacti-selected-events-list { width: 100%; max-width: 100%; overflow: auto; resize: vertical; }
 #bookacti-group-of-events-summary-preview-notice { display: none; margin: 10px 0; }
-#bookacti-group-of-events-summary-preview-notice .dashicons-undo { padding: 0; vertical-align: bottom; }
+#bookacti-group-of-events-summary-preview-notice .dashicons-undo { display: inline; padding: 0; vertical-align: bottom; }
 #bookacti-group-of-events-occurrences-navigation > * { user-select: none; font-size: 1.45em; line-height: 1em; padding: 4px 10px; }
 #bookacti-group-of-events-occurrences-undo .dashicons, .dashicons-before:before { display: inline; font-size: 1em; vertical-align: middle; }
 

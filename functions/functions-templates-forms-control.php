@@ -647,7 +647,7 @@ function bookacti_validate_group_of_events_data( $data ) {
 	if( ! $data[ 'category_id' ] && ! $data[ 'category_title' ] ) { $missing_fields[] = esc_html__( 'Category title', 'booking-activities' ); }
 	
 	// The saved events must be part of the repeat interval
-	if( $data[ 'repeat_from' ] && $data[ 'events' ] ) {
+	if( $data[ 'repeat_freq' ] !== 'none' ) {
 		$repeat_from_dt = new DateTime( $data[ 'repeat_from' ] . ' 00:00:00' );
 		$first_event_dt = new DateTime( $data[ 'events' ][ 0 ][ 'start' ] );
 		if( $first_event_dt < $repeat_from_dt ) {

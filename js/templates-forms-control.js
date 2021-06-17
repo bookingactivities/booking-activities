@@ -382,7 +382,6 @@ function bookacti_validate_event_repetition_data( object_type ) {
 	$j( scope + ' div[id$="-repeat-to-container"]' ).hide();
 	$j( scope + ' .bookacti-exceptions-container' ).hide();
 	$j( '#bookacti-group-of-events-repetition-first-event-notice' ).hide();
-	$j( '#bookacti-group-of-events-occurrences-navigation' ).hide();
 	
 	var exceptions_disabled = false;
 	var exceptions_min = moment.utc( repeat_from ).add( 1, 'd' );
@@ -423,7 +422,6 @@ function bookacti_validate_event_repetition_data( object_type ) {
 		$j( scope + ' div[id$="-repeat-from-container"]' ).show();
 		$j( scope + ' div[id$="-repeat-to-container"]' ).show();
 		$j( '#bookacti-group-of-events-repetition-first-event-notice' ).show();
-		$j( '#bookacti-group-of-events-occurrences-navigation' ).show();
 		
 		if( repeat_freq === 'weekly' ) {
 			$j( scope + ' div[id$="-repeat-days-container"]' ).show();
