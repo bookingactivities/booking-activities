@@ -696,7 +696,8 @@ function bookacti_get_groups_of_events( $raw_args = array() ) {
 		'interval' => array(),
 		'skip_exceptions' => 1,
 		'past_events' => 0,
-		'bounding_only' => 0
+		'bounding_only' => 0,
+		'data_only' => 0
 	);
 	$args = wp_parse_args( $raw_args, $default_args );
 	

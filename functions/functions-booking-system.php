@@ -3159,7 +3159,8 @@ function bookacti_get_groups_of_events_array_from_db_groups_of_events( $groups, 
 		'interval' => array(),
 		'skip_exceptions' => 1,
 		'past_events' => 0,
-		'bounding_only' => 0
+		'bounding_only' => 0,
+		'data_only' => 0
 	);
 	$args = wp_parse_args( $raw_args, $default_args );
 	
@@ -3168,7 +3169,7 @@ function bookacti_get_groups_of_events_array_from_db_groups_of_events( $groups, 
 	foreach( $groups as $group ) { $group_ids[] = $group->id; }
 	
 	// Get group exceptions
-	$exceptions_per_group = $args[ 'skip_exceptions' ] ? bookacti_get_exceptions_by_event( array( 'event_groups' => $group_ids, 'types' => array( 'group_of_events' ) ) ) : array();
+	$exceptions_per_group = $args[ 'skip_exceptions' ] && ! $args[ 'data_only' ] ? bookacti_get_exceptions_by_event( array( 'event_groups' => $group_ids, 'types' => array( 'group_of_events' ) ) ) : array();
 	
 	// Get groups meta
 	$groups_meta = bookacti_get_metadata( 'group_of_events', $group_ids );
@@ -3192,7 +3193,6 @@ function bookacti_get_groups_of_events_array_from_db_groups_of_events( $groups, 
 			'repeat_on'			=> $group->repeat_on,
 			'repeat_from'		=> $group->repeat_from,
 			'repeat_to'			=> $group->repeat_to,
-			'repeat_to'			=> $group->repeat_to,
 			'events'			=> isset( $groups_events[ $group_id ] ) ? $groups_events[ $group_id ] : array(),
 			'settings'			=> isset( $groups_meta[ $group_id ] ) ? $groups_meta[ $group_id ] : array()
 		);
@@ -3200,10 +3200,10 @@ function bookacti_get_groups_of_events_array_from_db_groups_of_events( $groups, 
 	}
 	
 	$args[ 'exceptions_dates' ] = $exceptions_per_group;
-	$groups_array[ 'groups' ] = bookacti_get_occurrences_of_repeated_groups_of_events( $groups_array[ 'data' ], $args );
+	$groups_array[ 'groups' ] = ! $args[ 'data_only' ] ? bookacti_get_occurrences_of_repeated_groups_of_events( $groups_array[ 'data' ], $args ) : array();
 	
 	// Keep only the first and the last groups
-	if( $args[ 'bounding_only' ] ) {
+	if( $args[ 'bounding_only' ] && ! $args[ 'data_only' ] ) {
 		$groups_array[ 'groups' ] = bookacti_get_bounding_group_of_events_occurrences( $groups_array[ 'groups' ] );
 		$groups_array[ 'data' ] = array_intersect_key( $groups_array[ 'data' ], $groups_array[ 'groups' ] );
 	}
@@ -3220,6 +3220,8 @@ function bookacti_get_groups_of_events_array_from_db_groups_of_events( $groups, 
  */
 function bookacti_get_bounding_group_of_events_occurrences( $groups_occurrences ) {
 	$bounding_groups = array();
+	if( ! $groups_occurrences ) { return $bounding_groups; }
+	
 	$bounding_dates = array();
 	$first_group_id = $last_group_id = 0;
 	$first_group_date = $last_group_date = '';

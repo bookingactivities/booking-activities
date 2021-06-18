@@ -146,7 +146,7 @@ function bookacti_get_bookings( $filters ) {
 	if( is_numeric( $filters[ 'group_category_id' ] ) && $filters[ 'group_category_id' ] )	{ $filters[ 'in__group_category_id' ][] = $filters[ 'group_category_id' ]; }
 	if( is_numeric( $filters[ 'event_id' ] ) && $filters[ 'event_id' ] )					{ $filters[ 'in__event_id' ][] = $filters[ 'event_id' ]; }
 	if( is_numeric( $filters[ 'form_id' ] ) && $filters[ 'form_id' ] )						{ $filters[ 'in__form_id' ][] = $filters[ 'form_id' ]; }
-	if( is_numeric( $filters[ 'user_id' ] ) && $filters[ 'user_id' ] )						{ $filters[ 'in__user_id' ][] = $filters[ 'user_id' ]; }
+	if( $filters[ 'user_id' ] )																{ $filters[ 'in__user_id' ][] = $filters[ 'user_id' ]; }
 	
 	$query_select	= ' SELECT DISTINCT B.id, B.user_id, B.order_id, B.form_id, B.group_id, B.event_id, B.event_start, B.event_end, B.state, B.payment_status, B.creation_date, B.expiration_date, B.quantity, B.active, IF( B.group_id IS NULL, B.id, CONCAT( "G", B.group_id ) ) as unique_group_id,'
 					. ' E.title as event_title, E.active as event_active,'
@@ -524,7 +524,7 @@ function bookacti_get_number_of_booking_rows( $filters ) {
 	if( is_numeric( $filters[ 'group_category_id' ] ) && $filters[ 'group_category_id' ] )	{ $filters[ 'in__group_category_id' ][] = $filters[ 'group_category_id' ]; }
 	if( is_numeric( $filters[ 'event_id' ] ) && $filters[ 'event_id' ] )					{ $filters[ 'in__event_id' ][] = $filters[ 'event_id' ]; }
 	if( is_numeric( $filters[ 'form_id' ] ) && $filters[ 'form_id' ] )						{ $filters[ 'in__form_id' ][] = $filters[ 'form_id' ]; }
-	if( is_numeric( $filters[ 'user_id' ] ) && $filters[ 'user_id' ] )						{ $filters[ 'in__user_id' ][] = $filters[ 'user_id' ]; }
+	if( $filters[ 'user_id' ] )																{ $filters[ 'in__user_id' ][] = $filters[ 'user_id' ]; }
 	
 	$query	= ' SELECT COUNT( list_items_count ) FROM ( '
 				. ' SELECT COUNT( DISTINCT B.id ) as list_items_count, IF( B.group_id IS NULL, B.id, CONCAT( "G", B.group_id ) ) as unique_group_id ';
@@ -852,7 +852,7 @@ function bookacti_get_number_of_bookings( $filters ) {
 	if( is_numeric( $filters[ 'group_category_id' ] ) && $filters[ 'group_category_id' ] )	{ $filters[ 'in__group_category_id' ][] = $filters[ 'group_category_id' ]; }
 	if( is_numeric( $filters[ 'event_id' ] ) && $filters[ 'event_id' ] )					{ $filters[ 'in__event_id' ][] = $filters[ 'event_id' ]; }
 	if( is_numeric( $filters[ 'form_id' ] ) && $filters[ 'form_id' ] )						{ $filters[ 'in__form_id' ][] = $filters[ 'form_id' ]; }
-	if( is_numeric( $filters[ 'user_id' ] ) && $filters[ 'user_id' ] )						{ $filters[ 'in__user_id' ][] = $filters[ 'user_id' ]; }
+	if( $filters[ 'user_id' ] )																{ $filters[ 'in__user_id' ][] = $filters[ 'user_id' ]; }
 	
 	$query = '';
 	
@@ -2134,8 +2134,8 @@ function bookacti_get_booking_groups( $filters ) {
 	if( is_numeric( $filters[ 'event_group_id' ] ) && $filters[ 'event_group_id' ] )		{ $filters[ 'in__event_group_id' ][] = $filters[ 'event_group_id' ]; }
 	if( is_numeric( $filters[ 'group_category_id' ] ) && $filters[ 'group_category_id' ] )	{ $filters[ 'in__group_category_id' ][] = $filters[ 'group_category_id' ]; }
 	if( is_numeric( $filters[ 'form_id' ] ) && $filters[ 'form_id' ] )						{ $filters[ 'in__form_id' ][] = $filters[ 'form_id' ]; }
-	if( is_numeric( $filters[ 'user_id' ] ) && $filters[ 'user_id' ] )						{ $filters[ 'in__user_id' ][] = $filters[ 'user_id' ]; }
-
+	if( $filters[ 'user_id' ] )																{ $filters[ 'in__user_id' ][] = $filters[ 'user_id' ]; }
+	
 	$query	= 'SELECT BG.id, BG.event_group_id, BG.user_id, BG.order_id, BG.form_id, BG.state, BG.payment_status, BG.active, IFNULL( NULLIF( BG.category_id, 0 ), EG.category_id ) as category_id,'
 			. ' EG.title as group_title, EG.active as event_group_active,'
 			. ' C.title as category_title, C.template_id, C.active as category_active,'
