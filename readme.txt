@@ -845,7 +845,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 = 1.5.8 - 2018/09/28 =
 * Fix - Hidden fields were shown after hitting "Make a new booking" button
 * Fix - "Generate Password" option prevented the form to be sent (password field not focusable)
-* Fix - PHP error when updating a recurring event if the new range doesn't include all booked occurrences
+* Fix - PHP error when updating a reccurring event if the new range doesn't include all booked occurrences
 * Fix - WC orders bookings status were not change with WooCommerce < 3.0.0
 * Fix - Remove corrupted cart items bookings when they are removed from cart
 * Fix - Update auto refund process to WC 3.0+ way (kept backward compatibility)
@@ -1016,7 +1016,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 = 1.3.1 - 2018/01/28 =
 * Fix - Empty booking list if booking groups table was empty
-* Fix - "Do not exist" error when trying to book single non-recurring events that did exist
+* Fix - "Do not exist" error when trying to book single non-reccurring events that did exist
 * Fix - Incorrect booking values if the booking was made with a booking form
 * Fix - Bookings numbers were not reloaded after booking form was sent
 

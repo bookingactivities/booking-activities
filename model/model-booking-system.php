@@ -8,13 +8,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  * Fetch events by templates and / or activities
  * @version 1.12.0
  * @param array $raw_args {
- *  @param array $templates Array of template IDs
- *  @param array $activities Array of activity IDs
- *  @param array $events Array of event IDs
- *  @param array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
- *  @param boolean $skip_exceptions Whether to retrieve occurrence on exceptions
- *  @param boolean $past_events Whether to compute past events
- *  @param boolean $bounding_only Whether to retrieve the first and the last events only
+ *  @type array $templates Array of template IDs
+ *  @type array $activities Array of activity IDs
+ *  @type array $events Array of event IDs
+ *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
+ *  @type boolean $skip_exceptions Whether to retrieve occurrence on exceptions
+ *  @type boolean $get_exceptions Whether to add exceptions in events data
+ *  @type boolean $past_events Whether to compute past events
+ *  @type boolean $bounding_only Whether to retrieve the first and the last events only
+ *  @type boolean $data_only Whether to retrieve the events data only, not occurrences
  * }
  * @return array $events_array Array of events
  */
@@ -25,8 +27,10 @@ function bookacti_fetch_events( $raw_args = array() ) {
 		'events' => array(),
 		'interval' => array(),
 		'skip_exceptions' => 1,
+		'get_exceptions' => 0,
 		'past_events' => 0,
-		'bounding_only' => 0
+		'bounding_only' => 0,
+		'data_only' => 0
 	);
 	$args = wp_parse_args( $raw_args, $default_args );
 
@@ -170,13 +174,14 @@ function bookacti_fetch_events( $raw_args = array() ) {
  * @version 1.12.0
  * @global wpdb $wpdb
  * @param array $raw_args {
- *  @param array $templates Array of template IDs
- *  @param array $activities Array of activity IDs
- *  @param array groups Array of groups of events IDs
- *  @param array group_categories Array of group categories IDs
- *  @param array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
- *  @param boolean $past_events Whether to compute past events
- *  @param boolean $bounding_only Whether to retrieve the first and the last events only
+ *  @type array $templates Array of template IDs
+ *  @type array $activities Array of activity IDs
+ *  @type array groups Array of groups of events IDs
+ *  @type array group_categories Array of group categories IDs
+ *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
+ *  @type boolean $past_events Whether to compute past events
+ *  @type boolean $bounding_only Whether to retrieve the first and the last events only
+ *  @type boolean $data_only Whether to retrieve the events data only, not occurrences
  * }
  * @return array
  */
@@ -188,7 +193,8 @@ function bookacti_fetch_grouped_events( $raw_args = array() ) {
 		'group_categories' => array(),
 		'interval' => array(),
 		'past_events' => 0,
-		'bounding_only' => 0
+		'bounding_only' => 0,
+		'data_only' => 0
 	);
 	$args = wp_parse_args( $raw_args, $default_args );
 
@@ -316,16 +322,18 @@ function bookacti_fetch_grouped_events( $raw_args = array() ) {
  * @version 1.12.0
  * @global wpdb $wpdb
  * @param array $raw_args {
- *  @param array $templates Array of template IDs
- *  @param array $activities Array of activity IDs
- *  @param array events Array of event IDs
- *  @param array $status Array of groups of events IDs
- *  @param int|false $active 0 or 1. False to ignore.
- *  @param array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
- *  @param int|string $users Array of user IDs
- *  @param boolean $past_events Whether to compute past events
- *  @param boolean $skip_exceptions Whether to retrieve occurrence on exceptions
- *  @param boolean $bounding_only Whether to retrieve the first and the last events only
+ *  @type array $templates Array of template IDs
+ *  @type array $activities Array of activity IDs
+ *  @type array events Array of event IDs
+ *  @type array $status Array of groups of events IDs
+ *  @type int|false $active 0 or 1. False to ignore.
+ *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
+ *  @type int|string $users Array of user IDs
+ *  @type boolean $past_events Whether to compute past events
+ *  @type boolean $skip_exceptions Whether to retrieve occurrence on exceptions
+ *  @type boolean $get_exceptions Whether to add exceptions in events data
+ *  @type boolean $bounding_only Whether to retrieve the first and the last events only
+ *  @type boolean $data_only Whether to retrieve the events data only, not occurrences
  * }
  * @return array
  */
@@ -340,7 +348,9 @@ function bookacti_fetch_booked_events( $raw_args = array() ) {
 		'interval' => array(),
 		'past_events' => 0,
 		'skip_exceptions' => 0,
-		'bounding_only' => 0
+		'get_exceptions' => 0,
+		'bounding_only' => 0,
+		'data_only' => 0
 	);
 	$args = wp_parse_args( $raw_args, $default_args );
 
@@ -522,10 +532,10 @@ function bookacti_get_event_availability( $event_id, $event_start, $event_end ) 
  * @version 1.12.0
  * @global wpdb $wpdb
  * @param array $raw_args {
- *  @param array $templates
- *  @param array $events
- *  @param array $event_groups
- *  @param array $types "event" or "group_of_events"
+ *  @type array $templates
+ *  @type array $events
+ *  @type array $event_groups
+ *  @type array $types "event" or "group_of_events"
  * }
  * @return array of dates
  */
@@ -678,13 +688,15 @@ function bookacti_get_group_of_events( $group_id, $return_type = OBJECT ) {
  * @version 1.12.0
  * @global wpdb $wpdb
  * @param array $raw_args {
- *  @param array $templates
- *  @param array $group_categories
- *  @param array $event_groups
- *  @param array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
- *  @param boolean $skip_exceptions Whether to retrieve occurrence on exceptions
- *  @param boolean $past_events Whether to get past groups of events
- *  @param boolean $bounding_only Whether to retrieve the first and the last events only
+ *  @type array $templates
+ *  @type array $group_categories
+ *  @type array $event_groups
+ *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
+ *  @type boolean $skip_exceptions Whether to retrieve occurrence on exceptions
+ *  @type boolean $get_exceptions Whether to add exceptions in groups data
+ *  @type boolean $past_events Whether to get past groups of events
+ *  @type boolean $bounding_only Whether to retrieve the first and the last events only
+ *  @type boolean $data_only Whether to retrieve the groups data only, not the occurrences
  * }
  * @return array
  */
@@ -695,6 +707,7 @@ function bookacti_get_groups_of_events( $raw_args = array() ) {
 		'event_groups' => array(),
 		'interval' => array(),
 		'skip_exceptions' => 1,
+		'get_exceptions' => 0,
 		'past_events' => 0,
 		'bounding_only' => 0,
 		'data_only' => 0
@@ -1055,8 +1068,8 @@ function bookacti_get_event_groups( $id, $start, $end ) {
  * @version 1.12.0
  * @global wpdb $wpdb
  * @param array $raw_args {
- *  @param array $templates
- *  @param array $group_categories
+ *  @type array $templates
+ *  @type array $group_categories
  * }
  * @return array|boolean
  */

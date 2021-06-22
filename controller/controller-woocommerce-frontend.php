@@ -949,7 +949,7 @@ function bookacti_update_quantity_in_cart( $new_quantity, $cart_item_key ) {
 			$updated = $new_quantity ? bookacti_wc_update_cart_item_bookings_quantity( $cart_item_key, $new_quantity ) : bookacti_wc_update_cart_item_bookings_status( $cart_item_key, 'removed' );
 			if( ! $updated ) {
 				$restore_qty = true;
-				wc_add_notice( esc_html__( 'An error occured while trying to change the quantity of the bookings attached to the item.', 'booking-activities' ), 'error' );
+				wc_add_notice( esc_html__( 'An error occurred while trying to change the quantity of the bookings attached to the item.', 'booking-activities' ), 'error' );
 			}
 		}
 	}
@@ -1050,7 +1050,7 @@ function bookacti_restore_bookings_of_removed_cart_item( $cart_item_key ) {
 		$updated = $quantity ? bookacti_wc_update_cart_item_bookings_quantity( $cart_item_key, $quantity ) : bookacti_wc_update_cart_item_bookings_status( $cart_item_key, 'removed' );
 		if( ! $updated ) { 
 			$restore_bookings = false;
-			wc_add_notice( esc_html__( 'An error occured while trying to change the quantity of the bookings attached to the item.', 'booking-activities' ), 'error' );
+			wc_add_notice( esc_html__( 'An error occurred while trying to change the quantity of the bookings attached to the item.', 'booking-activities' ), 'error' );
 		}
 	}
 	
@@ -1366,11 +1366,11 @@ add_action( 'woocommerce_checkout_create_order', 'bookacti_wc_checkout_create_on
 /**
  * Check availability before paying for a failed order
  * @since 1.7.13
- * @version 1.9.3
+ * @version 1.12.0
  * @param WC_Order $order
  */
 function bookacti_availability_check_before_pay_action( $order ) {
-	$error_occured = false;
+	$error_occurred = false;
 	$order_items_bookings = bookacti_wc_get_order_items_bookings( $order );
 	
 	foreach( $order_items_bookings as $order_item_key => $order_item_bookings ) {
@@ -1381,7 +1381,7 @@ function bookacti_availability_check_before_pay_action( $order ) {
 		
 		// Display the error and stop checkout processing
 		if( $response[ 'status' ] !== 'success' ) {
-			$error_occured = true;
+			$error_occurred = true;
 			foreach( $response[ 'messages' ] as $error => $error_message ) {
 				wc_add_notice( $error_message, 'error' );
 			}
@@ -1389,7 +1389,7 @@ function bookacti_availability_check_before_pay_action( $order ) {
 	}
 	
 	// If the events are no longer available, prevent submission and feedback user
-	if( $error_occured ) {
+	if( $error_occurred ) {
 		wc_add_notice( esc_html__( 'Sorry, this order is invalid and cannot be paid for.', 'woocommerce' ), 'error' );
 		$checkout_url = $order->get_checkout_payment_url();
 		wp_redirect( $checkout_url );

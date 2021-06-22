@@ -14,8 +14,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  *  @type array events Array of event IDs
  *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
  *  @type boolean $skip_exceptions Whether to retrieve occurrence on exceptions
+ *  @type boolean $get_exceptions Whether to add exceptions in events data
  *  @type boolean $past_events Whether to compute past events
  *  @type boolean $bounding_only Whether to retrieve the first and the last events only
+ *  @type boolean $data_only Whether to retrieve the events data only, not occurrences
  * }
  * @return array
  */
@@ -25,8 +27,10 @@ function bookacti_fetch_events_for_calendar_editor( $raw_args = array() ) {
 		'events' => array(),
 		'interval' => array(),
 		'skip_exceptions' => 0,
+		'get_exceptions' => 1,
 		'past_events' => 1,
-		'bounding_only' => 0
+		'bounding_only' => 0,
+		'data_only' => 0
 	);
 	$args = wp_parse_args( $raw_args, $default_args );
 

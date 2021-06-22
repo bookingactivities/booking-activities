@@ -1168,10 +1168,10 @@ function bookacti_get_number_of_bookings( $filters ) {
  * @since 1.12.0 (was bookacti_get_number_of_bookings_for_booking_system)
  * @global wpdb $wpdb
  * @param array $raw_args {
- *  @param array $templates Array of template IDs
- *  @param array $events Array of events IDs
- *  @param array $users Array of users IDs
- *  @param array $status Array of booking status
+ *  @type array $templates Array of template IDs
+ *  @type array $events Array of events IDs
+ *  @type array $users Array of users IDs
+ *  @type array $status Array of booking status
  * }
  * @return array
  */

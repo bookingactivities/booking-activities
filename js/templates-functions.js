@@ -42,7 +42,6 @@ function bookacti_switch_template( selected_template_id ) {
 	delete attributes[ 'events_interval' ];
 	delete attributes[ 'bookings' ];
 	delete attributes[ 'groups_bookings' ];
-	delete attributes[ 'exceptions' ];
 	delete attributes[ 'activities_data' ];
 	delete attributes[ 'groups_events' ];
 	delete attributes[ 'groups_data' ];
@@ -937,13 +936,6 @@ function bookacti_update_event_dates( event, delta, revertFunc, is_dialog ) {
 					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event_id ] = response.event_data;
 				}
 				
-				// Update exceptions
-				if( typeof response.exceptions[ event_id ] !== 'undefined' ) {
-					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ][ event_id ] = response.exceptions[ event_id ];
-				} else if( typeof bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ][ event_id ] !== 'undefined' ) {
-					delete bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ][ event_id ];
-				}
-				
 				// Update selected events
 				$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ], function( i, selected_event ) {
 					if( selected_event.id == event.id ) {
@@ -1040,6 +1032,7 @@ function bookacti_update_event_dates( event, delta, revertFunc, is_dialog ) {
 /**
  * Duplicate an event
  * @since 1.10.0
+ * @version 1.12.0
  * @param {object} event
  * @param {object} delta
  */
@@ -1074,18 +1067,13 @@ function bookacti_duplicate_event( event, delta ) {
 				// Display duplicated event(s)
 				var new_event_id = response.event_id;
 
-				// Update exceptions
-				if( typeof response.exceptions[ new_event_id ] !== 'undefined' ) {
-					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ][ new_event_id ] = response.exceptions[ new_event_id ];
-				}
-
 				// Add new event data
 				if( ! $j.isEmptyObject( response.event_data ) ) {
 					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ new_event_id ] = response.event_data;
 				}
 
 				// Load the new event on calendar
-				// AddEventSource will rerender events, then, new exceptions will also be taken into account
+				// addEventSource will rerender events, new exceptions will then be taken into account
 				$j( '#bookacti-template-calendar' ).fullCalendar( 'addEventSource', response.events );
 
 				$j( '#bookacti-template-calendar' ).trigger( 'bookacti_event_duplicated', [ event, response, data ] );
@@ -1333,23 +1321,17 @@ function bookacti_set_editor_group_of_events_max_height( category_id ) {
 
 /**
  * Expand or Collapse all group categories
- * @param {string} action
- * @param {array} exceptions
+ * @version 1.12.0
+ * @param {String} action
+ * @param {Array} except_category_ids
  */
-function bookacti_expand_collapse_all_groups_of_events( action, exceptions ) {
-	
-	exceptions = exceptions ? exceptions : false;
+function bookacti_expand_collapse_all_groups_of_events( action, except_category_ids ) {
+	except_category_ids = $j.isArray( except_category_ids ) ? except_category_ids : ( $j.isNumeric( except_category_ids ) ? [ except_category_ids ] : [] );
 	
 	var categories_selector = '.bookacti-group-category';
-	if( exceptions ) {
-		if( $j.isArray( exceptions ) ) {
-			$j.each( exceptions, function( i, exception ){
-				categories_selector += ':not([data-group-category-id="' + exception + '"])';
-			});
-		} else {
-			categories_selector = '.bookacti-group-category:not([data-group-category-id="' + exceptions + '"])';
-		}
-	}
+	$j.each( except_category_ids, function( i, category_id ){
+		categories_selector += ':not([data-group-category-id="' + category_id + '"])';
+	});
 	
 	if( action === 'collapse' ) {
 		$j( categories_selector ).attr( 'data-show-groups', 0 );

@@ -17,7 +17,6 @@ $j( document ).ready( function() {
 	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'calendars' ]				= bookacti.selected_template ? [ bookacti.selected_template ] : [];
 	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'bookings' ]				= [];
 	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_bookings' ]		= [];
-	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ]				= [];
 	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ]			= [];
 	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_data' ]			= [];
 	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'activities_data' ]		= {};
@@ -350,15 +349,12 @@ function bookacti_load_template_calendar( calendar ) {
 			}
 			
 			// Check if the event is on an exception
-			if( event_data.repeat_freq && event_data.repeat_freq !== 'none' ) {
-				if( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ] !== undefined 
-				&&  bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ][ event.id ] !== undefined ) {
-					$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ][ event.id ], function ( i, exception_date ) {
-						if( exception_date === event_start_date ) {
-							event.render = 0;
-						}
-					});
-				}
+			if( event_data.repeat_freq && event_data.repeat_freq !== 'none' && typeof event_data.exceptions_dates !== 'undefined' ) {
+				$j.each( event_data.exceptions_dates, function ( i, exception_date ) {
+					if( exception_date === event_start_date ) {
+						event.render = 0;
+					}
+				});
 			}
 			
 			// Check if the event is hidden
@@ -402,9 +398,6 @@ function bookacti_load_template_calendar( calendar ) {
 				$j( '.fc-event' ).removeClass( 'bookacti-event-unavailable' );
 			}
 
-			// Remove exceptions
-			$j( '.fc-event.event-exception' ).remove();
-			
 			// Hide event actions
 			$j( '.bookacti-event-action[data-hide-on-mouseout="1"]' ).hide();
 			

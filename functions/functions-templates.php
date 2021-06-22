@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  */
 function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 	$booking_system_data = $atts;
-	$groups = bookacti_get_groups_of_events( array( 'templates' => array( $template_id ), 'past_events' => 1, 'data_only' => 1 ) );
+	$groups = bookacti_get_groups_of_events( array( 'templates' => array( $template_id ), 'past_events' => 1, 'data_only' => 1, 'get_exceptions' => 1 ) );
 	$templates_data = bookacti_get_templates_data( $template_id, true );
 	
 	$booking_system_data[ 'calendars' ]				= array( $template_id );
@@ -23,7 +23,6 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 	$booking_system_data[ 'events_interval' ]		= array();
 	$booking_system_data[ 'bookings' ]				= bookacti_get_number_of_bookings_per_event( array( 'templates' => array( $template_id ) ) );
 	$booking_system_data[ 'groups_bookings' ]		= array(); // Not used in calendar editor
-	$booking_system_data[ 'exceptions' ]			= bookacti_get_exceptions_by_event( array( 'templates' => array( $template_id ) ) );
 	$booking_system_data[ 'activities_data' ]		= bookacti_get_activities_by_template( $template_id, false, true );
 	$booking_system_data[ 'groups_data' ]			= $groups[ 'data' ];
 	$booking_system_data[ 'groups_events' ]			= array(); // Retrieved when a group is updated

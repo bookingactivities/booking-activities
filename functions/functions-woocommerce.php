@@ -103,7 +103,7 @@ function bookacti_wc_add_bookings_to_cart( $product_bookings_data ) {
 		do_action( 'bookacti_wc_product_booking_form_validated', $return_array, $product_bookings_data );
 	}
 	else {
-		$return_array[ 'message' ] = esc_html__( 'An error occured while trying to add a booking to cart.', 'booking-activities' );
+		$return_array[ 'message' ] = esc_html__( 'An error occurred while trying to add a booking to cart.', 'booking-activities' );
 	}
 	
 	return $return_array;
