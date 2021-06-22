@@ -763,9 +763,6 @@ function bookacti_dialog_update_event( event ) {
 						bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_data' ] = response.groups_data;
 						bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ] = [];
 
-						// Delete old event
-						bookacti_clear_events_on_calendar( $j( '#bookacti-template-calendar' ), event );
-
 						// Replace the old event with the new event on calendar
 						// addEventSource will rerender events, new exceptions will then be taken into account
 						$j( '#bookacti-template-calendar' ).fullCalendar( 'removeEvents', event_id );
@@ -1759,7 +1756,7 @@ function bookacti_dialog_update_activity( activity_id ) {
 							bookacti_init_activities();
 
 							// Clear the calendar and refetch events
-							bookacti_refetch_events_on_template();
+							bookacti_refetch_events_on_calendar_editor();
 
 							$j( '#bookacti-activity-data-dialog' ).trigger( 'bookacti_activity_updated', [ response, data ] );
 							
@@ -1860,7 +1857,7 @@ function bookacti_dialog_delete_activity( activity_id ) {
 							if( data.delete_events ) { 
 								bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_data' ] = response.groups_data;
 								bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ] = [];
-								bookacti_refetch_events_on_template();
+								bookacti_refetch_events_on_calendar_editor();
 							}
 
 							// Display tuto if there is no more activities available

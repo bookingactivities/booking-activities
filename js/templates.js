@@ -184,7 +184,7 @@ function bookacti_load_template_calendar( calendar ) {
 		
 		/**
 		 * When a view is rendered
-		 * @version 1.8.6
+		 * @version 1.12.0
 		 * @param {object} view
 		 * @param {HTMLElement} element
 		 */
@@ -192,7 +192,8 @@ function bookacti_load_template_calendar( calendar ) {
 			// Maybe fetch the events on the view (if not already)
 			if( bookacti.load_events === true ) { 
 				var interval = { 'start': moment.utc( moment.utc( view.intervalStart ).clone().locale( 'en' ).format( 'YYYY-MM-DD' ) + ' 00:00:00' ).locale( 'en' ), 'end': moment.utc( moment.utc( view.intervalEnd ).clone().locale( 'en' ).subtract( 1, 'days' ).format( 'YYYY-MM-DD' ) + ' 23:59:59' ).locale( 'en' ) };
-				bookacti_fetch_events_from_interval( $j( '#bookacti-template-calendar' ), interval );
+				var new_interval = bookacti_get_interval_of_events( $j( '#bookacti-template-calendar' ), interval );
+				if( ! $j.isEmptyObject( new_interval ) ) { bookacti_fetch_events_on_calendar_editor( new_interval ); }
 			}
 			
 			// Add a class if the events are overlapping

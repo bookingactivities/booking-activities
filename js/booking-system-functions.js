@@ -153,16 +153,15 @@ function bookacti_reload_booking_system( booking_system, keep_picked_events ) {
 					});
 				}
 				
-				// Trigger action for plugins
-				booking_system.trigger( 'bookacti_booking_system_reloaded', original_attributes );
-				
 				// Load the booking method
 				bookacti_booking_method_set_up( booking_system );
 				
 				// Refresh picked events
 				bookacti_fill_booking_system_fields( booking_system );
 				bookacti_fill_picked_events_list( booking_system );
-				bookacti_refresh_picked_events_on_calendar( booking_system );
+				
+				// Trigger action for plugins
+				booking_system.trigger( 'bookacti_booking_system_reloaded', original_attributes );
 				
 			} else {
 				var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
@@ -182,15 +181,17 @@ function bookacti_reload_booking_system( booking_system, keep_picked_events ) {
 
 
 /**
- * Display events of a specific interval
- * @version 1.8.5
+ * Get the interval of events to be loaded according to the desired view interval
+ * @since 1.12.0 (was bookacti_fetch_events_from_interval)
  * @param {HTMLElement} booking_system
  * @param {object} desired_interval { 'start': moment.utc(), 'end': moment.utc() }
+ * @return {Object}
  */
-function bookacti_fetch_events_from_interval( booking_system, desired_interval ) {
+function bookacti_get_interval_of_events( booking_system, desired_interval ) {
 	var booking_system_id	= booking_system.attr( 'id' );
 	var current_interval	= bookacti.booking_system[ booking_system_id ][ 'events_interval' ];
 	var availability_period	= bookacti_get_availability_period( booking_system );
+	var event_load_interval	= parseInt( bookacti_localized.event_load_interval );
 	
 	var calendar_start	= moment.utc( availability_period.start );
 	var calendar_end	= moment.utc( availability_period.end );
@@ -200,17 +201,17 @@ function bookacti_fetch_events_from_interval( booking_system, desired_interval )
 	if( desired_interval_start.isBefore( calendar_start ) )	{ desired_interval_start = calendar_start.clone(); }
 	if( desired_interval_end.isAfter( calendar_end ) )		{ desired_interval_end = calendar_end.clone(); }
 	
-	var new_interval		= false;
-	var event_load_interval	= parseInt( bookacti_localized.event_load_interval );
-	var min_interval		= {
+	var new_interval = {};
+	var min_interval = {
 		"start" : desired_interval_start.clone(),
 		"end" : desired_interval_end.clone()
 	};
 	
 	// Compute the new interval of events to load
+	
 	// If no events has ever been loaded, compute the first interval to load
 	if( $j.isEmptyObject( current_interval ) ) { 
-		new_interval = bookacti_get_new_interval_of_events( booking_system, min_interval, event_load_interval );
+		new_interval = bookacti_get_new_interval_of_events( booking_system, min_interval );
 	} 
 
 	// Else, check if the desired_interval contain unloaded days, and if so, load events for this new interval
@@ -237,7 +238,7 @@ function bookacti_fetch_events_from_interval( booking_system, desired_interval )
 				bookacti_booking_method_clear_events( booking_system );
 
 				// Compute new interval
-				new_interval = bookacti_get_new_interval_of_events( booking_system, min_interval, event_load_interval );
+				new_interval = bookacti_get_new_interval_of_events( booking_system, min_interval );
 			}
 
 			else {
@@ -276,27 +277,19 @@ function bookacti_fetch_events_from_interval( booking_system, desired_interval )
 			}
 		}
 	}
-
-	// Fetch events of the interval
-	if( new_interval !== false ) {
-		if( booking_system_id === 'bookacti-template-calendar' ) {
-			bookacti_fetch_events_on_template( null, new_interval );
-		} else {
-			bookacti_fetch_events( booking_system, new_interval );
-		}
-	}
+	
+	return new_interval;
 }
 
 
 /**
  * Get the first events interval
- * @version 1.8.5
+ * @version 1.12.0
  * @param {HTMLElement} booking_system
- * @param {object} min_interval
- * @param {int} interval_duration
- * @returns {object}
+ * @param {Object} min_interval
+ * @returns {Object}
  */
-function bookacti_get_new_interval_of_events( booking_system, min_interval, interval_duration ) {
+function bookacti_get_new_interval_of_events( booking_system, min_interval ) {
 	var booking_system_id = booking_system.attr( 'id' );
 	var availability_period = bookacti_get_availability_period( booking_system );
 	
@@ -321,8 +314,7 @@ function bookacti_get_new_interval_of_events( booking_system, min_interval, inte
 		}
 	}
 	
-	interval_duration = parseInt( interval_duration ) || parseInt( bookacti_localized.event_load_interval );
-	
+	var interval_duration = parseInt( bookacti_localized.event_load_interval );
 	var interval_start	= moment.utc( moment.utc( min_interval.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD' ) + ' 00:00:00' ).locale( 'en' );
 	var interval_end	= moment.utc( moment.utc( min_interval.end ).clone().locale( 'en' ).format( 'YYYY-MM-DD' ) + ' 23:59:59' ).locale( 'en' );
 	var min_interval_duration = parseInt( Math.abs( moment.utc( min_interval.end ).diff( min_interval.start, 'days' ) ) );
@@ -347,12 +339,12 @@ function bookacti_get_new_interval_of_events( booking_system, min_interval, inte
 	interval_end.add( interval_end_days_to_add, 'days' );
 	if( calendar_end.isBefore( interval_end ) ) { interval_end = calendar_end; }
 
-	var interval = {
+	var new_interval = {
 		"start"	: interval_start.format( 'YYYY-MM-DD HH:mm:ss' ), 
 		"end"	: interval_end.format( 'YYYY-MM-DD HH:mm:ss' ) 
 	};
 
-	return interval;
+	return new_interval;
 }
 
 
@@ -405,11 +397,7 @@ function bookacti_refresh_booking_numbers( booking_system ) {
 	var groups_data			= bookacti.booking_system[ booking_system_id ][ 'groups_data' ];
 	var groups_events		= bookacti.booking_system[ booking_system_id ][ 'groups_events' ];
 	
-	if( booking_system_id === 'bookacti-template-calendar' ) {
-		bookacti_start_template_loading();
-	} else {
-		bookacti_start_loading_booking_system( booking_system );
-	}
+	bookacti_start_loading_booking_system( booking_system );
 
     $j.ajax({
         url: bookacti_localized.ajaxurl,
@@ -434,12 +422,8 @@ function bookacti_refresh_booking_numbers( booking_system ) {
             alert ( 'AJAX ' + bookacti_localized.error );
             console.log( e );
         },
-        complete: function() { 
-			if( booking_system_id === 'bookacti-template-calendar' ) {
-				bookacti_stop_template_loading();
-			} else {
-				bookacti_stop_loading_booking_system( booking_system );
-			}
+        complete: function() {
+			bookacti_stop_loading_booking_system( booking_system );
 		}
     });
 }
@@ -587,7 +571,7 @@ function bookacti_fill_booking_system_fields( booking_system ) {
 
 
 /**
- * Pick all events of a group onto the calendar
+ * Pick a single event or a all events of a group
  * @since 1.12.0 (was bookacti_pick_events_of_group)
  * @param {HTMLElement} booking_system
  * @param {Object|Int} event
@@ -1607,17 +1591,15 @@ function bookacti_sort_events_array_by_dates( array, sort_by_end, desc, labels )
  * @param {boolean} reload_events
  */
 function bookacti_booking_method_set_up( booking_system, reload_events ) {
+	reload_events = reload_events ? 1 : 0;
+	
 	var booking_system_id = booking_system.attr( 'id' );
 	booking_method = bookacti.booking_system[ booking_system_id ][ 'method' ];
-	reload_events = reload_events ? 1 : 0;
+	if( $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) { booking_method = 'calendar'; }
 	
 	if( bookacti.booking_system[ booking_system_id ][ 'no_events' ] ) { return; }
 	
-	if( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {
-		bookacti_set_calendar_up( booking_system, reload_events );
-	} else {
-		booking_system.trigger( 'bookacti_booking_method_set_up', [ booking_method, reload_events ] );
-	}
+	booking_system.trigger( 'bookacti_booking_method_set_up', [ booking_method, reload_events ] );
 	
 	// Display picked events list if events were selected by default
 	if( bookacti.booking_system[ booking_system_id ][ 'picked_events' ].length
@@ -1630,18 +1612,16 @@ function bookacti_booking_method_set_up( booking_system, reload_events ) {
 
 /**
  * Fill the events according to the booking method
- * @version 1.8.0
+ * @version 1.12.0
  * @param {HTMLElement} booking_system
  * @param {object} events
  */
 function bookacti_booking_method_display_events( booking_system, events ) {
 	var booking_system_id = booking_system.attr( 'id' );
 	booking_method = bookacti.booking_system[ booking_system_id ][ 'method' ];
-	if( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {
-		bookacti_display_events_on_calendar( booking_system, events );
-	} else {
-		booking_system.trigger( 'bookacti_booking_method_display_events', [ booking_method, events ] );
-	}
+	if( $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) { booking_method = 'calendar'; }
+	
+	booking_system.trigger( 'bookacti_booking_method_display_events', [ booking_method, events ] );
 }
 
 
@@ -1675,29 +1655,20 @@ function bookacti_booking_method_rerender_events( booking_system ) {
 
 /**
  * Clear events according to booking method
- * @version 1.8.0
+ * @version 1.12.0
  * @param {HTMLElement} booking_system
- * @param {object} event
  */
-function bookacti_booking_method_clear_events( booking_system, event ) {
+function bookacti_booking_method_clear_events( booking_system ) {
 	var booking_system_id = booking_system.attr( 'id' );
 	booking_method = bookacti.booking_system[ booking_system_id ][ 'method' ];
-	event = event || null;
+	if( $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) { booking_method = 'calendar'; }
 	
 	// Reset global arrays
-	if( ! event ) {
-		bookacti.booking_system[ booking_system_id ][ 'events' ]			= [];
-		bookacti.booking_system[ booking_system_id ][ 'events_data' ]		= [];
-		bookacti.booking_system[ booking_system_id ][ 'events_interval' ]	= [];
-	} else {
-		delete bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event.id ];
-	}
+	bookacti.booking_system[ booking_system_id ][ 'events' ]			= [];
+	bookacti.booking_system[ booking_system_id ][ 'events_data' ]		= [];
+	bookacti.booking_system[ booking_system_id ][ 'events_interval' ]	= [];
 	
-	if( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {
-		bookacti_clear_events_on_calendar( booking_system, event );
-	} else {
-		booking_system.trigger( 'bookacti_clear_events', [ booking_method, event ] );
-	}
+	booking_system.trigger( 'bookacti_clear_events', [ booking_method ] );
 }
 
 
@@ -1706,71 +1677,44 @@ function bookacti_booking_method_clear_events( booking_system, event ) {
 
 /**
  * Start a loading (or keep on loading if already loading)
+ * @version 1.12.0
  * @param {HTMLElement} booking_system
  */
 function bookacti_start_loading_booking_system( booking_system ) {
-	
-	var booking_system_id	= booking_system.attr( 'id' );
-	var booking_method		= bookacti.booking_system[ booking_system_id ][ 'method' ];
-	
-	var loading_div = '<div class="bookacti-loading-alt">' 
-					+	'<img class="bookacti-loader" src="' + bookacti_localized.plugin_path + '/img/ajax-loader.gif" title="' + bookacti_localized.loading + '" />'
-					+	'<span class="bookacti-loading-alt-text" >' + bookacti_localized.loading + '</span>'
-					+ '</div>';
+	var booking_system_id = booking_system.attr( 'id' );
+	var booking_method = bookacti.booking_system[ booking_system_id ][ 'method' ];
+	if( $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) { booking_method = 'calendar'; }
 	
 	if( ! $j.isNumeric( bookacti.booking_system[ booking_system_id ][ 'loading_number' ] ) ) {
 		bookacti.booking_system[ booking_system_id ][ 'loading_number' ] = 0;
 	}
 	
-	if( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {
-		if( booking_system.find( '.bookacti-calendar.fc' ).length ) {
-			if( bookacti.booking_system[ booking_system_id ][ 'loading_number' ] === 0 || ! booking_system.find( '.bookacti-loading-overlay' ).length ) {
-				booking_system.find( '.bookacti-loading-alt' ).remove();
-				bookacti_enter_calendar_loading_state( booking_system.find( '.bookacti-calendar' ) );
-			}
-		} else if( ! booking_system.find( '.bookacti-loading-alt' ).length ) {
-			booking_system.append( loading_div );
-		}
-		
-	}
-	
-	if( bookacti.booking_system[ booking_system_id ][ 'loading_number' ] === 0 ) {
-		booking_system.trigger( 'bookacti_enter_loading_state' );
-	}
-	
 	bookacti.booking_system[ booking_system_id ][ 'loading_number' ]++;
 	
-	booking_system.trigger( 'bookacti_start_loading', [ booking_method, loading_div ] );
+	booking_system.trigger( 'bookacti_start_loading', [ booking_method ] );
 }
 
 
 /**
  * Stop a loading (but keep on loading if there are other loadings)
+ * @version 1.12.0
  * @param {HTMLElement} booking_system
- * @param {boolean} force_exit 
+ * @param {Boolean} force_exit 
  */
 function bookacti_stop_loading_booking_system( booking_system, force_exit ) {
-	
-	force_exit = force_exit || false;
+	force_exit = force_exit ? force_exit : false;
 	
 	var booking_system_id	= booking_system.attr( 'id' );
 	var booking_method		= bookacti.booking_system[ booking_system_id ][ 'method' ];
+	if( $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) { booking_method = 'calendar'; }
 	
 	bookacti.booking_system[ booking_system_id ][ 'loading_number' ]--;
 	bookacti.booking_system[ booking_system_id ][ 'loading_number' ] = Math.max( bookacti.booking_system[ booking_system_id ][ 'loading_number' ], 0 );
 	
 	if( force_exit ) { bookacti.booking_system[ booking_system_id ][ 'loading_number' ] = 0; }
 	
-	booking_system.trigger( 'bookacti_stop_loading' );
-	
 	// Action to do after everything has loaded
 	if( bookacti.booking_system[ booking_system_id ][ 'loading_number' ] === 0 ) {
-		
-		if( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {		
-			bookacti_exit_calendar_loading_state( booking_system.find( '.bookacti-calendar' ) );
-		}
-		
-		booking_system.find( '.bookacti-loading-alt' ).remove();
 		booking_system.trigger( 'bookacti_exit_loading_state', [ booking_method, force_exit ] );
 	}
 }

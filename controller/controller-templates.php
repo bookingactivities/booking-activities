@@ -6,23 +6,24 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * AJAX Controller - Fetch events in order to display them
- * @version 1.9.0
+ * @version 1.12.0
  */
 function bookacti_controller_fetch_template_events() {
-	$template_id = intval( $_POST[ 'template_id' ] );
-
-	// Check nonce and capabilities
+	// Check nonce
 	$is_nonce_valid	= check_ajax_referer( 'bookacti_fetch_template_events', 'nonce', false );
 	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'fetch_template_events' ); }
 	
+	$template_id = intval( $_POST[ 'template_id' ] );
+	
+	// Check capabilities
 	$is_allowed = current_user_can( 'bookacti_read_templates' ) && bookacti_user_can_manage_template( $template_id );
 	if( ! $is_allowed || ! $template_id ) { bookacti_send_json_not_allowed( 'fetch_template_events' ); }
 
-	$event_id	= intval( $_POST[ 'event_id' ] );
 	$interval = ! empty( $_POST[ 'interval' ] ) ? bookacti_sanitize_events_interval( $_POST[ 'interval' ] ) : array();
 
-	$events_args = array( 'templates' => array( $template_id ), 'events' => $event_id ? array( $event_id ) : array(), 'interval' => $interval, 'past_events' => true );
+	$events_args = array( 'templates' => array( $template_id ), 'interval' => $interval, 'past_events' => 1 );
 	$events	= bookacti_fetch_events_for_calendar_editor( $events_args );
+	
 	bookacti_send_json( array( 
 		'status' => 'success', 
 		'events' => $events[ 'events' ] ? $events[ 'events' ] : array(),
