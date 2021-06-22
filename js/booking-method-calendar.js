@@ -286,9 +286,12 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 			element.attr( 'data-event-start',	event_start_formatted );
 			element.data( 'event-end',			event_end_formatted );
 			element.attr( 'data-event-end',		event_end_formatted );
-			element.data( 'activity-id',		bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event.id ][ 'activity_id' ] );
-			element.attr( 'data-activity-id',	bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event.id ][ 'activity_id' ] );
 			event.render = 1;
+			
+			if( typeof event_data !== 'undefined' ) {
+				element.data( 'activity-id', event_data.activity_id );
+				element.attr( 'data-activity-id', event_data.activity_id );
+			}
 			
 			// Allow HTML in titles
 			var title = element.find( '.fc-title' );

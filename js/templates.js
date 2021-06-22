@@ -75,7 +75,18 @@ $j( document ).ready( function() {
 	$j( 'body' ).on( 'dragstart', '#bookacti-template-activities-container .fc-event', function( e, ui ) {
 		ui.helper.css( 'maxWidth', $j( this ).width() );
 	});
-
+	
+	
+	/**
+	 * Clear events on calendar editor - on bookacti_clear_events
+	 * @since 1.12.0
+	 * @param {Event} e
+	 * @param {String} booking_method
+	 */
+	$j( 'body' ).on( 'bookacti_clear_events', '#bookacti-template-calendar', function( e, booking_method ) {
+		bookacti_clear_events_on_calendar_editor();
+	});
+	
 
 	/**
 	 * If an error occurs, stop loading and allow every interactions
@@ -235,7 +246,7 @@ function bookacti_load_template_calendar( calendar ) {
 			element.attr( 'data-event-end',		event_end_formatted );
 			event.render = 1;
 			
-			if( event_data.activity_id ) {
+			if( typeof event_data !== 'undefined' ) {
 				activity_id = event_data.activity_id;
 				element.data( 'activity-id', activity_id );
 				element.attr( 'data-activity-id', activity_id );
@@ -257,7 +268,7 @@ function bookacti_load_template_calendar( calendar ) {
 			element.find( '.fc-time' ).html( '<span class="bookacti-event-time-start">' + event.start.format( time_format ) + '</span><span class="bookacti-event-time-separator"> - </span><span class="bookacti-event-time-end">' + event.end.format( time_format ) + '</span>' );
 			
 			// Add availability div
-			var availability = parseInt( event_data.availability );
+			var availability = typeof event_data !== 'undefined' ? parseInt( event_data.availability ) : 0;
 			event.bookings = bookacti_get_event_number_of_bookings( $j( '#bookacti-template-calendar' ), event );
 			if( event.bookings != null ) {
 				var class_no_availability = '', class_booked = '', class_full = '';
@@ -350,12 +361,14 @@ function bookacti_load_template_calendar( calendar ) {
 			}
 			
 			// Check if the event is on an exception
-			if( event_data.repeat_freq && event_data.repeat_freq !== 'none' && typeof event_data.exceptions_dates !== 'undefined' ) {
-				$j.each( event_data.exceptions_dates, function ( i, exception_date ) {
-					if( exception_date === event_start_date ) {
-						event.render = 0;
-					}
-				});
+			if( typeof event_data !== 'undefined' ) {
+				if( event_data.repeat_freq && event_data.repeat_freq !== 'none' && typeof event_data.exceptions_dates !== 'undefined' ) {
+					$j.each( event_data.exceptions_dates, function ( i, exception_date ) {
+						if( exception_date === event_start_date ) {
+							event.render = 0;
+						}
+					});
+				}
 			}
 			
 			// Check if the event is hidden

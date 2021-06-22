@@ -863,7 +863,6 @@ function bookacti_refetch_events_on_calendar_editor() {
 /**
  * Clear events on calendar editor
  * @since 1.12.0
- * @param {HTMLElement} booking_system
  */
 function bookacti_clear_events_on_calendar_editor() {
 	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events' ]				= [];
