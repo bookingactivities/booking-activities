@@ -34,7 +34,7 @@ $default_template = false;
 <div id='bookacti-template-container'>
 <?php 
 	$templates = bookacti_fetch_templates();
-	wp_nonce_field( 'bookacti_fetch_template_events', 'nonce_fetch_template_events', false );
+	wp_nonce_field( 'bookacti_get_calendar_editor_data', 'nonce_get_calendar_editor_data', false );
 	wp_nonce_field( 'bookacti_edit_template', 'nonce_edit_template', false );
 ?>
     <div id='bookacti-template-sidebar' class='<?php if( ! $templates ) { echo 'bookacti-no-template'; } ?>'>

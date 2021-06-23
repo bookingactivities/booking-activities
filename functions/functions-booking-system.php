@@ -133,6 +133,7 @@ function bookacti_get_booking_system_data( $atts ) {
 	// Events related data
 	if( $atts[ 'auto_load' ] && ! $booking_system_data[ 'no_events' ] ) {
 		$availability_period= array( 'start' => $atts[ 'start' ], 'end' => $atts[ 'end' ] );
+		$events_interval	= bookacti_get_new_interval_of_events( $availability_period, array(), false, $atts[ 'past_events' ] );
 		$user_ids			= array();
 		$status				= array();
 		$categories_data	= array();
@@ -142,7 +143,7 @@ function bookacti_get_booking_system_data( $atts ) {
 		$booking_lists		= array();
 
 		if( ! in_array( 'none', $atts[ 'group_categories' ], true ) ) {
-			$groups = bookacti_get_groups_of_events( array( 'templates' => $atts[ 'calendars' ], 'group_categories' => $atts[ 'group_categories' ], 'interval' => $atts[ 'past_events_bookable' ] ? array() : $availability_period, 'past_events' => 1 ) );
+			$groups = bookacti_get_groups_of_events( array( 'templates' => $atts[ 'calendars' ], 'group_categories' => $atts[ 'group_categories' ], 'interval' => $events_interval, 'interval_started' => 1, 'past_events' => $atts[ 'past_events' ] ) );
 			$categories_data = bookacti_get_group_categories( array( 'templates' => $atts[ 'calendars' ], 'group_categories' => $atts[ 'group_categories' ] ) );
 			$groups_ids = array_keys( $groups[ 'data' ] );
 		}
@@ -180,6 +181,9 @@ function bookacti_get_booking_system_data( $atts ) {
 				// Trim the availability period
 				$availability_period = array( 'start' => $booking_system_data[ 'start' ], 'end' => $booking_system_data[ 'end' ] );
 				
+				// Update the interval of events to retrieve
+				$events_interval = bookacti_get_new_interval_of_events( $availability_period, array(), false, $atts[ 'past_events' ] );
+			
 				// Display the last event entirely
 				if( strtotime( $bounding_dates[ 'start_last' ] ) < strtotime( $booking_system_data[ 'end' ] )
 				 && strtotime( $bounding_dates[ 'end' ] ) > strtotime( $booking_system_data[ 'end' ] ) ) { $booking_system_data[ 'end' ] = $bounding_dates[ 'end' ]; }
@@ -191,9 +195,6 @@ function bookacti_get_booking_system_data( $atts ) {
 		}
 
 		if( ! $booking_system_data[ 'no_events' ] ) {
-			// Compute the interval of events to retrieve
-			$events_interval = bookacti_get_new_interval_of_events( $availability_period, array(), false, $atts[ 'past_events' ] );
-			
 			// Get events
 			if( $atts[ 'groups_only' ] ) {
 				if( $groups_ids ) {
@@ -206,6 +207,9 @@ function bookacti_get_booking_system_data( $atts ) {
 			} else {
 				$events	= bookacti_fetch_events( array( 'templates' => $atts[ 'calendars' ], 'activities' => $atts[ 'activities' ], 'past_events' => $atts[ 'past_events' ], 'interval' => $events_interval ) );	
 			}
+			
+			$events = apply_filters( 'bookacti_events_data_from_interval', $events, $events_interval, $atts );
+			$groups = apply_filters( 'bookacti_groups_of_events_data_from_interval', $groups, $events_interval, $atts );
 			
 			// Get the booking list for each events
 			if( $atts[ 'tooltip_booking_list' ] && $events[ 'events' ] && $events[ 'data' ] ) {
@@ -224,7 +228,7 @@ function bookacti_get_booking_system_data( $atts ) {
 			$booking_system_data[ 'events' ]				= $events[ 'events' ] ? $events[ 'events' ] : array();
 			$booking_system_data[ 'events_data' ]			= $events[ 'data' ] ? $events[ 'data' ] : array();
 			$booking_system_data[ 'events_interval' ]		= $events_interval;
-			$booking_system_data[ 'bookings' ]				= bookacti_get_number_of_bookings_per_event( array( 'templates' => $atts[ 'calendars' ], 'users' => $user_ids, 'status' => $status ) );
+			$booking_system_data[ 'bookings' ]				= bookacti_get_number_of_bookings_per_event( array( 'templates' => $atts[ 'calendars' ], 'events' => array_keys( $events[ 'data' ] ), 'interval' => $events_interval, 'users' => $user_ids, 'status' => $status ) );
 			$booking_system_data[ 'groups_bookings' ]		= bookacti_get_number_of_bookings_per_group_of_events( $groups, array( 'users' => $user_ids, 'status' => $status ) );
 			$booking_system_data[ 'booking_lists' ]			= $booking_lists;
 			$booking_system_data[ 'activities_data' ]		= bookacti_get_activities_by_template( $atts[ 'calendars' ], true );
@@ -1573,7 +1577,7 @@ function bookacti_picked_group_of_events_exists( $picked_event_group, $occurrenc
 			foreach( $occurrences[ $group_date ] as $group_event ) {
 				$is_picked = false;
 				foreach( $picked_event_group[ 'events' ] as $picked_event ) {
-					if( $picked_event[ 'id' ] === $group_event[ 'id' ] 
+					if( intval( $picked_event[ 'id' ] ) === intval( $group_event[ 'id' ] )
 					&&  $picked_event[ 'start' ] === $group_event[ 'start' ]
 					&&  $picked_event[ 'end' ] === $group_event[ 'end' ] ) {
 						$is_picked = true; break;
@@ -1632,7 +1636,8 @@ function bookacti_is_picked_event_available_on_form( $picked_event, $event_data,
 			$validated[ 'message' ] = esc_html__( 'You cannot book single events with this form, you must select a group of events.', 'booking-activities' );
 		} else {
 			// Get the event template's groups
-			$groups = bookacti_get_groups_of_events( array( 'templates' => array( $event_data[ 'template_id' ] ), 'group_categories' => $calendar_data[ 'group_categories' ], 'interval' => $past_events_bookable ? array() : $availability_period, 'past_events' => 1 ) );
+			$groups_interval = bookacti_sanitize_events_interval( array( 'start' => $picked_event[ 'start' ], 'end' => $picked_event[ 'end' ] ) );
+			$groups = bookacti_get_groups_of_events( array( 'templates' => array( $event_data[ 'template_id' ] ), 'group_categories' => $calendar_data[ 'group_categories' ], 'interval' => $groups_interval, 'interval_started' => 1, 'past_events' => 1 ) );
 			
 			// Check if the event belongs to a group
 			$is_in_group = false;
@@ -1766,7 +1771,7 @@ function bookacti_is_picked_group_of_events_available_on_form( $picked_event_gro
 		$started_groups_bookable	= isset( $group_data[ 'settings' ][ 'started_groups_bookable' ] ) && in_array( $group_data[ 'settings' ][ 'started_groups_bookable' ], array( 0, 1, '0', '1', true, false ), true ) ? intval( $group_data[ 'settings' ][ 'started_groups_bookable' ] ) : bookacti_get_setting_value( 'bookacti_general_settings', 'started_groups_bookable' );
 		$date_format				= bookacti_get_message( 'date_format_long' );
 		$last_picked_event			= end( $picked_event_group[ 'events' ] );
-		$first_picked_event			= end( $picked_event_group[ 'events' ] );
+		$first_picked_event			= reset( $picked_event_group[ 'events' ] );
 		$group_start				= new DateTime( $first_picked_event[ 'start' ], $timezone );
 		$group_end					= new DateTime( $last_picked_event[ 'end' ], $timezone );
 		$current_time				= new DateTime( 'now', $timezone );
@@ -1776,7 +1781,7 @@ function bookacti_is_picked_group_of_events_available_on_form( $picked_event_gro
 			$validated[ 'message' ] = esc_html__( 'You cannot book a group of events if any of its events is past.', 'booking-activities' );
 			return $validated;
 		}
-	
+		
 		// Check if the group of events is in the availability period
 		$availability_period = bookacti_get_calendar_field_availability_period( $calendar_data );
 		$calendar_start	= new DateTime( $availability_period[ 'start' ], $timezone );
@@ -3102,7 +3107,7 @@ function bookacti_export_events_page( $atts, $calname = '', $caldesc = '', $sequ
 	$events		= array( 'events' => array(), 'data' => array() );
 	if( $atts[ 'groups_only' ] ) {
 		if( ! in_array( 'none', $atts[ 'group_categories' ], true ) ) {
-			$groups = bookacti_get_groups_of_events( array( 'templates' => $atts[ 'calendars' ], 'group_categories' => $atts[ 'group_categories' ], 'interval' => $atts[ 'past_events_bookable' ] ? array() : $availability_period, 'past_events' => 1 ) );
+			$groups = bookacti_get_groups_of_events( array( 'templates' => $atts[ 'calendars' ], 'group_categories' => $atts[ 'group_categories' ], 'interval' => $events_interval, 'past_events' => $atts[ 'past_events' ] ) );
 			$groups_ids[] = array_keys( $groups[ 'data' ] );
 		}
 		if( $groups_ids ) {
@@ -3153,10 +3158,11 @@ function bookacti_export_events_page( $atts, $calname = '', $caldesc = '', $sequ
  * @since 1.12.0
  * @param array $groups Array of objects groups from database
  * @param array $raw_args {
+ *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
+ *  @type boolean $interval_started Whether to retrieve started groups in interval
  *  @type boolean $skip_exceptions Whether to retrieve occurrence on exceptions
  *  @type boolean $get_exceptions Whether to add exceptions in groups data
  *  @type boolean $past_events Whether to compute past groups of events
- *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
  *  @type boolean $bounding_only Whether to retrieve the first and the last events only
  *  @type boolean $data_only Whether to retrieve the groups data only, not the occurrences
  * }
@@ -3168,6 +3174,7 @@ function bookacti_get_groups_of_events_array_from_db_groups_of_events( $groups, 
 	
 	$default_args = array(
 		'interval' => array(),
+		'interval_started' => 0,
 		'skip_exceptions' => 1,
 		'get_exceptions' => 0,
 		'past_events' => 0,
@@ -3198,6 +3205,7 @@ function bookacti_get_groups_of_events_array_from_db_groups_of_events( $groups, 
 			'title'				=> apply_filters( 'bookacti_translate_text', $group->title ),
 			'start'				=> $group->start,
 			'end'				=> $group->end,
+			'delta_days'		=> $group->delta_days,
 			'template_id'		=> intval( $group->template_id ),
 			'category_id'		=> intval( $group->category_id ),
 			'repeat_freq'		=> $group->repeat_freq,
@@ -3263,6 +3271,7 @@ function bookacti_get_bounding_group_of_events_occurrences( $groups_occurrences 
  * @param object $groups Groups data 
  * @param array $raw_args {
  *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
+ *  @type boolean $interval_started Whether to retrieve started groups in interval
  *  @type array $exceptions array( group_id => array( 'Y-m-d', ... ), ... )
  *  @type boolean $skip_exceptions Whether to generate groups of events on exceptions dates
  *  @type boolean $past_events Whether to compute past groups of events
@@ -3277,6 +3286,7 @@ function bookacti_get_occurrences_of_repeated_groups_of_events( $groups, $raw_ar
 	$default_args = array(
 		'interval' => array(),
 		'exceptions' => array(),
+		'interval_started' => 0,
 		'skip_exceptions' => 1,
 		'past_events' => 0
 	);
@@ -3369,12 +3379,22 @@ function bookacti_get_occurrences_of_repeated_groups_of_events( $groups, $raw_ar
 			'repeat_from'	=> $group[ 'repeat_from' ],
 			'repeat_to'		=> $group[ 'repeat_to' ],
 		);
+		
+		// Get the occurrences of the first event of the group (it will determine the other group occurrences)
 		$dummy_args = array( 
 			'interval' => $args[ 'interval' ],
 			'skip_exceptions' => $args[ 'skip_exceptions' ],
 			'past_events' => 1, // Get past occurrences too, we need to make the past / started groups check later to take the whole group into account
 			'exceptions_dates' => $args[ 'skip_exceptions' ] && ! empty( $args[ 'exceptions' ][ 'G' . $group_id ] ) ? array_filter( array_map( 'bookacti_sanitize_date', $args[ 'exceptions' ][ 'G' . $group_id ] ) ) : array()
 		);
+		
+		// If the interval should include started groups
+		if( $args[ 'interval_started' ] && $group[ 'delta_days' ] && ! empty( $dummy_args[ 'interval' ][ 'start' ] ) ) {
+			$interval_start_dt = new DateTime( $dummy_args[ 'interval' ][ 'start' ] );
+			$interval_start_dt->sub( new DateInterval( 'P' . abs( $group[ 'delta_days' ] ) . 'D' ) );
+			$dummy_args[ 'interval' ][ 'start' ] = $interval_start_dt->format( 'Y-m-d H:i:s' );
+		}
+		
 		$first_event_occurrences = bookacti_get_occurrences_of_repeated_event( (object) $dummy_event, $dummy_args );
 		
 		// Compute the theorical (expected) events of each occurrence

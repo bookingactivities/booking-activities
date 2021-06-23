@@ -5,32 +5,41 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 // EVENTS
 
 /**
- * AJAX Controller - Fetch events in order to display them
+ * AJAX Controller - Get calendar editor data by interval (events and bookings) 
  * @version 1.12.0
  */
-function bookacti_controller_fetch_template_events() {
+function bookacti_controller_get_calendar_editor_data_by_interval() {
 	// Check nonce
-	$is_nonce_valid	= check_ajax_referer( 'bookacti_fetch_template_events', 'nonce', false );
-	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'fetch_template_events' ); }
+	$is_nonce_valid	= check_ajax_referer( 'bookacti_get_calendar_editor_data', 'nonce', false );
+	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'get_calendar_editor_data_by_interval' ); }
 	
 	$template_id = intval( $_POST[ 'template_id' ] );
 	
 	// Check capabilities
 	$is_allowed = current_user_can( 'bookacti_read_templates' ) && bookacti_user_can_manage_template( $template_id );
-	if( ! $is_allowed || ! $template_id ) { bookacti_send_json_not_allowed( 'fetch_template_events' ); }
+	if( ! $is_allowed || ! $template_id ) { bookacti_send_json_not_allowed( 'get_calendar_editor_data_by_interval' ); }
 
-	$interval = ! empty( $_POST[ 'interval' ] ) ? bookacti_sanitize_events_interval( $_POST[ 'interval' ] ) : array();
-
+	$interval = ! empty( $_POST[ 'interval' ] ) ? bookacti_sanitize_events_interval( bookacti_maybe_decode_json( stripslashes( $_POST[ 'interval' ] ), true ) ) : array();
+	
 	$events_args = array( 'templates' => array( $template_id ), 'interval' => $interval, 'past_events' => 1 );
 	$events	= bookacti_fetch_events_for_calendar_editor( $events_args );
+	
+	$group_ids = ! empty( $_POST[ 'group_ids' ] ) ? bookacti_ids_to_array( bookacti_maybe_decode_json( stripslashes( $_POST[ 'group_ids' ] ), true ) ) : array();
+	$groups_args = array( 'event_groups' => $group_ids, 'interval' => $interval, 'interval_started' => 1, 'past_events' => 1 );
+	$groups = $group_ids ? bookacti_get_groups_of_events( $groups_args ) : array();
+	
+	$bookings_nb_args = array( 'templates' => array( $template_id ), 'events' => array_keys( $events[ 'data' ] ), 'interval' => $interval );
+	$bookings_nb = $events[ 'data' ] ? bookacti_get_number_of_bookings_per_event( $bookings_nb_args ) : array();
 	
 	bookacti_send_json( array( 
 		'status' => 'success', 
 		'events' => $events[ 'events' ] ? $events[ 'events' ] : array(),
-		'events_data' => $events[ 'data' ] ? $events[ 'data' ] : array()
-	), 'fetch_template_events' );
+		'events_data' => $events[ 'data' ] ? $events[ 'data' ] : array(),
+		'groups_events' => ! empty( $groups[ 'groups' ] ) ? $groups[ 'groups' ] : array(),
+		'bookings' => $bookings_nb
+	), 'get_calendar_editor_data_by_interval' );
 }
-add_action( 'wp_ajax_bookactiFetchTemplateEvents', 'bookacti_controller_fetch_template_events' );
+add_action( 'wp_ajax_bookactiGetCalendarEditorDataByInterval', 'bookacti_controller_get_calendar_editor_data_by_interval' );
 
 
 /**
@@ -610,7 +619,8 @@ function bookacti_controller_insert_group_of_events() {
 	if( $group_of_events_data[ 'exceptions_dates' ] ) { bookacti_insert_exceptions( $group_id, $group_of_events_data[ 'exceptions_dates' ], 'group_of_events' ); }
 		
 	$category_data	= bookacti_get_group_category( $category_id );
-	$groups			= bookacti_get_groups_of_events( array( 'event_groups' => array( $group_id ), 'past_events' => 1, 'get_exceptions' => 1 ) );
+	$interval		= ! empty( $_POST[ 'interval' ] ) ? bookacti_sanitize_events_interval( bookacti_maybe_decode_json( stripslashes( $_POST[ 'interval' ] ), true ) ) : array();
+	$groups			= bookacti_get_groups_of_events( array( 'event_groups' => array( $group_id ), 'interval' => $interval, 'interval_started' => 1, 'past_events' => 1, 'get_exceptions' => 1 ) );
 	$group_data		= isset( $groups[ 'data' ][ $group_id ] ) ? $groups[ 'data' ][ $group_id ] : array();
 	$group_events	= isset( $groups[ 'groups' ][ $group_id ] ) ? $groups[ 'groups' ][ $group_id ] : array();
 	$group_title_raw= strip_tags( $group_data[ 'title' ] );
@@ -709,7 +719,8 @@ function bookacti_controller_update_group_of_events() {
 	}
 
 	$category_data	= bookacti_get_group_category( $category_id );
-	$groups			= bookacti_get_groups_of_events( array( 'event_groups' => array( $group_id ), 'past_events' => 1, 'get_exceptions' => 1 ) );
+	$interval		= ! empty( $_POST[ 'interval' ] ) ? bookacti_sanitize_events_interval( bookacti_maybe_decode_json( stripslashes( $_POST[ 'interval' ] ), true ) ) : array();
+	$groups			= bookacti_get_groups_of_events( array( 'event_groups' => array( $group_id ), 'interval' => $interval, 'interval_started' => 1, 'past_events' => 1, 'get_exceptions' => 1 ) );
 	$group_data		= isset( $groups[ 'data' ][ $group_id ] ) ? $groups[ 'data' ][ $group_id ] : array();
 	$group_events	= isset( $groups[ 'groups' ][ $group_id ] ) ? $groups[ 'groups' ][ $group_id ] : array();
 	$group_title_raw= strip_tags( $group_data[ 'title' ] );
@@ -738,7 +749,8 @@ function bookacti_controller_get_group_of_events() {
 	
 	// Check if group exists
 	$group_id = intval( $_POST[ 'group_id' ] );
-	$groups = bookacti_get_groups_of_events( array( 'event_groups' => array( $group_id ), 'past_events' => 1, 'get_exceptions' => 1 ) );
+	$interval = ! empty( $_POST[ 'interval' ] ) ? bookacti_sanitize_events_interval( bookacti_maybe_decode_json( stripslashes( $_POST[ 'interval' ] ), true ) ) : array();
+	$groups = bookacti_get_groups_of_events( array( 'event_groups' => array( $group_id ), 'interval' => $interval, 'interval_started' => 1, 'past_events' => 1, 'get_exceptions' => 1 ) );
 	$group_data = isset( $groups[ 'data' ][ $group_id ] ) ? $groups[ 'data' ][ $group_id ] : array();
 	if( ! $group_data ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'group_of_events_not_found', 'message' => esc_html__( 'Invalid group of events ID.', 'booking-activities' ) ), 'get_group_of_events' ); }
 	
@@ -764,10 +776,9 @@ function bookacti_controller_before_delete_group_of_events() {
 	
 	// Check if group exists
 	$group_id = intval( $_POST[ 'group_id' ] );
-	$groups = bookacti_get_groups_of_events( array( 'event_groups' => array( $group_id ), 'past_events' => 1, 'get_exceptions' => 1 ) );
+	$groups = bookacti_get_groups_of_events( array( 'event_groups' => array( $group_id ), 'past_events' => 1, 'data_only' => 1, 'get_exceptions' => 1 ) );
 	$group = isset( $groups[ 'data' ][ $group_id ] ) ? $groups[ 'data' ][ $group_id ] : array();
 	if( ! $group ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'group_of_events_not_found', 'message' => esc_html__( 'Invalid group of events ID.', 'booking-activities' ) ), 'before_deactivate_group_of_events' ); }
-	$group[ 'groups' ] = isset( $groups[ 'groups' ][ $group_id ] ) ? $groups[ 'groups' ][ $group_id ] : array();
 	
 	// Check capabilities
 	$is_allowed = current_user_can( 'bookacti_edit_templates' ) && bookacti_user_can_manage_template( $group[ 'template_id' ] );
@@ -815,10 +826,9 @@ function bookacti_controller_delete_group_of_events() {
 	
 	// Check if group exists
 	$group_id = intval( $_POST[ 'group_id' ] );
-	$groups = bookacti_get_groups_of_events( array( 'event_groups' => array( $group_id ), 'past_events' => 1, 'get_exceptions' => 1 ) );
+	$groups = bookacti_get_groups_of_events( array( 'event_groups' => array( $group_id ), 'past_events' => 1, 'data_only' => 1, 'get_exceptions' => 1 ) );
 	$group = isset( $groups[ 'data' ][ $group_id ] ) ? $groups[ 'data' ][ $group_id ] : false;
 	if( ! $group ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'group_of_events_not_found', 'message' => esc_html__( 'Invalid group of events ID.', 'booking-activities' ) ), 'deactivate_group_of_events' ); }
-	$group[ 'groups' ] = isset( $groups[ 'groups' ][ $group_id ] ) ? $groups[ 'groups' ][ $group_id ] : array();
 	
 	// Check capabilities
 	$is_allowed = current_user_can( 'bookacti_edit_templates' ) && bookacti_user_can_manage_template( $group[ 'template_id' ] );

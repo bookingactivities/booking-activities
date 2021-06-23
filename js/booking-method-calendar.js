@@ -36,7 +36,7 @@ $j( document ).ready( function() {
 	$j( 'body' ).on( 'bookacti_refetch_events', '.bookacti-booking-system', function( e, booking_method ) {
 		if( booking_method === 'calendar' && $j( this ).find( '.bookacti-calendar' ).length ) {
 			$j( this ).find( '.bookacti-calendar' ).fullCalendar( 'removeEvents' );
-			bookacti_fetch_events( $j( this ) );
+			bookacti_get_booking_system_data_by_interval( $j( this ) );
 		}
 	});
 	
@@ -260,7 +260,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 			if( bookacti.booking_system[ booking_system_id ][ 'load_events' ] === true ) {
 				var interval = { 'start': moment.utc( moment.utc( view.intervalStart ).clone().locale( 'en' ).format( 'YYYY-MM-DD' ) + ' 00:00:00' ).locale( 'en' ), 'end': moment.utc( moment.utc( view.intervalEnd ).clone().subtract( 1, 'days' ).locale( 'en' ).format( 'YYYY-MM-DD' ) + ' 23:59:59' ).locale( 'en' ) };
 				var new_interval = bookacti_get_interval_of_events( booking_system, interval );
-				if( ! $j.isEmptyObject() ) { bookacti_fetch_events( booking_system, new_interval ); }
+				if( ! $j.isEmptyObject( new_interval ) ) { bookacti_get_booking_system_data_by_interval( booking_system, new_interval ); }
 			}
 			
 			// Add a class if the events are overlapping
@@ -420,7 +420,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 	if( reload_events || is_view_larger_than_interval ) {
 		// Fetch events from database
 		var new_interval = bookacti_get_interval_of_events( booking_system, interval );
-		if( ! $j.isEmptyObject() ) { bookacti_fetch_events( booking_system, new_interval ); }
+		if( ! $j.isEmptyObject( new_interval ) ) { bookacti_get_booking_system_data_by_interval( booking_system, new_interval ); }
 	}
 	
 	bookacti.booking_system[ booking_system_id ][ 'load_events' ] = true;

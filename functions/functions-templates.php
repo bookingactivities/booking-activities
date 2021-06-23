@@ -21,8 +21,7 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 	$booking_system_data[ 'events' ]				= array();
 	$booking_system_data[ 'events_data' ]			= array();
 	$booking_system_data[ 'events_interval' ]		= array();
-	$booking_system_data[ 'bookings' ]				= bookacti_get_number_of_bookings_per_event( array( 'templates' => array( $template_id ) ) );
-	$booking_system_data[ 'groups_bookings' ]		= array(); // Not used in calendar editor
+	$booking_system_data[ 'bookings' ]				= array(); // Retrieved when navigating on the calendar
 	$booking_system_data[ 'activities_data' ]		= bookacti_get_activities_by_template( $template_id, false, true );
 	$booking_system_data[ 'groups_data' ]			= $groups[ 'data' ];
 	$booking_system_data[ 'groups_events' ]			= array(); // Retrieved when a group is updated

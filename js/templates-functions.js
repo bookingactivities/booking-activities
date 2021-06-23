@@ -35,20 +35,9 @@ function bookacti_switch_template( selected_template_id ) {
 	// Prevent events to be loaded while templates are switched
 	bookacti.load_events = false;
 	var attributes = $j.extend( {}, bookacti.booking_system[ 'bookacti-template-calendar' ] );
-	
-	// Do not send useless data
-	delete attributes[ 'events' ];
-	delete attributes[ 'events_data' ];
-	delete attributes[ 'events_interval' ];
-	delete attributes[ 'bookings' ];
-	delete attributes[ 'groups_bookings' ];
-	delete attributes[ 'activities_data' ];
-	delete attributes[ 'groups_events' ];
-	delete attributes[ 'groups_data' ];
-	delete attributes[ 'group_categories_data' ];
+	var attributes = bookacti_get_booking_system_attributes_without_data( $j( '#bookacti-template-calendar' ) );
+
 	delete attributes[ 'display_data' ];
-	delete attributes[ 'template_data' ];
-	delete attributes[ 'selected_events' ];
 	delete attributes[ 'picked_events' ];
 	
 	bookacti_start_template_loading();
@@ -153,7 +142,7 @@ function bookacti_switch_template( selected_template_id ) {
 					var view = $j( '#bookacti-template-calendar' ).fullCalendar( 'getView' );
 					var interval = { 'start': moment.utc( moment.utc( view.intervalStart ).clone().locale( 'en' ).format( 'YYYY-MM-DD' ) + ' 00:00:00' ).locale( 'en' ), 'end': moment.utc( moment.utc( view.intervalEnd ).clone().locale( 'en' ).subtract( 1, 'days' ).format( 'YYYY-MM-DD' ) + ' 23:59:59' ).locale( 'en' ) };
 					var new_interval = bookacti_get_interval_of_events( $j( '#bookacti-template-calendar' ), interval );
-					if( ! $j.isEmptyObject( new_interval ) ) { bookacti_fetch_events_on_calendar_editor( new_interval ); }
+					if( ! $j.isEmptyObject( new_interval ) ) { bookacti_get_calendar_editor_data_by_interval( new_interval ); }
 
 					// Re-enable events to load when view changes
 					bookacti.load_events = true;
@@ -779,11 +768,11 @@ function bookacti_update_create_form_link_url() {
 // CALENDAR and EVENTS
 
 /**
- * Fetch events on template calendar
- * @since 1.12.0 (was bookacti_fetch_events_on_template)
+ * Get calendar editor data by interval (events and bookings) 
+ * @since 1.12.0 (was bookacti_fetch_events_on_calendar_editor)
  * @param {object} interval
  */
-function bookacti_fetch_events_on_calendar_editor( interval ) {
+function bookacti_get_calendar_editor_data_by_interval( interval ) {
 	interval = interval ? interval : bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_interval' ];
 	
 	if( $j.isEmptyObject( interval ) ) {
@@ -795,15 +784,19 @@ function bookacti_fetch_events_on_calendar_editor( interval ) {
 	// Update events interval before success to prevent to fetch the same interval twice
 	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_interval' ] = bookacti_get_extended_events_interval( $j( '#bookacti-template-calendar' ), interval );
 	
+	// Update groups that have been retrieved
+	var group_ids = ! $j.isEmptyObject( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ] ) ? Object.keys( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ] ) : [];
+	
     bookacti_start_template_loading(); 
     $j.ajax({
         url: ajaxurl,
         type: 'POST',
         data: { 
-			'action': 'bookactiFetchTemplateEvents', 
+			'action': 'bookactiGetCalendarEditorDataByInterval', 
 			'template_id': bookacti.selected_template,
-			'interval': interval,
-			'nonce': $j( '#nonce_fetch_template_events' ).val()
+			'interval': JSON.stringify( interval ),
+			'group_ids': JSON.stringify( group_ids ),
+			'nonce': $j( '#nonce_get_calendar_editor_data' ).val()
 		},
         dataType: 'json',
         success: function( response ){
@@ -822,8 +815,26 @@ function bookacti_fetch_events_on_calendar_editor( interval ) {
 					$j.extend( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ], response.events_data );
 				}
 				
+				// Extend or replace the groups array if it was empty
+				if( $j.isEmptyObject( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ] ) ) {
+					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ] = response.groups_events;
+				} else {
+					$j.extend( true, bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ], response.groups_events );
+				}
+				
+				// Extend or replace the bookings array if it was empty
+				if( $j.isEmptyObject( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'bookings' ] ) ) {
+					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'bookings' ] = response.bookings;
+				} else {
+					$j.extend( true, bookacti.booking_system[ 'bookacti-template-calendar' ][ 'bookings' ], response.bookings );
+				}
+				
 				// Load new events on calendar
-				$j( '#bookacti-template-calendar' ).fullCalendar( 'addEventSource', response.events );
+				if( response.events.length ) {
+					$j( '#bookacti-template-calendar' ).fullCalendar( 'addEventSource', response.events );
+				}
+				
+				$j( '#bookacti-template-calendar' ).trigger( 'bookacti_calendar_editor_interval_data_loaded', [ response, interval ] );
 				
 			} else {
 				var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
@@ -856,7 +867,7 @@ function bookacti_refetch_events_on_calendar_editor() {
 	var min_interval = { 'start': moment.utc( moment.utc( view.intervalStart ).clone().locale( 'en' ).format( 'YYYY-MM-DD' ) + ' 00:00:00' ).locale( 'en' ), 'end': moment.utc( moment.utc( view.intervalEnd ).clone().locale( 'en' ).subtract( 1, 'days' ).format( 'YYYY-MM-DD' ) + ' 23:59:59' ).locale( 'en' ) };
 	var interval = bookacti_get_interval_of_events( $j( '#bookacti-template-calendar' ), min_interval );
 	
-	bookacti_fetch_events_on_calendar_editor( interval );
+	bookacti_get_calendar_editor_data_by_interval( interval );
 }
 
 

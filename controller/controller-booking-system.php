@@ -3,102 +3,42 @@
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
- * AJAX Controller - Fetch events in order to display them
- * @version	1.11.2
+ * AJAX Controller - Get booking system data by interval (events, groups, and bookings) 
+ * @since 1.12.0 (was bookacti_controller_fetch_events)
  */
-function bookacti_controller_fetch_events() {
-	// Check nonce
-	$is_admin	= intval( $_POST[ 'is_admin' ] );
-	$raw_atts	= bookacti_maybe_decode_json( stripslashes( $_POST[ 'attributes' ] ), true );
-	$atts		= bookacti_format_booking_system_attributes( $raw_atts );
-	
-	// On admin side only, check capabilities
-	$is_allowed = true;
-	if( $is_admin && ! is_super_admin() ) {		
-		$bypass_template_managers_check = apply_filters( 'bookacti_bypass_template_managers_check', false );
-		if( ! $bypass_template_managers_check ){
-			// Remove templates current user is not allowed to manage
-			foreach( $atts[ 'calendars' ] as $i => $template_id ){
-				if( ! bookacti_user_can_manage_template( $template_id ) ) {
-					unset( $atts[ 'calendars' ][ $i ] );
-				}
-			}
-			// If none remains, disallow the action
-			if( empty( $atts[ 'calendars' ] ) ) { $is_allowed = false; }
-		}
-	}
-	
-	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'fetch_events' ); }
-
+function bookacti_controller_get_booking_system_data_by_interval() {
+	$atts = bookacti_format_booking_system_attributes( bookacti_maybe_decode_json( stripslashes( $_POST[ 'attributes' ] ), true ) );
 	$interval = ! empty( $_POST[ 'interval' ] ) ? bookacti_sanitize_events_interval( $_POST[ 'interval' ] ) : array();
-	$events = array( 'events' => array(), 'data' => array() );
-
-	if( $atts[ 'groups_only' ] ) {
-		$groups_data	= isset( $raw_atts[ 'groups_data' ] ) ? (array) $raw_atts[ 'groups_data' ] : array();
-		$groups_ids		= $groups_data ? array_keys( $groups_data ) : array();
-		if( $groups_ids && ! in_array( 'none', $atts[ 'group_categories' ], true ) ) {
-			$events	= bookacti_fetch_grouped_events( array( 'templates' => $atts[ 'calendars' ], 'activities' => $atts[ 'activities' ], 'groups' => $groups_ids, 'group_categories' => $atts[ 'group_categories' ], 'past_events' => $atts[ 'past_events' ], 'interval' => $interval ) );
-		}
-	} else if( $atts[ 'bookings_only' ] ) {
-		$events = bookacti_fetch_booked_events( array( 'templates' => $atts[ 'calendars' ], 'activities' => $atts[ 'activities' ], 'status' => $atts[ 'status' ], 'users' => $atts[ 'user_id' ] ? array( $atts[ 'user_id' ] ) : array(), 'past_events' => $atts[ 'past_events' ], 'interval' => $interval ) );
-	} else {
-		$events	= bookacti_fetch_events( array( 'templates' => $atts[ 'calendars' ], 'activities' => $atts[ 'activities' ], 'past_events' => $atts[ 'past_events' ], 'interval' => $interval ) );	
-	}
 	
-	$events = apply_filters( 'bookacti_events_data_from_interval', $events, $interval, $atts );
+	$atts[ 'start' ] = ! empty( $interval[ 'start' ] ) ? $interval[ 'start' ] : '';
+	$atts[ 'end' ] = ! empty( $interval[ 'end' ] ) ? $interval[ 'end' ] : '';
+	$atts[ 'auto_load' ] = 1;
 	
-	// Get the booking list for each events
-	$booking_lists = array();
-	if( $atts[ 'tooltip_booking_list' ] && $events[ 'events' ] && $events[ 'data' ] ) {
-		$booking_filters = array(
-			'from'			=> ! empty( $interval[ 'start' ] ) ? $interval[ 'start' ] : '',
-			'to'			=> ! empty( $interval[ 'end' ] ) ? $interval[ 'end' ] : '',
-			'in__event_id'	=> array_keys( $events[ 'data' ] ),
-		);
-		if( $atts[ 'bookings_only' ] ) {
-			$booking_filters[ 'status' ] = $atts[ 'status' ];
-			$booking_filters[ 'in__user_id' ] = $atts[ 'user_id' ] ? array( $atts[ 'user_id' ] ) : array();
-		}
-		$booking_lists = bookacti_get_events_booking_lists( $booking_filters, $atts[ 'tooltip_booking_list_columns' ], $atts );
-	}
+	$booking_system_data = bookacti_get_booking_system_data( $atts );
+	
+	// Encrypt user id
+	$public_user_id = ! empty( $atts[ 'user_id' ] ) ? $atts[ 'user_id' ] : 0;
+	if( $public_user_id && ( ( is_numeric( $public_user_id ) && strlen( (string) $public_user_id ) < 16 ) || is_email( $public_user_id ) ) ) { $public_user_id = bookacti_encrypt( $public_user_id ); }
+	
+	// Let plugins define what data should be passed to JS
+	$public_booking_system_data = apply_filters( 'bookacti_public_booking_system_data', array_merge( $booking_system_data, array( 'user_id' => $public_user_id ) ), $atts );
 	
 	bookacti_send_json( array( 
-		'status'		=> 'success', 
-		'events'		=> $events[ 'events' ] ? $events[ 'events' ] : array(), 
-		'events_data'	=> $events[ 'data' ] ? $events[ 'data' ] : array(),
-		'booking_lists'	=> $booking_lists
-	), 'fetch_events' );
+		'status' => 'success', 
+		'booking_system_data' => $public_booking_system_data,
+	), 'get_booking_system_data_by_interval' );
 }
-add_action( 'wp_ajax_bookactiFetchEvents', 'bookacti_controller_fetch_events' );
-add_action( 'wp_ajax_nopriv_bookactiFetchEvents', 'bookacti_controller_fetch_events' );
+add_action( 'wp_ajax_bookactiGetBookingSystemDataByInterval', 'bookacti_controller_get_booking_system_data_by_interval' );
+add_action( 'wp_ajax_nopriv_bookactiGetBookingSystemDataByInterval', 'bookacti_controller_get_booking_system_data_by_interval' );
 
 
 /**
  * Reload booking system with new attributes via AJAX
  * @since 1.1.0
- * @version 1.9.0
+ * @version 1.12.0
  */
 function bookacti_controller_reload_booking_system() {
-	$is_admin = intval( $_POST[ 'is_admin' ] );
 	$atts = bookacti_format_booking_system_attributes( bookacti_maybe_decode_json( stripslashes( $_POST[ 'attributes' ] ), true ) );
-	
-	// On admin side only, check capabilities
-	$is_allowed = true;
-	if( $is_admin && ! is_super_admin() ) {		
-		$bypass_template_managers_check = apply_filters( 'bookacti_bypass_template_managers_check', false );
-		if( ! $bypass_template_managers_check ){
-			// Remove templates current user is not allowed to manage
-			foreach( $atts[ 'calendars' ] as $i => $template_id ){
-				if( ! bookacti_user_can_manage_template( $template_id ) ) {
-					unset( $atts[ 'calendars' ][ $i ] );
-				}
-			}
-			// If none remains, disallow the action
-			if( empty( $atts[ 'calendars' ] ) ) { $is_allowed = false; }
-		}
-	}
-	
-	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'reload_booking_system' ); }
 	
 	$atts[ 'auto_load' ] = 1;
 	$booking_system_data = bookacti_get_booking_system_data( $atts );

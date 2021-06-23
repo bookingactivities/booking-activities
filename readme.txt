@@ -323,8 +323,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 = 1.12.0 =
 * Breaking change - Remove opening and closing dates from calendar settings in calendar editor
+* Feature - Groups of events can be automatically repeated (like events)
 * Feature - Add a button to jump to a specific date in calendar editor
 * Tweak - Remove restrictions on event availability and repetition frequency, you can update them regardless of bookings made
+* Optimization - Groups of events and Bookings numbers are loaded by interval (like events) instead of all at once
+* Optimization - Reduce the number of queries to load the calendar editor
 * Dev - Breaking change - the wp_bookacti_exceptions table was totally refactored and the API related to exceptions too
 * Dev - Refactor the events, activities, group of events and group categories data sanitization when updating them from the calendar editor
 * Dev - Move the legacy functions to controller-legacy.php

@@ -494,6 +494,7 @@ function bookacti_get_js_variables() {
 		'current_locale'					=> bookacti_get_current_lang_code( true ),
 
 		'available_booking_methods'			=> array_keys( bookacti_get_available_booking_methods() ),
+		'booking_system_attributes_keys'	=> array_keys( bookacti_get_booking_system_default_attributes() ),
 
 		'event_tiny_height'					=> apply_filters( 'bookacti_event_tiny_height', 30 ),
 		'event_small_height'				=> apply_filters( 'bookacti_event_small_height', 75 ),

@@ -692,6 +692,7 @@ function bookacti_get_group_of_events( $group_id, $return_type = OBJECT ) {
  *  @type array $group_categories
  *  @type array $event_groups
  *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
+ *  @type boolean $interval_started Whether to retrieve started groups in interval
  *  @type boolean $skip_exceptions Whether to retrieve occurrence on exceptions
  *  @type boolean $get_exceptions Whether to add exceptions in groups data
  *  @type boolean $past_events Whether to get past groups of events
@@ -706,6 +707,7 @@ function bookacti_get_groups_of_events( $raw_args = array() ) {
 		'group_categories' => array(),
 		'event_groups' => array(),
 		'interval' => array(),
+		'interval_started' => 0,
 		'skip_exceptions' => 1,
 		'get_exceptions' => 0,
 		'past_events' => 0,
@@ -723,7 +725,7 @@ function bookacti_get_groups_of_events( $raw_args = array() ) {
 	$user_timestamp_offset		= $current_datetime_object->format( 'P' );
 	$variables					= array();
 
-	$query	= 'SELECT DISTINCT G.id, G.category_id, G.title, G.repeat_freq, G.repeat_step, G.repeat_on, G.repeat_from, G.repeat_to, GE.start, GE.end, C.template_id, M.started_groups_bookable '
+	$query	= 'SELECT DISTINCT G.id, G.category_id, G.title, G.repeat_freq, G.repeat_step, G.repeat_on, G.repeat_from, G.repeat_to, GE.start, GE.end, GE.delta_days, C.template_id, M.started_groups_bookable '
 			. ' FROM ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as G ' 
 			. ' LEFT JOIN ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' as C ON C.id = G.category_id '
 			. ' LEFT JOIN ' . BOOKACTI_TABLE_TEMPLATES . ' as T ON T.id = C.template_id ';
@@ -741,7 +743,7 @@ function bookacti_get_groups_of_events( $raw_args = array() ) {
 
 	// Join the groups events table to filter groups already started
 	$query .= ' LEFT JOIN ( 
-					SELECT group_id, MIN( event_start ) as start, MAX( event_end ) as end
+					SELECT group_id, MIN( event_start ) as start, MAX( event_end ) as end, ABS( DATEDIFF( MAX( event_start ), MIN( event_start ) ) ) as delta_days
 					FROM ' . BOOKACTI_TABLE_GROUPS_EVENTS . ' 
 					GROUP BY group_id
 				) as GE ON GE.group_id = G.id ';
@@ -754,11 +756,13 @@ function bookacti_get_groups_of_events( $raw_args = array() ) {
 	
 	// Do not fetch events totally out of the desired interval
 	if( $args[ 'interval' ] ) {
+		$interval_start = $args[ 'interval_started' ] ? 'DATE_SUB( %s, INTERVAL GE.delta_days DAY )' : '%s';
+		
 		$query  .= ' 
 		AND (
 				( 	NULLIF( G.repeat_freq, "none" ) IS NULL 
 					AND (	UNIX_TIMESTAMP( CONVERT_TZ( GE.start, %s, @@global.time_zone ) ) >= 
-							UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
+							UNIX_TIMESTAMP( CONVERT_TZ( ' . $interval_start . ', %s, @@global.time_zone ) ) 
 						AND
 							UNIX_TIMESTAMP( CONVERT_TZ( GE.start, %s, @@global.time_zone ) ) <= 
 							UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
@@ -767,10 +771,10 @@ function bookacti_get_groups_of_events( $raw_args = array() ) {
 				OR
 				( 	G.repeat_freq IS NOT NULL
 					AND NOT (	UNIX_TIMESTAMP( CONVERT_TZ( CONCAT( G.repeat_from, " 00:00:00" ), %s, @@global.time_zone ) ) < 
-								UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
+								UNIX_TIMESTAMP( CONVERT_TZ( ' . $interval_start . ', %s, @@global.time_zone ) ) 
 							AND 
 								UNIX_TIMESTAMP( CONVERT_TZ( CONCAT( G.repeat_to, " 23:59:59" ), %s, @@global.time_zone ) ) < 
-								UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
+								UNIX_TIMESTAMP( CONVERT_TZ( ' . $interval_start . ', %s, @@global.time_zone ) ) 
 							)
 					AND NOT (	UNIX_TIMESTAMP( CONVERT_TZ( CONCAT( G.repeat_from, " 00:00:00" ), %s, @@global.time_zone ) ) > 
 								UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
@@ -780,7 +784,7 @@ function bookacti_get_groups_of_events( $raw_args = array() ) {
 							)
 				) 
 			)';
-
+		
 		$variables[] = $user_timestamp_offset;
 		$variables[] = $args[ 'interval' ][ 'start' ];
 		$variables[] = $user_timestamp_offset;

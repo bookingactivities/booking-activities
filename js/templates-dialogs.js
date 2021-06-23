@@ -1966,6 +1966,7 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 				if( is_form_valid ) {
 					var data = $j( '#bookacti-group-of-events-form' ).serializeObject();
 					data.template_id = bookacti.selected_template;
+					data.interval = JSON.stringify( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_interval' ] );
 					data.events = JSON.stringify( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ] );
 					
 					$j( '#bookacti-group-of-events-dialog' ).trigger( 'bookacti_insert_group_of_events_before', [ data ] );
@@ -2127,6 +2128,7 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 				if( is_form_valid ) {
 					var data = $j( '#bookacti-group-of-events-form' ).serializeObject();
 					data.group_id = group_id;
+					data.interval = JSON.stringify( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_interval' ] );
 					data.events = JSON.stringify( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ] );
 					
 					$j( '#bookacti-group-of-events-dialog' ).trigger( 'bookacti_update_group_of_events_before', [ data, group_id ] );
@@ -2299,6 +2301,7 @@ function bookacti_get_group_of_events_occurrences( group_id ) {
 	var data = {
 		'action': 'bookactiGetGroupOfEvents',
 		'group_id': group_id,
+		'interval': JSON.stringify( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_interval' ] ),
 		'nonce': $j( '#nonce_insert_or_update_group_of_events' ).val()
 	};
 	

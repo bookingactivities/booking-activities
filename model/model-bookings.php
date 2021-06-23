@@ -1170,6 +1170,7 @@ function bookacti_get_number_of_bookings( $filters ) {
  * @param array $raw_args {
  *  @type array $templates Array of template IDs
  *  @type array $events Array of events IDs
+ *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
  *  @type array $users Array of users IDs
  *  @type array $status Array of booking status
  * }
@@ -1179,10 +1180,16 @@ function bookacti_get_number_of_bookings_per_event( $raw_args = array() ) {
 	$default_args = array(
 		'templates' => array(),
 		'events' => array(),
+		'interval' => array(),
 		'users' => array(),
 		'status' => array()
 	);
 	$args = wp_parse_args( $raw_args, $default_args );
+	
+	// Set current datetime
+	$timezone					= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
+	$current_datetime_object	= new DateTime( 'now', $timezone );
+	$user_timestamp_offset		= $current_datetime_object->format( 'P' );
 	
 	global $wpdb;
 
@@ -1218,6 +1225,28 @@ function bookacti_get_number_of_bookings_per_event( $raw_args = array() ) {
 		}
 		$query .= ') ';
 		$variables = array_merge( $variables, $args[ 'events' ] );
+	}
+	
+	// Do not fetch bookings out of the desired interval
+	if( ! empty( $args[ 'interval' ][ 'start' ] ) ) {
+		$query .= ' 
+		AND (	UNIX_TIMESTAMP( CONVERT_TZ( B.event_start, %s, @@global.time_zone ) ) >= 
+				UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) )';
+
+		$variables[] = $user_timestamp_offset;
+		$variables[] = $args[ 'interval' ][ 'start' ];
+		$variables[] = $user_timestamp_offset;
+	}
+	
+	if( ! empty( $args[ 'interval' ][ 'end' ] ) ) {
+		$query .= ' 
+		AND (	UNIX_TIMESTAMP( CONVERT_TZ( B.event_start, %s, @@global.time_zone ) ) <= 
+				UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
+			)';
+
+		$variables[] = $user_timestamp_offset;
+		$variables[] = $args[ 'interval' ][ 'end' ];
+		$variables[] = $user_timestamp_offset;
 	}
 	
 	// Filter by user
