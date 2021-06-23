@@ -1689,9 +1689,9 @@ function bookacti_start_loading_booking_system( booking_system ) {
 		bookacti.booking_system[ booking_system_id ][ 'loading_number' ] = 0;
 	}
 	
-	bookacti.booking_system[ booking_system_id ][ 'loading_number' ]++;
-	
 	booking_system.trigger( 'bookacti_start_loading', [ booking_method ] );
+	
+	bookacti.booking_system[ booking_system_id ][ 'loading_number' ]++;
 }
 
 

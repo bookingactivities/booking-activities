@@ -113,7 +113,7 @@ $j( document ).ready( function() {
 	 * @param {Event} e
 	 * @param {String} booking_method
 	 */
-	$j( 'body' ).on( 'bookacti_start_loading', '.bookacti-booking-system', function( e, booking_method ) {
+	$j( 'body' ).on( 'bookacti_exit_loading_state', '.bookacti-booking-system', function( e, booking_method ) {
 		if( booking_method === 'calendar' && $j( this ).find( '.bookacti-calendar' ).length ) {
 			$j( this ).find( '.bookacti-loading-alt' ).remove();
 			bookacti_exit_calendar_loading_state( $j( this ).find( '.bookacti-calendar' ) );
