@@ -90,12 +90,9 @@ function bookacti_switch_template( selected_template_id ) {
 					// Replace current groups with groups bound to the selected template
 					$j( '#bookacti-group-categories' ).empty();
 					$j( '#bookacti-group-categories' ).append( response.groups_list );
-					if( response.groups_list === '' ) {
-						$j( '#bookacti-template-add-group-of-events-tuto-select-events' ).show();
-					} else {
-						$j( '#bookacti-template-add-group-of-events-tuto-select-events' ).hide();
-					}
-
+					$j( '#bookacti-template-add-group-of-events-tuto-select-events' ).toggle( response.groups_list === '' );
+					$j( '#bookacti-template-groups-of-events-container .dashicons' ).toggleClass( 'bookacti-disabled', bookacti.blocked_events === true );
+					
 					// Empty selected events
 					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ] = [];
 					$j( '#bookacti-insert-group-of-events' ).css( 'visibility', 'hidden' );

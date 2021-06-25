@@ -902,7 +902,7 @@ add_action( 'wp_loaded', 'bookacti_remove_expired_product_from_cart', 100, 0 );
 
 /**
  * If quantity changes in cart, temporarily book the extra quantity if possible
- * @version 1.10.1
+ * @version 1.12.0
  * @param int $new_quantity
  * @param string $cart_item_key
  */
@@ -946,7 +946,24 @@ function bookacti_update_quantity_in_cart( $new_quantity, $cart_item_key ) {
 		
 		// Update the cart item bookings quantity
 		if( $response[ 'status' ] === 'success' && $new_quantity !== $old_quantity ) {
-			$updated = $new_quantity ? bookacti_wc_update_cart_item_bookings_quantity( $cart_item_key, $new_quantity ) : bookacti_wc_update_cart_item_bookings_status( $cart_item_key, 'removed' );
+			$updated = true;
+			if( $new_quantity ) { $updated = bookacti_wc_update_cart_item_bookings_quantity( $cart_item_key, $new_quantity ); }
+			
+			// If the quantity is 0, remove the cart item, but only change the booking status to "removed" if the cart item was 'in_cart'
+			else {
+				// Get the cart item bookings status and order status
+				$cart_item_bookings_status = $cart_item_bookings[ 0 ][ 'type' ] === 'group' && ! empty( $cart_item_bookings[ 0 ][ 'bookings' ][ 0 ]->group_state ) ? $cart_item_bookings[ 0 ][ 'bookings' ][ 0 ]->group_state : ( ! empty( $cart_item_bookings[ 0 ][ 'bookings' ][ 0 ]->state ) ? $cart_item_bookings[ 0 ][ 'bookings' ][ 0 ]->state : '' );
+				$cart_item_bookings_order_id = $cart_item_bookings[ 0 ][ 'type' ] === 'group' && ! empty( $cart_item_bookings[ 0 ][ 'bookings' ][ 0 ]->group_order_id ) ? $cart_item_bookings[ 0 ][ 'bookings' ][ 0 ]->group_order_id : ( ! empty( $cart_item_bookings[ 0 ][ 'bookings' ][ 0 ]->order_id ) ? $cart_item_bookings[ 0 ][ 'bookings' ][ 0 ]->order_id : '' );
+				$cart_item_bookings_order_status = '';
+				if( $cart_item_bookings_order_id ) { 
+					$cart_item_bookings_order = wc_get_order( $cart_item_bookings_order_id );
+					if( $cart_item_bookings_order ) { $cart_item_bookings_order_status = $cart_item_bookings_order->get_status( 'edit' ); }
+				}
+				if( $cart_item_bookings_status === 'in_cart' || $cart_item_bookings_order_status === 'failed' ) { 
+					$updated = bookacti_wc_update_cart_item_bookings_status( $cart_item_key, $cart_item_bookings_order_status === 'failed' ? 'cancelled' : 'removed' );
+				}
+			}
+			
 			if( ! $updated ) {
 				$restore_qty = true;
 				wc_add_notice( esc_html__( 'An error occurred while trying to change the quantity of the bookings attached to the item.', 'booking-activities' ), 'error' );
@@ -994,7 +1011,7 @@ add_action( 'woocommerce_remove_cart_item_from_session', 'bookacti_remove_bookin
 /**
  * Remove cart item bookings
  * @since 1.5.8
- * @version 1.9.0
+ * @version 1.12.0
  * @global WooCommerce $woocommerce
  * @param string $cart_item_key
  */
@@ -1004,13 +1021,26 @@ function bookacti_remove_cart_item_bookings( $cart_item_key ) {
 	if( ! $item ) { return; }
 	if( empty( $item[ '_bookacti_options' ] ) ) { return; }
 	
-	bookacti_wc_update_cart_item_bookings_status( $cart_item_key, 'removed' );
+	// Get the cart item bookings status and order status
+	$cart_item_bookings = bookacti_wc_get_cart_item_bookings( $cart_item_key );
+	if( ! $cart_item_bookings ) { return; }
+	$cart_item_bookings_status = $cart_item_bookings[ 0 ][ 'type' ] === 'group' && ! empty( $cart_item_bookings[ 0 ][ 'bookings' ][ 0 ]->group_state ) ? $cart_item_bookings[ 0 ][ 'bookings' ][ 0 ]->group_state : ( ! empty( $cart_item_bookings[ 0 ][ 'bookings' ][ 0 ]->state ) ? $cart_item_bookings[ 0 ][ 'bookings' ][ 0 ]->state : '' );
+	$cart_item_bookings_order_id = $cart_item_bookings[ 0 ][ 'type' ] === 'group' && ! empty( $cart_item_bookings[ 0 ][ 'bookings' ][ 0 ]->group_order_id ) ? $cart_item_bookings[ 0 ][ 'bookings' ][ 0 ]->group_order_id : ( ! empty( $cart_item_bookings[ 0 ][ 'bookings' ][ 0 ]->order_id ) ? $cart_item_bookings[ 0 ][ 'bookings' ][ 0 ]->order_id : '' );
+	$cart_item_bookings_order_status = '';
+	if( $cart_item_bookings_order_id ) { 
+		$cart_item_bookings_order = wc_get_order( $cart_item_bookings_order_id );
+		if( $cart_item_bookings_order ) { $cart_item_bookings_order_status = $cart_item_bookings_order->get_status( 'edit' ); }
+	}
+	
+	if( $cart_item_bookings_status === 'in_cart' || $cart_item_bookings_order_status === 'failed' ) {
+		bookacti_wc_update_cart_item_bookings_status( $cart_item_key, $cart_item_bookings_order_status === 'failed' ? 'cancelled' : 'removed' );
+	}
 }
 
 
 /**
  * Restore the booking if user change his mind after deleting one
- * @version 1.10.1
+ * @version 1.12.0
  * @global WooCommerce $woocommerce
  * @param string $cart_item_key
  */
@@ -1047,7 +1077,24 @@ function bookacti_restore_bookings_of_removed_cart_item( $cart_item_key ) {
 
 	// Update the cart item bookings quantity
 	if( $restore_bookings && $quantity !== $init_quantity ) { 
-		$updated = $quantity ? bookacti_wc_update_cart_item_bookings_quantity( $cart_item_key, $quantity ) : bookacti_wc_update_cart_item_bookings_status( $cart_item_key, 'removed' );
+		$updated = true;
+		if( $quantity ) { $updated = bookacti_wc_update_cart_item_bookings_quantity( $cart_item_key, $quantity ); }
+
+		// If the quantity is 0, remove the cart item, but only change the booking status to "removed" if the cart item was 'in_cart'
+		else {
+			// Get the cart item bookings status and order status
+			$cart_item_bookings_status = $cart_item_bookings[ 0 ][ 'type' ] === 'group' && ! empty( $cart_item_bookings[ 0 ][ 'bookings' ][ 0 ]->group_state ) ? $cart_item_bookings[ 0 ][ 'bookings' ][ 0 ]->group_state : ( ! empty( $cart_item_bookings[ 0 ][ 'bookings' ][ 0 ]->state ) ? $cart_item_bookings[ 0 ][ 'bookings' ][ 0 ]->state : '' );
+			$cart_item_bookings_order_id = $cart_item_bookings[ 0 ][ 'type' ] === 'group' && ! empty( $cart_item_bookings[ 0 ][ 'bookings' ][ 0 ]->group_order_id ) ? $cart_item_bookings[ 0 ][ 'bookings' ][ 0 ]->group_order_id : ( ! empty( $cart_item_bookings[ 0 ][ 'bookings' ][ 0 ]->order_id ) ? $cart_item_bookings[ 0 ][ 'bookings' ][ 0 ]->order_id : '' );
+			$cart_item_bookings_order_status = '';
+			if( $cart_item_bookings_order_id ) { 
+				$cart_item_bookings_order = wc_get_order( $cart_item_bookings_order_id );
+				if( $cart_item_bookings_order ) { $cart_item_bookings_order_status = $cart_item_bookings_order->get_status( 'edit' ); }
+			}
+			if( $cart_item_bookings_status === 'in_cart' || $cart_item_bookings_order_status === 'failed' ) { 
+				$updated = bookacti_wc_update_cart_item_bookings_status( $cart_item_key, $cart_item_bookings_order_status === 'failed' ? 'cancelled' : 'removed' );
+			}
+		}
+			
 		if( ! $updated ) { 
 			$restore_bookings = false;
 			wc_add_notice( esc_html__( 'An error occurred while trying to change the quantity of the bookings attached to the item.', 'booking-activities' ), 'error' );
@@ -1371,8 +1418,31 @@ add_action( 'woocommerce_checkout_create_order', 'bookacti_wc_checkout_create_on
  */
 function bookacti_availability_check_before_pay_action( $order ) {
 	$error_occurred = false;
+	$order_id = $order->get_id();
 	$order_items_bookings = bookacti_wc_get_order_items_bookings( $order );
 	
+	// If the booking is already attached to another non "failed" order, prevent to purchase it again
+	foreach( $order_items_bookings as $item_id => $order_item_bookings ) {
+		foreach( $order_item_bookings as $order_item_booking ) {
+			$booking_order_id = $order_item_booking[ 'type' ] === 'group' && ! empty( $order_item_booking[ 'bookings' ][ 0 ]->group_order_id ) ? $order_item_booking[ 'bookings' ][ 0 ]->group_order_id : ( ! empty( $order_item_booking[ 'bookings' ][ 0 ]->order_id ) ? $order_item_booking[ 'bookings' ][ 0 ]->order_id : 0 );
+			if( $booking_order_id && intval( $booking_order_id ) !== intval( $order_id ) ) {
+				$booking_order = wc_get_order( $booking_order_id );
+				if( $booking_order ) {
+					if( $booking_order->get_status() !== 'failed' ) {
+						$error_occurred = true;
+						$title = $order_item_booking[ 'type' ] === 'group' && ! empty( $order_item_booking[ 'bookings' ][ 0 ]->group_title ) ? $order_item_booking[ 'bookings' ][ 0 ]->group_title : ( ! empty( $order_item_booking[ 'bookings' ][ 0 ]->event_title ) ? $order_item_booking[ 'bookings' ][ 0 ]->event_title : '' );
+						$last_booking = end( $order_item_booking[ 'bookings' ] );
+						$first_booking = reset( $order_item_booking[ 'bookings' ] );
+						$dates = bookacti_get_formatted_event_dates( $first_booking->event_start, $last_booking->event_end, false );
+						/* translators: %1$s = the booking ID. %2$s = the event title and dates. %3$s = the order ID. */
+						wc_add_notice( sprintf( esc_html__( 'You have already purchased the booking #%1$s "%2$s" in the order #%3$s.', 'booking-activities' ), $order_item_booking[ 'id' ], $title ? $title . ' (' . $dates . ')' : $dates, $booking_order_id ), 'error' );
+					}
+				}
+			}
+		}
+	}
+	
+	// Validate events availability
 	foreach( $order_items_bookings as $order_item_key => $order_item_bookings ) {
 		// Check if the order item bookings quantity can be "changed" to its own quantity
 		// is the same as checking if an inactive order item can be turned to active
@@ -1402,17 +1472,41 @@ add_action( 'woocommerce_before_pay_action', 'bookacti_availability_check_before
 /**
  * Change order bookings states after the customer validates checkout
  * @since 1.2.2
- * @version 1.9.1
+ * @version 1.12.0
  * @param int $order_id
- * @param array $order_details
+ * @param array $posted_data
  * @param WC_Order $order
  */
-function bookacti_change_booking_state_after_checkout( $order_id, $order_details, $order = null ) {
+function bookacti_change_booking_state_after_checkout( $order_id, $posted_data, $order = null ) {
 	if( ! $order ) { $order = wc_get_order( $order_id ); }
 	if( ! $order ) { return; }
 	
 	// Get bookings before change
 	$order_items_bookings = bookacti_wc_get_order_items_bookings( $order );
+	
+	// If the booking is already attached to another non "failed" order, prevent to purchase it again
+	$error_messages = array();
+	foreach( $order_items_bookings as $item_id => $order_item_bookings ) {
+		foreach( $order_item_bookings as $order_item_booking ) {
+			$booking_order_id = $order_item_booking[ 'type' ] === 'group' && ! empty( $order_item_booking[ 'bookings' ][ 0 ]->group_order_id ) ? $order_item_booking[ 'bookings' ][ 0 ]->group_order_id : ( ! empty( $order_item_booking[ 'bookings' ][ 0 ]->order_id ) ? $order_item_booking[ 'bookings' ][ 0 ]->order_id : 0 );
+			if( $booking_order_id && intval( $booking_order_id ) !== intval( $order_id ) ) {
+				$booking_order = wc_get_order( $booking_order_id );
+				if( $booking_order ) {
+					if( $booking_order->get_status() !== 'failed' ) {
+						$title = $order_item_booking[ 'type' ] === 'group' && ! empty( $order_item_booking[ 'bookings' ][ 0 ]->group_title ) ? $order_item_booking[ 'bookings' ][ 0 ]->group_title : ( ! empty( $order_item_booking[ 'bookings' ][ 0 ]->event_title ) ? $order_item_booking[ 'bookings' ][ 0 ]->event_title : '' );
+						$last_booking = end( $order_item_booking[ 'bookings' ] );
+						$first_booking = reset( $order_item_booking[ 'bookings' ] );
+						$dates = bookacti_get_formatted_event_dates( $first_booking->event_start, $last_booking->event_end, false );
+						$error_messages[] = new Exception( sprintf( esc_html__( 'You have already purchased the booking #%1$s "%2$s" in the order #%3$s.', 'booking-activities' ), $order_item_booking[ 'id' ], $title ? $title . ' (' . $dates . ')' : $dates, $booking_order_id ) );
+						wc_delete_order_item( $item_id );
+					}
+				}
+			}
+		}
+	}
+	
+	if( $error_messages ) { throw new Exception( implode( '<br/>', $error_messages ) ); }
+	if( $order->get_status() === 'failed' ) { return; }
 	
 	$needs_payment = WC()->cart->needs_payment();
 	$customer_id= $order->get_user_id( 'edit' );
@@ -1439,7 +1533,7 @@ function bookacti_change_booking_state_after_checkout( $order_id, $order_details
 	// The new status notifications is automatically sent if the booking status has changed (on the bookacti_wc_order_item_booking_updated hook)
 	foreach( $order_items_bookings as $item_id => $order_item_bookings ) {
 		foreach( $order_item_bookings as $order_item_booking ) {
-			$old_status = $order_item_booking[ 'type' ] === 'group' ? $order_item_booking[ 'bookings' ][ 0 ]->group_state : $order_item_booking[ 'bookings' ][ 0 ]->state;
+			$old_status = $order_item_booking[ 'type' ] === 'group' && ! empty( $order_item_booking[ 'bookings' ][ 0 ]->group_state ) ? $order_item_booking[ 'bookings' ][ 0 ]->group_state : ( ! empty( $order_item_booking[ 'bookings' ][ 0 ]->state ) ? $order_item_booking[ 'bookings' ][ 0 ]->state : '' );
 			if( $old_status !== $new_data[ 'status' ] ) { continue; }
 			if( $order_item_booking[ 'type' ] === 'single' && in_array( $order_item_booking[ 'id' ], $updated[ 'booking_ids' ], true ) ) { continue; }
 			if( $order_item_booking[ 'type' ] === 'group' && in_array( $order_item_booking[ 'id' ], $updated[ 'booking_group_ids' ], true ) ) { continue; }

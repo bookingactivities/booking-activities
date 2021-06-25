@@ -400,6 +400,30 @@ function bookacti_get_bookings( $filters ) {
 		$variables = array_merge( $variables, $filters[ 'not_in__form_id' ] );
 	}
 	
+	if( $filters[ 'in__order_id' ] ) {
+		$query .= ' AND B.order_id IN ( %d ';
+		$array_count = count( $filters[ 'in__order_id' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ';
+		$variables = array_merge( $variables, $filters[ 'in__order_id' ] );
+	}
+	
+	if( $filters[ 'not_in__order_id' ] ) {
+		$query .= ' AND ( B.order_id IS NULL OR B.order_id NOT IN ( %d ';
+		$array_count = count( $filters[ 'not_in__order_id' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ) ';
+		$variables = array_merge( $variables, $filters[ 'not_in__order_id' ] );
+	}
+	
 	if( $filters[ 'in__user_id' ] ) {
 		$query .= ' AND B.user_id IN ( %s ';
 		$array_count = count( $filters[ 'in__user_id' ] );
@@ -778,6 +802,31 @@ function bookacti_get_number_of_booking_rows( $filters ) {
 		$variables = array_merge( $variables, $filters[ 'not_in__form_id' ] );
 	}
 	
+	if( $filters[ 'in__order_id' ] ) {
+		$query .= ' AND B.order_id IN ( %d ';
+		$array_count = count( $filters[ 'in__order_id' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ';
+		$variables = array_merge( $variables, $filters[ 'in__order_id' ] );
+	}
+	
+	if( $filters[ 'not_in__order_id' ] ) {
+		$query .= ' AND ( B.order_id IS NULL OR B.order_id NOT IN ( %d ';
+		$array_count = count( $filters[ 'not_in__order_id' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ) ';
+		$variables = array_merge( $variables, $filters[ 'not_in__order_id' ] );
+	}
+	
+	
 	if( $filters[ 'in__user_id' ] ) {
 		$query .= ' AND B.user_id IN ( %s ';
 		$array_count = count( $filters[ 'in__user_id' ] );
@@ -1111,6 +1160,30 @@ function bookacti_get_number_of_bookings( $filters ) {
 		}
 		$query .= ') ) ';
 		$variables = array_merge( $variables, $filters[ 'not_in__form_id' ] );
+	}
+	
+	if( $filters[ 'in__order_id' ] ) {
+		$query .= ' AND B.order_id IN ( %d ';
+		$array_count = count( $filters[ 'in__order_id' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ';
+		$variables = array_merge( $variables, $filters[ 'in__order_id' ] );
+	}
+	
+	if( $filters[ 'not_in__order_id' ] ) {
+		$query .= ' AND ( B.order_id IS NULL OR B.order_id NOT IN ( %d ';
+		$array_count = count( $filters[ 'not_in__order_id' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ) ';
+		$variables = array_merge( $variables, $filters[ 'not_in__order_id' ] );
 	}
 	
 	if( $filters[ 'in__user_id' ] ) {
@@ -2316,6 +2389,30 @@ function bookacti_get_booking_groups( $filters ) {
 		}
 		$query .= ') ) ';
 		$variables = array_merge( $variables, $filters[ 'not_in__form_id' ] );
+	}
+	
+	if( $filters[ 'in__order_id' ] ) {
+		$query .= ' AND BG.order_id IN ( %d ';
+		$array_count = count( $filters[ 'in__order_id' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ';
+		$variables = array_merge( $variables, $filters[ 'in__order_id' ] );
+	}
+	
+	if( $filters[ 'not_in__order_id' ] ) {
+		$query .= ' AND ( BG.order_id IS NULL OR BG.order_id NOT IN ( %d ';
+		$array_count = count( $filters[ 'not_in__order_id' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ) ';
+		$variables = array_merge( $variables, $filters[ 'not_in__order_id' ] );
 	}
 
 	if( $filters[ 'in__user_id' ] ) {

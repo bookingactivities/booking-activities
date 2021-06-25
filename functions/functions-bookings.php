@@ -265,7 +265,7 @@ function bookacti_get_activities_html_for_booking_page( $template_ids, $activity
 /**
  * Get Default booking filters
  * @since 1.6.0
- * @version 1.9.0
+ * @version 1.12.0
  * @return array
  */
 function bookacti_get_default_booking_filters() {
@@ -299,6 +299,7 @@ function bookacti_get_default_booking_filters() {
 		'in__event_id'				=> array(),
 		'in__user_id'				=> array(),
 		'in__form_id'				=> array(),
+		'in__order_id'				=> array(),
 		'not_in__booking_id'		=> array(),
 		'not_in__booking_group_id'	=> array(),
 		'not_in__group_category_id'	=> array(),
@@ -306,6 +307,7 @@ function bookacti_get_default_booking_filters() {
 		'not_in__event_id'			=> array(),
 		'not_in__user_id'			=> array(),
 		'not_in__form_id'			=> array(),
+		'not_in__order_id'			=> array(),
 		'fetch_meta'				=> false
 	));
 }
@@ -314,7 +316,7 @@ function bookacti_get_default_booking_filters() {
 /**
  * Format booking filters
  * @since 1.3.0
- * @version 1.10.0
+ * @version 1.12.0
  * @param array $filters 
  * @return array
  */
@@ -359,7 +361,7 @@ function bookacti_format_booking_filters( $filters = array() ) {
 			else { $current_value = $default_value; }
 			$current_value = array_values( $current_value );
 
-		} else if( in_array( $filter, array( 'activities', 'in__booking_id', 'in__booking_group_id', 'in__group_category_id', 'in__event_group_id', 'in__event_id', 'in__form_id', 'not_in__booking_id', 'not_in__booking_group_id', 'not_in__group_category_id', 'not_in__event_group_id', 'not_in__event_id', 'not_in__form_id' ), true ) ) {
+		} else if( in_array( $filter, array( 'activities', 'in__booking_id', 'in__booking_group_id', 'in__group_category_id', 'in__event_group_id', 'in__event_id', 'in__form_id', 'in__order_id', 'not_in__booking_id', 'not_in__booking_group_id', 'not_in__group_category_id', 'not_in__event_group_id', 'not_in__event_id', 'not_in__form_id', 'not_in__order_id' ), true ) ) {
 			if( is_numeric( $current_value ) )	{ $current_value = array( $current_value ); }
 			if( ! is_array( $current_value ) )	{ $current_value = $default_value; }
 			else if( ( $i = array_search( 'all', $current_value ) ) !== false ) { unset( $current_value[ $i ] ); }
@@ -793,7 +795,7 @@ function bookacti_booking_state_can_be_changed_to( $booking, $new_state, $contex
 function bookacti_booking_quantity_can_be_changed( $booking, $new_quantity = 'current' ) {
 	if( $new_quantity === 'current' ) { $new_quantity = $booking->quantity; }
 	
-	$events			= array( array( 'group_id' => 0, 'group_date' => '', 'events' => array( 'group_id' => 0, 'group_date' => '', 'id' => $booking->event_id, 'start' => $booking->event_start, 'end' => $booking->event_end ) ) );
+	$events			= array( array( 'group_id' => 0, 'group_date' => '', 'events' => array( array( 'group_id' => 0, 'group_date' => '', 'id' => $booking->event_id, 'start' => $booking->event_start, 'end' => $booking->event_end ) ) ) );
 	$picked_events	= bookacti_get_picked_events_availability( $events );
 	$picked_event	= $picked_events[ 0 ];
 	$activity_data	= bookacti_get_metadata( 'activity', $booking->activity_id );

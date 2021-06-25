@@ -1511,24 +1511,25 @@ function bookacti_get_picked_events_availability( $picked_events ) {
 	}
 	
 	// Fill each picked events with the corresponding availaibilities values 
-	foreach( $single_picked_events as $single_picked_event ) {
-		$index = $single_picked_event[ 'group_id' ] <= 0 ? 'E' . $single_picked_event[ 'id' ] . $single_picked_event[ 'start' ] . $single_picked_event[ 'end' ] : 'G' . $single_picked_event[ 'group_id' ] . $single_picked_event[ 'group_date' ];
-		foreach( $picked_events as $i => $picked_event ) {
-			// Make it work for both grouped picked events and single picked events format
-			$picked_event_index = '';
-			if( $picked_event[ 'group_id' ] ) {
-				$picked_event_index = 'G' . $picked_event[ 'group_id' ] . $picked_event[ 'group_date' ];
-			} else if( ! empty( $picked_event[ 'events' ] ) ) {
-				$picked_event_index = 'E' . $picked_event[ 'events' ][ 0 ][ 'id' ] . $picked_event[ 'events' ][ 0 ][ 'start' ] . $picked_event[ 'events' ][ 0 ][ 'end' ];
-			} else if( ! empty( $picked_event[ 'id' ] ) ) {
-				$picked_event_index = 'E' . $picked_event[ 'id' ] . $picked_event[ 'start' ] . $picked_event[ 'end' ];
-			}
+	foreach( $picked_events as $i => $picked_event ) {
+		if( ! isset( $picked_events[ $i ][ 'args' ] ) ) { $picked_events[ $i ][ 'args' ] = array( 'total_availability' => 0, 'availability' => 0, 'bookings_nb_per_user' => array() ); }
+
+		// Make it work for both grouped picked events and single picked events format
+		$picked_event_index = '';
+		if( $picked_event[ 'group_id' ] ) {
+			$picked_event_index = 'G' . $picked_event[ 'group_id' ] . $picked_event[ 'group_date' ];
+		} else if( ! empty( $picked_event[ 'events' ] ) ) {
+			$picked_event_index = 'E' . $picked_event[ 'events' ][ 0 ][ 'id' ] . $picked_event[ 'events' ][ 0 ][ 'start' ] . $picked_event[ 'events' ][ 0 ][ 'end' ];
+		} else if( ! empty( $picked_event[ 'id' ] ) ) {
+			$picked_event_index = 'E' . $picked_event[ 'id' ] . $picked_event[ 'start' ] . $picked_event[ 'end' ];
+		}
 			
-			if( $picked_event_index === $index ) {
-				if( ! isset( $picked_events[ $i ][ 'args' ] ) ) { $picked_events[ $i ][ 'args' ] = array(); }
-				$picked_events[ $i ][ 'args' ][ 'total_availability' ]	= isset( $picked_events_availability_data[ $index ] ) ? $picked_events_availability_data[ $index ][ 'total_availability' ] : 0;
-				$picked_events[ $i ][ 'args' ][ 'availability' ]		= isset( $picked_events_availability_data[ $index ] ) ? intval( $picked_events_availability_data[ $index ][ 'availability' ] ) : 0;
-				$picked_events[ $i ][ 'args' ][ 'bookings_nb_per_user' ]= isset( $picked_events_availability_data[ $index ] ) ? $picked_events_availability_data[ $index ][ 'bookings_nb_per_user' ] : array();
+		foreach( $single_picked_events as $single_picked_event ) {
+			$index = $single_picked_event[ 'group_id' ] <= 0 ? 'E' . $single_picked_event[ 'id' ] . $single_picked_event[ 'start' ] . $single_picked_event[ 'end' ] : 'G' . $single_picked_event[ 'group_id' ] . $single_picked_event[ 'group_date' ];
+			if( $picked_event_index === $index && isset( $picked_events_availability_data[ $index ] ) ) {
+				$picked_events[ $i ][ 'args' ][ 'total_availability' ]	= $picked_events_availability_data[ $index ][ 'total_availability' ];
+				$picked_events[ $i ][ 'args' ][ 'availability' ]		= intval( $picked_events_availability_data[ $index ][ 'availability' ] );
+				$picked_events[ $i ][ 'args' ][ 'bookings_nb_per_user' ]= $picked_events_availability_data[ $index ][ 'bookings_nb_per_user' ];
 				break;
 			}
 		}
