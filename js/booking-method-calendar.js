@@ -30,12 +30,15 @@ $j( document ).ready( function() {
 	/**
 	 * Refetch events on calendar
 	 * @since 1.11.3
+	 * @version 1.12.0
 	 * @param {Event} e
 	 * @param {String} booking_method
 	 */
 	$j( 'body' ).on( 'bookacti_refetch_events', '.bookacti-booking-system', function( e, booking_method ) {
-		if( booking_method === 'calendar' && $j( this ).find( '.bookacti-calendar' ).length ) {
-			$j( this ).find( '.bookacti-calendar' ).fullCalendar( 'removeEvents' );
+		if( booking_method === 'calendar' ) {
+			if( $j( this ).find( '.bookacti-calendar' ).length ) {
+				$j( this ).find( '.bookacti-calendar' ).fullCalendar( 'removeEvents' );
+			}
 			bookacti_get_booking_system_data_by_interval( $j( this ) );
 		}
 	});
@@ -88,7 +91,7 @@ $j( document ).ready( function() {
 	 * @param {String} booking_method
 	 */
 	$j( 'body' ).on( 'bookacti_start_loading', '.bookacti-booking-system', function( e, booking_method ) {
-		if( booking_method === 'calendar' && $j( this ).find( '.bookacti-calendar' ).length ) {
+		if( booking_method === 'calendar' ) {
 			var booking_system = $j( this );
 			if( booking_system.find( '.bookacti-calendar.fc' ).length ) {
 				var booking_system_id = booking_system.attr( 'id' );
@@ -114,9 +117,11 @@ $j( document ).ready( function() {
 	 * @param {String} booking_method
 	 */
 	$j( 'body' ).on( 'bookacti_exit_loading_state', '.bookacti-booking-system', function( e, booking_method ) {
-		if( booking_method === 'calendar' && $j( this ).find( '.bookacti-calendar' ).length ) {
+		if( booking_method === 'calendar' ) {
 			$j( this ).find( '.bookacti-loading-alt' ).remove();
-			bookacti_exit_calendar_loading_state( $j( this ).find( '.bookacti-calendar' ) );
+			if( $j( this ).find( '.bookacti-calendar' ).length ) { 
+				bookacti_exit_calendar_loading_state( $j( this ).find( '.bookacti-calendar' ) );
+			}
 		}
 	});
 	

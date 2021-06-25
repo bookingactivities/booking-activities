@@ -1779,7 +1779,7 @@ function bookacti_sort_array_by_start( $a, $b ) {
 
 /**
  * Sanitize int ids to array
- * @version 1.7.17
+ * @version 1.12.0
  * @param array|int $ids
  * @return array 
  */
@@ -1787,7 +1787,7 @@ function bookacti_ids_to_array( $ids ) {
 	if( is_array( $ids ) ){
 		return array_filter( array_unique( array_map( 'intval', $ids ) ) );
 	} else if( ! empty( $ids ) ){
-		if( is_numeric( $ids ) ) {
+		if( is_numeric( $ids ) && intval( $ids ) ) {
 			return array( intval( $ids ) );
 		}
 	}

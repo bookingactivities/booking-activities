@@ -1307,7 +1307,8 @@ function bookacti_export_booked_events_page() {
 		$bookings = bookacti_get_booking_group_bookings_by_id( $booking_group_id );
 		if( ! $booking_group || ! $bookings ) { esc_html_e( 'Invalid booking ID.', 'booking-activities' ); exit; }
 
-		$events = bookacti_fetch_grouped_events( array( 'groups' => array( $booking_group->event_group_id ), 'past_events' => $atts[ 'past_events' ] ) );
+		$groups = bookacti_get_groups_of_events( array( 'groups' => array( $booking_group->event_group_id ), 'past_events' => $atts[ 'past_events' ] ) );
+		$events = bookacti_fetch_events_of_group_of_events_occurrences( $groups[ 'groups' ], array( 'past_events' => $atts[ 'past_events' ] ) );
 
 		// Remove events of the group which are no longer booked
 		if( $events[ 'events' ] ) { 

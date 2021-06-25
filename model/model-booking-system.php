@@ -45,10 +45,10 @@ function bookacti_fetch_events( $raw_args = array() ) {
 
 	// Prepare the query
 	$query  = 'SELECT DISTINCT E.id as event_id, E.template_id, E.activity_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_step, E.repeat_on, E.repeat_from, E.repeat_to, E.availability, A.color '
-			. ' FROM ' . BOOKACTI_TABLE_ACTIVITIES . ' as A, ' . BOOKACTI_TABLE_TEMPLATES . ' as T, ' . BOOKACTI_TABLE_EVENTS . ' as E '
-			. ' WHERE E.activity_id = A.id '
-			. ' AND E.template_id = T.id '
-			. ' AND E.active = 1 '
+			. ' FROM ' . BOOKACTI_TABLE_EVENTS . ' as E '
+			. ' LEFT JOIN ' . BOOKACTI_TABLE_ACTIVITIES . ' as A ON E.activity_id = A.id '
+			. ' LEFT JOIN ' . BOOKACTI_TABLE_TEMPLATES . ' as T ON E.template_id = T.id '
+			. ' WHERE E.active = 1 '
 			. ' AND T.active = 1 ';
 
 	// Do not fetch events totally out of the desired interval
@@ -170,153 +170,6 @@ function bookacti_fetch_events( $raw_args = array() ) {
 
 
 /**
- * Fetch events by groups and / or group categories
- * @version 1.12.0
- * @global wpdb $wpdb
- * @param array $raw_args {
- *  @type array $templates Array of template IDs
- *  @type array $activities Array of activity IDs
- *  @type array groups Array of groups of events IDs
- *  @type array group_categories Array of group categories IDs
- *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
- *  @type boolean $past_events Whether to compute past events
- *  @type boolean $bounding_only Whether to retrieve the first and the last events only
- *  @type boolean $data_only Whether to retrieve the events data only, not occurrences
- * }
- * @return array
- */
-function bookacti_fetch_grouped_events( $raw_args = array() ) {
-	$default_args = array(
-		'templates' => array(),
-		'activities' => array(),
-		'groups' => array(),
-		'group_categories' => array(),
-		'interval' => array(),
-		'past_events' => 0,
-		'bounding_only' => 0,
-		'data_only' => 0
-	);
-	$args = wp_parse_args( $raw_args, $default_args );
-
-	global $wpdb;
-
-	// Set current datetime
-	$timezone					= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
-	$current_datetime_object	= new DateTime( 'now', $timezone );
-	$user_timestamp				= $current_datetime_object->format( 'U' );
-	$user_timestamp_offset		= $current_datetime_object->format( 'P' );
-	$variables					= array();
-
-	// Prepare the query
-	$query  = 'SELECT DISTINCT GE.event_id, E.template_id, E.activity_id, E.title, GE.event_start as start, GE.event_end as end, "none" as repeat_freq, E.repeat_step, E.repeat_on, E.repeat_from, E.repeat_to, E.availability, A.color '
-			. ' FROM ' . BOOKACTI_TABLE_GROUPS_EVENTS . ' as GE, ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as G, ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' as C, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A, ' . BOOKACTI_TABLE_TEMPLATES . ' as T, ' . BOOKACTI_TABLE_EVENTS . ' as E '
-			. ' WHERE GE.event_id = E.id '
-			. ' AND E.activity_id = A.id '
-			. ' AND E.template_id = T.id '
-			. ' AND GE.group_id = G.id '
-			. ' AND G.category_id = C.id '
-			. ' AND E.active = 1 '
-			. ' AND T.active = 1 '
-			. ' AND G.active = 1 '
-			. ' AND C.active = 1 ';
-
-	// Get events from desired templates only
-	if( $args[ 'templates' ] ) {
-		$query  .= ' AND E.template_id IN ( %d';
-		for( $i=1,$len=count( $args[ 'templates' ] ); $i < $len; ++$i ) {
-			$query  .= ', %d';
-		}
-		$query  .= ' ) ';
-		$variables = array_merge( $variables, $args[ 'templates' ] );
-	}
-
-	// Get events from desired activities only
-	if( $args[ 'activities' ] ) {
-		$query  .= ' AND A.id IN ( %d';
-		for( $i=1,$len=count( $args[ 'activities' ] ); $i < $len; ++$i ) {
-			$query  .= ', %d';
-		}
-		$query  .= ' ) ';
-		$variables = array_merge( $variables, $args[ 'activities' ] );
-	}
-
-	// Fetch events from desired groups only
-	if( $args[ 'groups' ] ) {
-		// Get the event only if it belongs to a group of the allowed categories
-		$query .= ' AND GE.group_id IN ( %d';
-		for( $i=1, $len=count( $args[ 'groups' ] ); $i < $len; ++$i ) {
-			$query .= ', %d';
-		}
-		$query .= ' ) ';
-		$variables = array_merge( $variables, $args[ 'groups' ] );
-	}
-
-	// Fetch events from desired categories only
-	if( $args[ 'group_categories' ] ) {
-		// Get the event only if it belongs to a group of the allowed categories
-		$query .= ' AND G.category_id IN ( %d';
-		for( $i=1, $len=count( $args[ 'group_categories' ] ); $i < $len; ++$i ) {
-			$query .= ', %d';
-		}
-		$query .= ' ) ';
-		$variables = array_merge( $variables, $args[ 'group_categories' ] );
-	}
-
-	// Do not fetch events out of the desired interval
-	if( $args[ 'interval' ] ) {
-		$query .= ' AND (	UNIX_TIMESTAMP( CONVERT_TZ( GE.event_start, %s, @@global.time_zone ) ) >= 
-							UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
-							AND 
-							UNIX_TIMESTAMP( CONVERT_TZ( GE.event_start, %s, @@global.time_zone ) ) <= 
-							UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
-						)';
-
-		$variables[] = $user_timestamp_offset;
-		$variables[] = $args[ 'interval' ][ 'start' ];
-		$variables[] = $user_timestamp_offset;
-		$variables[] = $user_timestamp_offset;
-		$variables[] = $args[ 'interval' ][ 'end' ];
-		$variables[] = $user_timestamp_offset;
-	}
-
-	// Whether to fetch past events
-	if( ! $args[ 'past_events' ] ) {
-		$started_events_bookable = bookacti_get_setting_value( 'bookacti_general_settings', 'started_events_bookable' );
-
-		$query .= ' AND ( UNIX_TIMESTAMP( CONVERT_TZ( GE.event_start, %s, @@global.time_zone ) ) >= %d ';
-
-		$variables[] = $user_timestamp_offset;
-		$variables[] = $user_timestamp;
-
-		if( $started_events_bookable ) {
-			// Fetch events already started but not finished
-			$query .= ' OR	(	UNIX_TIMESTAMP( CONVERT_TZ( GE.event_start, %s, @@global.time_zone ) ) <= %d 
-							AND UNIX_TIMESTAMP( CONVERT_TZ( GE.event_end, %s, @@global.time_zone ) ) >= %d 
-							) ';
-			$variables[] = $user_timestamp_offset;
-			$variables[] = $user_timestamp;
-			$variables[] = $user_timestamp_offset;
-			$variables[] = $user_timestamp;
-		}
-		$query .= ' ) ';
-	}
-
-	$query .= ' ORDER BY GE.event_start ASC ';
-
-	// Apply variables to the query
-	$query = apply_filters( 'bookacti_get_grouped_events_query', $wpdb->prepare( $query, $variables ), $args );
-
-	// Get events complying with parameters
-	$events = $wpdb->get_results( $query, OBJECT );
-
-	// Transform raw events from database to array of individual events
-	$events_array = bookacti_get_events_array_from_db_events( $events, $args );
-
-	return apply_filters( 'bookacti_get_grouped_events', $events_array, $query, $args );
-}
-
-
-/**
  * Fetch booked events only
  * @since 1.2.2
  * @version 1.12.0
@@ -366,10 +219,10 @@ function bookacti_fetch_booked_events( $raw_args = array() ) {
 
 	// Prepare the query
 	$query  = 'SELECT DISTINCT B.event_id, E.template_id, E.activity_id, E.title, B.event_start as start, B.event_end as end, "none" as repeat_freq, E.repeat_step, E.repeat_on, E.repeat_from, E.repeat_to, E.availability, A.color '
-			. ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A, ' . BOOKACTI_TABLE_TEMPLATES . ' as T, ' . BOOKACTI_TABLE_EVENTS . ' as E '
-			. ' WHERE B.event_id = E.id '
-			. ' AND E.activity_id = A.id '
-			. ' AND E.template_id = T.id ';
+			. ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B '
+			. ' LEFT JOIN ' . BOOKACTI_TABLE_EVENTS . ' as E ON B.event_id = E.id '
+			. ' LEFT JOIN ' . BOOKACTI_TABLE_ACTIVITIES . ' as A ON E.activity_id = A.id '
+			. ' WHERE TRUE ';
 
 	// Get events from desired templates only
 	if( $args[ 'templates' ] ) {
@@ -691,12 +544,12 @@ function bookacti_get_group_of_events( $group_id, $return_type = OBJECT ) {
  *  @type array $templates
  *  @type array $group_categories
  *  @type array $event_groups
+ *  @type array $nb_events array( 'min' => 2, 'max' => 0 ) Retrieve groups having between 'min' and 'max' events only
  *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
  *  @type boolean $interval_started Whether to retrieve started groups in interval
  *  @type boolean $skip_exceptions Whether to retrieve occurrence on exceptions
  *  @type boolean $get_exceptions Whether to add exceptions in groups data
  *  @type boolean $past_events Whether to get past groups of events
- *  @type boolean $bounding_only Whether to retrieve the first and the last events only
  *  @type boolean $data_only Whether to retrieve the groups data only, not the occurrences
  * }
  * @return array
@@ -706,12 +559,12 @@ function bookacti_get_groups_of_events( $raw_args = array() ) {
 		'templates' => array(),
 		'group_categories' => array(),
 		'event_groups' => array(),
+		'nb_events' => array( 'min' => 2, 'max' => 0 ),
 		'interval' => array(),
 		'interval_started' => 0,
 		'skip_exceptions' => 1,
 		'get_exceptions' => 0,
 		'past_events' => 0,
-		'bounding_only' => 0,
 		'data_only' => 0
 	);
 	$args = wp_parse_args( $raw_args, $default_args );
@@ -743,7 +596,7 @@ function bookacti_get_groups_of_events( $raw_args = array() ) {
 
 	// Join the groups events table to filter groups already started
 	$query .= ' LEFT JOIN ( 
-					SELECT group_id, MIN( event_start ) as start, MAX( event_end ) as end, ABS( DATEDIFF( MAX( event_start ), MIN( event_start ) ) ) as delta_days
+					SELECT group_id, MIN( event_start ) as start, MAX( event_end ) as end, COUNT( id ) as nb_events, ABS( DATEDIFF( MAX( event_start ), MIN( event_start ) ) ) as delta_days
 					FROM ' . BOOKACTI_TABLE_GROUPS_EVENTS . ' 
 					GROUP BY group_id
 				) as GE ON GE.group_id = G.id ';
@@ -865,6 +718,16 @@ function bookacti_get_groups_of_events( $raw_args = array() ) {
 		}
 		$query .= ') ';
 		$variables = array_merge( $variables, $args[ 'event_groups' ] );
+	}
+	
+	// Get groups having a certain number of events only
+	if( ! empty( $args[ 'nb_events' ][ 'min' ] ) ) {
+		$query .= ' AND GE.nb_events >= %d ';
+		$variables[] = intval( $args[ 'nb_events' ][ 'min' ] );
+	}
+	if( ! empty( $args[ 'nb_events' ][ 'max' ] ) ) {
+		$query .= ' AND GE.nb_events <= %d ';
+		$variables[] = intval( $args[ 'nb_events' ][ 'max' ] );
 	}
 	
 	$order_by = apply_filters( 'bookacti_groups_of_events_list_order_by', array( 'category_id', 'title', 'id' ) );
@@ -1033,32 +896,6 @@ function bookacti_get_groups_events( $raw_args = array() ) {
 	}
 
 	return $groups_events;
-}
-
-
-/**
- * Get groups of an event // TO BE DELETED IN 1.12
- *
- * @param int $id
- * @param string $start
- * @param string $end
- * @param boolean $active_only Whether to get the group of events even if the link between the desired event and this group is inactive
- */
-function bookacti_get_event_groups( $id, $start, $end ) {
-
-	global $wpdb;
-
-	$query	= ' SELECT GE.group_id, G.category_id '
-			. ' FROM ' . BOOKACTI_TABLE_GROUPS_EVENTS . ' as GE, ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as G '
-			. ' WHERE GE.group_id = G.id '
-			. ' AND GE.event_id = %d '
-			. ' AND GE.event_start = %s '
-			. ' AND GE.event_end = %s ';
-
-	$prep = $wpdb->prepare( $query, $id, $start, $end );
-	$groups = $wpdb->get_results( $prep, OBJECT );
-
-	return $groups;
 }
 
 
