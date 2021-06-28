@@ -1559,8 +1559,8 @@ function bookacti_get_event_number_of_bookings_div( booking_system, event ) {
 	var available_places	= bookacti_get_event_availability( booking_system, event );
 	
 	var total_availability = 0;
-	if( typeof attributes[ 'events_data' ][ event.id ] !== 'undefined' ) {
-		if( typeof attributes[ 'events_data' ][ event.id ][ 'availability' ] !== 'undefined' ) {
+	if( typeof bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event.id ] !== 'undefined' ) {
+		if( typeof bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event.id ][ 'availability' ] !== 'undefined' ) {
 			total_availability = bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event.id ][ 'availability' ];
 		}
 	}
