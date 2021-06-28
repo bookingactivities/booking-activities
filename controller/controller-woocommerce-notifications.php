@@ -20,7 +20,7 @@ function bookacti_wc_send_order_item_booking_status_notification( $order_item_bo
 	if(	 in_array( $new_status, array( 'booked', 'pending' ) )
 	&& ! in_array( $action, array( 'woocommerce_mark_order_status', 'editpost' ) ) ) {
 		$admin_notification	= bookacti_get_notification_settings( 'admin_new_booking' );
-		$notify_admin		= $admin_notification[ 'active_with_wc' ] ? 1 : 0;
+		$notify_admin		= ! empty( $admin_notification[ 'active_with_wc' ] ) ? 1 : 0;
 	}
 	
 	// Check if the customer must be notified
