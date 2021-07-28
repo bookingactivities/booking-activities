@@ -585,13 +585,14 @@ add_action( 'wp_ajax_bookactiGetGroupedBookingsRows', 'bookacti_controller_get_g
 /**
  * Trigger bookacti_booking_state_changed for each bookings of the group when bookacti_booking_group_state_changed is called
  * @since 1.2.0
- * @version 1.9.0
+ * @version 1.11.5
  * @param int $booking_group_id
  * @param array $bookings
  * @param string $status
  * @param array $args
  */
 function bookacti_trigger_booking_state_change_for_each_booking_of_a_group( $booking_group_id, $bookings, $status, $args ) {
+	if( ! $status ) { return; }
 	if( ! $bookings ) { $bookings = bookacti_get_bookings_by_booking_group_id( $booking_group_id ); }
 	$args[ 'booking_group_state_changed' ] = true;
 	foreach( $bookings as $booking ) {

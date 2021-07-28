@@ -3,9 +3,9 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
-Tested up to: 5.7
+Tested up to: 5.8
 Requires PHP: 5.3
-Stable tag: 1.11.4
+Stable tag: 1.11.5
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -320,6 +320,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.11.5 =
+* Fix - Invalid key error when exporting bookings on multisite installs
+* Fix - Notifications were sent after partial refund in WooCommerce
 
 = 1.11.4 - 2021/06/28 =
 * Fix - Cannot filter the booking list by customer if the customer has no account

@@ -1790,7 +1790,7 @@ function bookacti_does_order_support_auto_refund( $order ) {
 /**
  * Update order bookings if a partial refund is perfomed (refund of one or more items)
  * @since 1.2.0 (was part of bookacti_update_booking_when_order_item_is_refunded before)
- * @version 1.9.0
+ * @version 1.11.5
  * @param WC_Order_Refund $refund
  */
 function bookacti_update_order_bookings_on_items_refund( $refund ) {
@@ -1858,7 +1858,7 @@ function bookacti_update_order_bookings_on_items_refund( $refund ) {
 					bookacti_update_metadata( 'booking', $booking->id, array( 'refunds' => $refunds ) );
 					
 					// Trigger booking status change
-					if( $booking->state !== $booking_data[ 'status' ] ) {
+					if( $booking->state !== $booking_data[ 'status' ] && $booking_data[ 'status' ] ) {
 						do_action( 'bookacti_booking_state_changed', $booking, $booking_data[ 'status' ], array( 'refund_action' => $refund_action ) );
 					}
 				}
@@ -1877,7 +1877,7 @@ function bookacti_update_order_bookings_on_items_refund( $refund ) {
 
 					// Trigger booking group status change
 					$group_status = isset( $item_booking[ 'bookings' ][ 0 ]->group_state ) ? $item_booking[ 'bookings' ][ 0 ]->group_state : $item_booking[ 'bookings' ][ 0 ]->state;
-					if( $updated && $group_status !== $booking_group_data[ 'status' ] ) {
+					if( $updated && $group_status !== $booking_group_data[ 'status' ] && $booking_group_data[ 'status' ] ) {
 						do_action( 'bookacti_booking_group_state_changed', $item_booking[ 'id' ], $item_booking[ 'bookings' ], $booking_group_data[ 'status' ], array( 'refund_action' => $refund_action ) );
 					}
 				}
@@ -1890,7 +1890,7 @@ function bookacti_update_order_bookings_on_items_refund( $refund ) {
 /**
  * Update order bookings if a total refund is perfomed (refund of the whole order)
  * @since 1.2.0 (was part of bookacti_update_booking_when_order_item_is_refunded before)
- * @version 1.9.0
+ * @version 1.11.5
  * @param WC_Order_Refund $refund
  */
 function bookacti_update_order_bookings_on_order_refund( $refund ) {
@@ -1940,8 +1940,8 @@ function bookacti_update_order_bookings_on_order_refund( $refund ) {
 				$refunds[ $refund_id ] = $refund_record;
 				bookacti_update_metadata( 'booking', $item_booking[ 'id' ], array( 'refunds' => $refunds ) );
 
-				if( $updated && $status !== $booking_data[ 'status' ] ) {
-					do_action( 'bookacti_booking_state_changed', $item_booking[ 'bookings' ][ 0 ], 'refunded', array( 'refund_action' => $refund_action ) );
+				if( $updated && $status !== $booking_data[ 'status' ] && $booking_data[ 'status' ] ) {
+					do_action( 'bookacti_booking_state_changed', $item_booking[ 'bookings' ][ 0 ], $booking_data[ 'status' ], array( 'refund_action' => $refund_action ) );
 				}
 
 			// Booking group
@@ -1957,8 +1957,8 @@ function bookacti_update_order_bookings_on_order_refund( $refund ) {
 				$refunds[ $refund_id ] = $refund_record;
 				bookacti_update_metadata( 'booking_group', $item_booking[ 'id' ], array( 'refunds' => $refunds ) );
 
-				if( $updated && $status !== $booking_group_data[ 'status' ] ) {
-					do_action( 'bookacti_booking_group_state_changed', $item_booking[ 'id' ], $item_booking[ 'bookings' ], 'refunded', array( 'refund_action' => $refund_action ) );
+				if( $updated && $status !== $booking_group_data[ 'status' ] && $booking_group_data[ 'status' ] ) {
+					do_action( 'bookacti_booking_group_state_changed', $item_booking[ 'id' ], $item_booking[ 'bookings' ], $booking_group_data[ 'status' ], array( 'refund_action' => $refund_action ) );
 				}
 			}
 		}
