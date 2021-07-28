@@ -2873,3 +2873,21 @@ function bookacti_delete_exports( $raw_filters = array() ) {
 	
 	return $return;
 }
+
+
+/**
+ * Get the booking id corresponding to a secret key
+ * @since 1.12.0
+ * @param string $secret_key
+ * @return array [ "id" => int, "type" => string ]
+ */
+function bookacti_get_booking_id_by_secret_key( $secret_key ) {
+	global $wpdb;
+	$query	= 'SELECT object_type, object_id FROM ' . BOOKACTI_TABLE_META 
+			. ' WHERE meta_key = "secret_key" '
+			. ' AND object_type IN ( "booking", "booking_group" )'
+			. ' AND meta_value = %s;';
+	$query = $wpdb->prepare( $query, $secret_key );
+	$booking = $wpdb->get_row( $query );
+	return $booking ? array( 'id' => intval( $booking->object_id ), 'type' => $booking->object_type === 'booking_group' ? 'group' : 'single' ) : array();
+}

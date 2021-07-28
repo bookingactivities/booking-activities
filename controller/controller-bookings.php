@@ -1216,7 +1216,7 @@ add_action( 'init', 'bookacti_export_bookings_page', 10 );
 /**
  * Export booked events of a specific user as ICS
  * @since 1.6.0
- * @version 1.9.0
+ * @version 1.12.0
  */
 function bookacti_export_user_booked_events_page() {
 	if( empty( $_REQUEST[ 'action' ] ) ) { return; }
@@ -1224,11 +1224,11 @@ function bookacti_export_user_booked_events_page() {
 
 	// Check if the secret key exists
 	$key = ! empty( $_REQUEST[ 'key' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'key' ] ) : '';
-	if( ! $key ) { esc_html_e( 'Missing key.', 'booking-activities' ); exit; }
+	if( ! $key ) { esc_html_e( 'Missing secret key.', 'booking-activities' ); exit; }
 
 	// Check if the user exists
 	$user_id = bookacti_get_user_id_by_secret_key( $key );
-	if( ! $user_id ) { esc_html_e( 'Invalid key.', 'booking-activities' ); exit; }
+	if( ! $user_id ) { esc_html_e( 'Invalid secret key.', 'booking-activities' ); exit; }
 	
 	$atts = apply_filters( 'bookacti_export_events_attributes', array_merge( bookacti_format_booking_system_url_attributes(), array(
 		'bookings_only' => 1,
@@ -1259,88 +1259,50 @@ add_action( 'init', 'bookacti_export_user_booked_events_page', 10 );
 
 /**
  * Export events of a specific booking (group)
- * @since 1.6.0
- * @version 1.12.0
+ * @since 1.12.0 (was bookacti_export_booked_events_page)
  */
-function bookacti_export_booked_events_page() {
+function bookacti_export_specific_booking_page() {
 	if( empty( $_REQUEST[ 'action' ] ) ) { return; }
 	if( $_REQUEST[ 'action' ] !== 'bookacti_export_booked_events' ) { return; }
 
-	// Check if a booking ID was given
-	if( empty( $_REQUEST[ 'booking_id' ] ) && empty( $_REQUEST[ 'booking_group_id' ] ) ) { esc_html_e( 'Invalid booking ID.', 'booking-activities' ); exit; }
-
-	$atts = apply_filters( 'bookacti_export_events_attributes', array_merge( bookacti_get_booking_system_default_attributes(), array(
-		'status' => array( 'delivered', 'booked', 'pending' ),
-		'past_events' => 1
-	)));
-
+	// Sanitize the booking ID
+	$booking_type	= ! empty( $_REQUEST[ 'booking_group_id' ] ) ? 'group' : 'single';
+	$booking_id		= $booking_type === 'group' ? intval( $_REQUEST[ 'booking_group_id' ] ) : ( ! empty( $_REQUEST[ 'booking_id' ] ) ? intval( $_REQUEST[ 'booking_id' ] ) : 0 );
+	if( ! $booking_id ) { esc_html_e( 'Invalid booking ID.', 'booking-activities' ); exit; }
+	
+	// Check if the secret key exists
+	$key = ! empty( $_REQUEST[ 'key' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'key' ] ) : '';
+	if( ! $key ) { esc_html_e( 'Missing secret key.', 'booking-activities' ); exit; }
+	
+	// Check if the secret key is valid for the desired booking
+	$is_valid = bookacti_is_booking_secret_key_valid( $key, $booking_id, $booking_type );
+	if( ! $is_valid ) { esc_html_e( 'Invalid secret key.', 'booking-activities' ); exit; }
+	
 	// Check the filename
-	$filename = ! empty( $_REQUEST[ 'filename' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'filename' ] ) : ( ! empty( $atts[ 'filename' ] ) ? sanitize_title_with_dashes( $atts[ 'filename' ] ) : 'my-bookings' );
+	$filename = ! empty( $_REQUEST[ 'filename' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'filename' ] ) : 'my-bookings';
 	if( ! $filename ) { esc_html_e( 'Invalid filename.', 'booking-activities' ); exit; }
 	if( substr( $filename, -4 ) !== '.ics' ) { $filename .= '.ics'; }
-
-	$events = array( 'events' => array() );
-	if( ! empty( $_REQUEST[ 'booking_id' ] ) ) {
-		$booking_id = intval( $_REQUEST[ 'booking_id' ] );
-		$booking = bookacti_get_booking_by_id( $booking_id );
-		if( ! $booking ) { esc_html_e( 'Invalid booking ID.', 'booking-activities' ); exit; }
-		if( ! in_array( $booking->state, $atts[ 'status' ], true ) ) { esc_html_e( 'No events found.', 'booking-activities' ); exit; }
-
-		$event = bookacti_get_event_by_id( $booking->event_id );
-
-		// Check if the event is past
-		if( ! $atts[ 'past_events' ] ) {
-			$timezone		= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
-			$current_time	= new DateTime( 'now', $timezone );
-			$start_datetime = $event ? new DateTime( $event->start, $timezone ) : $current_time;
-			if( $start_datetime <= $current_time ) { esc_html_e( 'No events found.', 'booking-activities' ); exit; }
-		}
-
-		$events_args = array(
-			'past_events' => true,
-			'interval' => array( 'start' => $booking->event_start, 'end' => $booking->event_end ),
-		);
-		$events = bookacti_get_events_array_from_db_events( array( $event ), $events_args );
-
-	} else if( ! empty( $_REQUEST[ 'booking_group_id' ] ) ) {
-		$booking_group_id = intval( $_REQUEST[ 'booking_group_id' ] );
-		$booking_group = bookacti_get_booking_group_by_id( $booking_group_id );
-		$bookings = bookacti_get_booking_group_bookings_by_id( $booking_group_id );
-		if( ! $booking_group || ! $bookings ) { esc_html_e( 'Invalid booking ID.', 'booking-activities' ); exit; }
-
-		$groups = bookacti_get_groups_of_events( array( 'groups' => array( $booking_group->event_group_id ), 'past_events' => $atts[ 'past_events' ] ) );
-		$events = bookacti_fetch_events_of_group_of_events_occurrences( $groups[ 'groups' ], array( 'past_events' => $atts[ 'past_events' ] ) );
-
-		// Remove events of the group which are no longer booked
-		if( $events[ 'events' ] ) { 
-			foreach( $events[ 'events' ] as $i => $grouped_event ) {
-				$has_booking = false;
-				foreach( $bookings as $booking ) {
-					if( $booking->event_id === $grouped_event[ 'id' ] 
-					&&  $booking->event_start === $grouped_event[ 'start' ] 
-					&&  $booking->event_end === $grouped_event[ 'end' ]
-					&&  in_array( $booking->state, $atts[ 'status' ], true ) ) { 
-						$has_booking = true;
-						break;
-					}
-				}
-				if( ! $has_booking ) { unset( $events[ 'events' ][ $i ] ); }
-			}
-		}
-	}
-
-	if( ! $events[ 'events' ] ) { esc_html_e( 'Events not found.', 'booking-activities' ); exit; }
-
-	$calname = esc_html__( 'My bookings', 'booking-activities' );
-	$caldesc = $calname . '.';
 
 	header( 'Content-type: text/calendar; charset=utf-8' );
 	header( 'Content-Disposition: attachment; filename=' . $filename );
 	header( 'Cache-Control: no-cache, must-revalidate' ); // HTTP/1.1
 	header( 'Expires: Sat, 26 Jul 1997 05:00:00 GMT' ); // Expired date to force third-party calendars to refresh soon
-
-	echo bookacti_convert_events_to_ical( $events, $calname, $caldesc, 0 );
+	
+	$filters = $booking_type === 'group' ? array( 'booking_group_id' => $booking_id ) : array( 'booking_id' => $booking_id );
+	$filters = bookacti_format_booking_filters( $filters );
+	
+	$ical_args = array( 
+		'vevent_summary'		=> '{event_title}',
+		'vevent_description'	=> '',
+		'tooltip_booking_list_columns'	=> array(),
+		'booking_list_header'	=> 0,
+		'raw'					=> 0,
+		'sequence'				=> ! empty( $_REQUEST[ 'sequence' ] ) ? intval( $_REQUEST[ 'sequence' ] ) : 0,
+		'locale'				=> ! empty( $_REQUEST[ 'lang' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'lang' ] ) : bookacti_get_site_locale()
+	);
+	
+	echo bookacti_convert_bookings_to_ical( $filters, $ical_args );
 
 	exit;
 }
-add_action( 'init', 'bookacti_export_booked_events_page', 10 );
+add_action( 'init', 'bookacti_export_specific_booking_page', 10 );

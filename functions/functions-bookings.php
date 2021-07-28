@@ -2157,6 +2157,41 @@ function bookacti_get_bookings_for_export( $args_raw = array() ) {
 }
 
 
+/**
+ * Check if a secret key match a booking
+ * @since 1.12.0
+ * @param string $secret_key
+ * @param int $booking_id
+ * @param string $booking_type
+ * @param boolean $strict TRUE = check the booking secret key only. FALSE = check user secret key too.
+ * @return boolean
+ */
+function bookacti_is_booking_secret_key_valid( $secret_key, $booking_id, $booking_type = 'single', $strict = false ) {
+	$true = false;
+	
+	// Check if the secret key match the booking's
+	$booking_item = bookacti_get_booking_id_by_secret_key( $secret_key );
+	if( $booking_item && $booking_item[ 'id' ] === $booking_id && $booking_item[ 'type' ] === $booking_type ) { $true = true; }
+	else if( ! $strict ) {
+		// Check if the user is a super admin
+		$user_id = bookacti_get_user_id_by_secret_key( $secret_key );
+		if( $user_id && is_super_admin( $user_id ) ) { $true = true; }
+		else if( $user_id ) {
+			// Check if the secret key match the booking's user's
+			$booking = $booking_type === 'group' ? bookacti_get_booking_group_by_id( $booking_id ) : bookacti_get_booking_by_id( $booking_id );
+			if( $booking && intval( $booking->user_id ) === $user_id ) { $true = true; } 
+			else if( $booking && $booking->template_id && ( user_can( $user_id, 'bookacti_manage_bookings' ) || user_can( $user_id, 'bookacti_edit_bookings' ) ) ) {
+				// Check if the secret key match a manager's allowed to manage this booking
+				$managers = bookacti_get_template_managers( array( $booking->template_id ) );
+				if( in_array( $user_id, $managers, true ) ) { $true = true; }
+			}
+		}
+	}
+	
+	return $true;
+}
+
+
 
 
 // REFUND BOOKING

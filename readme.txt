@@ -327,6 +327,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Feature - Add a button to jump to a specific date in calendar editor
 * Tweak - Remove restrictions on event availability and repetition frequency, you can update them regardless of bookings made
 * Tweak - WC cart items with a booking attached are no longer removed after a failed payment, so the customer can try again
+* Tweak - Add the {booking_ical_url} notification tag and refactor the way booked events are exported
 * Optimization - Groups of events and Bookings numbers are loaded by interval (like events) instead of all at once
 * Optimization - Reduce the number of queries to load the calendar editor
 * Dev - Breaking change - the wp_bookacti_exceptions table was totally refactored and the API related to exceptions too

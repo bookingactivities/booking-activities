@@ -405,7 +405,7 @@ function bookacti_sanitize_notification_settings( $args, $notification_id = '' )
 /**
  * Get notifications tags
  * @since 1.2.0
- * @version 1.10.0
+ * @version 1.12.0
  * @param string $notification_id Optional.
  * @return array
  */
@@ -433,6 +433,7 @@ function bookacti_get_notifications_tags( $notification_id = '' ) {
 		'{user_id}'				=> esc_html__( 'The user ID. If the user has booked without account, this will display his email address.', 'booking-activities' ),
 		'{user_locale}'			=> esc_html__( 'The user locale code. If the user has booked without account, the site locale will be used.', 'booking-activities' ),
 		'{user_ical_url}'		=> esc_html__( 'URL to export the user list of bookings in ical format. You can append the "start" and "end" parameters with relative time format to this URL (e.g.: {user_ical_url}&start=today&end=next+year). If the user has booked without account, only the current booking is exported.', 'booking-activities' ),
+		'{booking_ical_url}'	=> esc_html__( 'URL to export the current booking in ical format.', 'booking-activities' ),
 		'{shortcode}{/shortcode}'	=> esc_html__( 'Use any shortcode between these tags.', 'booking-activities' )
 	);
 	
@@ -561,10 +562,16 @@ function bookacti_get_notifications_tags_values( $booking, $booking_type, $notif
 				$booking_data[ '{user_phone}' ]		= ! empty( $booking->user_phone ) ? $booking->user_phone : '';
 			}
 		}
-		if( ! $user_ical_key ) {
-			$booking_id_param_name = $booking_type === 'group' ? 'booking_group_id' : 'booking_id';
-			$booking_data[ '{user_ical_url}' ] = esc_url( home_url( '?action=bookacti_export_booked_events&filename=my-bookings&' . $booking_id_param_name . '=' . $booking->id . '&lang=' . $locale ) );
+		
+		$booking_ical_key = $user_ical_key ? $user_ical_key : ( ! empty( $booking->secret_key ) ? $booking->secret_key : '' );
+		if( ! $booking_ical_key ) { 
+			$booking_ical_key = md5( microtime().rand() );
+			$object_type = $booking_type === 'group' ? 'booking_group' : 'booking';
+			bookacti_update_metadata( $object_type, $booking->id, array( 'secret_key' => $booking_ical_key ) );
 		}
+		$booking_id_param_name = $booking_type === 'group' ? 'booking_group_id' : 'booking_id';
+		$booking_data[ '{booking_ical_url}' ] = esc_url( home_url( '?action=bookacti_export_booked_events&filename=my-bookings&key=' . $booking_ical_key . '&' . $booking_id_param_name . '=' . $booking->id . '&lang=' . $locale ) );
+		if( empty( $booking_data[ '{user_ical_url}' ] ) ) { $booking_data[ '{user_ical_url}' ] = $booking_data[ '{booking_ical_url}' ]; }
 	}
 	
 	$tags = array();

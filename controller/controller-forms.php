@@ -1687,7 +1687,7 @@ add_action( 'wp_ajax_bookactiResetExportEventsUrl', 'bookacti_controller_reset_f
 /**
  * Export events of a specific form
  * @since 1.6.0
- * @version 1.7.13
+ * @version 1.12.0
  */
 function bookacti_export_form_events_page() {
 	if( empty( $_REQUEST[ 'action' ] ) || $_REQUEST[ 'action' ] !== 'bookacti_export_form_events' ) { return; }
@@ -1698,11 +1698,11 @@ function bookacti_export_form_events_page() {
 	
 	// Check if the secret key exists
 	$key = ! empty( $_REQUEST[ 'key' ] ) ? $_REQUEST[ 'key' ] : '';
-	if( ! $key ) { esc_html_e( 'Missing key.', 'booking-activities' ); exit; }
+	if( ! $key ) { esc_html_e( 'Missing secret key.', 'booking-activities' ); exit; }
 	
 	// Check if the secret key is correct
 	$secret_key = bookacti_get_metadata( 'form', $form_id, 'secret_key', true );
-	if( $key !== $secret_key ) { esc_html_e( 'Invalid key.', 'booking-activities' ); exit; }
+	if( $key !== $secret_key ) { esc_html_e( 'Invalid secret key.', 'booking-activities' ); exit; }
 	
 	// Check if the form has a valid 'calendar' field
 	$calendar_field = bookacti_get_form_field_data_by_name( $form_id, 'calendar' );

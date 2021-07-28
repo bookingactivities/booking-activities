@@ -846,12 +846,11 @@ function bookacti_get_user_locale( $user_id, $default = 'current', $country_code
 /* 
  * Get site locale, and default to site or current locale
  * @since 1.2.0
- * @version 1.9.0
- * @param string $default 'current' or 'site'
+ * @version 1.12.0
  * @param boolean $country_code Whether to return also country code
  * @return string
  */
-function bookacti_get_site_locale( $default = 'site', $country_code = true ) {
+function bookacti_get_site_locale( $country_code = true ) {
 	// Get raw site locale, or current locale by default
 	$locale = get_locale();
 
@@ -863,7 +862,7 @@ function bookacti_get_site_locale( $default = 'site', $country_code = true ) {
 		}
 	}
 
-	return apply_filters( 'bookacti_site_locale', $locale, $default, $country_code );
+	return apply_filters( 'bookacti_site_locale', $locale, $country_code );
 }
 
 
