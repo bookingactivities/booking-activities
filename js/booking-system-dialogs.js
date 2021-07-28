@@ -197,7 +197,12 @@ function bookacti_dialog_choose_group_of_events( booking_system, groups, event )
 		var group = attributes[ 'groups_data' ][ group_id ];
 		var category_id = parseInt( group[ 'category_id' ] );
 		var category_data = attributes[ 'group_categories_data' ][ category_id ][ 'settings' ];
-		var started_groups_bookable = typeof category_data[ 'started_groups_bookable' ] !== 'undefined' ? parseInt( category_data[ 'started_groups_bookable' ] ) : parseInt( bookacti_localized.started_groups_bookable );
+		var started_groups_bookable	= parseInt( bookacti_localized.started_groups_bookable );
+		if( typeof category_data[ 'started_groups_bookable' ] !== 'undefined' ) {
+			if( $j.inArray( category_data[ 'started_groups_bookable' ], [ 0, 1, '0', '1', true, false ] ) >= 0 ) {
+				started_groups_bookable	= $j.isNumeric( category_data[ 'started_groups_bookable' ] ) ? parseInt( category_data[ 'started_groups_bookable' ] ) : ( category_data[ 'started_groups_bookable' ] ? 1 : 0 );
+			}
+		}
 		
 		$j.each( groups_per_date, function( group_date, group_events ) {
 			// Get group bookings data
@@ -221,7 +226,7 @@ function bookacti_dialog_choose_group_of_events( booking_system, groups, event )
 			&& ! ( started_groups_bookable && group_end.isAfter( current_time ) ) ) {
 				is_available = false;
 			}
-
+			
 			if( is_available ) {
 				// Check the min quantity
 				is_available		= false;

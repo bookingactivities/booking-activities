@@ -1371,10 +1371,10 @@ function bookacti_is_event_available( booking_system, event ) {
 			var group			= attributes[ 'groups_data' ][ group_id ];
 			var category_id		= parseInt( group[ 'category_id' ] );
 			var category_data	= attributes[ 'group_categories_data' ][ category_id ][ 'settings' ];
-			var started_groups_bookable	= bookacti_localized.started_groups_bookable;
+			var started_groups_bookable	= parseInt( bookacti_localized.started_groups_bookable );
 			if( typeof category_data[ 'started_groups_bookable' ] !== 'undefined' ) {
 				if( $j.inArray( category_data[ 'started_groups_bookable' ], [ 0, 1, '0', '1', true, false ] ) >= 0 ) {
-					started_groups_bookable	= parseInt( category_data[ 'started_groups_bookable' ] );
+					started_groups_bookable	= $j.isNumeric( category_data[ 'started_groups_bookable' ] ) ? parseInt( category_data[ 'started_groups_bookable' ] ) : ( category_data[ 'started_groups_bookable' ] ? 1 : 0 );
 				}
 			}
 			

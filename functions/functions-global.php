@@ -501,8 +501,8 @@ function bookacti_get_js_variables() {
 		'event_narrow_width'				=> apply_filters( 'bookacti_event_narrow_width', 70 ),
 		'event_wide_width'					=> apply_filters( 'bookacti_event_wide_width', 250 ),
 
-		'started_events_bookable'			=> bookacti_get_setting_value( 'bookacti_general_settings',	'started_events_bookable' ) ? true : false,
-		'started_groups_bookable'			=> bookacti_get_setting_value( 'bookacti_general_settings',	'started_groups_bookable' ) ? true : false,
+		'started_events_bookable'			=> bookacti_get_setting_value( 'bookacti_general_settings',	'started_events_bookable' ) ? 1 : 0,
+		'started_groups_bookable'			=> bookacti_get_setting_value( 'bookacti_general_settings',	'started_groups_bookable' ) ? 1 : 0,
 		'event_load_interval'				=> bookacti_get_setting_value( 'bookacti_general_settings', 'event_load_interval' ),
 		'default_view_threshold'			=> bookacti_get_setting_value( 'bookacti_general_settings', 'default_calendar_view_threshold' ),
 		'bookings_tooltip_mouseover_timeout'=> 250,
@@ -527,7 +527,7 @@ function bookacti_get_js_variables() {
 		'dialog_button_refund'				=> $can_edit_bookings ? esc_html_x( 'Refund', 'Button label to trigger the refund action', 'booking-activities' ) : apply_filters( 'bookacti_translate_text', $messages[ 'refund_dialog_button' ][ 'value' ] ),
 
 		'plugin_path'						=> plugins_url() . '/' . BOOKACTI_PLUGIN_NAME,
-		'is_admin'							=> is_admin(),
+		'is_admin'							=> is_admin() ? 1 : 0,
 		'current_user_id'					=> get_current_user_id(),
 		'current_time'						=> $current_datetime->format( 'Y-m-d H:i:s' ),
 
