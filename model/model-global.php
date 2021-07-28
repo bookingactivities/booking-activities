@@ -27,8 +27,8 @@ if( ! defined( 'BOOKACTI_TABLE_PERMISSIONS' ) )		{ define( 'BOOKACTI_TABLE_PERMI
 
 /**
  * Delete a user meta for all users
- * 
  * @since 1.3.0
+ * @version 1.11.5
  * @global wpdb $wpdb
  * @param string $meta_key
  * @param string $meta_value
@@ -36,10 +36,9 @@ if( ! defined( 'BOOKACTI_TABLE_PERMISSIONS' ) )		{ define( 'BOOKACTI_TABLE_PERMI
  * @return false|int
  */
 function bookacti_delete_user_meta( $meta_key, $user_id = 0, $meta_value = '' ) {
-	
 	global $wpdb;
 	
-	$query = 'DELETE FROM ' . $wpdb->prefix . 'usermeta WHERE meta_key = %s ';
+	$query = 'DELETE FROM ' . $wpdb->usermeta . ' WHERE meta_key = %s ';
 	
 	$variables = array( $meta_key );
 	
@@ -63,12 +62,13 @@ function bookacti_delete_user_meta( $meta_key, $user_id = 0, $meta_value = '' ) 
 /**
  * Get the user id corresponding to a secret key
  * @since 1.9.0
+ * @version 1.11.5
  * @param string $secret_key
  * @return int User ID or 0 if not found
  */
 function bookacti_get_user_id_by_secret_key( $secret_key ) {
 	global $wpdb;
-	$query = 'SELECT user_id FROM ' . $wpdb->prefix . 'usermeta WHERE meta_key = "bookacti_secret_key" AND meta_value = %s;';
+	$query = 'SELECT user_id FROM ' . $wpdb->usermeta . ' WHERE meta_key = "bookacti_secret_key" AND meta_value = %s;';
 	$query = $wpdb->prepare( $query, $secret_key );
 	$user_id = $wpdb->get_var( $query );
 	return $user_id ? intval( $user_id ) : 0;

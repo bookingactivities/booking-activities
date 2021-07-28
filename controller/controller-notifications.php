@@ -58,7 +58,7 @@ add_action( 'bookacti_clean_latest_notifications', 'bookacti_clean_latest_emails
 /**
  * Send a notification to admin and customer when a new booking is made
  * @since 1.2.2 (was bookacti_send_notification_admin_new_booking in 1.2.1)
- * @version 1.9.0
+ * @version 1.11.5
  * @param array $return_array
  * @param array $booking_form_values
  * @param int $form_id
@@ -66,7 +66,9 @@ add_action( 'bookacti_clean_latest_notifications', 'bookacti_clean_latest_emails
 function bookacti_send_notification_when_booking_is_made( $return_array, $booking_form_values, $form_id ) {
 	foreach( $return_array[ 'bookings' ] as $booking ) {
 		// Send a booking confirmation to the customer
-		bookacti_send_notification( 'customer_' . $booking_form_values[ 'status' ] . '_booking', $booking[ 'id' ], $booking[ 'type' ] );
+		if( ! empty( $booking_form_values[ 'status' ] ) ) { 
+			bookacti_send_notification( 'customer_' . $booking_form_values[ 'status' ] . '_booking', $booking[ 'id' ], $booking[ 'type' ] );
+		}
 		// Alert administrators that a new booking has been made
 		bookacti_send_notification( 'admin_new_booking', $booking[ 'id' ], $booking[ 'type' ] );
 	}
@@ -78,12 +80,15 @@ add_action( 'bookacti_booking_form_validated', 'bookacti_send_notification_when_
 /**
  * Send a notification to admin and customer when a single booking status changes
  * @since 1.2.1 (was bookacti_send_email_when_booking_state_changes in 1.2.0)
- * @version 1.10.0
+ * @version 1.11.5
  * @param object $booking
  * @param string $status
  * @param array $args
  */
 function bookacti_send_notification_when_booking_state_changes( $booking, $status, $args ) {
+	// Do not send notifications if the new status is unknown
+	if( ! $status ) { return; }
+	
 	// Do not send notification if explicitly said
 	if( isset( $args[ 'send_notifications' ] ) && ! $args[ 'send_notifications' ] ) { return; }
 	
@@ -109,13 +114,16 @@ add_action( 'bookacti_booking_state_changed', 'bookacti_send_notification_when_b
 /**
  * Send a notification to admin and customer when a booking group status changes
  * @since 1.2.1 (was bookacti_send_email_when_booking_group_state_changes in 1.2.0)
- * @version 1.9.0
+ * @version 1.11.5
  * @param int $booking_group_id
  * @param array $bookings
  * @param string $status
  * @param array $args
  */
 function bookacti_send_notification_when_booking_group_state_changes( $booking_group_id, $bookings, $status, $args ) {
+	// Do not send notifications if the new status is unknown
+	if( ! $status ) { return; }
+	
 	// Do not send notification if explicitly said
 	if( isset( $args[ 'send_notifications' ] ) && ! $args[ 'send_notifications' ] ) { return; }
 	

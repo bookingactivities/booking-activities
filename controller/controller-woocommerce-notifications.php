@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Send a new status notification for a booking attached to an order item
  * @since 1.9.0
- * @version 1.11.4
+ * @version 1.11.5
  * @param array $order_item_booking
  * @param string $new_status
  * @param WC_Order $order
@@ -50,7 +50,7 @@ function bookacti_wc_send_order_item_booking_status_notification( $order_item_bo
 	if( $old_status === $new_status && ! $forced ) { return; }
 	
 	// Send a booking confirmation to the customer
-	if( $notify_customer ) {
+	if( $notify_customer && $new_status ) {
 		bookacti_send_notification( 'customer_' . $new_status . '_booking', $order_item_booking[ 'id' ], $order_item_booking[ 'type' ] );
 	}
 

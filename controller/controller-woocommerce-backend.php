@@ -137,7 +137,7 @@ add_action( 'woocommerce_before_delete_order_item', 'bookacti_cancel_bookings_wh
 
 /**
  * Change booking quantity and status when a refund is deleted
- * @version 1.9.0
+ * @version 1.11.5
  * @param int $refund_id
  * @param int $order_id
  */
@@ -188,7 +188,7 @@ function bookacti_update_booking_when_refund_is_deleted( $refund_id, $order_id )
 				
 				// Trigger booking status change
 				if( $updated && $item_booking[ 'type' ] === 'single' ) {
-					if( $booking->state !== $booking_data[ 'status' ] ) {
+					if( $booking->state !== $booking_data[ 'status' ] && $booking_data[ 'status' ] ) {
 						do_action( 'bookacti_booking_state_changed', $booking, $booking_data[ 'status' ], array( 'is_admin' => true, 'send_notifications' => false ) );
 					}
 				}
@@ -212,8 +212,8 @@ function bookacti_update_booking_when_refund_is_deleted( $refund_id, $order_id )
 					$updated = bookacti_update_booking_group( $booking_group_data );
 
 					// Trigger booking group status change
-					if( $updated && $booking_group_data[ 'status' ] !== $status ) {
-						do_action( 'bookacti_booking_group_state_changed', $item_booking[ 'id' ], $item_booking[ 'bookings' ], $item_booking[ 'bookings' ], $booking_group_data[ 'status' ], array( 'is_admin' => true, 'send_notifications' => false ) );
+					if( $updated && $booking_group_data[ 'status' ] !== $status && $booking_group_data[ 'status' ] ) {
+						do_action( 'bookacti_booking_group_state_changed', $item_booking[ 'id' ], $item_booking[ 'bookings' ], $booking_group_data[ 'status' ], array( 'is_admin' => true, 'send_notifications' => false ) );
 					}
 				}
 			}
