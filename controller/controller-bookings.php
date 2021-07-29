@@ -1091,9 +1091,9 @@ add_action( 'wp_ajax_bookactiExportBookingsUrl', 'bookacti_controller_generate_e
 
 
 /**
- * Export booking list according to filters
+ * Export bookings according to filters
  * @since 1.6.0
- * @version 1.9.0
+ * @version 1.12.0
  */
 function bookacti_export_bookings_page() {
 	if( empty( $_REQUEST[ 'action' ] ) ) { return; }
@@ -1101,23 +1101,20 @@ function bookacti_export_bookings_page() {
 	
 	// Check if the secret key exists
 	$key = ! empty( $_REQUEST[ 'key' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'key' ] ) : '';
-	if( ! $key ) { esc_html_e( 'Missing key.', 'booking-activities' ); exit; }
+	if( ! $key ) { esc_html_e( 'Missing secret key.', 'booking-activities' ); exit; }
 	
 	// Check if the user exists
 	$user_id = bookacti_get_user_id_by_secret_key( $key );
-	if( ! $user_id ) { esc_html_e( 'Invalid key.', 'booking-activities' ); exit; }
-	
-	// Check capabilities
-	if( ! user_can( $user_id, 'bookacti_manage_bookings' ) ) { esc_html_e( 'You are not allowed to do that.', 'booking-activities' ); exit; }
+	if( ! $user_id ) { esc_html_e( 'Invalid secret key.', 'booking-activities' ); exit; }
 	
 	// Check if the export URL has been shortened
 	$args = $_REQUEST;
-	if( ! empty( $_REQUEST[ 'export_id' ] ) ) {
-		$export_id = intval( $_REQUEST[ 'export_id' ] );
+	$export_id = ! empty( $_REQUEST[ 'export_id' ] ) ? intval( $_REQUEST[ 'export_id' ] ) : 0;
+	if( $export_id ) {
 		$export = bookacti_get_export( $export_id );
 		
 		if( ! $export ) { esc_html_e( 'Invalid or expired export ID.', 'booking-activities' ); exit; }
-		if( intval( $export[ 'user_id' ] ) !== intval( $user_id ) ) { esc_html_e( 'The key doesn\'t match the user.', 'booking-activities' ); exit; }
+		if( intval( $export[ 'user_id' ] ) !== intval( $user_id ) ) { esc_html_e( 'The secret key doesn\'t match the user who has generated the export.', 'booking-activities' ); exit; }
 		
 		$args = array_merge( $export[ 'args' ], $_REQUEST );
 		$args[ 'sequence' ] = $export[ 'sequence' ];
@@ -1126,7 +1123,7 @@ function bookacti_export_bookings_page() {
 	
 	// Check the export type
 	$export_type = sanitize_title_with_dashes( $args[ 'export_type' ] );
-	if( ! in_array( $export_type, array( 'csv', 'ical' ), true ) ) { exit; }
+	if( ! in_array( $export_type, array( 'csv', 'ical' ), true ) ) { esc_html_e( 'Invalid export type.', 'booking-activities' ); exit; }
 	
 	// Check the filename
 	$filename = ! empty( $args[ 'filename' ] ) ? sanitize_title_with_dashes( $args[ 'filename' ] ) : 'booking-activities-bookings';
@@ -1141,8 +1138,8 @@ function bookacti_export_bookings_page() {
 	
 	// Check if the user can export bookings
 	$is_allowed = user_can( $user_id, 'bookacti_manage_bookings' );
-	$is_own = intval( $filters[ 'user_id' ] ) === $user_id || ( count( $filters[ 'in__user_id' ] ) === 1 && $filters[ 'in__user_id' ][ 0 ] === $user_id );
-	if( ! $is_allowed && ! $is_own ) { esc_html_e( 'Not allowed.', 'booking-activities' ); exit; }
+	$is_own = intval( $filters[ 'user_id' ] ) === $user_id || ( count( $filters[ 'in__user_id' ] ) === 1 && intval( $filters[ 'in__user_id' ][ 0 ] ) === $user_id );
+	if( ! $is_allowed && ! $is_own ) { esc_html_e( 'You are not allowed to do that.', 'booking-activities' ); exit; }
 	$filters[ 'display_private_columns' ] = 1;
 	
 	// If an event has been selected, do not retrieve groups of events containing this event
@@ -1180,23 +1177,23 @@ function bookacti_export_bookings_page() {
 	
 	// Generate export according to type
 	if( $export_type === 'csv' ) { 
-		$csv_args = array(
+		$csv_args = apply_filters( 'bookacti_export_bookings_csv_args', array(
 			'columns'	=> $columns,
 			'raw'		=> ! empty( $args[ 'raw' ] ) ? 1 : 0,
 			'locale'	=> $locale
-		);
+		) );
 		echo bookacti_convert_bookings_to_csv( $filters, $csv_args );
 	
 	} else if( $export_type === 'ical' ) { 
-		$ical_args = array( 
+		$ical_args = apply_filters( 'bookacti_export_bookings_ical_args', array( 
 			'vevent_summary'		=> isset( $args[ 'vevent_summary' ] ) ? utf8_decode( urldecode( trim( $args[ 'vevent_summary' ] ) ) ) : $user_settings[ 'vevent_summary' ],
 			'vevent_description'	=> isset( $args[ 'vevent_description' ] ) ? utf8_decode( urldecode( str_replace( array( '%0A', '%250A' ), '\n', trim( $args[ 'vevent_description' ] ) ) ) ) : $user_settings[ 'vevent_description' ],
 			'tooltip_booking_list_columns'	=> $columns,
 			'booking_list_header'	=> ! empty( $args[ 'booking_list_header' ] ) ? 1 : 0,
 			'raw'					=> ! empty( $args[ 'raw' ] ) ? 1 : 0,
-			'sequence'				=> ! empty( $args[ 'sequence' ] ) ? $args[ 'sequence' ] : 0,
+			'sequence'				=> ! empty( $args[ 'sequence' ] ) ? intval( $args[ 'sequence' ] ) : 0,
 			'locale'				=> $locale
-		);
+		) );
 		echo bookacti_convert_bookings_to_ical( $filters, $ical_args );
 	}
 	
@@ -1204,9 +1201,7 @@ function bookacti_export_bookings_page() {
 	bookacti_restore_locale();
 	
 	// Increment the expiry date and sequence
-	if( ! empty( $_REQUEST[ 'export_id' ] ) ) {
-		bookacti_update_export( $export_id );
-	}
+	if( $export_id ) { bookacti_update_export( $export_id ); }
 	
 	exit;
 }
@@ -1214,11 +1209,10 @@ add_action( 'init', 'bookacti_export_bookings_page', 10 );
 
 
 /**
- * Export booked events of a specific user as ICS
- * @since 1.6.0
- * @version 1.12.0
+ * Export a user's bookings events as iCal
+ * @since 1.12.0 (was bookacti_export_user_booked_events_page)
  */
-function bookacti_export_user_booked_events_page() {
+function bookacti_export_user_bookings_events_page() {
 	if( empty( $_REQUEST[ 'action' ] ) ) { return; }
 	if( $_REQUEST[ 'action' ] !== 'bookacti_export_user_booked_events' ) { return; }
 
@@ -1230,38 +1224,53 @@ function bookacti_export_user_booked_events_page() {
 	$user_id = bookacti_get_user_id_by_secret_key( $key );
 	if( ! $user_id ) { esc_html_e( 'Invalid secret key.', 'booking-activities' ); exit; }
 	
-	$atts = apply_filters( 'bookacti_export_events_attributes', array_merge( bookacti_format_booking_system_url_attributes(), array(
-		'bookings_only' => 1,
-		'user_id' => $user_id,
-		'status' => array( 'delivered', 'booked', 'pending' ),
-		'groups_single_events' => 1,
-		'past_events' => 1,
-		'past_events_bookable' => 1
-	)));
-
 	// Check the filename
-	$filename = ! empty( $_REQUEST[ 'filename' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'filename' ] ) : ( ! empty( $atts[ 'filename' ] ) ? sanitize_title_with_dashes( $atts[ 'filename' ] ) : 'my-bookings' );
+	$filename = ! empty( $_REQUEST[ 'filename' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'filename' ] ) : 'my-bookings';
 	if( ! $filename ) { esc_html_e( 'Invalid filename.', 'booking-activities' ); exit; }
 	$atts[ 'filename' ] = $filename;
 	if( substr( $filename, -4 ) !== '.ics' ) { $filename .= '.ics'; }
-
-	$calname = esc_html__( 'My bookings', 'booking-activities' );
-	$caldesc = $calname . '.';
 
 	// Increment the sequence number each time to make sure that the events will be updated
 	$sequence = intval( get_user_meta( $user_id, 'bookacti_ical_sequence', true ) ) + 1;
 	update_user_meta( $user_id, 'bookacti_ical_sequence', $sequence );
 
-	bookacti_export_events_page( $atts, $calname, $caldesc, $sequence );
+	header( 'Content-type: text/calendar; charset=utf-8' );
+	header( 'Content-Disposition: attachment; filename=' . $filename );
+	header( 'Cache-Control: no-cache, must-revalidate' ); // HTTP/1.1
+	header( 'Expires: Sat, 26 Jul 1997 05:00:00 GMT' ); // Expired date to force third-party calendars to refresh soon
+	
+	$filters = array( 'user_id' => $user_id, 'active' => 1, 'per_page' => 200 );
+	$filters = apply_filters( 'bookacti_export_user_bookings_events_filters', bookacti_format_booking_filters( $filters ), $user_id );
+	
+	// Temporarily switch locale to the desired one or user default's
+	$locale = ! empty( $_REQUEST[ 'lang' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'lang' ] ) : bookacti_get_user_locale( $user_id, 'site' );
+	bookacti_switch_locale( $locale );
+	
+	$ical_args = apply_filters( 'bookacti_export_user_bookings_events_ical_args', array( 
+		'vevent_summary'		=> '{event_title}',
+		'vevent_description'	=> '',
+		'tooltip_booking_list_columns'	=> array(),
+		'booking_list_header'	=> 0,
+		'raw'					=> 0,
+		'sequence'				=> $sequence,
+		'locale'				=> $locale
+	) );
+	
+	echo bookacti_convert_bookings_to_ical( $filters, $ical_args );
+
+	// Switch locale back to normal
+	bookacti_restore_locale();
+	
+	exit;
 }
-add_action( 'init', 'bookacti_export_user_booked_events_page', 10 );
+add_action( 'init', 'bookacti_export_user_bookings_events_page', 10 );
 
 
 /**
- * Export events of a specific booking (group)
+ * Export a booking (group) event(s) as iCal
  * @since 1.12.0 (was bookacti_export_booked_events_page)
  */
-function bookacti_export_specific_booking_page() {
+function bookacti_export_booking_events_page() {
 	if( empty( $_REQUEST[ 'action' ] ) ) { return; }
 	if( $_REQUEST[ 'action' ] !== 'bookacti_export_booked_events' ) { return; }
 
@@ -1288,21 +1297,28 @@ function bookacti_export_specific_booking_page() {
 	header( 'Cache-Control: no-cache, must-revalidate' ); // HTTP/1.1
 	header( 'Expires: Sat, 26 Jul 1997 05:00:00 GMT' ); // Expired date to force third-party calendars to refresh soon
 	
-	$filters = $booking_type === 'group' ? array( 'booking_group_id' => $booking_id ) : array( 'booking_id' => $booking_id );
-	$filters = bookacti_format_booking_filters( $filters );
+	$filters = $booking_type === 'group' ? array( 'booking_group_id' => $booking_id, 'active' => 1 ) : array( 'booking_id' => $booking_id, 'active' => 1 );
+	$filters = apply_filters( 'bookacti_export_booking_events_filters', bookacti_format_booking_filters( $filters ), $booking_id, $booking_type );
 	
-	$ical_args = array( 
+	// Temporarily switch locale to the desired one or site default's
+	$locale = ! empty( $_REQUEST[ 'lang' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'lang' ] ) : bookacti_get_site_locale();
+	bookacti_switch_locale( $locale );
+	
+	$ical_args = apply_filters( 'bookacti_export_booking_events_ical_args', array( 
 		'vevent_summary'		=> '{event_title}',
 		'vevent_description'	=> '',
 		'tooltip_booking_list_columns'	=> array(),
 		'booking_list_header'	=> 0,
 		'raw'					=> 0,
 		'sequence'				=> ! empty( $_REQUEST[ 'sequence' ] ) ? intval( $_REQUEST[ 'sequence' ] ) : 0,
-		'locale'				=> ! empty( $_REQUEST[ 'lang' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'lang' ] ) : bookacti_get_site_locale()
-	);
+		'locale'				=> $locale
+	) );
 	
 	echo bookacti_convert_bookings_to_ical( $filters, $ical_args );
-
+	
+	// Switch locale back to normal
+	bookacti_restore_locale();
+	
 	exit;
 }
-add_action( 'init', 'bookacti_export_specific_booking_page', 10 );
+add_action( 'init', 'bookacti_export_booking_events_page', 10 );

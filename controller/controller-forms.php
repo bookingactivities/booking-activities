@@ -1708,30 +1708,28 @@ function bookacti_export_form_events_page() {
 	$calendar_field = bookacti_get_form_field_data_by_name( $form_id, 'calendar' );
 	if( ! $calendar_field ) { esc_html_e( 'Cannot find the calendar field of the requested form.', 'booking-activities' ); exit; }
 	
-	$atts = apply_filters( 'bookacti_export_events_attributes', array_merge( bookacti_format_booking_system_url_attributes( $calendar_field ), array(
-		'groups_single_events' => 1
-	)));
-	
-	// Check the filename
-	$filename = ! empty( $_REQUEST[ 'filename' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'filename' ] ) : ( ! empty( $atts[ 'filename' ] ) ? sanitize_title_with_dashes( $atts[ 'filename' ] ) : 'booking-activities-events-form-' . $form_id );
-	if( ! $filename ) { esc_html_e( 'Invalid filename.', 'booking-activities' ); exit; }
-	$atts[ 'filename' ] = $filename;
-	if( substr( $filename, -4 ) !== '.ics' ) { $filename .= '.ics'; }
-	
+	// Set the file name, and the calendar name and description
 	$form = bookacti_get_form( $form_id );
-	if( $form ) {
-		$calname	= apply_filters( 'bookacti_translate_text', $form[ 'title' ] );
-		/* translators: %s is the form title */
-		$caldesc	= sprintf( esc_html__( 'Form "%s"', 'booking-activities' ), apply_filters( 'bookacti_translate_text', $form[ 'title' ] ) );
-	} else {
-		$calname	= sprintf( esc_html__( 'Form #%d', 'booking-activities' ), $form_id );
-		$caldesc	= $calname;
-	}
+	$filename = ! empty( $_REQUEST[ 'filename' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'filename' ] ) : 'booking-activities-events-form-' . $form_id;
+	$calname = $form ? apply_filters( 'bookacti_translate_text', $form[ 'title' ] ) : sprintf( esc_html__( 'Form #%d', 'booking-activities' ), $form_id );
+	/* translators: %s is the form title */
+	$caldesc = $form ? sprintf( esc_html__( 'Form "%s"', 'booking-activities' ), apply_filters( 'bookacti_translate_text', $form[ 'title' ] ) ) : $calname;
 	
 	// Increment the sequence number each time to make sure that the events will be updated
 	$sequence = intval( bookacti_get_metadata( 'form', $form_id, 'ical_sequence', true ) ) + 1;
 	bookacti_update_metadata( 'form', $form_id, array( 'ical_sequence' => $sequence ) );
 	
-	bookacti_export_events_page( $atts, $calname, $caldesc, $sequence );
+	// Let third party plugins change the booking system attributes
+	$atts = apply_filters( 'bookacti_export_form_events_attributes', array_merge( 
+			bookacti_format_booking_system_url_attributes( $calendar_field ), 
+			array( 'groups_single_events' => 1, 'filename' => $filename, 'calname' => $calname, 'caldesc' => $caldesc, 'sequence' => $sequence )
+		)
+	);
+	
+	// Check the filename
+	if( empty( $atts[ 'filename' ] ) ) { esc_html_e( 'Invalid filename.', 'booking-activities' ); exit; }
+	if( substr( $filename, -4 ) !== '.ics' ) { $filename .= '.ics'; }
+	
+	bookacti_export_events_page( $atts, $atts[ 'calname' ], $atts[ 'caldesc' ], $atts[ 'sequence' ] );
 }
 add_action( 'init', 'bookacti_export_form_events_page', 10 );
