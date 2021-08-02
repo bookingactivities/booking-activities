@@ -501,7 +501,7 @@ add_action( 'bookacti_messages_settings', 'bookacti_display_messages_fields' );
 /**
  * Analyse what data can be archive prior to specific date
  * @since 1.7.0
- * @version 1.10.0
+ * @version 1.12.0
  */
 function bookacti_controller_archive_data_analyse() {
 	$date = bookacti_sanitize_date( $_POST[ 'date' ] );
@@ -515,14 +515,16 @@ function bookacti_controller_archive_data_analyse() {
 	// Get the data prior to the desired date
 	// Get events IDs
 	$events = bookacti_get_events_prior_to( $date );
-	// Repeated events exceptions
-	$exceptions = bookacti_get_repeated_events_exceptions_prior_to( $date );
-	// Get started repeated events
-	$started_repeated_events = bookacti_get_started_repeated_events_as_of( $date );
 	// Get group of events
 	$groups_of_events = bookacti_get_group_of_events_prior_to( $date );
 	// Get grouped events
 	$grouped_events = bookacti_get_grouped_events_prior_to( $date );
+	// Get started repeated events
+	$started_repeated_events = bookacti_get_started_repeated_events_as_of( $date );
+	// Get started repeated groups of events
+	$started_repeated_groups = bookacti_get_started_repeated_groups_of_events_as_of( $date );
+	// Repeated events exceptions
+	$exceptions = bookacti_get_repeated_events_exceptions_prior_to( $date );
 	// Get bookings
 	$bookings = bookacti_get_bookings_prior_to( $date );
 	// Get booking groups
@@ -534,19 +536,21 @@ function bookacti_controller_archive_data_analyse() {
 	$no_data = true;
 	$ids_per_type = array(
 		esc_html__( 'Events', 'booking-activities' ) => array(),
-		esc_html__( 'Repetition exceptions', 'booking-activities' ) => array(),
-		esc_html__( 'Repeated events to be truncated', 'booking-activities' ) => array(),
 		esc_html__( 'Groups of events', 'booking-activities' ) => array(),
 		esc_html__( 'Grouped events', 'booking-activities' ) => array(),
+		esc_html__( 'Repeated events to be truncated', 'booking-activities' ) => array(),
+		esc_html__( 'Repeated groups of events to be truncated', 'booking-activities' ) => array(),
+		esc_html__( 'Repetition exceptions', 'booking-activities' ) => array(),
 		esc_html__( 'Bookings', 'booking-activities' ) => array(),
 		esc_html__( 'Booking groups', 'booking-activities' ) => array(),
 		esc_html__( 'Metadata', 'booking-activities' ) => array()
 	);
 	if( $events )					{ $no_data = false; foreach( $events as $event )						{ $ids_per_type[ esc_html__( 'Events', 'booking-activities' ) ][] = $event->id; } }
-	if( $exceptions )				{ $no_data = false; foreach( $exceptions as $exception )				{ $ids_per_type[ esc_html__( 'Repetition exceptions', 'booking-activities' ) ][] = $exception->id; } }
-	if( $started_repeated_events )	{ $no_data = false; foreach( $started_repeated_events as $event )		{ $ids_per_type[ esc_html__( 'Repeated events to be truncated', 'booking-activities' ) ][] = $event->id; } }
 	if( $groups_of_events )			{ $no_data = false; foreach( $groups_of_events as $group_of_events )	{ $ids_per_type[ esc_html__( 'Groups of events', 'booking-activities' ) ][] = $group_of_events->id; } }
 	if( $grouped_events )			{ $no_data = false; foreach( $grouped_events as $grouped_event )		{ $ids_per_type[ esc_html__( 'Grouped events', 'booking-activities' ) ][] = $grouped_event->id; } }
+	if( $started_repeated_events )	{ $no_data = false; foreach( $started_repeated_events as $event )		{ $ids_per_type[ esc_html__( 'Repeated events to be truncated', 'booking-activities' ) ][] = $event->id; } }
+	if( $started_repeated_groups )	{ $no_data = false; foreach( $started_repeated_groups as $group )		{ $ids_per_type[ esc_html__( 'Repeated groups of events to be truncated', 'booking-activities' ) ][] = $group->id; } }
+	if( $exceptions )				{ $no_data = false; foreach( $exceptions as $exception )				{ $ids_per_type[ esc_html__( 'Repetition exceptions', 'booking-activities' ) ][] = $exception->id; } }
 	if( $bookings )					{ $no_data = false; foreach( $bookings as $booking )					{ $ids_per_type[ esc_html__( 'Bookings', 'booking-activities' ) ][] = $booking->id; } }
 	if( $booking_groups )			{ $no_data = false; foreach( $booking_groups as $booking_group )		{ $ids_per_type[ esc_html__( 'Booking groups', 'booking-activities' ) ][] = $booking_group->id; } }
 	if( $metadata )					{ $no_data = false; foreach( $metadata as $meta_row )					{ $ids_per_type[ esc_html__( 'Metadata', 'booking-activities' ) ][] = $meta_row->id; } }

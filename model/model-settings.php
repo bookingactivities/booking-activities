@@ -39,6 +39,7 @@ function bookacti_get_mysql_temp_path() {
 /**
  * Get events prior to a date
  * @since 1.7.0
+ * @version 1.12.0
  * @global wpdb $wpdb
  * @param string $date
  * @return array
@@ -46,7 +47,8 @@ function bookacti_get_mysql_temp_path() {
 function bookacti_get_events_prior_to( $date ) {
 	global $wpdb;
 	
-	$query	= ' SELECT E.id, E.start, E.end, E.repeat_freq, E.repeat_from, E.repeat_to FROM ' . BOOKACTI_TABLE_EVENTS . ' as E '
+	$query	= ' SELECT E.id, E.template_id, E.activity_id, E.title, E.start, E.end, E.availability, E.repeat_freq, E.repeat_step, E.repeat_on, E.repeat_from, E.repeat_to, E.active '
+			. ' FROM ' . BOOKACTI_TABLE_EVENTS . ' as E '
 			. ' WHERE ( ( E.repeat_freq IS NULL OR E.repeat_freq = "none" ) AND E.end < %s ) '
 			. ' OR ( ( E.repeat_freq IS NOT NULL AND E.repeat_freq != "none" ) AND E.repeat_to < %s )'
 			. ' ORDER BY E.id DESC';
@@ -68,8 +70,9 @@ function bookacti_get_events_prior_to( $date ) {
 function bookacti_get_repeated_events_exceptions_prior_to( $date ) {
 	global $wpdb;
 	
-	$query	= ' SELECT id FROM ' . BOOKACTI_TABLE_EXCEPTIONS
-			. ' WHERE exception_value < %s'
+	$query	= ' SELECT X.id, X.object_type, X.object_id, X.exception_value '
+			. ' FROM ' . BOOKACTI_TABLE_EXCEPTIONS .' as X '
+			. ' WHERE X.exception_value < %s '
 			. ' ORDER BY id DESC';
 	
 	$variables	= array( $date );
@@ -83,6 +86,7 @@ function bookacti_get_repeated_events_exceptions_prior_to( $date ) {
 /**
  * Get repeated events that have started as of a specific date
  * @since 1.7.0
+ * @version 1.12.0
  * @global wpdb $wpdb
  * @param string $date
  * @return array
@@ -90,8 +94,10 @@ function bookacti_get_repeated_events_exceptions_prior_to( $date ) {
 function bookacti_get_started_repeated_events_as_of( $date ) {
 	global $wpdb;
 	
-	$query	= ' SELECT E.id, E.start, E.end, E.repeat_freq, E.repeat_from, E.repeat_to FROM ' . BOOKACTI_TABLE_EVENTS . ' as E '
-			. ' WHERE ( E.repeat_freq IS NOT NULL AND E.repeat_freq != "none" ) '
+	$query	= ' SELECT E.id, E.template_id, E.activity_id, E.title, E.start, E.end, E.availability, E.repeat_freq, E.repeat_step, E.repeat_on, E.repeat_from, E.repeat_to, E.active '
+			. ' FROM ' . BOOKACTI_TABLE_EVENTS . ' as E '
+			. ' WHERE E.repeat_freq IS NOT NULL '
+			. ' AND E.repeat_freq != "none" '
 			. ' AND E.repeat_to >= %s '
 			. ' AND E.repeat_from < %s '
 			. ' ORDER BY E.id DESC';
@@ -105,8 +111,35 @@ function bookacti_get_started_repeated_events_as_of( $date ) {
 
 
 /**
+ * Get repeated groups of events that have started as of a specific date
+ * @since 1.12.0
+ * @global wpdb $wpdb
+ * @param string $date
+ * @return array
+ */
+function bookacti_get_started_repeated_groups_of_events_as_of( $date ) {
+	global $wpdb;
+	
+	$query	= ' SELECT G.id, G.category_id, G.title, G.repeat_freq, G.repeat_step, G.repeat_on, G.repeat_from, G.repeat_to, G.active '
+			. ' FROM ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as G '
+			. ' WHERE G.repeat_freq IS NOT NULL '
+			. ' AND G.repeat_freq != "none" '
+			. ' AND G.repeat_to >= %s '
+			. ' AND G.repeat_from < %s '
+			. ' ORDER BY G.id DESC';
+	
+	$variables	= array( $date, $date );
+	$query		= $wpdb->prepare( $query, $variables );
+	$events		= $wpdb->get_results( $query, OBJECT );
+	
+	return $events;
+}
+
+
+/**
  * Get groups of events prior to a date
  * @since 1.7.0
+ * @version 1.12.0
  * @global wpdb $wpdb
  * @param string $date
  * @return array
@@ -114,12 +147,15 @@ function bookacti_get_started_repeated_events_as_of( $date ) {
 function bookacti_get_group_of_events_prior_to( $date ) {
 	global $wpdb;
 	
-	$query	= ' SELECT GE.group_id as id, MIN( GE.event_start ) as min_event_start, MAX( GE.event_end ) as max_event_end FROM ' . BOOKACTI_TABLE_GROUPS_EVENTS . ' as GE '
+	$query	= ' SELECT G.id, G.category_id, G.title, G.repeat_freq, G.repeat_step, G.repeat_on, G.repeat_from, G.repeat_to, G.active, MIN( GE.event_start ) as min_event_start, MAX( GE.event_end ) as max_event_end '
+			. ' FROM ' . BOOKACTI_TABLE_GROUPS_EVENTS . ' as GE, ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as G '
+			. ' WHERE G.id = GE.group_id '
 			. ' GROUP BY GE.group_id '
-			. ' HAVING max_event_end < %s '
+			. ' HAVING ( ( G.repeat_freq IS NULL OR G.repeat_freq = "none" ) AND max_event_end < %s ) '
+			. ' OR ( ( G.repeat_freq IS NOT NULL AND G.repeat_freq != "none" ) AND G.repeat_to < %s )'
 			. ' ORDER BY GE.group_id DESC';
 	
-	$variables	= array( $date . ' 00:00:00' );
+	$variables	= array( $date . ' 00:00:00', $date );
 	$query		= $wpdb->prepare( $query, $variables );
 	$groups		= $wpdb->get_results( $query, OBJECT );
 	
@@ -198,27 +234,27 @@ function bookacti_get_booking_groups_prior_to( $date ) {
 /**
  * Get events, group of events, booking and booking groups meta prior to a date
  * @since 1.7.0
+ * @version 1.12.0
  * @param string $date
  * @return int|false
  */
 function bookacti_get_metadata_prior_to( $date ) {
 	global $wpdb;
 		
-	// Where clauses
-	$where_events			= '( ( repeat_freq IS NULL OR repeat_freq = "none" ) AND end < %s ) OR ( ( repeat_freq IS NOT NULL AND repeat_freq != "none" ) AND repeat_to < %s )';
-	$where_group_of_events	= 'GROUP BY group_id HAVING MAX( event_end ) < %s';
-	$where_bookings			= 'event_end < %s';
-	$where_booking_groups	= 'id IN ( SELECT B.group_id FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B WHERE B.group_id IS NOT NULL GROUP BY B.group_id HAVING MAX( event_end ) < %s )';
-	
-	$where	= '( object_type = "event" AND object_id IN ( SELECT id FROM ' . BOOKACTI_TABLE_EVENTS . ' WHERE ' . $where_events . ' ) ) ';
-	$where .= 'OR ( object_type = "group_of_events" AND object_id IN ( SELECT group_id FROM ' . BOOKACTI_TABLE_GROUPS_EVENTS . ' ' . $where_group_of_events . ' ) ) ';
-	$where .= 'OR ( object_type = "booking" AND object_id IN ( SELECT id FROM ' . BOOKACTI_TABLE_BOOKINGS . ' WHERE ' . $where_bookings . ' ) ) ';
-	$where .= 'OR ( object_type = "booking_group" AND object_id IN ( SELECT id FROM ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' WHERE ' . $where_booking_groups . ' ) ) ';
-	
-	$variables = array( $date . ' 00:00:00', $date . ' 00:00:00', $date . ' 00:00:00', $date . ' 00:00:00', $date . ' 00:00:00' );
+	// Get IDs of each elements
+	$select_events			= 'SELECT E.id FROM ' . BOOKACTI_TABLE_EVENTS . ' as E WHERE ( ( E.repeat_freq IS NULL OR E.repeat_freq = "none" ) AND E.end < %s ) OR ( ( E.repeat_freq IS NOT NULL AND E.repeat_freq != "none" ) AND E.repeat_to < %s )';
+	$select_bookings		= 'SELECT B.id FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B WHERE B.event_end < %s';
+	$select_group_of_events	= 'SELECT GID.group_id FROM ( SELECT GE.group_id, G.repeat_freq, G.repeat_to, MAX( GE.event_end ) as max_event_end FROM ' . BOOKACTI_TABLE_GROUPS_EVENTS . ' as GE, ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as G WHERE G.id = GE.group_id GROUP BY GE.group_id HAVING ( ( G.repeat_freq IS NULL OR G.repeat_freq = "none" ) AND max_event_end < %s ) OR ( ( G.repeat_freq IS NOT NULL AND G.repeat_freq != "none" ) AND G.repeat_to < %s ) ) as GID';
+	$select_booking_groups	= 'SELECT B.group_id FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B WHERE B.group_id IS NOT NULL GROUP BY B.group_id HAVING MAX( event_end ) < %s';
 	
 	$query	= ' SELECT M.id, M.object_id, M.object_type FROM ' . BOOKACTI_TABLE_META . ' as M '
-			. ' WHERE ' . $where;
+			. ' WHERE ( object_type = "event" AND object_id IN ( ' . $select_events . ' ) ) '
+			. ' OR ( object_type = "booking" AND object_id IN ( ' . $select_bookings . ' ) ) '
+			. ' OR ( object_type = "group_of_events" AND object_id IN ( ' . $select_group_of_events . ' ) ) '
+			. ' OR ( object_type = "booking_group" AND object_id IN ( ' . $select_booking_groups . ' ) ) ';
+	
+	
+	$variables = array( $date . ' 00:00:00', $date . ' 00:00:00', $date . ' 00:00:00', $date . ' 00:00:00', $date . ' 00:00:00', $date . ' 00:00:00' );
 	
 	$query	= $wpdb->prepare( $query, $variables );
 	$meta	= $wpdb->get_results( $query, OBJECT );

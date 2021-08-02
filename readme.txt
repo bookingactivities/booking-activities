@@ -335,7 +335,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Dev - Move the legacy functions to controller-legacy.php
 * Dev - Store the activity_id in the wp_bookacti_groups_events table (part of removing dependencies between bookings and events (groups))
 
-= 1.11.5 =
+= 1.11.5 - 2021/08/02 =
 * Fix - Invalid key error when exporting bookings on multisite installs
 * Fix - Notifications were sent after partial refund in WooCommerce
 
