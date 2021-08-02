@@ -85,21 +85,6 @@ ul[id$='-select-box-results'] li[aria-disabled='true'] { display: none; }
 .bookacti-settings-table tbody tr:nth-child( 2n+1 )	{ background-color: #f9f9f9; }
 .bookacti-settings-table img	{ max-height: 24px; max-width: 24px; }
 
-.bookacti-not-found-row			{ text-align: center; }
-#bookacti-archive-disclaimer	{ max-width: 600px; color: #a00; }
-#bookacti-archive-delete-data-note	{ margin-top: 10px; color: #a00; }
-.bookacti-archive-options .bookacti-loading-alt { margin: 0 0 0 12px; display: inline-block; }
-.bookacti-archive-options .bookacti-notices ul	{ margin: 12px 0 0 0; width: fit-content; }
-.bookacti-archive-feedbacks-step { margin-top: 10px; }
-.bookacti-archive-feedbacks-step-container,
-.bookacti-archive-ids		{ display: none; margin-top: 10px; }
-.bookacti-show-archive-ids	{ cursor: pointer; margin-left: 6px; vertical-align: text-bottom; }
-.bookacti-archive-ids code	{ font-size: 0.8em; word-spacing: -2px; }
-.bookacti-archive-results ul				{ padding: 10px; margin: 5px 0; background: rgba( 255,255,255,0.4 ); border: 1px solid #aaa; }
-.bookacti-archive-results ul li:last-child	{ margin-bottom: 0; }
-a.bookacti-archive-action.button,
-a.bookacti-archive-action.button-link-delete{ font-weight: normal; vertical-align: middle; margin-right: 4px; }
-
 .bookacti-settings-table .dashicons-yes:before	{ color: #3cb371; }
 .bookacti-settings-table .dashicons-no:before	{ color: #cd5c5c; }
 

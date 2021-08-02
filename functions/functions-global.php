@@ -125,95 +125,6 @@ function bookacti_increase_max_execution_time( $context = '' ) {
 }
 
 
-/**
- * Create a zip
- * @since 1.7.0
- * @param array $files
- * @param string $destination
- * @param boolean $overwrite
- * @param boolean $remove_files
- * @return boolean
- */
-function bookacti_create_zip( $files = array(), $destination = '', $overwrite = true, $remove_files = false ) {
-	// If the zip file already exists and overwrite is false, return false
-	if( file_exists( $destination ) ) { 
-		if( ! $overwrite ) { return false; }
-		unlink( $destination );
-	}
-
-	$valid_files = array();
-	// Validate files
-	if( is_array( $files ) ) {
-		foreach( $files as $file) {
-			if( file_exists( $file ) ) { $valid_files[] = $file; }
-		}
-	}
-
-	if( empty( $valid_files ) ) { return false; }
-
-	// Create the archive
-	$zip = new ZipArchive();
-	$opened = $zip->open( $destination, ZIPARCHIVE::CREATE );
-	if( $opened !== true ) { return false; }
-
-	// Add the files
-	foreach( $valid_files as $file ) { $zip->addFile( $file, basename( $file ) ); }
-	$zip->close();
-
-	// Check to make sure the zip file exists
-	$zip_success = file_exists( $destination );
-
-	// Remove the original files
-	if( $zip_success && $remove_files ) {
-		foreach( $valid_files as $file ) { unlink( $file ); }
-	}
-
-	return $zip_success;
-}
-
-
-/**
- * Extract a zip file to specific directory
- * @since 1.7.0
- * @param string $zip_file
- * @param string $destination Must be an existing folder
- * @return array|false
- */
-function bookacti_extract_zip( $zip_file, $destination = '' ) {
-	// Make sure that the extract directory exists
-	if( ! is_dir( $destination ) ) {
-		$uploads_dir = wp_upload_dir();
-		$destination = str_replace( '\\', '/', $uploads_dir[ 'basedir' ] );
-	}
-	$extract_dir = trailingslashit( $destination ) . basename( $zip_file, '.zip' );
-
-	// Make sure that the extract directory is empty
-	$base_extract_dir = rtrim( $extract_dir, '/' );
-	while( is_dir( $extract_dir ) && count( scandir( $extract_dir ) ) > 2 ) {
-		$extract_dir = trailingslashit( $base_extract_dir . '-' . md5( microtime().rand() ) );
-	}
-
-	// Check if the zip file can be opened
-	$zip = new ZipArchive;
-	if( $zip->open( $zip_file ) !== true ) { return false; }
-
-	// Extract the files
-	$zip->extractTo( $extract_dir );
-	$zip->close();
-
-	$archives_handle = opendir( $extract_dir );
-	if( ! $archives_handle ) { return false; }
-
-	// Build an array of extracted file
-	$files = array();
-	while( false !== ( $filename = readdir( $archives_handle ) ) ) {
-		if( $filename == '.' || $filename == '..' ) { continue; }
-		$files[] = trailingslashit( $extract_dir ) . $filename;
-	}
-
-	return $files;
-}
-
 
 /**
  * Get a substring between two specific strings
@@ -235,25 +146,6 @@ function bookacti_get_string_between( $string, $start, $end ) {
 	return substr( $string, $ini, $len );
 }
 
-
-/**
- * Recursively remove values in an associative array by keys
- * @since 1.7.10
- * @param array $array
- * @param array $recursive_keys
- * @return array
- */
-function bookacti_recursive_unset( $array, $recursive_keys ) {
-	foreach( $recursive_keys as $key => $value ) {
-		if( is_array( $value ) && isset( $array[ $key ] ) && is_array( $array[ $key ] ) ) {
-			$array[ $key ] = bookacti_recursive_unset( $array[ $key ], $value );
-		}
-		else if( is_string( $value ) && isset( $array[ $value ] ) ) {
-			unset( $array[ $value ] );
-		}
-	}
-	return $array;
-}
 
 
 /**

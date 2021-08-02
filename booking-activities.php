@@ -97,7 +97,6 @@ include_once( 'controller/controller-legacy.php' );
 // INCLUDE DATABASE FUNCTIONS
 require_once( 'model/model-global.php' );
 require_once( 'model/model-install.php' );
-require_once( 'model/model-settings.php' );
 require_once( 'model/model-templates.php' );
 require_once( 'model/model-booking-system.php' );
 require_once( 'model/model-bookings.php' );

@@ -5,11 +5,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Add WooCommerce settings tab
  * @since 1.8.0 (was bookacti_add_cart_settings_tab)
+ * @version 1.12.0
  * @param array $tabs
  * @return array
  */
 function bookacti_add_wc_settings_tab( $tabs ) {
-	$i = array_search( 'system', array_keys( $tabs ) );
+	$i = array_search( 'licenses', array_keys( $tabs ) );
 	if( ! $i ) { $i = count( $tabs ); }
 	$new_tab = array( 'woocommerce' => esc_html__( 'WooCommerce', 'booking-activities' ) );
 	$tabs = array_merge( array_slice( $tabs, 0, $i, true ), $new_tab, array_slice( $tabs, $i, null, true ) );

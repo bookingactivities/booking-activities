@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking Activities settings page
- * @version 1.8.5
+ * @version 1.12.0
  */
 
 // Exit if accessed directly
@@ -20,14 +20,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	$active_tab = isset( $_GET[ 'tab' ] ) ? sanitize_title_with_dashes( $_GET[ 'tab' ] ) : 'general';
 	
-	// Define the tabs here: 'tab slug' => 'tab title'
+	// Define the ordered tabs here: 'tab slug' => 'tab title'
 	$tabs = apply_filters( 'bookacti_settings_tabs', array ( 
 		/* translators: Used for a category of parameters */
 		'general'		=> esc_html__( 'General', 'booking-activities' ),
 		'cancellation'	=> esc_html__( 'Cancellation', 'booking-activities' ),
 		'notifications'	=> esc_html__( 'Notifications', 'booking-activities' ),
 		'messages'		=> esc_html__( 'Messages', 'booking-activities' ),
-		'system'		=> esc_html__( 'System', 'booking-activities' ),
 		'licenses'		=> esc_html__( 'Licenses', 'booking-activities' )
 	) );
 	
@@ -87,13 +86,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			do_action( 'bookacti_messages_settings' );
 		
-		// SYSTEM
-		} else if( $active_tab === 'system' ) {
-			settings_fields( 'bookacti_system_settings' );
-			do_settings_sections( 'bookacti_system_settings' ); 
-			
-			do_action( 'bookacti_system_settings' );
-		
 		// LICENSES
 		} else if( $active_tab === 'licenses' ) {
 			settings_fields( 'bookacti_licenses_settings' );
@@ -105,7 +97,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		do_action( 'bookacti_settings_tab_content', $active_tab );
 		
 		// Display the submit button
-		$display_submit = apply_filters( 'bookacti_settings_display_submit_button', $active_tab !== 'system', $active_tab );
+		$display_submit = apply_filters( 'bookacti_settings_display_submit_button', true, $active_tab );
 		if( $display_submit ) { submit_button(); }
 		?>
 	</form>	
