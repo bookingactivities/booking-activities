@@ -321,7 +321,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.11.5 =
+= 1.11.5 - 2021/08/02 =
 * Fix - Invalid key error when exporting bookings on multisite installs
 * Fix - Notifications were sent after partial refund in WooCommerce
 
