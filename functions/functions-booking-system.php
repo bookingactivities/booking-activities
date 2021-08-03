@@ -196,7 +196,7 @@ function bookacti_get_booking_system_data( $atts ) {
 			
 			// Get events
 			if( $atts[ 'groups_only' ] ) {
-				$events = bookacti_fetch_events_of_group_of_events_occurrences( $groups[ 'groups' ], array( 'past_events' => $atts[ 'past_events' ], 'interval' => $events_interval ) );
+				$events = bookacti_fetch_events_of_group_of_events_occurrences( $groups[ 'groups' ], array( 'templates' => $atts[ 'calendars' ], 'activities' => $atts[ 'activities' ], 'past_events' => $atts[ 'past_events' ], 'interval' => $events_interval ) );
 			} else if( $atts[ 'bookings_only' ] ) {
 				$user_ids = $atts[ 'user_id' ] ? array( $atts[ 'user_id' ] ) : array();
 				$status = $atts[ 'status' ];
@@ -3104,7 +3104,7 @@ function bookacti_export_events_page( $atts, $calname = '', $caldesc = '', $sequ
 		if( ! in_array( 'none', $atts[ 'group_categories' ], true ) ) {
 			$groups = bookacti_get_groups_of_events( array( 'templates' => $atts[ 'calendars' ], 'group_categories' => $atts[ 'group_categories' ], 'interval' => $events_interval, 'past_events' => $atts[ 'past_events' ] ) );
 		}
-		$events = bookacti_fetch_events_of_group_of_events_occurrences( $groups[ 'groups' ], array( 'past_events' => $atts[ 'past_events' ], 'interval' => $events_interval ) );
+		$events = bookacti_fetch_events_of_group_of_events_occurrences( $groups[ 'groups' ], array( 'templates' => $atts[ 'calendars' ], 'activities' => $atts[ 'activities' ], 'past_events' => $atts[ 'past_events' ], 'interval' => $events_interval ) );
 	} else if( $atts[ 'bookings_only' ] ) {
 		$events = bookacti_fetch_booked_events( array( 'templates' => $atts[ 'calendars' ], 'activities' => $atts[ 'activities' ], 'status' => $atts[ 'status' ], 'users' => $atts[ 'user_id' ] ? array( $atts[ 'user_id' ] ) : array(), 'past_events' => $atts[ 'past_events' ], 'interval' => $events_interval ) );
 	} else {
@@ -3223,6 +3223,8 @@ function bookacti_get_groups_of_events_array_from_db_groups_of_events( $groups, 
  * @global wpdb $wpdb
  * @param array $groups_occurrences See bookacti_get_occurrences_of_repeated_groups_of_events
  * @param array $raw_args {
+ *  @type array $templates Array of template IDs
+ *  @type array $activities Array of activity IDs
  *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
  *  @type boolean $past_events Whether to retrieve past events
  *  @type boolean $bounding_only Whether to retrieve the first and the last events only
@@ -3234,11 +3236,15 @@ function bookacti_fetch_events_of_group_of_events_occurrences( $groups_occurrenc
 	if( ! $groups_occurrences ) { return $events_array; }
 	
 	$default_args = array(
+		'templates' => array(), 
+		'activities' => array(), 
 		'interval' => array(),
 		'past_events' => 1,
 		'bounding_only' => 0
 	);
 	$args = wp_parse_args( $raw_args, $default_args );
+	$args[ 'templates' ] = array_unique( array_map( 'intval', $args[ 'templates' ] ) );
+	$args[ 'activities' ] = array_unique( array_map( 'intval', $args[ 'activities' ] ) );
 	
 	// Get current datetime
 	$timezone	= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
@@ -3285,6 +3291,22 @@ function bookacti_fetch_events_of_group_of_events_occurrences( $groups_occurrenc
 	// Get the grouped events data
 	$events_ids = array_values( bookacti_ids_to_array( array_values( $events_ids ) ) );
 	$events_data = $events_ids ? bookacti_fetch_events( array( 'events' => $events_ids, 'past_events' => 1, 'data_only' => 1 ) ) : array( 'data' => array() );
+	
+	// Check if the events are part of the desired templates and activities
+	if( $args[ 'templates' ] || $args[ 'activities' ] ) {
+		foreach( $grouped_events as $i => $grouped_event ) {
+			// Check if the event data exists
+			if( empty( $events_data[ 'data' ][ $grouped_event[ 'id' ] ] ) ) { unset( $grouped_events[ $i ] ); continue; }
+			
+			// Check if the event is part of the desired templates / activities
+			if( ( $args[ 'templates' ]  && ! in_array( intval( $events_data[ 'data' ][ $grouped_event[ 'id' ] ][ 'template_id' ] ), $args[ 'templates' ], true ) )
+			||  ( $args[ 'activities' ] && ! in_array( intval( $events_data[ 'data' ][ $grouped_event[ 'id' ] ][ 'activity_id' ] ), $args[ 'activities' ], true ) ) ) {
+				unset( $grouped_events[ $i ] );
+				unset( $events_data[ 'data' ][ $grouped_event[ 'id' ] ] );
+				continue;
+			}
+		}
+	}
 	
 	$events_array = array( 'data' => $events_data[ 'data' ], 'events' => array_values( $grouped_events ) );
 	

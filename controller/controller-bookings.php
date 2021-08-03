@@ -382,7 +382,7 @@ function bookacti_controller_get_reschedule_booking_system_data() {
 	$atts[ 'auto_load' ]				= 0;
 
 	// Load only the events from the same activity as the booked event
-	$atts[ 'activities' ] = $booking->activity_id ? array( $booking->activity_id ) : array( 0 );
+	$atts[ 'activities' ] = intval( $booking->activity_id ) ? array( intval( $booking->activity_id ) ) : array( 0 );
 
 	// On the backend, display past events and grouped events, from all calendars, and make them all bookable
 	$is_admin = intval( $_POST[ 'is_admin' ] );

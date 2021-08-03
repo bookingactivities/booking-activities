@@ -323,7 +323,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 = 1.12.0 =
 * Breaking change - Remove opening and closing dates from calendar settings in calendar editor
-* Breaking change - Remove the archiving tool. You can still find your backups in wp-content/uploads/booking-activities/archives and import them with phpMyAdmin.
+* Breaking change - Remove the archiving tool. You can still find the backups you have made in wp-content/uploads/booking-activities/archives and manually import them with phpMyAdmin.
 * Feature - Groups of events can be automatically repeated (like events)
 * Feature - Add a button to jump to a specific date in calendar editor
 * Tweak - Remove restrictions on event availability and repetition frequency, you can update them regardless of bookings made
@@ -1231,7 +1231,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 Major changes in code:
 * If you have purchased add-ons, you need to update them too.
 * If you have custom code, you may need to adapt it. No support can be provided for your custom code.
-* The archiving tool has been removed. You can still find your backups in wp-content/uploads/booking-activities/archives and import them with phpMyAdmin.
+* The archiving tool has been removed. You can still find the backups you have made in wp-content/uploads/booking-activities/archives and manually import them with phpMyAdmin.
 * You won't be able to restore your previous backups of the wp_bookacti_exceptions table as is after the update
 
 = 1.9.0 =
