@@ -24,8 +24,8 @@ function bookacti_fill_bookings_new_columns_when_updating_to_1_12_0( $old_versio
 	$wpdb->query( $query_delete_inactive_grouped_events );
 	
 	// Check if the event_id column exists in exceptions table
-	$query_event_id_column_exists = 'SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = "' . BOOKACTI_TABLE_EXCEPTIONS . '" AND column_name = "event_id";';
-	$event_id_column_exists = $wpdb->get_results( $query_event_id_column_exists );
+	$query_event_id_column_exists = 'SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = "' . DB_NAME . '" AND TABLE_NAME = "' . BOOKACTI_TABLE_EXCEPTIONS . '" AND COLUMN_NAME = "event_id";';
+	$event_id_column_exists = $wpdb->get_var( $query_event_id_column_exists );
 	
 	if( ! empty( $event_id_column_exists ) ) {
 		// Rename event_id column to object_id and fill object_type column in exceptions table
