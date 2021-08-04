@@ -752,64 +752,6 @@ function bookacti_get_groups_of_events( $raw_args = array() ) {
 }
 
 
-/**
- * Get group of events availability (= the lowest availability among its events)
- * @since 1.1.0
- * @version 1.7.1
- * @global wpdb $wpdb
- * @param int|array $group_of_events_ids
- * @return false|int|array
- */
-function bookacti_get_group_of_events_availability( $group_of_events_ids ) {
-	// Sanitize the array of group of events ID
-	if( ! is_array( $group_of_events_ids ) ) {
-		$variables = array( intval( $group_of_events_ids ) );
-	} else {
-		$variables = array_filter( array_map( 'intval', $group_of_events_ids ) );
-	}
-
-	if( ! $variables ) { return false; }
-
-	global $wpdb;
-
-	$query = 'SELECT GE.group_id, MIN( E.availability - IFNULL( B.quantity_booked, 0 ) ) as availability '
-			. ' FROM ' . BOOKACTI_TABLE_GROUPS_EVENTS . ' as GE '
-			. ' JOIN ' . BOOKACTI_TABLE_EVENTS . ' as E '
-			. ' LEFT JOIN ( '
-				. ' SELECT event_id, event_start, event_end, SUM( quantity ) as quantity_booked FROM ' . BOOKACTI_TABLE_BOOKINGS 
-				. ' WHERE active = 1 '
-				. ' GROUP BY CONCAT( event_id, event_start, event_end ) '
-			. ' ) as B ON ( B.event_id = GE.event_id AND B.event_start = GE.event_start AND B.event_end = GE.event_end ) '
-			. ' WHERE GE.event_id = E.id '
-			. ' AND GE.group_id IN ( %d';
-
-	$array_count = count( $variables );
-	if( $array_count >= 2 ) {
-		for( $i=1; $i<$array_count; ++$i ) {
-			$query .= ', %d';
-		}
-	}
-
-	$query .= ' )'
-			. ' GROUP BY GE.group_id;';
-
-	$query		= $wpdb->prepare( $query, $variables );
-	$results	= $wpdb->get_results( $query );
-
-	$group_availabilities = array();
-	foreach( $results as $result ) {
-		$group_availabilities[ $result->group_id ] = $result->availability;
-	}
-
-	// Return the single value if only one group was given
-	if( ! is_array( $group_of_events_ids ) ) {
-		return isset( $group_availabilities[ $group_of_events_ids ] ) ? $group_availabilities[ $group_of_events_ids ] : 0;
-	}
-
-	return $group_availabilities;
-}
-
-
 
 
 // GROUPS X EVENTS

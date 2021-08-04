@@ -1177,42 +1177,89 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 
 
 <!-- Unbind an occurrence of a repeated event -->
-<div id='bookacti-unbind-booked-event-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Make an occurrence of a repeated event independent', 'booking-activities' ); ?>' style='display:none;' >
-	<form id='bookacti-unbind-booked-event-form'>
-		<?php wp_nonce_field( 'bookacti_unbind_occurrences', 'nonce_unbind_occurrences', false ); ?>
-		<input type='hidden' name='action' id='bookacti-unbind-booked-event-form-action' value='bookactiUnbindOccurrences'/>
+<div id='bookacti-unbind-event-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Make an occurrence of a repeated event independent', 'booking-activities' ); ?>' style='display:none;'>
+	<form id='bookacti-unbind-event-form'>
+		<?php wp_nonce_field( 'bookacti_unbind_event_occurrences', 'nonce_unbind_event_occurrences', false ); ?>
+		<input type='hidden' name='action' id='bookacti-unbind-event-form-action' value='bookactiUnbindEventOccurrences'/>
 		<input type='hidden' name='unbind_action' value='selected'/>
-		
-		<p class='bookacti-selected-event-dates'>
-			<strong><?php esc_html_e( 'Selected event:', 'booking-activities' ); ?></strong>
-			<span class='bookacti-selected-event-start'></span> - <span class='bookacti-selected-event-end'></span>
-		</p>
 		
 		<p><?php esc_html_e( 'In order to edit the occurrences of the event independently, you can:', 'booking-activities' ); ?></p>
 				
-		<div id='bookacti-unbind-actions'>
-			<div id='bookacti-unbind-action-selected-container' class='bookacti-unbind-action'>
-				<input type='radio' name='unbind_action' value='selected' id='bookacti-unbind-action-selected' checked='checked'/>
-				<label for='bookacti-unbind-action-selected'><?php esc_html_e( 'Unbind the selected occurrence', 'booking-activities' ); ?></label>
+		<div id='bookacti-unbind-event-actions'>
+			<div id='bookacti-unbind-event-action-selected-container' class='bookacti-unbind-action'>
+				<input type='radio' name='unbind_action' value='selected' id='bookacti-unbind-event-action-selected' checked='checked'/>
+				<label for='bookacti-unbind-event-action-selected'><?php esc_html_e( 'Unbind the selected occurrence', 'booking-activities' ); ?></label>
 				<br/><small><em><?php esc_html_e( 'This will result in two separate events: the selected occurrence, and the original event without the selected occurrence.', 'booking-activities' ); ?></em></small>
 			</div>
-			<div id='bookacti-unbind-action-future-container' class='bookacti-unbind-action'>
-				<input type='radio' name='unbind_action' value='future' id='bookacti-unbind-action-future'/>
-				<label for='bookacti-unbind-action-future'><?php esc_html_e( 'Unbind the next occurrences (including the selected one)', 'booking-activities' ); ?></label>
+			<div id='bookacti-unbind-event-action-future-container' class='bookacti-unbind-action'>
+				<input type='radio' name='unbind_action' value='future' id='bookacti-unbind-event-action-future'/>
+				<label for='bookacti-unbind-event-action-future'><?php esc_html_e( 'Unbind the next occurrences (including the selected one)', 'booking-activities' ); ?></label>
 				<br/><small><em><?php esc_html_e( 'This will result in two separate events: one with the occurrences prior to the selected one, the other with the occurrences subsequent to the selected one (included).', 'booking-activities' ); ?></em></small>
 			</div>
-			<div id='bookacti-unbind-action-booked-container' class='bookacti-unbind-action'>
-				<input type='radio' name='unbind_action' value='booked' id='bookacti-unbind-action-booked'/>
-				<label for='bookacti-unbind-action-booked'><?php esc_html_e( 'Unbind the booked occurrences', 'booking-activities' ); ?></label>
+			<div id='bookacti-unbind-event-action-booked-container' class='bookacti-unbind-action'>
+				<input type='radio' name='unbind_action' value='booked' id='bookacti-unbind-event-action-booked'/>
+				<label for='bookacti-unbind-event-action-booked'><?php esc_html_e( 'Unbind the booked occurrences', 'booking-activities' ); ?></label>
 				<br/><small><em><?php esc_html_e( 'This will result in two separate events: one with the booked occurrences, the other with the occurrences that don\'t have active bookings.', 'booking-activities' ); ?></em></small>
 			</div>
-			<div id='bookacti-unbind-action-all-container' class='bookacti-unbind-action'>
-				<input type='radio' name='unbind_action' value='all' id='bookacti-unbind-action-all'/>
-				<label for='bookacti-unbind-action-all'><?php esc_html_e( 'Unbind each occurrence', 'booking-activities' ); ?></label>
+			<div id='bookacti-unbind-event-action-all-container' class='bookacti-unbind-action'>
+				<input type='radio' name='unbind_action' value='all' id='bookacti-unbind-event-action-all'/>
+				<label for='bookacti-unbind-event-action-all'><?php esc_html_e( 'Unbind each occurrence', 'booking-activities' ); ?></label>
 				<br/><small><em><?php esc_html_e( 'This will result in one separate event per occurrence.', 'booking-activities' ); ?></em></small>
 			</div>
-			<?php do_action( 'bookacti_unbind_actions_after' ); ?>
+			<?php do_action( 'bookacti_unbind_event_actions_after' ); ?>
 		</div>
+		
+		<div class='bookacti-selected-event-dates'>
+			<label class='bookacti-fullwidth-label'><strong><?php esc_html_e( 'The currently selected occurrence is:', 'booking-activities' ); ?></strong></label>
+			<span class='bookacti-selected-event-start'></span> - <span class='bookacti-selected-event-end'></span>
+		</div>
+		
+		<div class='bookacti-error'>
+			<span class='dashicons dashicons-warning'></span>
+			<span><?php esc_html_e( 'This action cannot be undone.', 'booking-activities' ); ?></span>
+		</div>
+	</form>
+</div>
+
+
+<!-- Unbind an occurrence of a repeated group of events -->
+<div id='bookacti-unbind-group-of-events-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Make an occurrence of a repeated group of events independent', 'booking-activities' ); ?>' style='display:none;'>
+	<form id='bookacti-unbind-group-of-events-form'>
+		<?php wp_nonce_field( 'bookacti_unbind_group_of_events_occurrences', 'nonce_unbind_group_of_events_occurrences', false ); ?>
+		<input type='hidden' name='action' id='bookacti-unbind-group-of-events-form-action' value='bookactiUnbindGroupOfEventsOccurrences'/>
+		<input type='hidden' name='unbind_action' value='selected'/>
+		
+		<p><?php esc_html_e( 'In order to edit the occurrences of the group of events independently, you can:', 'booking-activities' ); ?></p>
+				
+		<div id='bookacti-unbind-group-of-events-actions'>
+			<div id='bookacti-unbind-group-of-events-action-selected-container' class='bookacti-unbind-action'>
+				<input type='radio' name='unbind_action' value='selected' id='bookacti-unbind-group-of-events-action-selected' checked='checked'/>
+				<label for='bookacti-unbind-group-of-events-action-selected'><?php esc_html_e( 'Unbind the selected occurrence', 'booking-activities' ); ?></label>
+				<br/><small><em><?php esc_html_e( 'This will result in two separate groups of events: the selected occurrence, and the original group of events without the selected occurrence.', 'booking-activities' ); ?></em></small>
+			</div>
+			<div id='bookacti-unbind-group-of-events-action-future-container' class='bookacti-unbind-action'>
+				<input type='radio' name='unbind_action' value='future' id='bookacti-unbind-group-of-events-action-future'/>
+				<label for='bookacti-unbind-group-of-events-action-future'><?php esc_html_e( 'Unbind the next occurrences (including the selected one)', 'booking-activities' ); ?></label>
+				<br/><small><em><?php esc_html_e( 'This will result in two separate groups of events: one with the occurrences prior to the selected one, the other with the occurrences subsequent to the selected one (included).', 'booking-activities' ); ?></em></small>
+			</div>
+			<div id='bookacti-unbind-group-of-events-action-booked-container' class='bookacti-unbind-action'>
+				<input type='radio' name='unbind_action' value='booked' id='bookacti-unbind-group-of-events-action-booked'/>
+				<label for='bookacti-unbind-group-of-events-action-booked'><?php esc_html_e( 'Unbind the booked occurrences', 'booking-activities' ); ?></label>
+				<br/><small><em><?php esc_html_e( 'This will result in two separate groups of events: one with the booked occurrences, the other with the occurrences that don\'t have active bookings.', 'booking-activities' ); ?></em></small>
+			</div>
+			<div id='bookacti-unbind-group-of-events-action-all-container' class='bookacti-unbind-action'>
+				<input type='radio' name='unbind_action' value='all' id='bookacti-unbind-group-of-events-action-all'/>
+				<label for='bookacti-unbind-group-of-events-action-all'><?php esc_html_e( 'Unbind each occurrence', 'booking-activities' ); ?></label>
+				<br/><small><em><?php esc_html_e( 'This will result in one separate group of events per occurrence.', 'booking-activities' ); ?></em></small>
+			</div>
+			<?php do_action( 'bookacti_unbind_group_of_events_actions_after' ); ?>
+		</div>
+		
+		<div class='bookacti-selected-group-of-events-container'>
+			<label for='bookacti-unbind-selected-group-of-events' class='bookacti-fullwidth-label'><strong><?php esc_html_e( 'The currently selected occurrence is:', 'booking-activities' ); ?></strong></label>
+			<select multiple id='bookacti-unbind-selected-group-of-events' class='bookacti-custom-scrollbar bookacti-selected-events-list'></select>
+		</div>
+		
 		<div class='bookacti-error'>
 			<span class='dashicons dashicons-warning'></span>
 			<span><?php esc_html_e( 'This action cannot be undone.', 'booking-activities' ); ?></span>

@@ -9,7 +9,6 @@ $j( document ).ready( function() {
 	bookacti.is_dragging		= false;
 	bookacti.is_resizing		= false;
 	bookacti.is_hovering		= false;
-	bookacti.blocked_events		= false;
 	bookacti.load_events		= false;
 	
 	// Init globals
@@ -402,15 +401,9 @@ function bookacti_load_template_calendar( calendar ) {
 		 * @param {object} view
 		 */
 		eventAfterAllRender: function( view ) {
-			// Block the event if no other operation on it is allowed until the running ones are finished
-			if( bookacti.blocked_events === true ) { 
-				$j( '.fc-event' ).addClass( 'bookacti-event-unavailable' );
-			} else if ( $j.isNumeric( bookacti.blocked_events ) ) {
-				$j( '.fc-event[data-event-id="' + bookacti.blocked_events + '"]' ).addClass( 'bookacti-event-unavailable' );
-			} else {
-				$j( '.fc-event' ).removeClass( 'bookacti-event-unavailable' );
-			}
-
+			// Block the event if loading
+			calendar.find( '.fc-event' ).toggleClass( 'bookacti-event-unavailable', bookacti.booking_system[ 'bookacti-template-calendar' ][ 'loading_number' ] > 0 );
+			
 			// Hide event actions
 			$j( '.bookacti-event-action[data-hide-on-mouseout="1"]' ).hide();
 			
@@ -647,6 +640,7 @@ function bookacti_load_template_calendar( calendar ) {
 			}
 			
 			// Format the picked events
+			bookacti.booking_system[ 'bookacti-template-calendar' ][ 'picked_events' ] = [];
 			$j( '.fc-event' ).removeClass( 'bookacti-picked-event' );
 			elements.addClass( 'bookacti-picked-event' );
 

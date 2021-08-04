@@ -181,12 +181,11 @@ function bookacti_get_template_activities_list( $activities, $template_id = 0 ) 
 
 
 
-// TEMPLATE SETTINGS
+// TEMPLATES
 
 /**
  * Get templates data
  * @since 1.7.3 (was bookacti_fetch_templates)
- * @global wpdb $wpdb
  * @param array $template_ids
  * @param boolean $ignore_permissions
  * @param int $user_id
@@ -340,13 +339,13 @@ function bookacti_bind_activities_to_template( $new_activities, $template_id ) {
 
 /**
  * Unbind selected occurrence of an event
- * @version 1.12.0
+ * @since 1.12.0 (was bookacti_unbind_selected_occurrence)
  * @param object $event
  * @param string $event_start Y-m-d H:i:s
  * @param string $event_end Y-m-d H:i:s
  * @return int
  */
-function bookacti_unbind_selected_occurrence( $event, $event_start, $event_end ) {
+function bookacti_unbind_selected_event_occurrence( $event, $event_start, $event_end ) {
 	$event_id = $event->event_id;
 	
 	// Duplicate the event occurrence
@@ -355,7 +354,7 @@ function bookacti_unbind_selected_occurrence( $event, $event_start, $event_end )
 	if( ! $duplicated_event_id ) { return 0; }
 	
 	// Duplicate event metadata
-	$duplicated = bookacti_duplicate_metadata( 'event', $event_id, $duplicated_event_id );
+	bookacti_duplicate_metadata( 'event', $event_id, $duplicated_event_id );
 
 	// If the event was part of a group, change its id to the new one
 	bookacti_update_grouped_event_id( $event_id, $duplicated_event_id, $event_start, $event_end );
@@ -379,12 +378,11 @@ function bookacti_unbind_selected_occurrence( $event, $event_start, $event_end )
 
 /**
  * Unbind booked occurrences of an event
- * @version 1.12.0
- * @global wpdb $wpdb
+ * @since 1.12.0 (was bookacti_unbind_booked_occurrences)
  * @param object $event
  * @return int
  */
-function bookacti_unbind_booked_occurrences( $event ) {
+function bookacti_unbind_booked_event_occurrences( $event ) {
 	$event_id = $event->event_id;
 	
 	// Get the booked occurrences (the original event will keep the booked occurrences only)
@@ -450,13 +448,12 @@ function bookacti_unbind_booked_occurrences( $event ) {
 
 /**
  * Unbind future occurrences of an event
- * @since 1.10.0
- * @version 1.12.0
+ * @since 1.12.0 (was bookacti_unbind_future_occurrences)
  * @param object $event
  * @param string $unbind_from Y-m-d
  * @return int
  */
-function bookacti_unbind_future_occurrences( $event, $unbind_from ) {
+function bookacti_unbind_future_event_occurrences( $event, $unbind_from ) {
 	// Get the original events exceptions
 	$events_exceptions = bookacti_get_exceptions_by_event( array( 'events' => array( $event->event_id ) ) );
 	$original_event_exceptions = isset( $events_exceptions[ $event->event_id ] ) ? $events_exceptions[ $event->event_id ] : array();
@@ -495,28 +492,27 @@ function bookacti_unbind_future_occurrences( $event, $unbind_from ) {
 
 /**
  * Unbind each occurrence of an event
- * @since 1.10.0
- * @version 1.12.0
+ * @since 1.12.0 (was bookacti_unbind_all_occurrences)
  * @param object $event
  * @return array
  */
-function bookacti_unbind_all_occurrences( $event ) {
+function bookacti_unbind_all_event_occurrences( $event ) {
+	// Get the event occurrences (skip exceptions)
 	$events_exceptions = bookacti_get_exceptions_by_event( array( 'events' => array( $event->event_id ) ) );
 	$original_event_exceptions = isset( $events_exceptions[ $event->event_id ] ) ? $events_exceptions[ $event->event_id ] : array();
 	$occurrences = bookacti_get_occurrences_of_repeated_event( $event, array( 'exceptions_dates' => $original_event_exceptions, 'past_events' => 1 ) );
 	if( ! $occurrences ) { return array(); }
 	
-	$event_array = (array) $event;
 	$occurrences_ids = array();
 	foreach( $occurrences as $occurrence ) {
 		// Get the occurrence data
 		$occurrence_data = bookacti_sanitize_event_data( array( 
-			'template_id'   => $event_array[ 'template_id' ],
-			'activity_id'   => $event_array[ 'activity_id' ],
-			'title'         => $event_array[ 'title' ],
+			'template_id'   => $event->template_id,
+			'activity_id'   => $event->activity_id,
+			'title'         => $event->title,
 			'start'         => $occurrence[ 'start' ],
 			'end'           => $occurrence[ 'end' ],
-			'availability'	=> $event_array[ 'availability' ],
+			'availability'	=> $event->availability,
 			'repeat_freq'	=> 'none'
 		));
 		
@@ -537,11 +533,342 @@ function bookacti_unbind_all_occurrences( $event ) {
 	}
 	
 	// Deactivate the original event
-	bookacti_deactivate_event( $event->event_id );
+	if( $occurrences_ids ) { bookacti_deactivate_event( $event->event_id ); }
 	
 	return $occurrences_ids;
 }
 
+
+
+
+// GROUP OF EVENTS
+
+/**
+ * Unbind selected occurrence of a group of events
+ * @since 1.12.0
+ * @param array $group
+ * @param string $group_date
+ * @return int
+ */
+function bookacti_unbind_selected_group_of_events_occurrence( $group, $group_date ) {
+	$group_id = $group[ 'data' ][ 'id' ];
+	
+	// Make sure the group occurrence exists
+	if( ! $group_date || empty( $group[ 'groups' ][ $group_date ] ) ) { return 0; }
+	
+	// Duplicate the group occurrence
+	$duplicated_group_data = bookacti_sanitize_group_of_events_data( array_merge( $group[ 'data' ], array( 'id' => 0, 'repeat_freq' => 'none', 'events' => $group[ 'groups' ][ $group_date ], 'title' => $group[ 'data' ][ 'multilingual_title' ] ) ) );
+	$duplicated_group_id = bookacti_insert_group_of_events( $duplicated_group_data );
+	if( ! $duplicated_group_id ) { return 0; }
+	
+	// Insert the events in the group
+	$inserted = bookacti_insert_events_into_group( $duplicated_group_id, $group[ 'groups' ][ $group_date ] );
+	if( ! $inserted ) { return 0; }
+	
+	// Duplicate group metadata
+	bookacti_duplicate_metadata( 'group_of_events', $group_id, $duplicated_group_id );
+
+	// If the group was booked, move its bookings to the new single group
+	bookacti_update_booking_groups_event_group_id( $group_id, $duplicated_group_id, $group_date );
+	
+	// Get original group exceptions and add the unbound group date to them
+	$groups_exceptions = bookacti_get_exceptions_by_event( array( 'event_groups' => array( $group_id ) ) );
+	$original_group_exceptions = isset( $groups_exceptions[ 'G' . $group_id ] ) ? $groups_exceptions[ 'G' . $group_id ] : array();
+	
+	// Sanitize and update the original group of events and its exceptions
+	$original_group_data = bookacti_sanitize_group_of_events_data( array_merge( $group[ 'data' ], array( 'exceptions_dates' => array_unique( array_merge( $original_group_exceptions, array( $group_date ) ) ), 'title' => $group[ 'data' ][ 'multilingual_title' ] ) ) );
+	bookacti_update_group_of_events( $original_group_data );
+	bookacti_update_exceptions( $group_id, $original_group_data[ 'exceptions_dates' ], 'group_of_events' );
+	
+	return $duplicated_group_id;
+}
+
+
+/**
+ * Unbind booked occurrences of a group of events
+ * @since 1.12.0
+ * @param array $group
+ * @return int
+ */
+function bookacti_unbind_booked_group_of_events_occurrences( $group ) {
+	$group_id = $group[ 'data' ][ 'id' ];
+	
+	// Get the booked occurrences (the original group of events will keep the booked occurrences only)
+	$booking_groups_filters = bookacti_format_booking_filters( array( 'event_group_id' => $group_id, 'active' => 1 ) );
+	$booking_groups = bookacti_get_booking_groups( $booking_groups_filters );
+	$booked_dates = array();
+	if( $booking_groups ) {
+		foreach( $booking_groups as $booking_group ) {
+			if( ! empty( $booking_group->group_date ) && ! in_array( $booking_group->group_date, $booked_dates, true ) ) {
+				$booked_dates[] = $booking_group->group_date;
+			}
+		}
+	}
+	if( ! $booked_dates ) { return 0; }
+	
+	$occurrences_dates	= array_keys( $group[ 'groups' ] );
+	$booked_dates		= array_intersect( $occurrences_dates, $booked_dates );
+	$not_booked_dates	= array_diff( $occurrences_dates, $booked_dates );
+	
+	// Get original group exceptions
+	$groups_exceptions = bookacti_get_exceptions_by_event( array( 'event_groups' => array( $group_id ) ) );
+	$original_group_exceptions = isset( $groups_exceptions[ 'G' . $group_id ] ) ? $groups_exceptions[ 'G' . $group_id ] : array();
+	
+	// Duplicate group of events
+	$duplicated_group_data = bookacti_sanitize_group_of_events_data( array_merge( $group[ 'data' ], array( 'id' => 0, 'exceptions_dates' => array_unique( array_merge( $original_group_exceptions, $booked_dates ) ), 'title' => $group[ 'data' ][ 'multilingual_title' ] ) ) );
+	$duplicated_group_id = bookacti_insert_group_of_events( $duplicated_group_data );
+	if( ! $duplicated_group_id ) { return 0; }
+	
+	// Insert duplicated grouped events
+	$grouped_events = $duplicated_group_data[ 'repeat_freq' ] !== 'none' && $duplicated_group_data[ 'repeat_from' ] && ! empty( $group[ 'groups' ][ $duplicated_group_data[ 'repeat_from' ] ] ) ? $group[ 'groups' ][ $duplicated_group_data[ 'repeat_from' ] ] : $group[ 'data' ][ 'events' ];
+	$inserted = bookacti_insert_events_into_group( $duplicated_group_id, $grouped_events );
+	if( ! $inserted ) { return 0; }
+	
+	// Update duplicated group of events exceptions
+	bookacti_update_exceptions( $duplicated_group_id, $duplicated_group_data[ 'exceptions_dates' ], 'group_of_events' );
+	
+	// Duplicate group metadata
+	bookacti_duplicate_metadata( 'group_of_events', $group_id, $duplicated_group_id );
+	
+	// Sanitize and update the original group of events and its exceptions
+	$original_group_data = bookacti_sanitize_group_of_events_data( array_merge( $group[ 'data' ], array( 'exceptions_dates' => array_unique( array_merge( $original_group_exceptions, $not_booked_dates ) ), 'title' => $group[ 'data' ][ 'multilingual_title' ] ) ) );
+	bookacti_update_group_of_events( $original_group_data );
+	bookacti_update_exceptions( $group_id, $original_group_data[ 'exceptions_dates' ], 'group_of_events' );
+	
+	// Update original grouped events
+	if( $original_group_data[ 'repeat_freq' ] !== 'none' && $original_group_data[ 'repeat_from' ] && ! empty( $group[ 'groups' ][ $original_group_data[ 'repeat_from' ] ] ) ) {
+		bookacti_delete_events_from_group( $group_id );
+		bookacti_insert_events_into_group( $group_id, $group[ 'groups' ][ $original_group_data[ 'repeat_from' ] ] );
+	}
+	
+	return $duplicated_group_id;
+}
+
+
+/**
+ * Unbind future occurrences of a group of events
+ * @since 1.12.0
+ * @param array $group
+ * @param string $unbind_from Y-m-d
+ * @return int
+ */
+function bookacti_unbind_future_group_of_events_occurrences( $group, $unbind_from ) {
+	$group_id = $group[ 'data' ][ 'id' ];
+	
+	// Make sure the group occurrence exists
+	if( ! $unbind_from || empty( $group[ 'groups' ][ $unbind_from ] ) ) { return 0; }
+	
+	// Get original group exceptions
+	$groups_exceptions = bookacti_get_exceptions_by_event( array( 'event_groups' => array( $group_id ) ) );
+	$original_group_exceptions = isset( $groups_exceptions[ 'G' . $group_id ] ) ? $groups_exceptions[ 'G' . $group_id ] : array();
+	
+	// Duplicate the original group of events and make its repetition begins on the desired date
+	$duplicated_group_data = bookacti_sanitize_group_of_events_data( array_merge( $group[ 'data' ], array( 'id' => 0, 'repeat_from' => $unbind_from, 'exceptions_dates' => $original_group_exceptions, 'title' => $group[ 'data' ][ 'multilingual_title' ] ) ) );
+	$duplicated_group_id = bookacti_insert_group_of_events( $duplicated_group_data );
+	if( ! $duplicated_group_id ) { return 0; }
+	
+	// Insert the events in the group
+	$inserted = bookacti_insert_events_into_group( $duplicated_group_id, $group[ 'groups' ][ $unbind_from ] );
+	if( ! $inserted ) { return 0; }
+	
+	// Duplicate group of events metadata
+	bookacti_duplicate_metadata( 'group_of_events', $group_id, $duplicated_group_id );
+	
+	// Duplicate group of events exceptions
+	bookacti_update_exceptions( $duplicated_group_id, $duplicated_group_data[ 'exceptions_dates' ], 'group_of_events' );
+	
+	// Change the event_group_id of booking groups made on future group of events
+	bookacti_update_booking_groups_event_group_id( $group_id, $duplicated_group_id, '', $unbind_from );
+	
+	// Stop the original group of events repetition where the new group of events repetition begins
+	$repeat_to_dt = DateTime::createFromFormat( 'Y-m-d', $unbind_from );
+	$repeat_to_dt->sub( new DateInterval( 'P1D' ) );
+	
+	// Update the original group of events dates
+	$original_group_data = bookacti_sanitize_group_of_events_data( array_merge( $group[ 'data' ], array( 'repeat_to' => $repeat_to_dt->format( 'Y-m-d' ), 'exceptions_dates' => $original_group_exceptions, 'title' => $group[ 'data' ][ 'multilingual_title' ] ) ) );
+	bookacti_update_group_of_events( $original_group_data );
+	bookacti_update_exceptions( $group_id, $original_group_data[ 'exceptions_dates' ], 'group_of_events' );
+	
+	return $duplicated_group_id;
+}
+
+
+/**
+ * Unbind each occurrence of a group of events
+ * @since 1.12.0
+ * @param array $group
+ * @return array
+ */
+function bookacti_unbind_all_group_of_events_occurrences( $group ) {
+	$group_id = $group[ 'data' ][ 'id' ];
+	
+	$occurrences_ids = array();
+	foreach( $group[ 'groups' ] as $group_date => $group_events ) {
+		// Sanitize the occurrence data
+		$occurrence_data = bookacti_sanitize_group_of_events_data( array( 
+			'template_id'   => $group[ 'data' ][ 'template_id' ],
+			'category_id'   => $group[ 'data' ][ 'category_id' ],
+			'title'         => $group[ 'data' ][ 'multilingual_title' ],
+			'repeat_freq'	=> 'none'
+		));
+		
+		// Create one group of events per occurrence
+		$occurrence_id = bookacti_insert_group_of_events( $occurrence_data );
+		if( ! $occurrence_id ) { continue; }
+		
+		// Insert the events in the group
+		$inserted = bookacti_insert_events_into_group( $occurrence_id, $group_events );
+		if( ! $inserted ) { continue; }
+		
+		// Duplicate group of events metadata
+		bookacti_duplicate_metadata( 'group_of_events', $group_id, $occurrence_id );
+		
+		// Change the event_group_id of booking groups
+		bookacti_update_booking_groups_event_group_id( $group_id, $occurrence_id, $group_date );
+		
+		$occurrences_ids[] = $occurrence_id;
+	}
+	
+	// Deactivate the original group of events
+	if( $occurrences_ids ) { bookacti_deactivate_group_of_events( $group_id ); }
+	
+	return $occurrences_ids;
+}
+
+
+/**
+ * Check if a group category exists
+ * @since 1.1.0
+ * @version 1.12.0
+ * @param int $category_id
+ * @param int $template_id
+ * @return boolean
+ */
+function bookacti_group_category_exists( $category_id, $template_id = 0 ) {
+	if( ! $category_id || ! is_numeric( $category_id ) ) { return false; }
+	$template_ids = $template_id ? array( $template_id ) : array();
+	$available_category_ids = array_map( 'intval', bookacti_get_group_category_ids_by_template( $template_ids ) );
+	return in_array( intval( $category_id ), $available_category_ids, true );
+}
+
+
+/**
+ * Update events of a group
+ * @since 1.1.0
+ * @version 1.12.0
+ * @param int $group_id
+ * @param array $new_events [[id: int, start: "Y-m-d H:i:s", end: "Y-m-d H:i:s"], ...]
+ * @return int|boolean
+ */
+function bookacti_update_events_of_group( $group_id, $new_events ) {
+	// Get events currently in the group
+	$current_events = bookacti_get_group_events( $group_id );
+
+	// Determine what events are to be added or removed
+	$to_insert = $new_events;
+	$to_delete = $current_events;
+	foreach( $new_events as $i => $new_event ) {
+		foreach( $current_events as $j => $current_event ) {
+			// If the event already exists, remove it from both arrays
+			if( intval( $current_event[ 'id' ] ) === intval( $new_event[ 'id' ] )
+			&&  $current_event[ 'start' ] === $new_event[ 'start' ]
+			&&  $current_event[ 'end' ] === $new_event[ 'end' ] ) {
+				unset( $to_insert[ $i ] );
+				unset( $to_delete[ $j ] );
+				break;
+			}
+		}
+	}
+
+	// Delete old events
+	$deleted = $to_delete ? bookacti_delete_events_from_group( $group_id, $to_delete ) : 0;
+
+	// Insert new events
+	$inserted = $to_insert ? bookacti_insert_events_into_group( $group_id, $to_insert ) : 0;
+
+	return $deleted === false && $inserted === false ? false : intval( $deleted ) + intval( $inserted );
+}
+
+
+/**
+ * Get the groups of events list for the desired template
+ * @since 1.1.0
+ * @version 1.12.0
+ * @param array $categories see bookacti_get_group_categories
+ * @param array $groups see bookacti_get_groups_of_events
+ * @param int $template_id
+ * @return string
+ */
+function bookacti_get_template_groups_of_events_list( $categories, $groups, $template_id = 0 ) {
+	if( ! $categories || ! $groups ) { return ''; }
+
+	$current_user_can_edit_template	= current_user_can( 'bookacti_edit_templates' );
+	
+	// Sort the group categories by custom order
+	$ordered_categories = $categories;
+	$categories_order = bookacti_get_metadata( 'template', $template_id, 'group_categories_order', true );
+	if( $categories_order ) {
+		$sorted_categories = array();
+		foreach( $categories_order as $category_id ) {
+			if( isset( $categories[ $category_id ] ) ) { $sorted_categories[] = $categories[ $category_id ]; }
+		}
+		$ordered_categories = array_merge( $sorted_categories, array_diff_key( $categories, array_flip( $categories_order ) ) );
+	}
+	
+	ob_start();
+	
+	foreach( $ordered_categories as $category ) {
+		$category_short_title = strlen( $category[ 'title' ] ) > 16 ? substr( $category[ 'title' ], 0, 16 ) . '&#8230;' : $category[ 'title' ];
+	?>
+		<div class='bookacti-group-category' data-group-category-id='<?php echo $category[ 'id' ]; ?>' data-show-groups='0' data-visible='1'>
+			<div class='bookacti-group-category-title' title='<?php echo $category[ 'title' ]; ?>'>
+				<span><?php echo $category_short_title; ?></span>
+			</div>
+	<?php
+		if( $current_user_can_edit_template ) {
+			?><div class='bookacti-update-group-category dashicons dashicons-admin-generic'></div><?php
+		}
+	?>
+			<div class='bookacti-groups-of-events-editor-list bookacti-custom-scrollbar'>
+			<?php
+				// Sort the groups of events by custom order
+				$ordered_groups = $groups[ 'data' ];
+				$groups_order = ! empty( $categories[ $category[ 'id' ] ][ 'settings' ][ 'groups_of_events_order' ] ) ? $categories[ $category[ 'id' ] ][ 'settings' ][ 'groups_of_events_order' ] : array();
+				if( $groups_order ) {
+					$sorted_groups = array();
+					foreach( $groups_order as $group_id ) {
+						if( isset( $ordered_groups[ $group_id ] ) ) { $sorted_groups[] = $groups[ 'data' ][ $group_id ]; }
+					}
+					$ordered_groups = array_merge( $sorted_groups, array_diff_key( $groups[ 'data' ], array_flip( $groups_order ) ) );
+				}
+				
+				foreach( $ordered_groups as $group ) {
+					if( intval( $group[ 'category_id' ] ) !== intval( $category[ 'id' ] ) ) { continue; }
+						$group_title = strip_tags( $group[ 'title' ] );
+					?>
+						<div class='bookacti-group-of-events' data-group-id='<?php echo $group[ 'id' ]; ?>'>
+							<div class='bookacti-group-of-events-title' title='<?php echo $group_title; ?>'><?php echo $group_title; ?></div>
+					<?php
+						if( $current_user_can_edit_template ) {
+							?><div class='bookacti-update-group-of-events dashicons dashicons-admin-generic'></div><?php
+						}
+					?>
+						</div>
+					<?php
+				}
+			?>
+			</div>
+		</div>
+	<?php
+	}
+
+	return ob_get_clean();
+}
+
+
+
+
+// MISC
 
 /**
  * Update event exceptions
@@ -709,139 +1036,4 @@ function bookacti_promo_for_bapap_addon( $type = 'event' ) {
 		</div>
 		<?php
 	}
-}
-
-
-
-
-// GROUP OF EVENTS
-
-/**
- * Check if a group category exists
- * @since 1.1.0
- * @version 1.12.0
- * @param int $category_id
- * @param int $template_id
- * @return boolean
- */
-function bookacti_group_category_exists( $category_id, $template_id = 0 ) {
-	if( ! $category_id || ! is_numeric( $category_id ) ) { return false; }
-	$template_ids = $template_id ? array( $template_id ) : array();
-	$available_category_ids = array_map( 'intval', bookacti_get_group_category_ids_by_template( $template_ids ) );
-	return in_array( intval( $category_id ), $available_category_ids, true );
-}
-
-
-/**
- * Update events of a group
- * @since 1.1.0
- * @version 1.12.0
- * @global wpdb $wpdb
- * @param int $group_id
- * @param array $new_events [[id: int, start: "Y-m-d H:i:s", end: "Y-m-d H:i:s"], ...]
- * @return int|boolean
- */
-function bookacti_update_events_of_group( $group_id, $new_events ) {
-	// Get events currently in the group
-	$current_events = bookacti_get_group_events( $group_id );
-
-	// Determine what events are to be added or removed
-	$to_insert = $new_events;
-	$to_delete = $current_events;
-	foreach( $new_events as $i => $new_event ) {
-		foreach( $current_events as $j => $current_event ) {
-			// If the event already exists, remove it from both arrays
-			if( intval( $current_event[ 'id' ] ) === intval( $new_event[ 'id' ] )
-			&&  $current_event[ 'start' ] === $new_event[ 'start' ]
-			&&  $current_event[ 'end' ] === $new_event[ 'end' ] ) {
-				unset( $to_insert[ $i ] );
-				unset( $to_delete[ $j ] );
-				break;
-			}
-		}
-	}
-
-	// Delete old events
-	$deleted = $to_delete ? bookacti_delete_events_from_group( $group_id, $to_delete ) : 0;
-
-	// Insert new events
-	$inserted = $to_insert ? bookacti_insert_events_into_group( $group_id, $to_insert ) : 0;
-
-	return $deleted === false && $inserted === false ? false : intval( $deleted ) + intval( $inserted );
-}
-
-
-/**
- * Get the groups of events list for the desired template
- * @since 1.1.0
- * @version 1.12.0
- * @param array $categories see bookacti_get_group_categories
- * @param array $groups see bookacti_get_groups_of_events
- * @param int $template_id
- * @return string
- */
-function bookacti_get_template_groups_of_events_list( $categories, $groups, $template_id = 0 ) {
-	if( ! $categories || ! $groups ) { return ''; }
-
-	$current_user_can_edit_template	= current_user_can( 'bookacti_edit_templates' );
-	
-	// Sort the group categories by custom order
-	$ordered_categories = $categories;
-	$categories_order = bookacti_get_metadata( 'template', $template_id, 'group_categories_order', true );
-	if( $categories_order ) {
-		$sorted_categories = array();
-		foreach( $categories_order as $category_id ) {
-			if( isset( $categories[ $category_id ] ) ) { $sorted_categories[] = $categories[ $category_id ]; }
-		}
-		$ordered_categories = array_merge( $sorted_categories, array_diff_key( $categories, array_flip( $categories_order ) ) );
-	}
-	
-	ob_start();
-	
-	foreach( $ordered_categories as $category ) {
-		$category_short_title = strlen( $category[ 'title' ] ) > 16 ? substr( $category[ 'title' ], 0, 16 ) . '&#8230;' : $category[ 'title' ];
-	?>
-		<div class='bookacti-group-category' data-group-category-id='<?php echo $category[ 'id' ]; ?>' data-show-groups='0' data-visible='1'>
-			<div class='bookacti-group-category-title' title='<?php echo $category[ 'title' ]; ?>'>
-				<span><?php echo $category_short_title; ?></span>
-			</div>
-	<?php
-		if( $current_user_can_edit_template ) {
-			?><div class='bookacti-update-group-category dashicons dashicons-admin-generic'></div><?php
-		}
-	?>
-			<div class='bookacti-groups-of-events-editor-list bookacti-custom-scrollbar'>
-			<?php
-				// Sort the groups of events by custom order
-				$ordered_groups = $groups[ 'data' ];
-				$groups_order = ! empty( $categories[ $category[ 'id' ] ][ 'settings' ][ 'groups_of_events_order' ] ) ? $categories[ $category[ 'id' ] ][ 'settings' ][ 'groups_of_events_order' ] : array();
-				if( $groups_order ) {
-					$sorted_groups = array();
-					foreach( $groups_order as $group_id ) {
-						if( isset( $ordered_groups[ $group_id ] ) ) { $sorted_groups[] = $groups[ 'data' ][ $group_id ]; }
-					}
-					$ordered_groups = array_merge( $sorted_groups, array_diff_key( $groups[ 'data' ], array_flip( $groups_order ) ) );
-				}
-				
-				foreach( $ordered_groups as $group ) {
-					if( intval( $group[ 'category_id' ] ) !== intval( $category[ 'id' ] ) ) { continue; }
-						$group_title = strip_tags( $group[ 'title' ] );
-					?>
-						<div class='bookacti-group-of-events' data-group-id='<?php echo $group[ 'id' ]; ?>'>
-							<div class='bookacti-group-of-events-title' title='<?php echo $group_title; ?>'><?php echo $group_title; ?></div>
-					<?php
-						if( $current_user_can_edit_template ) {
-							?><div class='bookacti-update-group-of-events dashicons dashicons-admin-generic'></div><?php
-						}
-					?>
-						</div>
-					<?php
-				}
-			?>
-			</div>
-		</div>
-	<?php
-	}
-
-	return ob_get_clean();
 }

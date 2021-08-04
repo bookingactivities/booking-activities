@@ -91,7 +91,7 @@ function bookacti_switch_template( selected_template_id ) {
 					$j( '#bookacti-group-categories' ).empty();
 					$j( '#bookacti-group-categories' ).append( response.groups_list );
 					$j( '#bookacti-template-add-group-of-events-tuto-select-events' ).toggle( response.groups_list === '' );
-					$j( '#bookacti-template-groups-of-events-container .dashicons' ).toggleClass( 'bookacti-disabled', bookacti.blocked_events === true );
+					$j( '#bookacti-template-groups-of-events-container .dashicons' ).toggleClass( 'bookacti-disabled', bookacti.booking_system[ 'bookacti-template-calendar' ][ 'loading_number' ] > 0 );
 					
 					// Empty selected events
 					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ] = [];
@@ -169,7 +169,7 @@ function bookacti_switch_template( selected_template_id ) {
 
 /**
  * Initialize draggable activities
- * @version 1.11.0
+ * @version 1.12.0
  */
 function bookacti_init_activities() {
 	// Make the event draggable using jQuery UI
@@ -190,7 +190,7 @@ function bookacti_init_activities() {
 			$j( this ).parent().css( 'overflow', '' );
 		}
 	});
-	if( bookacti.blocked_events === true ) {
+	if( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'loading_number' ] > 0 ) {
 		$j( '#bookacti-template-activities-container .dashicons' ).addClass( 'bookacti-disabled' );
 		$j( '#bookacti-template-activities-container .fc-event' ).addClass( 'bookacti-event-unavailable' );
 	}
@@ -1143,22 +1143,6 @@ function bookacti_bind_template_dialogs() {
 
 
 /**
- * Check if the event is locked
- * @param {int} event_id
- */
-function bookacti_is_locked_event( event_id ) {
-    var is_locked = false;
-    $j.each( lockedEvents, function( i, blocked_event_id ) {
-        if( parseInt( event_id ) === parseInt( blocked_event_id ) ) {
-            is_locked = true;
-            return false;
-        }
-    });
-    return is_locked;
-}
-
-
-/**
  * Start a template loading (or keep on loading if already loading)
  */
 function bookacti_start_template_loading() {
@@ -1187,10 +1171,9 @@ function bookacti_stop_template_loading() {
 
 /**
  * Enter template loading state and prevent user from doing anything else
- * @version 1.7.18
+ * @version 1.12.0
  */
 function bookacti_enter_template_loading_state() {
-	
 	var loading_div =	'<div class="bookacti-loading-alt">' 
 							+ '<img class="bookacti-loader" src="' + bookacti_localized.plugin_path + '/img/ajax-loader.gif" title="' + bookacti_localized.loading + '" />'
 							+ '<span class="bookacti-loading-alt-text" >' + bookacti_localized.loading + '</span>'
@@ -1209,9 +1192,8 @@ function bookacti_enter_template_loading_state() {
 		 $j( '#bookacti-template-calendar' ).append( loading_div );
 	}
 	
-	
-	bookacti.blocked_events = true;
 	$j( '#bookacti-template-sidebar .dashicons' ).addClass( 'bookacti-disabled' );
+	$j( '#bookacti-template-activities-container .fc-event' ).addClass( 'bookacti-event-unavailable' );
 	$j( '.bookacti-template-dialog' ).find( 'input, select, button' ).attr( 'disabled', true );
 	$j( '#bookacti-template-picker' ).attr( 'disabled', true );
 	$j( '#bookacti-template-calendar' ).fullCalendar( 'rerenderEvents' );
@@ -1220,20 +1202,18 @@ function bookacti_enter_template_loading_state() {
 
 /**
  * Exit template loading state and allow user to continue editing templates
- * @version 1.7.18
+ * @version 1.12.0
  * @param {boolean} force_exit
  */
 function bookacti_exit_template_loading_state( force_exit ) {
-	
 	force_exit = force_exit || false;
-	
 	if( force_exit ) { bookacti.booking_system[ 'bookacti-template-calendar' ][ 'loading_number' ] = 0; }
 	
 	bookacti_exit_calendar_loading_state( $j( '#bookacti-template-calendar' ) );
 	$j( '#bookacti-template-calendar' ).find( '.bookacti-loading-alt' ).remove();
 	
-	bookacti.blocked_events = false;
 	$j( '#bookacti-template-sidebar .dashicons' ).removeClass( 'bookacti-disabled' );
+	$j( '#bookacti-template-activities-container .fc-event' ).removeClass( 'bookacti-event-unavailable' );
 	$j( '.bookacti-template-dialog' ).find( 'input, select, button' ).attr( 'disabled', false );
 	$j( '#bookacti-template-picker' ).attr( 'disabled', false );
 	$j( '#bookacti-template-calendar' ).fullCalendar( 'rerenderEvents' );

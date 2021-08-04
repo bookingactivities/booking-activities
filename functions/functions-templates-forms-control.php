@@ -397,7 +397,7 @@ function bookacti_sanitize_repeat_data( $object_data, $object_type = 'event' ) {
 	if( $data[ 'repeat_freq' ] !== 'none' ) {
 		if( $object_type === 'group' ) {
 			// Get the occurrences
-			$group_i = $data[ 'id' ] ? $data[ 'id' ] : 999999999;
+			$group_i = $data[ 'id' ] ? $data[ 'id' ] : ( rand() * -1 );
 			$groups_occurrences = bookacti_get_occurrences_of_repeated_groups_of_events( array( $group_i => $data ), array( 'past_events' => true ) );
 			$group_occurrences = ! empty( $groups_occurrences[ $group_i ] ) ? $groups_occurrences[ $group_i ] : array();
 
@@ -606,7 +606,7 @@ function bookacti_sanitize_group_of_events_data( $raw_data ) {
 	$data[ 'exceptions_dates' ] = ! empty( $raw_data[ 'exceptions_dates' ] ) ? $raw_data[ 'exceptions_dates' ] : array();
 	
 	// Sanitize array of events
-	$raw_events = isset( $raw_data[ 'events' ] ) ? bookacti_maybe_decode_json( stripslashes( $raw_data[ 'events' ] ), true ) : array();
+	$raw_events = isset( $raw_data[ 'events' ] ) ? ( is_array( $raw_data[ 'events' ] ) ? $raw_data[ 'events' ] : ( is_string( $raw_data[ 'events' ] ) ? bookacti_maybe_decode_json( stripslashes( $raw_data[ 'events' ] ), true ) : array() ) ) : array();
 	$event_default_data = array( 'id' => 0, 'activity_id' => 0, 'start' => '', 'end' => '' );
 	$event_keys_by_type = array( 
 		'absint'	=> array( 'id', 'activity_id', 'template_id' ),

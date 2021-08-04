@@ -1961,6 +1961,58 @@ function bookacti_update_booking_group( $booking_group_data, $where = array() ) 
 }
 
 
+/** 
+ * Update booking groups event_group_id 
+ * @since 1.12.0
+ * @global wpdb $wpdb
+ * @param int $old_event_group_id
+ * @param int $new_event_group_id
+ * @param string $group_date Y-m-d
+ * @param string $from Y-m-d
+ * @param string $to Y-m-d
+ * @return int|false
+ */
+function bookacti_update_booking_groups_event_group_id( $old_event_group_id, $new_event_group_id, $group_date = '', $from = '', $to = '' ) {
+	global $wpdb;
+	
+	$timezone					= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
+	$current_datetime_object	= new DateTime( 'now', $timezone );
+	$user_timestamp_offset		= $current_datetime_object->format( 'P' );
+	
+	$query	= 'UPDATE ' . BOOKACTI_TABLE_BOOKING_GROUPS
+			. ' SET event_group_id = %d '
+			. ' WHERE event_group_id = %d ';
+	
+	$variables = array( $new_event_group_id, $old_event_group_id );
+	
+	if( $group_date ) {
+		$query .= ' AND group_date = %s ';
+		$variables[] = $group_date;
+	}
+
+	if( $from ) {
+		$query .= ' AND (	UNIX_TIMESTAMP( CONVERT_TZ( group_date, %s, @@global.time_zone ) ) >= 
+							UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) )';
+		$variables[] = $user_timestamp_offset;
+		$variables[] = $from;
+		$variables[] = $user_timestamp_offset;
+	}
+	
+	if( $to ) {
+		$query .= ' AND (	UNIX_TIMESTAMP( CONVERT_TZ( group_date, %s, @@global.time_zone ) ) <= 
+							UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) )';
+		$variables[] = $user_timestamp_offset;
+		$variables[] = $to;
+		$variables[] = $user_timestamp_offset;
+	}
+	
+	$query = $wpdb->prepare( $query, $variables );
+	$updated = $wpdb->query( $query );
+	
+	return $updated;
+}
+
+
 /**
  * Update booking group state
  * @since 1.1.0
@@ -2238,7 +2290,7 @@ function bookacti_get_booking_groups( $filters ) {
 	if( is_numeric( $filters[ 'form_id' ] ) && $filters[ 'form_id' ] )						{ $filters[ 'in__form_id' ][] = $filters[ 'form_id' ]; }
 	if( $filters[ 'user_id' ] )																{ $filters[ 'in__user_id' ][] = $filters[ 'user_id' ]; }
 	
-	$query	= 'SELECT BG.id, BG.event_group_id, BG.user_id, BG.order_id, BG.form_id, BG.state, BG.payment_status, BG.active, IFNULL( NULLIF( BG.category_id, 0 ), EG.category_id ) as category_id,'
+	$query	= 'SELECT BG.id, BG.group_date, BG.event_group_id, BG.user_id, BG.order_id, BG.form_id, BG.state, BG.payment_status, BG.active, IFNULL( NULLIF( BG.category_id, 0 ), EG.category_id ) as category_id,'
 			. ' EG.title as group_title, EG.active as event_group_active,'
 			. ' C.title as category_title, C.template_id, C.active as category_active,'
 			. ' B.start, B.end, B.last_start, B.quantity, B.bookings_nb ';

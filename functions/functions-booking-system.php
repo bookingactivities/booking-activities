@@ -2018,7 +2018,8 @@ function bookacti_get_occurrences_of_repeated_event( $event, $raw_args = array()
 	$shared_properties = array(
 		'id'	=> ! empty( $event->event_id ) ? intval( $event->event_id ) : ( ! empty( $event->id ) ? intval( $event->id ) : 0 ),
 		'title'	=> ! empty( $event->title ) ? apply_filters( 'bookacti_translate_text', $event->title ) : '',
-		'color'	=> ! empty( $event->color ) ? $event->color : ''
+		'color'	=> ! empty( $event->color ) ? $event->color : '',
+		'activity_id' => ! empty( $event->activity_id ) ? intval( $event->activity_id ) : 0
 	);
 	
 	// Init variables to compute occurrences
@@ -3597,7 +3598,8 @@ function bookacti_get_occurrences_of_repeated_groups_of_events( $groups, $raw_ar
 					'title'	=> $grouped_event[ 'title' ],
 					'color'	=> $grouped_event[ 'color' ],
 					'start'	=> $grouped_event[ 'start' ],
-					'end'	=> $grouped_event[ 'end' ]
+					'end'	=> $grouped_event[ 'end' ],
+					'activity_id' => $group_event[ 'activity_id' ]
 				);
 			}
 			if( $is_incomplete ) { continue; }

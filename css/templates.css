@@ -157,10 +157,14 @@
 
 
 /* Unbind dialog */
-#bookacti-unbind-booked-event-dialog .bookacti-selected-event-dates	{ margin-top: 10px; }
-#bookacti-unbind-booked-event-dialog #bookacti-unbind-actions		{ padding: 0 3em 1em 3em; }
-#bookacti-unbind-booked-event-dialog .bookacti-unbind-action label	{ line-height: 3em; }
-#bookacti-unbind-booked-event-dialog .bookacti-unbind-action small	{ display: inline-block; margin-left: 2em; }
+#bookacti-unbind-event-dialog .bookacti-selected-event-dates,
+#bookacti-unbind-group-of-events-dialog .bookacti-selected-group-of-events-container{ margin: 0 0 25px 0; }
+#bookacti-unbind-event-dialog #bookacti-unbind-event-actions,
+#bookacti-unbind-group-of-events-dialog #bookacti-unbind-group-of-events-actions	{ padding: 0 3em 0 3em; }
+#bookacti-unbind-event-dialog .bookacti-unbind-action label,
+#bookacti-unbind-group-of-events-dialog .bookacti-unbind-action label				{ line-height: 3em; }
+#bookacti-unbind-event-dialog .bookacti-unbind-action small,
+#bookacti-unbind-group-of-events-dialog .bookacti-unbind-action small				{ display: inline-block; margin-left: 2em; }
 
 
 /* Group of events dialog */

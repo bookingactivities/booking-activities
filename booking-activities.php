@@ -9,7 +9,7 @@
  * Text Domain: booking-activities
  * Domain Path: /languages/
  * WC requires at least: 3.0
- * WC tested up to: 5.4
+ * WC tested up to: 5.6
  * License: GPL3
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  * 
@@ -26,7 +26,7 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License
- * along with Booking Activities. If not, see <http://www.gnu.org/licenses/>.
+ * along with Booking Activities. If not, see <https://www.gnu.org/licenses/>.
  * 
  * @package Booking Activities
  * @category Core

@@ -7,7 +7,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  * @since 1.12.0 (was bookacti_controller_fetch_events)
  */
 function bookacti_controller_get_booking_system_data_by_interval() {
-	$atts = bookacti_format_booking_system_attributes( bookacti_maybe_decode_json( stripslashes( $_POST[ 'attributes' ] ), true ) );
+	$atts = isset( $_POST[ 'attributes' ] ) ? ( is_array( $_POST[ 'attributes' ] ) ? $_POST[ 'attributes' ] : ( is_string( $_POST[ 'attributes' ] ) ? bookacti_maybe_decode_json( stripslashes( $_POST[ 'attributes' ] ), true ) : array() ) ) : array();
+	$atts = bookacti_format_booking_system_attributes( $atts );
 	$interval = ! empty( $_POST[ 'interval' ] ) ? bookacti_sanitize_events_interval( $_POST[ 'interval' ] ) : array();
 	
 	$atts[ 'start' ] = ! empty( $interval[ 'start' ] ) ? $interval[ 'start' ] : '';
@@ -38,7 +39,8 @@ add_action( 'wp_ajax_nopriv_bookactiGetBookingSystemDataByInterval', 'bookacti_c
  * @version 1.12.0
  */
 function bookacti_controller_reload_booking_system() {
-	$atts = bookacti_format_booking_system_attributes( bookacti_maybe_decode_json( stripslashes( $_POST[ 'attributes' ] ), true ) );
+	$atts = isset( $_POST[ 'attributes' ] ) ? ( is_array( $_POST[ 'attributes' ] ) ? $_POST[ 'attributes' ] : ( is_string( $_POST[ 'attributes' ] ) ? bookacti_maybe_decode_json( stripslashes( $_POST[ 'attributes' ] ), true ) : array() ) ) : array();
+	$atts = bookacti_format_booking_system_attributes( $atts );
 	
 	$atts[ 'auto_load' ] = 1;
 	$booking_system_data = bookacti_get_booking_system_data( $atts );

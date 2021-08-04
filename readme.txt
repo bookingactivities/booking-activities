@@ -3,11 +3,11 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
-Tested up to: 5.7
+Tested up to: 5.8
 Requires PHP: 5.3
 Stable tag: 1.11.4
 License: GPLv3 or later
-License URI: http://www.gnu.org/licenses/gpl-3.0.html
+License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
 Reservation system specialized in activities: sports, leisure, courses, events, tourism, and more! Works great with WooCommerce.
 
@@ -21,7 +21,7 @@ It is very easy to use:
 2. Copy / Paste a **shortcode** to display a booking form. Or **integrate it with WooCommerce** products.
 3. **Pick** an event on this calendar and book it. 
 
-Try this reservation tool live on the [demo website](http://demo.booking-activities.fr/en/)!
+Try this reservation tool live on the [demo website](https://demo.booking-activities.fr/en/)!
 
 [youtube https://www.youtube.com/watch?v=Q7gbK5i4DPU]
 
@@ -159,7 +159,7 @@ Then feel free to tell us if you miss a feature, if you find a bug or anything t
 = I am not an activity provider, can this plugin still meet my needs? =
 Yes of course. It is basically a reservation system based on event scheduling. In other words, you build your event calendar and allow them to be booked. You can find another purposes to it.
 To know if it actually meets your needs, simply try it, it's free. 
-If you are on a hurry, you can just check the [demo website](http://demo.booking-activities.fr/en/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme).
+If you are on a hurry, you can just check the [demo website](https://demo.booking-activities.fr/en/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme).
 Or read the full [features description](https://booking-activities.fr/en/documentation/features/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme) if you are looking for something in particular.
 
 = Create and fill your first calendar = 
@@ -325,6 +325,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Breaking change - Remove opening and closing dates from calendar settings in calendar editor
 * Breaking change - Remove the archiving tool. You can still find the backups you have made in wp-content/uploads/booking-activities/archives and manually import them with phpMyAdmin.
 * Feature - Groups of events can be automatically repeated (like events)
+* Feature - Unbind repeated groups of events occurrences
 * Feature - Add a button to jump to a specific date in calendar editor
 * Tweak - Remove restrictions on event availability and repetition frequency, you can update them regardless of bookings made
 * Tweak - WC cart items with a booking attached are no longer removed after a failed payment, so the customer can try again
@@ -333,7 +334,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Optimization - Reduce the number of queries to load the calendar editor
 * Dev - Breaking change - the wp_bookacti_exceptions table was totally refactored and the API related to exceptions too
 * Dev - Refactor the events, activities, group of events and group categories data sanitization when updating them from the calendar editor
-* Dev - Move the legacy functions to controller-legacy.php
+* Dev - Move the functions to run once after specific updates to controller-legacy.php
 * Dev - Store the activity_id in the wp_bookacti_groups_events table (part of removing dependencies between bookings and events (groups))
 
 = 1.11.5 - 2021/08/02 =

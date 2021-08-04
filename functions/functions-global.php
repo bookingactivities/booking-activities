@@ -482,7 +482,6 @@ function bookacti_get_js_variables() {
 				'error_excep_duplicated'			=> esc_html__( 'Exceptions should all have a different date.', 'booking-activities' ),
 				'error_no_templates_for_activity'	=> esc_html__( 'The activity must be bound to at least one calendar.', 'booking-activities' ),
 				'error_select_at_least_two_events'	=> esc_html__( 'You must select at least two events.', 'booking-activities' ),
-				'error_edit_locked_event'			=> esc_html__( 'This event is booked, you cannot move it nor change its duration.', 'booking-activities' ),
 				'error_no_template_selected'		=> esc_html__( 'You must select a calendar first.', 'booking-activities' ),
 			);
 			$bookacti_localized_backend = array_merge( $bookacti_localized_backend, $calendar_editor_strings );
