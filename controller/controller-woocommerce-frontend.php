@@ -1875,3 +1875,22 @@ function bookacti_display_my_account_bookings_tab_content() {
 	}
 }
 add_action( 'woocommerce_account_bookings_endpoint', 'bookacti_display_my_account_bookings_tab_content', 10 );
+
+
+/**
+ * Display links to the new "Bookings" endpoint on the customer's WC account dashboard
+ * @since 1.12.0
+ */
+function bookacti_display_my_account_dashboard_links() {
+	$page_id = intval( bookacti_get_setting_value( 'bookacti_account_settings', 'wc_my_account_bookings_page_id' ) );
+	if( $page_id < 0 ) { return; }
+?>
+	<p>
+		<?php
+			/* translators: %s = link to "Bookings" */
+			echo sprintf( esc_html__( 'You can also manage your %s.', 'booking-activities' ), '<a href="' . esc_url( wc_get_endpoint_url( 'bookings' ) ) . '">' . esc_html__( 'Bookings', 'booking-activities' ) . '</a>' );
+		?>
+	</p>	
+<?php
+}
+add_action( 'woocommerce_account_dashboard', 'bookacti_display_my_account_dashboard_links', 20 );

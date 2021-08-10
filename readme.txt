@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 5.8
 Requires PHP: 5.3
-Stable tag: 1.11.4
+Stable tag: 1.11.5
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -321,7 +321,8 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.12.0 =
+= 1.12.0-beta1 - 2021/08/10 =
+* **[See the user-friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-12-repeat-groups-of-events/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
 * Breaking change - Remove opening and closing dates from calendar settings in calendar editor
 * Breaking change - Remove the archiving tool. You can still find the backups you have made in wp-content/uploads/booking-activities/archives and manually import them with phpMyAdmin.
 * Feature - Groups of events can be automatically repeated (like events)
@@ -330,6 +331,8 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Tweak - Remove restrictions on event availability and repetition frequency, you can update them regardless of bookings made
 * Tweak - WC cart items with a booking attached are no longer removed after a failed payment, so the customer can try again
 * Tweak - Add the {booking_ical_url} notification tag and refactor the way booked events are exported
+* Tweak - Display links to the Bookings tab on the customer's WC account dashboard
+* Tweak - Display the booking form in full width below the WC product image and description by default (option in Booking Activities > Settings > WooCommerce tab)
 * Optimization - Groups of events and Bookings numbers are loaded by interval (like events) instead of all at once
 * Optimization - Reduce the number of queries to load the calendar editor
 * Dev - Breaking change - the wp_bookacti_exceptions table was totally refactored and the API related to exceptions too
@@ -1228,7 +1231,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Upgrade Notice ==
 
-= 1.12.0 =
+= 1.12.0-beta1 =
 Major changes in code:
 * If you have purchased add-ons, you need to update them too.
 * If you have custom code, you may need to adapt it. No support can be provided for your custom code.

@@ -788,9 +788,9 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 					<label id='bookacti-group-of-events-summary-label' for='bookacti-group-of-events-summary'><?php esc_html_e( 'Selected events', 'booking-activities' ); ?></label>
 					<div id='bookacti-group-of-events-occurrences-navigation'>
 						<span id='bookacti-group-of-events-occurrences-undo' class='button' title='<?php esc_html_e( 'Events that will be saved', 'booking-activities' ) ?>'><span class='dashicons dashicons-undo'></span></span>
-						<span id='bookacti-group-of-events-occurrences-reset' class='button' title='<?php esc_html_e( 'Currently saved events', 'booking-activities' ) ?>'>&#11123;</span>
-						<span id='bookacti-group-of-events-occurrences-prev' class='button' title='<?php esc_html_e( 'Previous occurrence', 'booking-activities' ) ?>'>&#8249;</span>
-						<span id='bookacti-group-of-events-occurrences-next' class='button' title='<?php esc_html_e( 'Next occurrence', 'booking-activities' ) ?>'>&#8250;</span>
+						<span id='bookacti-group-of-events-occurrences-reset' class='button' title='<?php esc_html_e( 'Currently saved events', 'booking-activities' ) ?>'><span class='dashicons dashicons-database-view'></span></span>
+						<span id='bookacti-group-of-events-occurrences-prev' class='button' title='<?php esc_html_e( 'Previous occurrence', 'booking-activities' ) ?>'><span class='dashicons dashicons-arrow-left-alt2'></span></span>
+						<span id='bookacti-group-of-events-occurrences-next' class='button' title='<?php esc_html_e( 'Next occurrence', 'booking-activities' ) ?>'><span class='dashicons dashicons-arrow-right-alt2'></span></span>
 					</div>
 				</div>
 				<!-- This field is only used for feedback, it is not used to pass any AJAX data, events list is passed through an array made with JS -->
@@ -798,7 +798,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 				
 				<div id='bookacti-group-of-events-summary-preview-notice' class='bookacti-backend-settings-only-notice bookacti-warning'>
 					<span class='dashicons dashicons-warning'></span>
-					<span><?php echo sprintf( esc_html__( 'This is a preview of a currently saved occurrence of the group, click the "%s" button to see the events that will be actually saved.', 'booking-activities' ), '<span class="dashicons dashicons-undo" title="' . esc_html__( 'Events that will be saved', 'booking-activities' ) . '"></span>' ); ?></span>
+					<span><?php /* translators: %s = "undo" dashicons */ echo sprintf( esc_html__( 'This is a preview of a currently saved occurrence of the group, click the "%s" button to see the events that will be actually saved.', 'booking-activities' ), '<span class="dashicons dashicons-undo" title="' . esc_html__( 'Events that will be saved', 'booking-activities' ) . '"></span>' ); ?></span>
 				</div>
 			</div>
 		<?php
@@ -1091,36 +1091,33 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			 */
 			function bookacti_fill_group_category_tab_permissions( $params = array() ) {
 				do_action( 'bookacti_group_category_tab_permissions_before', $params );
-			?>
-				<div>
-					<label for='bookacti-group-category-roles' class='bookacti-fullwidth-label' >
-					<?php 
-						esc_html_e( 'Who can book this category of groups?', 'booking-activities' );
-						
-						$tip  = esc_html__( 'Choose who is allowed to book the groups of this category.', 'booking-activities' );
-						$tip  .= '<br/>' . esc_html__( 'Use CTRL+Click to pick or unpick a role.', 'booking-activities' ) . ' ' . esc_html__( 'Don\'t pick any role to allow everybody.', 'booking-activities' );
-						bookacti_help_tip( $tip );
-					?>
-					</label>
-					<div>
-						<select name='allowed_roles[]' id='bookacti-group-category-roles' class='bookacti-select' multiple>
-							<?php 
-								$roles = get_editable_roles();
-								foreach( $roles as $role_id => $role ) {
-									echo '<option value="' . esc_attr( $role_id ) . '" >' . esc_html( $role[ 'name' ] ) . '</option>'; 
-								}
-							?>
-							<option value='all' ><?php esc_html_e( 'Everybody', 'booking-activities' ); ?></option>
-						</select>
-					</div>
-					<div class='bookacti-roles-notice bookacti-warning' style='margin-bottom:0;'>
-						<span class='dashicons dashicons-info'></span>
-						<span><?php esc_html_e( 'Don\'t pick any role to allow everybody.', 'booking-activities' ); ?></span>
-					</div>
-					<div class='bookacti-roles-notice bookacti-info'>
-						<span class='dashicons dashicons-info'></span>
-						<span><?php esc_html_e( 'Use CTRL+Click to pick or unpick a role.', 'booking-activities' ); ?></span>
-					</div>
+				
+				// Allowed roles field
+				$roles = get_editable_roles();
+				$roles_options = array();
+				foreach( $roles as $role_id => $role ) { $roles_options[ $role_id ] = $role[ 'name' ]; }
+				
+				$allowed_roles = array( 
+					'type'		=> 'select',
+					'multiple'	=> 1,
+					'name'		=> 'allowed_roles',
+					'id'		=> 'bookacti-group-category-roles',
+					'title'		=> esc_html__( 'Who can book this category of groups?', 'booking-activities' ),
+					'fullwidth'	=> 1,
+					'options'	=> array_merge( $roles_options, array( 'all' => esc_html__( 'Everybody', 'booking-activities' ) ) ),
+					'tip'		=> esc_html__( 'Choose who is allowed to book the groups of this category.', 'booking-activities' )
+								. '<br/>' . esc_html__( 'Use CTRL+Click to pick or unpick a role.', 'booking-activities' ) 
+								. ' ' . esc_html__( 'Don\'t pick any role to allow everybody.', 'booking-activities' )
+				);
+				bookacti_display_fields( array( 'allowed_roles' => $allowed_roles ) );
+			?>		
+				<div class='bookacti-roles-notice bookacti-warning' style='margin-bottom:0;'>
+					<span class='dashicons dashicons-info'></span>
+					<span><?php esc_html_e( 'Don\'t pick any role to allow everybody.', 'booking-activities' ); ?></span>
+				</div>
+				<div class='bookacti-roles-notice bookacti-info'>
+					<span class='dashicons dashicons-info'></span>
+					<span><?php esc_html_e( 'Use CTRL+Click to pick or unpick a role.', 'booking-activities' ); ?></span>
 				</div>
 			<?php
 				do_action( 'bookacti_group_category_tab_permissions_after', $params );

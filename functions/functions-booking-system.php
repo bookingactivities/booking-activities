@@ -154,12 +154,20 @@ function bookacti_get_booking_system_data( $atts ) {
 				$bounding_events = bookacti_fetch_events( array( 'templates' => $atts[ 'calendars' ], 'activities' => $atts[ 'activities' ], 'past_events' => $atts[ 'past_events' ], 'interval' => $availability_period, 'bounding_only' => 1 ) );	
 			}
 			
-			// Compute bounding dates
-			$bounding_events = ! empty( $bounding_events[ 'events' ] ) ? $bounding_events[ 'events' ] : ( $bounding_events ? $bounding_events : array() );
+			// Sanitize bounding events array
+			if( isset( $bounding_events[ 'events' ] ) ) { $bounding_events = $bounding_events[ 'events' ]; }
+			if( ! is_array( $bounding_events ) ) { $bounding_events = array(); }
 			if( $bounding_events ) {
 				$bounding_events_keys = array_keys( $bounding_events );
 				$last_key = end( $bounding_events_keys );
 				$first_key = reset( $bounding_events_keys );
+				if( empty( $bounding_events[ $first_key ][ 'start' ] ) || empty( $bounding_events[ $last_key ][ 'start' ] ) || empty( $bounding_events[ $last_key ][ 'end' ] ) ) {
+					$bounding_events = array();
+				}
+			}
+			
+			// Compute bounding dates
+			if( $bounding_events ) {
 				$bounding_dates = array( 
 					'start' => $bounding_events[ $first_key ][ 'start' ], 
 					'start_last' => $bounding_events[ $last_key ][ 'start' ],

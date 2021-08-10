@@ -1952,14 +1952,13 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 				// Prepare fields
 				$j( '#bookacti-group-of-events-action' ).val( 'bookactiInsertGroupOfEvents' );
 				$j( '#bookacti-group-of-events-form select[multiple].bookacti-items-select-box option' ).prop( 'selected', true );
-				
+				$j( '#bookacti-group-of-events-form select[multiple]#bookacti-group-of-events-exceptions-selectbox option' ).prop( 'selected', true );
+
 				// Get the data to save
 				var selected_category_id	= $j( '#bookacti-group-of-events-category-selectbox' ).val();
 				bookacti.selected_category	= selected_category_id;
 				
-				if( typeof tinyMCE !== 'undefined' ) { 
-					if( tinyMCE ) { tinyMCE.triggerSave(); }
-				}
+				if( typeof tinyMCE !== 'undefined' ) { if( tinyMCE ) { tinyMCE.triggerSave(); } }
 				
 				var is_form_valid = bookacti_validate_group_of_events_form();
 				
@@ -2274,7 +2273,7 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 				}
 			});
 		}
-	}
+	};
 	buttons.push( delete_button );
 	
 	// Add the Unbind button if the group of event is repeated
@@ -2397,6 +2396,7 @@ function bookacti_dialog_delete_group_of_events( group_id ) {
 				$j( '#bookacti-delete-group-of-events-dialog .bookacti-notices' ).remove();
 				
 				var data = $j( '#bookacti-delete-group-of-events-form' ).serializeObject();
+				data.cancel_bookings = $j( '#bookacti-delete-group-of-events-cancel_bookings' ).is( ':checked' ) ? 1 : 0; // Sanitize as int (important to be used later in ajax success)
 				data.group_id = group_id;
 				
 				$j( '#bookacti-delete-group-of-events-dialog' ).trigger( 'bookacti_deactivate_group_of_events_before', [ data, group_id ] );

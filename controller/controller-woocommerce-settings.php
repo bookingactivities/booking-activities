@@ -125,6 +125,7 @@ add_action( 'bookacti_add_settings', 'bookacti_add_woocommerce_settings_section'
 /**
  * Define default cart settings values
  * @since 1.7.16 (was bookacti_cart_default_settings)
+ * @version 1.12.0
  * @param array $settings
  * @return array
  */
@@ -133,8 +134,7 @@ function bookacti_wc_default_settings( $settings ) {
 	$settings[ 'is_cart_expiration_per_product' ]			= false;
 	$settings[ 'cart_timeout' ]								= 30;
 	$settings[ 'reset_cart_timeout_on_change' ]				= false;
-	$settings[ 'reset_cart_timeout_on_change' ]				= false;
-	$settings[ 'wc_product_pages_booking_form_location' ]	= 'default';
+	$settings[ 'wc_product_pages_booking_form_location' ]	= 'form_below';
 	$settings[ 'wc_my_account_bookings_page_id' ]			= 0;
 	return $settings;
 }
