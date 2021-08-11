@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Create Booking Activities database tables
- * @version 1.11.0
+ * @version 1.12.0
  * @global wpdb $wpdb
  */
 function bookacti_create_tables() {
@@ -17,9 +17,7 @@ function bookacti_create_tables() {
 	
 	$table_templates_query = 'CREATE TABLE ' . BOOKACTI_TABLE_TEMPLATES . ' ( 
 		id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, 
-		title TEXT, 
-		start_date DATE, 
-		end_date DATE,  
+		title TEXT,
 		active TINYINT(1) UNSIGNED NOT NULL DEFAULT 1,
 		PRIMARY KEY ( id ) ) ' . $collate . ';';
 
@@ -56,22 +54,28 @@ function bookacti_create_tables() {
 	
 	$table_exceptions_query = 'CREATE TABLE ' . BOOKACTI_TABLE_EXCEPTIONS . ' ( 
 		id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, 
-		event_id BIGINT UNSIGNED NOT NULL, 
-		exception_type VARCHAR(10) NOT NULL DEFAULT "date",
-		exception_value VARCHAR(10),
+		object_type VARCHAR(128) DEFAULT "event", 
+		object_id BIGINT UNSIGNED, 
+		exception_value DATE,
 		PRIMARY KEY ( id ) ) ' . $collate . ';';
 	
 	$table_event_groups_query = 'CREATE TABLE ' . BOOKACTI_TABLE_EVENT_GROUPS . ' ( 
 		id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, 
 		category_id BIGINT UNSIGNED NOT NULL, 
 		title TEXT, 
+		repeat_freq VARCHAR(32) NOT NULL DEFAULT "none", 
+		repeat_step SMALLINT(4) UNSIGNED, 
+		repeat_on VARCHAR(32), 
+		repeat_from DATE, 
+		repeat_to DATE,
 		active TINYINT(1) NOT NULL DEFAULT 1,
 		PRIMARY KEY ( id ) ) ' . $collate . ';';
 
 	$table_groups_events_query = 'CREATE TABLE ' . BOOKACTI_TABLE_GROUPS_EVENTS . ' ( 
 		id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, 
 		group_id BIGINT UNSIGNED NOT NULL, 
-		event_id BIGINT UNSIGNED NOT NULL, 
+		activity_id BIGINT UNSIGNED, 
+		event_id BIGINT UNSIGNED, 
 		event_start DATETIME, 
 		event_end DATETIME, 
 		active TINYINT(1) NOT NULL DEFAULT 1,
@@ -129,6 +133,7 @@ function bookacti_create_tables() {
 
 	$table_booking_groups_query = 'CREATE TABLE ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' ( 
 		id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, 
+		group_date DATE, 
 		category_id BIGINT UNSIGNED, 
 		event_group_id BIGINT UNSIGNED, 
 		user_id VARCHAR(64), 

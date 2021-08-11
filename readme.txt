@@ -7,7 +7,7 @@ Tested up to: 5.8
 Requires PHP: 5.3
 Stable tag: 1.11.5
 License: GPLv3 or later
-License URI: http://www.gnu.org/licenses/gpl-3.0.html
+License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
 Reservation system specialized in activities: sports, leisure, courses, events, tourism, and more! Works great with WooCommerce.
 
@@ -21,7 +21,7 @@ It is very easy to use:
 2. Copy / Paste a **shortcode** to display a booking form. Or **integrate it with WooCommerce** products.
 3. **Pick** an event on this calendar and book it. 
 
-Try this reservation tool live on the [demo website](http://demo.booking-activities.fr/en/)!
+Try this reservation tool live on the [demo website](https://demo.booking-activities.fr/en/)!
 
 [youtube https://www.youtube.com/watch?v=Q7gbK5i4DPU]
 
@@ -159,7 +159,7 @@ Then feel free to tell us if you miss a feature, if you find a bug or anything t
 = I am not an activity provider, can this plugin still meet my needs? =
 Yes of course. It is basically a reservation system based on event scheduling. In other words, you build your event calendar and allow them to be booked. You can find another purposes to it.
 To know if it actually meets your needs, simply try it, it's free. 
-If you are on a hurry, you can just check the [demo website](http://demo.booking-activities.fr/en/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme).
+If you are on a hurry, you can just check the [demo website](https://demo.booking-activities.fr/en/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme).
 Or read the full [features description](https://booking-activities.fr/en/documentation/features/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme) if you are looking for something in particular.
 
 = Create and fill your first calendar = 
@@ -321,6 +321,25 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.12.0-beta1 - 2021/08/10 =
+* **[See the user-friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-12-repeat-groups-of-events/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
+* Breaking change - Remove opening and closing dates from calendar settings in calendar editor
+* Breaking change - Remove the archiving tool. You can still find the backups you have made in wp-content/uploads/booking-activities/archives and manually import them with phpMyAdmin.
+* Feature - Groups of events can be automatically repeated (like events)
+* Feature - Unbind repeated groups of events occurrences
+* Feature - Add a button to jump to a specific date in calendar editor
+* Tweak - Remove restrictions on event availability and repetition frequency, you can update them regardless of bookings made
+* Tweak - WC cart items with a booking attached are no longer removed after a failed payment, so the customer can try again
+* Tweak - Add the {booking_ical_url} notification tag and refactor the way booked events are exported
+* Tweak - Display links to the Bookings tab on the customer's WC account dashboard
+* Tweak - Display the booking form in full width below the WC product image and description by default (option in Booking Activities > Settings > WooCommerce tab)
+* Optimization - Groups of events and Bookings numbers are loaded by interval (like events) instead of all at once
+* Optimization - Reduce the number of queries to load the calendar editor
+* Dev - Breaking change - the wp_bookacti_exceptions table was totally refactored and the API related to exceptions too
+* Dev - Refactor the events, activities, group of events and group categories data sanitization when updating them from the calendar editor
+* Dev - Move the functions to run once after specific updates to controller-legacy.php
+* Dev - Store the activity_id in the wp_bookacti_groups_events table (part of removing dependencies between bookings and events (groups))
+
 = 1.11.5 - 2021/08/02 =
 * Fix - Invalid key error when exporting bookings on multisite installs
 * Fix - Notifications were sent after partial refund in WooCommerce
@@ -331,7 +350,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 = 1.11.3 - 2021/06/11 =
 * Tweak - Improve feedback when a non-default form action is selected and WC is installed
-* Tweak - The WC refund coupon codes are crossed out is in the booking lists if they are no longer valid
+* Tweak - The WC refund coupon codes are crossed out in the booking lists if they are no longer valid
 * Fix - Cannot update event availability to 0
 * Fix - Missing js dependencies in backend non Booking Activities screens
 * Fix - Reschedule booking form must prevents from selecting multiple events
@@ -343,10 +362,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Tweak - Show the bookings list of the selected user and status only on calendars showing booked events only
 * Fix - Fix a bug introduced in 1.11.1 where Bookings page may timeout if WooCommerce is active and has a lot of orders
 
-= 1.11.1 - 2021/05/24 =
+= 1.11.1 – 2021/05/24 =
 * Fix - Order data were blank in bookings lists and exports after the 10 first orders
 
-= 1.11.0 - 2021/05/05 =
+= 1.11.0 – 2021/05/05 =
 * **[See the user-friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-11-advanced-options-to-repeat-events/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
 * Feature - Repeat events: option to skip n days / weeks / months between each occurrence (e.g.: repeat every 2 days)
 * Feature - Repeat events weekly: select the days of the week on which the event should be repeated
@@ -843,7 +862,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 = 1.5.8 - 2018/09/28 =
 * Fix - Hidden fields were shown after hitting "Make a new booking" button
 * Fix - "Generate Password" option prevented the form to be sent (password field not focusable)
-* Fix - PHP error when updating a recurring event if the new range doesn't include all booked occurrences
+* Fix - PHP error when updating a reccurring event if the new range doesn't include all booked occurrences
 * Fix - WC orders bookings status were not change with WooCommerce < 3.0.0
 * Fix - Remove corrupted cart items bookings when they are removed from cart
 * Fix - Update auto refund process to WC 3.0+ way (kept backward compatibility)
@@ -1014,7 +1033,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 = 1.3.1 - 2018/01/28 =
 * Fix - Empty booking list if booking groups table was empty
-* Fix - "Do not exist" error when trying to book single non-recurring events that did exist
+* Fix - "Do not exist" error when trying to book single non-reccurring events that did exist
 * Fix - Incorrect booking values if the booking was made with a booking form
 * Fix - Bookings numbers were not reloaded after booking form was sent
 
@@ -1212,10 +1231,17 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Upgrade Notice ==
 
+= 1.12.0-beta1 =
+Major changes in code:
+* If you have purchased add-ons, you need to update them too.
+* If you have custom code, you may need to adapt it. No support can be provided for your custom code.
+* The archiving tool has been removed. You can still find the backups you have made in wp-content/uploads/booking-activities/archives and manually import them with phpMyAdmin.
+* You won't be able to restore your previous backups of the wp_bookacti_exceptions table as is after the update
+
 = 1.9.0 =
 Major changes in code:
 * If you have purchased add-ons, you need to update them too.
-* If you have custom code, you probably need to adapt it. No support can be provided for your custom code.
+* If you have custom code, you may need to adapt it. No support can be provided for your custom code.
 
 = 1.1.0 =
 Major update with breaking changes. To be safe, make a backup of your database. 

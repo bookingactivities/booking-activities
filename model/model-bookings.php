@@ -126,7 +126,7 @@ function bookacti_update_booking( $booking_data, $where = array() ) {
 
 /**
  * Get bookings according to filters
- * @version 1.11.4
+ * @version 1.12.0
  * @global wpdb $wpdb
  * @param array $filters Use bookacti_format_booking_filters() before
  * @return array
@@ -144,14 +144,15 @@ function bookacti_get_bookings( $filters ) {
 	if( is_numeric( $filters[ 'booking_group_id' ] ) && $filters[ 'booking_group_id' ] )	{ $filters[ 'in__booking_group_id' ][] = $filters[ 'booking_group_id' ]; }
 	if( is_numeric( $filters[ 'event_group_id' ] ) && $filters[ 'event_group_id' ] )		{ $filters[ 'in__event_group_id' ][] = $filters[ 'event_group_id' ]; }
 	if( is_numeric( $filters[ 'group_category_id' ] ) && $filters[ 'group_category_id' ] )	{ $filters[ 'in__group_category_id' ][] = $filters[ 'group_category_id' ]; }
+	if( is_numeric( $filters[ 'event_id' ] ) && $filters[ 'event_id' ] )					{ $filters[ 'in__event_id' ][] = $filters[ 'event_id' ]; }
 	if( is_numeric( $filters[ 'form_id' ] ) && $filters[ 'form_id' ] )						{ $filters[ 'in__form_id' ][] = $filters[ 'form_id' ]; }
 	if( $filters[ 'user_id' ] )																{ $filters[ 'in__user_id' ][] = $filters[ 'user_id' ]; }
 	
-	$query_select	= ' SELECT DISTINCT B.*, IF( B.group_id IS NULL, B.id, CONCAT( "G", B.group_id ) ) as unique_group_id,'
+	$query_select	= ' SELECT DISTINCT B.id, B.user_id, B.order_id, B.form_id, B.group_id, B.event_id, B.event_start, B.event_end, B.state, B.payment_status, B.creation_date, B.expiration_date, B.quantity, B.active, IF( B.group_id IS NULL, B.id, CONCAT( "G", B.group_id ) ) as unique_group_id,'
 					. ' E.title as event_title, E.active as event_active,'
 					. ' A.id as activity_id, A.title as activity_title, A.active as activity_active,'
 					. ' T.id as template_id, T.title as template_title, T.active as template_active,'
-					. ' BG.event_group_id, BG.state as group_state, BG.payment_status as group_payment_status, BG.user_id as group_user_id, BG.order_id as group_order_id, BG.form_id as group_form_id, BG.active as group_active,'
+					. ' BG.group_date, BG.event_group_id, BG.state as group_state, BG.payment_status as group_payment_status, BG.user_id as group_user_id, BG.order_id as group_order_id, BG.form_id as group_form_id, BG.active as group_active,'
 					. ' EG.category_id, EG.title as group_title, EG.active as event_group_active ';
 	
 	// Get event / group of event total availability
@@ -341,9 +342,28 @@ function bookacti_get_bookings( $filters ) {
 		$variables = array_merge( $variables, $filters[ 'not_in__group_category_id' ] );
 	}
 	
-	if( $filters[ 'event_id' ] ) {
-		$query .= ' AND B.event_id = %d ';
-		$variables[] = $filters[ 'event_id' ];
+	if( $filters[ 'in__event_id' ] ) {
+		$query .= ' AND B.event_id IN ( %d ';
+		$array_count = count( $filters[ 'in__event_id' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ';
+		$variables = array_merge( $variables, $filters[ 'in__event_id' ] );
+	}
+	
+	if( $filters[ 'not_in__event_id' ] ) {
+		$query .= ' AND ( B.event_id IS NULL OR B.event_id NOT IN ( %d ';
+		$array_count = count( $filters[ 'not_in__event_id' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ) ';
+		$variables = array_merge( $variables, $filters[ 'not_in__event_id' ] );
 	}
 
 	if( $filters[ 'event_start' ] ) {
@@ -378,6 +398,30 @@ function bookacti_get_bookings( $filters ) {
 		}
 		$query .= ') ) ';
 		$variables = array_merge( $variables, $filters[ 'not_in__form_id' ] );
+	}
+	
+	if( $filters[ 'in__order_id' ] ) {
+		$query .= ' AND B.order_id IN ( %d ';
+		$array_count = count( $filters[ 'in__order_id' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ';
+		$variables = array_merge( $variables, $filters[ 'in__order_id' ] );
+	}
+	
+	if( $filters[ 'not_in__order_id' ] ) {
+		$query .= ' AND ( B.order_id IS NULL OR B.order_id NOT IN ( %d ';
+		$array_count = count( $filters[ 'not_in__order_id' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ) ';
+		$variables = array_merge( $variables, $filters[ 'not_in__order_id' ] );
 	}
 	
 	if( $filters[ 'in__user_id' ] ) {
@@ -484,7 +528,7 @@ function bookacti_get_bookings( $filters ) {
 /**
  * Get the total amount of booking rows according to filters
  * @since 1.3.1
- * @version 1.11.4
+ * @version 1.12.0
  * @global wpdb $wpdb
  * @param array $filters Use bookacti_format_booking_filters() before
  * @return int
@@ -502,6 +546,7 @@ function bookacti_get_number_of_booking_rows( $filters ) {
 	if( is_numeric( $filters[ 'booking_group_id' ] ) && $filters[ 'booking_group_id' ] )	{ $filters[ 'in__booking_group_id' ][] = $filters[ 'booking_group_id' ]; }
 	if( is_numeric( $filters[ 'event_group_id' ] ) && $filters[ 'event_group_id' ] )		{ $filters[ 'in__event_group_id' ][] = $filters[ 'event_group_id' ]; }
 	if( is_numeric( $filters[ 'group_category_id' ] ) && $filters[ 'group_category_id' ] )	{ $filters[ 'in__group_category_id' ][] = $filters[ 'group_category_id' ]; }
+	if( is_numeric( $filters[ 'event_id' ] ) && $filters[ 'event_id' ] )					{ $filters[ 'in__event_id' ][] = $filters[ 'event_id' ]; }
 	if( is_numeric( $filters[ 'form_id' ] ) && $filters[ 'form_id' ] )						{ $filters[ 'in__form_id' ][] = $filters[ 'form_id' ]; }
 	if( $filters[ 'user_id' ] )																{ $filters[ 'in__user_id' ][] = $filters[ 'user_id' ]; }
 	
@@ -699,9 +744,28 @@ function bookacti_get_number_of_booking_rows( $filters ) {
 		$variables = array_merge( $variables, $filters[ 'not_in__group_category_id' ] );
 	}
 	
-	if( $filters[ 'event_id' ] ) {
-		$query .= ' AND B.event_id = %d ';
-		$variables[] = $filters[ 'event_id' ];
+	if( $filters[ 'in__event_id' ] ) {
+		$query .= ' AND B.event_id IN ( %d ';
+		$array_count = count( $filters[ 'in__event_id' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ';
+		$variables = array_merge( $variables, $filters[ 'in__event_id' ] );
+	}
+	
+	if( $filters[ 'not_in__event_id' ] ) {
+		$query .= ' AND ( B.event_id IS NULL OR B.event_id NOT IN ( %d ';
+		$array_count = count( $filters[ 'not_in__event_id' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ) ';
+		$variables = array_merge( $variables, $filters[ 'not_in__event_id' ] );
 	}
 
 	if( $filters[ 'event_start' ] ) {
@@ -737,6 +801,31 @@ function bookacti_get_number_of_booking_rows( $filters ) {
 		$query .= ') ) ';
 		$variables = array_merge( $variables, $filters[ 'not_in__form_id' ] );
 	}
+	
+	if( $filters[ 'in__order_id' ] ) {
+		$query .= ' AND B.order_id IN ( %d ';
+		$array_count = count( $filters[ 'in__order_id' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ';
+		$variables = array_merge( $variables, $filters[ 'in__order_id' ] );
+	}
+	
+	if( $filters[ 'not_in__order_id' ] ) {
+		$query .= ' AND ( B.order_id IS NULL OR B.order_id NOT IN ( %d ';
+		$array_count = count( $filters[ 'not_in__order_id' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ) ';
+		$variables = array_merge( $variables, $filters[ 'not_in__order_id' ] );
+	}
+	
 	
 	if( $filters[ 'in__user_id' ] ) {
 		$query .= ' AND B.user_id IN ( %s ';
@@ -792,7 +881,7 @@ function bookacti_get_number_of_booking_rows( $filters ) {
 
 /**
  * Get number of bookings of a specific event or a specific occurrence
- * @version 1.11.4
+ * @version 1.12.0
  * @global wpdb $wpdb
  * @param array $filters Use bookacti_format_booking_filters() before
  * @return int
@@ -810,6 +899,7 @@ function bookacti_get_number_of_bookings( $filters ) {
 	if( is_numeric( $filters[ 'booking_group_id' ] ) && $filters[ 'booking_group_id' ] )	{ $filters[ 'in__booking_group_id' ][] = $filters[ 'booking_group_id' ]; }
 	if( is_numeric( $filters[ 'event_group_id' ] ) && $filters[ 'event_group_id' ] )		{ $filters[ 'in__event_group_id' ][] = $filters[ 'event_group_id' ]; }
 	if( is_numeric( $filters[ 'group_category_id' ] ) && $filters[ 'group_category_id' ] )	{ $filters[ 'in__group_category_id' ][] = $filters[ 'group_category_id' ]; }
+	if( is_numeric( $filters[ 'event_id' ] ) && $filters[ 'event_id' ] )					{ $filters[ 'in__event_id' ][] = $filters[ 'event_id' ]; }
 	if( is_numeric( $filters[ 'form_id' ] ) && $filters[ 'form_id' ] )						{ $filters[ 'in__form_id' ][] = $filters[ 'form_id' ]; }
 	if( $filters[ 'user_id' ] )																{ $filters[ 'in__user_id' ][] = $filters[ 'user_id' ]; }
 	
@@ -1014,9 +1104,28 @@ function bookacti_get_number_of_bookings( $filters ) {
 		$variables = array_merge( $variables, $filters[ 'not_in__group_category_id' ] );
 	}
 	
-	if( $filters[ 'event_id' ] ) {
-		$query .= ' AND B.event_id = %d ';
-		$variables[] = $filters[ 'event_id' ];
+	if( $filters[ 'in__event_id' ] ) {
+		$query .= ' AND B.event_id IN ( %d ';
+		$array_count = count( $filters[ 'in__event_id' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ';
+		$variables = array_merge( $variables, $filters[ 'in__event_id' ] );
+	}
+	
+	if( $filters[ 'not_in__event_id' ] ) {
+		$query .= ' AND ( B.event_id IS NULL OR B.event_id NOT IN ( %d ';
+		$array_count = count( $filters[ 'not_in__event_id' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ) ';
+		$variables = array_merge( $variables, $filters[ 'not_in__event_id' ] );
 	}
 
 	if( $filters[ 'event_start' ] ) {
@@ -1051,6 +1160,30 @@ function bookacti_get_number_of_bookings( $filters ) {
 		}
 		$query .= ') ) ';
 		$variables = array_merge( $variables, $filters[ 'not_in__form_id' ] );
+	}
+	
+	if( $filters[ 'in__order_id' ] ) {
+		$query .= ' AND B.order_id IN ( %d ';
+		$array_count = count( $filters[ 'in__order_id' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ';
+		$variables = array_merge( $variables, $filters[ 'in__order_id' ] );
+	}
+	
+	if( $filters[ 'not_in__order_id' ] ) {
+		$query .= ' AND ( B.order_id IS NULL OR B.order_id NOT IN ( %d ';
+		$array_count = count( $filters[ 'not_in__order_id' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ) ';
+		$variables = array_merge( $variables, $filters[ 'not_in__order_id' ] );
 	}
 	
 	if( $filters[ 'in__user_id' ] ) {
@@ -1104,23 +1237,34 @@ function bookacti_get_number_of_bookings( $filters ) {
 
 
 /**
- * Get number of bookings ordered by events
- * @since 1.9.2 (was bookacti_get_number_of_bookings_by_events)
- * @version 1.11.2
+ * Get number of bookings per event
+ * @since 1.12.0 (was bookacti_get_number_of_bookings_for_booking_system)
  * @global wpdb $wpdb
- * @param array $template_ids
- * @param array $event_ids
- * @param array $user_ids
- * @param array $status
+ * @param array $raw_args {
+ *  @type array $templates Array of template IDs
+ *  @type array $events Array of events IDs
+ *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
+ *  @type array $users Array of users IDs
+ *  @type array $status Array of booking status
+ * }
  * @return array
  */
-function bookacti_get_number_of_bookings_for_booking_system( $template_ids = array(), $event_ids = array(), $user_ids = array(), $status = array() ) {
-	global $wpdb;
+function bookacti_get_number_of_bookings_per_event( $raw_args = array() ) {
+	$default_args = array(
+		'templates' => array(),
+		'events' => array(),
+		'interval' => array(),
+		'users' => array(),
+		'status' => array()
+	);
+	$args = wp_parse_args( $raw_args, $default_args );
 	
-	// Convert ids to array
-	$template_ids	= bookacti_ids_to_array( $template_ids );
-	$event_ids		= bookacti_ids_to_array( $event_ids );
-	$user_ids		= bookacti_ids_to_array( $user_ids );
+	// Set current datetime
+	$timezone					= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
+	$current_datetime_object	= new DateTime( 'now', $timezone );
+	$user_timestamp_offset		= $current_datetime_object->format( 'P' );
+	
+	global $wpdb;
 
 	$query	= 'SELECT B.event_id, B.event_start, B.event_end, E.availability as total_availability, SUM( B.quantity ) as quantity, COUNT( DISTINCT B.user_id ) as distinct_users, SUM( IF( B.user_id = %s, B.quantity, 0 ) ) as current_user_bookings '
 			. ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B '
@@ -1131,65 +1275,85 @@ function bookacti_get_number_of_bookings_for_booking_system( $template_ids = arr
 	$variables = array( $current_user_id );
 	
 	// Filter by template
-	if( $template_ids ) {
+	if( $args[ 'templates' ] ) {
 		$query	.= ' AND E.template_id IN ( %d ';
-		$array_count = count( $template_ids );
+		$array_count = count( $args[ 'templates' ] );
 		if( $array_count >= 2 ) {
 			for( $i=1; $i<$array_count; ++$i ) {
 				$query .= ', %d ';
 			}
 		}
 		$query .= ') ';
-		$variables = array_merge( $variables, $template_ids );
+		$variables = array_merge( $variables, $args[ 'templates' ] );
 	}
 	
 	// Filter by event
-	if( $event_ids ) {
+	if( $args[ 'events' ] ) {
 		$query	.= ' AND B.event_id IN ( %d ';
-		$array_count = count( $event_ids );
+		$array_count = count( $args[ 'events' ] );
 		if( $array_count >= 2 ) {
 			for( $i=1; $i<$array_count; ++$i ) {
 				$query .= ', %d ';
 			}
 		}
 		$query .= ') ';
-		$variables = array_merge( $variables, $event_ids );
+		$variables = array_merge( $variables, $args[ 'events' ] );
+	}
+	
+	// Do not fetch bookings out of the desired interval
+	if( ! empty( $args[ 'interval' ][ 'start' ] ) ) {
+		$query .= ' 
+		AND (	UNIX_TIMESTAMP( CONVERT_TZ( B.event_start, %s, @@global.time_zone ) ) >= 
+				UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) )';
+
+		$variables[] = $user_timestamp_offset;
+		$variables[] = $args[ 'interval' ][ 'start' ];
+		$variables[] = $user_timestamp_offset;
+	}
+	
+	if( ! empty( $args[ 'interval' ][ 'end' ] ) ) {
+		$query .= ' 
+		AND (	UNIX_TIMESTAMP( CONVERT_TZ( B.event_start, %s, @@global.time_zone ) ) <= 
+				UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
+			)';
+
+		$variables[] = $user_timestamp_offset;
+		$variables[] = $args[ 'interval' ][ 'end' ];
+		$variables[] = $user_timestamp_offset;
 	}
 	
 	// Filter by user
-	if( $user_ids ) {
+	if( $args[ 'users' ] ) {
 		$query	.= ' AND B.user_id IN ( %s ';
-		$array_count = count( $user_ids );
+		$array_count = count( $args[ 'users' ] );
 		if( $array_count >= 2 ) {
 			for( $i=1; $i<$array_count; ++$i ) {
 				$query .= ', %s ';
 			}
 		}
 		$query .= ') ';
-		$variables = array_merge( $variables, $user_ids );
+		$variables = array_merge( $variables, $args[ 'users' ] );
 	}
 	
 	// Filter by status
-	if( $status ) {
+	if( $args[ 'status' ] ) {
 		$query	.= ' AND B.state IN ( %s ';
-		$array_count = count( $status );
+		$array_count = count( $args[ 'status' ] );
 		if( $array_count >= 2 ) {
 			for( $i=1; $i<$array_count; ++$i ) {
 				$query .= ', %s ';
 			}
 		}
 		$query .= ') ';
-		$variables = array_merge( $variables, $status );
+		$variables = array_merge( $variables, $args[ 'status' ] );
 	}
 	
 	$query .= ' GROUP BY B.event_id, B.event_start, B.event_end '
 			. ' ORDER BY B.event_id, B.event_start, B.event_end ';
 	
-	if( $variables ) {
-		$query = $wpdb->prepare( $query, $variables );
-	}
+	if( $variables ) { $query = $wpdb->prepare( $query, $variables ); }
 	
-	$query = apply_filters( 'bookacti_number_of_bookings_for_booking_system_query', $query, $template_ids, $event_ids, $user_ids );
+	$query = apply_filters( 'bookacti_get_number_of_bookings_per_event_query', $query, $args );
 	
 	$events_booking_data = $wpdb->get_results( $query );
 	
@@ -1199,20 +1363,22 @@ function bookacti_get_number_of_bookings_for_booking_system( $template_ids = arr
 		$event_id = $event_booking_data->event_id;
 		if( ! isset( $return_array[ $event_id ] ) ) { $return_array[ $event_id ] = array(); }
 		$return_array[ $event_id ][ $event_booking_data->event_start ] = array(
-			'quantity' => intval( $event_booking_data->quantity ),
+			'total_availability' => intval( $event_booking_data->total_availability ),
 			'availability' => intval( $event_booking_data->total_availability ) - intval( $event_booking_data->quantity ),
+			'quantity' => intval( $event_booking_data->quantity ),
 			'distinct_users' => intval( $event_booking_data->distinct_users ),
 			'current_user_bookings' => intval( $event_booking_data->current_user_bookings )
 		);
 	}
 	
-	return apply_filters( 'bookacti_number_of_bookings_for_booking_system', $return_array, $template_ids, $event_ids, $user_ids, $query );
+	return apply_filters( 'bookacti_get_number_of_bookings_per_event', $return_array, $args, $query );
 }
 
 
 /**
  * Get number of bookings for the desired events, per event and per user, with the total availability
  * @since 1.9.2
+ * @version 1.12.0
  * @global wpdb $wpdb
  * @param array $events [ [ 'id' => int, 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' ], ... ]
  * @return array
@@ -1249,14 +1415,13 @@ function bookacti_get_number_of_bookings_per_event_per_user( $events ) {
 			. ' GROUP BY E.id, B.event_start, B.event_end, B.user_id  '
 			. ' ORDER BY E.id, B.event_start, B.event_end, B.user_id  ';
 	
-	if( $variables ) {
-		$query = $wpdb->prepare( $query, $variables );
-	}
+	if( $variables ) { $query = $wpdb->prepare( $query, $variables ); }
 	
 	$query = apply_filters( 'bookacti_number_of_bookings_per_event_per_user_query', $query, $events );
 	$events_booking_data = $wpdb->get_results( $query );
 	
 	// Order the array by event id
+	$return_events = array();
 	foreach( $events as $i => $event ) {
 		// Default values
 		$return_event = $event;
@@ -1279,114 +1444,10 @@ function bookacti_get_number_of_bookings_per_event_per_user( $events ) {
 			}
 		}
 		
-		$return_array[ $i ] = $return_event;
+		$return_events[ $i ] = $return_event;
 	}
 	
-	return apply_filters( 'bookacti_number_of_bookings_per_event_per_user', $return_array, $events );
-}
-
-
-/**
- * Get every distinct users who booked a specific group of events
- * @since 1.4.0
- * @version 1.7.1
- * @global wpdb $wpdb
- * @param int|array $group_of_events_ids
- * @param int $active 0|1
- * @return false|array of user ids
- */
-function bookacti_get_number_of_bookings_per_user_by_group_of_events( $group_of_events_ids, $active = 1 ) {
-	// Sanitize the array of group of events ID
-	if( ! is_array( $group_of_events_ids ) ) {
-		$variables = array( intval( $group_of_events_ids ) );
-	} else {
-		$variables = array_filter( array_map( 'intval', $group_of_events_ids ) );
-	}
-
-	if( ! $variables ) { return false; }
-	
-	global $wpdb;
-	
-	$query	= 'SELECT BG.event_group_id, BG.user_id, SUM( IFNULL( B.max_quantity, 0 ) ) as quantity '
-			. ' FROM ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' as BG ' 
-			. ' LEFT JOIN ( '
-				. ' SELECT group_id, MAX( quantity ) as max_quantity '
-				. ' FROM ' . BOOKACTI_TABLE_BOOKINGS
-				. ' WHERE active = 1 '
-				. ' AND group_id IS NOT NULL '
-				. ' GROUP BY group_id '
-			. ' ) as B ON B.group_id = BG.id '
-			. ' WHERE BG.id = B.group_id '
-			. ' AND BG.event_group_id IN ( %d';
-	
-	$array_count = count( $variables );
-	if( $array_count >= 2 ) {
-		for( $i=1; $i<$array_count; ++$i ) {
-			$query .= ', %d';
-		}
-	}
-	
-	$query .= ' )'
-			. ' AND BG.active = %d '
-			. ' GROUP BY BG.event_group_id, BG.user_id;';
-	
-	$variables[] = $active;
-	
-	$query		= $wpdb->prepare( $query, $variables );
-	$results	= $wpdb->get_results( $query );
-	
-	if( $results === false ) { return false; }
-	
-	$quantity_per_user = array();
-	foreach( $results as $result ) {
-		$quantity_per_user[ $result->event_group_id ][ $result->user_id ] = $result->quantity;
-	}
-	
-	// Return the single value if only one group was given
-	if( ! is_array( $group_of_events_ids ) ) {
-		return isset( $quantity_per_user[ $group_of_events_ids ] ) ? $quantity_per_user[ $group_of_events_ids ] : array();
-	}
-	
-	return $quantity_per_user;
-}
-
-
-/**
- * Get booking by id
- * @version 1.10.0
- * @global wpdb $wpdb
- * @param int $booking_id
- * @return object|null
- */
-function bookacti_get_booking_by_id( $booking_id ) {
-	global $wpdb;
-
-	$query	= 'SELECT B.*, E.title, E.activity_id, E.template_id '
-			. ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B '
-			. ' LEFT JOIN ' . BOOKACTI_TABLE_EVENTS . ' as E ON B.event_id = E.id '
-			. ' WHERE B.id = %d';
-	$prep		= $wpdb->prepare( $query, $booking_id );
-	$booking	= $wpdb->get_row( $prep, OBJECT );
-
-	return $booking;
-}
-
-
-/**
- * Get booking form id
- * @since 1.5.4
- * @global wpdb $wpdb
- * @param int $booking_id
- * @return string|null
- */
-function bookacti_get_booking_form_id( $booking_id ) {
-	global $wpdb;
-
-	$query	= 'SELECT form_id FROM ' . BOOKACTI_TABLE_BOOKINGS . ' WHERE id = %d';
-	$prep	= $wpdb->prepare( $query, $booking_id );
-	$form_id= $wpdb->get_var( $prep );
-
-	return intval( $form_id );
+	return apply_filters( 'bookacti_number_of_bookings_per_event_per_user', $return_events, $events );
 }
 
 
@@ -1752,6 +1813,42 @@ function bookacti_delete_booking( $booking_id ) {
 }
 
 
+/**
+ * Update specific bookings dates with a relative amount of seconds
+ * @version 1.10.0
+ * @global wpdb $wpdb
+ * @param array $booking_ids
+ * @param int $delta_seconds
+ * @param string $event_start_time Set a fixed start time (H:i:s). Empty string to use the current start time.
+ * @param string $event_end_time Set a fixed end time (H:i:s). Empty string to use the current end time.
+ * @return int|false
+ */
+function bookacti_shift_bookings_dates( $booking_ids, $delta_seconds = 0, $event_start_time = '', $event_end_time = '' ) {
+	global $wpdb;
+
+	$query	= 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS
+			. ' SET  event_start = IF( %s = "", DATE_ADD( event_start, INTERVAL %d SECOND ), CONCAT( DATE( DATE_ADD( event_start, INTERVAL %d SECOND ) ), " ", %s ) ), '
+				.  ' event_end = IF( %s = "", DATE_ADD( event_end, INTERVAL %d SECOND ), CONCAT( DATE( DATE_ADD( event_end, INTERVAL %d SECOND ) ), " ", %s ) ) '
+			. ' WHERE id IN ( ';
+	
+	$variables = array( $event_start_time, $delta_seconds, $delta_seconds, $event_start_time, $event_end_time, $delta_seconds, $delta_seconds, $event_end_time );
+	
+	if( $booking_ids ) {
+		$query .= '%d';
+		for( $i=1,$len=count($booking_ids); $i<$len; ++$i ) {
+			$query .= ', %d';
+		}
+		$variables = array_merge( $variables, $booking_ids );
+	}
+	$query .= ' ) ';
+	
+	$query	= $wpdb->prepare( $query, $variables );
+	$updated= $wpdb->query( $query );
+
+	return $updated;   
+}
+
+
 
 
 // BOOKING GROUPS
@@ -1759,7 +1856,7 @@ function bookacti_delete_booking( $booking_id ) {
 /**
  * Insert a booking group
  * @since 1.1.0
- * @version 1.11.0
+ * @version 1.12.0
  * @global wpdb $wpdb
  * @param array $booking_group_data Sanitized with bookacti_sanitize_booking_group_data
  * @return int
@@ -1777,10 +1874,11 @@ function bookacti_insert_booking_group( $booking_group_data ) {
 	}
 
 	$query = 'INSERT INTO ' . BOOKACTI_TABLE_BOOKING_GROUPS
-			. ' ( category_id, event_group_id, user_id, form_id, order_id, state, payment_status, active ) ' 
-			. ' VALUES ( NULLIF( %d, 0 ), NULLIF( %d, 0 ), %s, NULLIF( %d, 0 ), NULLIF( %d, 0 ), %s, %s, %d )';
+			. ' ( group_date, category_id, event_group_id, user_id, form_id, order_id, state, payment_status, active ) ' 
+			. ' VALUES ( %s, NULLIF( %d, 0 ), NULLIF( %d, 0 ), %s, NULLIF( %d, 0 ), NULLIF( %d, 0 ), %s, %s, %d )';
 
 	$variables = array( 
+		$booking_group_data[ 'group_date' ],
 		$category_id,
 		$booking_group_data[ 'event_group_id' ],
 		$booking_group_data[ 'user_id' ],
@@ -1806,7 +1904,7 @@ function bookacti_insert_booking_group( $booking_group_data ) {
 
 /**
  * Update booking group
- * @version 1.11.0
+ * @version 1.12.0
  * @global wpdb $wpdb
  * @param array $booking_group_data Sanitized with bookacti_sanitize_booking_group_data
  * @param array $where
@@ -1817,6 +1915,7 @@ function bookacti_update_booking_group( $booking_group_data, $where = array() ) 
 	
 	$query	= 'UPDATE ' . BOOKACTI_TABLE_BOOKING_GROUPS
 			. ' SET '
+			. ' group_date = IFNULL( NULLIF( %s, "" ), group_date ), '
 			. ' category_id = NULLIF( IFNULL( NULLIF( %d, 0 ), category_id ), -1 ), '
 			. ' event_group_id = NULLIF( IFNULL( NULLIF( %d, 0 ), event_group_id ), -1 ), '
 			. ' user_id = IFNULL( NULLIF( %s, "0" ), user_id ), '
@@ -1828,6 +1927,7 @@ function bookacti_update_booking_group( $booking_group_data, $where = array() ) 
 			. ' WHERE id = %d ';
 	
 	$variables = array( 
+		$booking_group_data[ 'group_date' ],
 		! is_null( $booking_group_data[ 'category_id' ] ) ? $booking_group_data[ 'category_id' ] : -1,
 		! is_null( $booking_group_data[ 'event_group_id' ] ) ? $booking_group_data[ 'event_group_id' ] : -1,
 		$booking_group_data[ 'user_id' ],
@@ -1856,6 +1956,58 @@ function bookacti_update_booking_group( $booking_group_data, $where = array() ) 
 	if( $updated ) {
 		do_action( 'bookacti_booking_group_updated', $booking_group_data, $where );
 	}
+	
+	return $updated;
+}
+
+
+/** 
+ * Update booking groups event_group_id 
+ * @since 1.12.0
+ * @global wpdb $wpdb
+ * @param int $old_event_group_id
+ * @param int $new_event_group_id
+ * @param string $group_date Y-m-d
+ * @param string $from Y-m-d
+ * @param string $to Y-m-d
+ * @return int|false
+ */
+function bookacti_update_booking_groups_event_group_id( $old_event_group_id, $new_event_group_id, $group_date = '', $from = '', $to = '' ) {
+	global $wpdb;
+	
+	$timezone					= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
+	$current_datetime_object	= new DateTime( 'now', $timezone );
+	$user_timestamp_offset		= $current_datetime_object->format( 'P' );
+	
+	$query	= 'UPDATE ' . BOOKACTI_TABLE_BOOKING_GROUPS
+			. ' SET event_group_id = %d '
+			. ' WHERE event_group_id = %d ';
+	
+	$variables = array( $new_event_group_id, $old_event_group_id );
+	
+	if( $group_date ) {
+		$query .= ' AND group_date = %s ';
+		$variables[] = $group_date;
+	}
+
+	if( $from ) {
+		$query .= ' AND (	UNIX_TIMESTAMP( CONVERT_TZ( group_date, %s, @@global.time_zone ) ) >= 
+							UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) )';
+		$variables[] = $user_timestamp_offset;
+		$variables[] = $from;
+		$variables[] = $user_timestamp_offset;
+	}
+	
+	if( $to ) {
+		$query .= ' AND (	UNIX_TIMESTAMP( CONVERT_TZ( group_date, %s, @@global.time_zone ) ) <= 
+							UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) )';
+		$variables[] = $user_timestamp_offset;
+		$variables[] = $to;
+		$variables[] = $user_timestamp_offset;
+	}
+	
+	$query = $wpdb->prepare( $query, $variables );
+	$updated = $wpdb->query( $query );
 	
 	return $updated;
 }
@@ -2122,7 +2274,7 @@ function bookacti_force_update_booking_group_bookings_quantity( $booking_group_i
 /**
  * Get booking groups according to filters
  * @since 1.3.0 (was bookacti_get_booking_groups_by_group_of_events)
- * @version 1.11.4
+ * @version 1.12.0
  * @global wpdb $wpdb
  * @param array $filters Use bookacti_format_booking_filters() before
  * @return array
@@ -2137,22 +2289,23 @@ function bookacti_get_booking_groups( $filters ) {
 	if( is_numeric( $filters[ 'group_category_id' ] ) && $filters[ 'group_category_id' ] )	{ $filters[ 'in__group_category_id' ][] = $filters[ 'group_category_id' ]; }
 	if( is_numeric( $filters[ 'form_id' ] ) && $filters[ 'form_id' ] )						{ $filters[ 'in__form_id' ][] = $filters[ 'form_id' ]; }
 	if( $filters[ 'user_id' ] )																{ $filters[ 'in__user_id' ][] = $filters[ 'user_id' ]; }
-
-	$query	= 'SELECT BG.*,'
-			. ' EG.title as group_title, EG.category_id, EG.active as event_group_active,'
+	
+	$query	= 'SELECT BG.id, BG.group_date, BG.event_group_id, BG.user_id, BG.order_id, BG.form_id, BG.state, BG.payment_status, BG.active, IFNULL( NULLIF( BG.category_id, 0 ), EG.category_id ) as category_id,'
+			. ' EG.title as group_title, EG.active as event_group_active,'
 			. ' C.title as category_title, C.template_id, C.active as category_active,'
 			. ' B.start, B.end, B.last_start, B.quantity, B.bookings_nb ';
 
 	$query .= ' FROM ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' as BG ' 
 			. ' LEFT JOIN ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as EG ON BG.event_group_id = EG.id '
-			. ' LEFT JOIN ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' as C ON EG.category_id = C.id ';
+			. ' LEFT JOIN ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' as C ON IFNULL( NULLIF( BG.category_id, 0 ), EG.category_id ) = C.id ';
 
 	// Get the first and the last event of the booking group and keep respectively their start and end datetime
 	// Get the max booking quantity
-	$query .= ' LEFT JOIN ( SELECT group_id as booking_group_id, COUNT( id ) as bookings_nb, MAX( quantity ) as quantity, MIN( event_start ) as start, MAX( event_end ) as end, MAX( event_start ) as last_start '
-			. ' FROM ' . BOOKACTI_TABLE_BOOKINGS 
-			. ' GROUP BY group_id ' . ' ) as B '
-			. ' ON BG.id = B.booking_group_id ';
+	$query .= ' LEFT JOIN ( '
+				. ' SELECT group_id as booking_group_id, COUNT( id ) as bookings_nb, MAX( quantity ) as quantity, MIN( event_start ) as start, MAX( event_end ) as end, MAX( event_start ) as last_start '
+				. ' FROM ' . BOOKACTI_TABLE_BOOKINGS 
+				. ' GROUP BY group_id'
+			. ' ) as B ON BG.id = B.booking_group_id ';
 
 	$query .= ' WHERE true ';
 
@@ -2289,6 +2442,30 @@ function bookacti_get_booking_groups( $filters ) {
 		$query .= ') ) ';
 		$variables = array_merge( $variables, $filters[ 'not_in__form_id' ] );
 	}
+	
+	if( $filters[ 'in__order_id' ] ) {
+		$query .= ' AND BG.order_id IN ( %d ';
+		$array_count = count( $filters[ 'in__order_id' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ';
+		$variables = array_merge( $variables, $filters[ 'in__order_id' ] );
+	}
+	
+	if( $filters[ 'not_in__order_id' ] ) {
+		$query .= ' AND ( BG.order_id IS NULL OR BG.order_id NOT IN ( %d ';
+		$array_count = count( $filters[ 'not_in__order_id' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ) ';
+		$variables = array_merge( $variables, $filters[ 'not_in__order_id' ] );
+	}
 
 	if( $filters[ 'in__user_id' ] ) {
 		$query .= ' AND BG.user_id IN ( %s ';
@@ -2355,70 +2532,6 @@ function bookacti_get_booking_groups( $filters ) {
 
 
 /**
- * Get a booking group by its id
- * 
- * @since 1.1.0
- * 
- * @global wpdb $wpdb
- * @param int $booking_group_id
- * @return object
- */
-function bookacti_get_booking_group_by_id( $booking_group_id ) {
-	global $wpdb;
-
-	$query	= 'SELECT G.* FROM ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' as G '
-			. ' WHERE G.id = %d';
-	$prep	= $wpdb->prepare( $query, $booking_group_id );
-	$group	= $wpdb->get_row( $prep, OBJECT );
-
-	return $group;
-}
-
-
-/**
- * Get booking group's form id
- * @since 1.5.4
- * @global wpdb $wpdb
- * @param int $booking_group_id
- * @return int
- */
-function bookacti_get_booking_group_form_id( $booking_group_id ) {
-	global $wpdb;
-
-	$query	= 'SELECT form_id FROM ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' WHERE id = %d';
-	$prep	= $wpdb->prepare( $query, $booking_group_id );
-	$form_id= $wpdb->get_var( $prep );
-
-	return intval( $form_id );
-}
-
-
-/**
- * Get bookings by booking group id
- * 
- * @since 1.1.0
- * 
- * @global wpdb $wpdb
- * @param int $booking_group_id
- * @return array
- */
-function bookacti_get_bookings_by_booking_group_id( $booking_group_id ) {
-	global $wpdb;
-
-	$query		= 'SELECT B.*, E.title, E.activity_id, E.template_id FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B '
-				. ' LEFT JOIN (
-						SELECT id, title, activity_id, template_id FROM ' . BOOKACTI_TABLE_EVENTS . '
-					) as E ON B.event_id = E.id'
-				. ' WHERE B.group_id = %d '
-				. ' ORDER BY B.event_start, B.event_id, E.activity_id DESC';
-	$prep		= $wpdb->prepare( $query, $booking_group_id );
-	$bookings	= $wpdb->get_results( $prep, OBJECT );
-
-	return $bookings;
-}
-
-
-/**
  * Get ids of bookings included in a booking group
  * 
  * @since 1.1.0
@@ -2442,31 +2555,6 @@ function bookacti_get_booking_group_bookings_ids( $booking_group_id ) {
 	}
 
 	return $booking_ids;
-}
-
-
-/**
- * Get booking group quantity (= max quantity of its bookings)
- * 
- * @since 1.1.0
- * 
- * @global wpdb $wpdb
- * @param int $booking_group_id
- * @return int 
- */
-function bookacti_get_booking_group_quantity( $booking_group_id ) {
-	global $wpdb;
-
-	$query		= 'SELECT MAX( quantity ) as max_quantity FROM ' . BOOKACTI_TABLE_BOOKINGS
-				. ' WHERE group_id = %d ';
-	$prep		= $wpdb->prepare( $query, $booking_group_id );
-	$max_qty	= $wpdb->get_var( $prep );
-
-	if( empty( $max_qty ) ) {
-		return 0;
-	}
-
-	return $max_qty;
 }
 
 
@@ -2836,4 +2924,22 @@ function bookacti_delete_exports( $raw_filters = array() ) {
 	}
 	
 	return $return;
+}
+
+
+/**
+ * Get the booking id corresponding to a secret key
+ * @since 1.12.0
+ * @param string $secret_key
+ * @return array [ "id" => int, "type" => string ]
+ */
+function bookacti_get_booking_id_by_secret_key( $secret_key ) {
+	global $wpdb;
+	$query	= 'SELECT object_type, object_id FROM ' . BOOKACTI_TABLE_META 
+			. ' WHERE meta_key = "secret_key" '
+			. ' AND object_type IN ( "booking", "booking_group" )'
+			. ' AND meta_value = %s;';
+	$query = $wpdb->prepare( $query, $secret_key );
+	$booking = $wpdb->get_row( $query );
+	return $booking ? array( 'id' => intval( $booking->object_id ), 'type' => $booking->object_type === 'booking_group' ? 'group' : 'single' ) : array();
 }

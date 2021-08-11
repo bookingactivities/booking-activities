@@ -125,95 +125,6 @@ function bookacti_increase_max_execution_time( $context = '' ) {
 }
 
 
-/**
- * Create a zip
- * @since 1.7.0
- * @param array $files
- * @param string $destination
- * @param boolean $overwrite
- * @param boolean $remove_files
- * @return boolean
- */
-function bookacti_create_zip( $files = array(), $destination = '', $overwrite = true, $remove_files = false ) {
-	// If the zip file already exists and overwrite is false, return false
-	if( file_exists( $destination ) ) { 
-		if( ! $overwrite ) { return false; }
-		unlink( $destination );
-	}
-
-	$valid_files = array();
-	// Validate files
-	if( is_array( $files ) ) {
-		foreach( $files as $file) {
-			if( file_exists( $file ) ) { $valid_files[] = $file; }
-		}
-	}
-
-	if( empty( $valid_files ) ) { return false; }
-
-	// Create the archive
-	$zip = new ZipArchive();
-	$opened = $zip->open( $destination, ZIPARCHIVE::CREATE );
-	if( $opened !== true ) { return false; }
-
-	// Add the files
-	foreach( $valid_files as $file ) { $zip->addFile( $file, basename( $file ) ); }
-	$zip->close();
-
-	// Check to make sure the zip file exists
-	$zip_success = file_exists( $destination );
-
-	// Remove the original files
-	if( $zip_success && $remove_files ) {
-		foreach( $valid_files as $file ) { unlink( $file ); }
-	}
-
-	return $zip_success;
-}
-
-
-/**
- * Extract a zip file to specific directory
- * @since 1.7.0
- * @param string $zip_file
- * @param string $destination Must be an existing folder
- * @return array|false
- */
-function bookacti_extract_zip( $zip_file, $destination = '' ) {
-	// Make sure that the extract directory exists
-	if( ! is_dir( $destination ) ) {
-		$uploads_dir = wp_upload_dir();
-		$destination = str_replace( '\\', '/', $uploads_dir[ 'basedir' ] );
-	}
-	$extract_dir = trailingslashit( $destination ) . basename( $zip_file, '.zip' );
-
-	// Make sure that the extract directory is empty
-	$base_extract_dir = rtrim( $extract_dir, '/' );
-	while( is_dir( $extract_dir ) && count( scandir( $extract_dir ) ) > 2 ) {
-		$extract_dir = trailingslashit( $base_extract_dir . '-' . md5( microtime().rand() ) );
-	}
-
-	// Check if the zip file can be opened
-	$zip = new ZipArchive;
-	if( $zip->open( $zip_file ) !== true ) { return false; }
-
-	// Extract the files
-	$zip->extractTo( $extract_dir );
-	$zip->close();
-
-	$archives_handle = opendir( $extract_dir );
-	if( ! $archives_handle ) { return false; }
-
-	// Build an array of extracted file
-	$files = array();
-	while( false !== ( $filename = readdir( $archives_handle ) ) ) {
-		if( $filename == '.' || $filename == '..' ) { continue; }
-		$files[] = trailingslashit( $extract_dir ) . $filename;
-	}
-
-	return $files;
-}
-
 
 /**
  * Get a substring between two specific strings
@@ -235,25 +146,6 @@ function bookacti_get_string_between( $string, $start, $end ) {
 	return substr( $string, $ini, $len );
 }
 
-
-/**
- * Recursively remove values in an associative array by keys
- * @since 1.7.10
- * @param array $array
- * @param array $recursive_keys
- * @return array
- */
-function bookacti_recursive_unset( $array, $recursive_keys ) {
-	foreach( $recursive_keys as $key => $value ) {
-		if( is_array( $value ) && isset( $array[ $key ] ) && is_array( $array[ $key ] ) ) {
-			$array[ $key ] = bookacti_recursive_unset( $array[ $key ], $value );
-		}
-		else if( is_string( $value ) && isset( $array[ $value ] ) ) {
-			unset( $array[ $value ] );
-		}
-	}
-	return $array;
-}
 
 
 /**
@@ -445,7 +337,7 @@ function bookacti_generate_ical( $vevents, $vcalendar = array() ) {
 /**
  * Get the variables used with javascript
  * @since 1.8.0
- * @version 1.10.0
+ * @version 1.12.0
  * @return array
  */
 function bookacti_get_js_variables() {
@@ -478,10 +370,12 @@ function bookacti_get_js_variables() {
 		'one_person_per_booking'			=> esc_html__( 'for one person', 'booking-activities' ),
 		/* translators: %1$s is the number of people who can enjoy the activity with one booking */
 		'n_people_per_booking'				=> esc_html__( 'for %1$s people', 'booking-activities' ),
-		/* translators: This particle is used right after the quantity of bookings. Put the singular here. E.g.: 1 booking . */
+		/* translators: This particle is used right after the quantity of bookings. Put the singular here. E.g.: 1 booking. */
 		'booking'							=> esc_html__( 'booking', 'booking-activities' ),
-		/* translators: This particle is used right after the quantity of bookings. Put the plural here. E.g.: 2 bookings . . */
+		/* translators: This particle is used right after the quantity of bookings. Put the plural here. E.g.: 2 bookings. */
 		'bookings'							=> esc_html__( 'bookings', 'booking-activities' ),
+		/* translators: Button label to go to a specific date in the calendar */
+		'go_to_button'						=> esc_html__( 'Go to', 'booking-activities' ),
 
 		// VARIABLES
 		'ajaxurl'							=> admin_url( 'admin-ajax.php' ),
@@ -492,14 +386,15 @@ function bookacti_get_js_variables() {
 		'current_locale'					=> bookacti_get_current_lang_code( true ),
 
 		'available_booking_methods'			=> array_keys( bookacti_get_available_booking_methods() ),
+		'booking_system_attributes_keys'	=> array_keys( bookacti_get_booking_system_default_attributes() ),
 
 		'event_tiny_height'					=> apply_filters( 'bookacti_event_tiny_height', 30 ),
 		'event_small_height'				=> apply_filters( 'bookacti_event_small_height', 75 ),
 		'event_narrow_width'				=> apply_filters( 'bookacti_event_narrow_width', 70 ),
 		'event_wide_width'					=> apply_filters( 'bookacti_event_wide_width', 250 ),
 
-		'started_events_bookable'			=> bookacti_get_setting_value( 'bookacti_general_settings',	'started_events_bookable' ) ? true : false,
-		'started_groups_bookable'			=> bookacti_get_setting_value( 'bookacti_general_settings',	'started_groups_bookable' ) ? true : false,
+		'started_events_bookable'			=> bookacti_get_setting_value( 'bookacti_general_settings',	'started_events_bookable' ) ? 1 : 0,
+		'started_groups_bookable'			=> bookacti_get_setting_value( 'bookacti_general_settings',	'started_groups_bookable' ) ? 1 : 0,
 		'event_load_interval'				=> bookacti_get_setting_value( 'bookacti_general_settings', 'event_load_interval' ),
 		'default_view_threshold'			=> bookacti_get_setting_value( 'bookacti_general_settings', 'default_calendar_view_threshold' ),
 		'bookings_tooltip_mouseover_timeout'=> 250,
@@ -517,14 +412,14 @@ function bookacti_get_js_variables() {
 		'avails'							=> apply_filters( 'bookacti_translate_text', $messages[ 'avails' ][ 'value' ] ),
 		'hide_availability_fixed'			=> apply_filters( 'bookacti_hide_availability_fixed', 0 ), // Threshold above which availability is masked. 0 to always show availability.
 
-		'dialog_button_ok'                  => esc_html__( 'OK', 'booking-activities' ),
+		'dialog_button_ok'					=> esc_html__( 'OK', 'booking-activities' ),
 		'dialog_button_cancel'				=> apply_filters( 'bookacti_translate_text', $messages[ 'cancel_dialog_button' ][ 'value' ] ),
 		'dialog_button_cancel_booking'		=> apply_filters( 'bookacti_translate_text', $messages[ 'cancel_booking_dialog_button' ][ 'value' ] ),
 		'dialog_button_reschedule'			=> apply_filters( 'bookacti_translate_text', $messages[ 'reschedule_dialog_button' ][ 'value' ] ),
 		'dialog_button_refund'				=> $can_edit_bookings ? esc_html_x( 'Refund', 'Button label to trigger the refund action', 'booking-activities' ) : apply_filters( 'bookacti_translate_text', $messages[ 'refund_dialog_button' ][ 'value' ] ),
 
 		'plugin_path'						=> plugins_url() . '/' . BOOKACTI_PLUGIN_NAME,
-		'is_admin'							=> is_admin(),
+		'is_admin'							=> is_admin() ? 1 : 0,
 		'current_user_id'					=> get_current_user_id(),
 		'current_time'						=> $current_datetime->format( 'Y-m-d H:i:s' ),
 
@@ -570,27 +465,24 @@ function bookacti_get_js_variables() {
 				'error_end_before_start'			=> sprintf( esc_html__( 'The "%1$s" date must be prior to the "%2$s" date.', 'booking-activities' ), 
 						esc_html__( 'Start', 'booking-activities' ), 
 						esc_html__( 'End', 'booking-activities' ) ),
-				'error_fill_field'                  => esc_html__( 'Please fill this field.', 'booking-activities' ),
-				'error_invalid_value'               => esc_html__( 'Please select a valid value.', 'booking-activities' ),
+				'error_on_a_form_field'				=> esc_html__( 'There is an error on one of the form fields.', 'booking-activities' ),
+				'error_fill_field'					=> esc_html__( 'Please fill this field.', 'booking-activities' ),
+				'error_invalid_value'				=> esc_html__( 'Please select a valid value.', 'booking-activities' ),
 				'error_repeat_period_not_set'		=> esc_html__( 'The repetition period is not set.', 'booking-activities' ),
-				'error_repeat_end_before_begin'     => esc_html__( 'The repetition period cannot end before it started.', 'booking-activities' ),
+				'error_repeat_end_before_begin'		=> esc_html__( 'The repetition period cannot end before it started.', 'booking-activities' ),
 				'error_repeat_start_before_template'=> esc_html__( 'The repetition period should not start before the beginning date of the calendar.', 'booking-activities' ),
-				'error_repeat_end_after_template'   => esc_html__( 'The repetition period should not end after the end date of the calendar.', 'booking-activities' ),
-				'error_days_sup_to_365'             => esc_html__( 'The number of days should be between 0 and 365.', 'booking-activities' ),
-				'error_hours_sup_to_23'             => esc_html__( 'The number of hours should be between 0 and 23.', 'booking-activities' ),
-				'error_minutes_sup_to_59'           => esc_html__( 'The number of minutes should be between 0 and 59.', 'booking-activities' ),
+				'error_repeat_end_after_template'	=> esc_html__( 'The repetition period should not end after the end date of the calendar.', 'booking-activities' ),
+				'error_days_sup_to_365'				=> esc_html__( 'The number of days should be between 0 and 365.', 'booking-activities' ),
+				'error_hours_sup_to_23'				=> esc_html__( 'The number of hours should be between 0 and 23.', 'booking-activities' ),
+				'error_minutes_sup_to_59'			=> esc_html__( 'The number of minutes should be between 0 and 59.', 'booking-activities' ),
 				'error_activity_duration_is_null'	=> esc_html__( 'The activity duration should not be null.', 'booking-activities' ),
-				'error_less_avail_than_bookings'    => esc_html__( "You can't set less available bookings than it has already on one of the occurrence of this event.", 'booking-activities' ),
-				'error_booked_events_out_of_period' => esc_html__( 'The repetition period must include all booked occurrences.', 'booking-activities' ),
-				'error_event_not_btw_from_and_to'   => esc_html__( 'The selected event should be included in the period in which it will be repeated.', 'booking-activities' ),
-				'error_freq_not_allowed'            => esc_html__( 'Error: The repetition frequency is not a valid value.', 'booking-activities' ),
-				'error_excep_not_btw_from_and_to'   => esc_html__( 'Exception dates should be included in the repetition period.', 'booking-activities' ),
-				'error_excep_duplicated'            => esc_html__( 'Exceptions should all have a different date.', 'booking-activities' ),
-				'error_set_excep_on_booked_occur'   => esc_html__( 'Warning: this occurrence is booked.', 'booking-activities' ),
+				'error_event_not_btw_from_and_to'	=> esc_html__( 'The selected event should be included in the period in which it will be repeated.', 'booking-activities' ),
+				'error_freq_not_allowed'			=> esc_html__( 'Error: The repetition frequency is not a valid value.', 'booking-activities' ),
+				'error_excep_not_btw_from_and_to'	=> esc_html__( 'Exception dates should be included in the repetition period.', 'booking-activities' ),
+				'error_excep_duplicated'			=> esc_html__( 'Exceptions should all have a different date.', 'booking-activities' ),
 				'error_no_templates_for_activity'	=> esc_html__( 'The activity must be bound to at least one calendar.', 'booking-activities' ),
 				'error_select_at_least_two_events'	=> esc_html__( 'You must select at least two events.', 'booking-activities' ),
-				'error_edit_locked_event'           => esc_html__( 'This event is booked, you cannot move it nor change its duration.', 'booking-activities' ),
-				'error_no_template_selected'        => esc_html__( 'You must select a calendar first.', 'booking-activities' ),
+				'error_no_template_selected'		=> esc_html__( 'You must select a calendar first.', 'booking-activities' ),
 			);
 			$bookacti_localized_backend = array_merge( $bookacti_localized_backend, $calendar_editor_strings );
 		}
@@ -630,7 +522,7 @@ function bookacti_get_active_add_ons( $prefix = '', $exclude = array( 'balau' ) 
 /**
  * Get add-on data by prefix
  * @since 1.7.14
- * @version 1.11.0
+ * @version 1.12.0
  * @param string $prefix
  * @param array $exclude
  * @return array
@@ -643,7 +535,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name'	=> 'ba-display-pack', 
 			'end_of_life'	=> '', 
 			'download_id'	=> 482,
-			'min_version'	=> '1.4.11'
+			'min_version'	=> '1.4.19-beta1'
 		),
 		'banp'	=> array( 
 			'title'			=> 'Notification Pack', 
@@ -651,7 +543,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name'	=> 'ba-notification-pack', 
 			'end_of_life'	=> '', 
 			'download_id'	=> 1393,
-			'min_version'	=> '1.2.6'
+			'min_version'	=> '1.2.7-beta1'
 		),
 		'bapap' => array( 
 			'title'			=> 'Prices and Credits', 
@@ -659,7 +551,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name'	=> 'ba-prices-and-credits', 
 			'end_of_life'	=> '', 
 			'download_id'	=> 438,
-			'min_version'	=> '1.4.16'
+			'min_version'	=> '1.4.20-beta1'
 		),
 		'baaf' => array( 
 			'title'			=> 'Advanced Forms', 
@@ -667,7 +559,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name'	=> 'ba-advanced-forms', 
 			'end_of_life'	=> '', 
 			'download_id'	=> 2705,
-			'min_version'	=> '1.2.13'
+			'min_version'	=> '1.2.15-beta1'
 		),
 		'baofc'	=> array( 
 			'title'			=> 'Order for Customers', 
@@ -845,12 +737,11 @@ function bookacti_get_user_locale( $user_id, $default = 'current', $country_code
 /* 
  * Get site locale, and default to site or current locale
  * @since 1.2.0
- * @version 1.9.0
- * @param string $default 'current' or 'site'
+ * @version 1.12.0
  * @param boolean $country_code Whether to return also country code
  * @return string
  */
-function bookacti_get_site_locale( $default = 'site', $country_code = true ) {
+function bookacti_get_site_locale( $country_code = true ) {
 	// Get raw site locale, or current locale by default
 	$locale = get_locale();
 
@@ -862,7 +753,7 @@ function bookacti_get_site_locale( $default = 'site', $country_code = true ) {
 		}
 	}
 
-	return apply_filters( 'bookacti_site_locale', $locale, $default, $country_code );
+	return apply_filters( 'bookacti_site_locale', $locale, $country_code );
 }
 
 
@@ -1313,7 +1204,7 @@ function bookacti_display_field( $args ) {
 /**
  * Format arguments to display a proper field
  * @since 1.2.0
- * @version 1.8.7
+ * @version 1.12.0
  * @param array $args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'attr', 'value', 'multiple', 'tip', 'required']
  * @return array|false
  */
@@ -1361,8 +1252,7 @@ function bookacti_format_field_args( $args ) {
 	if( $args[ 'required' ] ) { $args[ 'class' ] .= ' bookacti-required-field'; }
 
 	// Make sure fields with multiple options have 'options' set
-	if( in_array( $args[ 'type' ], array( 'checkboxes', 'radio', 'select', 'user_id' ) ) ){
-		if( ! $args[ 'options' ] ) { return false; }
+	if( in_array( $args[ 'type' ], array( 'checkboxes', 'radio', 'select', 'user_id' ) ) ) {
 		if( ! is_array( $args[ 'attr' ] ) ) { $args[ 'attr' ] = array(); }
 	} else {
 		if( ! is_string( $args[ 'attr' ] ) ) { $args[ 'attr' ] = ''; }
@@ -1763,8 +1653,23 @@ function bookacti_sort_array_by_order( $a, $b ) {
 
 
 /**
+ * Sort array of arrays with a ['start'] index
+ * @since 1.12.0
+ * @param array $a
+ * @param array $b
+ * @return array 
+ */
+function bookacti_sort_array_by_start( $a, $b ) {
+	if( $a[ 'start' ] === $b[ 'start' ] ) { return 0; }
+	$a_dt = new DateTime( $a[ 'start' ] );
+	$b_dt = new DateTime( $b[ 'start' ] );
+	return $a_dt < $b_dt ? -1 : 1;
+}
+
+
+/**
  * Sanitize int ids to array
- * @version 1.7.17
+ * @version 1.12.0
  * @param array|int $ids
  * @return array 
  */
@@ -1772,7 +1677,7 @@ function bookacti_ids_to_array( $ids ) {
 	if( is_array( $ids ) ){
 		return array_filter( array_unique( array_map( 'intval', $ids ) ) );
 	} else if( ! empty( $ids ) ){
-		if( is_numeric( $ids ) ) {
+		if( is_numeric( $ids ) && intval( $ids ) ) {
 			return array( intval( $ids ) );
 		}
 	}
@@ -1869,13 +1774,13 @@ function bookacti_format_datetime( $datetime, $format = '' ) {
 
 /**
  * Check if a string is in a correct datetime format
- * @version 1.9.0
+ * @version 1.12.0
  * @param string $datetime Date format "Y-m-d H:i:s" is expected
  * @return string
  */
 function bookacti_sanitize_datetime( $datetime ) {
-	if( preg_match( '/^\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d$/', $datetime ) 
-	||  preg_match( '/^\d{4}-[01]\d-[0-3]\d [0-2]\d:[0-5]\d:[0-5]\d$/', $datetime ) ) {
+	if( preg_match( '/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])T([01]\d|2[0-3]):[0-5]\d:[0-5]\d$/', $datetime ) 
+	||  preg_match( '/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]) ([01]\d|2[0-3]):[0-5]\d:[0-5]\d$/', $datetime ) ) {
 		$datetime_object = new DateTime( $datetime );
 
 		// Do not allow to set a date after 2037 because of the year 2038 problem
@@ -1907,12 +1812,12 @@ if( ! function_exists( 'wp_date' ) ) {
 
 /**
  * Check if a string is in a correct date format
- * @version 1.8.0
+ * @version 1.12.0
  * @param string $date Date format Y-m-d is expected
  * @return string 
  */
 function bookacti_sanitize_date( $date ) {
-	if( preg_match( '/^\d{4}-[01]\d-[0-3]\d$/', $date ) ) {
+	if( preg_match( '/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/', $date ) ) {
 		$datetime_object = new DateTime( $date );
 
 		// Do not allow to set a date after 2037 because of the year 2038 problem
@@ -2060,7 +1965,7 @@ function bookacti_maybe_decode_json( $string, $assoc = false ) {
 /**
  * Sanitize the values of an array
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.12.0
  * @param array $default_data
  * @param array $raw_data
  * @param array $keys_by_type
@@ -2069,7 +1974,7 @@ function bookacti_maybe_decode_json( $string, $assoc = false ) {
  */
 function bookacti_sanitize_values( $default_data, $raw_data, $keys_by_type, $sanitized_data = array() ) {
 	// Sanitize the keys-by-type array
-	$allowed_types = array( 'int', 'float', 'numeric', 'bool', 'str', 'str_id', 'str_html', 'array', 'datetime', 'date' );
+	$allowed_types = array( 'int', 'absint', 'float', 'absfloat', 'numeric', 'bool', 'str', 'str_id', 'str_html', 'color', 'array', 'datetime', 'date' );
 	foreach( $allowed_types as $allowed_type ) {
 		if( ! isset( $keys_by_type[ $allowed_type ] ) ) { $keys_by_type[ $allowed_type ] = array(); }
 	}
@@ -2097,10 +2002,20 @@ function bookacti_sanitize_values( $default_data, $raw_data, $keys_by_type, $san
 		if( in_array( $key, $keys_by_type[ 'int' ], true ) ) { 
 			$sanitized_data[ $key ] = is_numeric( $raw_data[ $key ] ) ? intval( $raw_data[ $key ] ) : $default_value;
 		}
+		
+		// Sanitize absolute integers
+		if( in_array( $key, $keys_by_type[ 'absint' ], true ) ) { 
+			$sanitized_data[ $key ] = is_numeric( $raw_data[ $key ] ) ? abs( intval( $raw_data[ $key ] ) ) : $default_value;
+		}
 
 		// Sanitize floats
 		if( in_array( $key, $keys_by_type[ 'float' ], true ) ) { 
 			$sanitized_data[ $key ] = is_numeric( $raw_data[ $key ] ) ? foatval( $raw_data[ $key ] ) : $default_value;
+		}
+
+		// Sanitize absolute floats
+		if( in_array( $key, $keys_by_type[ 'absfloat' ], true ) ) { 
+			$sanitized_data[ $key ] = is_numeric( $raw_data[ $key ] ) ? abs( foatval( $raw_data[ $key ] ) ) : $default_value;
 		}
 
 		// Sanitize numeric
@@ -2122,6 +2037,11 @@ function bookacti_sanitize_values( $default_data, $raw_data, $keys_by_type, $san
 		else if( in_array( $key, $keys_by_type[ 'str_html' ], true ) ) { 
 			$sanitized_data[ $key ] = is_string( $raw_data[ $key ] ) ? wp_kses_post( stripslashes( $raw_data[ $key ] ) ) : $default_value;
 		}
+		
+		// Sanitize hex color
+		else if( in_array( $key, $keys_by_type[ 'color' ], true ) ) { 
+			$sanitized_data[ $key ] = is_string( $raw_data[ $key ] ) ? sanitize_hex_color( stripslashes( $raw_data[ $key ] ) ) : $default_value;
+		}
 
 		// Sanitize array
 		else if( in_array( $key, $keys_by_type[ 'array' ], true ) ) { 
@@ -2130,18 +2050,18 @@ function bookacti_sanitize_values( $default_data, $raw_data, $keys_by_type, $san
 
 		// Sanitize boolean
 		else if( in_array( $key, $keys_by_type[ 'bool' ], true ) ) { 
-			$sanitized_data[ $key ] = in_array( $raw_data[ $key ], array( 1, '1', true, 'true' ), true ) ? 1 : 0;
+			$sanitized_data[ $key ] = in_array( $raw_data[ $key ], array( 1, '1', true, 'true' ), true ) ? 1 : ( in_array( $raw_data[ $key ], array( 0, '0', false, 'false' ), true ) ? 0 : $default_value );
 		}
 
 		// Sanitize datetime
 		else if( in_array( $key, $keys_by_type[ 'datetime' ], true ) ) { 
-			$sanitized_data[ $key ] = bookacti_sanitize_datetime( $raw_data[ $key ] );
+			$sanitized_data[ $key ] = is_string( $raw_data[ $key ] ) ? bookacti_sanitize_datetime( stripslashes( $raw_data[ $key ] ) ) : '';
 			if( ! $sanitized_data[ $key ] ) { $sanitized_data[ $key ] = $default_value; }
 		}
 
 		// Sanitize date
 		else if( in_array( $key, $keys_by_type[ 'date' ], true ) ) { 
-			$sanitized_data[ $key ] = bookacti_sanitize_date( $raw_data[ $key ] );
+			$sanitized_data[ $key ] = is_string( $raw_data[ $key ] ) ? bookacti_sanitize_date( stripslashes( $raw_data[ $key ] ) ) : '';
 			if( ! $sanitized_data[ $key ] ) { $sanitized_data[ $key ] = $default_value; }
 		}
 	}

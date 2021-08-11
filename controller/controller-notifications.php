@@ -67,8 +67,8 @@ function bookacti_send_notification_when_booking_is_made( $return_array, $bookin
 	foreach( $return_array[ 'bookings' ] as $booking ) {
 		// Send a booking confirmation to the customer
 		if( ! empty( $booking_form_values[ 'status' ] ) ) { 
-            bookacti_send_notification( 'customer_' . $booking_form_values[ 'status' ] . '_booking', $booking[ 'id' ], $booking[ 'type' ] );
-        }
+			bookacti_send_notification( 'customer_' . $booking_form_values[ 'status' ] . '_booking', $booking[ 'id' ], $booking[ 'type' ] );
+		}
 		// Alert administrators that a new booking has been made
 		bookacti_send_notification( 'admin_new_booking', $booking[ 'id' ], $booking[ 'type' ] );
 	}

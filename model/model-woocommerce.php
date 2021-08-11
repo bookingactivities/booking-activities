@@ -327,7 +327,7 @@ function bookacti_cancel_order_remaining_bookings( $order_id, $not_booking_ids =
 
 /**
  * Deactivate expired bookings
- * @version	1.8.6
+ * @version	1.12.0
  * @global wpdb $wpdb
  * @return array|string|false
  */
@@ -384,10 +384,10 @@ function bookacti_deactivate_expired_bookings() {
 	
 	$return = $expired_ids;
 	
-	// Turn bookings state to 'expired'
+	// Turn bookings state to 'expired' (or 'cancelled' if the booking is part of an order)
 	if( $expired_ids ) {
 		$query	= 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS . ' '
-				. ' SET active = 0, state = "expired" '
+				. ' SET active = 0, state = IF( ISNULL( NULLIF( order_id, 0 ) ), "expired", "cancelled" ) '
 				. ' WHERE id IN ( %d';
 		for( $i=1,$len=count($expired_ids); $i < $len; ++$i ) {
 			$query .= ', %d';
@@ -405,10 +405,10 @@ function bookacti_deactivate_expired_bookings() {
 		}
 	}
 	
-	// Turn booking groups state to 'expired'
+	// Turn booking groups state to 'expired' (or 'cancelled' if the booking group is part of an order)
 	if( $return !== false && $expired_group_ids ) {
 		$query	= 'UPDATE ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' '
-				. ' SET active = 0, state = "expired" '
+				. ' SET active = 0, state = IF( ISNULL( NULLIF( order_id, 0 ) ), "expired", "cancelled" ) '
 				. ' WHERE id IN ( %d';
 		for( $i=1,$len=count($expired_group_ids); $i < $len; ++$i ) {
 			$query .= ', %d';

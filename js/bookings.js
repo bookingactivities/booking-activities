@@ -76,13 +76,13 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Display the "unpick events" button
-	 * @version 1.8.0
+	 * @version 1.12.0
 	 * @param {Event} e
 	 * @param {Object} event
-	 * @param {Int|String} group_id
+	 * @param {Object} groups
 	 * @param {Boolean} open_dialog
 	 */
-	$j( '#bookacti-booking-system-bookings-page' ).on( 'bookacti_event_click', function( e, event, group_id, open_dialog ) { 
+	$j( '#bookacti-booking-system-bookings-page' ).on( 'bookacti_event_click', function( e, event, groups, open_dialog ) { 
 		$j( '#bookacti-pick-event-filter-instruction' ).hide( 200 );
 		$j( '#bookacti-unpick-events-filter' ).show( 200 );
 		$j( '#bookacti-picked-events-actions-container' ).show( 200 );
@@ -91,14 +91,14 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Filter the booking list when an event is picked
-	 * @version 1.8.0
+	 * @version 1.12.0
 	 * @param {Event} e
 	 * @param {Object} event
-	 * @param {Int|String} group_id
+	 * @param {Object} groups
 	 * @param {Boolean} open_dialog
 	 */
-	$j( '#bookacti-booking-system-bookings-page' ).on( 'bookacti_event_click', function( e, event, group_id, open_dialog ) {
-		if( group_id === 'single' || ! open_dialog ) {
+	$j( '#bookacti-booking-system-bookings-page' ).on( 'bookacti_event_click', function( e, event, groups, open_dialog ) {
+		if( $j.isEmptyObject( groups ) || ! open_dialog ) {
 			if( $j( '#bookacti-submit-filter-button' ).data( 'ajax' ) ) { bookacti_filter_booking_list(); }
 		}
 	});
@@ -106,12 +106,13 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Filter the booking list when a group of events is picked
-	 * @version 1.8.0
+	 * @version 1.12.0
 	 * @param {Event} e
+	 * @param {Int} group_id
+	 * @param {String} group_date
 	 * @param {Object} event
-	 * @param {Int|String} group_id
 	 */
-	$j( '#bookacti-booking-system-bookings-page' ).on( 'bookacti_group_of_events_chosen', function( e, group_id, event ) {
+	$j( '#bookacti-booking-system-bookings-page' ).on( 'bookacti_group_of_events_chosen', function( e, group_id, group_date, event ) {
 		if( $j( '#bookacti-submit-filter-button' ).data( 'ajax' ) ) { bookacti_filter_booking_list(); }
 	});
 	

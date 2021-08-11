@@ -23,16 +23,16 @@
 
 ul[id$='-select-box-results'] li[aria-disabled='true'] { display: none; }
 
-.bookacti-error span, .bookacti-warning span, .bookacti-info span, .bookacti-sos span						{ display: table-cell; vertical-align: middle; }
-.bookacti-error .dashicons,.bookacti-warning .dashicons, .bookacti-info .dashicons, .bookacti-sos .dashicons{ font-size: 1.5em; padding-right: 10px; }
-.bookacti-error a, .bookacti-warning a, .bookacti-info a, .bookacti-sos a									{ color: #0073aa; text-decoration: none; }
-.bookacti-error a:hover, .bookacti-warning a:hover, .bookacti-info a:hover, .bookacti-sos a:hover			{ color: #00a0d2; }
-.bookacti-error .dashicons		{ color: #b81c23; }
-.bookacti-warning .dashicons	{ color: #f89b2f; }
-.bookacti-info .dashicons		{ color: #00a0d2; }
-.bookacti-sos					{ width: auto; height: auto; }
-.bookacti-sos .dashicons		{ color: #ca4a1f; text-align: center; width: auto; max-width: 50px; }
-.bookacti-sos .dashicons:after	{ content: attr( data-label ); display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-transform: uppercase; font-size: 10px; font-weight: bold; font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif; }
+.bookacti-error > span, .bookacti-warning > span, .bookacti-info > span, .bookacti-sos > span		{ display: table-cell; vertical-align: middle; }
+.bookacti-error > .dashicons,.bookacti-warning > .dashicons, .bookacti-info > .dashicons, .bookacti-sos > .dashicons{ font-size: 1.5em; padding-right: 10px; }
+.bookacti-error a, .bookacti-warning a, .bookacti-info a, .bookacti-sos a							{ color: #0073aa; text-decoration: none; }
+.bookacti-error a:hover, .bookacti-warning a:hover, .bookacti-info a:hover, .bookacti-sos a:hover	{ color: #00a0d2; }
+.bookacti-error > .dashicons		{ color: #b81c23; }
+.bookacti-warning > .dashicons		{ color: #f89b2f; }
+.bookacti-info > .dashicons			{ color: #00a0d2; }
+.bookacti-sos						{ width: auto; height: auto; }
+.bookacti-sos > .dashicons			{ color: #ca4a1f; text-align: center; width: auto; max-width: 50px; }
+.bookacti-sos > .dashicons:after	{ content: attr( data-label ); display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-transform: uppercase; font-size: 10px; font-weight: bold; font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif; }
 
 .wp-core-ui .button.bookacti-delete-button			{ color: #a00; border-color: #a00; }
 .wp-core-ui .button.bookacti-delete-button:hover	{ color: #dc3232; border-color: #dc3232; }
@@ -85,27 +85,13 @@ ul[id$='-select-box-results'] li[aria-disabled='true'] { display: none; }
 .bookacti-settings-table tbody tr:nth-child( 2n+1 )	{ background-color: #f9f9f9; }
 .bookacti-settings-table img	{ max-height: 24px; max-width: 24px; }
 
+.bookacti-settings-table .dashicons-yes:before	{ color: #3cb371; }
+.bookacti-settings-table .dashicons-no:before	{ color: #cd5c5c; }
+
+.bookacti-notification-id-container { display: inline-block; font-size: 13px; font-weight: normal; }
 #bookacti-notifications-list-column-title { width: 350px; }
 .bookacti-settings-table .bookacti-notifications-list-column-value-title a { text-decoration: none; font-weight: bold; }
 .bookacti-notifications-list-column-value-actions .button { vertical-align: middle; }
-
-.bookacti-not-found-row			{ text-align: center; }
-#bookacti-archive-disclaimer	{ max-width: 600px; color: #a00; }
-#bookacti-archive-delete-data-note	{ margin-top: 10px; color: #a00; }
-.bookacti-archive-options .bookacti-loading-alt { margin: 0 0 0 12px; display: inline-block; }
-.bookacti-archive-options .bookacti-notices ul	{ margin: 12px 0 0 0; width: fit-content; }
-.bookacti-archive-feedbacks-step { margin-top: 10px; }
-.bookacti-archive-feedbacks-step-container,
-.bookacti-archive-ids		{ display: none; margin-top: 10px; }
-.bookacti-show-archive-ids	{ cursor: pointer; margin-left: 6px; vertical-align: text-bottom; }
-.bookacti-archive-ids code	{ font-size: 0.8em; word-spacing: -2px; }
-.bookacti-archive-results ul				{ padding: 10px; margin: 5px 0; background: rgba( 255,255,255,0.4 ); border: 1px solid #aaa; }
-.bookacti-archive-results ul li:last-child	{ margin-bottom: 0; }
-a.bookacti-archive-action.button,
-a.bookacti-archive-action.button-link-delete{ font-weight: normal; vertical-align: middle; margin-right: 4px; }
-
-.bookacti-settings-table .dashicons-yes:before	{ color: #3cb371; }
-.bookacti-settings-table .dashicons-no:before	{ color: #cd5c5c; }
 
 #bookacti-notifications-list-column-active			{ width: 1px; }
 .bookacti-notifications-list-column-value-active	{ text-align: center; }
@@ -120,9 +106,9 @@ a.bookacti-archive-action.button-link-delete{ font-weight: normal; vertical-alig
 .bookacti-notifications-tags-list .bookacti-notifications-tag { margin-bottom: 8px; white-space: nowrap; }
 .bookacti-notifications-tag code { font-weight: normal; font-size: 0.8em; }
 
-.bookati-settings-tab-messages .form-table th			{ display: none; }
-.bookati-settings-tab-messages .form-table td			{ padding: 0 0 20px 0; font-size: 13px; }
-.bookati-settings-tab-messages #calendar_localization	{ margin-top: 6px; }
+.bookacti-settings-tab-messages .form-table th			{ display: none; }
+.bookacti-settings-tab-messages .form-table td			{ padding: 0 0 20px 0; font-size: 13px; }
+.bookacti-settings-tab-messages #calendar_localization	{ margin-top: 6px; }
 
 .bookacti-message-setting		{ margin-bottom: 20px; }
 .bookacti-message-setting input	{ margin-top: 6px; }

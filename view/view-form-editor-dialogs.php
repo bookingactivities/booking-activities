@@ -2,7 +2,7 @@
 /**
  * Form editor dialogs
  * @since 1.5.0
- * @version 1.9.0
+ * @version 1.12.0
  */
 
 // Exit if accessed directly

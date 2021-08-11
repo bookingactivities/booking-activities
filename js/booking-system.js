@@ -2,11 +2,13 @@ $j( document ).ready( function() {
 	/**
 	 * Remove error messages after pciking new events
 	 * @since 1.7.19
+	 * @version 1.12.0
 	 * @param {Event} e
-	 * @param {Int|String} group_id
-	 * @param {Object} event
+	 * @param {Object} picked_event
+	 * @param {Int} group_id
+	 * @param {String} group_date
 	 */
-	$j( 'body' ).on( 'bookacti_events_picked', '.bookacti-booking-system', function( e, group_id, event ) {
+	$j( 'body' ).on( 'bookacti_events_picked', '.bookacti-booking-system', function( e, picked_event, group_id, group_date ) {
 		if( $j( this ).siblings( '.bookacti-notices' ).length ) {
 			$j( this ).siblings( '.bookacti-notices' ).empty();
 		}
@@ -15,12 +17,13 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Init actions to perfoms when the user picks an event
-	 * @version 1.9.0
+	 * @version 1.12.0
 	 * @param {Event} e
-	 * @param {Int|String} group_id
-	 * @param {Object} event
+	 * @param {Object} picked_event
+	 * @param {Int} group_id
+	 * @param {String} group_date
 	 */
-	$j( 'body' ).on( 'bookacti_events_picked', '.bookacti-booking-system', function( e, group_id, event ){
+	$j( 'body' ).on( 'bookacti_events_picked', '.bookacti-booking-system', function( e, picked_event, group_id, group_date ) {
 		// Retrieve the info required to show the desired events
 		var booking_system		= $j( this );
 		var booking_system_id	= booking_system.attr( 'id' );
@@ -31,31 +34,28 @@ $j( document ).ready( function() {
 		bookacti_fill_picked_events_list( booking_system );
 		
 		// Perform form action for single events only (for groups, see bookacti_group_of_events_chosen)
-		if( group_id === 'single' && attributes[ 'when_perform_form_action' ] === 'on_event_click' ) {
-			var group_ids = bookacti_get_event_group_ids( booking_system, event );
-			var open_dialog = false;
-			if( $j.isArray( group_ids )
-				&&	(	( group_ids.length > 1 )
-					||  ( group_ids.length === 1 && attributes[ 'groups_single_events' ] ) ) ) {
-				open_dialog = true;
-			}
+		if( ! group_id && attributes[ 'when_perform_form_action' ] === 'on_event_click' ) {
+			var groups = bookacti_get_event_groups( booking_system, picked_event );
+			var groups_nb = bookacti_get_event_groups_nb( groups );
+			var open_dialog = groups_nb > 1 || ( groups_nb === 1 && attributes[ 'groups_single_events' ] ) ? true : false;
 			if( ! open_dialog ) {
 				bookacti_perform_form_action( booking_system );
 			}
 		}
 		
-		booking_system.trigger( 'bookacti_events_picked_after', [ group_id, event ] );
+		booking_system.trigger( 'bookacti_events_picked_after', [ picked_event, group_id, group_date ] );
 	});
 	
 	
 	/**
 	 * Init actions to perfoms when the user picks a group of events
-	 * @version 1.9.0
+	 * @version 1.12.0
 	 * @param {Event} e
 	 * @param {Int|String} group_id
+	 * @param {String} group_date
 	 * @param {Object} event
 	 */
-	$j( 'body' ).on( 'bookacti_group_of_events_chosen', '.bookacti-booking-system', function( e, group_id, event ) {
+	$j( 'body' ).on( 'bookacti_group_of_events_chosen', '.bookacti-booking-system', function( e, group_id, group_date, event ) {
 		// Retrieve the info required to show the desired events
 		var booking_system		= $j( this );
 		var booking_system_id	= booking_system.attr( 'id' );
@@ -66,13 +66,14 @@ $j( document ).ready( function() {
 			bookacti_perform_form_action( booking_system );
 		}
 		
-		booking_system.trigger( 'bookacti_group_of_events_chosen_after', [ group_id, event ] );
+		booking_system.trigger( 'bookacti_group_of_events_chosen_after', [ group_id, group_date, event ] );
 	});
 	
 	
 	/**
 	 * Unpick an event from the picked events list - on click on their trash icon
 	 * @since 1.9.0
+	 * @version 1.12.0
 	 * @param {Event} e
 	 */
 	$j( 'body' ).on( 'click', '.bookacti-unpick-event-icon', function( e ) {
@@ -80,7 +81,8 @@ $j( document ).ready( function() {
 		
 		// Groups
 		var group_id = $j( this ).closest( 'li' ).data( 'group-id' );
-		if( group_id ) { bookacti_unpick_events_of_group( booking_system, group_id ); return; }
+		var group_date = $j( this ).closest( 'li' ).data( 'group-date' );
+		if( group_id ) { bookacti_unpick_events( booking_system, 0, group_id, group_date ); return; }
 		
 		// Single events
 		var event_row = $j( this ).closest( 'li' );
@@ -89,17 +91,20 @@ $j( document ).ready( function() {
 			'start': event_row.data( 'event-start' ),
 			'end': event_row.data( 'event-end' )
 		};
-		bookacti_unpick_events_of_group( booking_system, 'single', event );
+		bookacti_unpick_events( booking_system, event );
 	});
 	
 	
 	/**
-	 * Refresh the picked events list and display on calendar - on bookacti_unpick_event
+	 * Refresh the picked events list and display on calendar - on bookacti_events_unpicked
 	 * @since 1.9.0
+	 * @version 1.12.0
 	 * @param {Event} e
 	 * @param {Object} event
+	 * @param {Int} group_id
+	 * @param {String} group_date
 	 */
-	$j( 'body' ).on( 'bookacti_unpick_event', '.bookacti-booking-system', function( e, event ) {
+	$j( 'body' ).on( 'bookacti_events_unpicked', '.bookacti-booking-system', function( e, event, group_id, group_date ) {
 		var booking_system		= $j( this );
 		var booking_system_id	= booking_system.attr( 'id' );
 		var booking_method		= bookacti.booking_system[ booking_system_id ][ 'method' ];
@@ -139,43 +144,6 @@ $j( document ).ready( function() {
 	$j( 'body' ).on( 'bookacti_init_booking_sytem', '.bookacti-booking-system#bookacti-booking-system-reschedule', function( e, load, attributes ) {
 		load.load = false;
 	});
-	
-	
-	// Check if booking systems exist before anything
-	if( $j( '.bookacti-booking-system' ).length ) {
-		// Init the Dialogs
-		bookacti_init_booking_system_dialogs();
-				
-		$j( '.bookacti-booking-system' ).each( function() {
-			// Retrieve the info required to show the desired events
-			var booking_system		= $j( this );
-			var booking_system_id	= booking_system.attr( 'id' );
-			var attributes			= bookacti.booking_system[ booking_system_id ];
-			
-			if( typeof bookacti.booking_system[ booking_system_id ][ 'loading_number' ] === 'undefined' ) {
-				bookacti.booking_system[ booking_system_id ][ 'loading_number' ] = 0;
-			}
-			if( typeof bookacti.booking_system[ booking_system_id ][ 'picked_events' ] === 'undefined' ) {
-				bookacti.booking_system[ booking_system_id ][ 'picked_events' ]	= [];
-			}
-			
-			// Load the booking system
-			var load = { 'load': true, 'auto_load': attributes.auto_load ? true : false };
-			booking_system.trigger( 'bookacti_init_booking_sytem', [ load, attributes ] );
-			
-			if( load.load ) {
-				if( load.auto_load ) {
-					bookacti_booking_method_set_up( booking_system );
-					
-					// Remove initial loading feedback
-					booking_system.find( '.bookacti-loading-alt' ).remove();
-					
-				} else {
-					bookacti_reload_booking_system( booking_system, true );
-				}
-			}
-		});		
-	}
 	
 	
 	
@@ -311,6 +279,45 @@ $j( document ).ready( function() {
 			}, tooltip_mouseover_timeout );
 		}
 	});
+	
+	
+	// Load the booking systems
+	
+	// Check if booking systems exist before anything
+	if( $j( '.bookacti-booking-system' ).length ) {
+		// Init the Dialogs
+		bookacti_init_booking_system_dialogs();
+				
+		$j( '.bookacti-booking-system' ).each( function() {
+			// Retrieve the info required to show the desired events
+			var booking_system		= $j( this );
+			var booking_system_id	= booking_system.attr( 'id' );
+			var attributes			= bookacti.booking_system[ booking_system_id ];
+			
+			if( typeof bookacti.booking_system[ booking_system_id ][ 'loading_number' ] === 'undefined' ) {
+				bookacti.booking_system[ booking_system_id ][ 'loading_number' ] = 0;
+			}
+			if( typeof bookacti.booking_system[ booking_system_id ][ 'picked_events' ] === 'undefined' ) {
+				bookacti.booking_system[ booking_system_id ][ 'picked_events' ]	= [];
+			}
+			
+			// Load the booking system
+			var load = { 'load': true, 'auto_load': attributes.auto_load ? true : false };
+			booking_system.trigger( 'bookacti_init_booking_sytem', [ load, attributes ] );
+			
+			if( load.load ) {
+				if( load.auto_load ) {
+					bookacti_booking_method_set_up( booking_system );
+					
+					// Remove initial loading feedback
+					booking_system.find( '.bookacti-loading-alt' ).remove();
+					
+				} else {
+					bookacti_reload_booking_system( booking_system, true );
+				}
+			}
+		});		
+	}
 });
 
 

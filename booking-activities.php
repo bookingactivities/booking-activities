@@ -3,7 +3,7 @@
  * Plugin Name: Booking Activities
  * Plugin URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Description: Booking system specialized in activities (sports, cultural, leisure, events...). Works great with WooCommerce.
- * Version: 1.11.5
+ * Version: 1.12.0-beta1
  * Author: Booking Activities Team
  * Author URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Text Domain: booking-activities
@@ -26,13 +26,13 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License
- * along with Booking Activities. If not, see <http://www.gnu.org/licenses/>.
+ * along with Booking Activities. If not, see <https://www.gnu.org/licenses/>.
  * 
  * @package Booking Activities
  * @category Core
  * @author Booking Activities Team
  * 
- * Copyright 2020 Yoan Cutillas
+ * Copyright 2021 Yoan Cutillas
 */
 
 // Exit if accessed directly
@@ -40,7 +40,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 // GLOBALS AND CONSTANTS
-if( ! defined( 'BOOKACTI_VERSION' ) )		{ define( 'BOOKACTI_VERSION', '1.11.5' ); }
+if( ! defined( 'BOOKACTI_VERSION' ) )		{ define( 'BOOKACTI_VERSION', '1.12.0-beta1' ); }
 if( ! defined( 'BOOKACTI_PLUGIN_NAME' ) )	{ define( 'BOOKACTI_PLUGIN_NAME', 'booking-activities' ); }
 
 
@@ -91,12 +91,12 @@ include_once( 'controller/controller-notifications.php' );
 include_once( 'controller/controller-bookings.php' );
 include_once( 'controller/controller-forms.php' );
 include_once( 'controller/controller-shortcodes.php' );
+include_once( 'controller/controller-legacy.php' );
 
 
 // INCLUDE DATABASE FUNCTIONS
 require_once( 'model/model-global.php' );
 require_once( 'model/model-install.php' );
-require_once( 'model/model-settings.php' );
 require_once( 'model/model-templates.php' );
 require_once( 'model/model-booking-system.php' );
 require_once( 'model/model-bookings.php' );
@@ -109,9 +109,15 @@ if( is_admin() ) {
 	require_once( 'class/class-forms-list.php' );
 }
 
+// Get active plugins
+$active_plugins = (array) get_option( 'active_plugins', array() );
+if( is_multisite() ) {
+	$network_active_plugins	= array_keys( (array) get_site_option( 'active_sitewide_plugins', array() ) );
+	$active_plugins			= array_merge( $active_plugins, $network_active_plugins );
+}
 
 // If woocommerce is active, include functions
-if( bookacti_is_plugin_active( 'woocommerce/woocommerce.php' ) ) {
+if( in_array( 'woocommerce/woocommerce.php', $active_plugins, true ) ) {
 	include_once( 'controller/controller-woocommerce-bookings.php' );
 	include_once( 'controller/controller-woocommerce-backend.php' );
 	include_once( 'controller/controller-woocommerce-frontend.php' );
@@ -196,7 +202,7 @@ add_action( 'wp_enqueue_scripts',	'bookacti_enqueue_high_priority_global_scripts
 
 /**
  * Enqueue normal priority scripts
- * @version 1.11.3
+ * @version 1.12.0
  */
 function bookacti_enqueue_global_scripts() {
 	// Include WooCommerce style and scripts
@@ -226,9 +232,9 @@ function bookacti_enqueue_global_scripts() {
 	wp_enqueue_style( 'bookacti-css-jquery-ui' );
 	
 	// INCLUDE JAVASCRIPT FILES
-	wp_enqueue_script( 'bookacti-js-booking-system',			plugins_url( 'js/booking-system.min.js', __FILE__ ),			array( 'jquery', 'fullcalendar', 'bookacti-js-global-var', 'bookacti-js-global-functions' ), BOOKACTI_VERSION, true );
 	wp_enqueue_script( 'bookacti-js-booking-system-dialogs',	plugins_url( 'js/booking-system-dialogs.min.js', __FILE__ ),	array( 'jquery', 'moment', 'jquery-ui-dialog', 'bookacti-js-global-var' ), BOOKACTI_VERSION, true );
 	wp_enqueue_script( 'bookacti-js-booking-method-calendar',	plugins_url( 'js/booking-method-calendar.min.js', __FILE__ ),	array( 'jquery', 'fullcalendar', 'bookacti-js-global-var', 'bookacti-js-global-functions' ), BOOKACTI_VERSION, true );
+	wp_enqueue_script( 'bookacti-js-booking-system',			plugins_url( 'js/booking-system.min.js', __FILE__ ),			array( 'jquery', 'fullcalendar', 'bookacti-js-global-var', 'bookacti-js-global-functions', 'bookacti-js-booking-system-functions', 'bookacti-js-booking-system-dialogs' ), BOOKACTI_VERSION, true );
 	wp_enqueue_script( 'bookacti-js-bookings-functions',		plugins_url( 'js/bookings-functions.min.js', __FILE__ ),		array( 'jquery', 'fullcalendar', 'bookacti-js-global-var', 'bookacti-js-global-functions', ), BOOKACTI_VERSION, true );
 	wp_enqueue_script( 'bookacti-js-bookings-dialogs',			plugins_url( 'js/bookings-dialogs.min.js', __FILE__ ),			array( 'jquery', 'moment', 'jquery-ui-dialog', 'bookacti-js-global-var', 'bookacti-js-global-functions' ), BOOKACTI_VERSION, true );
 	wp_enqueue_script( 'bookacti-js-forms',						plugins_url( 'js/forms.min.js', __FILE__ ),						array( 'jquery', 'jquery-ui-dialog', 'bookacti-js-global-functions' ), BOOKACTI_VERSION, true );
@@ -409,199 +415,6 @@ function bookacti_check_version() {
 	}
 }
 add_action( 'init', 'bookacti_check_version', 5 );
-
-
-/**
- * Update the form settings and the template settings that relies on global settings removed in 1.7.16
- * This function is temporary
- * @since 1.7.16
- * @global wpdb $wpdb
- * @param string $old_version
- */
-function bookacti_update_removed_global_settings_in_1_7_16( $old_version ) {
-	// Do it only once, when Booking Activities is updated for the first time after 1.7.16
-	if( version_compare( $old_version, '1.7.16', '<' ) ) {
-		// Get the global values
-		$global_booking_method				= bookacti_get_setting_value( 'bookacti_general_settings', 'booking_method' );
-		$global_availability_period_start	= bookacti_get_setting_value( 'bookacti_general_settings', 'availability_period_start' );
-		$global_availability_period_end		= bookacti_get_setting_value( 'bookacti_general_settings', 'availability_period_end' );
-		
-		global $wpdb;
-		
-		// Update the "Booking method" setting (Calendar form fields)
-		$booking_method_updated = $wpdb->update( 
-			BOOKACTI_TABLE_META, 
-			array( 'meta_value' => $global_booking_method ? $global_booking_method : 'calendar' ),
-			array( 'meta_key' => 'method', 'meta_value' => 'site' ),
-			array( '%s' ),
-			array( '%s', '%s' )
-		);
-		$wc_product_booking_method_updated = $wpdb->update( 
-			$wpdb->postmeta, 
-			array( 'meta_value' => $global_booking_method ? $global_booking_method : 'calendar' ),
-			array( 'meta_key' => '_bookacti_booking_method', 'meta_value' => 'site' ),
-			array( '%s' ),
-			array( '%s', '%s' )
-		);
-		$wc_variation_booking_method_updated = $wpdb->update( 
-			$wpdb->postmeta, 
-			array( 'meta_value' => $global_booking_method ? $global_booking_method : 'calendar' ),
-			array( 'meta_key' => 'bookacti_variable_booking_method', 'meta_value' => 'site' ),
-			array( '%s' ),
-			array( '%s', '%s' )
-		);
-		
-		// Update the "Events will be bookable in" setting (Templates, Calendar form fields)
-		$availability_period_start_updated = $wpdb->update( 
-			BOOKACTI_TABLE_META, 
-			array( 'meta_value' => $global_availability_period_start ? $global_availability_period_start : 0 ),
-			array( 'meta_key' => 'availability_period_start', 'meta_value' => -1 ),
-			array( '%d' ),
-			array( '%s', '%d' )
-		);
-		
-		// Update the "Events will be bookable in" setting (Templates, Calendar form fields)
-		$availability_period_end_updated = $wpdb->update( 
-			BOOKACTI_TABLE_META, 
-			array( 'meta_value' => $global_availability_period_end ? $global_availability_period_end : 0 ),
-			array( 'meta_key' => 'availability_period_end', 'meta_value' => -1 ),
-			array( '%d' ),
-			array( '%s', '%d' )
-		);
-	}
-}
-add_action( 'bookacti_updated', 'bookacti_update_removed_global_settings_in_1_7_16', 10 );
-
-
-/**
- * Remove the template settings removed in 1.7.17
- * This function is temporary
- * @since 1.7.17
- * @global wpdb $wpdb
- * @param string $old_version
- */
-function bookacti_delete_removed_template_settings_in_1_7_17( $old_version ) {
-	// Do it only once, when Booking Activities is updated for the first time after 1.7.17
-	if( version_compare( $old_version, '1.7.17', '<' ) ) {
-		global $wpdb;
-		
-		// Delete templates availability_period_start
-		$availability_period_start_deleted = $wpdb->delete( 
-			BOOKACTI_TABLE_META, 
-			array( 
-				'object_type' => 'template',
-				'meta_key' => 'availability_period_start'
-			), 
-			array( '%s', '%s' ) 
-		);
-		
-		// Delete templates availability_period_end
-		$availability_period_end_deleted = $wpdb->delete( 
-			BOOKACTI_TABLE_META, 
-			array( 
-				'object_type' => 'template',
-				'meta_key' => 'availability_period_end'
-			), 
-			array( '%s', '%s' ) 
-		);
-	}
-}
-add_action( 'bookacti_updated', 'bookacti_delete_removed_template_settings_in_1_7_17', 20 );
-
-
-/**
- * Update the refactored settings in 1.8.0
- * This function is temporary
- * @since 1.8.0
- * @version 1.8.4
- * @global wpdb $wpdb
- * @param string $old_version
- */
-function bookacti_update_refactored_settings_in_1_8_0( $old_version ) {
-	// Do it only once, when Booking Activities is updated for the first time after 1.8.0
-	if( version_compare( $old_version, '1.8.0', '<' ) ) {
-		// Rename cancellation_min_delay_before_event option to booking_changes_deadline and 
-		// Convert its value to seconds
-		$cancellation_options = get_option( 'bookacti_cancellation_settings' );
-		if( isset( $cancellation_options[ 'cancellation_min_delay_before_event' ] ) ) {
-			$cancellation_options[ 'booking_changes_deadline' ] = intval( $cancellation_options[ 'cancellation_min_delay_before_event' ] ) * 86400;
-			unset( $cancellation_options[ 'cancellation_min_delay_before_event' ] );
-			update_option( 'bookacti_cancellation_settings', $cancellation_options );
-		}
-		
-		global $wpdb;
-		
-		// Convert the "booking_changes_deadline" options values to seconds
-		$query_booking_changes_deadline_value = 'UPDATE ' . BOOKACTI_TABLE_META . ' SET meta_value = IF( ( meta_value > 0 AND meta_value < 86400 ), ( CAST( meta_value AS UNSIGNED ) * 86400 ), IF( meta_value < 0, "", meta_value ) ) WHERE meta_key = "booking_changes_deadline"';
-		$wpdb->query( $query_booking_changes_deadline_value );
-		
-		// Convert the "availability_period_start" options values to seconds
-		$query_availability_period_start_value = 'UPDATE ' . BOOKACTI_TABLE_META . ' SET meta_value = IF( ( meta_value > 0 AND meta_value < 86400 ), ( CAST( meta_value AS UNSIGNED ) * 86400 ), meta_value ) WHERE meta_key = "availability_period_start"';
-		$wpdb->query( $query_availability_period_start_value );
-		
-		// Convert the "availability_period_end" options values to seconds
-		$query_availability_period_end_value = 'UPDATE ' . BOOKACTI_TABLE_META . ' SET meta_value = IF( ( meta_value > 0 AND meta_value < 86400 ), ( CAST( meta_value AS UNSIGNED ) * 86400 ), meta_value ) WHERE meta_key = "availability_period_end"';
-		$wpdb->query( $query_availability_period_end_value );
-	}
-}
-add_action( 'bookacti_updated', 'bookacti_update_refactored_settings_in_1_8_0', 30 );
-
-
-/**
- * Update changes to 1.9.0
- * This function is temporary
- * @since 1.9.0
- * @param string $old_version
- */
-function bookacti_clear_sessions_when_updating_to_1_9_0( $old_version ) {
-	// Do it only once, when Booking Activities is updated for the first time after 1.9.0
-	if( version_compare( $old_version, '1.9.0', '>=' ) ) { return; }
-	
-	// Clear all WC customer sessions to empty carts, since cart items data are formatted differently
-	if( bookacti_is_plugin_active( 'woocommerce/woocommerce.php' ) ) {
-		$action = 'clear_sessions';
-		$tools_controller = new WC_REST_System_Status_Tools_Controller();
-		$tools = $tools_controller->get_tools();
-		$response = $tools_controller->execute_tool( $action );
-		$tool = array_merge( array(
-			'id'          => $action,
-			'name'        => $tools[ $action ][ 'name' ],
-			'action'      => $tools[ $action ][ 'button' ],
-			'description' => $tools[ $action ][ 'desc' ],
-		), $response );
-		
-		do_action( 'woocommerce_system_status_tool_executed', $tool );
-	}
-}
-add_action( 'bookacti_updated', 'bookacti_clear_sessions_when_updating_to_1_9_0', 40 );
-
-
-/**
- * Update changes to 1.11.0
- * This function is temporary
- * @since 1.11.0
- * @global wpdb $wpdb
- * @param string $old_version
- */
-function bookacti_fill_bookings_new_columns_when_updating_to_1_11_0( $old_version ) {
-	// Do it only once, when Booking Activities is updated for the first time after 1.11.0-beta1
-	if( version_compare( $old_version, '1.11.0-beta1', '>=' ) ) { return; }
-	
-	global $wpdb;
-	
-	// Update the bookings new activity_id column
-	$query_bookings_activity_id = 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS . ' as B LEFT JOIN ' . BOOKACTI_TABLE_EVENTS . ' as E ON B.event_id = E.id SET B.activity_id = E.activity_id WHERE B.activity_id IS NULL';
-	$wpdb->query( $query_bookings_activity_id );
-	
-	// Update the booking groups new category_id column
-	$query_booking_groups_category_id = 'UPDATE ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' as BG LEFT JOIN ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as EG ON BG.event_group_id = EG.id SET BG.category_id = EG.category_id WHERE BG.category_id IS NULL';
-	$wpdb->query( $query_booking_groups_category_id );
-	
-	// Set repeat_on to "last_day_of_month" for the monthly events occuring on the last day of their month
-	$query_monthly_events_on_last_day_of_month = 'UPDATE ' . BOOKACTI_TABLE_EVENTS . ' SET repeat_on = "last_day_of_month" WHERE repeat_freq = "monthly" AND CAST( start AS DATE ) = LAST_DAY( CAST( start AS DATE ) )';
-	$wpdb->query( $query_monthly_events_on_last_day_of_month );
-}
-add_action( 'bookacti_updated', 'bookacti_fill_bookings_new_columns_when_updating_to_1_11_0', 50 );
 
 
 

@@ -704,7 +704,7 @@ add_action( 'wp_ajax_nopriv_bookactiSubmitLoginForm', 'bookacti_controller_valid
 /**
  * Check if booking form is correct and then book the event, or send the error message
  * @since 1.5.0
- * @version 1.9.1
+ * @version 1.12.0
  */
 function bookacti_controller_validate_booking_form() {
 	// Check nonce
@@ -896,9 +896,9 @@ function bookacti_controller_validate_booking_form() {
 			$booking_data = bookacti_sanitize_booking_data( array( 
 				'user_id'			=> $booking_form_values[ 'user_id' ],
 				'form_id'			=> $booking_form_values[ 'form_id' ],
-				'event_id'			=> $picked_event[ 'id' ],
-				'event_start'		=> $picked_event[ 'start' ],
-				'event_end'			=> $picked_event[ 'end' ],
+				'event_id'			=> $picked_event[ 'events' ][ 0 ][ 'id' ],
+				'event_start'		=> $picked_event[ 'events' ][ 0 ][ 'start' ],
+				'event_end'			=> $picked_event[ 'events' ][ 0 ][ 'end' ],
 				'quantity'			=> $booking_form_values[ 'quantity' ],
 				'status'			=> $booking_form_values[ 'status' ],
 				'payment_status'	=> $booking_form_values[ 'payment_status' ],
@@ -918,6 +918,7 @@ function bookacti_controller_validate_booking_form() {
 				'user_id'			=> $booking_form_values[ 'user_id' ],
 				'form_id'			=> $booking_form_values[ 'form_id' ],
 				'event_group_id'	=> $picked_event[ 'group_id' ],
+				'group_date'		=> $picked_event[ 'group_date' ],
 				'grouped_events'	=> $picked_event[ 'events' ],
 				'quantity'			=> $booking_form_values[ 'quantity' ],
 				'status'			=> $booking_form_values[ 'status' ],
@@ -1055,7 +1056,7 @@ add_action( 'admin_footer-booking-activities_page_bookacti_forms', 'bookacti_pri
 /**
  * Create a booking form from REQUEST parameters
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.12.0
  */
 function bookacti_controller_create_form() {
 	if( empty( $_REQUEST[ 'action' ] ) || $_REQUEST[ 'action' ] !== 'new' ) { return; }
@@ -1074,7 +1075,7 @@ function bookacti_controller_create_form() {
 		$default_calendar_meta = array();
 		if( ! empty( $_REQUEST[ 'calendar_field' ][ 'calendars' ] ) ) {
 			$calendar_ids = bookacti_ids_to_array( $_REQUEST[ 'calendar_field' ][ 'calendars' ] );
-			$template_data = bookacti_get_mixed_template_data( $calendar_ids, false );
+			$template_data = bookacti_get_mixed_template_data( $calendar_ids );
 			$default_calendar_meta = $template_data[ 'settings' ];
 		}
 		$raw_calendar_meta = array_merge( $default_calendar_meta, $_REQUEST[ 'calendar_field' ] );
@@ -1338,7 +1339,7 @@ add_action( 'wp_ajax_bookactiUpdateFormMeta', 'bookacti_controller_update_form_m
 /**
  * AJAX Controller - Insert a form field
  * @since 1.5.0
- * @version 1.9.2
+ * @version 1.12.0
  */
 function bookacti_controller_insert_form_field() {
 	// Check nonce
@@ -1394,7 +1395,7 @@ function bookacti_controller_insert_form_field() {
 	}
 
 	// Update field order
-	$field_order	= bookacti_get_metadata( 'form', $form_id, 'field_order', true );
+	$field_order	= bookacti_get_form_fields_order( $form_id );
 	$field_order[]	= $field_id;
 	bookacti_update_metadata( 'form', $form_id, array( 'field_order' => $field_order ) );
 
@@ -1417,7 +1418,7 @@ add_action( 'wp_ajax_bookactiInsertFormField', 'bookacti_controller_insert_form_
 /**
  * AJAX Controller - Remove a form field
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.12.0
  */
 function bookacti_controller_remove_form_field() {
 	$field_id	= intval( $_POST[ 'field_id' ] );
@@ -1438,7 +1439,7 @@ function bookacti_controller_remove_form_field() {
 	do_action( 'bookacti_form_field_removed', $field );
 
 	// Update field order
-	$field_order = bookacti_get_metadata( 'form', $field[ 'form_id' ], 'field_order', true );
+	$field_order = bookacti_get_form_fields_order( $field[ 'form_id' ] );
 	if( $field_order ) {
 		$order_index = array_search( $field_id, $field_order );
 
@@ -1686,7 +1687,7 @@ add_action( 'wp_ajax_bookactiResetExportEventsUrl', 'bookacti_controller_reset_f
 /**
  * Export events of a specific form
  * @since 1.6.0
- * @version 1.7.13
+ * @version 1.12.0
  */
 function bookacti_export_form_events_page() {
 	if( empty( $_REQUEST[ 'action' ] ) || $_REQUEST[ 'action' ] !== 'bookacti_export_form_events' ) { return; }
@@ -1697,40 +1698,38 @@ function bookacti_export_form_events_page() {
 	
 	// Check if the secret key exists
 	$key = ! empty( $_REQUEST[ 'key' ] ) ? $_REQUEST[ 'key' ] : '';
-	if( ! $key ) { esc_html_e( 'Missing key.', 'booking-activities' ); exit; }
+	if( ! $key ) { esc_html_e( 'Missing secret key.', 'booking-activities' ); exit; }
 	
 	// Check if the secret key is correct
 	$secret_key = bookacti_get_metadata( 'form', $form_id, 'secret_key', true );
-	if( $key !== $secret_key ) { esc_html_e( 'Invalid key.', 'booking-activities' ); exit; }
+	if( $key !== $secret_key ) { esc_html_e( 'Invalid secret key.', 'booking-activities' ); exit; }
 	
 	// Check if the form has a valid 'calendar' field
 	$calendar_field = bookacti_get_form_field_data_by_name( $form_id, 'calendar' );
 	if( ! $calendar_field ) { esc_html_e( 'Cannot find the calendar field of the requested form.', 'booking-activities' ); exit; }
 	
-	$atts = apply_filters( 'bookacti_export_events_attributes', array_merge( bookacti_format_booking_system_url_attributes( $calendar_field ), array(
-		'groups_single_events' => 1
-	)));
-	
-	// Check the filename
-	$filename = ! empty( $_REQUEST[ 'filename' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'filename' ] ) : ( ! empty( $atts[ 'filename' ] ) ? sanitize_title_with_dashes( $atts[ 'filename' ] ) : 'booking-activities-events-form-' . $form_id );
-	if( ! $filename ) { esc_html_e( 'Invalid filename.', 'booking-activities' ); exit; }
-	$atts[ 'filename' ] = $filename;
-	if( substr( $filename, -4 ) !== '.ics' ) { $filename .= '.ics'; }
-	
+	// Set the file name, and the calendar name and description
 	$form = bookacti_get_form( $form_id );
-	if( $form ) {
-		$calname	= apply_filters( 'bookacti_translate_text', $form[ 'title' ] );
-		/* translators: %s is the form title */
-		$caldesc	= sprintf( esc_html__( 'Form "%s"', 'booking-activities' ), apply_filters( 'bookacti_translate_text', $form[ 'title' ] ) );
-	} else {
-		$calname	= sprintf( esc_html__( 'Form #%d', 'booking-activities' ), $form_id );
-		$caldesc	= $calname;
-	}
+	$filename = ! empty( $_REQUEST[ 'filename' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'filename' ] ) : 'booking-activities-events-form-' . $form_id;
+	$calname = $form ? apply_filters( 'bookacti_translate_text', $form[ 'title' ] ) : sprintf( esc_html__( 'Form #%d', 'booking-activities' ), $form_id );
+	/* translators: %s is the form title */
+	$caldesc = $form ? sprintf( esc_html__( 'Form "%s"', 'booking-activities' ), apply_filters( 'bookacti_translate_text', $form[ 'title' ] ) ) : $calname;
 	
 	// Increment the sequence number each time to make sure that the events will be updated
 	$sequence = intval( bookacti_get_metadata( 'form', $form_id, 'ical_sequence', true ) ) + 1;
 	bookacti_update_metadata( 'form', $form_id, array( 'ical_sequence' => $sequence ) );
 	
-	bookacti_export_events_page( $atts, $calname, $caldesc, $sequence );
+	// Let third party plugins change the booking system attributes
+	$atts = apply_filters( 'bookacti_export_form_events_attributes', array_merge( 
+			bookacti_format_booking_system_url_attributes( $calendar_field ), 
+			array( 'groups_single_events' => 1, 'filename' => $filename, 'calname' => $calname, 'caldesc' => $caldesc, 'sequence' => $sequence )
+		)
+	);
+	
+	// Check the filename
+	if( empty( $atts[ 'filename' ] ) ) { esc_html_e( 'Invalid filename.', 'booking-activities' ); exit; }
+	if( substr( $filename, -4 ) !== '.ics' ) { $filename .= '.ics'; }
+	
+	bookacti_export_events_page( $atts, $atts[ 'calname' ], $atts[ 'caldesc' ], $atts[ 'sequence' ] );
 }
 add_action( 'init', 'bookacti_export_form_events_page', 10 );

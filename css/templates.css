@@ -138,7 +138,7 @@
 .bookacti-roles-notice { margin-top: 10px; margin-bottom: 20px; }
 
 /* Event dialog */
-#bookacti-event-repeat-freq-start-of-week-notice { display: none; margin-top: 10px; }
+.bookacti-repeat-freq-start-of-week-notice { display: none; margin-top: 10px; }
 
 /* Move an event dialog */
 .bookacti-selected-event-dates						{ margin: 25px 0; }
@@ -157,15 +157,25 @@
 
 
 /* Unbind dialog */
-#bookacti-unbind-booked-event-dialog .bookacti-selected-event-dates	{ margin-top: 10px; }
-#bookacti-unbind-booked-event-dialog #bookacti-unbind-actions		{ padding: 0 3em 1em 3em; }
-#bookacti-unbind-booked-event-dialog .bookacti-unbind-action label	{ line-height: 3em; }
-#bookacti-unbind-booked-event-dialog .bookacti-unbind-action small	{ display: inline-block; margin-left: 2em; }
+#bookacti-unbind-event-dialog .bookacti-selected-event-dates,
+#bookacti-unbind-group-of-events-dialog .bookacti-selected-group-of-events-container{ margin: 0 0 25px 0; }
+#bookacti-unbind-event-dialog #bookacti-unbind-event-actions,
+#bookacti-unbind-group-of-events-dialog #bookacti-unbind-group-of-events-actions	{ padding: 0 3em 0 3em; }
+#bookacti-unbind-event-dialog .bookacti-unbind-action label,
+#bookacti-unbind-group-of-events-dialog .bookacti-unbind-action label				{ line-height: 3em; }
+#bookacti-unbind-event-dialog .bookacti-unbind-action small,
+#bookacti-unbind-group-of-events-dialog .bookacti-unbind-action small				{ display: inline-block; margin-left: 2em; }
 
 
 /* Group of events dialog */
 #bookacti-group-of-events-new-category-title { display: none; }
-#bookacti-group-of-events-summary { width: 100%; max-width: 100%; overflow: auto; }
+#bookacti-group-of-events-summary-label-container { display: flex; justify-content: space-between; }
+#bookacti-group-of-events-summary-label { padding: 8px 0; }
+.bookacti-backend-dialog .bookacti-selected-events-list { width: 100%; max-width: 100%; overflow: auto; resize: vertical; }
+#bookacti-group-of-events-summary-preview-notice { display: none; margin: 10px 0; }
+#bookacti-group-of-events-occurrences-navigation > .button { user-select: none; padding: 0 6px; }
+#bookacti-group-of-events-occurrences-navigation #bookacti-group-of-events-occurrences-undo { padding: 0 12px; }
+#bookacti-group-of-events-occurrences-navigation .dashicons { display: inline; font-size: 1.2em; vertical-align: middle; }
 
 
 /***** RESPONSIVE DESIGN *****/

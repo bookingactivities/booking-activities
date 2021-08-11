@@ -245,7 +245,7 @@ function bookacti_empty_all_dialog_forms( scope ) {
 
 /**
  * Fill custom settings fields in a form
- * @version 1.9.3
+ * @version 1.12.0
  * @param {array} fields
  * @param {string} field_prefix
  * @param {qtring} scope
@@ -333,6 +333,7 @@ function bookacti_fill_fields_from_array( fields, field_prefix, scope ) {
 
 		// Select multiple
 		} else if( $j( scope + 'select[name="' + field_name + '[]"]' ).length ) {
+			if( ! $j.isArray( value ) ) { value = [ value ]; }
 			$j.each( value, function( i, option ) {
 				$j( scope + 'select[name="' + field_name + '[]"] option[value="' + option + '"]' ).prop( 'selected', true );
 			});

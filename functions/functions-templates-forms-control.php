@@ -2,52 +2,101 @@
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
+// TEMPLATE
 
 /**
- * Validate template basic data
- * @since	1.0.6
- * @version	1.8.7
- * @param	string		$template_title
- * @param	string	$template_start Format 'YYYY-MM-DD'
- * @param	string	$template_end	Format 'YYYY-MM-DD'
- * @return	array
+ * Get template default data
+ * @since 1.12.0
  */
-function bookacti_validate_template_data( $template_title, $template_start, $template_end ) {
-
-    //Init var to check with worst case
-    $is_template_start_before_end	= false;
-	
-    //Prepare var that will be used to check the conditions
-    $start_date = strtotime( $template_start );
-    $end_date   = strtotime( $template_end );
-	
-    //Make the tests to validate the var
-    if( $start_date <= $end_date ) { $is_template_start_before_end = true; }
-	
-    $return_array = array();
-    $return_array['status'] = 'valid';
-    $return_array['errors'] = array();
-    if( ! $is_template_start_before_end ) {
-        $return_array['status'] = 'not_valid';
-		$return_array['errors'][] = 'error_closing_before_opening';
-    }
-    
-    return apply_filters( 'bookacti_validate_template_data', $return_array, $template_title, $template_start, $template_end );
+function bookacti_get_template_default_data() {
+	return apply_filters( 'bookacti_template_default_data', array(
+		'id' => 0,
+		'title' => esc_html__( 'Calendar', 'booking-activities' ),
+		'active' => 1
+	));
 }
 
 
 /**
- * Format template managers
- * @version 1.8.8
+ * Get template default meta
+ * @since 1.12.0
+ */
+function bookacti_get_template_default_meta() {
+	return apply_filters( 'bookacti_template_default_meta', array(
+		'minTime'		=> '00:00',
+		'maxTime'		=> '00:00',
+		'snapDuration'	=> '00:05'
+	));
+}
+
+
+/**
+ * Sanitize template data
+ * @since 1.12.0 (was bookacti_sanitize_template_settings)
+ * @param array $raw_data
+ * @return array
+ */
+function bookacti_sanitize_template_data( $raw_data ) {
+	$default_data = bookacti_get_template_default_data();
+	$default_meta = bookacti_get_template_default_meta();
+	
+	// Sanitize common values
+	$keys_by_type = array( 
+		'absint'=> array( 'id', 'duplicated_template_id' ),
+		'str'	=> array( 'title', 'minTime', 'maxTime', 'snapDuration' ),
+		'array'	=> array( 'managers' ),
+		'bool'	=> array( 'active' )
+	);
+	$data = bookacti_sanitize_values( array_merge( $default_data, $default_meta, array( 'managers' => array() ) ), $raw_data, $keys_by_type );
+	
+	if( ! $data[ 'id' ] && ! empty( $raw_data[ 'template_id' ] ) ) { $data[ 'id' ] = intval( $raw_data[ 'template_id' ] ); }
+	if( ! empty( $raw_data[ 'duplicated_template_id' ] ) ) { $data[ 'duplicated_template_id' ] = intval( $raw_data[ 'duplicated_template_id' ] ); }
+	
+	// Sanitize managers
+	$data[ 'managers' ] = bookacti_sanitize_template_managers( $data[ 'managers' ] );
+	
+	// Format 24-h times: minTime, maxTime, snapDuration
+	if( ! preg_match( '/^([0-1][0-9]|2[0-3]):([0-5][0-9])$/', $data[ 'minTime' ] ) )		{ $data[ 'minTime' ] = $default_meta[ 'minTime' ]; }
+	if( ! preg_match( '/^([0-1][0-9]|2[0-3]):([0-5][0-9])$/', $data[ 'maxTime' ] ) )		{ $data[ 'maxTime' ] = $default_meta[ 'maxTime' ]; }
+	if( ! preg_match( '/^([0-1][0-9]|2[0-3]):([0-5][0-9])$/', $data[ 'snapDuration' ] ) )	{ $data[ 'snapDuration' ] = $default_meta[ 'snapDuration' ]; }
+	
+	// If minTime >= maxTime, add one day to maxTime
+	if( intval( str_replace( ':', '', $data[ 'minTime' ] ) ) >= intval( str_replace( ':', '', $data[ 'maxTime' ] ) ) ) { 
+		$data[ 'maxTime' ] = str_pad( 24 + ( intval( substr( $data[ 'maxTime' ], 0, 2 ) ) % 24 ), 2, '0', STR_PAD_LEFT ) . substr( $data[ 'maxTime' ], 2 );
+	}
+	
+	// Make sure snapDuration is not null
+	if( $data[ 'snapDuration' ] === '00:00' ) { $data[ 'snapDuration' ] = '00:01'; }
+	
+	return apply_filters( 'bookacti_sanitized_template_data', $data, $raw_data );
+}
+
+
+/**
+ * Validate template data
+ * @since 1.0.6
+ * @version 1.12.0
+ * @param array $data
+ * @return array
+ */
+function bookacti_validate_template_data( $data ) {
+	$return_array = array( 'status' => 'success', 'errors' => array(), 'messages' => array() );
+	return apply_filters( 'bookacti_validate_template_data', $return_array, $data ) ;
+}
+
+
+/**
+ * Sanitize template managers
+ * @since 1.12.0 (was bookacti_format_template_managers)
  * @param array $template_managers
  * @return array
  */
-function bookacti_format_template_managers( $template_managers = array() ) {
+function bookacti_sanitize_template_managers( $template_managers ) {
 	$template_managers = bookacti_ids_to_array( $template_managers );
 	
-	// If user is not super admin, add him automatically in the template managers list if he isn't already
-	$bypass_template_managers_check = apply_filters( 'bookacti_bypass_template_managers_check', false );
-	if( ! is_super_admin() && ! $bypass_template_managers_check ) {
+	// Add the current user automatically if not super admin
+	$bypass_managers_check = apply_filters( 'bookacti_bypass_template_managers_check', false );
+	if( ! is_super_admin() && ! $bypass_managers_check ) {
 		$user_id = get_current_user_id();
 		if( ! in_array( $user_id, $template_managers, true ) ) {
 			$template_managers[] = $user_id;
@@ -55,12 +104,12 @@ function bookacti_format_template_managers( $template_managers = array() ) {
 	}
 	
 	// Make sure all users have permission to manage templates
-	$template_managers_caps = array( 'bookacti_edit_bookings', 'bookacti_edit_templates', 'bookacti_read_templates' );
+	$managers_caps = array( 'bookacti_edit_bookings', 'bookacti_edit_templates', 'bookacti_read_templates' );
 	foreach( $template_managers as $i => $template_manager ) {
 		if( $template_manager ) {
 			$user_can = false;
-			foreach( $template_managers_caps as $template_managers_cap ) {
-				if( user_can( $template_manager, $template_managers_cap ) ) { $user_can = true; break; }
+			foreach( $managers_caps as $managers_cap ) {
+				if( user_can( $template_manager, $managers_cap ) ) { $user_can = true; break; }
 			}
 			if( $user_can ) { continue; }
 		}
@@ -71,59 +120,106 @@ function bookacti_format_template_managers( $template_managers = array() ) {
 }
 
 
+
+
+// ACTIVITY
+
 /**
- * Sanitize template settings
- * @since 1.9.3 (was bookacti_format_template_settings)
- * @param array $raw_settings
- * @return array
+ * Get activity default data
+ * @since 1.12.0
  */
-function bookacti_sanitize_template_settings( $raw_settings ) {
-	if( empty( $raw_settings ) ) { $raw_settings = array(); }
-	
-	// Default settings
-	$default_settings = apply_filters( 'bookacti_template_default_settings', array(
-		'minTime'					=> '00:00',
-		'maxTime'					=> '00:00',
-		'snapDuration'				=> '00:05'
-	) );
-	
-	$settings = array();
-		
-	// Check if all templates settings are filled
-	foreach( $default_settings as $setting_key => $setting_default_value ){
-		if( isset( $raw_settings[ $setting_key ] ) && is_string( $raw_settings[ $setting_key ] ) ){ $raw_settings[ $setting_key ] = stripslashes( $raw_settings[ $setting_key ] ); }
-		$settings[ $setting_key ] = isset( $raw_settings[ $setting_key ] ) ? $raw_settings[ $setting_key ] : $setting_default_value;
-	}
-	
-	// Format 24-h times: minTime, maxTime, snapDuration
-	if( ! preg_match( '/^([0-1][0-9]|2[0-3]):([0-5][0-9])$/', $settings[ 'minTime' ] ) )		{ $settings[ 'minTime' ] = $default_settings[ 'minTime' ]; }
-	if( ! preg_match( '/^([0-1][0-9]|2[0-3]):([0-5][0-9])$/', $settings[ 'maxTime' ] ) )		{ $settings[ 'maxTime' ] = $default_settings[ 'maxTime' ]; }
-	if( ! preg_match( '/^([0-1][0-9]|2[0-3]):([0-5][0-9])$/', $settings[ 'snapDuration' ] ) )	{ $settings[ 'snapDuration' ] = $default_settings[ 'snapDuration' ]; }
-	
-	// If minTime >= maxTime, add one day to maxTime
-	if( intval( str_replace( ':', '', $settings[ 'minTime' ] ) ) >= intval( str_replace( ':', '', $settings[ 'maxTime' ] ) ) ) { 
-		$settings[ 'maxTime' ] = str_pad( 24 + ( intval( substr( $settings[ 'maxTime' ], 0, 2 ) ) % 24 ), 2, '0', STR_PAD_LEFT ) . substr( $settings[ 'maxTime' ], 2 );
-	}
-	
-	// Make sure snapDuration is not null
-	if( $settings[ 'snapDuration' ] === '00:00' ) { $settings[ 'snapDuration' ] = '00:01'; }
-	
-	return apply_filters( 'bookacti_template_settings_formatted', $settings, $raw_settings, $default_settings );
+function bookacti_get_activity_default_data() {
+	return apply_filters( 'bookacti_activity_default_data', array(
+		'id' => 0,
+		'title' => esc_html__( 'Activity', 'booking-activities' ),
+		'color' => '#3a87ad',
+		'availability' => 1,
+		'duration' => 3600,
+		'active' => 1
+	));
 }
 
 
 /**
- * Format activity managers
- * @version 1.8.8
+ * Get activity default meta
+ * @since 1.12.0
+ */
+function bookacti_get_activity_default_meta() {
+	return apply_filters( 'bookacti_activity_default_meta', array(
+		'unit_name_singular'		=> '',
+		'unit_name_plural'			=> '',
+		'show_unit_in_availability'	=> 0,
+		'places_number'				=> 0,
+		'min_bookings_per_user'		=> 0,
+		'max_bookings_per_user'		=> 0,
+		'max_users_per_event'		=> 0,
+		'booking_changes_deadline'	=> '',
+		'allowed_roles'				=> array()
+	));
+}
+
+
+/**
+ * Sanitize activity data
+ * @since 1.12.0 (was bookacti_format_activity_settings)
+ * @param array $raw_data
+ * @return array
+ */
+function bookacti_sanitize_activity_data( $raw_data ) {
+	$default_data = bookacti_get_activity_default_data();
+	$default_meta = bookacti_get_activity_default_meta();
+	
+	// Sanitize by type
+	$keys_by_type = array( 
+		'absint'	=> array( 'id', 'availability', 'duration', 'places_number', 'min_bookings_per_user', 'max_bookings_per_user', 'max_users_per_event', 'booking_changes_deadline' ),
+		'str'		=> array( 'title', 'unit_name_singular', 'unit_name_plural' ),
+		'color'		=> array( 'color' ),
+		'bool'		=> array( 'show_unit_in_availability' ),
+		'array'		=> array( 'allowed_roles', 'managers' )
+	);
+	$data = bookacti_sanitize_values( array_merge( $default_data, $default_meta, array( 'managers' => array() ) ), $raw_data, $keys_by_type );
+	
+	if( ! $data[ 'id' ] && ! empty( $raw_data[ 'activity_id' ] ) ) { $data[ 'id' ] = intval( $raw_data[ 'activity_id' ] ); }
+	if( ! empty( $raw_data[ 'duplicated_template_id' ] ) ) { $data[ 'duplicated_template_id' ] = intval( $raw_data[ 'duplicated_template_id' ] ); }
+	
+	// Convert duration from seconds to timespan
+	$data[ 'duration' ] = $data[ 'duration' ] ? bookacti_format_duration( $data[ 'duration' ], 'timespan' ) : bookacti_format_duration( $default_data[ 'duration' ], 'timespan' );
+	
+	// If booking_changes_deadline is empty, it fallbacks to the global value. So it is not the same as booking_changes_deadline = 0.
+	if( ! is_numeric( $raw_data[ 'booking_changes_deadline' ] ) 
+	||  ( is_numeric( $raw_data[ 'booking_changes_deadline' ] ) && intval( $raw_data[ 'booking_changes_deadline' ] ) < 0 ) ) { $data[ 'booking_changes_deadline' ] = ''; }
+	
+	// Sanitize managers
+	$data[ 'managers' ] = bookacti_sanitize_template_managers( $data[ 'managers' ] );
+	
+	return apply_filters( 'bookacti_sanitized_activity_data', $data, $raw_data );
+}
+
+
+/**
+ * Validate activity data
+ * @since 1.12.0
+ * @param array $data
+ * @return array
+ */
+function bookacti_validate_activity_data( $data ) {
+	$return_array = array( 'status' => 'success', 'errors' => array(), 'messages' => array() );
+	return apply_filters( 'bookacti_validate_activity_data', $return_array, $data ) ;
+}
+
+
+/**
+ * Sanitize activity managers
+ * @since 1.12.0 (was bookacti_format_activity_managers)
  * @param array $activity_managers
  * @return array
  */
-function bookacti_format_activity_managers( $activity_managers = array() ) {
+function bookacti_sanitize_activity_managers( $activity_managers = array() ) {
 	$activity_managers = bookacti_ids_to_array( $activity_managers );
 	
-	// If user is not super admin, add him automatically in the activity managers list if he isn't already
-	$bypass_activity_managers_check = apply_filters( 'bypass_activity_managers_check', false );
-	if( ! is_super_admin() && ! $bypass_activity_managers_check ) {
+	// Add the current user automatically if not super admin
+	$bypass_managers_check = apply_filters( 'bypass_activity_managers_check', false );
+	if( ! is_super_admin() && ! $bypass_managers_check ) {
 		$user_id = get_current_user_id();
 		if( ! in_array( $user_id, $activity_managers, true ) ) {
 			$activity_managers[] = $user_id;
@@ -131,12 +227,12 @@ function bookacti_format_activity_managers( $activity_managers = array() ) {
 	}
 	
 	// Make sure all users have permission to manage activities
-	$activity_managers_caps = array( 'bookacti_edit_bookings', 'bookacti_edit_templates', 'bookacti_read_templates' );
+	$managers_caps = array( 'bookacti_edit_bookings', 'bookacti_edit_activities', 'bookacti_edit_templates', 'bookacti_read_templates' );
 	foreach( $activity_managers as $i => $activity_manager ) {
 		if( $activity_manager ) {
 			$user_can = false;
-			foreach( $activity_managers_caps as $activity_managers_cap ) {
-				if( user_can( $activity_manager, $activity_managers_cap ) ) { $user_can = true; break; }
+			foreach( $managers_caps as $managers_cap ) {
+				if( user_can( $activity_manager, $managers_cap ) ) { $user_can = true; break; }
 			}
 			if( $user_can ) { continue; }
 		}
@@ -147,50 +243,9 @@ function bookacti_format_activity_managers( $activity_managers = array() ) {
 }
 
 
-/**
- * Format activity settings
- * @version 1.8.0
- * @param array $activity_settings
- * @return array
- */
-function bookacti_format_activity_settings( $activity_settings ) {
-	if( empty( $activity_settings ) ) { $activity_settings = array(); }
-	
-	// Default settings
-	$init_default_settings = array(
-		'unit_name_singular'		=> '',
-		'unit_name_plural'			=> '',
-		'show_unit_in_availability'	=> 0,
-		'places_number'				=> 0,
-		'min_bookings_per_user'		=> 0,
-		'max_bookings_per_user'		=> 0,
-		'max_users_per_event'		=> 0,
-		'booking_changes_deadline'	=> '',
-		'allowed_roles'				=> array()
-	);
-	$default_settings = apply_filters( 'bookacti_activity_default_settings', $init_default_settings );
-	
-	$settings = array();
-	foreach( $default_settings as $setting_key => $setting_default_value ){
-		if( isset( $activity_settings[ $setting_key ] ) && is_string( $activity_settings[ $setting_key ] ) ){ $activity_settings[ $setting_key ] = stripslashes( $activity_settings[ $setting_key ] ); }
-		$settings[ $setting_key ] = isset( $activity_settings[ $setting_key ] ) ? $activity_settings[ $setting_key ] : $setting_default_value;
-	}
-	
-	// Sanitize by type
-	$keys_by_type = array( 
-		'str'	=> array( 'unit_name_singular', 'unit_name_plural' ),
-		'bool'	=> array( 'show_unit_in_availability' ),
-		'int'	=> array( 'places_number', 'min_bookings_per_user', 'max_bookings_per_user', 'max_users_per_event', 'booking_changes_deadline' ),
-		'array'	=> array( 'allowed_roles' )
-	);
-	$settings = bookacti_sanitize_values( $default_settings, $settings, $keys_by_type, array_diff_key( $settings, $init_default_settings ) );
-	
-	// booking_changes_deadline
-	if( is_numeric( $settings[ 'booking_changes_deadline' ] ) && $settings[ 'booking_changes_deadline' ] < 0 ) { $settings[ 'booking_changes_deadline' ] = ''; }
-	
-	return apply_filters( 'bookacti_activity_settings', $settings, $activity_settings, $default_settings );
-}
 
+
+// EVENT
 
 /**
  * Get event default data
@@ -246,7 +301,7 @@ function bookacti_get_event_repeat_periods() {
 /**
  * Sanitize event data
  * @since 1.8.0
- * @version 1.11.0
+ * @version 1.12.0
  */
 function bookacti_sanitize_event_data( $raw_data ) {
 	$default_data = bookacti_get_event_default_data();
@@ -254,22 +309,17 @@ function bookacti_sanitize_event_data( $raw_data ) {
 	
 	// Sanitize common values
 	$keys_by_type = array( 
-		'int'		=> array( 'id', 'template_id', 'activity_id', 'availability', 'repeat_step' ),
+		'absint'	=> array( 'id', 'template_id', 'activity_id', 'availability', 'repeat_step' ),
 		'str_html'	=> array( 'title' ),
 		'datetime'	=> array( 'start', 'end' ),
 		'str_id'	=> array( 'repeat_freq', 'repeat_on' ),
 		'date'		=> array( 'repeat_from', 'repeat_to' ),
 		'bool'		=> array( 'active' )
 	);
-	$data = bookacti_sanitize_values( $default_data, $raw_data, $keys_by_type );
-	$data[ 'exceptions_dates' ] = ! empty( $raw_data[ 'exceptions_dates' ] ) ? bookacti_sanitize_date_array( $raw_data[ 'exceptions_dates' ] ) : array();
+	$data = bookacti_sanitize_values( array_merge( $default_data, $default_meta ), $raw_data, $keys_by_type );
 	
 	if( ! $data[ 'id' ] && ! empty( $raw_data[ 'event_id' ] ) ) { $data[ 'id' ] = intval( $raw_data[ 'event_id' ] ); }
-	
-	// Make sure ints are positive
-	foreach( $keys_by_type[ 'int' ] as $int ) {
-		if( $data[ $int ] < 0 ) { $data[ $int ] = $default_data[ $int ]; }
-	}
+	$data[ 'exceptions_dates' ] = ! empty( $raw_data[ 'exceptions_dates' ] ) ? $raw_data[ 'exceptions_dates' ] : array();
 	
 	// Make sure start AND end are set
 	if( ! $data[ 'start' ] || ! $data[ 'end' ] ) { 
@@ -289,8 +339,37 @@ function bookacti_sanitize_event_data( $raw_data ) {
 		$data[ 'end' ] = $end_dt->format( 'Y-m-d H:i:s' );
 	}
 	
+	$data = bookacti_sanitize_repeat_data( $data, 'event' );
+	
+	return apply_filters( 'bookacti_sanitized_event_data', $data, $raw_data );
+}
+
+
+/**
+ * Sanitize (group of) events repeat data
+ * @since 1.12.0
+ * @param array $object_data see bookacti_get_group_of_events_default_data or bookacti_get_event_default_data
+ * @param string $object_type "event" or "group"
+ * @return array
+ */
+function bookacti_sanitize_repeat_data( $object_data, $object_type = 'event' ) {
+	$default_data = $object_type === 'group' ? bookacti_get_group_of_events_default_data() : bookacti_get_event_default_data();
+	
+	// Sanitize common values
+	$keys_by_type = array( 
+		'int'		=> array( 'repeat_step' ),
+		'str_id'	=> array( 'repeat_freq', 'repeat_on' ),
+		'date'		=> array( 'repeat_from', 'repeat_to' )
+	);
+	$data = array_merge( $object_data, bookacti_sanitize_values( $default_data, $object_data, $keys_by_type ) );
+	$data[ 'exceptions_dates' ] = ! empty( $object_data[ 'exceptions_dates' ] ) ? bookacti_sanitize_date_array( $object_data[ 'exceptions_dates' ] ) : array();
+	
+	// Make sure repeat_step is positive
+	if( $data[ 'repeat_step' ] < 0 ) { $data[ 'repeat_step' ] = $default_data[ 'repeat_step' ]; }
+	
 	// Make sure repeat period exists
-	if( ! in_array( $data[ 'repeat_freq' ], array_keys( bookacti_get_event_repeat_periods() ), true ) ) {
+	$repeat_periods = array_keys( bookacti_get_event_repeat_periods() );
+	if( ! in_array( $data[ 'repeat_freq' ], $repeat_periods, true ) ) {
 		$data[ 'repeat_freq' ] = $default_data[ 'repeat_freq' ];
 	}
 	
@@ -312,19 +391,37 @@ function bookacti_sanitize_event_data( $raw_data ) {
 	}
 	
 	// Check the consistency between the event date and the repeat period
-	$data = bookacti_sanitize_event_date_and_repeat_period( $data );
+	$data = bookacti_sanitize_event_date_and_repeat_period( $data, $object_type );
 	
 	// If the event is repeated
 	if( $data[ 'repeat_freq' ] !== 'none' ) {
+		if( $object_type === 'group' ) {
+			// Get the occurrences
+			$group_i = $data[ 'id' ] ? $data[ 'id' ] : ( rand() * -1 );
+			$groups_occurrences = bookacti_get_occurrences_of_repeated_groups_of_events( array( $group_i => $data ), array( 'past_events' => true ) );
+			$group_occurrences = ! empty( $groups_occurrences[ $group_i ] ) ? $groups_occurrences[ $group_i ] : array();
+
+			// Get the first events of each group occurrence
+			$group_occurrences_events = array();
+			$group_occurrences_bounding_events = array();
+			foreach( $group_occurrences as $group_date => $group_events ) {
+				if( empty( $group_events[ 0 ] ) ) { continue; }
+				$group_occurrences_events[ $group_date ] = $group_events[ 0 ];
+				if( ! in_array( $group_date, $data[ 'exceptions_dates' ], true ) ) { $group_occurrences_bounding_events[ $group_date ] = $group_events[ 0 ]; }
+			}
+			ksort( $group_occurrences_events );
+			ksort( $group_occurrences_bounding_events );
+		}
+		
 		// Restrict the repeat period to the actual first and last occurrences
-		$bounding_events = bookacti_get_occurrences_of_repeated_event( (object) $data, array( 'exceptions_dates' => $data[ 'exceptions_dates' ], 'past_events' => true, 'bounding_events_only' => true ) );
+		$bounding_events = $object_type === 'event' ? bookacti_get_occurrences_of_repeated_event( (object) $data, array( 'exceptions_dates' => $data[ 'exceptions_dates' ], 'past_events' => true, 'bounding_only' => true ) ) : $group_occurrences_bounding_events;
 		if( $bounding_events ) {
 			$bounding_events_keys = array_keys( $bounding_events );
 			$last_key = end( $bounding_events_keys );
 			$first_key = reset( $bounding_events_keys );
 			$bounding_dates = array( 
 				'start' => substr( $bounding_events[ $first_key ][ 'start' ], 0, 10 ), 
-				'end' => substr( $bounding_events[ $last_key ][ 'end' ], 0, 10 )
+				'end' => substr( $bounding_events[ $last_key ][ 'start' ], 0, 10 )
 			);
 			
 			// Replace repeat period with events bounding dates
@@ -332,18 +429,20 @@ function bookacti_sanitize_event_data( $raw_data ) {
 			if( strtotime( $bounding_dates[ 'end' ] ) < strtotime( $data[ 'repeat_to' ] ) )		{ $data[ 'repeat_to' ] = $bounding_dates[ 'end' ]; }
 			
 			// Make the event starts on the first occurrence
-			$repeat_from_dt = DateTime::createFromFormat( 'Y-m-d', $data[ 'repeat_from' ] );
-			$start_date_dt = DateTime::createFromFormat( 'Y-m-d', substr( $data[ 'start' ], 0, 10 ) );
-			$offset_interval = $start_date_dt->diff( $repeat_from_dt );
-			$start_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $data[ 'start' ] );
-			$end_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $data[ 'end' ] );
-			$start_dt->add( $offset_interval );
-			$end_dt->add( $offset_interval );
-			$data[ 'start' ] = $start_dt->format( 'Y-m-d H:i:s' );
-			$data[ 'end' ] = $end_dt->format( 'Y-m-d H:i:s' );
+			if( $object_type === 'event' ) {
+				$repeat_from_dt = DateTime::createFromFormat( 'Y-m-d', $data[ 'repeat_from' ] );
+				$start_date_dt = DateTime::createFromFormat( 'Y-m-d', substr( $data[ 'start' ], 0, 10 ) );
+				$offset_interval = $start_date_dt->diff( $repeat_from_dt );
+				$start_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $data[ 'start' ] );
+				$end_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $data[ 'end' ] );
+				$start_dt->add( $offset_interval );
+				$end_dt->add( $offset_interval );
+				$data[ 'start' ] = $start_dt->format( 'Y-m-d H:i:s' );
+				$data[ 'end' ] = $end_dt->format( 'Y-m-d H:i:s' );
+			}
 			
 			// The repeat period may have changed, so, check the consistency again between the event date and the new repeat period
-			$data = bookacti_sanitize_event_date_and_repeat_period( $data );
+			$data = bookacti_sanitize_event_date_and_repeat_period( $data, $object_type );
 		}
 		
 		// If the repeat period is only only day, do not repeat the event
@@ -354,7 +453,7 @@ function bookacti_sanitize_event_data( $raw_data ) {
 			$repeat_from_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $data[ 'repeat_from' ] . ' 00:00:00' );
 			$repeat_to_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $data[ 'repeat_to' ] . ' 23:59:59' );
 			
-			$occurrences = bookacti_get_occurrences_of_repeated_event( (object) $data, array( 'past_events' => true ) );
+			$occurrences = $object_type === 'event' ? bookacti_get_occurrences_of_repeated_event( (object) $data, array( 'past_events' => true ) ) : $group_occurrences_events;
 			foreach( $data[ 'exceptions_dates' ] as $i => $excep_date ) {
 				// Remove exceptions out of the repeat period
 				$excep_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $excep_date . ' 00:00:00' );
@@ -383,17 +482,21 @@ function bookacti_sanitize_event_data( $raw_data ) {
 		$data[ 'repeat_from' ] = 'null';
 		$data[ 'repeat_to' ] = 'null';
 		$data[ 'exceptions_dates' ] = array();
-	} 
+	}
 	
-	return apply_filters( 'bookacti_sanitized_event_data', $data, $raw_data );
+	return $data;
 }
 
 
 /**
  * Make sure the event date and its repeat period are consistent
  * @since 1.11.0
+ * @version 1.12.0
+ * @param array $data see bookacti_get_group_of_events_default_data or bookacti_get_event_default_data
+ * @param string $object_type "event" or "group"
+ * @return array
  */
-function bookacti_sanitize_event_date_and_repeat_period( $data ) {
+function bookacti_sanitize_event_date_and_repeat_period( $data, $object_type = 'event' ) {
 	if( $data[ 'repeat_freq' ] !== 'none' && $data[ 'repeat_from' ] && $data[ 'repeat_to' ] ) {
 		// Make sure repeat from is before repeat to
 		$repeat_from_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $data[ 'repeat_from' ] . ' 00:00:00' );
@@ -404,21 +507,23 @@ function bookacti_sanitize_event_date_and_repeat_period( $data ) {
 		}
 
 		// Make sure the event starts in the repeat period (else, set the event date to the repeat_from date)
-		$start_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $data[ 'start' ] );
-		if( $start_dt < $repeat_from_dt || $start_dt > $repeat_to_dt ) { 
-			$end_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $data[ 'end' ] );
-			$repeat_from_date_dt = DateTime::createFromFormat( 'Y-m-d', $data[ 'repeat_from' ] );
-			$start_date_dt = DateTime::createFromFormat( 'Y-m-d', substr( $data[ 'start' ], 0, 10 ) );
-			$offset_interval = $start_date_dt->diff( $repeat_from_date_dt );
-			$start_dt->add( $offset_interval );
-			$end_dt->add( $offset_interval );
-			$data[ 'start' ] = $start_dt->format( 'Y-m-d H:i:s' );
-			$data[ 'end' ] = $end_dt->format( 'Y-m-d H:i:s' );
+		if( $object_type === 'event' ) {
+			$start_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $data[ 'start' ] );
+			if( $start_dt < $repeat_from_dt || $start_dt > $repeat_to_dt ) { 
+				$end_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $data[ 'end' ] );
+				$repeat_from_date_dt = DateTime::createFromFormat( 'Y-m-d', $data[ 'repeat_from' ] );
+				$start_date_dt = DateTime::createFromFormat( 'Y-m-d', substr( $data[ 'start' ], 0, 10 ) );
+				$offset_interval = $start_date_dt->diff( $repeat_from_date_dt );
+				$start_dt->add( $offset_interval );
+				$end_dt->add( $offset_interval );
+				$data[ 'start' ] = $start_dt->format( 'Y-m-d H:i:s' );
+				$data[ 'end' ] = $end_dt->format( 'Y-m-d H:i:s' );
+			}
 		}
 	}
 
 	// Check if the monthly repetition type is valid
-	if( $data[ 'repeat_freq' ] === 'monthly' && $data[ 'repeat_on' ] ) {
+	if( $data[ 'repeat_freq' ] === 'monthly' && $data[ 'repeat_on' ] && isset( $data[ 'start' ] ) ) {
 		$start_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $data[ 'start' ] );
 		$nth_in_month = intval( $start_dt->format( 'j' ) );
 		$days_in_month = intval( $start_dt->format( 't' ) );
@@ -433,133 +538,138 @@ function bookacti_sanitize_event_date_and_repeat_period( $data ) {
 /**
  * Validate event data
  * @since 1.8.0 (was bookacti_validate_event)
- * @version 1.11.0
+ * @version 1.12.0
  * @param array $data
  * @return array
  */
 function bookacti_validate_event_data( $data ) {
-	// Get info required
-	$min_avail		= bookacti_get_min_availability( $data[ 'id' ] );
-	$min_period		= bookacti_get_min_period( $data[ 'id' ] );
-	
-	$utc_timezone	= new DateTimeZone( 'UTC' );
-	$repeat_from_dt	= bookacti_sanitize_date( $data[ 'repeat_from' ] ) ? new DateTime( bookacti_sanitize_date( $data[ 'repeat_from' ] ), $utc_timezone ) : 0;
-	$repeat_to_dt	= bookacti_sanitize_date( $data[ 'repeat_to' ] ) ? new DateTime( bookacti_sanitize_date( $data[ 'repeat_to' ] ), $utc_timezone ) : 0;
-	$max_from_dt	= $min_period ? new DateTime( $min_period[ 'from' ], $utc_timezone ) : 0;
-	$min_to_dt		= $min_period ? new DateTime( $min_period[ 'to' ], $utc_timezone ) : 0;
-	
-	// Init var to check with worst case
-	$isAvailSupToBookings			= $min_avail ? false : true;
-	$isRepeatPeriodBoundingBookings	= $min_period && $data[ 'repeat_freq' ] !== 'none' ? false : true;
-
-	// Make the tests
-	if( ! $isAvailSupToBookings ) {
-		if( intval( $data[ 'availability' ] ) >= intval( $min_avail ) ) { $isAvailSupToBookings = true; }
-	}
-	if( ! $isRepeatPeriodBoundingBookings && $repeat_from_dt && $repeat_to_dt && $max_from_dt && $min_to_dt ) {
-		if( $repeat_from_dt <= $max_from_dt && $repeat_to_dt >= $min_to_dt ) { $isRepeatPeriodBoundingBookings = true; }
-	}
-	
-	// Return feedbacks
-	$return_array = array(
-		'status' => 'success',
-		'errors' => array(),
-		'message' => ''
-	);
-	if( ! $isAvailSupToBookings ){
-		$return_array[ 'status' ] = 'failed';
-		$return_array[ 'min_availability' ] = $min_avail;
-		$return_array[ 'errors' ][] = 'error_less_avail_than_bookings';
-		$return_array[ 'message' ] = esc_html__( 'You can\'t set less available bookings than it has already on one of the occurrence of this event.', 'booking-activities' );
-	}
-	if( ! $isRepeatPeriodBoundingBookings ){
-		$return_array[ 'status' ] = 'failed';
-		$date_format = get_option( 'date_format' );
-		$return_array[ 'from' ] = $max_from_dt ? $max_from_dt->format( 'Y-m-d' ) : '';
-		$return_array[ 'to' ] = $min_to_dt ? $min_to_dt->format( 'Y-m-d' ) : '';
-		$max_from_formatted = $max_from_dt ? apply_filters( 'date_i18n', wp_date( $date_format, $max_from_dt->getTimestamp(), $utc_timezone ), $date_format, $max_from_dt->getTimestamp(), false ) : '';
-		$min_to_formatted = $min_to_dt ? apply_filters( 'date_i18n', wp_date( $date_format, $min_to_dt->getTimestamp(), $utc_timezone ), $date_format, $min_to_dt->getTimestamp(), false ) : '';
-		$return_array[ 'errors' ][] = 'error_booked_events_out_of_period';
-		if( $return_array[ 'message' ] ) { $return_array[ 'message' ] .= '</li><li>'; }
-		/* translators: %1$s and %2$s are formatted dates */
-		$return_array[ 'message' ] .= sprintf( esc_html__( 'The repetition period must include all booked occurrences (from %1$s to %2$s).', 'booking-activities' ), $max_from_formatted, $min_to_formatted );
-	}
-
+	$return_array = array( 'status' => 'success', 'errors' => array(), 'messages' => array() );
 	return apply_filters( 'bookacti_validate_event', $return_array, $data ) ;
 }
+
 
 
 
 // GROUPS OF EVENTS
 
 /**
- * Validate group of events data input
- * 
- * @since 1.1.0
- * 
- * @param string $group_title
- * @param int $category_id
- * @param string $category_title
- * @param array $events
- * @return array
+ * Get group of events default data
+ * @since 1.12.0
  */
-function bookacti_validate_group_of_events_data( $group_title, $category_id, $category_title, $events ) {
-	
-	//Init var to check with worst case
-	$is_title			= false;
-	$is_category		= false;
-	$is_category_title	= false;
-	$is_events			= false;
-	
-	//Make the tests to validate the var
-	if( is_string( $group_title ) && $group_title !== '' )		{ $is_title = true; }
-	if( is_numeric( $category_id ) )							{ $is_category = true; }
-	if( is_string( $category_title ) && $category_title !== '' ){ $is_category_title = true; }
-	if( is_array( $events ) && count( $events ) >= 2 )			{ $is_events = true; }
-	
-	$return_array = array();
-	$return_array['status'] = 'valid';
-	$return_array['errors'] = array();
-	if( ! $is_title ) {
-		$return_array['status'] = 'not_valid';
-		$return_array['errors'][] = 'error_missing_title';
-	}
-	if( ! $is_category && ! $is_category_title ) {
-		$return_array['status'] = 'not_valid';
-		$return_array['errors'][] = 'error_missing_title';
-	}
-	if( ! $is_events ) {
-		$return_array['status'] = 'not_valid';
-		$return_array['errors'][] = 'error_select_at_least_two_events';
-	}
-	
-	return apply_filters( 'bookacti_validate_group_of_events_data', $return_array, $group_title, $category_id, $category_title, $events );
+function bookacti_get_group_of_events_default_data() {
+	return apply_filters( 'bookacti_group_of_events_default_data', array(
+		'id' => 0,
+		'category_id' => 0,
+		'title' => esc_html__( 'Group of events', 'booking-activities' ),
+		'repeat_freq' => 'none',
+		'repeat_step' => 1,
+		'repeat_on' => '',
+		'repeat_from' => '',
+		'repeat_to' => '',
+		'active' => 1
+	));
 }
 
 
 /**
- * Format group of events data or apply default value
- * 
- * @since 1.1.0
- * @version 1.7.17
- * @param array $group_settings
+ * Get group of events default meta
+ * @since 1.12.0
+ */
+function bookacti_get_group_of_events_default_meta() {
+	return apply_filters( 'bookacti_group_of_events_default_meta', array() );
+}
+
+
+/**
+ * Sanitize group of events data
+ * @since 1.12.0
+ * @param array $raw_data
  * @return array
  */
-function bookacti_format_group_of_events_settings( $group_settings ) {
-	if( empty( $group_settings ) ) { $group_settings = array(); }
+function bookacti_sanitize_group_of_events_data( $raw_data ) {
+	$default_data = bookacti_get_group_of_events_default_data();
+	$default_meta = bookacti_get_group_of_events_default_meta();
 	
-	// Default settings
-	$default_settings = apply_filters( 'bookacti_group_of_events_default_settings', array() );
+	// Sanitize common values
+	$keys_by_type = array( 
+		'absint'	=> array( 'id', 'category_id', 'repeat_step' ),
+		'str_html'	=> array( 'title' ),
+		'str'		=> array( 'category_title' ),
+		'str_id'	=> array( 'repeat_freq', 'repeat_on' ),
+		'date'		=> array( 'repeat_from', 'repeat_to' ),
+		'bool'		=> array( 'active' )
+	);
+	$data = bookacti_sanitize_values( array_merge( $default_data, $default_meta, array( 'category_title' => '' ) ), $raw_data, $keys_by_type );
 	
-	$settings = array();
-		
-	// Check if all templates settings are filled
-	foreach( $default_settings as $setting_key => $setting_default_value ){
-		if( isset( $group_settings[ $setting_key ] ) && is_string( $group_settings[ $setting_key ] ) ){ $group_settings[ $setting_key ] = stripslashes( $group_settings[ $setting_key ] ); }
-		$settings[ $setting_key ] = isset( $group_settings[ $setting_key ] ) ? $group_settings[ $setting_key ] : $setting_default_value;
+	if( ! $data[ 'id' ] && ! empty( $raw_data[ 'group_id' ] ) ) { $data[ 'id' ] = intval( $raw_data[ 'group_id' ] ); }
+	$data[ 'template_id' ] = ! empty( $raw_data[ 'template_id' ] ) ? abs( intval( $raw_data[ 'template_id' ] ) ) : 0;
+	$data[ 'exceptions_dates' ] = ! empty( $raw_data[ 'exceptions_dates' ] ) ? $raw_data[ 'exceptions_dates' ] : array();
+	
+	// Sanitize array of events
+	$raw_events = isset( $raw_data[ 'events' ] ) ? ( is_array( $raw_data[ 'events' ] ) ? $raw_data[ 'events' ] : ( is_string( $raw_data[ 'events' ] ) ? bookacti_maybe_decode_json( stripslashes( $raw_data[ 'events' ] ), true ) : array() ) ) : array();
+	$event_default_data = array( 'id' => 0, 'activity_id' => 0, 'start' => '', 'end' => '' );
+	$event_keys_by_type = array( 
+		'absint'	=> array( 'id', 'activity_id', 'template_id' ),
+		'datetime'	=> array( 'start', 'end' ),
+	);
+	
+	$data[ 'events' ] = array();
+	foreach( $raw_events as $raw_event ) {
+		$event = bookacti_sanitize_values( $event_default_data, $raw_event, $event_keys_by_type );
+		if( $event[ 'id' ] && $event[ 'start' ] && $event[ 'end' ] ) { 
+			if( ! isset( $event[ 'template_id' ] ) && isset( $data[ 'template_id' ] ) ) { $event[ 'template_id' ] = $data[ 'template_id' ]; }
+			$data[ 'events' ][] = $event;
+		}
+	}
+	usort( $data[ 'events' ], 'bookacti_sort_array_by_start' );
+	
+	// Group start (used for sanitizing repeat data)
+	$data[ 'start' ] = isset( $data[ 'events' ][ 0 ][ 'start' ] ) ? $data[ 'events' ][ 0 ][ 'start' ] : '';
+	
+	$data = bookacti_sanitize_repeat_data( $data, 'group' );
+	
+	return apply_filters( 'bookacti_sanitized_group_of_events_data', $data, $raw_data );
+}
+
+
+/**
+ * Validate group of events data
+ * @since 1.1.0
+ * @version 1.12.0
+ * @param array $data
+ * @return array
+ */
+function bookacti_validate_group_of_events_data( $data ) {
+	$return_array = array( 'status' => 'success', 'errors' => array(), 'messages' => array() );
+	
+	$missing_fields = array();
+	if( ! $data[ 'title' ] ) { $missing_fields[] = esc_html__( 'Group title', 'booking-activities' ); }
+	if( ! $data[ 'category_id' ] && ! $data[ 'category_title' ] ) { $missing_fields[] = esc_html__( 'Category title', 'booking-activities' ); }
+	
+	// The saved events must be part of the repeat interval
+	if( $data[ 'repeat_freq' ] !== 'none' ) {
+		$repeat_from_dt = new DateTime( $data[ 'repeat_from' ] . ' 00:00:00' );
+		$first_event_dt = new DateTime( $data[ 'events' ][ 0 ][ 'start' ] );
+		if( $first_event_dt < $repeat_from_dt ) {
+			$return_array[ 'status' ] = 'failed';
+			$return_array[ 'errors' ][] = 'event_not_btw_from_and_to';
+			$return_array[ 'messages' ][ 'event_not_btw_from_and_to' ] = esc_html__( 'The selected event should be included in the period in which it will be repeated.', 'booking-activities' );
+		}
 	}
 	
-	return apply_filters( 'bookacti_group_of_events_settings', $settings, $group_settings, $default_settings );
+	if( $missing_fields ) {
+		$return_array[ 'status' ] = 'failed';
+		$return_array[ 'errors' ][] = 'missing_fields';
+		/* translators: %s is a comma-sperated list of field labels */
+		$return_array[ 'messages' ][ 'missing_fields' ] = sprintf( esc_html__( 'You must fill these fields: %s', 'booking-activities' ), implode( ', ', $missing_fields ) );
+	}
+	if( count( $data[ 'events' ] ) < 2 ) {
+		$return_array[ 'status' ] = 'failed';
+		$return_array[ 'errors' ][] = 'select_at_least_two_events';
+		$return_array[ 'messages' ][ 'select_at_least_two_events' ] = esc_html__( 'You must select at least two events.', 'booking-activities' );
+	}
+	
+	return apply_filters( 'bookacti_validate_group_of_events_data', $return_array, $data );
 }
 
 
@@ -568,74 +678,81 @@ function bookacti_format_group_of_events_settings( $group_settings ) {
 // GROUP CATEGORIES
 
 /**
- * Validate group activity data input
- * 
- * @since 1.1.0
- * 
- * @param string $title
- * @return array
+ * Get group category default data
+ * @since 1.12.0
  */
-function bookacti_validate_group_category_data( $title ) {
-	
-	//Init var to check with worst case
-	$is_title	= false;
-	
-	//Make the tests to validate the var
-	if( ! empty( $title ) )	{ $is_title = true; }
-
-	$return_array = array();
-	$return_array['status'] = 'valid';
-	$return_array['errors'] = array();
-	if( ! $is_title ) {
-		$return_array['status'] = 'not_valid';
-		$return_array['errors'][] = 'error_missing_title';
-	}
-	
-	return apply_filters( 'bookacti_validate_group_activity_data', $return_array, $title );
+function bookacti_get_group_category_default_data() {
+	return apply_filters( 'bookacti_group_category_default_data', array(
+		'id' => 0,
+		'template_id' => 0,
+		'title' => esc_html__( 'Group category', 'booking-activities' ),
+		'active' => 1
+	));
 }
 
 
 /**
- * Format group category data or apply default value
- * @since 1.1.0
- * @version 1.8.0
- * @param array $category_settings
- * @return array
+ * Get group category default meta
+ * @since 1.12.0
  */
-function bookacti_format_group_category_settings( $category_settings ) {
-	if( empty( $category_settings ) ) { $category_settings = array(); }
-	
-	// Default settings
-	$init_default_settings = array( 
+function bookacti_get_group_category_default_meta() {
+	return apply_filters( 'bookacti_group_category_default_meta', array(
 		'min_bookings_per_user'		=> 0,
 		'max_bookings_per_user'		=> 0,
 		'max_users_per_event'		=> 0,
 		'booking_changes_deadline'	=> '',
 		'started_groups_bookable'	=> -1,
 		'allowed_roles'				=> array()
-	);
-	$default_settings = apply_filters( 'bookacti_group_category_default_settings', $init_default_settings );
-	
-	$settings = array();
-		
-	// Check if all templates settings are filled
-	foreach( $default_settings as $setting_key => $setting_default_value ){
-		if( isset( $category_settings[ $setting_key ] ) && is_string( $category_settings[ $setting_key ] ) ){ $category_settings[ $setting_key ] = stripslashes( $category_settings[ $setting_key ] ); }
-		$settings[ $setting_key ] = isset( $category_settings[ $setting_key ] ) ? $category_settings[ $setting_key ] : $setting_default_value;
-	}
+	));
+}
+
+
+/**
+ * Sanitize group category data
+ * @since 1.1.0
+ * @version 1.12.0
+ * @param array $raw_data
+ * @return array
+ */
+function bookacti_sanitize_group_category_data( $raw_data ) {
+	$default_data = bookacti_get_group_category_default_data();
+	$default_meta = bookacti_get_group_category_default_meta();
 	
 	// Sanitize by type
 	$keys_by_type = array( 
-		'int'	=> array( 'min_bookings_per_user', 'max_bookings_per_user', 'max_users_per_event', 'booking_changes_deadline', 'started_groups_bookable' ),
-		'array'	=> array( 'allowed_roles' )
+		'absint'	=> array( 'id', 'template_id', 'min_bookings_per_user', 'max_bookings_per_user', 'max_users_per_event', 'booking_changes_deadline' ),
+		'str'		=> array( 'title' ),
+		'bool'		=> array( 'started_groups_bookable' ),
+		'array'		=> array( 'allowed_roles' )
 	);
-	$settings = bookacti_sanitize_values( $default_settings, $settings, $keys_by_type, array_diff_key( $settings, $init_default_settings ) );
+	$data = bookacti_sanitize_values( array_merge( $default_data, $default_meta ), $raw_data, $keys_by_type );
 	
-	// booking_changes_deadline
-	if( is_numeric( $settings[ 'booking_changes_deadline' ] ) && $settings[ 'booking_changes_deadline' ] < 0 ) { $settings[ 'booking_changes_deadline' ] = ''; }
-		
-	// started_groups_bookable
-	if( $settings[ 'started_groups_bookable' ] > 1 || $settings[ 'started_groups_bookable' ] < -1 ) { $settings[ 'started_groups_bookable' ] = $default_settings[ 'started_groups_bookable' ]; }
+	if( ! $data[ 'id' ] && ! empty( $raw_data[ 'category_id' ] ) ) { $data[ 'id' ] = intval( $raw_data[ 'category_id' ] ); }
 	
-	return apply_filters( 'bookacti_group_category_settings', $settings, $category_settings, $default_settings );
+	return apply_filters( 'bookacti_sanitized_group_category_data', $data, $raw_data );
+}
+
+
+/**
+ * Validate group category data
+ * @since 1.1.0
+ * @version 1.12.0
+ * @param array $data
+ * @return array
+ */
+function bookacti_validate_group_category_data( $data ) {
+	$return_array = array( 'status' => 'success', 'errors' => array(), 'messages' => array() );
+	
+	if( ! $data[ 'title' ] ) {
+		$return_array[ 'status' ] = 'failed';
+		$return_array[ 'errors' ][] = 'missing_fields';
+		$return_array[ 'messages' ][ 'missing_fields' ] = sprintf( esc_html__( 'You must fill these fields: %s', 'booking-activities' ), esc_html__( 'New category title', 'booking-activities' ) );
+	}
+	if( ! $data[ 'template_id' ] ) { 
+		$return_array[ 'status' ] = 'failed';
+		$return_array[ 'errors' ][] = 'invalid_template_id';
+		$return_array[ 'messages' ][ 'invalid_template_id' ] = esc_html__( 'Invalid calendar ID.', 'booking-activities' );
+	}
+	
+	return apply_filters( 'bookacti_validate_group_category_data', $return_array, $data );
 }

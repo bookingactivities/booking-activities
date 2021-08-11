@@ -480,7 +480,7 @@ function bookacti_refresh_booking_group_frame() {
 
 /**
  * Check if sent data correspond to displayed data
- * @version 1.9.0
+ * @version 1.12.0
  * @param {HTMLElement} booking_system
  * @param {int} quantity
  * @returns {boolean}
@@ -516,26 +516,27 @@ function bookacti_validate_picked_events( booking_system, quantity ) {
 	
 	if( typeof form_values[ 'selected_events' ] === 'undefined' )	{ valid_form.events_selected = false; }
 	else if( $j.isEmptyObject( form_values[ 'selected_events' ] ) )	{ valid_form.events_selected = false; }
-	if( $j.isEmptyObject( picked_events ) )							{ valid_form.events_selected = false; }
+	if( ! picked_events.length )									{ valid_form.events_selected = false; }
 	
 	// Check if the picked events inputs match the picked events object
 	if( valid_form.events_selected ) {
 		var i = 0;
-		$j.each( picked_events, function( j, event ) {
+		$j.each( picked_events, function( j, picked_event ) {
 			// Break the loop if a problem has been detected
 			if( ! valid_form.consistent_inputs ) { return false; }
 
 			// Groups of events
-			if( parseInt( event.group_id ) > 0 ) {
-				if( form_values[ 'selected_events' ][ i ][ 'group_id' ] != event.group_id ) {
+			if( parseInt( picked_event.group_id ) > 0 ) {
+				if( form_values[ 'selected_events' ][ i ][ 'group_id' ] != picked_event.group_id
+				||  form_values[ 'selected_events' ][ i ][ 'group_date' ] !== picked_event.group_date ) {
 					valid_form.consistent_inputs = false;
 				}
 
 			// Single events
 			} else {
-				if( form_values[ 'selected_events' ][ i ][ 'id' ] != event.id 
-				||  form_values[ 'selected_events' ][ i ][ 'start' ] !== event.start 
-				||  form_values[ 'selected_events' ][ i ][ 'end' ] !== event.end ) {
+				if( form_values[ 'selected_events' ][ i ][ 'id' ] != picked_event.id 
+				||  form_values[ 'selected_events' ][ i ][ 'start' ] !== picked_event.start 
+				||  form_values[ 'selected_events' ][ i ][ 'end' ] !== picked_event.end ) {
 					valid_form.consistent_inputs = false;
 				}
 			}
