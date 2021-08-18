@@ -559,7 +559,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name'	=> 'ba-advanced-forms', 
 			'end_of_life'	=> '', 
 			'download_id'	=> 2705,
-			'min_version'	=> '1.2.15-beta1'
+			'min_version'	=> '1.2.16-beta2'
 		),
 		'baofc'	=> array( 
 			'title'			=> 'Order for Customers', 
