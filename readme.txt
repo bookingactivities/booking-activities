@@ -333,6 +333,8 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Tweak - Add the {booking_ical_url} notification tag and refactor the way booked events are exported
 * Tweak - Display links to the Bookings tab on the customer's WC account dashboard
 * Tweak - Display the booking form in full width below the WC product image and description by default (option in Booking Activities > Settings > WooCommerce tab)
+* Fix - TinyMCE editor was not loaded in settings dialogs if the Visual view was loaded by default, set the Text tab by default as a workaround
+* Fix - The icon to unpick an event span tag was not correctly closed
 * Optimization - Groups of events and Bookings numbers are loaded by interval (like events) instead of all at once
 * Optimization - Reduce the number of queries to load the calendar editor
 * Dev - Breaking change - the wp_bookacti_exceptions table was totally refactored and the API related to exceptions too

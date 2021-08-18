@@ -409,6 +409,7 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 							'name'	=> 'bookacti_notification[email][message]',
 							'id'	=> 'bookacti_notification_email_message' . ( $recipient === 'admin' ? '_admin' : '' ),
 							'height'=> 470,
+							'options'=> array( 'default_editor' => wp_default_editor() ),
 							'value'	=> $notification_settings[ 'email' ][ 'message' ] ? $notification_settings[ 'email' ][ 'message' ] : ''
 						);
 						bookacti_display_field( $args );

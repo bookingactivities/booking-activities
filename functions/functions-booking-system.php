@@ -140,7 +140,7 @@ function bookacti_get_booking_system_data( $atts ) {
 		$groups				= array( 'groups' => array(), 'data' => array() );
 		$events				= array( 'events' => array(), 'data' => array() );
 		$booking_lists		= array();
-
+		
 		// Trim leading and trailing empty days
 		if( $atts[ 'trim' ] ) {
 			// Get bounding events
@@ -3273,7 +3273,7 @@ function bookacti_fetch_events_of_group_of_events_occurrences( $groups_occurrenc
 				
 				// Check if the event is past
 				$group_event_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $group_event[ 'start' ], $timezone );
-				if( ! $args[ 'past_events' ] && $group_event_dt > $now_dt ) { continue; }
+				if( ! $args[ 'past_events' ] && $group_event_dt < $now_dt ) { continue; }
 				
 				// Check if the event is in the desired interval
 				$interval_start_dt = ! empty( $args[ 'interval' ][ 'start' ] ) ? new DateTime( $args[ 'interval' ][ 'start' ], $timezone ) : null;
@@ -3300,7 +3300,7 @@ function bookacti_fetch_events_of_group_of_events_occurrences( $groups_occurrenc
 	// Get the grouped events data
 	$events_ids = array_values( bookacti_ids_to_array( array_values( $events_ids ) ) );
 	$events_data = $events_ids ? bookacti_fetch_events( array( 'events' => $events_ids, 'past_events' => 1, 'data_only' => 1 ) ) : array( 'data' => array() );
-	
+				
 	// Check if the events are part of the desired templates and activities
 	if( $args[ 'templates' ] || $args[ 'activities' ] ) {
 		foreach( $grouped_events as $i => $grouped_event ) {

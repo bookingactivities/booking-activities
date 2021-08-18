@@ -85,7 +85,7 @@ add_action( 'wp_ajax_bookactiGetBookingList', 'bookacti_controller_get_booking_l
 function bookacti_controller_cancel_booking() {
 	$booking_id = intval( $_POST[ 'booking_id' ] );
 
-	// Check nonce, capabilities and other params
+	// Check nonce
 	$is_nonce_valid = check_ajax_referer( 'bookacti_cancel_booking', 'nonce', false );
 	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'cancel_booking' ); }
 	

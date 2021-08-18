@@ -76,7 +76,7 @@ function bookacti_init_template_dialogs() {
 		
 		if( ! $j.isEmptyObject( template_data.settings ) && current_template_id === duplicated_template_id ) {
 			// Fill template settings
-			bookacti_fill_fields_from_array( template_data.settings );
+			bookacti_fill_fields_from_array( template_data.settings, '', '#bookacti-template-data-dialog' );
 		}
 	});
 	
@@ -400,7 +400,7 @@ function bookacti_dialog_update_template( template_id ) {
 	// Settings tabs
 	$j( '#bookacti-template-data-dialog' ).trigger( 'bookacti_default_template_settings' );
 	if( ! $j.isEmptyObject( template_data.settings ) ) {
-		bookacti_fill_fields_from_array( template_data.settings );
+		bookacti_fill_fields_from_array( template_data.settings, '', '#bookacti-template-data-dialog' );
 	}
 	$j( '#bookacti-template-data-dialog' ).trigger( 'bookacti_template_data_dialog', [ template_id ] );
 
@@ -1694,7 +1694,7 @@ function bookacti_dialog_update_activity( activity_id ) {
 
 	// Settings tabs
 	if( activity_data.settings ) {
-		bookacti_fill_fields_from_array( activity_data.settings );
+		bookacti_fill_fields_from_array( activity_data.settings, '', '#bookacti-activity-data-dialog' );
 		$j( '#bookacti-activity-unit-name-singular' ).val( activity_data.settings.multilingual_unit_name_singular ); 
 		$j( '#bookacti-activity-unit-name-plural' ).val( activity_data.settings.multilingual_unit_name_plural ); 
 	}
@@ -2083,7 +2083,7 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 	bookacti_fill_repetition_fields( group_id, 'group' );
 	
 	// Other settings
-	if( group_data.settings ) { bookacti_fill_fields_from_array( group_data.settings ); }
+	if( group_data.settings ) { bookacti_fill_fields_from_array( group_data.settings, '', '#bookacti-group-of-events-dialog' ); }
 	
 	$j( '#bookacti-group-of-events-dialog' ).trigger( 'bookacti_group_of_events_update_dialog', [ group_id ] );
 
@@ -2612,7 +2612,7 @@ function bookacti_dialog_update_group_category( category_id ) {
 
 	// Other settings
 	if( category_data.settings ) {
-		bookacti_fill_fields_from_array( category_data.settings );
+		bookacti_fill_fields_from_array( category_data.settings, '', '#bookacti-group-category-dialog' );
 	}
 	
 	$j( '#bookacti-group-category-dialog' ).trigger( 'bookacti_group_category_update_dialog', [ category_id ] );

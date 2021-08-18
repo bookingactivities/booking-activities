@@ -47,7 +47,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	$save_with_ajax	= isset( $_GET[ 'notification_id' ] ) ? 'bookacti_save_settings_with_ajax' : '';
 	$action			= $save_with_ajax ? '' : 'options.php';
 	?>
-	<form method='post' action='<?php echo $action; ?>' id='bookacti-settings' class='bookati-settings-tab-<?php echo $active_tab . ' ' . $save_with_ajax; ?>' >
+	<form method='post' action='<?php echo $action; ?>' id='bookacti-settings' class='bookacti-settings-tab-<?php echo $active_tab . ' ' . $save_with_ajax; ?>' >
 		<?php
 		// Display the tabs content
 		// GENERAL
