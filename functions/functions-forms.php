@@ -1063,7 +1063,7 @@ function bookacti_sanitize_form_field_values( $values, $field_type = '' ) {
 /**
  * Display a form field
  * @since 1.5.0
- * @version 1.5.4
+ * @version 1.12.0
  * @param array $field
  * @param string $instance_id
  * @param string $context
@@ -1071,19 +1071,19 @@ function bookacti_sanitize_form_field_values( $values, $field_type = '' ) {
  * @return string|void
  */
 function bookacti_display_form_field( $field, $instance_id = '', $context = 'display', $echo = true ) {
-	
 	if( empty( $field[ 'name' ] ) ) { return ''; }
 	
 	if( ! $instance_id ) { $instance_id = rand(); }
 	$field_id	= ! empty( $field[ 'id' ] ) ? esc_attr( $field[ 'id' ] ) : esc_attr( 'bookacti-form-field-' . $field[ 'type' ] . '-' . $field[ 'field_id' ] . '-' . $instance_id );
 	$field_class= 'bookacti-form-field-container';
-	if( ! empty( $field[ 'name' ] ) )		{ $field_class .= ' bookacti-form-field-name-' . sanitize_title_with_dashes( esc_attr( $field[ 'name' ] ) ); } 
-	if( ! empty( $field[ 'type' ] ) )		{ $field_class .= ' bookacti-form-field-type-' . sanitize_title_with_dashes( esc_attr( $field[ 'type' ] ) ); } 
-	if( ! empty( $field[ 'field_id' ] ) )	{ $field_class .= ' bookacti-form-field-id-' . esc_attr( $field[ 'field_id' ] ); }
+	$field_css_data = '';
+	if( ! empty( $field[ 'name' ] ) )		{ $field_class .= ' bookacti-form-field-name-' . sanitize_title_with_dashes( esc_attr( $field[ 'name' ] ) ); $field_css_data .= ' data-field-name="' . esc_attr( $field[ 'name' ] ) . '"'; } 
+	if( ! empty( $field[ 'type' ] ) )		{ $field_class .= ' bookacti-form-field-type-' . sanitize_title_with_dashes( esc_attr( $field[ 'type' ] ) ); $field_css_data .= ' data-field-type="' . esc_attr( $field[ 'type' ] ) . '"'; } 
+	if( ! empty( $field[ 'field_id' ] ) )	{ $field_class .= ' bookacti-form-field-id-' . esc_attr( $field[ 'field_id' ] ); $field_css_data .= ' data-field-id="' . esc_attr( $field[ 'field_id' ] ) . '"'; }
 	if( ! empty( $field[ 'class' ] ) )		{ $field_class .= ' ' . esc_attr( $field[ 'class' ] ); }
 	ob_start();
 ?>
-	<div class='<?php echo $field_class; ?>' id='<?php echo $field_id; ?>' >
+	<div class='<?php echo $field_class; ?>' id='<?php echo $field_id; ?>' <?php echo trim( $field_css_data ); ?>>
 	<?php if( ! empty( $field[ 'label' ] ) && is_string( $field[ 'label' ] ) ) { ?>
 		<div class='bookacti-form-field-label' >
 			<label>

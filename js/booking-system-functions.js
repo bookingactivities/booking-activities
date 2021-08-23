@@ -891,7 +891,7 @@ function bookacti_fill_picked_events_list( booking_system ) {
 				var group_list_element = $j( '<li></li>', { 'html': group_title + '<ul class="bookacti-picked-group-of-events-list">' + list_element[0].outerHTML + '</ul>' } );
 				group_list_element.data( 'group-id', picked_event.group_id ).attr( 'data-group-id', picked_event.group_id );
 				group_list_element.data( 'group-date', picked_event.group_date ).attr( 'data-group-date', picked_event.group_date );
-				if( multiple_bookings ) { group_list_element.prepend( '<span class="bookacti-unpick-event-icon"></<span>' ); }
+				if( multiple_bookings ) { group_list_element.prepend( '<span class="bookacti-unpick-event-icon"></span>' ); }
 				event_list.append( group_list_element );
 			} 
 			// The grouped events list was already added
@@ -903,7 +903,7 @@ function bookacti_fill_picked_events_list( booking_system ) {
 		
 		// Add a single event to the list
 		else {
-			if( multiple_bookings ) { list_element.prepend( '<span class="bookacti-unpick-event-icon"></<span>' ); }
+			if( multiple_bookings ) { list_element.prepend( '<span class="bookacti-unpick-event-icon"></span>' ); }
 			event_list.append( list_element );
 		}
 	});

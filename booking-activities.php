@@ -3,7 +3,7 @@
  * Plugin Name: Booking Activities
  * Plugin URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Description: Booking system specialized in activities (sports, cultural, leisure, events...). Works great with WooCommerce.
- * Version: 1.12.0-beta1
+ * Version: 1.12.0
  * Author: Booking Activities Team
  * Author URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Text Domain: booking-activities
@@ -40,7 +40,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 // GLOBALS AND CONSTANTS
-if( ! defined( 'BOOKACTI_VERSION' ) )		{ define( 'BOOKACTI_VERSION', '1.12.0-beta1' ); }
+if( ! defined( 'BOOKACTI_VERSION' ) )		{ define( 'BOOKACTI_VERSION', '1.12.0' ); }
 if( ! defined( 'BOOKACTI_PLUGIN_NAME' ) )	{ define( 'BOOKACTI_PLUGIN_NAME', 'booking-activities' ); }
 
 
@@ -360,7 +360,7 @@ register_deactivation_hook( __FILE__, 'bookacti_deactivate' );
 
 /**
  * Uninstall Booking Activities
- * @version 1.7.3
+ * @version 1.12.0
  */
 function bookacti_uninstall() {
 	// Delete notices acknowledgement
@@ -375,13 +375,6 @@ function bookacti_uninstall() {
 		
 		// Drop tables and every Booking Activities Data
 		bookacti_drop_tables();
-		
-		// Delete Booking Activities files
-		$uploads_dir = wp_upload_dir();
-		$bookacti_upload_dir = trailingslashit( str_replace( '\\', '/', $uploads_dir[ 'basedir' ] ) ) . BOOKACTI_PLUGIN_NAME . '/';
-		if( is_dir( $bookacti_upload_dir ) ) {
-			bookacti_delete_files( $bookacti_upload_dir, true );
-		}
 	}
 	
 	// Unset roles and capabilities

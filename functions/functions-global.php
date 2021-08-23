@@ -535,7 +535,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name'	=> 'ba-display-pack', 
 			'end_of_life'	=> '', 
 			'download_id'	=> 482,
-			'min_version'	=> '1.4.19-beta1'
+			'min_version'	=> '1.4.19'
 		),
 		'banp'	=> array( 
 			'title'			=> 'Notification Pack', 
@@ -543,7 +543,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name'	=> 'ba-notification-pack', 
 			'end_of_life'	=> '', 
 			'download_id'	=> 1393,
-			'min_version'	=> '1.2.7-beta1'
+			'min_version'	=> '1.2.7'
 		),
 		'bapap' => array( 
 			'title'			=> 'Prices and Credits', 
@@ -551,7 +551,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name'	=> 'ba-prices-and-credits', 
 			'end_of_life'	=> '', 
 			'download_id'	=> 438,
-			'min_version'	=> '1.4.20-beta1'
+			'min_version'	=> '1.4.20'
 		),
 		'baaf' => array( 
 			'title'			=> 'Advanced Forms', 
@@ -559,7 +559,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name'	=> 'ba-advanced-forms', 
 			'end_of_life'	=> '', 
 			'download_id'	=> 2705,
-			'min_version'	=> '1.2.15-beta1'
+			'min_version'	=> '1.2.16'
 		),
 		'baofc'	=> array( 
 			'title'			=> 'Order for Customers', 
@@ -1281,6 +1281,7 @@ function bookacti_format_field_args( $args ) {
 	// Make sure that if 'editor' has options, options is an array
 	else if( $args[ 'type' ] === 'editor' ) {
 		if( ! is_array( $args[ 'options' ] ) ) { $args[ 'options' ] = array(); }
+		$args[ 'options' ][ 'default_editor' ]	= ! empty( $args[ 'options' ][ 'default_editor' ] ) ? sanitize_title_with_dashes( $args[ 'options' ][ 'default_editor' ] ) : 'html'; // Workaround to correctly load TinyMCE in dialogs
 		$args[ 'options' ][ 'textarea_name' ]	= $args[ 'name' ];
 		$args[ 'options' ][ 'editor_class' ]	= $args[ 'class' ];
 		$args[ 'options' ][ 'editor_height' ]	= ! empty( $args[ 'height' ] ) ? intval( $args[ 'class' ] ) : 120;
@@ -2244,44 +2245,4 @@ function bookacti_log_user_in( $username ) {
  */
 function bookacti_allow_to_log_user_in_programmatically( $user, $username, $password ) {
 	return get_user_by( 'login', $username );
-}
-
-
-
-
-// FILES AND FOLDERS
-
-/**
- * Delete a directory and all its files
- * @since 1.7.0
- * @param string $dir_path Initial directory Path
- * @param boolean $delete_init_dir TRUE = delete content and self. FALSE = delete content only.
- * @return boolean TRUE if everything is deleted, FALSE if a single file or directory hasn't been deleted
- */
-function bookacti_delete_files( $dir_path, $delete_init_dir = false ) {
-	if( ! is_dir( $dir_path ) ) { return false; }
-	
-	$iter = new RecursiveIteratorIterator(
-		new RecursiveDirectoryIterator( $dir_path, RecursiveDirectoryIterator::SKIP_DOTS ),
-		RecursiveIteratorIterator::CHILD_FIRST,
-		RecursiveIteratorIterator::CATCH_GET_CHILD // Ignore "Permission denied"
-	);
-
-	$files = array();
-	foreach ( $iter as $path => $dir ) {
-		$files[] = $path;
-	}
-	if( $delete_init_dir ) { $files[] = $dir_path; }
-	
-	$all_deleted = true;
-	foreach( $files as $file ) {
-		if( is_dir( $file ) ){
-			$deleted = rmdir( $file );
-		} elseif( is_file( $file ) ) {
-			$deleted  = unlink( $file );
-		}
-		if( ! $deleted ) { $all_deleted = false; }
-	}
-	
-	return $all_deleted;
 }
