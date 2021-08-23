@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 5.8
 Requires PHP: 5.3
-Stable tag: 1.11.5
+Stable tag: 1.12.0
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -321,7 +321,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.12.0-beta2 - 2021/08/18 =
+= 1.12.0 - 2021/08/23 =
 * **[See the user-friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-12-repeat-groups-of-events/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
 * Breaking change - Remove opening and closing dates from calendar settings in calendar editor
 * Breaking change - Remove the archiving tool. You can still find the backups you have made in wp-content/uploads/booking-activities/archives and manually import them with phpMyAdmin.
@@ -337,6 +337,8 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - The icon to unpick an event span tag was not correctly closed
 * Optimization - Groups of events and Bookings numbers are loaded by interval (like events) instead of all at once
 * Optimization - Reduce the number of queries to load the calendar editor
+* Dev - Display form fields name, type and id in HTML data attributes
+* Dev - Allow plugins to change FormData thanks to the js hook bookacti_before_submit_booking_form
 * Dev - Breaking change - the wp_bookacti_exceptions table was totally refactored and the API related to exceptions too
 * Dev - Refactor the events, activities, group of events and group categories data sanitization when updating them from the calendar editor
 * Dev - Move the functions to run once after specific updates to controller-legacy.php
@@ -1233,7 +1235,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Upgrade Notice ==
 
-= 1.12.0-beta1 =
+= 1.12.0 =
 Major changes in code:
 * If you have purchased add-ons, you need to update them too.
 * If you have custom code, you may need to adapt it. No support can be provided for your custom code.

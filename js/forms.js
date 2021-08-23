@@ -253,7 +253,7 @@ function bookacti_show_hide_register_fields( login_field_container ) {
 /**
  * Get password strength and display a password strength meter
  * @since 1.5.0
- * @version 1.8.8
+ * @version 1.12.0
  * @param {HTMLElement} password_field
  * @param {HTMLElement} password_confirm_field
  * @param {HTMLElement} password_strength_meter
@@ -266,8 +266,8 @@ function bookacti_check_password_strength( password_field, password_confirm_fiel
 	var pwd = password_field.val();
 	var confirm_pwd = password_confirm_field != null ? password_confirm_field.val() : pwd;
 	
-	// extend the forbidden words array with those from the site data
-	forbidden_words = forbidden_words.concat( wp.passwordStrength.userInputBlacklist() );
+	// extend the forbidden words array with those from the site data (Backward Compatibility)
+	forbidden_words = typeof wp.passwordStrength.userInputDisallowedList === 'function' ? forbidden_words.concat( wp.passwordStrength.userInputDisallowedList() ) : forbidden_words.concat( wp.passwordStrength.userInputBlacklist() );
 
 	// reset the strength meter status
 	password_field.removeClass( 'short bad good strong' );
@@ -433,7 +433,7 @@ function bookacti_submit_login_form( submit_button ) {
 /**
  * Submit booking form
  * @since 1.7.6 (was bookacti_sumbit_booking_form)
- * @version 1.8.4
+ * @version 1.12.0
  * @param {HTMLElement} form
  */
 function bookacti_submit_booking_form( form ) {
@@ -495,7 +495,7 @@ function bookacti_submit_booking_form( form ) {
 	else { form.append( '<input type="hidden" name="action" value="bookactiSubmitBookingForm"/>' ); }
 	
 	// Get form field values
-	var data = new FormData( form.get(0) );
+	var data = { 'form_data': new FormData( form.get(0) ) };
 	
 	// Restore form action field value
 	if( has_form_action ) { form.find( 'input[name="action"]' ).val( old_form_action ); } 
@@ -504,7 +504,7 @@ function bookacti_submit_booking_form( form ) {
 	// Trigger action before sending form
 	form.trigger( 'bookacti_before_submit_booking_form', [ data ] );
 	
-	if( ! ( data instanceof FormData ) ) { return; }
+	if( ! ( data.form_data instanceof FormData ) ) { return; }
 	
 	// Display a loader after the submit button too
 	if( submit_button ) { 
@@ -520,7 +520,7 @@ function bookacti_submit_booking_form( form ) {
 	$j.ajax({
 		url: bookacti_localized.ajaxurl,
 		type: 'POST',
-		data: data,
+		data: data.form_data,
 		dataType: 'json',
 		cache: false,
         contentType: false,

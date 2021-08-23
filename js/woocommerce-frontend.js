@@ -4,6 +4,7 @@ $j( document ).ready( function() {
 	/**
 	 * Add data to booking actions
 	 * @since 1.0.12
+	 * @version 1.12.0
 	 * @param {Event} e
 	 * @param {Object} data
 	 * @param {Int} booking_id
@@ -11,7 +12,13 @@ $j( document ).ready( function() {
 	 * @param {String} action
 	 */
 	$j( '.woocommerce-table' ).on( 'bookacti_booking_action_data', 'tr.order_item', function( e, data, booking_id, booking_type, action ) {
-		data.context = 'wc_order_items';
+		var is_FormData = false;
+		if( typeof data.form_data !== 'undefined' ) { if( data.form_data instanceof FormData ) { is_FormData = true; } }
+		if( is_FormData ) {
+			data.form_data.append( 'context', 'wc_order_items' );
+		} else {
+			data.context = 'wc_order_items';
+		}
 	});
 
 
@@ -93,7 +100,7 @@ $j( document ).ready( function() {
 	if( $j( '.woocommerce form.cart .single_add_to_cart_button' ).length ) {
 		/**
 		 * Add to cart dynamic check
-		 * @version 1.11.0
+		 * @version 1.12.0
 		 */
 		$j( '.woocommerce form.cart' ).on( 'submit', function() { 
 			var form = $j( this );
@@ -115,7 +122,12 @@ $j( document ).ready( function() {
 					var is_valid = bookacti_validate_picked_events( form.find( '.bookacti-booking-system' ), form.find( 'input.qty' ).val() );
 					if( is_valid ) {
 						// Trigger action before sending form
-						form.trigger( 'bookacti_before_submit_booking_form' );
+						var data = { 'form_data': new FormData( form.get(0) ) };
+						
+						form.trigger( 'bookacti_before_submit_booking_form', [ data ] );
+						
+						if( ! ( data.form_data instanceof FormData ) ) { return false; }
+						
 						return true;
 					} else {
 						// Scroll to error message

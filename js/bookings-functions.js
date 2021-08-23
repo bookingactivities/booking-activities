@@ -13,13 +13,15 @@ $j( document ).ready( function() {
 	/**
 	 * Add data to booking actions
 	 * @since 1.7.6
-	 * @version 1.8.0
+	 * @version 1.12.0
 	 * @param {Event} e
 	 * @param {Object} data
 	 */
 	$j( '#bookacti-booking-list, .bookacti-user-booking-list-table' ).on( 'bookacti_booking_action_data', 'tr.bookacti-single-booking, tr.bookacti-booking-group', function( e, data ) {
-		if( data instanceof FormData ) { 
-			data.append( 'locale', bookacti_localized.current_locale );
+		var is_FormData = false;
+		if( typeof data.form_data !== 'undefined' ) { if( data.form_data instanceof FormData ) { is_FormData = true; } }
+		if( is_FormData ) {
+			data.form_data.append( 'locale', bookacti_localized.current_locale );
 		} else {
 			data.locale = bookacti_localized.current_locale;
 		}
