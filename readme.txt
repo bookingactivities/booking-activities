@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 5.8
 Requires PHP: 5.3
-Stable tag: 1.12.0
+Stable tag: 1.12.1
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -320,6 +320,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.12.1 - 2021/08/26 =
+* Fix - Issue preventing bookings refunds to work
 
 = 1.12.0 - 2021/08/23 =
 * **[See the user-friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-12-repeat-groups-of-events/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**

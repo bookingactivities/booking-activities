@@ -162,7 +162,7 @@ add_action( 'wp_ajax_nopriv_bookactiGetBookingRefundActionsHTML', 'bookacti_cont
 
 /**
  * AJAX Controller - Refund a booking
- * @version 1.12.0
+ * @version 1.12.1
  */
 function bookacti_controller_refund_booking() {
 	$booking_id = intval( $_POST[ 'booking_id' ] );
@@ -195,7 +195,7 @@ function bookacti_controller_refund_booking() {
 		// The refund request notification is send by bookacti_send_notification_when_booking_state_changes() on the hook 'bookacti_booking_state_changed'
 		$refunded = array( 'status' => 'success', 'new_state' => 'refund_requested', 'message' => esc_html__( 'Your refund request has been sent. We will contact you soon.', 'booking-activities' ) );
 	} else {
-		$refunded = apply_filters( 'bookacti_refund_booking', array( 'status' => 'failed' ), $booking, 'single', $refund_action, $refund_message, $front_or_admin );
+		$refunded = apply_filters( 'bookacti_refund_booking', array( 'status' => 'failed' ), array( $booking ), 'single', $refund_action, $refund_message, $front_or_admin );
 	}
 
 	if( $refunded[ 'status' ] !== 'success' ) {
