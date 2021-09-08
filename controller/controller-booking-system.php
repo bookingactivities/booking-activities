@@ -5,6 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * AJAX Controller - Get booking system data by interval (events, groups, and bookings) 
  * @since 1.12.0 (was bookacti_controller_fetch_events)
+ * @version 1.12.2
  */
 function bookacti_controller_get_booking_system_data_by_interval() {
 	$atts = isset( $_POST[ 'attributes' ] ) ? ( is_array( $_POST[ 'attributes' ] ) ? $_POST[ 'attributes' ] : ( is_string( $_POST[ 'attributes' ] ) ? bookacti_maybe_decode_json( stripslashes( $_POST[ 'attributes' ] ), true ) : array() ) ) : array();
@@ -13,6 +14,7 @@ function bookacti_controller_get_booking_system_data_by_interval() {
 	
 	$atts[ 'start' ] = ! empty( $interval[ 'start' ] ) ? $interval[ 'start' ] : '';
 	$atts[ 'end' ] = ! empty( $interval[ 'end' ] ) ? $interval[ 'end' ] : '';
+	$atts[ 'events_min_interval' ] = $atts[ 'start' ] || $atts[ 'end' ] ? array( 'start' => $atts[ 'start' ], 'end' => $atts[ 'end' ] ) : array();
 	$atts[ 'auto_load' ] = 1;
 	
 	$booking_system_data = bookacti_get_booking_system_data( $atts );

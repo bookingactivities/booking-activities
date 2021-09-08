@@ -603,6 +603,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 /**
  * Detect current language with Qtranslate-XT or WPML
  * @version 1.8.5
+ * @global array $q_config
  * @param boolean $with_locale
  * @return string 
  */
@@ -754,6 +755,38 @@ function bookacti_get_site_locale( $country_code = true ) {
 	}
 
 	return apply_filters( 'bookacti_site_locale', $locale, $country_code );
+}
+
+
+/* 
+ * Get site default locale
+ * @since 1.12.2
+ * @param boolean $country_code Whether to return also country code
+ * @return string
+ */
+function bookacti_get_site_default_locale( $with_locale = true ) {
+	$locale		= get_locale();
+	$lang_code	= $with_locale ? $locale : substr( $locale, 0, strpos( $locale, '_' ) );
+
+	if( bookacti_is_plugin_active( 'qtranslate-x/qtranslate.php' ) || bookacti_is_plugin_active( 'qtranslate-xt/qtranslate.php' ) ) {
+		global $q_config;
+		if( $q_config && ! empty( $q_config[ 'default_language' ] ) ) { 
+			$lang_code = $q_config[ 'default_language' ];
+			if( $with_locale && $lang_code ) {
+				if( ! empty( $q_config[ 'locale' ][ $lang_code ] ) ) { $lang_code = $q_config[ 'locale' ][ $lang_code ]; }
+			}
+		}
+	} else if ( bookacti_is_plugin_active( 'wpml/wpml.php' ) ) {
+		$lang_code = apply_filters( 'wpml_default_language', NULL );
+		if( $with_locale && $lang_code ) {
+			$languages = apply_filters( 'wpml_active_languages', NULL );
+			if( $languages && ! empty( $languages[ $lang_code ][ 'default_locale' ] ) ) { $lang_code = $languages[ $lang_code ][ 'default_locale' ]; }
+		}
+	}
+	
+	if( ! $lang_code ) { $lang_code = $with_locale ? 'en_US' : 'en'; }
+	
+	return apply_filters( 'bookacti_site_default_locale', $lang_code, $with_locale );
 }
 
 

@@ -708,7 +708,7 @@ add_action( 'wp_ajax_nopriv_bookactiSubmitLoginForm', 'bookacti_controller_valid
 /**
  * Check if booking form is correct and then book the event, or send the error message
  * @since 1.5.0
- * @version 1.12.0
+ * @version 1.12.2
  */
 function bookacti_controller_validate_booking_form() {
 	// Check nonce
@@ -943,9 +943,9 @@ function bookacti_controller_validate_booking_form() {
 		$return_array[ 'status' ] = 'success';
 		$return_array[ 'messages' ][ 'booked' ] = bookacti_get_message( 'booking_success' );
 		
-		$return_array = apply_filters( 'bookacti_booking_form_validated_response', $return_array, $booking_form_values, $form_id );
-		
 		do_action( 'bookacti_booking_form_validated', $return_array, $booking_form_values, $form_id );
+		
+		$return_array = apply_filters( 'bookacti_booking_form_validated_response', $return_array, $booking_form_values, $form_id );
 		
 		if( $return_array[ 'messages' ] ) { $return_array[ 'message' ] = implode( '</li><li>', $return_array[ 'messages' ] ); }
 		bookacti_send_json( $return_array, 'submit_booking_form' );

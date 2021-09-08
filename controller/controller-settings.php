@@ -546,9 +546,17 @@ add_filter( 'plugin_row_meta', 'bookacti_meta_links_in_plugins_table', 10, 2 );
 /**
  * Display an admin error notice if an add-on is outdated and will cause malfunction
  * @since 1.9.0
+ * @version 1.12.2
  */
 function bookacti_add_ons_compatibility_error_notice() {
 	$add_ons = bookacti_get_active_add_ons( '', array() );
+	
+	// Add Booking Activities, and allow plugins to change its min required version
+	$add_ons[ 'bookacti' ] = array( 
+		'title' => 'Booking Activities', 
+		'min_version' => apply_filters( 'bookacti_min_version', BOOKACTI_VERSION )
+	);
+	
 	$outdated_add_ons = array();
 	foreach( $add_ons as $prefix => $add_on ) {
 		$constant_name = strtoupper( $prefix ) . '_VERSION';
@@ -566,7 +574,7 @@ function bookacti_add_ons_compatibility_error_notice() {
 				$docs_link = 'https://booking-activities.fr/en/faq/the-add-ons-are-not-updated-automatically-or-an-error-occurs-during-the-updates/';
 				$docs_link_html = '<a href="' . $docs_link . '" target="_blank">' . esc_html__( 'documentation', 'booking-activities' ) . '</a>';
 				/* translators: %1$s = Plugin name. %2$s = Link to the "documentation". */
-				echo sprintf( esc_html__( '%1$s is experiencing malfunctions due to the obsolescence of the following add-ons. You need to update them now (%2$s).', 'booking-activities' ), '<strong>Booking Activities</strong>', $docs_link_html );
+				echo sprintf( esc_html__( '%1$s is experiencing major compatibility issues. You need to update the following plugins now (%2$s).', 'booking-activities' ), '<strong>Booking Activities</strong>', $docs_link_html );
 			?>
 		</p>
 		<ul>
@@ -577,7 +585,7 @@ function bookacti_add_ons_compatibility_error_notice() {
 					<li><strong><?php echo $outdated_add_on[ 'title' ]; ?></strong> <em><?php echo $add_on_version; ?></em> &#8594; 
 					<?php 
 					/* translators: %s = a version number (e.g.: 1.2.6) */
-					echo sprintf( esc_html__( 'Requires version %s or later.', 'booking-activities' ), '<strong>' . $outdated_add_on[ 'min_version' ] . '</strong>' );
+					echo sprintf( esc_html__( 'version %s or later required.', 'booking-activities' ), '<strong>' . $outdated_add_on[ 'min_version' ] . '</strong>' );
 				}
 			?>
 		</ul>

@@ -337,7 +337,7 @@ function bookacti_change_export_type_according_to_active_tab() {
 
 /**
  * Show bookings of a group
- * @version 1.8.0
+ * @version 1.12.2
  * @param {int} booking_group_id
  * @returns {false|null}
  */
@@ -345,7 +345,7 @@ function bookacti_display_grouped_bookings( booking_group_id ) {
 	booking_group_id = typeof booking_group_id !== 'undefined' && $j.isNumeric( booking_group_id ) ? booking_group_id : false;
 	if( ! booking_group_id ) { return false; }
 	
-	var group_row = $j( '.bookacti-show-booking-group-bookings[data-booking-group-id="' + booking_group_id + '"]:focus' ).closest( 'tr' );
+	var group_row = $j( '.bookacti-show-booking-group-bookings[data-booking-group-id="' + booking_group_id + '"]:focus' ).first().closest( 'tr' );
 	
 	group_row.find( '.bookacti-show-booking-group-bookings' ).toggleClass( 'active' );
 	

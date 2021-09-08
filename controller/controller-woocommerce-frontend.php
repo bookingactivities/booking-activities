@@ -1472,7 +1472,7 @@ add_action( 'woocommerce_before_pay_action', 'bookacti_availability_check_before
 /**
  * Change order bookings states after the customer validates checkout
  * @since 1.2.2
- * @version 1.12.0
+ * @version 1.12.2
  * @param int $order_id
  * @param array $posted_data
  * @param WC_Order $order
@@ -1497,7 +1497,7 @@ function bookacti_change_booking_state_after_checkout( $order_id, $posted_data, 
 						$last_booking = end( $order_item_booking[ 'bookings' ] );
 						$first_booking = reset( $order_item_booking[ 'bookings' ] );
 						$dates = bookacti_get_formatted_event_dates( $first_booking->event_start, $last_booking->event_end, false );
-						$error_messages[] = new Exception( sprintf( esc_html__( 'You have already purchased the booking #%1$s "%2$s" in the order #%3$s.', 'booking-activities' ), $order_item_booking[ 'id' ], $title ? $title . ' (' . $dates . ')' : $dates, $booking_order_id ) );
+						$error_messages[] = sprintf( esc_html__( 'You have already purchased the booking #%1$s "%2$s" in the order #%3$s.', 'booking-activities' ), $order_item_booking[ 'id' ], $title ? $title . ' (' . $dates . ')' : $dates, $booking_order_id );
 						wc_delete_order_item( $item_id );
 					}
 				}

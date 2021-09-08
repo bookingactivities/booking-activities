@@ -102,7 +102,7 @@ function bookacti_get_booking_system( $atts ) {
 /**
  * Get booking system data
  * @since 1.7.4
- * @version 1.12.0
+ * @version 1.12.2
  * @param array $atts (see bookacti_format_booking_system_attributes())
  * @return array
  */
@@ -115,6 +115,7 @@ function bookacti_get_booking_system_data( $atts ) {
 		'events' => array(),
 		'events_data' => array(),
 		'events_interval' => array( 'start' => $now, 'end' => $now ),
+		'events_min_interval' => array(),
 		'bookings' => array(),
 		'groups_bookings' => array(),
 		'booking_lists' => array(),
@@ -133,7 +134,13 @@ function bookacti_get_booking_system_data( $atts ) {
 	// Events related data
 	if( $atts[ 'auto_load' ] && ! $booking_system_data[ 'no_events' ] ) {
 		$availability_period= array( 'start' => $atts[ 'start' ], 'end' => $atts[ 'end' ] );
-		$events_interval	= bookacti_get_new_interval_of_events( $availability_period, array(), false, $atts[ 'past_events' ] );
+		$min_interval = array( 
+			'start' => ! empty( $booking_system_data[ 'events_min_interval' ][ 'start' ] ) ? $booking_system_data[ 'events_min_interval' ][ 'start' ] : '', 
+			'end' => ! empty( $booking_system_data[ 'events_min_interval' ][ 'end' ] ) ? $booking_system_data[ 'events_min_interval' ][ 'end' ] : ''
+		);
+		if( ! $min_interval[ 'start' ] && ! $min_interval[ 'end' ] ) { $min_interval = array(); } 
+		
+		$events_interval	= bookacti_get_new_interval_of_events( $availability_period, $min_interval, false, $atts[ 'past_events' ] );
 		$user_ids			= array();
 		$status				= array();
 		$categories_data	= array();
@@ -178,12 +185,16 @@ function bookacti_get_booking_system_data( $atts ) {
 				if( strtotime( $bounding_dates[ 'start' ] ) > strtotime( $booking_system_data[ 'start' ] ) )	{ $booking_system_data[ 'start' ] = $bounding_dates[ 'start' ]; }
 				if( strtotime( $bounding_dates[ 'end' ] ) < strtotime( $booking_system_data[ 'end' ] ) )		{ $booking_system_data[ 'end' ] = $bounding_dates[ 'end' ]; }
 				if( strtotime( $booking_system_data[ 'start' ] ) > strtotime( $booking_system_data[ 'end' ] ) )	{ $booking_system_data[ 'start' ] = $booking_system_data[ 'end' ]; }
-				
+				if( ! empty( $min_interval[ 'start' ] ) && strtotime( $bounding_dates[ 'start' ] ) > strtotime( $min_interval[ 'start' ] ) )									{ $min_interval[ 'start' ] = $bounding_dates[ 'start' ]; }
+				if( ! empty( $min_interval[ 'end' ] ) && strtotime( $bounding_dates[ 'end' ] ) < strtotime( $min_interval[ 'end' ] ) )											{ $min_interval[ 'end' ] = $bounding_dates[ 'end' ]; }
+				if( ! empty( $min_interval[ 'start' ] ) && ! empty( $min_interval[ 'start' ] ) && strtotime( $min_interval[ 'start' ] ) > strtotime( $min_interval[ 'end' ] ) )	{ $min_interval[ 'start' ] = $min_interval[ 'end' ]; }
+				$booking_system_data[ 'events_min_interval' ] = $min_interval;
+						
 				// Trim the availability period
 				$availability_period = array( 'start' => $booking_system_data[ 'start' ], 'end' => $booking_system_data[ 'end' ] );
 				
 				// Update the interval of events to retrieve
-				$events_interval = bookacti_get_new_interval_of_events( $availability_period, array(), false, $atts[ 'past_events' ] );
+				$events_interval = bookacti_get_new_interval_of_events( $availability_period, $min_interval, false, $atts[ 'past_events' ] );
 			
 				// Display the last event entirely
 				if( strtotime( $bounding_dates[ 'start_last' ] ) < strtotime( $booking_system_data[ 'end' ] )
@@ -2614,7 +2625,7 @@ function bookacti_get_event_first_occurrence_date( $event ) {
 /**
  * Get a new interval of events to load. Computed from the compulsory interval, or now's date
  * @since 1.2.2
- * @version 1.11.0
+ * @version 1.12.2
  * @param array $availability_period array( 'start'=> 'Y-m-d H:i:s', 'end'=> 'Y-m-d H:i:s' ) 
  * @param array $min_interval array( 'start'=> 'Y-m-d', 'end'=> 'Y-m-d' )
  * @param int $interval_duration Number of days of the interval
@@ -2633,6 +2644,7 @@ function bookacti_get_new_interval_of_events( $availability_period, $min_interva
 	
 	if( ! $past_events && $calendar_end < $current_time ) { return array(); }
 	
+	if( empty( $min_interval[ 'start' ] ) || empty( $min_interval[ 'end' ] ) ) { $min_interval = array(); } 
 	if( ! $min_interval ) {
 		if( $calendar_start > $current_time ) {
 			$min_interval = array( 'start' => $availability_period[ 'start' ], 'end' => $availability_period[ 'start' ] );

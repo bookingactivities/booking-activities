@@ -40,7 +40,15 @@ table.woocommerce_order_items ul.bookacti-booking-events-list { margin: 0; }
 	/* Elementor support */
 	.woocommerce div.product.bookacti-activity.elementor form.cart.variations_form .woocommerce-variation-add-to-cart, 
 	.woocommerce div.product.bookacti-activity.elementor form.cart:not(.grouped_form):not(.variations_form) { display: block; }
+	
+	/* WC PayPal Payments support */
+	.woocommerce div.product.bookacti-activity .paypal-buttons { display: none !important; }
+	
+	/* WC Stripe support */
+	.woocommerce div.product.bookacti-activity #wc-stripe-payment-request-wrapper,
+	.woocommerce div.product.bookacti-activity #wc-stripe-payment-request-button-separator { display: none !important; }
 
+	
 /* Cart, Checkout */
 .bookacti-order-item-activity td.product-name .wc-item-meta .wc-item-meta-bookacti_booked_events,
 .bookacti-cart-item-activity td.product-name dl.variation dt { float: none; display: block; }
