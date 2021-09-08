@@ -137,11 +137,20 @@ add_action( 'bookacti_delete_expired_bookings', 'bookacti_controller_delete_expi
 /**
  * Delete the in cart bookings when the sessions is cleared
  * @since 1.9.0
+ * @version 1.12.2
  * @param array $tool
  */
 function bookacti_wc_controller_remove_in_cart_bookings( $tool ) {
 	if( $tool[ 'id' ] !== 'clear_sessions' || ! $tool[ 'success' ] ) { return; }
+	
+	$in_cart_bookings_filters = bookacti_format_booking_filters( array( 'status' => array( 'in_cart' ), 'group_by' => 'booking_group', 'fetch_meta' => true ) );
+	$in_cart_bookings = bookacti_get_bookings( $in_cart_bookings_filters );
+	
 	$deleted = bookacti_wc_update_in_cart_bookings_to_removed();
+	
+	if( $deleted ) {
+		do_action( 'bookacti_wc_clear_sessions_in_cart_bookings_removed', $in_cart_bookings );
+	}
 }
 add_action( 'woocommerce_system_status_tool_executed', 'bookacti_wc_controller_remove_in_cart_bookings', 10, 1 );
 

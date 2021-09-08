@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 5.8
 Requires PHP: 5.3
-Stable tag: 1.12.1
+Stable tag: 1.12.2
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -320,6 +320,17 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.12.2 - 2021/09/08 =
+* Tweak - Disable login button after click
+* Tweak - Disable submit button after click when form action is "Add to cart" too
+* Tweak - Hide Paypal and Stripe buttons on activity single products pages because the user needs to adds the booking to cart first for a proper working
+* Fix - Events were not all loaded if the "Load events every" option was set to a too small number
+* Fix - Error messages may not be displayed (if any) after submitting login form
+* Fix - Error message not properly formatted when a booking already made is detected in WC cart
+* Fix - Incorrect form action when submitting registration form if the form contained duplicated fields (in both booking form and registration form) with Advanced Forms add-on
+* Fix - Incorrect number of columns after booking action performed in frontent booking lists having one_row_per_participant parameter active with Advanced Forms add-on
+* Dev - Allow other plugins to change all FormData js object before they are sent
 
 = 1.12.1 - 2021/08/26 =
 * Fix - Issue preventing bookings refunds to work

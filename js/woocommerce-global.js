@@ -124,25 +124,24 @@ function bookacti_redirect_to_group_category_product_page( booking_system, group
 /**
  * Add a product to cart from a booking form
  * @since 1.7.0
- * @version 1.9.0
+ * @version 1.12.2
  * @param {HTMLElement} booking_system
  */
 function bookacti_add_product_to_cart_via_booking_system( booking_system ) {
-	// Use the error div of the booking system by default, or if possible, the error div of the form
-	var error_div = booking_system.siblings( '.bookacti-notices' );
-	if( booking_system.closest( 'form' ).length ) {
-		if( booking_system.closest( 'form' ).find( '> .bookacti-notices' ).length ) {
-			error_div = booking_system.closest( 'form' ).find( '> .bookacti-notices' );
-		}
-	}
-	
-	// Remove the previous feedbacks
-	error_div.empty();
-	
 	// Get form or create a temporary one
 	var has_form = booking_system.closest( 'form' ).length;
 	if( ! has_form ) { booking_system.closest( '.bookacti-form-fields' ).wrap( '<form class="bookacti-temporary-form"></form>' ); }
 	var form = booking_system.closest( 'form' );
+	
+	// Disable the submit button to avoid multiple booking
+	var submit_button = form.find( 'input[type="submit"]' ).length ? form.find( 'input[type="submit"]' ) : null;
+	if( submit_button.length ) { submit_button.prop( 'disabled', true ); }
+	
+	// Use the error div of the booking system by default, or if possible, the error div of the form
+	var error_div = form.find( '> .bookacti-notices' ).length ? form.find( '> .bookacti-notices' ) : booking_system.siblings( '.bookacti-notices' );
+	
+	// Remove the previous feedbacks
+	error_div.empty();
 	
 	// Change form action field value
 	var has_form_action = form.find( 'input[name="action"]' ).length;
@@ -151,26 +150,39 @@ function bookacti_add_product_to_cart_via_booking_system( booking_system ) {
 	else { form.append( '<input type="hidden" name="action" value="bookactiAddBoundProductToCart"/>' ); }
 	
 	// Get form field values
-	var data = new FormData( form.get(0) );
+	var data = { 'form_data': new FormData( form.get(0) ) };
+	
+	// Trigger action before sending form
+	booking_system.trigger( 'bookacti_before_add_product_to_cart', [ data ] );
 	
 	// Restore form action field value
 	if( has_form_action ) { form.find( 'input[name="action"]' ).val( old_form_action ); } 
 	else { form.find( 'input[name="action"]' ).remove(); }
 	
-	// Trigger action before sending form
-	booking_system.trigger( 'bookacti_before_add_product_to_cart', [ data ] );
-	
 	// Remove temporary form
 	if( ! has_form ) { booking_system.closest( '.bookacti-form-fields' ).unwrap( 'form.bookacti-temporary-form' ); }
 	
-	if( ! ( data instanceof FormData ) ) { return; }
+	if( ! ( data.form_data instanceof FormData ) ) { 
+		// Re-enable the submit button
+		if( submit_button.length ) { submit_button.prop( 'disabled', false ); }
+		return false;
+	}
+	
+	// Display a loader after the submit button too
+	if( submit_button.length ) { 
+		var loading_div = '<div class="bookacti-loading-alt">' 
+						+ '<img class="bookacti-loader" src="' + bookacti_localized.plugin_path + '/img/ajax-loader.gif" title="' + bookacti_localized.loading + '" />'
+						+ '<span class="bookacti-loading-alt-text" >' + bookacti_localized.loading + '</span>'
+					+ '</div>';
+		submit_button.after( loading_div );
+	}
 	
 	bookacti_start_loading_booking_system( booking_system );
 	
 	$j.ajax({
 		url: bookacti_localized.ajaxurl,
 		type: 'POST',
-		data: data,
+		data: data.form_data,
 		dataType: 'json',
 		cache: false,
         contentType: false,
@@ -217,7 +229,12 @@ function bookacti_add_product_to_cart_via_booking_system( booking_system ) {
             console.log( 'AJAX error occurred while trying to add the product to cart' );
             console.log( e );
         },
-        complete: function() { 
+        complete: function() {
+			if( submit_button.length ) { 
+				submit_button.next( '.bookacti-loading-alt' ).remove();
+				// Re-enable the submit button
+				submit_button.prop( 'disabled', false );
+			}
 			bookacti_stop_loading_booking_system( booking_system );
 		}
     });

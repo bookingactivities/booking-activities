@@ -249,15 +249,15 @@ function bookacti_settings_field_when_events_load_callback() {
 
 /**
  * Display Event Load Interval setting
- * 
  * @since 1.2.2
+ * @version 1.12.2
  */
 function bookacti_settings_field_event_load_interval_callback() {
 	$args = array(
 		'type'		=> 'number',
 		'name'		=> 'bookacti_general_settings[event_load_interval]',
 		'id'		=> 'event_load_interval',
-		'options'	=> array( 'min' => 1 ),
+		'options'	=> array( 'min' => 14 ),
 		'label'		=> ' ' . esc_html__( 'days', 'booking-activities' ),
 		'value'		=> bookacti_get_setting_value( 'bookacti_general_settings', 'event_load_interval' ),
 		'tip'		=> __( 'Events are loaded at intervals as the user navigates the calendar. E.g.: If you set "92", events will be loaded for 92 days. When the user reaches the 92nd day on the calendar, events of the next 92 days will be loaded.', 'booking-activities' )
