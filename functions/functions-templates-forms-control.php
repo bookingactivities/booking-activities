@@ -88,6 +88,7 @@ function bookacti_validate_template_data( $data ) {
 /**
  * Sanitize template managers
  * @since 1.12.0 (was bookacti_format_template_managers)
+ * @version 1.12.3
  * @param array $template_managers
  * @return array
  */
@@ -104,7 +105,7 @@ function bookacti_sanitize_template_managers( $template_managers ) {
 	}
 	
 	// Make sure all users have permission to manage templates
-	$managers_caps = array( 'bookacti_edit_bookings', 'bookacti_edit_templates', 'bookacti_read_templates' );
+	$managers_caps = array( 'bookacti_manage_bookings', 'bookacti_edit_bookings', 'bookacti_edit_templates', 'bookacti_read_templates' );
 	foreach( $template_managers as $i => $template_manager ) {
 		if( $template_manager ) {
 			$user_can = false;

@@ -1649,7 +1649,7 @@ add_filter( 'bookacti_user_booking_list_default_columns', 'bookacti_reorder_wooc
 /**
  * Add WC data to the user booking list
  * @since 1.7.12 (was bookacti_fill_wc_price_column_in_booking_list)
- * @version 1.11.3
+ * @version 1.12.3
  * @param array $booking_list_items
  * @param array $bookings
  * @param array $booking_groups
@@ -1698,7 +1698,7 @@ function bookacti_add_wc_data_to_user_booking_list_items( $booking_list_items, $
 	}
 
 	// Get WC refund actions
-	$wc_refund_actions = array_keys( bookacti_wc_get_refund_actions() );
+	$wc_refund_actions = bookacti_wc_get_refund_actions();
 
 	// Add order item data to the booking list
 	foreach( $order_items as $order_item_id => $order_item ) {
@@ -1772,8 +1772,8 @@ function bookacti_add_wc_data_to_user_booking_list_items( $booking_list_items, $
 				$order		= $orders[ $order_id ];
 				$is_paid	= $order->get_date_paid( 'edit' );
 
-				if( $order->get_status() !== 'pending' && $is_paid && $order_item_total > 0 ) {
-					$booking_list_items[ $booking_id ][ 'refund_actions' ] = array_intersect_key( $booking_list_items[ $booking_id ][ 'refund_actions' ], array_flip( $wc_refund_actions ) );
+				if( $order->get_status() === 'pending' || ! $is_paid || $order_item_total <= 0 ) {
+					$booking_list_items[ $booking_id ][ 'refund_actions' ] = array_diff_key( $booking_list_items[ $booking_id ][ 'refund_actions' ], $wc_refund_actions );
 				}
 			}
 		}

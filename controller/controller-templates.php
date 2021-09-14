@@ -296,7 +296,7 @@ add_action( 'wp_ajax_bookactiDuplicateEvent', 'bookacti_controller_duplicate_eve
 /**
  * AJAX Controller - Update event
  * @since 1.2.2 (was bookacti_controller_update_event_data)
- * @version 1.12.0
+ * @version 1.12.3
  */
 function bookacti_controller_update_event() {
 	// Check nonce
@@ -363,9 +363,7 @@ function bookacti_controller_update_event() {
 	if( is_numeric( $updated ) && is_numeric( $updated_excep ) ) { $updated += $updated_excep; }
 	
 	// Check if the data has been updated
-	if( $updated === 0 ) { 
-		bookacti_send_json( array( 'status' => 'nochanges' ), 'update_event' );
-	} else if( $updated === false ) { 
+	if( $updated === false ) { 
 		bookacti_send_json( array( 'status' => 'failed', 'event_data' => $event_data ), 'update_event' ); 
 	}
 
@@ -645,7 +643,7 @@ add_action( 'wp_ajax_bookactiInsertGroupOfEvents', 'bookacti_controller_insert_g
 /**
  * Update group of events data with AJAX
  * @since 1.1.0
- * @version 1.12.0
+ * @version 1.12.3
  */
 function bookacti_controller_update_group_of_events() {
 	// Check nonce
@@ -717,8 +715,6 @@ function bookacti_controller_update_group_of_events() {
 	// Check if the data has been updated
 	if( $updated === false ) {
 		bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_updated', 'group_data' => $group_of_events_data ), 'update_group_of_events' );
-	} else if( $updated === 0 ) {
-		bookacti_send_json( array( 'status' => 'nochanges' ), 'update_group_of_events' );
 	}
 
 	$category_data	= bookacti_get_group_category( $category_id );
@@ -955,7 +951,7 @@ add_action( 'wp_ajax_bookactiUnbindGroupOfEventsOccurrences', 'bookacti_controll
 /**
  * Update group category data with AJAX
  * @since 1.1.0
- * @version 1.12.0
+ * @version 1.12.3
  */
 function bookacti_controller_update_group_category() {
 	// Check nonce
@@ -991,8 +987,6 @@ function bookacti_controller_update_group_category() {
 	// Check if the data has been updated
 	if( $updated === false ) {
 		bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_updated', 'category_data' => $category_data ), 'update_group_category' );
-	} else if( $updated === 0 ) {
-		bookacti_send_json( array( 'status' => 'nochanges' ), 'update_group_category' );
 	}
 	
 	$category = bookacti_get_group_category( $category_id );
@@ -1105,7 +1099,7 @@ add_action( 'wp_ajax_bookactiInsertTemplate', 'bookacti_controller_insert_templa
 
 /**
  * AJAX Controller - Update template
- * @version	1.12.0
+ * @version	1.12.3
  */
 function bookacti_controller_update_template() {
 	// Check nonce and capabilities
@@ -1141,8 +1135,6 @@ function bookacti_controller_update_template() {
 	// Check if the data has been updated
 	if( $updated === false ) {
 		bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_updated', 'template_data' => $template_data ), 'update_template' );
-	} else if( $updated === 0 ) {
-		bookacti_send_json( array( 'status' => 'nochanges' ), 'update_template' );
 	}
 	
 	$templates_data = bookacti_get_templates_data( $template_id, true );
@@ -1268,7 +1260,7 @@ add_action( 'wp_ajax_bookactiInsertActivity', 'bookacti_controller_insert_activi
 
 /**
  * AJAX Controller - Update an activity
- * @version 1.12.0
+ * @version 1.12.3
  */
 function bookacti_controller_update_activity() {
 	// Check nonce
@@ -1308,8 +1300,6 @@ function bookacti_controller_update_activity() {
 	// Check if the data has been updated
 	if( $updated === false ) {
 		bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_updated', 'activity_data' => $activity_data ), 'update_activity' );
-	} else if( $updated === 0 ) {
-		bookacti_send_json( array( 'status' => 'nochanges' ), 'update_activity' );
 	}
 	
 	$activities_data= bookacti_get_activities_by_template( $template_id, false, true );

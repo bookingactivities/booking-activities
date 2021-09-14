@@ -10,7 +10,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 	
 	/**
 	 * Bookings WP_List_Table
-	 * @version 1.11.2
+	 * @version 1.12.3
 	 */
 	class Bookings_List_Table extends WP_List_Table {
 		
@@ -202,7 +202,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		
 		/**
 		 * Fill columns
-		 * @version 1.7.7
+		 * @version 1.12.3
 		 * @access public
 		 * @param array $item
 		 * @param string $column_name
@@ -273,14 +273,11 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			// Retrieve information about users and stock them into an array sorted by user id
 			$users = bookacti_get_users_data( array( 'include' => $this->user_ids ) );
 			$roles_names = bookacti_get_roles();
+			$can_edit_users = current_user_can( 'edit_users' );
 			
 			// Get datetime format
 			$datetime_format	= bookacti_get_message( 'date_format_long' );
 			$quantity_separator	= bookacti_get_message( 'quantity_separator' );
-			
-			// Booking actions
-			$booking_actions		= bookacti_get_booking_actions( 'admin' );
-			$booking_group_actions	= bookacti_get_booking_group_actions( 'admin' );
 			
 			// Build booking list
 			$booking_list_items = array();
@@ -308,7 +305,8 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					$end			= $group->end;
 					$quantity		= $group->quantity;
 					$order_id		= $group->order_id;
-					$actions		= $booking_group_actions;
+					$actions		= bookacti_get_booking_group_actions_by_booking_group( $grouped_bookings, 'admin' );
+					$refund_actions	= bookacti_get_booking_refund_actions( $grouped_bookings, 'group', 'admin' );
 					$activity_title	= $group->category_title;
 					$booking_type	= 'group';
 					
@@ -331,7 +329,8 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					$end			= $booking->event_end;
 					$quantity		= $booking->quantity;
 					$order_id		= $booking->order_id;
-					$actions		= $booking_actions;
+					$actions		= bookacti_get_booking_actions_by_booking( $booking, 'admin' );
+					$refund_actions	= bookacti_get_booking_refund_actions( array( $booking ), 'single', 'admin' );
 					$activity_title	= $booking->activity_title;
 					$booking_type	= 'single';
 				}
@@ -354,12 +353,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 				if( ! empty( $users[ $user_id ] ) ) {
 					$user = $users[ $user_id ];
 					$display_name = ! empty( $user->first_name ) && ! empty( $user->last_name ) ? $user->first_name . ' ' . $user->last_name : $user->display_name;
-					$customer	= '<a '
-									. ' href="' . esc_url( admin_url( 'user-edit.php?user_id=' . $user_id ) ) . '" '
-									. ' target="_blank" '
-									. ' >'
-										. $display_name
-								. ' </a>';
+					$customer	= $can_edit_users ? '<a href="' . esc_url( admin_url( 'user-edit.php?user_id=' . $user_id ) ) . '">' . esc_html( $display_name ) . ' </a>' : esc_html( $display_name );
 					$email		= ! empty( $user->user_email ) ? $user->user_email : '';
 					$phone		= ! empty( $user->phone ) ? $user->phone : '';
 					$roles		= ! empty( $user->roles ) ? implode( ', ', array_replace( array_combine( $user->roles, $user->roles ), array_intersect_key( $roles_names, array_flip( $user->roles ) ) ) ) : '';
@@ -428,7 +422,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					'activity_title'=> apply_filters( 'bookacti_translate_text', $activity_title ),
 					'creation_date'	=> $creation_date,
 					'actions'		=> $actions,
-					'refund_actions'=> array(),
+					'refund_actions'=> $refund_actions,
 					'order_id'		=> $order_id,
 					'primary_data'	=> $primary_data,
 					'primary_data_html'	=> $primary_data_html
@@ -451,11 +445,10 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 				
 				// Format refund actions
 				if( empty( $booking_list_item[ 'refund_actions' ] ) && isset( $booking_list_item[ 'actions' ][ 'refund' ] ) ) { unset( $booking_list_item[ 'actions' ][ 'refund' ] ); }
-				if( empty( $booking_list_item[ 'actions' ] ) ) { continue; }
 				if( $booking_list_item[ 'booking_type' ] === 'group' ) {
-					$booking_list_items[ $booking_id ][ 'actions' ] = bookacti_get_booking_group_actions_html( $bookings_per_group[ $booking_list_item[ 'raw_id' ] ], 'admin', $booking_list_item[ 'actions' ] );
+					$booking_list_items[ $booking_id ][ 'actions' ] = ! empty( $booking_list_item[ 'actions' ] ) ? bookacti_get_booking_group_actions_html( $bookings_per_group[ $booking_list_item[ 'raw_id' ] ], 'admin', $booking_list_item[ 'actions' ] ) : '';
 				} else if( $booking_list_item[ 'booking_type' ] === 'single' ) {
-					$booking_list_items[ $booking_id ][ 'actions' ] = bookacti_get_booking_actions_html( $booking, 'admin', $booking_list_item[ 'actions' ] );
+					$booking_list_items[ $booking_id ][ 'actions' ] = ! empty( $booking_list_item[ 'actions' ] ) ? bookacti_get_booking_actions_html( $booking, 'admin', $booking_list_item[ 'actions' ] ) : '';
 				}
 			}
 			

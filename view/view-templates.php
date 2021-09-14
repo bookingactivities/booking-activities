@@ -1,7 +1,7 @@
 <?php
 /**
  * Calendar editor page
- * @version 1.12.0
+ * @version 1.12.3
  */
 
 // Exit if accessed directly
@@ -178,7 +178,7 @@ $default_template = false;
 	<ol>
 		<li>
 		<?php if( current_user_can( 'bookacti_create_forms' ) ) { ?>
-			<a href='<?php echo $new_form_initial_url; ?>' target='_blank' id='bookacti-create-form-link' data-base-url='<?php echo $new_form_basic_url; ?>'>
+			<a href='<?php echo $new_form_initial_url; ?>' id='bookacti-create-form-link' data-base-url='<?php echo $new_form_basic_url; ?>'>
 				<?php esc_html_e( 'Click here to create a booking form with this calendar', 'booking-activities' ); ?>
 			</a>
 		<?php } else { ?>

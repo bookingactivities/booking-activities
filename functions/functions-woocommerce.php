@@ -1463,30 +1463,28 @@ function bookacti_get_order_item_by_booking_group_id( $booking_group_id ) {
 /**
  * Get booking actions according to its order status
  * @since 1.6.0 (replace bookacti_display_actions_buttons_on_items)
+ * @version 1.12.3
  * @param array $booking_actions
  * @param int $order_id
  * @return array
  */
 function bookacti_wc_booking_actions_per_order_id( $booking_actions, $order_id ) {
-
-	if( ! $order_id || ! is_numeric( $order_id ) ) {
-		return $booking_actions;
-	}
+	if( ! $order_id || ! is_numeric( $order_id ) ) { return $booking_actions; }
 
 	$order = wc_get_order( $order_id );
 
 	// Check view order
-	if( empty( $order ) ) {
-		if( isset( $booking_actions['view-order'] ) ) { unset( $booking_actions['view-order'] ); } 
-		return $booking_actions;
-	} else {
-		if( isset( $booking_actions['view-order'] ) ) { $booking_actions[ 'view-order' ][ 'link' ] = get_edit_post_link( $order_id ); }
+	if( ! $order || ! current_user_can( 'edit_others_shop_orders' ) ) {
+		if( isset( $booking_actions[ 'view-order' ] ) ) { unset( $booking_actions[ 'view-order' ] ); } 
 	}
+	if( ! $order ) { return $booking_actions; }
+	
+	if( isset( $booking_actions[ 'view-order' ] ) ) { $booking_actions[ 'view-order' ][ 'link' ] = get_edit_post_link( $order_id ); }
 
 	// Check cancel / reschedule
 	if( ! current_user_can( 'bookacti_edit_bookings' ) && $order->get_status() === 'pending' )	{ 
-		if( isset( $booking_actions['cancel'] ) )		{ unset( $booking_actions['cancel'] ); } 
-		if( isset( $booking_actions['reschedule'] ) )	{ unset( $booking_actions['reschedule'] ); }
+		if( isset( $booking_actions[ 'cancel' ] ) )		{ unset( $booking_actions[ 'cancel' ] ); } 
+		if( isset( $booking_actions[ 'reschedule' ] ) )	{ unset( $booking_actions[ 'reschedule' ] ); }
 	}
 
 	return $booking_actions;

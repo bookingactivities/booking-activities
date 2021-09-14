@@ -237,7 +237,7 @@ add_action( 'wp_ajax_nopriv_bookactiRefundBooking', 'bookacti_controller_refund_
 
 /**
  * AJAX Controller - Change booking state
- * @version 1.12.0
+ * @version 1.12.3
  */
 function bookacti_controller_change_booking_state() {
 	$booking_id = intval( $_POST[ 'booking_id' ] );
@@ -247,7 +247,7 @@ function bookacti_controller_change_booking_state() {
 	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'change_booking_status' ); }
 	
 	// Check capabilities
-	$is_allowed = current_user_can( 'bookacti_edit_bookings' ) && bookacti_user_can_manage_booking( $booking_id );
+	$is_allowed = bookacti_user_can_manage_booking( $booking_id, false );
 	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'change_booking_status' ); }
 
 	$booking = bookacti_get_booking_by_id( $booking_id, true );
@@ -307,7 +307,7 @@ add_action( 'wp_ajax_bookactiChangeBookingState', 'bookacti_controller_change_bo
 /**
  * AJAX Controller - Change booking quantity
  * @since 1.7.10
- * @version 1.12.0
+ * @version 1.12.3
  */
 function bookacti_controller_change_booking_quantity() {
 	$booking_id		= intval( $_POST[ 'booking_id' ] );
@@ -319,7 +319,7 @@ function bookacti_controller_change_booking_quantity() {
 	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'change_booking_quantity' ); }
 	
 	// Check capabilities
-	$is_allowed = current_user_can( 'bookacti_edit_bookings' ) && bookacti_user_can_manage_booking( $booking_id );
+	$is_allowed = bookacti_user_can_manage_booking( $booking_id, false );
 	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'change_booking_quantity' ); }
 
 	// Check if the quantity is valid
@@ -418,7 +418,7 @@ add_action( 'wp_ajax_nopriv_bookactiGetRescheduleBookingSystemData', 'bookacti_c
 
 /**
  * AJAX Controller - Reschedule a booking
- * @version 1.12.0
+ * @version 1.12.3
  */
 function bookacti_controller_reschedule_booking() {
 	$booking_id		= intval( $_POST[ 'booking_id' ] );
@@ -464,8 +464,8 @@ function bookacti_controller_reschedule_booking() {
 	$rescheduled = bookacti_reschedule_booking( $booking_id, $picked_events[ 0 ][ 'id' ], $picked_events[ 0 ][ 'start' ], $picked_events[ 0 ][ 'end' ] );
 
 	if( $rescheduled === 0 ) {
-		$message = __( 'You must select a different time slot than the current one.', 'booking-activities' );
-		bookacti_send_json( array( 'status' => 'no_changes', 'error' => 'no_changes', 'message' => $message ), 'reschedule_booking' );
+		$message = esc_html__( 'You must select a different event than the current one.', 'booking-activities' );
+		bookacti_send_json( array( 'status' => 'failed', 'error' => 'same_event', 'message' => $message ), 'reschedule_booking' );
 	}
 
 	if( ! $rescheduled ) {
@@ -493,7 +493,7 @@ add_action( 'wp_ajax_nopriv_bookactiRescheduleBooking', 'bookacti_controller_res
 /**
  * AJAX Controller - Delete a booking
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.12.3
  */
 function bookacti_controller_delete_booking() {
 	$booking_id = intval( $_POST[ 'booking_id' ] );
@@ -503,7 +503,7 @@ function bookacti_controller_delete_booking() {
 	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'delete_booking' ); }
 
 	// Check capabilities
-	$is_allowed = current_user_can( 'bookacti_delete_bookings' ) && bookacti_user_can_manage_booking( $booking_id );
+	$is_allowed = bookacti_user_can_manage_booking( $booking_id, false, array( 'bookacti_delete_bookings' ) );
 	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'delete_booking' ); }
 
 	do_action( 'bookacti_before_delete_booking', $booking_id );
@@ -533,20 +533,20 @@ add_action( 'wp_ajax_bookactiDeleteBooking', 'bookacti_controller_delete_booking
 /**
  * AJAX Controller - Get grouped bookings rows
  * @since 1.7.4 (was bookacti_controller_get_booking_rows)
- * @version 1.8.0
+ * @version 1.12.3
  */
 function bookacti_controller_get_grouped_bookings_rows() {
 	// Check nonce and capabilities
 	$is_nonce_valid = check_ajax_referer( 'bookacti_get_booking_rows', 'nonce', false );
 	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'get_grouped_bookings_rows' ); }
 	
-	$is_allowed = current_user_can( 'bookacti_edit_bookings' );
+	$booking_group_id = intval( $_POST[ 'booking_group_id' ] );
+	$is_allowed = bookacti_user_can_manage_booking_group( $booking_group_id, true, array( 'bookacti_manage_bookings', 'bookacti_edit_bookings' ) );
 	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'get_grouped_bookings_rows' ); }
 
-	$booking_group_id	= intval( $_POST[ 'booking_group_id' ] );
-	$context			= ! empty( $_POST[ 'context' ] ) ? sanitize_title_with_dashes( $_POST[ 'context' ] ) : '';
-	$columns			= ! empty( $_POST[ 'columns' ] ) && is_array( $_POST[ 'columns' ] ) ? array_map( 'sanitize_title_with_dashes', $_POST[ 'columns' ] ) : array();
-	$rows				= $booking_group_id ? bookacti_get_booking_list_rows_according_to_context( $context, array( 'booking_group_id' => $booking_group_id, 'group_by' => 'none' ), $columns ) : '';
+	$context = ! empty( $_POST[ 'context' ] ) ? sanitize_title_with_dashes( $_POST[ 'context' ] ) : '';
+	$columns = ! empty( $_POST[ 'columns' ] ) && is_array( $_POST[ 'columns' ] ) ? array_map( 'sanitize_title_with_dashes', $_POST[ 'columns' ] ) : array();
+	$rows = $booking_group_id ? bookacti_get_booking_list_rows_according_to_context( $context, array( 'booking_group_id' => $booking_group_id, 'group_by' => 'none' ), $columns ) : '';
 
 	if( ! $rows ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'no_rows', 'message' => esc_html__( 'No bookings.', 'booking-activities' ) ), 'get_grouped_bookings_rows' ); }
 
@@ -742,7 +742,7 @@ add_action( 'wp_ajax_nopriv_bookactiRefundBookingGroup', 'bookacti_controller_re
 /**
  * AJAX Controller - Change booking group state
  * @since 1.1.0
- * @version 1.12.0
+ * @version 1.12.3
  */
 function bookacti_controller_change_booking_group_state() {
 	$booking_group_id = intval( $_POST[ 'booking_id' ] );
@@ -752,7 +752,7 @@ function bookacti_controller_change_booking_group_state() {
 	if( ! $is_nonce_valid ) { bookacti_send_json_not_allowed( 'change_booking_group_status' ); }
 
 	// Check capabilities
-	$is_allowed = current_user_can( 'bookacti_edit_bookings' ) && bookacti_user_can_manage_booking_group( $booking_group_id );	
+	$is_allowed = bookacti_user_can_manage_booking_group( $booking_group_id, false );	
 	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'change_booking_group_status' ); }
 
 	// Get bookings
@@ -817,7 +817,7 @@ add_action( 'wp_ajax_bookactiChangeBookingGroupState', 'bookacti_controller_chan
 /**
  * AJAX Controller - Change booking group quantity
  * @since 1.7.10
- * @version 1.12.0
+ * @version 1.12.3
  */
 function bookacti_controller_change_booking_group_quantity() {
 	$booking_group_id	= intval( $_POST[ 'booking_id' ] );
@@ -830,7 +830,7 @@ function bookacti_controller_change_booking_group_quantity() {
 	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'change_booking_group_quantity' ); }
 	
 	// Check capabilities
-	$is_allowed = current_user_can( 'bookacti_edit_bookings' ) && bookacti_user_can_manage_booking_group( $booking_group_id );
+	$is_allowed = bookacti_user_can_manage_booking_group( $booking_group_id, false );
 	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'change_booking_group_quantity' ); }
 
 	// Check if the quantity is valid
@@ -868,7 +868,7 @@ add_action( 'wp_ajax_bookactiChangeBookingGroupQuantity', 'bookacti_controller_c
 /**
  * AJAX Controller - Delete a booking group
  * @since 1.5.0
- * @version 1.8.5
+ * @version 1.12.3
  */
 function bookacti_controller_delete_booking_group() {
 	$booking_group_id = intval( $_POST[ 'booking_id' ] );
@@ -878,7 +878,7 @@ function bookacti_controller_delete_booking_group() {
 	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'delete_booking_group' ); }
 
 	// Check capabilities
-	$is_allowed = current_user_can( 'bookacti_delete_bookings' ) && bookacti_user_can_manage_booking_group( $booking_group_id );
+	$is_allowed = bookacti_user_can_manage_booking_group( $booking_group_id, false, array( 'bookacti_delete_bookings' ) );
 	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'delete_booking_group' ); }
 
 	do_action( 'bookacti_before_delete_booking_group', $booking_group_id );
