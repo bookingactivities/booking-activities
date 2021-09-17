@@ -584,7 +584,7 @@ function bookacti_format_booking_system_attributes( $raw_atts = array() ) {
 /**
  * Format picked events array
  * @since 1.9.0
- * @version 1.12.0
+ * @version 1.12.3
  * @param array $picked_events_raw
  * @param boolean $one_entry_per_group
  * @return array
@@ -603,7 +603,7 @@ function bookacti_format_picked_events( $picked_events_raw = array(), $one_entry
 			// For groups of events
 			if( $group_uid && $one_entry_per_group ) {
 				// If the group of events is already in the array, add the picked event to the corresponding group and skip
-				$array_i = array_search( $group_uid, $picked_group_uids );
+				$array_i = array_search( $group_uid, $picked_group_uids, true );
 				if( $array_i !== false ) { 
 					$picked_events[ $array_i ][ 'events' ][] = $picked_event;
 					continue;

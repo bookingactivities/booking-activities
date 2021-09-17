@@ -1,7 +1,7 @@
 <?php 
 /**
  * Frontend and Backend booking dialogs
- * @version 1.8.6
+ * @version 1.12.3
  */
 
 // Exit if accessed directly
@@ -40,7 +40,7 @@ $messages = bookacti_get_messages();
 			</div>
 			<div id='bookacti-refund-options'></div>
 			<div id='bookacti-refund-message'>
-				<strong><?php echo bookacti_get_message( 'refund_request_dialog_content' ); ?></strong>
+				<strong><?php echo bookacti_get_message( 'refund_request_dialog_feedback_label' ); ?></strong>
 				<textarea name='refund-message'></textarea>
 			</div>
 		</div>

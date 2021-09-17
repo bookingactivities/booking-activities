@@ -209,7 +209,7 @@ $j( document ).ready( function() {
 
 /**
  * Initialize the calendar
- * @version 1.12.0
+ * @version 1.12.3
  * @param {HTMLElement} booking_system
  * @param {boolean} reload_events
  */
@@ -313,6 +313,12 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 			}
 			element.find( '.fc-time' ).html( '<span class="bookacti-event-time-start">' + event.start.format( time_format ) + '</span><span class="bookacti-event-time-separator"> - </span><span class="bookacti-event-time-end">' + event.end.format( time_format ) + '</span>' );
 			
+			// Add background to basic views
+			if( view.hasOwnProperty( 'dayGrid' ) ) {
+				var bg_div = $j( '<div></div>', { 'class': 'fc-bg' });
+				element.append( bg_div );
+			}
+			
 			// Add availability div
 			var bookings_only = bookacti.booking_system[ booking_system_id ][ 'bookings_only' ] == 1 ? true : false;
 			var avail_div = '';
@@ -335,14 +341,6 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 			}
 
 			if( avail_div ) { element.append( avail_div ); }
-			
-			// Add background to basic views
-			if( view.hasOwnProperty( 'dayGrid' ) ) {
-				var bg_div = $j( '<div></div>', {
-					'class': 'fc-bg'
-				});
-				element.append( bg_div );
-			}
 			
 			booking_system.trigger( 'bookacti_event_render', [ event, element, view ] );
 			

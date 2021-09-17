@@ -828,7 +828,7 @@ add_filter( 'bookacti_booking_items_to_export', 'bookacti_fill_wc_columns_in_boo
 /**
  * Add WC bookings export columns
  * @since 1.6.0
- * @version 1.11.0
+ * @version 1.12.3
  * @param array $columns_labels
  * @return array
  */
@@ -839,7 +839,7 @@ function bookacti_wc_bookings_export_columns( $columns_labels ) {
 	$columns_labels[ 'order_item_price' ]	= esc_html__( 'Product price', 'booking-activities' );
 	$columns_labels[ 'order_item_tax' ]		= esc_html__( 'Product tax', 'booking-activities' );
 	
-	$pos = array_search( 'customer_roles', array_keys( $columns_labels ) );
+	$pos = array_search( 'customer_roles', array_keys( $columns_labels ), true );
 	if( $pos === false ) { $pos = count( $columns_labels ) - 1; }
 	
 	$customer_columns_labels[ 'customer_company' ]	= esc_html__( 'Customer company', 'booking-activities' );

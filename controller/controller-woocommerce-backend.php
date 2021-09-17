@@ -137,7 +137,7 @@ add_action( 'woocommerce_before_delete_order_item', 'bookacti_cancel_bookings_wh
 
 /**
  * Change booking quantity and status when a refund is deleted
- * @version 1.11.5
+ * @version 1.12.3
  * @param int $refund_id
  * @param int $order_id
  */
@@ -165,7 +165,7 @@ function bookacti_update_booking_when_refund_is_deleted( $refund_id, $order_id )
 			if( ! $refunds ) { continue; }
 			
 			// Backward compatibility
-			$refund_id_index = array_search( $refund_id, $refunds ); // The refunds array used to be an array of ids only
+			$refund_id_index = array_search( $refund_id, $refunds, true ); // The refunds array used to be an array of ids only
 			if( $refund_id_index === false ) {
 				if( isset( $refunds[ $refund_id ] ) ) { $refund_id_index = $refund_id; }
 			}

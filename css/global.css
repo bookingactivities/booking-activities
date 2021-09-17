@@ -136,6 +136,7 @@
 
 .bookacti-calendar .fc-basic-view .fc-event .fc-title		{ display: block; }
 .bookacti-calendar .fc-basic-view .fc-content-skeleton tr	{ background-color: transparent !important; }
+.bookacti-calendar:not( .badp-eventLimit-auto ) .fc-basic-view .bookacti-availability-container { position: relative; text-align: right; }
 
 .fc-popover .fc-widget-content { max-height: 300px; overflow-y: auto; }
 
