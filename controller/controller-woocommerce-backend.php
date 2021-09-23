@@ -137,7 +137,7 @@ add_action( 'woocommerce_before_delete_order_item', 'bookacti_cancel_bookings_wh
 
 /**
  * Change booking quantity and status when a refund is deleted
- * @version 1.11.5
+ * @version 1.12.3
  * @param int $refund_id
  * @param int $order_id
  */
@@ -165,7 +165,7 @@ function bookacti_update_booking_when_refund_is_deleted( $refund_id, $order_id )
 			if( ! $refunds ) { continue; }
 			
 			// Backward compatibility
-			$refund_id_index = array_search( $refund_id, $refunds ); // The refunds array used to be an array of ids only
+			$refund_id_index = array_search( $refund_id, $refunds, true ); // The refunds array used to be an array of ids only
 			if( $refund_id_index === false ) {
 				if( isset( $refunds[ $refund_id ] ) ) { $refund_id_index = $refund_id; }
 			}
@@ -300,7 +300,7 @@ add_filter( 'woocommerce_product_data_tabs', 'bookacti_create_activity_tab', 10,
 
 /**
  * Content of the activity tab
- * @version 1.8.0
+ * @version 1.12.3
  * @global int $thepostid
  */
 function bookacti_activity_tab_content() {
@@ -343,13 +343,13 @@ function bookacti_activity_tab_content() {
 					if( $can_edit_forms ) {
 						if( $forms_nb ) {
 							?>
-							<a href='<?php echo esc_url( admin_url( 'admin.php?page=bookacti_forms&action=edit&form_id=' . $current_form ) ); ?>' target='_blank'>
+							<a href='<?php echo esc_url( admin_url( 'admin.php?page=bookacti_forms&action=edit&form_id=' . $current_form ) ); ?>'>
 								<?php esc_html_e( 'Edit this form', 'booking-activities' ); ?>
 							</a>
 							<?php
 						} else {
 							?>
-							<a href='<?php echo esc_url( admin_url( 'admin.php?page=bookacti_forms&action=new' ) ); ?>' target='_blank'>
+							<a href='<?php echo esc_url( admin_url( 'admin.php?page=bookacti_forms&action=new' ) ); ?>'>
 								<?php esc_html_e( 'Create a form', 'booking-activities' ); ?>
 							</a>
 							<?php
@@ -420,7 +420,7 @@ add_action( 'woocommerce_variation_options', 'bookacti_add_variation_option', 10
 
 /**
  * Add custom fields for activity variation product type
- * @version 1.8.0
+ * @version 1.12.3
  * @param int $loop
  * @param array $variation_data
  * @param WP_Post $variation
@@ -465,13 +465,13 @@ function bookacti_add_variation_fields( $loop, $variation_data, $variation ) {
 				if( $can_edit_forms ) {
 					if( $forms_nb ) {
 						?>
-						<a href='<?php echo esc_url( admin_url( 'admin.php?page=bookacti_forms&action=edit&form_id=' . $current_form ) ); ?>' target='_blank'>
+						<a href='<?php echo esc_url( admin_url( 'admin.php?page=bookacti_forms&action=edit&form_id=' . $current_form ) ); ?>'>
 							<?php esc_html_e( 'Edit this form', 'booking-activities' ); ?>
 						</a>
 						<?php
 					} else {
 						?>
-						<a href='<?php echo esc_url( admin_url( 'admin.php?page=bookacti_forms&action=new' ) ); ?>' target='_blank'>
+						<a href='<?php echo esc_url( admin_url( 'admin.php?page=bookacti_forms&action=new' ) ); ?>'>
 							<?php esc_html_e( 'Create a form', 'booking-activities' ); ?>
 						</a>
 						<?php

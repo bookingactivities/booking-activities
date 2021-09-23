@@ -541,7 +541,7 @@ function bookacti_dialog_refund_confirmation( message ) {
 
 /**
  * Change Booking State
- * @version 1.12.2
+ * @version 1.12.3
  * @param {int} booking_id
  * @param {string} booking_type
  */
@@ -616,6 +616,13 @@ function bookacti_dialog_change_booking_state( booking_id, booking_type ) {
 					// Display a loader
 					bookacti_booking_row_enter_loading_state( row );
 					
+					// Display a loader
+					var loading_div = '<div class="bookacti-loading-alt">' 
+										+ '<img class="bookacti-loader" src="' + bookacti_localized.plugin_path + '/img/ajax-loader.gif" title="' + bookacti_localized.loading + '" />'
+										+ '<span class="bookacti-loading-alt-text" >' + bookacti_localized.loading + '</span>'
+									+ '</div>';
+					$j( '#bookacti-change-booking-state-dialog' ).append( loading_div );
+					
 					$j.ajax({
 						url: bookacti_localized.ajaxurl,
 						type: 'POST',
@@ -673,6 +680,7 @@ function bookacti_dialog_change_booking_state( booking_id, booking_type ) {
 						},
 						complete: function() {
 							$j( '#bookacti-change-booking-state-dialog .bookacti-notices' ).show();
+							$j( '#bookacti-change-booking-state-dialog .bookacti-loading-alt' ).remove();
 							bookacti_booking_row_exit_loading_state( row );
 						}
 					});
@@ -699,7 +707,7 @@ function bookacti_dialog_change_booking_state( booking_id, booking_type ) {
 /**
  * Change Booking quantity
  * @since 1.7.10
- * @version 1.12.2
+ * @version 1.12.3
  * @param {int} booking_id
  * @param {string} booking_type
  */
@@ -761,6 +769,13 @@ function bookacti_dialog_change_booking_quantity( booking_id, booking_type ) {
 					// Display a loader
 					bookacti_booking_row_enter_loading_state( row );
 					
+					// Display a loader
+					var loading_div = '<div class="bookacti-loading-alt">' 
+										+ '<img class="bookacti-loader" src="' + bookacti_localized.plugin_path + '/img/ajax-loader.gif" title="' + bookacti_localized.loading + '" />'
+										+ '<span class="bookacti-loading-alt-text" >' + bookacti_localized.loading + '</span>'
+									+ '</div>';
+					$j( '#bookacti-change-booking-quantity-dialog' ).append( loading_div );
+	
 					$j.ajax({
 						url: bookacti_localized.ajaxurl,
 						type: 'POST',
@@ -811,6 +826,7 @@ function bookacti_dialog_change_booking_quantity( booking_id, booking_type ) {
 						},
 						complete: function() {
 							$j( '#bookacti-change-booking-quantity-dialog .bookacti-notices' ).show();
+							$j( '#bookacti-change-booking-quantity-dialog .bookacti-loading-alt' ).remove();
 							bookacti_booking_row_exit_loading_state( row );
 						}
 					});
@@ -837,7 +853,7 @@ function bookacti_dialog_change_booking_quantity( booking_id, booking_type ) {
 
 /**
  * Reschedule booking dialog
- * @version 1.12.2
+ * @version 1.12.3
  * @param {int} booking_id
  */
 function bookacti_dialog_reschedule_booking( booking_id ) {
@@ -855,7 +871,7 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 	
 	// Display a loader
 	bookacti_booking_row_enter_loading_state( loading_container );
-
+	
 	$j.ajax({
 		url: bookacti_localized.ajaxurl,
 		type: 'POST',
@@ -940,6 +956,13 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 				// Display a loader
 				bookacti_booking_row_enter_loading_state( loading_container );
 				bookacti_start_loading_booking_system( booking_system );
+				
+				// Display a loader
+				var loading_div = '<div class="bookacti-loading-alt">' 
+									+ '<img class="bookacti-loader" src="' + bookacti_localized.plugin_path + '/img/ajax-loader.gif" title="' + bookacti_localized.loading + '" />'
+									+ '<span class="bookacti-loading-alt-text" >' + bookacti_localized.loading + '</span>'
+								+ '</div>';
+				$j( '#bookacti-reschedule-booking-dialog' ).append( loading_div );
 
 				$j.ajax({
 					url: bookacti_localized.ajaxurl,
@@ -972,6 +995,7 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 						console.log( e );
 					},
 					complete: function() {
+						$j( '#bookacti-reschedule-booking-dialog .bookacti-loading-alt' ).remove();
 						bookacti_booking_row_exit_loading_state( loading_container );
 						bookacti_stop_loading_booking_system( booking_system );
 					}
@@ -981,10 +1005,7 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 		// Cancel button
 		{
             text: bookacti_localized.dialog_button_cancel,
-            
-            // On click on the OK Button, new values are send to a script that update the database
             click: function() {
-				// Close the modal dialog
 				$j( this ).dialog( 'close' );
             }
         }]

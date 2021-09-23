@@ -464,7 +464,7 @@ function bookacti_get_notifications_tags( $notification_id = '' ) {
 /**
  * Get notifications tags and values corresponding to given booking
  * @since 1.2.0
- * @version 1.12.0
+ * @version 1.12.3
  * @param object $booking
  * @param string $booking_type 'group' or 'single'
  * @param array $notification
@@ -500,7 +500,7 @@ function bookacti_get_notifications_tags_values( $booking, $booking_type, $notif
 			$booking_data[ '{booking_start_raw}' ]	= $booking->start;
 			$booking_data[ '{booking_end}' ]		= bookacti_format_datetime( $booking->end, $datetime_format );
 			$booking_data[ '{booking_end_raw}' ]	= $booking->end;
-			$booking_data[ '{booking_admin_url}' ]	= esc_url( admin_url( 'admin.php?page=bookacti_bookings' ) . '&booking_group_id=' . $booking->id . '&event_group_id=' . $booking->event_group_id . '&group_by=booking_group' );
+			$booking_data[ '{booking_admin_url}' ]	= esc_url( admin_url( 'admin.php?page=bookacti_bookings' ) . '&booking_group_id=' . $booking->id . '&group_by=booking_group' );
 			$booking_data[ '{event_admin_url}' ]	= esc_url( admin_url( 'admin.php?page=bookacti_bookings' ) . '&event_group_id=' . $booking->event_group_id . '&group_by=booking_group' );
 			$booking_data[ '{activity_id}' ]		= $booking->category_id;
 			$booking_data[ '{activity_title}' ]		= apply_filters( 'bookacti_translate_text', $booking->category_title, $locale );
@@ -517,7 +517,7 @@ function bookacti_get_notifications_tags_values( $booking, $booking_type, $notif
 			$booking_data[ '{booking_start_raw}' ]	= $booking->event_start;
 			$booking_data[ '{booking_end}' ]		= bookacti_format_datetime( $booking->event_end, $datetime_format );
 			$booking_data[ '{booking_end_raw}' ]	= $booking->event_end;
-			$booking_data[ '{booking_admin_url}' ]	= esc_url( admin_url( 'admin.php?page=bookacti_bookings' ) . '&booking_id=' . $booking->id . '&event_id=' . $booking->event_id . '&event_start=' . $booking->event_start . '&event_end=' . $booking->event_end );
+			$booking_data[ '{booking_admin_url}' ]	= esc_url( admin_url( 'admin.php?page=bookacti_bookings' ) . '&booking_id=' . $booking->id );
 			$booking_data[ '{event_admin_url}' ]	= esc_url( admin_url( 'admin.php?page=bookacti_bookings' ) . '&event_id=' . $booking->event_id . '&event_start=' . $booking->event_start . '&event_end=' . $booking->event_end );
 			$booking_data[ '{activity_id}' ]		= $booking->activity_id;
 			$booking_data[ '{activity_title}' ]		= apply_filters( 'bookacti_translate_text', $booking->activity_title, $locale );

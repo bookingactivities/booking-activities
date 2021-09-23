@@ -5,12 +5,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Add WooCommerce settings tab
  * @since 1.8.0 (was bookacti_add_cart_settings_tab)
- * @version 1.12.0
+ * @version 1.12.3
  * @param array $tabs
  * @return array
  */
 function bookacti_add_wc_settings_tab( $tabs ) {
-	$i = array_search( 'licenses', array_keys( $tabs ) );
+	$i = array_search( 'licenses', array_keys( $tabs ), true );
 	if( ! $i ) { $i = count( $tabs ); }
 	$new_tab = array( 'woocommerce' => esc_html__( 'WooCommerce', 'booking-activities' ) );
 	$tabs = array_merge( array_slice( $tabs, 0, $i, true ), $new_tab, array_slice( $tabs, $i, null, true ) );
@@ -211,15 +211,17 @@ add_action( 'bookacti_notification_settings_page_global', 'bookacti_display_wc_n
 
 /**
  * Add customizable messages
- * 
  * @since 1.2.0
- * @version 1.3.0
+ * @version 1.12.3
  * @param array $messages
  * @return array
  */
 function bookacti_wc_default_messages( $messages ) {
-	
 	$wc_messages = array( 
+		'booking_form_submit_button' => array(
+			'value'			=> esc_html__( 'Book', 'booking-activities' ),
+			'description'	=> esc_html__( 'Add to cart button label on "Activity" products pages only.', 'booking-activities' )
+		),
 		'temporary_booking_success' => array(
 			/* translators: {time} tag is a variable standing for an amount of days, hours and minutes. E.g.: {time}' can be '1 day, 6 hours, 30 minutes'. */
 			'value'			=> esc_html__( 'Your activity is temporarily booked for {time}. Please proceed to checkout.', 'booking-activities' ),
@@ -231,7 +233,6 @@ function bookacti_wc_default_messages( $messages ) {
 			'description'	=> esc_html__( 'This message will be displayed above your cart. Use the {countdown} tag to display the real-time countdown.', 'booking-activities' )
 		)
 	);
-	
 	return array_merge( $messages, $wc_messages );
 }
 add_filter( 'bookacti_default_messages', 'bookacti_wc_default_messages', 10, 1 );

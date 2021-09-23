@@ -1385,6 +1385,7 @@ function bookacti_sanitize_form_field_order( $form_id, $field_order ) {
 /**
  * Get form fields order
  * @since 1.12.0
+ * @version 1.12.3
  * @param int $form_id
  * @return array
  */
@@ -1392,7 +1393,7 @@ function bookacti_get_form_fields_order( $form_id ) {
 	$form_id = intval( $form_id );
 	$fields_order = wp_cache_get( 'form_fields_order_' . $form_id, 'bookacti' );
 	if( $form_id && ! $fields_order ) {
-		$fields_order = bookacti_get_metadata( 'form', $form_id, 'field_order', true );
+		$fields_order = bookacti_ids_to_array( bookacti_get_metadata( 'form', $form_id, 'field_order', true ) );
 		wp_cache_set( 'form_fields_order_' . $form_id, $fields_order, 'bookacti' );
 	}
 	return $fields_order ? $fields_order : array();
@@ -1586,7 +1587,7 @@ function bookacti_get_register_fields_default_data() {
 /**
  * Format form filters
  * @since 1.5.0
- * @version 1.6.0
+ * @version 1.12.3
  * @param array $filters 
  * @return array
  */
@@ -1618,7 +1619,7 @@ function bookacti_format_form_filters( $filters = array() ) {
 		if( in_array( $filter, array( 'id' ), true ) ) {
 			if( is_numeric( $current_value ) )	{ $current_value = array( $current_value ); }
 			if( ! is_array( $current_value ) )	{ $current_value = $default_value; }
-			else if( ( $i = array_search( 'all', $current_value ) ) !== false ) { unset( $current_value[ $i ] ); }
+			else if( ( $i = array_search( 'all', $current_value, true ) ) !== false ) { unset( $current_value[ $i ] ); }
 		
 		} else if( in_array( $filter, array( 'title' ), true ) ) {
 			if( ! is_string( $current_value ) ) { $current_value = $default_value; }
@@ -1626,7 +1627,7 @@ function bookacti_format_form_filters( $filters = array() ) {
 		} else if( in_array( $filter, array( 'status' ), true ) ) {
 			if( is_string( $current_value ) )	{ $current_value = array( $current_value ); }
 			if( ! is_array( $current_value ) )	{ $current_value = $default_value; }
-			else if( ( $i = array_search( 'all', $current_value ) ) !== false ) { unset( $current_value[ $i ] ); }
+			else if( ( $i = array_search( 'all', $current_value, true ) ) !== false ) { unset( $current_value[ $i ] ); }
 			
 		} else if( in_array( $filter, array( 'active' ), true ) ) {
 				 if( in_array( $current_value, array( true, 'true', 1, '1' ), true ) )	{ $current_value = 1; }

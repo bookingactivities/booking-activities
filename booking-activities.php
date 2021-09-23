@@ -3,13 +3,13 @@
  * Plugin Name: Booking Activities
  * Plugin URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Description: Booking system specialized in activities (sports, cultural, leisure, events...). Works great with WooCommerce.
- * Version: 1.12.2
+ * Version: 1.12.3
  * Author: Booking Activities Team
  * Author URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Text Domain: booking-activities
  * Domain Path: /languages/
  * WC requires at least: 3.0
- * WC tested up to: 5.7
+ * WC tested up to: 5.8
  * License: GPL3
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  * 
@@ -40,7 +40,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 // GLOBALS AND CONSTANTS
-if( ! defined( 'BOOKACTI_VERSION' ) )		{ define( 'BOOKACTI_VERSION', '1.12.2' ); }
+if( ! defined( 'BOOKACTI_VERSION' ) )		{ define( 'BOOKACTI_VERSION', '1.12.3' ); }
 if( ! defined( 'BOOKACTI_PLUGIN_NAME' ) )	{ define( 'BOOKACTI_PLUGIN_NAME', 'booking-activities' ); }
 
 
@@ -416,20 +416,20 @@ add_action( 'init', 'bookacti_check_version', 5 );
 
 /**
  * Create the Admin Menu
- * @version 1.8.5
+ * @version 1.12.3
  */
 function bookacti_create_menu() {
     // Add a menu and submenus
     $icon_url = 'dashicons-calendar-alt';
     add_menu_page( 'Booking Activities', 'Booking Activities', 'bookacti_manage_booking_activities', 'booking-activities', null, $icon_url, '58.5' );
-    add_submenu_page( 'booking-activities',	'Booking Activities',							_x( 'Home', 'Landing page tab name', 'booking-activities' ),'bookacti_manage_booking_activities',			'booking-activities',	'bookacti_landing_page' );
-	add_submenu_page( 'booking-activities',	__( 'Calendar editor', 'booking-activities' ),	__( 'Calendar editor', 'booking-activities' ),				'bookacti_manage_templates',					'bookacti_calendars',	'bookacti_templates_page' );
-	add_submenu_page( 'booking-activities',	__( 'Booking forms', 'booking-activities' ),	__( 'Booking forms', 'booking-activities' ),				'bookacti_manage_forms',						'bookacti_forms',		'bookacti_forms_page' );
-	add_submenu_page( 'booking-activities',	__( 'Bookings', 'booking-activities' ),			__( 'Bookings', 'booking-activities' ),						'bookacti_manage_bookings',						'bookacti_bookings',	'bookacti_bookings_page' );
+    add_submenu_page( 'booking-activities', 'Booking Activities', esc_html( _x( 'Home', 'Landing page tab name', 'booking-activities' ) ), 'bookacti_manage_booking_activities', 'booking-activities', 'bookacti_landing_page' );
+	add_submenu_page( 'booking-activities', esc_html__( 'Calendar editor', 'booking-activities' ), esc_html__( 'Calendar editor', 'booking-activities' ), 'bookacti_manage_templates', 'bookacti_calendars', 'bookacti_templates_page' );
+	add_submenu_page( 'booking-activities', esc_html__( 'Booking forms', 'booking-activities' ), esc_html__( 'Booking forms', 'booking-activities' ), 'bookacti_manage_forms', 'bookacti_forms', 'bookacti_forms_page' );
+	add_submenu_page( 'booking-activities', esc_html__( 'Bookings', 'booking-activities' ), esc_html__( 'Bookings', 'booking-activities' ), 'bookacti_manage_bookings', 'bookacti_bookings', 'bookacti_bookings_page' );
     
 	do_action( 'bookacti_admin_menu' );
 	
-	add_submenu_page( 'booking-activities',	__( 'Settings', 'booking-activities' ),			__( 'Settings', 'booking-activities' ),						'bookacti_manage_booking_activities_settings',	'bookacti_settings',	'bookacti_settings_page' );
+	add_submenu_page( 'booking-activities', esc_html__( 'Settings', 'booking-activities' ), esc_html__( 'Settings', 'booking-activities' ), 'bookacti_manage_booking_activities_settings', 'bookacti_settings', 'bookacti_settings_page' );
 }
 add_action( 'admin_menu', 'bookacti_create_menu' );
 

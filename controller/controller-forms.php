@@ -1422,7 +1422,7 @@ add_action( 'wp_ajax_bookactiInsertFormField', 'bookacti_controller_insert_form_
 /**
  * AJAX Controller - Remove a form field
  * @since 1.5.0
- * @version 1.12.0
+ * @version 1.12.3
  */
 function bookacti_controller_remove_form_field() {
 	$field_id	= intval( $_POST[ 'field_id' ] );
@@ -1445,7 +1445,7 @@ function bookacti_controller_remove_form_field() {
 	// Update field order
 	$field_order = bookacti_get_form_fields_order( $field[ 'form_id' ] );
 	if( $field_order ) {
-		$order_index = array_search( $field_id, $field_order );
+		$order_index = array_search( $field_id, $field_order, true );
 
 		if( $order_index !== false ) {
 			unset( $field_order[ $order_index ] );

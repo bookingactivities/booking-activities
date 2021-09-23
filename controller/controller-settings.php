@@ -546,7 +546,7 @@ add_filter( 'plugin_row_meta', 'bookacti_meta_links_in_plugins_table', 10, 2 );
 /**
  * Display an admin error notice if an add-on is outdated and will cause malfunction
  * @since 1.9.0
- * @version 1.12.2
+ * @version 1.12.3
  */
 function bookacti_add_ons_compatibility_error_notice() {
 	$add_ons = bookacti_get_active_add_ons( '', array() );
@@ -571,10 +571,8 @@ function bookacti_add_ons_compatibility_error_notice() {
 	<div class='notice notice-error bookacti-add-ons-compatibility-notice' >
 		<p>
 			<?php
-				$docs_link = 'https://booking-activities.fr/en/faq/the-add-ons-are-not-updated-automatically-or-an-error-occurs-during-the-updates/';
-				$docs_link_html = '<a href="' . $docs_link . '" target="_blank">' . esc_html__( 'documentation', 'booking-activities' ) . '</a>';
-				/* translators: %1$s = Plugin name. %2$s = Link to the "documentation". */
-				echo sprintf( esc_html__( '%1$s is experiencing major compatibility issues. You need to update the following plugins now (%2$s).', 'booking-activities' ), '<strong>Booking Activities</strong>', $docs_link_html );
+				/* translators: %s = Plugin name (Booking Actiities) */
+				echo sprintf( esc_html__( '%s is experiencing major compatibility issues. You need to update the following plugins now.', 'booking-activities' ), '<strong>Booking Activities</strong>' );
 			?>
 		</p>
 		<ul>
@@ -589,6 +587,17 @@ function bookacti_add_ons_compatibility_error_notice() {
 				}
 			?>
 		</ul>
+		<p>
+			<?php
+				if( isset( $outdated_add_ons[ 'bookacti' ] ) ) { unset( $outdated_add_ons[ 'bookacti' ] ); }
+				if( $outdated_add_ons ) {
+					$docs_link = 'https://booking-activities.fr/en/faq/the-add-ons-are-not-updated-automatically-or-an-error-occurs-during-the-updates/';
+					$docs_link_html = '<a href="' . $docs_link . '" target="_blank">' . esc_html__( 'documentation', 'booking-activities' ) . '</a>';
+					/* translators: %s = Link to the "documentation" */
+					echo '<em>' . sprintf( esc_html__( 'If the add-ons update doesn\'t work, follow the instructions here: %s.', 'booking-activities' ), '<strong>' . $docs_link_html . '</strong>' ) . '</em>';
+				}
+			?>
+		</p>
 	</div>
 	<?php
 }

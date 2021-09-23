@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 5.8
 Requires PHP: 5.3
-Stable tag: 1.12.2
+Stable tag: 1.12.3
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -320,6 +320,16 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.12.3 - 2021/09/23 =
+* Tweak - Add loading feedbacks after validating booking actions dialogs (change status, quantity, reschedule)
+* Tweak - Open new tabs only for external links and exports in backend navigation
+* Tweak - Allow read-only access to bookings with the bookacti_manage_bookings capability
+* Tweak - Add a line break before displaying events availability in basic views (e.g.: month view)
+* Fix - Custom label of the feedback textarea was not displayed in refund dialog
+* Fix - Display the option to customize the submit button only if WC is installed in Messages settings, because it needs to be customized for each form
+* Dev - Make sure the event background is added before availability div in basic views
+* Dev - Set the array_search to strict mode
 
 = 1.12.2 - 2021/09/08 =
 * Tweak - Disable login button after click

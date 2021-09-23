@@ -1,7 +1,7 @@
 <?php 
 /**
  * Calendar editor dialogs
- * @version 1.12.0
+ * @version 1.12.3
  */
 
 // Exit if accessed directly
@@ -331,7 +331,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			function bookacti_fill_template_tab_permissions( $params = array() ) {
 				do_action( 'bookacti_template_tab_permissions_before', $params );
 				
-				$template_managers_cap = array( 'bookacti_edit_bookings', 'bookacti_edit_templates', 'bookacti_read_templates' );
+				$template_managers_cap = array( 'bookacti_manage_bookings', 'bookacti_edit_bookings', 'bookacti_edit_templates', 'bookacti_read_templates' );
 				$template_managers_args = array(
 					'option_label' => array( 'display_name', ' (', 'user_login', ')' ), 
 					'id' => 'bookacti-add-new-template-managers-select-box', 

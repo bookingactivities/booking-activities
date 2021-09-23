@@ -581,7 +581,7 @@ add_filter( 'woocommerce_email_order_items_table', 'bookacti_order_items_unset_e
 /**
  * Add WC data to the booking list
  * @since 1.6.0 (was bookacti_woocommerce_fill_booking_list_custom_columns before)
- * @version 1.11.3
+ * @version 1.12.3
  * @param array $booking_list_items
  * @param array $bookings
  * @param array $booking_groups
@@ -594,6 +594,8 @@ function bookacti_add_wc_data_to_booking_list_items( $booking_list_items, $booki
 	if( ! $booking_list_items ) { return $booking_list_items; }
 
 	$admin_url = admin_url();
+	$can_edit_users = current_user_can( 'edit_users' );
+	$can_edit_products = current_user_can( 'edit_published_products' ) && current_user_can( 'edit_others_products' );
 
 	$order_ids = array();
 	$booking_ids = array();
@@ -623,12 +625,7 @@ function bookacti_add_wc_data_to_booking_list_items( $booking_list_items, $booki
 			if( $booking_list_item[ 'order_id' ] || empty( $booking_list_item[ 'customer' ] ) ) {
 				$display_name	= ! empty( $user->first_name ) && ! empty( $user->last_name ) ? $user->first_name . ' ' . $user->last_name : $user->display_name;
 				$customer_name	= ! empty( $user->billing_first_name ) && ! empty( $user->billing_last_name ) ? $user->billing_first_name . ' ' . $user->billing_last_name : $display_name;
-				$customer = '<a '
-							. ' href="' . esc_url( $admin_url . 'user-edit.php?user_id=' . $booking_list_item[ 'user_id' ] ) . '" '
-							. ' target="_blank" '
-							. ' >'
-								. esc_html( $customer_name )
-						. ' </a>';
+				$customer		= $can_edit_users ? '<a href="' . esc_url( $admin_url . 'user-edit.php?user_id=' . $booking_list_item[ 'user_id' ] ) . '">' . esc_html( $customer_name ) . '</a>' : esc_html( $customer_name );
 				$booking_list_items[ $booking_id ][ 'customer' ] = $customer;
 			}
 
@@ -651,7 +648,7 @@ function bookacti_add_wc_data_to_booking_list_items( $booking_list_items, $booki
 	if( ! $order_items ) { return $booking_list_items; }
 	
 	// Get WC refund actions
-	$wc_refund_actions = array_keys( bookacti_wc_get_refund_actions() );
+	$wc_refund_actions = bookacti_wc_get_refund_actions();
 
 	// Add order item data to the booking list
 	foreach( $order_items as $order_item_id => $order_item ) {
@@ -676,8 +673,8 @@ function bookacti_add_wc_data_to_booking_list_items( $booking_list_items, $booki
 			
 			// Fill product column
 			$product_title = apply_filters( 'bookacti_translate_text', $order_item->get_name() );
-			if( ! empty( $order_item[ 'product_id' ] ) ) {
-				$product_title = '<a href="' . esc_url( $admin_url . 'post.php?action=edit&post=' . $order_item[ 'product_id' ] ) . '" target="_blank">' . $product_title . '</a>';
+			if( ! empty( $order_item[ 'product_id' ] ) && $can_edit_products ) {
+				$product_title = '<a href="' . esc_url( $admin_url . 'post.php?action=edit&post=' . $order_item[ 'product_id' ] ) . '">' . $product_title . '</a>';
 			}
 			$booking_list_items[ $booking_id ][ 'product' ] = $product_title;
 
@@ -720,8 +717,8 @@ function bookacti_add_wc_data_to_booking_list_items( $booking_list_items, $booki
 				$order		= $orders[ $order_id ];
 				$is_paid	= $order->get_date_paid( 'edit' );
 				
-				if( $order->get_status() !== 'pending' && $is_paid && $total_price > 0 ) {
-					$booking_list_items[ $booking_id ][ 'refund_actions' ] = array_unique( array_merge( $booking_list_items[ $booking_id ][ 'refund_actions' ], $wc_refund_actions ) );
+				if( $order->get_status() === 'pending' || ! $is_paid || $total_price <= 0 ) {
+					$booking_list_items[ $booking_id ][ 'refund_actions' ] = array_diff_key( $booking_list_items[ $booking_id ][ 'refund_actions' ], $wc_refund_actions );
 				}
 			}
 		}
@@ -831,7 +828,7 @@ add_filter( 'bookacti_booking_items_to_export', 'bookacti_fill_wc_columns_in_boo
 /**
  * Add WC bookings export columns
  * @since 1.6.0
- * @version 1.11.0
+ * @version 1.12.3
  * @param array $columns_labels
  * @return array
  */
@@ -842,7 +839,7 @@ function bookacti_wc_bookings_export_columns( $columns_labels ) {
 	$columns_labels[ 'order_item_price' ]	= esc_html__( 'Product price', 'booking-activities' );
 	$columns_labels[ 'order_item_tax' ]		= esc_html__( 'Product tax', 'booking-activities' );
 	
-	$pos = array_search( 'customer_roles', array_keys( $columns_labels ) );
+	$pos = array_search( 'customer_roles', array_keys( $columns_labels ), true );
 	if( $pos === false ) { $pos = count( $columns_labels ) - 1; }
 	
 	$customer_columns_labels[ 'customer_company' ]	= esc_html__( 'Customer company', 'booking-activities' );
@@ -942,6 +939,7 @@ add_filter( 'booking_list_rows_according_to_context', 'bookacti_controller_get_o
 /**
  * Add WC booking actions
  * @since 1.6.0
+ * @version 1.12.3
  * @param array $actions
  * @param string $admin_or_front Can be "both", "admin", "front. Default "both".
  * @return array
@@ -949,9 +947,9 @@ add_filter( 'booking_list_rows_according_to_context', 'bookacti_controller_get_o
 function bookacti_wc_booking_actions( $actions, $admin_or_front ) {
 	if( in_array( $admin_or_front, array( 'admin', 'both' ), true ) && ! isset( $actions[ 'view-order' ] ) ) {
 		$actions[ 'view-order' ] = array( 
-			'class'			=> 'bookacti-view-booking-order _blank',
-			'label'			=> __( 'View order', 'booking-activities' ),
-			'description'	=> __( 'Go to the related WooCommerce admin order page.', 'booking-activities' ),
+			'class'			=> 'bookacti-view-booking-order',
+			'label'			=> esc_html__( 'View order', 'booking-activities' ),
+			'description'	=> esc_html__( 'Go to the related WooCommerce admin order page.', 'booking-activities' ),
 			'link'			=> '',
 			'admin_or_front'=> 'admin' 
 		);

@@ -316,7 +316,7 @@ function bookacti_get_default_booking_filters() {
 /**
  * Format booking filters
  * @since 1.3.0
- * @version 1.12.0
+ * @version 1.12.3
  * @param array $filters 
  * @return array
  */
@@ -364,7 +364,7 @@ function bookacti_format_booking_filters( $filters = array() ) {
 		} else if( in_array( $filter, array( 'activities', 'in__booking_id', 'in__booking_group_id', 'in__group_category_id', 'in__event_group_id', 'in__event_id', 'in__form_id', 'in__order_id', 'not_in__booking_id', 'not_in__booking_group_id', 'not_in__group_category_id', 'not_in__event_group_id', 'not_in__event_id', 'not_in__form_id', 'not_in__order_id' ), true ) ) {
 			if( is_numeric( $current_value ) )	{ $current_value = array( $current_value ); }
 			if( ! is_array( $current_value ) )	{ $current_value = $default_value; }
-			else if( ( $i = array_search( 'all', $current_value ) ) !== false ) { unset( $current_value[ $i ] ); }
+			else if( ( $i = array_search( 'all', $current_value, true ) ) !== false ) { unset( $current_value[ $i ] ); }
 			$current_value = array_values( $current_value );
 
 		} else if( in_array( $filter, array( 'in__user_id', 'not_in__user_id' ), true ) ) {
@@ -375,7 +375,7 @@ function bookacti_format_booking_filters( $filters = array() ) {
 		} else if( in_array( $filter, array( 'status', 'payment_status' ), true ) ) {
 			if( is_string( $current_value ) )	{ $current_value = array( $current_value ); }
 			if( ! is_array( $current_value ) )	{ $current_value = $default_value; }
-			else if( ( $i = array_search( 'all', $current_value ) ) !== false ) { unset( $current_value[ $i ] ); }
+			else if( ( $i = array_search( 'all', $current_value, true ) ) !== false ) { unset( $current_value[ $i ] ); }
 			$current_value = array_values( $current_value );
 
 		} else if( in_array( $filter, array( 'booking_id', 'booking_group_id', 'group_category_id', 'event_group_id', 'event_id', 'offset', 'per_page' ), true ) ) {
@@ -582,33 +582,42 @@ function bookacti_get_removed_event_bookings_to_cancel( $event ) {
 
 /**
  * Check if user is allowed to manage a booking
- * @version 1.12.0
+ * @version 1.12.3
  * @param object|int $booking
- * @param int|string $user_id
+ * @param bool $allow_self Return true if the booking belongs to the user.
+ * @param array $capabilities The user must have one of these capabilities. Default to array( 'bookacti_edit_bookings' ).
+ * @param int $user_id
  * @return boolean
  */
-function bookacti_user_can_manage_booking( $booking, $user_id = false ) {
+function bookacti_user_can_manage_booking( $booking, $allow_self = true, $capabilities = array(), $user_id = 0 ) {
 	$user_can_manage_booking = false;
 	
+	// Get desired user (fallback to current user)
 	$user = false;
 	if( ! $user_id && function_exists( 'wp_get_current_user' ) ) { $user = wp_get_current_user(); }
 	else if( $user_id && function_exists( 'get_user_by' ) ) { $user = get_user_by( 'id', $user_id ); }
 	
 	if( $user ) {
+		// Check capabilities
+		$has_cap = false;
+		if( ! $capabilities ) { $capabilities = array( 'bookacti_edit_bookings' ); }
+		foreach( $capabilities as $capability ) { if( user_can( $user, $capability ) ) { $has_cap = true; break; } }
+		
 		// Get booking
 		if( is_numeric( $booking ) ) { $booking = bookacti_get_booking_by_id( $booking, true ); }
 	
 		if( $booking ) {
-			if( ( user_can( $user, 'bookacti_edit_bookings' ) && bookacti_user_can_manage_template( $booking->template_id, $user->ID ) ) 
-			 || ( $booking->user_id && $booking->user_id == $user->ID ) 
+			$booking_user_id = isset( $booking->user_id ) && is_numeric( $booking->user_id ) ? intval( $booking->user_id ) : 0;
+			$is_own = $booking_user_id && $booking_user_id === intval( $user->ID );
+			if( ( $has_cap && bookacti_user_can_manage_template( $booking->template_id, $user->ID ) ) 
+			 || ( $allow_self && $is_own )
 			) { 
 				$user_can_manage_booking = true; 
 			}
 		} 
 		
-		else if( in_array( 'administrator', (array) $user->roles, true ) ) {
-			$user_can_manage_booking = true;
-		}
+		// Allow administrators
+		else if( in_array( 'administrator', (array) $user->roles, true ) ) { $user_can_manage_booking = true; }
 	}
 	
 	return apply_filters( 'bookacti_user_can_manage_booking', $user_can_manage_booking, $booking, $user_id );
@@ -617,7 +626,7 @@ function bookacti_user_can_manage_booking( $booking, $user_id = false ) {
 
 /**
  * Check if a booking can be cancelled
- * @version 1.12.0
+ * @version 1.12.3
  * @param object|int $booking
  * @param string $context
  * @param boolean $allow_grouped_booking
@@ -634,7 +643,9 @@ function bookacti_booking_can_be_cancelled( $booking, $context = '', $allow_grou
 			$is_cancel_allowed	= bookacti_get_setting_value( 'bookacti_cancellation_settings', 'allow_customers_to_cancel' );
 			$is_grouped			= apply_filters( 'bookacti_allow_grouped_booking_changes', $allow_grouped_booking, $booking, 'cancel' ) ? false : ! empty( $booking->group_id );
 			$is_in_delay		= apply_filters( 'bookacti_bypass_booking_changes_deadline', false, $booking, 'cancel' ) ? true : bookacti_is_booking_in_delay( $booking, 'cancel' );
-			if( ! $is_cancel_allowed || $is_grouped || ! $is_in_delay ) { $is_allowed = false; }
+			$user_id			= isset( $booking->user_id ) && is_numeric( $booking->user_id ) ? intval( $booking->user_id ) : 0;
+			$is_own				= $user_id && $user_id === get_current_user_id();
+			if( ! $is_cancel_allowed || $is_grouped || ! $is_in_delay || ! $is_own ) { $is_allowed = false; }
 		}
 		if( empty( $booking->active ) && $context !== 'admin' ) { $is_allowed = false; }
 	}
@@ -645,7 +656,7 @@ function bookacti_booking_can_be_cancelled( $booking, $context = '', $allow_grou
 
 /**
  * Check if a booking is allowed to be rescheduled
- * @version 1.9.0
+ * @version 1.12.3
  * @param object|int $booking
  * @param string $context
  * @return boolean
@@ -662,7 +673,9 @@ function bookacti_booking_can_be_rescheduled( $booking, $context = '' ) {
 			$is_reschedule_allowed	= bookacti_get_setting_value( 'bookacti_cancellation_settings', 'allow_customers_to_reschedule' );
 			$is_grouped				= apply_filters( 'bookacti_allow_grouped_booking_changes', false, $booking, 'reschedule' ) ? false : ! empty( $booking->group_id );
 			$is_in_delay			= apply_filters( 'bookacti_bypass_booking_changes_deadline', false, $booking, 'reschedule' ) ? true : bookacti_is_booking_in_delay( $booking, 'reschedule' );
-			if( ! $is_reschedule_allowed || ! $booking->active || $is_grouped || ! $is_in_delay ) { $is_allowed = false; }
+			$user_id				= isset( $booking->user_id ) && is_numeric( $booking->user_id ) ? intval( $booking->user_id ) : 0;
+			$is_own					= $user_id && $user_id === get_current_user_id();
+			if( ! $is_reschedule_allowed || ! $booking->active || $is_grouped || ! $is_in_delay || ! $is_own ) { $is_allowed = false; }
 		}
 
 		// If the booked event has been removed, we cannot know its activity, then, the booking cannot be rescheduled.
@@ -721,7 +734,7 @@ function bookacti_booking_can_be_rescheduled_to( $booking, $event_id, $event_sta
 
 /**
  * Check if a booking can be refunded
- * @version 1.12.0
+ * @version 1.12.3
  * @param object|int $booking
  * @param string $context
  * @param string $refund_action
@@ -736,6 +749,9 @@ function bookacti_booking_can_be_refunded( $booking, $context = '', $refund_acti
 	else {
 		$refund_actions = bookacti_get_booking_refund_actions( array( $booking ), 'single', $context );
 		
+		$user_id = isset( $booking->user_id ) && is_numeric( $booking->user_id ) ? intval( $booking->user_id ) : 0;
+		$is_own = $user_id && $user_id === get_current_user_id();
+		
 		// Disallow refund in those cases:
 		// -> If the booking is already marked as refunded, 
 		if( $booking->state === 'refunded' 
@@ -746,12 +762,12 @@ function bookacti_booking_can_be_refunded( $booking, $context = '', $refund_acti
 		// -> If the refund action is set but doesn't exist in available refund actions list
 		|| ( ! empty( $refund_action ) && ! array_key_exists( $refund_action, $refund_actions ) ) 
 		// -> If the user is not an admin, the booking state has to be 'cancelled' in the first place
-		|| ( $booking->state !== 'cancelled' && ( ! current_user_can( 'bookacti_edit_bookings' ) || $context === 'front' ) ) ) { 
+		|| ( ! current_user_can( 'bookacti_edit_bookings' ) && ! ( $is_own && $booking->state === 'cancelled' ) ) ) { 
 
 			$true = false;
 		}
 	}
-
+	
 	return apply_filters( 'bookacti_booking_can_be_refunded', $true, $booking, $context );
 }
 
@@ -963,18 +979,20 @@ function bookacti_get_booking_group_bookings_by_id( $booking_group_id, $fetch_me
 /**
  * Check if user is allowed to manage a booking group
  * @since 1.1.0
- * @version 1.12.0
+ * @version 1.12.3
  * @param int $booking_group_id
- * @param int|string $user_id
+ * @param bool $allow_self Return true if the booking belongs to the user.
+ * @param array $capabilities The user must have one of these capabilities. Default to array( 'bookacti_edit_bookings' ).
+ * @param int $user_id
  * @return boolean
  */
-function bookacti_user_can_manage_booking_group( $booking_group_id, $user_id = false ) {
+function bookacti_user_can_manage_booking_group( $booking_group_id, $allow_self = true, $capabilities = array(), $user_id = 0 ) {
 	// Get grouped bookings
 	$bookings = bookacti_get_booking_group_bookings_by_id( $booking_group_id, true );
 	
 	$user_can_manage_booking_group = true;
 	foreach( $bookings as $booking ) {
-		$is_allowed = bookacti_user_can_manage_booking( $booking, $user_id );
+		$is_allowed = bookacti_user_can_manage_booking( $booking, $allow_self, $capabilities, $user_id );
 		if( ! $is_allowed ) {
 			$user_can_manage_booking_group = false;
 			break; // If one of the booking of the group is not allowed, return false immediatly
@@ -1021,7 +1039,7 @@ function bookacti_booking_group_can_be_cancelled( $bookings, $context = '' ) {
 /**
  * Check if a booking group can be refunded
  * @since 1.1.0
- * @version 1.12.0
+ * @version 1.12.3
  * @param array|int $bookings
  * @param string $refund_action
  * @param string $context
@@ -1039,6 +1057,9 @@ function bookacti_booking_group_can_be_refunded( $bookings, $refund_action = '',
 		$booking_keys = array_keys( $bookings );
 		$first_key = reset( $booking_keys );
 		
+		$user_id = isset( $bookings[ $first_key ]->user_id ) && is_numeric( $bookings[ $first_key ]->user_id ) ? intval( $bookings[ $first_key ]->user_id ) : 0;
+		$is_own = $user_id && $user_id === get_current_user_id();
+		
 		// Disallow refund in those cases:
 		// -> If the booking group is already marked as refunded, 
 		if( $bookings[ $first_key ]->group_state === 'refunded' 
@@ -1047,7 +1068,7 @@ function bookacti_booking_group_can_be_refunded( $bookings, $refund_action = '',
 		// -> If the refund action is set but doesn't exist in available refund actions list
 		|| ( $refund_action && ! array_key_exists( $refund_action, $refund_actions ) ) 
 		// -> If the user is not an admin, the booking group state has to be 'cancelled' in the first place
-		|| ( $bookings[ $first_key ]->group_state !== 'cancelled' && ( ! current_user_can( 'bookacti_edit_bookings' ) || $context === 'front' ) ) ) { 
+		|| ( ! current_user_can( 'bookacti_edit_bookings' ) && ! ( $is_own && $bookings[ $first_key ]->group_state === 'cancelled' ) ) ) { 
 
 			$true = false;
 		}
@@ -1508,7 +1529,7 @@ function bookacti_get_booking_group_actions( $admin_or_front = 'both' ) {
 /**
  * Get booking actions according to booking id
  * @since 1.6.0 (replace bookacti_get_booking_actions_array)
- * @version 1.12.0
+ * @version 1.12.3
  * @param array|int $bookings
  * @param string $admin_or_front Can be "both", "admin", "front. Default "both".
  * @return array
@@ -1520,9 +1541,11 @@ function bookacti_get_booking_group_actions_by_booking_group( $bookings, $admin_
 
 	$actions = bookacti_get_booking_group_actions( $admin_or_front );
 	if( ! current_user_can( 'bookacti_edit_bookings' ) ) {
-		if( isset( $actions[ 'change-state' ] ) )	{ unset( $actions[ 'change-state' ] ); }
-		if( isset( $actions[ 'change-quantity' ] ) ){ unset( $actions[ 'change-quantity' ] ); }
-		if( isset( $actions[ 'edit-single' ] ) )	{ unset( $actions[ 'edit-single' ] ); }
+		if( isset( $actions[ 'change-state' ] ) ) { unset( $actions[ 'change-state' ] ); }
+		if( isset( $actions[ 'change-quantity' ] ) ) { unset( $actions[ 'change-quantity' ] ); }
+	}
+	if( ! current_user_can( 'bookacti_manage_bookings' ) && ! current_user_can( 'bookacti_edit_bookings' ) ) {
+		if( isset( $actions[ 'edit-single' ] ) ) { unset( $actions[ 'edit-single' ] ); }
 	}
 	if( isset( $actions[ 'cancel' ] ) && ! bookacti_booking_group_can_be_cancelled( $bookings, $admin_or_front ) ) {
 		unset( $actions[ 'cancel' ] );

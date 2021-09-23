@@ -798,7 +798,7 @@ function bookacti_settings_field_calendar_localization_callback() {
 /**
  * Get all default messages
  * @since 1.2.0
- * @version 1.8.9
+ * @version 1.12.3
  */
 function bookacti_get_default_messages() {
 	$wp_date_format_link = '<a href="https://wordpress.org/support/article/formatting-date-and-time/" target="_blank" >' .  esc_html__( 'Formatting Date and Time', 'booking-activities' ) . '</a>';
@@ -865,10 +865,6 @@ function bookacti_get_default_messages() {
 		'booking_success' => array(
 			'value'			=> esc_html__( 'Your reservation has been processed!', 'booking-activities' ),
 			'description'	=> esc_html__( 'When a reservation has been successfully registered.', 'booking-activities' )
-		),
-		'booking_form_submit_button' => array(
-			'value'			=> esc_html__( 'Book', 'booking-activities' ),
-			'description'	=> esc_html__( 'Submit button label.', 'booking-activities' )
 		),
 		'booking_form_new_booking_button' => array(
 			'value'			=> esc_html__( 'Make a new booking', 'booking-activities' ),
