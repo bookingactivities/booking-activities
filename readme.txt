@@ -321,7 +321,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.12.3 =
+= 1.12.3 - 2021/09/23 =
 * Tweak - Add loading feedbacks after validating booking actions dialogs (change status, quantity, reschedule)
 * Tweak - Open new tabs only for external links and exports in backend navigation
 * Tweak - Allow read-only access to bookings with the bookacti_manage_bookings capability
