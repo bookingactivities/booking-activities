@@ -309,24 +309,24 @@ function bookacti_get_available_booking_methods(){
 /**
  * Get booking method HTML
  * @since 1.1.0
- * @version 1.8.0
+ * @version 1.12.4
  * @param string $method
  * @param array $booking_system_data
  * @return string $html_elements
  */
 function bookacti_get_booking_method_html( $method, $booking_system_data = array() ) {
-	// Return a uniform message when no events are to be displayed
+	$html = '';
+	$available_booking_methods = bookacti_get_available_booking_methods();
+	
+	// Feedback when no events are to be displayed
 	if( ! empty( $booking_system_data[ 'no_events' ] ) ) {
-		return '<div class="bookacti-no-events">' . bookacti_get_message( 'no_events' ) . '</div>';
+		$html = '<div class="bookacti-no-events">' . bookacti_get_message( 'no_events' ) . '</div>';
+	}
+	else if( $method === 'calendar' || ! in_array( $method, array_keys( $available_booking_methods ), true ) ) {
+		$html = bookacti_get_calendar_html( $booking_system_data );
 	}
 	
-	$available_booking_methods = bookacti_get_available_booking_methods();
-	if( $method === 'calendar' || ! in_array( $method, array_keys( $available_booking_methods ), true ) ) {
-		$html = bookacti_get_calendar_html( $booking_system_data );
-	} else {
-		$html = apply_filters( 'bookacti_get_booking_method_html', '', $method, $booking_system_data );
-	}
-	return $html;
+	return apply_filters( 'bookacti_get_booking_method_html', $html, $method, $booking_system_data );
 }
 
 

@@ -546,7 +546,7 @@ function bookacti_get_default_form_fields_data( $field_name = '' ) {
  * Get fields metadata
  * @see bookacti_format_form_field_data to properly format your array
  * @since 1.5.0
- * @version 1.9.3
+ * @version 1.12.4
  * @param string $field_name
  * @return array
  */
@@ -612,6 +612,7 @@ function bookacti_get_default_form_fields_meta( $field_name = '' ) {
 			'register_button_label'		=> esc_html__( 'Register', 'booking-activities' ),
 			'min_password_strength'		=> 4,
 			'generate_password'			=> 0,
+			'remember'					=> 0,
 			'send_new_account_email'	=> 1,
 			'new_user_role'				=> 'default',
 			'displayed_fields'			=> array_merge( $login_defaults[ 'displayed' ], $login_type_defaults[ 'displayed' ], $register_defaults[ 'displayed' ] ),
@@ -660,7 +661,7 @@ function bookacti_get_available_form_action_triggers() {
 /**
  * Format field data according to its type
  * @since 1.5.0
- * @version 1.9.3
+ * @version 1.12.4
  * @param array|string $raw_field_data
  * @return array|false
  */
@@ -726,7 +727,7 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 	} else if( $raw_field_data[ 'name' ] === 'login' ) {
 		// Format meta values
 		$keys_by_type = array( 
-			'bool'		=> array( 'automatic_login', 'generate_password', 'send_new_account_email', 'login_first', 'login_button' ),
+			'bool'		=> array( 'automatic_login', 'generate_password', 'send_new_account_email', 'login_first', 'login_button', 'remember' ),
 			'int'		=> array( 'min_password_strength' ),
 			'str_id'	=> array( 'new_user_role' ),
 			'str'		=> array( 'login_button_label', 'register_button_label' )
@@ -810,7 +811,7 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 /**
  * Sanitize field data according to its type
  * @since 1.5.0
- * @version 1.9.3
+ * @version 1.12.4
  * @param array|string $raw_field_data
  * @return array|false
  */
@@ -897,7 +898,7 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 	} else if( $raw_field_data[ 'name' ] === 'login' ) {
 		// Sanitize meta values
 		$keys_by_type = array( 
-			'bool'		=> array( 'automatic_login', 'generate_password', 'send_new_account_email', 'login_first', 'login_button' ),
+			'bool'		=> array( 'automatic_login', 'generate_password', 'send_new_account_email', 'login_first', 'login_button', 'remember' ),
 			'int'		=> array( 'min_password_strength' ),
 			'str_id'	=> array( 'new_user_role' ),
 			'str'		=> array( 'login_button_label', 'register_button_label' )
@@ -1025,7 +1026,7 @@ function bookacti_update_form_field_meta( $meta, $field_id_or_name, $form_id = 0
 /**
  * Sanitize the values entered by the user in the form fields
  * @since 1.5.0
- * @version 1.7.16
+ * @version 1.12.4
  * @param array $values
  * @param string $field_type
  * @return array
@@ -1041,6 +1042,7 @@ function bookacti_sanitize_form_field_values( $values, $field_type = '' ) {
 		$sanitized_values[ 'email' ]	= ! empty( $values[ 'email' ] ) ? sanitize_email( stripslashes( $values[ 'email' ] ) ) : '';
 		$sanitized_values[ 'password' ]	= ! empty( $values[ 'password' ] ) ? trim( stripslashes( $values[ 'password' ] ) ) : '';
 		$sanitized_values[ 'password_strength' ] = ! empty( $values[ 'password_strength' ] ) ? intval( $values[ 'password_strength' ] ) : 1;
+		$sanitized_values[ 'remember' ] = ! empty( $values[ 'remember' ] ) ? 1 : 0;
 		
 		$login_types = bookacti_get_login_type_field_default_options();
 		$sanitized_values[ 'login_type' ] = ! empty( $values[ 'login_type' ] ) && in_array( $values[ 'login_type' ], array_keys( $login_types ), true ) ? $values[ 'login_type' ] : '';
@@ -1449,6 +1451,7 @@ function bookacti_sort_form_fields_array( $form_id, $fields, $remove_unordered_f
 /**
  * Get login fields default data
  * @since 1.6.0
+ * @version 1.12.4
  * @return array
  */
 function bookacti_get_login_fields_default_data() {
@@ -1482,6 +1485,15 @@ function bookacti_get_login_fields_default_data() {
 			'value'			=> '', 
 			'required'		=> 0, 
 			'displayed'		=> 1
+		),
+		'remember' => array( 
+			'name'			=> 'remember', 
+			'type'			=> 'checkbox', 
+			'label'			=> esc_html__( 'Remember me', 'booking-activities' ), 
+			'placeholder'	=> 0, 
+			'tip'			=> '', 
+			'required'		=> 0, 
+			'displayed'		=> 0
 		)
 	);
 	

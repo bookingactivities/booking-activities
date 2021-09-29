@@ -321,6 +321,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.12.4 =
+* Tweak - Add an optional "Remember me" checkbox field in "User data (login / registration)" field settings
+* Tweak - Add an optional "Redirect URL" option for the forgotten password link in "User data (login / registration)" field settings ("Login" tab, advanced options) to replace the Forgotten password dialog
+
 = 1.12.3 - 2021/09/23 =
 * Tweak - Add loading feedbacks after validating booking actions dialogs (change status, quantity, reschedule)
 * Tweak - Open new tabs only for external links and exports in backend navigation

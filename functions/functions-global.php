@@ -2249,22 +2249,24 @@ function bookacti_get_roles_by_capabilities( $capabilities = array() ) {
 /**
  * Programmatically logs a user in
  * @since 1.5.0
+ * @version 1.12.4
  * @param string $username
+ * @param boolean $remember
  * @return bool True if the login was successful; false if it wasn't
  */
-function bookacti_log_user_in( $username ) {
-
-	if ( is_user_logged_in() ) { wp_logout(); }
-
+function bookacti_log_user_in( $username, $remember = false ) {
+	if( is_user_logged_in() ) { wp_logout(); }
+	
 	// hook in earlier than other callbacks to short-circuit them
 	add_filter( 'authenticate', 'bookacti_allow_to_log_user_in_programmatically', 10, 3 );
-	$user = wp_signon( array( 'user_login' => $username ) );
+	$user = wp_signon( array( 'user_login' => $username, 'remember' => $remember ) );
 	remove_filter( 'authenticate', 'bookacti_allow_to_log_user_in_programmatically', 10, 3 );
 
 	if( is_a( $user, 'WP_User' ) ) {
 		wp_set_current_user( $user->ID, $user->user_login );
-		if ( is_user_logged_in() ) { return true; }
+		if( is_user_logged_in() ) { return true; }
 	}
+	
 	return false;
 }
 

@@ -438,7 +438,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 		/**
 		 * Display the content of the "Fields" tab of the "Login" dialog
 		 * @since 1.6.0
-		 * @version 1.8.0
+		 * @version 1.12.4
 		 * @param array $params
 		 */
 		function bookacti_fill_login_dialog_fields_tab( $params ) {
@@ -517,6 +517,57 @@ foreach( $fields_data as $field_name => $field_data ) {
 							'name'	=> 'tip[password]',
 							'id'	=> 'bookacti-password-tip',
 							'tip'	=> esc_html__( 'Text displayed in the tooltip next to the field.', 'booking-activities' )
+						);
+						bookacti_display_field( $args );
+					?>
+				</div>
+			</fieldset>
+			<fieldset>
+				<legend><?php esc_html_e( 'Remember me', 'booking-activities' ); ?></legend>
+				<div>
+					<label for='bookacti-displayed_fields-remember'><?php esc_html_e( 'Displayed', 'booking-activities' ); ?></label>
+					<?php 
+						$args = array(
+							'type'	=> 'checkbox',
+							'name'	=> 'displayed_fields[remember]',
+							'id'	=> 'bookacti-displayed_fields-remember',
+							'tip'	=> esc_html__( 'Whether this field is displayed in the form.', 'booking-activities' )
+						);
+						bookacti_display_field( $args );
+					?>
+				</div>
+				<div>
+					<label for='bookacti-label-remember'><?php esc_html_e( 'Label', 'booking-activities' ); ?></label>
+					<?php 
+						$args = array(
+							'type'	=> 'text',
+							'name'	=> 'label[remember]',
+							'id'	=> 'bookacti-label-remember',
+							'tip'	=> esc_html__( 'Text displayed before the field.', 'booking-activities' )
+						);
+						bookacti_display_field( $args );
+					?>
+				</div>
+				<div class='bookacti-hidden-field' >
+					<label for='bookacti-tip-remember'><?php esc_html_e( 'Tooltip', 'booking-activities' ); ?></label>
+					<?php 
+						$args = array(
+							'type'	=> 'text',
+							'name'	=> 'tip[remember]',
+							'id'	=> 'bookacti-tip-remember',
+							'tip'	=> esc_html__( 'Text displayed in the tooltip next to the field.', 'booking-activities' )
+						);
+						bookacti_display_field( $args );
+					?>
+				</div>
+				<div>
+					<label for='bookacti-placeholder-remember'><?php esc_html_e( 'Value', 'booking-activities' ); ?></label>
+					<?php 
+						$args = array(
+							'type'	=> 'checkbox',
+							'name'	=> 'placeholder[remember]',
+							'id'	=> 'bookacti-placeholder-remember',
+							'tip'	=> esc_html__( 'Default field value.', 'booking-activities' )
 						);
 						bookacti_display_field( $args );
 					?>
@@ -688,7 +739,19 @@ foreach( $fields_data as $field_name => $field_data ) {
 						bookacti_display_field( $args );
 					?>
 				</div>
-				<div class='bookacti-hidden-field' >
+				<div class='bookacti-hidden-field'>
+					<label for='bookacti-forgotten_password-placeholder'><?php esc_html_e( 'Redirect URL', 'booking-activities' ); ?></label>
+					<?php 
+						$args = array(
+							'type'	=> 'text',
+							'name'	=> 'placeholder[forgotten_password]',
+							'id'	=> 'bookacti-forgotten_password-placeholder',
+							'tip'	=> esc_html__( 'Page URL where the customer will be redirected after clicking the link.', 'booking-activities' )
+						);
+						bookacti_display_field( $args );
+					?>
+				</div>
+				<div class='bookacti-hidden-field'>
 					<label for='bookacti-forgotten_password-tip'><?php esc_html_e( 'Tooltip', 'booking-activities' ); ?></label>
 					<?php 
 						$args = array(

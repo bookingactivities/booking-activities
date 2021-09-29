@@ -34,7 +34,7 @@ add_action( 'bookacti_display_form_field_calendar', 'bookacti_display_form_field
 /**
  * Display the form field 'login'
  * @since 1.5.0
- * @version 1.12.0
+ * @version 1.12.4
  * @param string $html
  * @param array $field
  * @param string $instance_id
@@ -102,6 +102,7 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 	?>
 		<div class='bookacti-user-data-fields'>
 			<div class='bookacti-log-in-fields'>
+				<?php do_action( 'bookacti_login_fields_before', $field, $instance_id, $context ); ?>
 				<div class='bookacti-form-field-login-field-container bookacti-login-field-email' id='<?php echo $field_id; ?>-email-container' data-field-name='email' data-field-type='email'>
 					<div class='bookacti-form-field-label' >
 						<label for='<?php echo $field_id . '-email'; ?>' >
@@ -165,16 +166,18 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 							<?php
 						}
 						
-						if( ! empty( $field[ 'displayed_fields' ][ 'forgotten_password' ] ) ) { 
+						if( ! empty( $field[ 'displayed_fields' ][ 'forgotten_password' ] ) ) {
+							$forgotten_password_url = ! empty( $field[ 'placeholder' ][ 'forgotten_password' ] ) ? esc_attr( apply_filters( 'bookacti_translate_text', $field[ 'placeholder' ][ 'forgotten_password' ] ) ) : '';
 						?>
 							<div class='bookacti-forgotten-password' >
-								<a href='#' class='bookacti-forgotten-password-link' data-field-id='<?php echo $field_id; ?>' ><?php echo esc_html( apply_filters( 'bookacti_translate_text', $field[ 'label' ][ 'forgotten_password' ] ) ) ?></a>
+								<a href='<?php echo $forgotten_password_url ? $forgotten_password_url : '#'; ?>' class='bookacti-forgotten-password-link' data-field-id='<?php echo $field_id; ?>' ><?php echo esc_html( apply_filters( 'bookacti_translate_text', $field[ 'label' ][ 'forgotten_password' ] ) ) ?></a>
 							<?php
 								if( ! empty( $field[ 'tip' ][ 'forgotten_password' ] ) ) {
 									bookacti_help_tip( esc_html( apply_filters( 'bookacti_translate_text', $field[ 'tip' ][ 'forgotten_password' ] ) ) );
 								}
 							?>
 							</div>
+							<?php if( ! $forgotten_password_url ) { ?>
 							<div data-field-id='<?php echo $field_id; ?>' class='bookacti-forgotten-password-dialog bookacti-form-dialog' title='<?php esc_html_e( 'Forgotten password', 'booking-activities' ); ?>' style='display:none;' >
 								<div class='bookacti-forgotten-password-dialog-description' >
 									<p>
@@ -201,11 +204,40 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 								</div>
 							</div>
 						<?php 
+							}
 						}
 						?>
 					</div>
 					<?php do_action( 'bookacti_login_field_after_password', $field, $instance_id, $context ); ?>
 				</div>
+				<?php
+				if( ! empty( $field[ 'displayed_fields' ][ 'remember' ] ) ) { 
+				?>
+				<div class='bookacti-form-field-login-field-container bookacti-login-field-remember' id='<?php echo $field_id; ?>-remember-container' data-field-name='remember' data-field-type='checkbox'>
+					<div class='bookacti-form-field-label' >
+						<label for='<?php echo $field_id . '-remember'; ?>'>
+							<?php echo esc_html( apply_filters( 'bookacti_translate_text', $field[ 'label' ][ 'remember' ] ) ); ?>
+						</label>
+					<?php if( ! empty( $field[ 'tip' ][ 'remember' ] ) ) { bookacti_help_tip( esc_html( apply_filters( 'bookacti_translate_text', $field[ 'tip' ][ 'remember' ] ) ) ); } ?>
+					</div>
+					<div class='bookacti-form-field-content'>
+					<?php
+						$args = array(
+							'type'	=> 'checkbox',
+							'name'	=> 'remember',
+							'value'	=> ! empty( $_REQUEST[ 'remember' ] ) || ! empty( $field[ 'placeholder' ][ 'remember' ] ) ? 1 : 0,
+							'id'	=> $field_id . '-remember',
+							'class'	=> 'bookacti-form-field bookacti-remember'
+						);
+						bookacti_display_field( $args );
+					?>
+					</div>
+					<?php do_action( 'bookacti_login_field_after_remember', $field, $instance_id, $context ); ?>
+				</div>
+				<?php
+				}
+				do_action( 'bookacti_login_fields_after', $field, $instance_id, $context );
+				?>
 			</div>
 			<?php 
 			if( ! empty( $field[ 'displayed_fields' ][ 'new_account' ] ) || ! empty( $field[ 'displayed_fields' ][ 'no_account' ] ) ) { 
@@ -568,7 +600,7 @@ add_action( 'wp_ajax_nopriv_bookactiForgottenPassword', 'bookacti_controller_for
 /**
  * Check if login form is correct and then register / log the user in
  * @since 1.8.0
- * @version 1.9.0
+ * @version 1.12.4
  */
 function bookacti_controller_validate_login_form() {
 	// Check nonce
@@ -680,7 +712,7 @@ function bookacti_controller_validate_login_form() {
 	}
 	
 	// Log the user in
-	$is_logged_in = bookacti_log_user_in( $user->user_login );
+	$is_logged_in = bookacti_log_user_in( $user->user_login, $login_values[ 'remember' ] );
 	if( ! $is_logged_in ) { 
 		$return_array[ 'error' ] = 'cannot_log_in';
 		$return_array[ 'messages' ][ 'cannot_log_in' ] = esc_html__( 'An error occurred while trying to log you in.', 'booking-activities' );
@@ -708,7 +740,7 @@ add_action( 'wp_ajax_nopriv_bookactiSubmitLoginForm', 'bookacti_controller_valid
 /**
  * Check if booking form is correct and then book the event, or send the error message
  * @since 1.5.0
- * @version 1.12.2
+ * @version 1.12.4
  */
 function bookacti_controller_validate_booking_form() {
 	// Check nonce
@@ -847,7 +879,7 @@ function bookacti_controller_validate_booking_form() {
 		
 		// Log the user in programmatically
 		if( $login_field[ 'automatic_login' ] && isset( $user ) && is_a( $user, 'WP_User' ) ) {
-			$is_logged_in = bookacti_log_user_in( $user->user_login );
+			$is_logged_in = bookacti_log_user_in( $user->user_login, $login_values[ 'remember' ] );
 			if( ! $is_logged_in ) { 
 				$return_array[ 'error' ] = 'cannot_log_in';
 				$return_array[ 'messages' ][ 'cannot_log_in' ] = esc_html__( 'An error occurred while trying to log you in.', 'booking-activities' );

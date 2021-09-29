@@ -24,11 +24,17 @@ $j( document ).ready( function() {
 		}
 	});
 	
-	// Forgotten password dialog
+	
+	/**
+	 * Forgotten password dialog
+	 * @version 1.12.4
+	 */
 	$j( 'body' ).on( 'click', '.bookacti-forgotten-password-link', function( e ) {
-		e.preventDefault();
-		var field_id = $j( this ).data( 'field-id' );
-		bookacti_dialog_forgotten_password( field_id );
+		if( ! $j( this ).attr( 'href' ) || $j( this ).attr( 'href' ) === '#' ) { 
+			e.preventDefault();
+			var field_id = $j( this ).data( 'field-id' );
+			bookacti_dialog_forgotten_password( field_id );
+		}
 	});
 	
 	
@@ -200,7 +206,7 @@ function bookacti_init_form_dialogs() {
 /**
  * Display or hide the register fields according to the login type value
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.12.4
  * @param {HTMLElement} login_field_container
  */
 function bookacti_show_hide_register_fields( login_field_container ) {
@@ -208,6 +214,7 @@ function bookacti_show_hide_register_fields( login_field_container ) {
 	var password_strength	= login_field_container.find( '.bookacti-password-strength' );
 	var password_forgotten	= login_field_container.find( '.bookacti-forgotten-password' );
 	var password_field		= login_field_container.find( '.bookacti-login-field-password' );
+	var remember_field		= login_field_container.find( '.bookacti-login-field-remember' );
 	var register_fieldset	= login_field_container.find( '.bookacti-register-fields' );
 	var login_button		= login_field_container.find( '.bookacti-login-button' );
 	var button_container	= login_field_container.find( '.bookacti-login-field-submit-button' );
@@ -221,6 +228,7 @@ function bookacti_show_hide_register_fields( login_field_container ) {
 			password_field.show();
 			password_field.find( 'input[name="password"]' ).prop( 'required', true );
 		}
+		remember_field.show();
 		register_fieldset.show(); 
 		register_fieldset.find( '.bookacti-required-field' ).prop( 'required', true );
 		login_button.val( login_button.data( 'register-label' ) ).prop( 'disabled', false );
@@ -235,6 +243,7 @@ function bookacti_show_hide_register_fields( login_field_container ) {
 			password_field.show();
 			password_field.find( 'input[name="password"]' ).prop( 'required', true );
 		}
+		remember_field.show();
 		register_fieldset.hide(); 
 		register_fieldset.find( '.bookacti-required-field' ).prop( 'required', false );
 		login_button.val( login_button.data( 'login-label' ) ).prop( 'disabled', false );
@@ -242,7 +251,8 @@ function bookacti_show_hide_register_fields( login_field_container ) {
 	} else if( login_type === 'no_account' ) { 
 		password_field.hide();
 		password_field.find( 'input[name="password"]' ).prop( 'required', false );
-		register_fieldset.show(); 
+		remember_field.hide();
+		register_fieldset.show();
 		register_fieldset.find( '.bookacti-required-field' ).prop( 'required', true );
 		login_button.prop( 'disabled', true );
 		button_container.hide();
