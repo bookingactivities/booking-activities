@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Get default settings values
  * @since 1.3.0 (was bookacti_define_default_settings_constants)
- * @version 1.8.0
+ * @version 1.12.4
  */
 function bookacti_get_default_settings() {
 	$date = new DateTime(); 
@@ -26,7 +26,7 @@ function bookacti_get_default_settings() {
 		'allow_customers_to_reschedule'			=> true,
 		'booking_changes_deadline'				=> 604800, // 7 days
 		'refund_actions_after_cancellation'		=> array(),
-		'notifications_from_name'				=> get_bloginfo( 'name' ),
+		'notifications_from_name'				=> wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ),
 		'notifications_from_email'				=> get_bloginfo( 'admin_email' ),
 		'notifications_async'					=> true,
 		'calendar_localization'					=> 'default'
