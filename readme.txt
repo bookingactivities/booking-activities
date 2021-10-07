@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 5.8
 Requires PHP: 5.3
-Stable tag: 1.12.3
+Stable tag: 1.12.4
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -325,6 +325,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Tweak - Add an optional "Remember me" checkbox field in "User data (login / registration)" field settings
 * Tweak - Add an optional "Redirect URL" option for the forgotten password link in "User data (login / registration)" field settings ("Login" tab, advanced options) to replace the Forgotten password dialog
 * Fix - Site title special characters were not decoded in email notifications subjects
+* Fix - Administrator role in multisite installs can now manage everything created in Booking Activities on their own site
 
 = 1.12.3 - 2021/09/23 =
 * Tweak - Add loading feedbacks after validating booking actions dialogs (change status, quantity, reschedule)

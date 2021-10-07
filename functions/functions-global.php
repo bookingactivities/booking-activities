@@ -2286,3 +2286,17 @@ function bookacti_log_user_in( $username, $remember = false ) {
 function bookacti_allow_to_log_user_in_programmatically( $user, $username, $password ) {
 	return get_user_by( 'login', $username );
 }
+
+
+/**
+ * Bypass managers checks for all administrators
+ * @since 1.12.4
+ * @param boolean $true
+ * @return boolean
+ */
+function bookacti_bypass_managers_check_for_administrators( $true ) {
+	return current_user_can( 'administrator' ) ? true : $true;
+}
+add_filter( 'bookacti_bypass_template_managers_check', 'bookacti_bypass_managers_check_for_administrators', 100, 1 );
+add_filter( 'bookacti_bypass_activity_managers_check', 'bookacti_bypass_managers_check_for_administrators', 100, 1 );
+add_filter( 'bookacti_bypass_form_managers_check', 'bookacti_bypass_managers_check_for_administrators', 100, 1 );
