@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Get array of woocommerce products and product variations titles ordered by ids
  * @since 1.7.10
- * @version 1.8.0
+ * @version 1.12.4
  * @global wpdb $wpdb
  * @param string $product_search
  * @return array
@@ -57,10 +57,13 @@ function bookacti_get_products_titles( $search = '' ) {
 	}
 	
 	$products = $wpdb->get_results( $query, OBJECT );
-
+	
 	$products_array = array();
 	if( $products ) {
 		foreach( $products as $product ) {
+			// Remove auto-draft entries
+			if( strpos( $product->title, 'AUTO-DRAFT' ) !== false ) { continue; }
+			
 			if( $product->post_type !== 'product_variation' ){
 				if( ! isset( $products_array[ $product->id ] ) ) { $products_array[ $product->id ] = array(); }
 				$products_array[ $product->id ][ 'title' ] = $product->title;
@@ -70,6 +73,11 @@ function bookacti_get_products_titles( $search = '' ) {
 				if( ! isset( $products_array[ $product->parent ][ 'variations' ] ) ) { $products_array[ $product->parent ][ 'variations' ] = array(); }
 				$products_array[ $product->parent ][ 'variations' ][ $product->id ][ 'title' ] = $product->variations_title ? $product->variations_title : $product->id;
 			}
+		}
+		
+		// Remove variations if their parent variable product doesn't exist
+		foreach( $products_array as $product_id => $product ) {
+			if( ! isset( $product[ 'type' ] ) || ! isset( $product[ 'type' ] ) ) { unset( $products_array[ $product_id ] ); }
 		}
 	}
 	

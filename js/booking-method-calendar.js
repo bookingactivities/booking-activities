@@ -507,13 +507,18 @@ function bookacti_unpick_all_events_on_calendar( booking_system ) {
 
 /**
  * Add CSS classes to events accoding to their size
- * @version 1.8.4
+ * @version 1.12.4
  * @param {HTMLElement} element
  */
 function bookacti_add_class_according_to_event_size( element ) {
 	element.removeClass( 'bookacti-tiny-event bookacti-small-event bookacti-narrow-event bookacti-wide-event' );
 
-	var custom_size = $j.extend( {}, bookacti.event_sizes );
+	var custom_size = {
+		'tiny_height' : typeof bookacti_localized.event_tiny_height !== 'undefined' ? parseInt( bookacti_localized.event_tiny_height ) : 30,
+		'small_height' : typeof bookacti_localized.event_small_height !== 'undefined' ? parseInt( bookacti_localized.event_small_height ) : 75,
+		'narrow_width' : typeof bookacti_localized.event_narrow_width !== 'undefined' ? parseInt( bookacti_localized.event_narrow_width ) : 70,
+		'wide_width' : typeof bookacti_localized.event_wide_width !== 'undefined' ? parseInt( bookacti_localized.event_wide_width ) : 250
+	};
 	$j( element ).trigger( 'bookacti_event_sizes', [ element, custom_size ] );
 
 	var add_classes = '';

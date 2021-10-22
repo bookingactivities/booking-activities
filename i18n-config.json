@@ -141,6 +141,12 @@
 						"bookacti-free_text-value":{}
 					}
 				},
+				"bookacti-form-field-form-total_price":{
+					"fields":{
+						"bookacti-total_price-label":{},
+						"bookacti-total_price-tip":{}
+					}
+				},
 				"bookacti-form-field-form-terms":{
 					"fields":{
 						"bookacti-terms-label":{}

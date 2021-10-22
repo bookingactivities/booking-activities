@@ -337,7 +337,7 @@ function bookacti_generate_ical( $vevents, $vcalendar = array() ) {
 /**
  * Get the variables used with javascript
  * @since 1.8.0
- * @version 1.12.0
+ * @version 1.12.4
  * @return array
  */
 function bookacti_get_js_variables() {
@@ -426,6 +426,11 @@ function bookacti_get_js_variables() {
 		'calendar_localization'				=> bookacti_get_setting_value( 'bookacti_messages_settings', 'calendar_localization' ),
 		'wp_time_format'					=> get_option( 'time_format' ),
 		'wp_start_of_week'					=> get_option( 'start_of_week' ),
+		
+		'price_format'						=> '{price}',
+		'price_thousand_separator'			=> '',
+		'price_decimal_separator' 			=> ',',
+		'price_decimal_number'				=> 2
 	);
 	
 	// Strings for backend only

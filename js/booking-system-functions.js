@@ -815,8 +815,114 @@ function bookacti_unpick_all_events( booking_system ) {
 
 
 /**
+ * Get the picked events list items
+ * @since 1.12.4
+ * @param {HTMLElement} booking_system
+ * @return {Object}
+ */
+function bookacti_get_picked_events_list_items( booking_system ) {
+	var list_items = {};
+	var booking_system_id = booking_system.attr( 'id' );
+	
+	// Get quantity
+	var form = booking_system.closest( 'form' ).length ? booking_system.closest( 'form' ) : booking_system.closest( '.bookacti-form-fields' );
+	qty_field = form.find( 'input[name="quantity"]' );
+	var quantity = qty_field.length ? parseInt( qty_field.val() ) : 1;
+	
+	$j.each( bookacti.booking_system[ booking_system_id ][ 'picked_events' ], function( i, picked_event ) {
+		var activity_id = 0;
+		if( typeof bookacti.booking_system[ booking_system_id ][ 'events_data' ] !== 'undefined' && parseInt( picked_event.id ) > 0 ) {
+			if( typeof bookacti.booking_system[ booking_system_id ][ 'events_data' ][ picked_event.id ] !== 'undefined' ) {
+				activity_id = bookacti.booking_system[ booking_system_id ][ 'events_data' ][ picked_event.id ][ 'activity_id' ];
+			}
+		}
+		var category_id = 0;
+		if( typeof bookacti.booking_system[ booking_system_id ][ 'groups_data' ] !== 'undefined' && parseInt( picked_event.group_id ) > 0 ) {
+			if( typeof bookacti.booking_system[ booking_system_id ][ 'groups_data' ][ picked_event.group_id ] !== 'undefined' ) {
+				category_id = bookacti.booking_system[ booking_system_id ][ 'groups_data' ][ picked_event.group_id ][ 'category_id' ];
+			}
+		}
+		
+		var list_item_data = {
+			'id': picked_event.id,
+			'title': picked_event.title,
+			'group_id': picked_event.group_id,
+			'group_date': picked_event.group_date,
+			'start': moment.utc( picked_event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' ),
+			'end': moment.utc( picked_event.end ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' ),
+			'activity_id': parseInt( activity_id ),
+			'category_id': parseInt( category_id ),
+			'quantity': quantity,
+			'price': 0.00,
+			'price_to_display': '',
+			'has_price': false
+		};
+		
+		booking_system.trigger( 'bookacti_picked_events_list_item_data', [ list_item_data, picked_event ] );
+		
+		var list_item_id = parseInt( list_item_data.group_id ) > 0 ? 'event-group-' + list_item_data.group_id + '-' + list_item_data.group_date : 'event-' + list_item_data.id + '-' + list_item_data.start + '-' + list_item_data.end;
+		
+		var list_element = $j( '<li></li>', {
+			'html': '<span class="bookacti-booking-event-title" >' + list_item_data.title + '</span>'
+		});
+		
+		var event_duration = bookacti_format_event_duration( list_item_data.start, list_item_data.end );
+		if( event_duration ) {
+			list_element.append( '<span class="bookacti-booking-event-title-separator" > - </span>' + event_duration );
+		}
+		
+		if( list_item_data.quantity > 0 ) {
+			var activity_unit = bookacti_get_activity_unit( booking_system, list_item_data.activity_id, list_item_data.quantity );
+			if( activity_unit ) {
+				list_element.append( '<span class="bookacti-booking-event-quantity-separator" > - </span><span class="bookacti-booking-event-quantity" >' + list_item_data.quantity + ' ' + activity_unit + '</span>' );
+			}
+		}
+		
+		list_element.data( 'event-id', list_item_data.id ).attr( 'data-event-id', list_item_data.id );
+		list_element.data( 'event-start', list_item_data.start ).attr( 'data-event-start', list_item_data.start );
+		list_element.data( 'event-end', list_item_data.end ).attr( 'data-event-end', list_item_data.end );
+		
+		// Add grouped event to the list
+		if( parseInt( list_item_data.group_id ) > 0 ) {
+			// Add the grouped events list
+			if( typeof list_items[ list_item_id ] === 'undefined' ) {
+				// Get the group title
+				var group_title = '';
+				if( typeof bookacti.booking_system[ booking_system_id ][ 'groups_data' ][ list_item_data.group_id ] !== 'undefined' ) {
+					var group = bookacti.booking_system[ booking_system_id ][ 'groups_data' ][ list_item_data.group_id ];
+					group_title = '<span class="bookacti-picked-group-of-events-title">' + group.title + '</span>';
+				}
+				
+				var group_list_element = $j( '<li></li>', { 'html': group_title + '<ul class="bookacti-picked-group-of-events-list">' + list_element[0].outerHTML + '</ul>' } );
+				group_list_element.data( 'group-id', list_item_data.group_id ).attr( 'data-group-id', list_item_data.group_id );
+				group_list_element.data( 'group-date', list_item_data.group_date ).attr( 'data-group-date', list_item_data.group_date );
+				
+				list_items[ list_item_id ] = $j.extend( true, {}, list_item_data );
+				list_items[ list_item_id ].list_element = group_list_element;
+			} 
+			// The grouped events list was already added
+			else {
+				list_items[ list_item_id ][ 'end' ] = list_item_data.end;
+				list_items[ list_item_id ].list_element.find( 'ul' ).append( list_element );
+			}
+		}
+		
+		// Add a single event to the list
+		else {
+			list_items[ list_item_id ] = $j.extend( true, {}, list_item_data );
+			list_items[ list_item_id ].list_element = list_element;
+		}
+	});
+	
+	booking_system.trigger( 'bookacti_picked_events_list_items', [ list_items ] );
+	
+	return list_items;
+}
+
+
+/**
  * Display a list of picked events
- * @version 1.12.0
+ * @version 1.12.4
  * @param {HTMLElement} booking_system
  */
 function bookacti_fill_picked_events_list( booking_system ) {
@@ -832,85 +938,19 @@ function bookacti_fill_picked_events_list( booking_system ) {
 	
 	var multiple_bookings = bookacti.booking_system[ booking_system_id ][ 'multiple_bookings' ];
 	
-	// Get quantity
-	var qty_field = booking_system.closest( '.bookacti-booking-form, .bookacti-form-fields' ).find( 'input.bookacti-quantity' );
-	var quantity = qty_field.length ? parseInt( qty_field.val() ) : 1;
-	
 	// Fill title with singular or plural
 	var title = bookacti.booking_system[ booking_system_id ][ 'picked_events' ].length === 1 ? bookacti_localized.selected_event : bookacti_localized.selected_events;
 	event_list_title.html( title );
-
-	// Fill the picked events list
-	$j.each( bookacti.booking_system[ booking_system_id ][ 'picked_events' ], function( i, picked_event ) {
-		var event_duration = bookacti_format_event_duration( picked_event.start, picked_event.end );
-		var event_data = {
-			'title': picked_event.title,
-			'duration': event_duration,
-			'quantity': quantity
-		};
-
-		booking_system.trigger( 'bookacti_picked_events_list_data', [ event_data, event ] );
-
-		var activity_id = 0;
-		if( typeof bookacti.booking_system[ booking_system_id ][ 'events_data' ] !== 'undefined' ) {
-			if( typeof bookacti.booking_system[ booking_system_id ][ 'events_data' ][ picked_event.id ] !== 'undefined' ) {
-				activity_id = bookacti.booking_system[ booking_system_id ][ 'events_data' ][ picked_event.id ][ 'activity_id' ];
-			}
-		}
-
-		var unit = bookacti_get_activity_unit( booking_system, activity_id, event_data.quantity );
-		if( unit !== '' ) {
-			unit = '<span class="bookacti-booking-event-quantity-separator" > - </span>' 
-				 + '<span class="bookacti-booking-event-quantity" >' + unit + '</span>';
-		}
-		var list_element_data = {
-			'html': '<span class="bookacti-booking-event-title" >' + event_data.title + '</span><span class="bookacti-booking-event-title-separator" > - </span>' + event_data.duration + unit
-		};
-		
-		var list_element = $j( '<li></li>', list_element_data );
-		
-		// Add attributes to list elements to identify them
-		var event_start_formatted = moment.utc( picked_event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
-		var event_end_formatted = moment.utc( picked_event.end ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
-		
-		list_element.data( 'event-id', picked_event.id ).attr( 'data-event-id', picked_event.id );
-		list_element.data( 'event-start', event_start_formatted ).attr( 'data-event-start', event_start_formatted );
-		list_element.data( 'event-end', event_end_formatted ).attr( 'data-event-end', event_end_formatted );
-		
-		// Add grouped event to the list
-		if( parseInt( picked_event.group_id ) > 0 ) {
-			// Add the grouped events list
-			if( ! event_list.find( 'li[data-group-id="' + picked_event.group_id + '"][data-group-date="' + picked_event.group_date + '"] ul' ).length ) {
-				// Get the group title
-				var group_title = '';
-				if( typeof bookacti.booking_system[ booking_system_id ][ 'groups_data' ][ picked_event.group_id ] !== 'undefined' ) {
-					var group = bookacti.booking_system[ booking_system_id ][ 'groups_data' ][ picked_event.group_id ];
-					group_title = '<span class="bookacti-picked-group-of-events-title">' + group.title + '</span>';
-				}
-				
-				var group_list_element = $j( '<li></li>', { 'html': group_title + '<ul class="bookacti-picked-group-of-events-list">' + list_element[0].outerHTML + '</ul>' } );
-				group_list_element.data( 'group-id', picked_event.group_id ).attr( 'data-group-id', picked_event.group_id );
-				group_list_element.data( 'group-date', picked_event.group_date ).attr( 'data-group-date', picked_event.group_date );
-				if( multiple_bookings ) { group_list_element.prepend( '<span class="bookacti-unpick-event-icon"></span>' ); }
-				event_list.append( group_list_element );
-			} 
-			// The grouped events list was already added
-			else {
-				var group_list_element = event_list.find( 'li[data-group-id="' + picked_event.group_id + '"][data-group-date="' + picked_event.group_date + '"] ul' );
-				group_list_element.append( list_element );
-			}
-		}
-		
-		// Add a single event to the list
-		else {
-			if( multiple_bookings ) { list_element.prepend( '<span class="bookacti-unpick-event-icon"></span>' ); }
-			event_list.append( list_element );
-		}
+	
+	var list_items = bookacti_get_picked_events_list_items( booking_system );
+	
+	$j.each( list_items, function( i, list_item_data ) {
+		var list_element = list_item_data.list_element;
+		if( multiple_bookings ) { list_element.prepend( '<span class="bookacti-unpick-event-icon"></span>' ); }
+		event_list.append( list_element );
 	});
 	
-	if( ! event_list.is( ':empty' ) ) {
-		booking_system.siblings( '.bookacti-picked-events' ).show();
-	}
+	if( ! event_list.is( ':empty' ) ) { booking_system.siblings( '.bookacti-picked-events' ).show(); }
 	
 	booking_system.trigger( 'bookacti_picked_events_list_filled' );
 }
@@ -1069,12 +1109,13 @@ function bookacti_get_min_and_max_quantity( booking_system ) {
 
 /**
  * Set min and max quantity on the quantity field
- * @version 1.12.0
+ * @version 1.12.4
  * @param {HTMLElement} booking_system
  */
 function bookacti_set_min_and_max_quantity( booking_system ) {
 	var qty_data = bookacti_get_min_and_max_quantity( booking_system );
-	qty_data.field = booking_system.closest( '.bookacti-booking-form, .bookacti-form-fields' ).find( 'input.bookacti-quantity' );
+	var form = booking_system.closest( 'form' ).length ? booking_system.closest( 'form' ) : booking_system.closest( '.bookacti-form-fields' );
+	qty_data.field = form.find( 'input[name="quantity"]' );
 	
 	booking_system.trigger( 'bookacti_update_quantity', [ qty_data ] );
 	
@@ -1145,7 +1186,7 @@ function bookacti_format_event_duration( start, end ) {
 
 /**
  * Get activity unit value
- * @version 1.8.0
+ * @version 1.12.4
  * @param {HTMLElement} booking_system
  * @param {int} activity_id
  * @param {int} qty
@@ -1168,19 +1209,16 @@ function bookacti_get_activity_unit( booking_system, activity_id, qty ) {
 	if( activity_data[ 'settings' ][ 'unit_name_plural' ] === ''
 	||  activity_data[ 'settings' ][ 'unit_name_singular' ] === '' ) { return ''; }
 	
-	var activity_val = qty + ' ';
-	activity_val += qty === 1 ? activity_data[ 'settings' ][ 'unit_name_singular' ] : activity_data[ 'settings' ][ 'unit_name_plural' ];
+	var activity_unit = qty === 1 ? activity_data[ 'settings' ][ 'unit_name_singular' ] : activity_data[ 'settings' ][ 'unit_name_plural' ];
 	
 	// Display people per booking
-	if( typeof activity_data[ 'settings' ][ 'places_number' ] === 'undefined' ) { return activity_val + '<br/>'; }
+	if( typeof activity_data[ 'settings' ][ 'places_number' ] === 'undefined' ) { return activity_unit; }
 	if( activity_data[ 'settings' ][ 'places_number' ] === '' 
-	||  parseInt( activity_data[ 'settings' ][ 'places_number' ] ) === 0 ) { return activity_val + '<br/>'; }
+	||  parseInt( activity_data[ 'settings' ][ 'places_number' ] ) === 0 ) { return activity_unit; }
 	
-	activity_val += ' ';
-	activity_val += parseInt( activity_data[ 'settings' ][ 'places_number' ] ) === 1 ? bookacti_localized.one_person_per_booking : bookacti_localized.n_people_per_booking.replace( '%1$s', activity_data[ 'settings' ][ 'places_number' ] );
-	activity_val += '<br/>';
+	activity_unit += parseInt( activity_data[ 'settings' ][ 'places_number' ] ) === 1 ? bookacti_localized.one_person_per_booking : bookacti_localized.n_people_per_booking.replace( '%1$s', activity_data[ 'settings' ][ 'places_number' ] );
 	
-	return activity_val;
+	return activity_unit;
 }
 
 
@@ -1804,7 +1842,7 @@ function bookacti_redirect_to_group_category_url( booking_system, group_id ) {
 /**
  * Redirect to url with the booking form values as parameters
  * @since 1.7.10
- * @version 1.11.0
+ * @version 1.12.4
  * @param {HTMLElement} booking_system
  * @param {string} redirect_url
  */
@@ -1832,8 +1870,32 @@ function bookacti_redirect_booking_system_to_url( booking_system, redirect_url )
 	
 	booking_system.trigger( 'bookacti_before_redirect', [ redirect ] );
 	
-	// Redirect to URL
+	// Disable the submit button to avoid multiple booking
+	var form = booking_system.closest( 'form' ).length ? booking_system.closest( 'form' ) : booking_system.closest( '.bookacti-form-fields' );	
+	var submit_button = form.find( 'input[type="submit"]' ).length ? form.find( 'input[type="submit"]' ) : null;
+	if( submit_button.length ) { submit_button.prop( 'disabled', true ); }
+	
+	// Start loading
 	bookacti_start_loading_booking_system( booking_system );
+	
+	// Display a loader after the submit button too
+	if( submit_button.length ) { 
+		var loading_div = '<div class="bookacti-loading-alt">' 
+						+ '<img class="bookacti-loader" src="' + bookacti_localized.plugin_path + '/img/ajax-loader.gif" title="' + bookacti_localized.loading + '" />'
+						+ '<span class="bookacti-loading-alt-text" >' + bookacti_localized.loading + '</span>'
+					+ '</div>';
+		submit_button.after( loading_div );
+	}
+	
+	// Redirect to URL
 	window.location.href = redirect.url;
-	bookacti_stop_loading_booking_system( booking_system );
+	
+	// Stop loading if nothing happened after 15 seconds
+	setTimeout( function() { 
+		bookacti_stop_loading_booking_system( booking_system ); 
+		if( submit_button.length ) { 
+			submit_button.next( '.bookacti-loading-alt' ).remove();
+			submit_button.prop( 'disabled', false );
+		}
+	}, 15000 );
 }

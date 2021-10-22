@@ -540,6 +540,80 @@ function bookacti_display_compulsory_quantity_form_field( $fields, $form, $insta
 add_filter( 'bookacti_displayed_form_fields', 'bookacti_display_compulsory_quantity_form_field', 100, 4 );
 
 
+/**
+ * Remove the Total Price field by default, since it is only used by third party plugins
+ * @since 1.2.14
+ * @param array $fields_data
+ * @param string $field_name
+ * @return array
+ */
+function bookacti_remove_unused_total_price_field( $fields_data, $field_name = '' ) {
+	$used = apply_filters( 'bookacti_is_total_price_field_used', false );
+	if( ! $used && isset( $fields_data[ 'total_price' ] ) ) { unset( $fields_data[ 'total_price' ] ); }
+	return $fields_data;
+}
+add_filter( 'bookacti_default_form_fields_data', 'bookacti_remove_unused_total_price_field', 10, 2 );
+add_filter( 'bookacti_default_form_fields_meta', 'bookacti_remove_unused_total_price_field', 10, 2 );
+
+
+/**
+ * Display the form field "Total price"
+ * @since 1.12.4
+ * @param string $html
+ * @param array $field
+ * @param string $instance_id
+ * @param string $context
+ */
+function bookacti_display_form_field_total_price( $html, $field, $instance_id = '', $context = '' ) {
+	if( ! $instance_id ) { $instance_id = rand(); }
+	$field_id = ! empty( $field[ 'id' ] ) ? esc_attr( $field[ 'id' ] ) : esc_attr( 'bookacti-form-field-' . $field[ 'type' ] . '-' . $field[ 'field_id' ] . '-' . $instance_id );
+	
+	$field_class = 'bookacti-form-field-container';
+	$field_css_data = 'style="display:none;"';
+	if( ! empty( $field[ 'name' ] ) )		{ $field_class .= ' bookacti-form-field-name-' . sanitize_title_with_dashes( esc_attr( $field[ 'name' ] ) ); $field_css_data .= ' data-field-name="' . esc_attr( $field[ 'name' ] ) . '"'; } 
+	if( ! empty( $field[ 'type' ] ) )		{ $field_class .= ' bookacti-form-field-type-' . sanitize_title_with_dashes( esc_attr( $field[ 'type' ] ) ); $field_css_data .= ' data-field-type="' . esc_attr( $field[ 'type' ] ) . '"'; } 
+	if( ! empty( $field[ 'field_id' ] ) )	{ $field_class .= ' bookacti-form-field-id-' . esc_attr( $field[ 'field_id' ] ); $field_css_data .= ' data-field-id="' . esc_attr( $field[ 'field_id' ] ) . '"'; }
+	if( ! empty( $field[ 'class' ] ) )		{ $field_class .= ' ' . esc_attr( $field[ 'class' ] ); }
+	
+	$tip = ! empty( $field[ 'tip' ] ) ? apply_filters( 'bookacti_translate_text', $field[ 'tip' ] ) : '';
+	$tip = esc_attr( $tip ) ? bookacti_help_tip( $tip, false ) : '';
+	
+	ob_start();
+?>
+	<div class='<?php echo $field_class; ?>' id='<?php echo $field_id; ?>' <?php echo trim( $field_css_data ); ?>>
+		<input type='hidden' name='total_price' value='' class='bookacti-total-price-value'/>
+	<?php if( ! empty( $field[ 'label' ] ) ) { ?>
+			<label><?php echo apply_filters( 'bookacti_translate_text', $field[ 'label' ] ); ?></label>
+			<?php echo $tip; ?>
+	<?php } 
+	if( ! empty( $field[ 'price_breakdown' ] ) ) { ?>
+		<table class='bookacti-total-price-table'>
+			<thead>
+				<tr>
+					<th><?php esc_html_e( 'Items', 'booking-activities' ); ?></th>
+					<th><?php esc_html_e( 'Price', 'booking-activities' ); ?></th>
+				</tr>
+			</thead>
+			<tbody></tbody>
+			<tfoot>
+				<tr>
+					<th><?php esc_html_e( 'Total', 'booking-activities' ); if( empty( $field[ 'label' ] ) ) { echo $tip; } ?></th>
+					<th class='bookacti-grand-total-price-container'></th>
+				</tr>
+			</tfoot>
+		</table>
+	<?php } else { ?>
+		<span class='bookacti-grand-total-price-container'></span>
+	<?php 
+		if( empty( $field[ 'label' ] ) ) { echo $tip; }
+	} ?>
+	</div>
+<?php
+	return ob_get_clean();
+}
+add_filter( 'bookacti_html_form_field_total_price', 'bookacti_display_form_field_total_price', 10, 4 );
+
+
 
 
 // FORM
@@ -1576,7 +1650,7 @@ add_action( 'wp_ajax_bookactiUpdateFormField', 'bookacti_controller_update_form_
 /**
  * AJAX Controller - Reset form meta
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.12.4
  */
 function bookacti_controller_reset_form_field() {
 	$field_id	= intval( $_POST[ 'field_id' ] );
@@ -1606,6 +1680,7 @@ function bookacti_controller_reset_form_field() {
 	do_action( 'bookacti_form_field_reset', $field );
 
 	// Get field data and HTML for editor
+	wp_cache_delete( 'form_field_data_' . $field_id, 'bookacti' );
 	$field_data	= bookacti_get_form_field_data( $field_id );
 	$field_html = bookacti_display_form_field_for_editor( $field_data, false );
 

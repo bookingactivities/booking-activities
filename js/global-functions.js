@@ -481,3 +481,41 @@ function bookacti_get_url_parameter( desired_param ) {
 	}
 	return null;
 }
+
+
+/**
+ * Format price with the correct format (currency, separators, decimals)
+ * @since 1.12.4
+ * @param {Float} price
+ * @returns {string}
+ */
+function bookacti_format_price( price ) {
+	var formatted_price = '';
+	if( ! $j.isNumeric( price ) ) { return formatted_price; }
+	
+	price = parseFloat( price );
+	var negative = price < 0;
+	if( negative ) { price = price * -1; }
+	
+	// Keep n decimals
+	formatted_price = price.toFixed( parseInt( bookacti_localized.price_decimal_number ) );
+	
+	// Do not display decimals if = 0
+	if( parseFloat( formatted_price ).toString().indexOf( '.' ) === -1 ) { formatted_price = parseFloat( formatted_price ); }
+	
+	// Split int and decimal parts
+	var num_parts = formatted_price.toString().split( '.' );
+	
+	// Add thousand separators to the int part
+    num_parts[ 0 ] = num_parts[ 0 ].replace( /\B(?=(\d{3})+(?!\d))/g, bookacti_localized.price_thousand_separator );
+	
+	// Join int and decimal parts again with decimal separators
+    formatted_price = num_parts.join( bookacti_localized.price_decimal_separator );
+	
+	// Add the price in its container (with currency)
+	formatted_price = bookacti_localized.price_format.replace( '{price}', formatted_price );
+	
+	if( negative ) { formatted_price = '-' + formatted_price; }
+	
+	return formatted_price;
+}

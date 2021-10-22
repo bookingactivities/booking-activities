@@ -443,12 +443,11 @@ function bookacti_get_default_form_field_common_data() {
  * Get fields data
  * @see bookacti_format_form_field_data to properly format your array
  * @since 1.5.0
- * @version 1.6.0
+ * @version 1.12.4
  * @param string $field_name
  * @return array
  */
 function bookacti_get_default_form_fields_data( $field_name = '' ) {
-	
 	// Set the common default data
 	$default_data = bookacti_get_default_form_field_common_data();
 	
@@ -498,10 +497,10 @@ function bookacti_get_default_form_fields_data( $field_name = '' ) {
 			'tip'			=> array_merge( $login_defaults[ 'tip' ], $login_type_defaults[ 'tip' ], $register_defaults[ 'tip' ] )
 		),
 		'free_text' => array( 
-			'name'			=> 'free_text',
-			'type'			=> 'free_text',
-			'title'			=> esc_html__( 'Free text', 'booking-activities' ),
-			'unique' 		=> 0
+			'name'		=> 'free_text',
+			'type'		=> 'free_text',
+			'title'		=> esc_html__( 'Free text', 'booking-activities' ),
+			'unique' 	=> 0
 		),
 		'quantity' => array( 
 			'name'		=> 'quantity',
@@ -517,6 +516,12 @@ function bookacti_get_default_form_fields_data( $field_name = '' ) {
 			'title'		=> esc_html__( 'Terms', 'booking-activities' ),
 			'label'		=> esc_html__( 'I have read and agree to the terms and conditions', 'booking-activities' ),
 			'required'	=> 1
+		),
+		'total_price' => array( 
+			'name'		=> 'total_price',
+			'type'		=> 'total_price',
+			'title'		=> esc_html__( 'Total price', 'booking-activities' ),
+			'label'		=> esc_html__( 'Total price', 'booking-activities' )
 		),
 		'submit' => array( 
 			'name'		=> 'submit',
@@ -618,10 +623,11 @@ function bookacti_get_default_form_fields_meta( $field_name = '' ) {
 			'displayed_fields'			=> array_merge( $login_defaults[ 'displayed' ], $login_type_defaults[ 'displayed' ], $register_defaults[ 'displayed' ] ),
 			'required_fields'			=> array_merge( $login_defaults[ 'required' ], $login_type_defaults[ 'required' ], $register_defaults[ 'required' ] )
 		),
-		'free_text'	=> array(),
-		'quantity'	=> array(),
-		'terms'		=> array(),
-		'submit'	=> array()
+		'free_text'		=> array(),
+		'quantity'		=> array(),
+		'terms'			=> array(),
+		'total_price'	=> array( 'price_breakdown' => 1 ),
+		'submit'		=> array()
 	), $field_name );
 	
 	if( $field_name ) {
@@ -784,6 +790,10 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 		if( isset( $raw_field_data[ 'value' ] ) ) {
 			$field_data[ 'value' ] = wpautop( $raw_field_data[ 'value' ] );
 		}
+	} else if( $raw_field_data[ 'name' ] === 'total_price' ) {
+		// Format meta values
+		$keys_by_type = array( 'bool' => array( 'price_breakdown' ) );
+		$field_meta = bookacti_sanitize_values( $default_meta, $raw_field_data, $keys_by_type, $field_meta );
 	}
 	
 	// Format common values
@@ -958,6 +968,10 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 		if( isset( $raw_field_data[ 'value' ] ) ) {
 			$field_data[ 'value' ] = bookacti_sanitize_form_field_free_text( $raw_field_data[ 'value' ] );
 		}
+	} else if( $raw_field_data[ 'name' ] === 'total_price' ) {
+		// Sanitize meta values
+		$keys_by_type = array( 'bool' => array( 'price_breakdown' ) );
+		$field_meta = bookacti_sanitize_values( $default_meta, $raw_field_data, $keys_by_type, $field_meta );
 	}
 	
 	// Sanitize common values

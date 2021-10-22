@@ -141,11 +141,16 @@ $j( document ).ready( function() {
 
 
 	/**
-	 * Change activity summary on qty change
-	 * @version 1.11.3
+	 * Change picked events list, set min and max quantity, and refresh total price field - on WC product page quantity change
+	 * @version 1.12.4
 	 */
 	$j( '.woocommerce form.cart' ).on( 'keyup mouseup change', 'input.qty', function() {
-		var booking_system = $j( this ).closest( 'form.cart' ).find( '.bookacti-booking-system' );
+		var form = $j( this ).closest( 'form' ).length ? $j( this ).closest( 'form' ) : $j( this ).closest( '.bookacti-form-fields' );
+		if( ! form.length ) { return; }
+		
+		form.trigger( 'bookacti_booking_form_quantity_change', [ $j( this ).val(), $j( this ) ] );
+		
+		var booking_system = form.find( '.bookacti-booking-system' );
 		if( booking_system.length ) {
 			bookacti_set_min_and_max_quantity( booking_system );
 			bookacti_fill_picked_events_list( booking_system );
@@ -154,34 +159,43 @@ $j( document ).ready( function() {
 	
 	
 	/**
-	 * Set picked events list quantity according to the product form quantity - on bookacti_picked_events_list_data
-	 * @version 1.11.0
+	 * Add price data to selected events
+	 * @since 1.12.4
 	 * @param {Event} e
-	 * @param {Object} event_data
-	 * @param {Object} event
+	 * @param {Object} list_item_data
+	 * @param {Object} picked_event
 	 */
-	$j( '.woocommerce form.cart' ).on( 'bookacti_picked_events_list_data', '.bookacti-booking-system', function( e, event_data, event ) {
+	$j( 'body' ).on( 'bookacti_picked_events_list_item_data', '.bookacti-booking-system', function( e, list_item_data, picked_event ) {
+		if( parseInt( list_item_data.price ) !== 0 || list_item_data.quantity <= 0 || list_item_data.has_price ) { return; }
+		
 		var booking_system = $j( this );
-		var qty_field = booking_system.closest( 'form' ).find( 'input.qty' );
-		if( qty_field.length ) {
-			event_data.quantity = parseInt( qty_field.val() );
+		var booking_system_id = $j( this ).attr( 'id' );
+		var attributes = bookacti.booking_system[ booking_system_id ];
+		var form = booking_system.closest( 'form' ).length ? booking_system.closest( 'form' ) : booking_system.closest( '.bookacti-form-fields' );
+		
+		if( form.find( 'input[data-name="price"]' ).length ) {
+			list_item_data.price = parseFloat( form.find( 'input[data-name="price"]' ).val() ) * parseInt( list_item_data.quantity );
 		}
-	});
-	
-
-	/**
-	 * Set product form quantity field - on bookacti_update_quantity
-	 * @since 1.9.0
-	 * @version 1.11.0
-	 * @param {Event} e
-	 * @param {Object} qty_data
-	 */
-	$j( '.woocommerce form.cart' ).on( 'bookacti_update_quantity', '.bookacti-booking-system', function( e, qty_data ) {
-		var booking_system = $j( this );
-		var qty_field = booking_system.closest( 'form' ).find( 'input.qty' );
-		if( qty_field.length ) {
-			qty_data.field = qty_field;
+		
+		if( $j.inArray( attributes[ 'form_action' ], [ 'add_product_to_cart', 'redirect_to_product_page' ] ) >= 0 ) {
+			if( parseInt( list_item_data.group_id ) > 0 ) {
+				if( typeof attributes[ 'product_price_by_group_category' ] !== 'undefined' ) {
+					if( typeof attributes[ 'product_price_by_group_category' ][ list_item_data.category_id ] !== 'undefined' ) {
+						list_item_data.price = parseFloat( attributes[ 'product_price_by_group_category' ][ list_item_data.category_id ] ) * parseInt( list_item_data.quantity );
+						list_item_data.has_price = true;
+					}
+				}
+			} else {
+				if( typeof attributes[ 'product_price_by_activity' ] !== 'undefined' ) {
+					if( typeof attributes[ 'product_price_by_activity' ][ list_item_data.activity_id ] !== 'undefined' ) {
+						list_item_data.price = parseFloat( attributes[ 'product_price_by_activity' ][ list_item_data.activity_id ] ) * parseInt( list_item_data.quantity );
+						list_item_data.has_price = true;
+					}
+				}
+			}
 		}
+		
+		if( list_item_data.price > 0 && ! list_item_data.price_to_display ) { list_item_data.price_to_display = bookacti_format_price( list_item_data.price ); }
 	});
 
 
