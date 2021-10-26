@@ -140,6 +140,7 @@ body.booking-activities_page_bookacti_forms label[for='bookacti_form_publish-hid
 .bookacti-form-field-checkbox-label	{ display: table-cell; vertical-align: top; }
 .bookacti-form-field-checkbox-label	{ padding: 0 10px; }
 
+.bookacti-form-field-type-total_price label { font-weight: bold; }
 .bookacti-total-price-table { border-collapse: collapse; }
 .bookacti-total-price-table th, .bookacti-total-price-table td { padding: 5px 10px; text-align: left; vertical-align: middle; border: 1px solid #ddd; }
 .bookacti-total-price-table th + th, .bookacti-total-price-table td + td { text-align: right; }

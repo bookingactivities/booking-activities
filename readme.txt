@@ -321,7 +321,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.12.4 =
+= 1.12.4 - 2021/10/27 =
 * Feature - Add a "Total price" field, it can be used with WooCommerce, the Prices and Credits add-on or the Advanced Forms add-on only
 * Tweak - Add an optional "Remember me" checkbox field in "User data (login / registration)" field settings
 * Tweak - Add an optional "Redirect URL" option for the forgotten password link in "User data (login / registration)" field settings ("Login" tab, advanced options) to replace the Forgotten password dialog
@@ -329,6 +329,8 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Administrator role in multisite installs can now manage everything created in Booking Activities on their own site
 * Fix - Form fields display was not properly refreshed in form editor after resetting their options, a page refresh was needed
 * Fix - Loading feedback was not displayed if the form action was to redirect to another page
+* Fix - Request a refund button appeared in frontend to administrators when it should not
+* Fix - On iOS, picked events title may be undefined, if Display Pack add-on tooltip feature was used
 
 = 1.12.3 - 2021/09/23 =
 * Tweak - Add loading feedbacks after validating booking actions dialogs (change status, quantity, reschedule)

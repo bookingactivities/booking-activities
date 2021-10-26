@@ -734,7 +734,7 @@ function bookacti_booking_can_be_rescheduled_to( $booking, $event_id, $event_sta
 
 /**
  * Check if a booking can be refunded
- * @version 1.12.3
+ * @version 1.12.4
  * @param object|int $booking
  * @param string $context
  * @param string $refund_action
@@ -762,7 +762,7 @@ function bookacti_booking_can_be_refunded( $booking, $context = '', $refund_acti
 		// -> If the refund action is set but doesn't exist in available refund actions list
 		|| ( ! empty( $refund_action ) && ! array_key_exists( $refund_action, $refund_actions ) ) 
 		// -> If the user is not an admin, the booking state has to be 'cancelled' in the first place
-		|| ( ! current_user_can( 'bookacti_edit_bookings' ) && ! ( $is_own && $booking->state === 'cancelled' ) ) ) { 
+		|| ( ( ! current_user_can( 'bookacti_edit_bookings' ) || $context === 'front' ) && ! ( $is_own && $booking->state === 'cancelled' ) ) ) { 
 
 			$true = false;
 		}

@@ -920,6 +920,8 @@ function bookacti_refresh_total_price_field( form ) {
 	if( ! grand_total_to_display && grand_total ) { grand_total_to_display = bookacti_format_price( grand_total ); }
 	if( grand_total_container.length ) { grand_total_container.html( grand_total_to_display ); }
 	
+	form.find( '.bookacti-form-field-type-total_price .bookacti-total-price-value' ).val( grand_total );
+	
 	form.find( '.bookacti-form-field-type-total_price:not(.bookacti-form-editor-field)' ).toggle( price_table.length ? ( rows.items.length > 0 ) : ( grand_total_container.html().length > 0 ) );
 	
 	form.trigger( 'bookacti_total_price_field_refreshed', [ rows ] );

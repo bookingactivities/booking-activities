@@ -450,7 +450,7 @@ function bookacti_refresh_booking_numbers( booking_system ) {
 
 /**
  * An event is clicked
- * @version 1.12.0
+ * @version 1.12.4
  * @param {HTMLElement} booking_system
  * @param {object} event
  */
@@ -486,8 +486,7 @@ function bookacti_event_click( booking_system, event ) {
 		var group_dates = group_id ? Object.keys( groups[ group_id ] ) : [];
 		var group_date = group_dates.length ? group_dates[ 0 ] : '';
 		
-		if( multiple_bookings ) { bookacti_unpick_events( booking_system, event ); }
-		else { bookacti_unpick_all_events( booking_system ); }
+		if( ! multiple_bookings ) { bookacti_unpick_all_events( booking_system ); }
 		
 		bookacti_pick_events( booking_system, event, group_id, group_date );
 
@@ -663,7 +662,7 @@ function bookacti_is_event_picked( booking_system, event ) {
 
 /**
  * Pick an event
- * @version 1.12.0
+ * @version 1.12.4
  * @param {HTMLElement} booking_system
  * @param {Object|Int} event
  * @param {Int} group_id
@@ -683,9 +682,11 @@ function bookacti_pick_event( booking_system, event, group_id, group_date ) {
 	var booking_system_id = booking_system.attr( 'id' );
 	
 	// Find activity ID
+	var title = typeof event.title !== 'undefined' ? event.title : '';
 	var activity_id = typeof event.activity_id !== 'undefined' ? parseInt( event.activity_id ) : 0;
 	if( ! activity_id ) {
 		if( typeof bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event.id ] !== 'undefined' ) {
+			title = bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event.id ][ 'title' ];
 			activity_id = bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event.id ][ 'activity_id' ];
 		}
 	}
@@ -697,7 +698,7 @@ function bookacti_pick_event( booking_system, event, group_id, group_date ) {
 		"id": parseInt( event.id ),
 		"start": moment.utc( event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' ),
 		"end": moment.utc( event.end ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' ),
-		"title": event.title,
+		"title": title,
 		"activity_id": parseInt( activity_id )
 	};
 	

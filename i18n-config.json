@@ -16,7 +16,8 @@
 				"bookacti-form-field-dialog-quantity-lang-switcher": { "where": "first" },
 				"bookacti-form-field-dialog-submit-lang-switcher": { "where": "first" },
 				"bookacti-form-field-dialog-free_text-lang-switcher": { "where": "first" },
-				"bookacti-form-field-dialog-terms-lang-switcher": { "where": "first" }
+				"bookacti-form-field-dialog-terms-lang-switcher": { "where": "first" },
+				"bookacti-form-field-dialog-total_price-lang-switcher": { "where": "first" }
 			},
 			"forms":{
 				"bookacti-settings":{
