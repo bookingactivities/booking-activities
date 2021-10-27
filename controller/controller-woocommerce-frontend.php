@@ -12,7 +12,7 @@ if( ! isset( $GLOBALS[ 'global_bookacti_wc' ] ) ) { $GLOBALS[ 'global_bookacti_w
 
 /**
  * Add woocommerce related translations
- * @version 1.8.0
+ * @version 1.12.4
  * @param array $translation_array
  * @return array
  */
@@ -23,7 +23,11 @@ function bookacti_woocommerce_translation_array( $translation_array ) {
 	$translation_array[ 'error_cart_expired' ]				= esc_html__( 'Your cart has expired.', 'booking-activities' );
 	$translation_array[ 'add_product_to_cart_button_text' ]	= esc_html__( 'Add to cart', 'woocommerce' );
 	$translation_array[ 'add_booking_to_cart_button_text' ]	= bookacti_get_message( 'booking_form_submit_button' );
-
+	$translation_array[ 'price_format' ]					= str_replace( array( '%1$s', '%2$s' ), array( get_woocommerce_currency_symbol(), '{price}' ), get_woocommerce_price_format() );
+	$translation_array[ 'price_thousand_separator' ]		= wc_get_price_thousand_separator();
+	$translation_array[ 'price_decimal_separator' ]			= wc_get_price_decimal_separator();
+	$translation_array[ 'price_decimal_number' ]			= wc_get_price_decimals();
+	
 	if( is_admin() ) {
 		$translation_array[ 'empty_product_price' ] = esc_html__( 'You must set a price for your product, otherwise the booking form won’t appear on the product page.', 'booking-activities' );
 	}

@@ -34,7 +34,7 @@ add_action( 'bookacti_display_form_field_calendar', 'bookacti_display_form_field
 /**
  * Display the form field 'login'
  * @since 1.5.0
- * @version 1.12.0
+ * @version 1.12.4
  * @param string $html
  * @param array $field
  * @param string $instance_id
@@ -102,6 +102,7 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 	?>
 		<div class='bookacti-user-data-fields'>
 			<div class='bookacti-log-in-fields'>
+				<?php do_action( 'bookacti_login_fields_before', $field, $instance_id, $context ); ?>
 				<div class='bookacti-form-field-login-field-container bookacti-login-field-email' id='<?php echo $field_id; ?>-email-container' data-field-name='email' data-field-type='email'>
 					<div class='bookacti-form-field-label' >
 						<label for='<?php echo $field_id . '-email'; ?>' >
@@ -165,16 +166,18 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 							<?php
 						}
 						
-						if( ! empty( $field[ 'displayed_fields' ][ 'forgotten_password' ] ) ) { 
+						if( ! empty( $field[ 'displayed_fields' ][ 'forgotten_password' ] ) ) {
+							$forgotten_password_url = ! empty( $field[ 'placeholder' ][ 'forgotten_password' ] ) ? esc_attr( apply_filters( 'bookacti_translate_text', $field[ 'placeholder' ][ 'forgotten_password' ] ) ) : '';
 						?>
 							<div class='bookacti-forgotten-password' >
-								<a href='#' class='bookacti-forgotten-password-link' data-field-id='<?php echo $field_id; ?>' ><?php echo esc_html( apply_filters( 'bookacti_translate_text', $field[ 'label' ][ 'forgotten_password' ] ) ) ?></a>
+								<a href='<?php echo $forgotten_password_url ? $forgotten_password_url : '#'; ?>' class='bookacti-forgotten-password-link' data-field-id='<?php echo $field_id; ?>' ><?php echo esc_html( apply_filters( 'bookacti_translate_text', $field[ 'label' ][ 'forgotten_password' ] ) ) ?></a>
 							<?php
 								if( ! empty( $field[ 'tip' ][ 'forgotten_password' ] ) ) {
 									bookacti_help_tip( esc_html( apply_filters( 'bookacti_translate_text', $field[ 'tip' ][ 'forgotten_password' ] ) ) );
 								}
 							?>
 							</div>
+							<?php if( ! $forgotten_password_url ) { ?>
 							<div data-field-id='<?php echo $field_id; ?>' class='bookacti-forgotten-password-dialog bookacti-form-dialog' title='<?php esc_html_e( 'Forgotten password', 'booking-activities' ); ?>' style='display:none;' >
 								<div class='bookacti-forgotten-password-dialog-description' >
 									<p>
@@ -201,11 +204,40 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 								</div>
 							</div>
 						<?php 
+							}
 						}
 						?>
 					</div>
 					<?php do_action( 'bookacti_login_field_after_password', $field, $instance_id, $context ); ?>
 				</div>
+				<?php
+				if( ! empty( $field[ 'displayed_fields' ][ 'remember' ] ) ) { 
+				?>
+				<div class='bookacti-form-field-login-field-container bookacti-login-field-remember' id='<?php echo $field_id; ?>-remember-container' data-field-name='remember' data-field-type='checkbox'>
+					<div class='bookacti-form-field-label' >
+						<label for='<?php echo $field_id . '-remember'; ?>'>
+							<?php echo esc_html( apply_filters( 'bookacti_translate_text', $field[ 'label' ][ 'remember' ] ) ); ?>
+						</label>
+					<?php if( ! empty( $field[ 'tip' ][ 'remember' ] ) ) { bookacti_help_tip( esc_html( apply_filters( 'bookacti_translate_text', $field[ 'tip' ][ 'remember' ] ) ) ); } ?>
+					</div>
+					<div class='bookacti-form-field-content'>
+					<?php
+						$args = array(
+							'type'	=> 'checkbox',
+							'name'	=> 'remember',
+							'value'	=> ! empty( $_REQUEST[ 'remember' ] ) || ! empty( $field[ 'placeholder' ][ 'remember' ] ) ? 1 : 0,
+							'id'	=> $field_id . '-remember',
+							'class'	=> 'bookacti-form-field bookacti-remember'
+						);
+						bookacti_display_field( $args );
+					?>
+					</div>
+					<?php do_action( 'bookacti_login_field_after_remember', $field, $instance_id, $context ); ?>
+				</div>
+				<?php
+				}
+				do_action( 'bookacti_login_fields_after', $field, $instance_id, $context );
+				?>
 			</div>
 			<?php 
 			if( ! empty( $field[ 'displayed_fields' ][ 'new_account' ] ) || ! empty( $field[ 'displayed_fields' ][ 'no_account' ] ) ) { 
@@ -508,6 +540,80 @@ function bookacti_display_compulsory_quantity_form_field( $fields, $form, $insta
 add_filter( 'bookacti_displayed_form_fields', 'bookacti_display_compulsory_quantity_form_field', 100, 4 );
 
 
+/**
+ * Remove the Total Price field by default, since it is only used by third party plugins
+ * @since 1.2.14
+ * @param array $fields_data
+ * @param string $field_name
+ * @return array
+ */
+function bookacti_remove_unused_total_price_field( $fields_data, $field_name = '' ) {
+	$used = apply_filters( 'bookacti_is_total_price_field_used', false );
+	if( ! $used && isset( $fields_data[ 'total_price' ] ) ) { unset( $fields_data[ 'total_price' ] ); }
+	return $fields_data;
+}
+add_filter( 'bookacti_default_form_fields_data', 'bookacti_remove_unused_total_price_field', 10, 2 );
+add_filter( 'bookacti_default_form_fields_meta', 'bookacti_remove_unused_total_price_field', 10, 2 );
+
+
+/**
+ * Display the form field "Total price"
+ * @since 1.12.4
+ * @param string $html
+ * @param array $field
+ * @param string $instance_id
+ * @param string $context
+ */
+function bookacti_display_form_field_total_price( $html, $field, $instance_id = '', $context = '' ) {
+	if( ! $instance_id ) { $instance_id = rand(); }
+	$field_id = ! empty( $field[ 'id' ] ) ? esc_attr( $field[ 'id' ] ) : esc_attr( 'bookacti-form-field-' . $field[ 'type' ] . '-' . $field[ 'field_id' ] . '-' . $instance_id );
+	
+	$field_class = 'bookacti-form-field-container';
+	$field_css_data = 'style="display:none;"';
+	if( ! empty( $field[ 'name' ] ) )		{ $field_class .= ' bookacti-form-field-name-' . sanitize_title_with_dashes( esc_attr( $field[ 'name' ] ) ); $field_css_data .= ' data-field-name="' . esc_attr( $field[ 'name' ] ) . '"'; } 
+	if( ! empty( $field[ 'type' ] ) )		{ $field_class .= ' bookacti-form-field-type-' . sanitize_title_with_dashes( esc_attr( $field[ 'type' ] ) ); $field_css_data .= ' data-field-type="' . esc_attr( $field[ 'type' ] ) . '"'; } 
+	if( ! empty( $field[ 'field_id' ] ) )	{ $field_class .= ' bookacti-form-field-id-' . esc_attr( $field[ 'field_id' ] ); $field_css_data .= ' data-field-id="' . esc_attr( $field[ 'field_id' ] ) . '"'; }
+	if( ! empty( $field[ 'class' ] ) )		{ $field_class .= ' ' . esc_attr( $field[ 'class' ] ); }
+	
+	$tip = ! empty( $field[ 'tip' ] ) ? apply_filters( 'bookacti_translate_text', $field[ 'tip' ] ) : '';
+	$tip = esc_attr( $tip ) ? bookacti_help_tip( $tip, false ) : '';
+	
+	ob_start();
+?>
+	<div class='<?php echo $field_class; ?>' id='<?php echo $field_id; ?>' <?php echo trim( $field_css_data ); ?>>
+		<input type='hidden' name='total_price' value='' class='bookacti-total-price-value'/>
+	<?php if( ! empty( $field[ 'label' ] ) ) { ?>
+			<label><?php echo apply_filters( 'bookacti_translate_text', $field[ 'label' ] ); ?></label>
+			<?php echo $tip; ?>
+	<?php } 
+	if( ! empty( $field[ 'price_breakdown' ] ) ) { ?>
+		<table class='bookacti-total-price-table'>
+			<thead>
+				<tr>
+					<th><?php esc_html_e( 'Items', 'booking-activities' ); ?></th>
+					<th><?php esc_html_e( 'Price', 'booking-activities' ); ?></th>
+				</tr>
+			</thead>
+			<tbody></tbody>
+			<tfoot>
+				<tr>
+					<th><?php esc_html_e( 'Total', 'booking-activities' ); if( empty( $field[ 'label' ] ) ) { echo $tip; } ?></th>
+					<th class='bookacti-grand-total-price-container'></th>
+				</tr>
+			</tfoot>
+		</table>
+	<?php } else { ?>
+		<span class='bookacti-grand-total-price-container'></span>
+	<?php 
+		if( empty( $field[ 'label' ] ) ) { echo $tip; }
+	} ?>
+	</div>
+<?php
+	return ob_get_clean();
+}
+add_filter( 'bookacti_html_form_field_total_price', 'bookacti_display_form_field_total_price', 10, 4 );
+
+
 
 
 // FORM
@@ -568,7 +674,7 @@ add_action( 'wp_ajax_nopriv_bookactiForgottenPassword', 'bookacti_controller_for
 /**
  * Check if login form is correct and then register / log the user in
  * @since 1.8.0
- * @version 1.9.0
+ * @version 1.12.4
  */
 function bookacti_controller_validate_login_form() {
 	// Check nonce
@@ -680,7 +786,7 @@ function bookacti_controller_validate_login_form() {
 	}
 	
 	// Log the user in
-	$is_logged_in = bookacti_log_user_in( $user->user_login );
+	$is_logged_in = bookacti_log_user_in( $user->user_login, $login_values[ 'remember' ] );
 	if( ! $is_logged_in ) { 
 		$return_array[ 'error' ] = 'cannot_log_in';
 		$return_array[ 'messages' ][ 'cannot_log_in' ] = esc_html__( 'An error occurred while trying to log you in.', 'booking-activities' );
@@ -708,7 +814,7 @@ add_action( 'wp_ajax_nopriv_bookactiSubmitLoginForm', 'bookacti_controller_valid
 /**
  * Check if booking form is correct and then book the event, or send the error message
  * @since 1.5.0
- * @version 1.12.2
+ * @version 1.12.4
  */
 function bookacti_controller_validate_booking_form() {
 	// Check nonce
@@ -847,7 +953,7 @@ function bookacti_controller_validate_booking_form() {
 		
 		// Log the user in programmatically
 		if( $login_field[ 'automatic_login' ] && isset( $user ) && is_a( $user, 'WP_User' ) ) {
-			$is_logged_in = bookacti_log_user_in( $user->user_login );
+			$is_logged_in = bookacti_log_user_in( $user->user_login, $login_values[ 'remember' ] );
 			if( ! $is_logged_in ) { 
 				$return_array[ 'error' ] = 'cannot_log_in';
 				$return_array[ 'messages' ][ 'cannot_log_in' ] = esc_html__( 'An error occurred while trying to log you in.', 'booking-activities' );
@@ -1544,7 +1650,7 @@ add_action( 'wp_ajax_bookactiUpdateFormField', 'bookacti_controller_update_form_
 /**
  * AJAX Controller - Reset form meta
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.12.4
  */
 function bookacti_controller_reset_form_field() {
 	$field_id	= intval( $_POST[ 'field_id' ] );
@@ -1574,6 +1680,7 @@ function bookacti_controller_reset_form_field() {
 	do_action( 'bookacti_form_field_reset', $field );
 
 	// Get field data and HTML for editor
+	wp_cache_delete( 'form_field_data_' . $field_id, 'bookacti' );
 	$field_data	= bookacti_get_form_field_data( $field_id );
 	$field_html = bookacti_display_form_field_for_editor( $field_data, false );
 

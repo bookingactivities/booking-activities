@@ -958,6 +958,7 @@ function bookacti_wc_format_order_item_bookings_ids( $order_item ) {
 /**
  * Get in order bookings per order item
  * @since 1.9.0
+ * @version 1.12.4
  * @global woocommerce $woocommerce
  * @param int|WC_Order|WC_Order_Item_Product[] $order_id
  * @param array $filters
@@ -994,7 +995,7 @@ function bookacti_wc_get_order_items_bookings( $order_id, $filters = array() ) {
 	
 	$bookings = array();
 	if( $order_item_ids_by_booking_id || $order_item_ids_by_booking_group_id ) {
-		$filters = apply_filters( 'bookacti_wc_cart_items_bookings_filters', bookacti_format_booking_filters( array_merge( $filters, array( 
+		$filters = apply_filters( 'bookacti_wc_order_items_bookings_filters', bookacti_format_booking_filters( array_merge( $filters, array( 
 			'in__booking_id' => array_keys( $order_item_ids_by_booking_id ), 
 			'in__booking_group_id' => array_keys( $order_item_ids_by_booking_group_id ), 
 			'booking_group_id_operator' => 'OR' ) ) ) );

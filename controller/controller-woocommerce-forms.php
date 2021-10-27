@@ -123,6 +123,46 @@ add_filter( 'bookacti_default_form_fields_meta', 'bookacti_default_wc_calendar_f
 
 
 /**
+ * Display a price field on WC product page
+ * @since 1.12.4
+ * @global WC_Product $product
+ * @param array $form
+ * @param string $instance_id
+ * @param string $context
+ */
+function bookacti_display_price_field_on_product_page( $form, $instance_id = '', $context = '' ) {
+	if( $context !== 'wc_product_init' && $context !== 'wc_switch_variation' ) { return; }
+	
+	$price = '';
+	
+	global $product;
+	if( $product ) {
+		// Display price according to Tax options
+		$tax_display_shop = get_option( 'woocommerce_tax_display_shop' );
+		if( $tax_display_shop === 'incl' ) {
+			$price = wc_get_price_including_tax( $product );
+		} else {
+			$price = wc_get_price_excluding_tax( $product );
+		}
+	}
+	?>
+		<input type='hidden' data-name='price' value='<?php echo esc_attr( $price ); ?>'/>
+	<?php
+}
+add_action( 'bookacti_form_before', 'bookacti_display_price_field_on_product_page', 10, 3 );
+
+
+/**
+ * Unlock the "Total Price" field for WooCommerce
+ * @since 1.12.4
+ * @param array $default_meta
+ * @param string $field_name
+ * @return array
+ */
+add_filter( 'bookacti_is_total_price_field_used', '__return_true' );
+
+
+/**
  * Add an icon before WC unsupported form field in form editor
  * @since 1.5.0
  * @param array $field_data
@@ -235,6 +275,36 @@ function bookacti_add_wc_form_action_options( $options ) {
 	return $options;
 }
 add_filter( 'bookacti_form_action_options', 'bookacti_add_wc_form_action_options', 10, 1 );
+
+
+/**
+ * Add product price per activity / category to booking sytem data if the form action is related to products
+ * @since 1.12.4
+ * @param array $booking_system_data
+ * @param array $atts
+ * @return array
+ */
+function bookacti_wc_add_product_price_per_activity_to_booking_system_data( $booking_system_data, $atts ) {
+	if( ! in_array( $atts[ 'form_action' ], array( 'add_product_to_cart', 'redirect_to_product_page' ), true ) ) { return $booking_system_data; }
+	
+	$booking_system_data[ 'product_price_by_activity' ] = array();
+	$booking_system_data[ 'product_price_by_group_category' ] = array();
+
+	// Display price according to Tax options
+	$tax_display_shop = get_option( 'woocommerce_tax_display_shop' );
+
+	foreach( $booking_system_data[ 'product_by_activity' ] as $activity_id => $product_id ) {
+		$product = wc_get_product( $product_id );
+		if( $product ) { $booking_system_data[ 'product_price_by_activity' ][ $activity_id ] = $tax_display_shop === 'incl' ? wc_get_price_including_tax( $product ) : wc_get_price_excluding_tax( $product ); }
+	}
+	foreach( $booking_system_data[ 'product_by_group_category' ] as $category_id => $product_id ) {
+		$product = wc_get_product( $product_id );
+		if( $product ) { $booking_system_data[ 'product_price_by_group_category' ][ $category_id ] = $tax_display_shop === 'incl' ? wc_get_price_including_tax( $product ) : wc_get_price_excluding_tax( $product ); }
+	}
+	
+	return $booking_system_data;
+}
+add_filter( 'bookacti_booking_system_data', 'bookacti_wc_add_product_price_per_activity_to_booking_system_data', 20, 2 );
 
 
 /**

@@ -5,12 +5,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Array of configurable notifications
  * @since 1.2.1 (was bookacti_get_emails_default_settings in 1.2.0)
- * @version 1.10.0
+ * @version 1.12.4
  * @return array
  */
 function bookacti_get_notifications_default_settings() {
 	$admin_email = get_bloginfo( 'admin_email' );
-	$blog_name = apply_filters( 'bookacti_translate_text', get_bloginfo( 'name' ) );
+	$blog_name = apply_filters( 'bookacti_translate_text', wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ) );
 	
 	$notifications = array( 
 		'admin_new_booking' => 

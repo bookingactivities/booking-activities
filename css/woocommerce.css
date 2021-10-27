@@ -32,6 +32,8 @@ table.woocommerce_order_items ul.bookacti-booking-events-list { margin: 0; }
 /* Booking forms */
 .bookacti-success-list.woocommerce a.button,
 .woocommerce div.product.bookacti-activity form.cart .bookacti-success-list.woocommerce .button { float: right; }
+.woocommerce div.product form.cart table.bookacti-total-price-table td { padding-left: 10px; }
+.bookacti-success-list.woocommerce li:not(:first-child) a.button.wc-forward { display: none; }
 
 /* Single product page */
 .woocommerce div.product.bookacti-activity form.cart table td.fc-axis		{ padding-left: 4px; }

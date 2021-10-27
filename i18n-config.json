@@ -1,4 +1,4 @@
-{ "vendor": { "plugins/booking-activities": "1.8.6" },
+{ "vendor": { "plugins/booking-activities": "1.12.4" },
 	"admin-config":{
 		"bookacti_calendars":{
 			"pages":{ "admin.php":"" },
@@ -16,7 +16,8 @@
 				"bookacti-form-field-dialog-quantity-lang-switcher": { "where": "first" },
 				"bookacti-form-field-dialog-submit-lang-switcher": { "where": "first" },
 				"bookacti-form-field-dialog-free_text-lang-switcher": { "where": "first" },
-				"bookacti-form-field-dialog-terms-lang-switcher": { "where": "first" }
+				"bookacti-form-field-dialog-terms-lang-switcher": { "where": "first" },
+				"bookacti-form-field-dialog-total_price-lang-switcher": { "where": "first" }
 			},
 			"forms":{
 				"bookacti-settings":{
@@ -100,7 +101,10 @@
 						"bookacti-password-placeholder":{},
 						"bookacti-password-tip":{},
 						"bookacti-forgotten_password-label":{},
+						"bookacti-forgotten_password-placeholder":{},
 						"bookacti-forgotten_password-tip":{},
+						"bookacti-label-remember":{},
+						"bookacti-tip-remember":{},
 						"bookacti-label-my_account":{},
 						"bookacti-tip-my_account":{},
 						"bookacti-label-new_account":{},
@@ -136,6 +140,12 @@
 					"fields":{
 						"bookacti-free_text-title":{},
 						"bookacti-free_text-value":{}
+					}
+				},
+				"bookacti-form-field-form-total_price":{
+					"fields":{
+						"bookacti-total_price-label":{},
+						"bookacti-total_price-tip":{}
 					}
 				},
 				"bookacti-form-field-form-terms":{

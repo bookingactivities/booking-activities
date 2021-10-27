@@ -7,14 +7,14 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Check password strength
-	 * @version 1.8.8
+	 * @version 1.12.4
 	 */
 	$j( 'body' ).on( 'keyup mouseup change', '.bookacti-booking-form input[name=password], .bookacti-form-fields input[name=password]', function() {
 		var password_field			= $j( this );
 		var password_confirm_field	= null;
 		var password_strength_meter	= $j( this ).closest( '.bookacti-form-field-container' ).find( '.bookacti-password-strength-meter' );
 		var forbidden_words			= [];
-		var login_type				= password_field.closest( '.bookacti-booking-form, .bookacti-form-fields' ).find( 'input[name="login_type"]:checked' ).val();
+		var login_type				= password_field.closest( 'form, .bookacti-form-fields' ).find( 'input[name="login_type"]:checked' ).val();
 		
 		if( password_strength_meter.length && login_type === 'new_account' ) {
 			var pwd_strength = bookacti_check_password_strength( password_field, password_confirm_field, password_strength_meter, forbidden_words );
@@ -24,11 +24,18 @@ $j( document ).ready( function() {
 		}
 	});
 	
-	// Forgotten password dialog
+	
+	/**
+	 * Forgotten password dialog
+	 * @version 1.12.4
+	 * @param {Event} e
+	 */
 	$j( 'body' ).on( 'click', '.bookacti-forgotten-password-link', function( e ) {
-		e.preventDefault();
-		var field_id = $j( this ).data( 'field-id' );
-		bookacti_dialog_forgotten_password( field_id );
+		if( ! $j( this ).attr( 'href' ) || $j( this ).attr( 'href' ) === '#' ) { 
+			e.preventDefault();
+			var field_id = $j( this ).data( 'field-id' );
+			bookacti_dialog_forgotten_password( field_id );
+		}
 	});
 	
 	
@@ -122,11 +129,48 @@ $j( document ).ready( function() {
 	
 	
 	/**
-	 * Change activity summary on qty change
-	 * @version 1.11.3
+	 * Enable submit booking button
+	 * @version 1.12.4
+	 */
+	$j( 'body' ).on( 'bookacti_view_refreshed bookacti_displayed_info_cleared', '.bookacti-booking-form .bookacti-booking-system, .bookacti-form-fields .bookacti-booking-system', function() {
+		var form = $j( this ).closest( 'form' ).length ? $j( this ).closest( 'form' ) : $j( this ).closest( '.bookacti-form-fields' );
+		form.find( 'input[name="quantity"]' ).attr( 'disabled', false );
+		form.find( 'button[type="submit"]' ).attr( 'disabled', false );
+	});
+
+
+	/**
+	 * Disable submit booking button
+	 * @version 1.12.4
+	 */
+	$j( 'body' ).on( 'bookacti_error_displayed', '.bookacti-booking-form .bookacti-booking-system, .bookacti-form-fields .bookacti-booking-system', function() {
+		var form = $j( this ).closest( 'form' ).length ? $j( this ).closest( 'form' ) : $j( this ).closest( '.bookacti-form-fields' );
+		form.find( 'input[name="quantity"]' ).attr( 'disabled', true );
+		form.find( 'button[type="submit"]' ).attr( 'disabled', true );
+	});
+	
+	
+	/**
+	 * Trigger bookacti_booking_form_quantity_change - on page load
+	 * @since 1.12.4
+	 */
+	$j( 'form input[name="quantity"]' ).each( function() {
+		var form = $j( this ).closest( 'form' ).length ? $j( this ).closest( 'form' ) : $j( this ).closest( '.bookacti-form-fields' );
+		if( form.length && form.find( '.bookacti-booking-system' ).length ) { form.trigger( 'bookacti_booking_form_quantity_change', [ $j( this ).val(), $j( this ) ] ); }
+	});
+	
+	
+	/**
+	 * Change picked events list, set min and max quantity, and refresh total price field - on booking form quantity change
+	 * @version 1.12.4
 	 */
 	$j( 'body' ).on( 'keyup mouseup change', '.bookacti-booking-form input.bookacti-quantity, .bookacti-form-fields input.bookacti-quantity', function() {
-		var booking_system = $j( this ).closest( '.bookacti-booking-form, .bookacti-form-fields' ).find( '.bookacti-booking-system' );
+		var form = $j( this ).closest( 'form' ).length ? $j( this ).closest( 'form' ) : $j( this ).closest( '.bookacti-form-fields' );
+		if( ! form.length ) { return; }
+			
+		form.trigger( 'bookacti_booking_form_quantity_change', [ $j( this ).val(), $j( this ) ] );
+		
+		var booking_system = form.find( '.bookacti-booking-system' );
 		if( booking_system.length ) {
 			bookacti_set_min_and_max_quantity( booking_system );
 			bookacti_fill_picked_events_list( booking_system );
@@ -135,25 +179,41 @@ $j( document ).ready( function() {
 	
 	
 	/**
-	 * Enable submit booking button
-	 * @version 1.7.6
+	 * Trigger bookacti_booking_form_quantity_change when the the quantity is automatically changed after onther action
+	 * @since 1.2.14
+	 * @param {Event} e
+	 * @param {Int} old_quantity
+	 * @param {Object} qty_data
 	 */
-	$j( 'body' ).on( 'bookacti_view_refreshed bookacti_displayed_info_cleared', '.bookacti-booking-form .bookacti-booking-system, .bookacti-form-fields .bookacti-booking-system', function() {
-		var booking_form = $j( this ).closest( '.bookacti-booking-form, .bookacti-form-fields' );
-		booking_form.find( 'input[name="quantity"]' ).attr( 'disabled', false );
-		booking_form.find( 'button[type="submit"]' ).attr( 'disabled', false );
+	$j( 'body' ).on( 'bookacti_quantity_updated', '.bookacti-booking-form input.bookacti-quantity, .bookacti-form-fields input.bookacti-quantity', function( e, old_quantity, qty_data ) {
+		var form = $j( this ).closest( 'form' ).length ? $j( this ).closest( 'form' ) : $j( this ).closest( '.bookacti-form-fields' );
+		if( form.length ) { form.trigger( 'bookacti_booking_form_quantity_change', [ $j( this ).val(), $j( this ) ] ); }
 	});
-
-
+	
+	
 	/**
-	 * Disable submit booking button
-	 * @version 1.7.6
+	 * Refresh total price field - on bookacti_booking_form_quantity_change
+	 * @since 1.2.14
+	 * @param {Event} e
+	 * @param {Int} quantity
+	 * @param {HTMLElement} qty_field
 	 */
-	$j( 'body' ).on( 'bookacti_error_displayed', '.bookacti-booking-form .bookacti-booking-system, .bookacti-form-fields .bookacti-booking-system', function() {
-		var booking_form = $j( this ).closest( '.bookacti-booking-form, .bookacti-form-fields' );
-		booking_form.find( 'input[name="quantity"]' ).attr( 'disabled', true );
-		booking_form.find( 'button[type="submit"]' ).attr( 'disabled', true );
+	$j( 'body' ).on( 'bookacti_booking_form_quantity_change', 'form, .bookacti-form-fields', function( e, quantity, qty_field ) {
+		var form = $j( this ).closest( 'form' ).length ? $j( this ).closest( 'form' ) : $j( this ).closest( '.bookacti-form-fields' );
+		if( form.length ) { bookacti_update_total_price_field_data_and_refresh( form ); }
 	});
+	
+	
+	/**
+	 * Refresh total price field - on page load
+	 * @since 1.12.4
+	 */
+	if( $j( '.bookacti-form-field-type-total_price' ).length ) {
+		$j( '.bookacti-form-field-type-total_price' ).each( function() {
+			var form = $j( this ).closest( 'form' ).length ? $j( this ).closest( 'form' ) : $j( this ).closest( '.bookacti-form-fields' );
+			bookacti_update_total_price_field_data_and_refresh( form );
+		});
+	}
 });
 
 
@@ -200,7 +260,7 @@ function bookacti_init_form_dialogs() {
 /**
  * Display or hide the register fields according to the login type value
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.12.4
  * @param {HTMLElement} login_field_container
  */
 function bookacti_show_hide_register_fields( login_field_container ) {
@@ -208,6 +268,7 @@ function bookacti_show_hide_register_fields( login_field_container ) {
 	var password_strength	= login_field_container.find( '.bookacti-password-strength' );
 	var password_forgotten	= login_field_container.find( '.bookacti-forgotten-password' );
 	var password_field		= login_field_container.find( '.bookacti-login-field-password' );
+	var remember_field		= login_field_container.find( '.bookacti-login-field-remember' );
 	var register_fieldset	= login_field_container.find( '.bookacti-register-fields' );
 	var login_button		= login_field_container.find( '.bookacti-login-button' );
 	var button_container	= login_field_container.find( '.bookacti-login-field-submit-button' );
@@ -221,6 +282,7 @@ function bookacti_show_hide_register_fields( login_field_container ) {
 			password_field.show();
 			password_field.find( 'input[name="password"]' ).prop( 'required', true );
 		}
+		remember_field.show();
 		register_fieldset.show(); 
 		register_fieldset.find( '.bookacti-required-field' ).prop( 'required', true );
 		login_button.val( login_button.data( 'register-label' ) ).prop( 'disabled', false );
@@ -235,6 +297,7 @@ function bookacti_show_hide_register_fields( login_field_container ) {
 			password_field.show();
 			password_field.find( 'input[name="password"]' ).prop( 'required', true );
 		}
+		remember_field.show();
 		register_fieldset.hide(); 
 		register_fieldset.find( '.bookacti-required-field' ).prop( 'required', false );
 		login_button.val( login_button.data( 'login-label' ) ).prop( 'disabled', false );
@@ -242,7 +305,8 @@ function bookacti_show_hide_register_fields( login_field_container ) {
 	} else if( login_type === 'no_account' ) { 
 		password_field.hide();
 		password_field.find( 'input[name="password"]' ).prop( 'required', false );
-		register_fieldset.show(); 
+		remember_field.hide();
+		register_fieldset.show();
 		register_fieldset.find( '.bookacti-required-field' ).prop( 'required', true );
 		login_button.prop( 'disabled', true );
 		button_container.hide();
@@ -727,4 +791,138 @@ function bookacti_dialog_forgotten_password( field_id ) {
 			}
 		}]
     );
+}
+
+
+// TOTAL PRICE FIELD
+
+/**
+ * Update all total price field data and refresh it asynchronously
+ * Every functions changing the price field data should be triggered here
+ * @since 1.12.4
+ * @param {HTMLElement} form
+ */
+function bookacti_update_total_price_field_data_and_refresh( form ) {
+	// Check if the form has a total price field
+	if( ! form.find( '.bookacti-form-field-type-total_price' ).length ) { return; }
+	
+	var form_id = form.attr( 'id' );
+	var handler = 'bookacti_update_total_price_field_' + form_id;
+
+	// Clear the previous timeout
+	if( typeof window[ handler ] !== 'undefined' ) { if( window[ handler ] ) { clearTimeout( window[ handler ] ); } }
+
+	// Set a small timeout to trigger this process only once
+	window[ handler ] = setTimeout( function() {
+		bookacti_update_total_price_field_data( form );
+		bookacti_refresh_total_price_field( form );
+	}, 200 );
+}
+
+
+/**
+ * Update all total price field data
+ * @since 1.12.4
+ * @param {HTMLElement} form
+ */
+function bookacti_update_total_price_field_data( form ) {
+	bookacti_update_total_price_field_picked_events_data( form );
+	
+	// Every functions changing the price field data should be triggered here
+	form.trigger( 'bookacti_update_total_price_field_data' );
+}
+
+
+/**
+ * Update total price field picked events data
+ * @since 1.12.4
+ * @param {HTMLElement} form
+ */
+function bookacti_update_total_price_field_picked_events_data( form ) {
+	var form_id = form.attr( 'id' );
+	if( typeof bookacti.total_price_fields_data[ form_id ] === 'undefined' ) { 
+		bookacti.total_price_fields_data[ form_id ] = { 'items': [], 'total': { 'price': 0.00, 'price_to_display': '' } };
+	}
+	
+	var rows = bookacti.total_price_fields_data[ form_id ];
+	
+	// Remove old events entries
+	rows.items = $j.grep( rows.items, function( item ) {
+		if( typeof item.id === 'undefined' ) { return true; } // keep
+		return item.id.indexOf( 'picked-' ) < 0; // remove picked events items
+	});
+	
+	var booking_system = form.find( '.bookacti-booking-system' );
+	if( ! booking_system.length ) { return; }
+	
+	var booking_system_id = booking_system.attr( 'id' );
+	if( typeof bookacti.booking_system[ booking_system_id ][ 'picked_events' ] === 'undefined' ) { return; }
+	
+	// Add new events entries
+	var events_items = [];
+	var picked_events_list_items = bookacti_get_picked_events_list_items( booking_system );
+	
+	$j.each( picked_events_list_items, function( list_item_id, list_item_data ) {
+		if( list_item_data.quantity > 0 ) {
+			events_items.push( { id: 'picked-' + list_item_id, 'label': list_item_data.list_element.html(), 'price': list_item_data.price, 'price_to_display': list_item_data.price_to_display } );
+		}
+	});
+	
+	// Always place the events on the top of the array
+	rows.items = events_items.concat( rows.items );
+	
+	form.trigger( 'bookacti_total_price_field_picked_events_data', [ rows, picked_events_list_items ] );
+}
+
+
+/**
+ * Refresh total price field
+ * @since 1.12.4
+ * @param {HTMLElement} form
+ */
+function bookacti_refresh_total_price_field( form ) {
+	var form_id = form.attr( 'id' );
+	if( typeof bookacti.total_price_fields_data[ form_id ] === 'undefined' ) { return; }
+	if( $j.isEmptyObject( bookacti.total_price_fields_data[ form_id ] ) ) { return; }
+	
+	// bookacti.total_price_fields_data[ form_id ] = { 'items': [ 0: { id: '', 'label': '', 'price': 0.00, 'price_to_display': '' }, 1: ... ], 'total': { 'price': 0.00, 'price_to_display': '' } }
+	var rows = $j.extend( true, {}, bookacti.total_price_fields_data[ form_id ] ); 
+	
+	form.trigger( 'bookacti_refresh_total_price_field', [ rows ] );
+	
+	var grand_total = 0.00;
+	var grand_total_to_display = rows.total.price_to_display;
+	var price_table = form.find( '.bookacti-form-field-type-total_price .bookacti-total-price-table' );
+	var grand_total_container = form.find( '.bookacti-form-field-type-total_price .bookacti-grand-total-price-container' );
+	
+	if( price_table.length ) { price_table.find( 'tbody' ).empty(); }
+	
+	// Compute the grand total and display the items subtotals
+	$j.each( rows.items, function( i, item ) {
+		if( typeof item.price === 'undefined' ) { return true; } // skip
+		if( ! $j.isNumeric( item.price ) ) { return true; } // skip
+		
+		grand_total += parseFloat( item.price );
+		
+		if( price_table.length ) {
+			var label = typeof item.label !== 'undefined' ? item.label : '';
+			var price = item.price_to_display;
+			if( typeof item.price_to_display === 'undefined' ) { item.price_to_display = ''; }
+			if( ! item.price_to_display && item.price ) { 
+				item.price_to_display = bookacti_format_price( parseFloat( item.price ) );
+			}
+			
+			var row = $j( '<tr></tr>', { 'html': '<td>' + label + '</td><td>' + price + '</td>' });
+			price_table.find( 'tbody' ).append( row );
+		}
+	});
+	
+	if( ! grand_total_to_display && grand_total ) { grand_total_to_display = bookacti_format_price( grand_total ); }
+	if( grand_total_container.length ) { grand_total_container.html( grand_total_to_display ); }
+	
+	form.find( '.bookacti-form-field-type-total_price .bookacti-total-price-value' ).val( grand_total );
+	
+	form.find( '.bookacti-form-field-type-total_price:not(.bookacti-form-editor-field)' ).toggle( price_table.length ? ( price_table.find( 'tbody tr' ).length > 0 ) : ( grand_total_container.html().length > 0 ) );
+	
+	form.trigger( 'bookacti_total_price_field_refreshed', [ rows ] );
 }
