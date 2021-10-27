@@ -922,7 +922,7 @@ function bookacti_refresh_total_price_field( form ) {
 	
 	form.find( '.bookacti-form-field-type-total_price .bookacti-total-price-value' ).val( grand_total );
 	
-	form.find( '.bookacti-form-field-type-total_price:not(.bookacti-form-editor-field)' ).toggle( price_table.length ? ( rows.items.length > 0 ) : ( grand_total_container.html().length > 0 ) );
+	form.find( '.bookacti-form-field-type-total_price:not(.bookacti-form-editor-field)' ).toggle( price_table.length ? ( price_table.find( 'tbody tr' ).length > 0 ) : ( grand_total_container.html().length > 0 ) );
 	
 	form.trigger( 'bookacti_total_price_field_refreshed', [ rows ] );
 }

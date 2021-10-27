@@ -331,6 +331,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Loading feedback was not displayed if the form action was to redirect to another page
 * Fix - Request a refund button appeared in frontend to administrators when it should not
 * Fix - On iOS, picked events title may be undefined, if Display Pack add-on tooltip feature was used
+* Fix - PHP warning if Site language was not set
 
 = 1.12.3 - 2021/09/23 =
 * Tweak - Add loading feedbacks after validating booking actions dialogs (change status, quantity, reschedule)

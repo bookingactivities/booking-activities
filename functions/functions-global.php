@@ -697,7 +697,7 @@ if( bookacti_is_plugin_active( 'qtranslate-x/qtranslate.php' ) || bookacti_is_pl
 /* 
  * Get user locale, and default to site or current locale
  * @since 1.2.0
- * @version 1.8.5
+ * @version 1.12.4
  * @param int|WP_User $user_id
  * @param string $default 'current' or 'site'
  * @param boolean $country_code Whether to return also country code
@@ -720,7 +720,7 @@ function bookacti_get_user_locale( $user_id, $default = 'current', $country_code
 			// If not set, get site default locale
 			if( ! $locale ) {
 				$alloptions	= wp_load_alloptions();
-				$locale		= $alloptions[ 'WPLANG' ] ? strval( $alloptions[ 'WPLANG' ] ) : get_locale();
+				$locale		= ! empty( $alloptions[ 'WPLANG' ] ) ? strval( $alloptions[ 'WPLANG' ] ) : get_locale();
 			}
 		} else {
 			// Get user locale, if not set get current locale
