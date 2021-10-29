@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 5.8
 Requires PHP: 5.3
-Stable tag: 1.12.4
+Stable tag: 1.12.5
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -320,6 +320,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.12.5 - 2021/10/29 =
+* Fix - JS error if booking form had no submit button
 
 = 1.12.4 - 2021/10/27 =
 * Feature - Add a "Total price" field, it can be used with WooCommerce, the Prices and Credits add-on or the Advanced Forms add-on only
