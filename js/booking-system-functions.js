@@ -1843,7 +1843,7 @@ function bookacti_redirect_to_group_category_url( booking_system, group_id ) {
 /**
  * Redirect to url with the booking form values as parameters
  * @since 1.7.10
- * @version 1.12.4
+ * @version 1.12.5
  * @param {HTMLElement} booking_system
  * @param {string} redirect_url
  */
@@ -1873,7 +1873,7 @@ function bookacti_redirect_booking_system_to_url( booking_system, redirect_url )
 	
 	// Disable the submit button to avoid multiple booking
 	var form = booking_system.closest( 'form' ).length ? booking_system.closest( 'form' ) : booking_system.closest( '.bookacti-form-fields' );	
-	var submit_button = form.find( 'input[type="submit"]' ).length ? form.find( 'input[type="submit"]' ) : null;
+	var submit_button = form.find( 'input[type="submit"]' );
 	if( submit_button.length ) { submit_button.prop( 'disabled', true ); }
 	
 	// Start loading

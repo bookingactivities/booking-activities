@@ -495,14 +495,14 @@ function bookacti_submit_login_form( submit_button ) {
 /**
  * Submit booking form
  * @since 1.7.6 (was bookacti_sumbit_booking_form)
- * @version 1.12.2
+ * @version 1.12.5
  * @param {HTMLElement} form
  */
 function bookacti_submit_booking_form( form ) {
 	var booking_system = form.find( '.bookacti-booking-system' );
 	
 	// Disable the submit button to avoid multiple booking
-	var submit_button = form.find( 'input[type="submit"]' ).length ? form.find( 'input[type="submit"]' ) : null;
+	var submit_button = form.find( 'input[type="submit"]' );
 	if( submit_button.length ) { submit_button.prop( 'disabled', true ); }
 	
 	// Use the error div of the booking system by default, or if possible, the error div of the form
