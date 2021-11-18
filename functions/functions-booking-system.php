@@ -2803,7 +2803,7 @@ function bookacti_sanitize_events_interval( $interval_raw ) {
 /**
  * Get exceptions dates by event
  * @since 1.7.0
- * @version 1.12.0
+ * @version 1.12.6
  * @param array $raw_args {
  *  @type array $templates
  *  @type array $events
@@ -2834,7 +2834,7 @@ function bookacti_get_exceptions_by_event( $raw_args = array() ) {
 		}
 	}
 	
-	return $exceptions_by_event;
+	return apply_filters( 'bookacti_exceptions_by_event', $exceptions_by_event, $args );
 }
 
 

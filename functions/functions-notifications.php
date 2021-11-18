@@ -705,15 +705,15 @@ add_action( 'bookacti_send_async_notification', 'bookacti_send_notification', 10
 /**
  * Send an email notification
  * @since 1.2.0
- * @version 1.9.0
+ * @version 1.12.6
  * @param array $notification
  * @param array $tags
  * @param string $locale
  * @return boolean
  */
 function bookacti_send_email_notification( $notification, $tags = array(), $locale = 'site' ) {
-	// Do not send email notification if it is deactivated or if there are no recipients
-	if( empty( $notification[ 'active' ] ) || empty( $notification[ 'email' ][ 'active' ] ) || empty( $notification[ 'email' ][ 'to' ] ) ) { return false; }
+	// Do not send email notification if it is deactivated
+	if( empty( $notification[ 'active' ] ) || empty( $notification[ 'email' ][ 'active' ] ) ) { return false; }
 	
 	// Set default locale to site's locale
 	if( $locale === 'site' ) { $locale = bookacti_get_site_locale(); }
@@ -740,6 +740,8 @@ function bookacti_send_email_notification( $notification, $tags = array(), $loca
 		'headers'		=> $headers,
 		'attachments'	=> array()
 	), $notification, $tags, $locale );
+	
+	if( empty( $email_data[ 'to' ] ) ) { return false; }
 	
 	$sent = bookacti_send_email( $email_data[ 'to' ], $email_data[ 'subject' ], $email_data[ 'message' ], $email_data[ 'headers' ], $email_data[ 'attachments' ] );
 	

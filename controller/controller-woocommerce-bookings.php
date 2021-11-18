@@ -223,7 +223,7 @@ add_action( 'woocommerce_order_status_changed', 'bookacti_wc_update_failed_order
 
 
 /**
- * Update the bookings of an order to "Cancelled" when it turns "Cancelled" or "Failed"
+ * Update the bookings of an order to "Cancelled" when it turns "Cancelled"
  * @since 1.9.0 (was bookacti_cancelled_order)
  * @param int $order_id
  * @param WC_Order $order
@@ -455,6 +455,7 @@ add_action( 'woocommerce_order_status_pending_to_on-hold', 'bookacti_wc_update_p
 /**
  * Update the bookings of an order to "In cart" when it turns from "Pending" to "Failed" and its bookings are still in cart
  * @since 1.12.0
+ * @version 1.12.6
  * @param int $order_id
  * @param WC_Order $order
  */
@@ -464,7 +465,7 @@ function bookacti_wc_update_failed_order_in_cart_bookings( $order_id, $order = n
 	// Check if the bookings attached to the order are still in cart (this is possible for failed orders)
 	$order_items_bookings = bookacti_wc_get_order_items_bookings( $order );
 	$cart_items_bookings = bookacti_wc_get_cart_items_bookings();
-	$in_cart_filters = array( 
+	$in_cart_filters = $not_in_cart_filters = array( 
 		'in__booking_id' => array(), 
 		'in__booking_group_id' => array(), 
 		'booking_group_id_operator' => 'OR'
@@ -485,18 +486,30 @@ function bookacti_wc_update_failed_order_in_cart_bookings( $order_id, $order = n
 				}
 				if( $is_in_cart ) { break; }
 			}
+			if( ! $is_in_cart ) {
+				if( $order_item_booking[ 'type' ] === 'single' ) { $not_in_cart_filters[ 'in__booking_id' ][] = intval( $order_item_booking[ 'id' ] ); }
+				if( $order_item_booking[ 'type' ] === 'group' ) { $not_in_cart_filters[ 'in__booking_group_id' ][] = intval( $order_item_booking[ 'id' ] ); }
+			}
 		}
 	}
 	
-	// If the booking of this order are no longer in cart, return
-	if( ! $in_cart_filters[ 'in__booking_id' ] && ! $in_cart_filters[ 'in__booking_group_id' ] ) { return; }
-	
 	// Change state of the in cart bookings of the order to 'in_cart'
-	$new_data = array(
-		'status' => 'in_cart',
-		'active' => 'auto'
-	);
-	bookacti_wc_update_order_items_bookings( $order, $new_data, array_merge( array( 'in__status' => array( 'booked', 'pending' ) ), $in_cart_filters ) );
+	if( $in_cart_filters[ 'in__booking_id' ] || $in_cart_filters[ 'in__booking_group_id' ] ) {
+		$new_data = array(
+			'status' => 'in_cart',
+			'active' => 'auto'
+		);
+		bookacti_wc_update_order_items_bookings( $order, $new_data, array_merge( array( 'in__status' => array( 'booked', 'pending' ) ), $in_cart_filters ) );
+	}
+	
+	// If the bookings of this order are no longer in cart, turn the bookings to 'cancelled'
+	if( $not_in_cart_filters[ 'in__booking_id' ] || $not_in_cart_filters[ 'in__booking_group_id' ] ) {
+		$new_data = array(
+			'status' => 'cancelled',
+			'active' => 0
+		);
+		bookacti_wc_update_order_items_bookings( $order, $new_data, array_merge( array( 'in__status' => array( 'booked', 'pending', 'in_cart' ) ), $not_in_cart_filters ) );
+	}
 	
 	// It is possible that pending bookings remain bound to the order if the user change his mind after he placed the order, but before he paid it.
 	// He then changed his cart, placed a new order, paid it, and only part of the old order is booked (or even nothing), the rest is still 'pending'
