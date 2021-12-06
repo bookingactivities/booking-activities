@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 5.8
 Requires PHP: 5.3
-Stable tag: 1.12.5
+Stable tag: 1.12.6
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -320,6 +320,14 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.12.6 - 2021/12/06 =
+* Tweak - Change the backend ON/OFF switch appearence (supports RTL)
+* Fix - Missing space between concatenated texts in picked events list
+* Fix - Bookings are cancelled if the WC gateway empties cart after failed payment (non default behaviour, compatibility fix)
+* Fix - Select2 dropdown may disappear if click is not held (always display the search box)
+* Fix - Activity tab may appear in WC product data even if the activity box was not checked
+* Dev - Support third parameter in bookacti_translate_text hook (for qTranslate-XT)
 
 = 1.12.5 - 2021/10/29 =
 * Fix - JS error if booking form had no submit button

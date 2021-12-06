@@ -678,19 +678,21 @@ function bookacti_translate_text( $text, $lang = '' ) {
 if( bookacti_is_plugin_active( 'qtranslate-x/qtranslate.php' ) || bookacti_is_plugin_active( 'qtranslate-xt/qtranslate.php' ) ) {
 	/**
 	 * Translate a string into the desired language (default to current site language)
-	 * 
-	 * @version 1.2.0
+	 * @version 1.12.6
 	 * @param string $text
 	 * @param string $lang Optional. Two letter lang id (e.g. fr or en) or locale id (e.g. fr_FR or en_US).
+	 * @param string $fallback Optional. False to display empty string if the text doesn't exist in the desired language. True to display the text of another existing language.
 	 * @return string
 	 */
-	function bookacti_translate_text_with_qtranslate( $text, $lang = null ) {
+	function bookacti_translate_text_with_qtranslate( $text, $lang = false, $fallback = true ) {
 		if( $lang && is_string( $lang ) && strpos( $lang, '_' ) !== false ) { 
 			$lang = substr( $lang, 0, strpos( $lang, '_' ) );
 		}
-		return apply_filters( 'translate_text', $text, $lang );
+		$qtranslate_show_empty = defined( 'TRANSLATE_SHOW_EMPTY' ) ? TRANSLATE_SHOW_EMPTY : 4;
+		$flags = $fallback ? 0 : $qtranslate_show_empty;
+		return apply_filters( 'translate_text', $text, $lang, $flags );
 	}
-	add_filter( 'bookacti_translate_text', 'bookacti_translate_text_with_qtranslate', 10, 2 );
+	add_filter( 'bookacti_translate_text', 'bookacti_translate_text_with_qtranslate', 10, 3 );
 }
 
 
@@ -711,7 +713,7 @@ function bookacti_get_user_locale( $user_id, $default = 'current', $country_code
 	} elseif ( $user_id && is_numeric( $user_id ) ) {
 		$user = get_user_by( 'id', $user_id );
 	}
-
+	
 	if( ! $user ) { $locale = get_locale(); }
 	else {
 		if( $default === 'site' ) {
@@ -906,7 +908,7 @@ function bookacti_convert_wp_locale_to_fc_locale( $wp_locale = false ) {
 /**
  * Display fields
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.12.6
  * @param array $args
  */
 function bookacti_display_fields( $fields, $args = array() ) {
@@ -923,7 +925,7 @@ function bookacti_display_fields( $fields, $args = array() ) {
 		if( empty( $field[ 'name' ] ) ) { $field[ 'name' ] = $field_name; }
 		$field[ 'name' ]	= ! empty( $args[ 'prefix' ] ) ? $args[ 'prefix' ] . '[' . $field_name . ']' : $field[ 'name' ];
 		$field[ 'id' ]		= empty( $field[ 'id' ] ) ? 'bookacti-' . $field_name : $field[ 'id' ];
-		$field[ 'hidden' ]	= in_array( $field_name, $args[ 'hidden' ], true ) ? 1 : 0;
+		$field[ 'hidden' ]	= ! isset( $field[ 'hidden' ] ) ? ( in_array( $field_name, $args[ 'hidden' ], true ) ? 1 : 0 ) : $field[ 'hidden' ];
 		
 		$wrap_class = '';
 		if( ! empty( $field[ 'hidden' ] ) )			{ $wrap_class .= ' bookacti-hidden-field'; } 
@@ -1401,7 +1403,7 @@ function bookacti_help_tip( $tip, $echo = true ){
 
 /**
  * Create ON / OFF switch
- * @version 1.5.4
+ * @version 1.12.6
  * @param string $name
  * @param string $current_value
  * @param string $id
@@ -1416,20 +1418,18 @@ function bookacti_onoffswitch( $name, $current_value, $id = NULL, $disabled = fa
 	if( is_null ( $id ) || $id === '' || ! $id ) { $id = $name; }
 
 	?>
-	<div class="bookacti-onoffswitch <?php if( $disabled ) { echo 'bookacti-disabled'; } ?>">
-		<input type="hidden" name="<?php echo esc_attr( $name ); ?>" value='0' class='bookacti-onoffswitch-hidden-input' />
-		<input type="checkbox" 
-			   name="<?php echo esc_attr( $name ); ?>" 
-			   class="bookacti-onoffswitch-checkbox" 
-			   id="<?php echo esc_attr( $id ); ?>" 
+	<div class='bookacti-onoffswitch' <?php if( $disabled ) { echo 'bookacti-disabled'; } ?>>
+		<input type='hidden' name='<?php echo esc_attr( $name ); ?>' value='0' class='bookacti-onoffswitch-hidden-input'/>
+		<input type='checkbox' 
+			   name='<?php echo esc_attr( $name ); ?>' 
+			   class='bookacti-onoffswitch-checkbox' 
+			   id='<?php echo esc_attr( $id ); ?>' 
 			   value='1' 
 				<?php echo $checked; ?> 
 				<?php if( $disabled ) { echo 'disabled'; } ?> 
 		/>
-		<label class="bookacti-onoffswitch-label" for="<?php echo esc_attr( $id ); ?>">
-			<span class="bookacti-onoffswitch-inner"></span>
-			<span class="bookacti-onoffswitch-switch"></span>
-		</label>
+		<div class='bookacti-onoffswitch-knobs'></div>
+		<div class='bookacti-onoffswitch-layer'></div>
 	</div>
 	<?php
 	if( $disabled ) { echo '<input type="hidden" name="' . esc_attr( $name ) . '" value="' . esc_attr( $current_value ) . '" />'; }

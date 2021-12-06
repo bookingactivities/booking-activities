@@ -272,6 +272,7 @@ $j.fn.serializeObject = function() {
 /**
  * Init selectbox with AJAX search
  * @since 1.7.19
+ * @version 1.12.6
  */
 function bookacti_select2_init() {
 	if( ! $j.fn.select2 ) { return; }
@@ -279,7 +280,7 @@ function bookacti_select2_init() {
 	// Without AJAX search
 	$j( '.bookacti-select2-no-ajax:not(.select2-hidden-accessible)' ).select2({
 		language: bookacti_localized.fullcalendar_locale,
-		minimumResultsForSearch: 10,
+		minimumResultsForSearch: 1,
 		width: 'element',
 		dropdownAutoWidth: true,
 		dropdownParent: $j( this ).closest( '.bookacti-backend-dialog' ).length ? $j( this ).closest( '.bookacti-backend-dialog' ) : $j( 'body' ),
