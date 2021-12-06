@@ -321,9 +321,12 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.12.6 =
+= 1.12.6 - 2021/12/06 =
+* Tweak - Change the backend ON/OFF switch appearence (supports RTL)
 * Fix - Missing space between concatenated texts in picked events list
 * Fix - Bookings are cancelled if the WC gateway empties cart after failed payment (non default behaviour, compatibility fix)
+* Fix - Select2 dropdown may disappear if click is not held (always display the search box)
+* Fix - Activity tab may appear in WC product data even if the activity box was not checked
 * Dev - Support third parameter in bookacti_translate_text hook (for qTranslate-XT)
 
 = 1.12.5 - 2021/10/29 =

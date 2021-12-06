@@ -9,7 +9,7 @@
  * Text Domain: booking-activities
  * Domain Path: /languages/
  * WC requires at least: 3.0
- * WC tested up to: 5.9
+ * WC tested up to: 6.0
  * License: GPL3
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  * 
@@ -245,7 +245,7 @@ add_action( 'wp_enqueue_scripts',	'bookacti_enqueue_global_scripts', 20 );
 
 /**
  * Enqueue high priority scripts in backend only
- * @version 1.9.0
+ * @version 1.12.6
  */
 function bookacti_enqueue_high_priority_backend_scripts() {
 	// On backend, only include these scripts on Booking Activities pages
@@ -255,7 +255,8 @@ function bookacti_enqueue_high_priority_backend_scripts() {
 	$select2_version = '4.0.13';
 	if( ! wp_script_is( 'select2', 'registered' ) )	{ wp_register_script( 'select2', plugins_url( 'lib/select2/select2.min.js', __FILE__ ), array( 'jquery' ), $select2_version, true ); }
 	if( ! wp_script_is( 'select2', 'enqueued' ) )	{ wp_enqueue_script( 'select2' ); }
-	wp_enqueue_style( 'select2', plugins_url( 'lib/select2/select2.min.css', __FILE__ ), array(), $select2_version );
+	if( ! wp_style_is( 'select2', 'registered' ) )	{ wp_register_style( 'select2', plugins_url( 'lib/select2/select2.min.css', __FILE__ ), array(), $select2_version ); }
+	if( ! wp_style_is( 'select2', 'enqueued' ) )	{ wp_enqueue_style( 'select2' ); }
 	
 	// INCLUDE JAVASCRIPT FILES
 	wp_enqueue_script( 'bookacti-js-backend-functions',	plugins_url( 'js/backend-functions.min.js', __FILE__ ),	array( 'jquery', 'jquery-ui-dialog', 'jquery-ui-tabs', 'jquery-ui-tooltip', 'bookacti-js-global-var', 'bookacti-js-global-functions' ), BOOKACTI_VERSION, true );

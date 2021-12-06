@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking Activities landing page
- * @version 1.8.6
+ * @version 1.12.6
  */
 
 // Exit if accessed directly
@@ -202,7 +202,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				<div class='bookacti-add-ons-guarantee' >
 					<div class='bookacti-add-ons-guarantee-picto' ><span class="dashicons dashicons-email-alt"></span></div>
 					<h4><?php esc_html_e( 'Ready to help', 'booking-activities' ); ?></h4>
-					<div class='bookacti-add-ons-guarantee-description' ><?php esc_html_e( 'Contact us at contact@booking‑activities.fr, we answer within 48h', 'booking-activities' ); ?></div>
+					<div class='bookacti-add-ons-guarantee-description' ><?php /* translators: %s = support email address) */ echo sprintf( esc_html__( 'Contact us at %s, we answer within 48h', 'booking-activities' ), 'contact@booking-activities.fr' ); ?></div>
 				</div>
 			</div>
 		</div>

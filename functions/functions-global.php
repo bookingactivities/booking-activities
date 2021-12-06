@@ -1403,7 +1403,7 @@ function bookacti_help_tip( $tip, $echo = true ){
 
 /**
  * Create ON / OFF switch
- * @version 1.5.4
+ * @version 1.12.6
  * @param string $name
  * @param string $current_value
  * @param string $id
@@ -1418,20 +1418,18 @@ function bookacti_onoffswitch( $name, $current_value, $id = NULL, $disabled = fa
 	if( is_null ( $id ) || $id === '' || ! $id ) { $id = $name; }
 
 	?>
-	<div class="bookacti-onoffswitch <?php if( $disabled ) { echo 'bookacti-disabled'; } ?>">
-		<input type="hidden" name="<?php echo esc_attr( $name ); ?>" value='0' class='bookacti-onoffswitch-hidden-input' />
-		<input type="checkbox" 
-			   name="<?php echo esc_attr( $name ); ?>" 
-			   class="bookacti-onoffswitch-checkbox" 
-			   id="<?php echo esc_attr( $id ); ?>" 
+	<div class='bookacti-onoffswitch' <?php if( $disabled ) { echo 'bookacti-disabled'; } ?>>
+		<input type='hidden' name='<?php echo esc_attr( $name ); ?>' value='0' class='bookacti-onoffswitch-hidden-input'/>
+		<input type='checkbox' 
+			   name='<?php echo esc_attr( $name ); ?>' 
+			   class='bookacti-onoffswitch-checkbox' 
+			   id='<?php echo esc_attr( $id ); ?>' 
 			   value='1' 
 				<?php echo $checked; ?> 
 				<?php if( $disabled ) { echo 'disabled'; } ?> 
 		/>
-		<label class="bookacti-onoffswitch-label" for="<?php echo esc_attr( $id ); ?>">
-			<span class="bookacti-onoffswitch-inner"></span>
-			<span class="bookacti-onoffswitch-switch"></span>
-		</label>
+		<div class='bookacti-onoffswitch-knobs'></div>
+		<div class='bookacti-onoffswitch-layer'></div>
 	</div>
 	<?php
 	if( $disabled ) { echo '<input type="hidden" name="' . esc_attr( $name ) . '" value="' . esc_attr( $current_value ) . '" />'; }

@@ -1,17 +1,23 @@
 if( typeof $j === 'undefined' ) { $j=jQuery.noConflict(); }
 
 $j( document ).ready( function() {
+	
 	/**
-	 * Show or hide the activity tab on product page in the backend
-	 * @version 1.7.19
+	 * Show or hide the activity tab on product page in the backend - on load
 	 */
-	$j( '#product-type, #_bookacti_is_activity' ).on( 'change', function() {
-		bookacti_show_hide_activity_tab();
-		if( $j( '#_bookacti_is_activity' ).is( ':checked' ) && ! $j( '#_virtual' ).is( ':checked' ) ) {
+	bookacti_show_hide_activity_tab();
+	
+	
+	/**
+	 * Show or hide the activity tab on product page in the backend - on change
+	 * @version 1.12.6
+	 */
+	$j( '.type_box select, .type_box input' ).on( 'change', function() {
+		if( $j( this ).is( '#_bookacti_is_activity' ) && $j( '#_bookacti_is_activity' ).is( ':checked' ) && ! $j( '#_virtual' ).is( ':checked' ) ) {
 			$j( '#_virtual' ).prop( 'checked', true ).trigger( 'change' );
 		}
+		bookacti_show_hide_activity_tab();
 	});
-	bookacti_show_hide_activity_tab();
 	
 	
 	/**
