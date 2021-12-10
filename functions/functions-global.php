@@ -151,6 +151,7 @@ function bookacti_get_string_between( $string, $start, $end ) {
 /**
  * Encrypt a string
  * @since 1.7.15
+ * @version 1.12.7
  * @param string $string
  * @return string
  */
@@ -158,8 +159,8 @@ function bookacti_encrypt( $string ) {
 	$secret_key = get_option( 'bookacti_secret_key' );
 	$secret_iv = get_option( 'bookacti_secret_iv' );
 
-	if( ! $secret_key ) { update_option( 'bookacti_secret_key', md5( microtime().rand() ) ); }
-	if( ! $secret_iv )	{ update_option( 'bookacti_secret_iv', md5( microtime().rand() ) ); }
+	if( ! $secret_key ) { $secret_key = md5( microtime().rand() ); update_option( 'bookacti_secret_key', $secret_key ); }
+	if( ! $secret_iv )	{ $secret_iv = md5( microtime().rand() ); update_option( 'bookacti_secret_iv', $secret_iv ); }
 
 	$output = $string;
 	$encrypt_method = 'AES-256-CBC';

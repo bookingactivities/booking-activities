@@ -1843,12 +1843,16 @@ function bookacti_redirect_to_group_category_url( booking_system, group_id ) {
 /**
  * Redirect to url with the booking form values as parameters
  * @since 1.7.10
- * @version 1.12.5
+ * @version 1.12.7
  * @param {HTMLElement} booking_system
  * @param {string} redirect_url
  */
 function bookacti_redirect_booking_system_to_url( booking_system, redirect_url ) {
 	if( ! redirect_url ) { return; }
+	
+	// Do not send password via URL
+	booking_system.closest( 'form, .bookacti-form-fields' ).find( 'input[type="password"][disabled]' ).addClass( 'bookacti-was-disabled' );
+	booking_system.closest( 'form, .bookacti-form-fields' ).find( 'input[type="password"]' ).prop( 'disabled', true );
 	
 	// Add form parameters to the URL
 	var url_params = '';
@@ -1859,6 +1863,10 @@ function bookacti_redirect_booking_system_to_url( booking_system, redirect_url )
 	} else {
 		url_params	= booking_system.closest( 'form' ).serialize();
 	}
+	
+	// Enable password fields again
+	booking_system.closest( 'form, .bookacti-form-fields' ).find( 'input[type="password"]:not(.bookacti-was-disabled)' ).prop( 'disabled', false );
+	booking_system.closest( 'form, .bookacti-form-fields' ).find( 'input[type="password"].bookacti-was-disabled' ).removeClass( 'bookacti-was-disabled' );
 	
 	var redirect = { 'url': redirect_url, 'redirect_url': redirect_url, 'params': url_params, 'anchor': '' };
 	var anchor_pos = redirect.url.indexOf( '#' );

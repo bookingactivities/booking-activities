@@ -965,7 +965,7 @@ add_action( 'bookacti_clean_expired_exports', 'bookacti_clean_expired_exports' )
 /**
  * Generate the export bookings URL according to current filters and export settings
  * @since 1.6.0
- * @version 1.9.0
+ * @version 1.12.7
  */
 function bookacti_controller_generate_export_bookings_url() {
 	// Check nonce
@@ -979,7 +979,7 @@ function bookacti_controller_generate_export_bookings_url() {
 	// Get or generate current user export secret key
 	$current_user_id = get_current_user_id();
 	$secret_key = get_user_meta( $current_user_id, 'bookacti_secret_key', true );
-	if( ! $secret_key || ! empty( $_POST[ 'reset_key' ] ) ) {
+	if( ( ! $secret_key || ! empty( $_POST[ 'reset_key' ] ) ) && ( $current_user_id && is_numeric( $current_user_id ) ) ) {
 		// Update secret key
 		$secret_key = md5( microtime().rand() );
 		update_user_meta( $current_user_id, 'bookacti_secret_key', $secret_key );
@@ -1031,7 +1031,7 @@ function bookacti_controller_generate_export_bookings_url() {
 		'action'		=> 'bookacti_export_bookings',
 		'export_type'	=> $export_type,
 		'filename'		=> '',
-		'key'			=> $secret_key,
+		'key'			=> $secret_key ? $secret_key : '',
 		'lang'			=> bookacti_get_current_lang_code( true ),
 		'per_page'		=> $export_settings[ 'per_page' ],
 		'short_url'		=> 1

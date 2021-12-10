@@ -321,6 +321,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.12.7 =
+* Tweak - Add {product_id} and {product_title} notification tags (with WooCommerce)
+* Dev - Add bookacti_allow_others_booking_changes hook to allow to display action buttons on others' bookings on frontend
+
 = 1.12.6 - 2021/12/06 =
 * Tweak - Change the backend ON/OFF switch appearence (supports RTL)
 * Fix - Missing space between concatenated texts in picked events list
