@@ -151,6 +151,7 @@ function bookacti_get_string_between( $string, $start, $end ) {
 /**
  * Encrypt a string
  * @since 1.7.15
+ * @version 1.12.7
  * @param string $string
  * @return string
  */
@@ -158,8 +159,8 @@ function bookacti_encrypt( $string ) {
 	$secret_key = get_option( 'bookacti_secret_key' );
 	$secret_iv = get_option( 'bookacti_secret_iv' );
 
-	if( ! $secret_key ) { update_option( 'bookacti_secret_key', md5( microtime().rand() ) ); }
-	if( ! $secret_iv )	{ update_option( 'bookacti_secret_iv', md5( microtime().rand() ) ); }
+	if( ! $secret_key ) { $secret_key = md5( microtime().rand() ); update_option( 'bookacti_secret_key', $secret_key ); }
+	if( ! $secret_iv )	{ $secret_iv = md5( microtime().rand() ); update_option( 'bookacti_secret_iv', $secret_iv ); }
 
 	$output = $string;
 	$encrypt_method = 'AES-256-CBC';
@@ -2296,12 +2297,15 @@ function bookacti_allow_to_log_user_in_programmatically( $user, $username, $pass
 /**
  * Bypass managers checks for all administrators
  * @since 1.12.4
+ * @version 1.12.7
  * @param boolean $true
+ * @param int $user_id
  * @return boolean
  */
-function bookacti_bypass_managers_check_for_administrators( $true ) {
-	return current_user_can( 'administrator' ) ? true : $true;
+function bookacti_bypass_managers_check_for_administrators( $true, $user_id = 0 ) {
+	if( ! $user_id ) { $user_id = wp_get_current_user(); }
+	return user_can( $user_id, 'administrator' ) ? true : $true;
 }
-add_filter( 'bookacti_bypass_template_managers_check', 'bookacti_bypass_managers_check_for_administrators', 100, 1 );
-add_filter( 'bookacti_bypass_activity_managers_check', 'bookacti_bypass_managers_check_for_administrators', 100, 1 );
-add_filter( 'bookacti_bypass_form_managers_check', 'bookacti_bypass_managers_check_for_administrators', 100, 1 );
+add_filter( 'bookacti_bypass_template_managers_check', 'bookacti_bypass_managers_check_for_administrators', 100, 2 );
+add_filter( 'bookacti_bypass_activity_managers_check', 'bookacti_bypass_managers_check_for_administrators', 100, 2 );
+add_filter( 'bookacti_bypass_form_managers_check', 'bookacti_bypass_managers_check_for_administrators', 100, 2 );

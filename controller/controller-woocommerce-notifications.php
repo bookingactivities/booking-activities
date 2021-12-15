@@ -196,7 +196,7 @@ add_filter( 'woocommerce_email_order_items_args', 'bookacti_wc_email_order_item_
 /**
  * Add WC notifications tags descriptions
  * @since 1.6.0
- * @version 1.8.6
+ * @version 1.12.7
  * @param array $tags
  * @param int $notification_id
  * @return array
@@ -205,6 +205,8 @@ function bookacti_wc_notifications_tags( $tags, $notification_id ) {
 	if( strpos( $notification_id, 'refund' ) !== false ) {
 		$tags[ '{refund_coupon_code}' ] = esc_html__( 'The WooCommerce coupon code generated when the booking was refunded.', 'booking-activities' );
 	}
+	$tags[ '{product_id}' ] = esc_html__( 'The order item product ID.', 'booking-activities' );
+	$tags[ '{product_title}' ] = esc_html__( 'The order item title.', 'booking-activities' );
 	$tags[ '{price}' ] = esc_html__( 'Booking price, with currency.', 'booking-activities' );
 	return $tags;
 }
@@ -214,7 +216,7 @@ add_filter( 'bookacti_notifications_tags', 'bookacti_wc_notifications_tags', 15,
 /**
  * Set WC notifications tags values
  * @since 1.6.0
- * @version 1.9.0
+ * @version 1.12.7
  * @param array $tags
  * @param object $booking
  * @param string $booking_type
@@ -237,6 +239,11 @@ function bookacti_wc_notifications_tags_values( $tags, $booking, $booking_type, 
 	}
 	
 	if( ! $item ) { return $tags; }
+	
+	$product_id = $item->get_variation_id() ? $item->get_variation_id() : $item->get_product_id();
+	$order_item_name = $item->get_name();
+	$tags[ '{product_id}' ]		= $product_id ? $product_id : '';
+	$tags[ '{product_title}' ]	= $order_item_name ? apply_filters( 'bookacti_translate_text', $order_item_name, $locale ) : '';
 	
 	$item_id = $item->get_id();
 	$item_price = (float) $item->get_total() + (float) $item->get_total_tax();

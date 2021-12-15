@@ -626,7 +626,7 @@ function bookacti_user_can_manage_booking( $booking, $allow_self = true, $capabi
 
 /**
  * Check if a booking can be cancelled
- * @version 1.12.3
+ * @version 1.12.7
  * @param object|int $booking
  * @param string $context
  * @param boolean $allow_grouped_booking
@@ -644,7 +644,7 @@ function bookacti_booking_can_be_cancelled( $booking, $context = '', $allow_grou
 			$is_grouped			= apply_filters( 'bookacti_allow_grouped_booking_changes', $allow_grouped_booking, $booking, 'cancel' ) ? false : ! empty( $booking->group_id );
 			$is_in_delay		= apply_filters( 'bookacti_bypass_booking_changes_deadline', false, $booking, 'cancel' ) ? true : bookacti_is_booking_in_delay( $booking, 'cancel' );
 			$user_id			= isset( $booking->user_id ) && is_numeric( $booking->user_id ) ? intval( $booking->user_id ) : 0;
-			$is_own				= $user_id && $user_id === get_current_user_id();
+			$is_own				= apply_filters( 'bookacti_allow_others_booking_changes', $user_id && $user_id === get_current_user_id(), $booking, 'cancel' );
 			if( ! $is_cancel_allowed || $is_grouped || ! $is_in_delay || ! $is_own ) { $is_allowed = false; }
 		}
 		if( empty( $booking->active ) && $context !== 'admin' ) { $is_allowed = false; }
@@ -656,7 +656,7 @@ function bookacti_booking_can_be_cancelled( $booking, $context = '', $allow_grou
 
 /**
  * Check if a booking is allowed to be rescheduled
- * @version 1.12.3
+ * @version 1.12.7
  * @param object|int $booking
  * @param string $context
  * @return boolean
@@ -674,7 +674,7 @@ function bookacti_booking_can_be_rescheduled( $booking, $context = '' ) {
 			$is_grouped				= apply_filters( 'bookacti_allow_grouped_booking_changes', false, $booking, 'reschedule' ) ? false : ! empty( $booking->group_id );
 			$is_in_delay			= apply_filters( 'bookacti_bypass_booking_changes_deadline', false, $booking, 'reschedule' ) ? true : bookacti_is_booking_in_delay( $booking, 'reschedule' );
 			$user_id				= isset( $booking->user_id ) && is_numeric( $booking->user_id ) ? intval( $booking->user_id ) : 0;
-			$is_own					= $user_id && $user_id === get_current_user_id();
+			$is_own					= apply_filters( 'bookacti_allow_others_booking_changes', $user_id && $user_id === get_current_user_id(), $booking, 'reschedule' );
 			if( ! $is_reschedule_allowed || ! $booking->active || $is_grouped || ! $is_in_delay || ! $is_own ) { $is_allowed = false; }
 		}
 
@@ -734,7 +734,7 @@ function bookacti_booking_can_be_rescheduled_to( $booking, $event_id, $event_sta
 
 /**
  * Check if a booking can be refunded
- * @version 1.12.4
+ * @version 1.12.7
  * @param object|int $booking
  * @param string $context
  * @param string $refund_action
@@ -750,7 +750,7 @@ function bookacti_booking_can_be_refunded( $booking, $context = '', $refund_acti
 		$refund_actions = bookacti_get_booking_refund_actions( array( $booking ), 'single', $context );
 		
 		$user_id = isset( $booking->user_id ) && is_numeric( $booking->user_id ) ? intval( $booking->user_id ) : 0;
-		$is_own = $user_id && $user_id === get_current_user_id();
+		$is_own = apply_filters( 'bookacti_allow_others_booking_changes', $user_id && $user_id === get_current_user_id(), $booking, 'refund' );
 		
 		// Disallow refund in those cases:
 		// -> If the booking is already marked as refunded, 
@@ -1039,7 +1039,7 @@ function bookacti_booking_group_can_be_cancelled( $bookings, $context = '' ) {
 /**
  * Check if a booking group can be refunded
  * @since 1.1.0
- * @version 1.12.3
+ * @version 1.12.7
  * @param array|int $bookings
  * @param string $refund_action
  * @param string $context
@@ -1058,7 +1058,7 @@ function bookacti_booking_group_can_be_refunded( $bookings, $refund_action = '',
 		$first_key = reset( $booking_keys );
 		
 		$user_id = isset( $bookings[ $first_key ]->user_id ) && is_numeric( $bookings[ $first_key ]->user_id ) ? intval( $bookings[ $first_key ]->user_id ) : 0;
-		$is_own = $user_id && $user_id === get_current_user_id();
+		$is_own = apply_filters( 'bookacti_allow_others_booking_changes', $user_id && $user_id === get_current_user_id(), $bookings[ $first_key ], 'refund' );
 		
 		// Disallow refund in those cases:
 		// -> If the booking group is already marked as refunded, 

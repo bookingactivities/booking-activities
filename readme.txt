@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 5.8
 Requires PHP: 5.3
-Stable tag: 1.12.6
+Stable tag: 1.12.7
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -320,6 +320,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.12.7 - 2021/12/15 =
+* Tweak - Add {product_id} and {product_title} notification tags (with WooCommerce)
+* Fix - Bypass manager checks for shop managers and administrators may not work if performed for non current user
+* Dev - Add bookacti_allow_others_booking_changes hook to allow to display action buttons on others' bookings on frontend
 
 = 1.12.6 - 2021/12/06 =
 * Tweak - Change the backend ON/OFF switch appearence (supports RTL)
