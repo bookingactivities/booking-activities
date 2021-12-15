@@ -242,16 +242,17 @@ add_filter( 'bookacti_managers_roles_exceptions', 'bookacti_add_shop_manager_to_
 
 /**
  * Bypass template manager check for shop managers
- * @version 1.7.19
- * @param boolean $allowed
+ * @version 1.12.7
+ * @param boolean $true
+ * @param int $user_id
  * @return boolean
  */
-function bookacti_bypass_checks_for_shop_managers( $allowed ) {
-	return bookacti_is_shop_manager() ? true : $allowed;
+function bookacti_bypass_checks_for_shop_managers( $true, $user_id = 0 ) {
+	return bookacti_is_shop_manager( $user_id ) ? true : $true;
 }
-add_filter( 'bookacti_bypass_template_managers_check', 'bookacti_bypass_checks_for_shop_managers', 10, 1 );
-add_filter( 'bookacti_bypass_activity_managers_check', 'bookacti_bypass_checks_for_shop_managers', 10, 1 );
-add_filter( 'bookacti_bypass_form_managers_check', 'bookacti_bypass_checks_for_shop_managers', 10, 1 );
+add_filter( 'bookacti_bypass_template_managers_check', 'bookacti_bypass_checks_for_shop_managers', 10, 2 );
+add_filter( 'bookacti_bypass_activity_managers_check', 'bookacti_bypass_checks_for_shop_managers', 10, 2 );
+add_filter( 'bookacti_bypass_form_managers_check', 'bookacti_bypass_checks_for_shop_managers', 10, 2 );
 
 
 

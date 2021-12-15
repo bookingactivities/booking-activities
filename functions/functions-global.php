@@ -2297,12 +2297,15 @@ function bookacti_allow_to_log_user_in_programmatically( $user, $username, $pass
 /**
  * Bypass managers checks for all administrators
  * @since 1.12.4
+ * @version 1.12.7
  * @param boolean $true
+ * @param int $user_id
  * @return boolean
  */
-function bookacti_bypass_managers_check_for_administrators( $true ) {
-	return current_user_can( 'administrator' ) ? true : $true;
+function bookacti_bypass_managers_check_for_administrators( $true, $user_id = 0 ) {
+	if( ! $user_id ) { $user_id = wp_get_current_user(); }
+	return user_can( $user_id, 'administrator' ) ? true : $true;
 }
-add_filter( 'bookacti_bypass_template_managers_check', 'bookacti_bypass_managers_check_for_administrators', 100, 1 );
-add_filter( 'bookacti_bypass_activity_managers_check', 'bookacti_bypass_managers_check_for_administrators', 100, 1 );
-add_filter( 'bookacti_bypass_form_managers_check', 'bookacti_bypass_managers_check_for_administrators', 100, 1 );
+add_filter( 'bookacti_bypass_template_managers_check', 'bookacti_bypass_managers_check_for_administrators', 100, 2 );
+add_filter( 'bookacti_bypass_activity_managers_check', 'bookacti_bypass_managers_check_for_administrators', 100, 2 );
+add_filter( 'bookacti_bypass_form_managers_check', 'bookacti_bypass_managers_check_for_administrators', 100, 2 );
