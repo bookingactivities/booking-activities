@@ -3,6 +3,7 @@
 /** GLOBAL **/
 
 /* Select2 */
+.bookacti-select2-no-ajax, .bookacti-select2-ajax { transition: none !important; }
 .bookacti-user-selectbox	{ width: 100%; }
 .select2-dropdown			{ z-index: 3999999 !important; }
 .bookacti-user-selectbox + .select2-container .select2-selection--single { margin: 0; }

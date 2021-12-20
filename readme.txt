@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 5.8
 Requires PHP: 5.3
-Stable tag: 1.12.7
+Stable tag: 1.12.8
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -320,6 +320,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.12.8 - 2021/12/20 =
+* Fix - Shop managers may not be allowed to manage calendars and forms since 1.12.7
+* Fix - Select2 selectboxes may have incorrect width after reinitialization on WC single product pages
 
 = 1.12.7 - 2021/12/15 =
 * Tweak - Add {product_id} and {product_title} notification tags (with WooCommerce)

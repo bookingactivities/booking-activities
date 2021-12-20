@@ -244,7 +244,7 @@ add_filter( 'bookacti_managers_roles_exceptions', 'bookacti_add_shop_manager_to_
  * Bypass template manager check for shop managers
  * @version 1.12.7
  * @param boolean $true
- * @param int $user_id
+ * @param int $user_id Default to current user
  * @return boolean
  */
 function bookacti_bypass_checks_for_shop_managers( $true, $user_id = 0 ) {

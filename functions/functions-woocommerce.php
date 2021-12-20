@@ -2491,34 +2491,29 @@ function bookacti_settings_field_reset_cart_timeout_on_change_callback() {
 
 /**
  * Determines if user is shop manager
- * @version 1.6.0
- * @param int $user_id
+ * @version 1.12.8
+ * @param int $user_id Default to current user
  * @return boolean
  */
 function bookacti_is_shop_manager( $user_id = 0 ) {
-
-	if( $user_id === 0 ) {
-		$user_id = get_current_user_id();
-	}
-
+	if( ! $user_id ) { $user_id = get_current_user_id(); }
 	$user = get_user_by( 'id', $user_id );
-	if ( isset( $user->roles ) && in_array( 'shop_manager', $user->roles, true ) ) {
-		return true;
-	}
-	return false;
+	return apply_filters( 'bookacti_is_shop_manager', isset( $user->roles ) && in_array( 'shop_manager', $user->roles, true ), $user_id );
 }
 
 
 /**
  * Check if the current page is a WooCommerce screen
  * @since 1.7.3 (was bookacti_is_wc_edit_product_screen)
- * @version 1.8.0
+ * @version 1.12.8
  * @return boolean
  */
 function bookacti_is_wc_screen( $screen_ids = array() ) {
+	$is_wc_screen = false;
 	$current_screen = function_exists( 'get_current_screen' ) ? get_current_screen() : false;
-	if( empty( $current_screen ) ) { return false; }
-	if( ! $screen_ids || ! is_array( $screen_ids ) ) { $screen_ids = wc_get_screen_ids(); }
-	if( isset( $current_screen->id ) && in_array( $current_screen->id, $screen_ids, true ) ) { return true; }
-	return false;
+	if( ! empty( $current_screen ) ) {
+		if( ! $screen_ids || ! is_array( $screen_ids ) ) { $screen_ids = wc_get_screen_ids(); }
+		if( isset( $current_screen->id ) && in_array( $current_screen->id, $screen_ids, true ) ) { $is_wc_screen = true; }
+	}
+	return apply_filters( 'bookacti_is_wc_screen', $is_wc_screen, $screen_ids );
 }
