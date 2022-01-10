@@ -3,9 +3,9 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
-Tested up to: 5.8
+Tested up to: 5.9
 Requires PHP: 5.3
-Stable tag: 1.12.8
+Stable tag: 1.12.9
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -320,6 +320,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.12.9 - 2022/01/10 =
+* Fix - Activities filter not working in booking list
+* Fix - Cast to int or float before using abs to prevent PHP error with PHP 8
 
 = 1.12.8 - 2021/12/20 =
 * Fix - Shop managers may not be allowed to manage calendars and forms since 1.12.7

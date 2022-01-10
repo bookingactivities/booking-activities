@@ -215,11 +215,11 @@ function bookacti_init_activities() {
 
 /**
  * Show / hide events when clicking the icon next to the activity
- * @version 1.11.0
+ * @version 1.12.9
  */
 function bookacti_init_show_hide_activities_switch() {
 	$j( 'body' ).on( 'click', '#bookacti-template-activity-list .bookacti-activity-visibility', function() { 
-		var activity_id = $j( this ).closest( '.bookacti-activity' ).data( 'activity-id' );
+		var activity_id = parseInt( $j( this ).closest( '.bookacti-activity' ).data( 'activity-id' ) );
 		var idx = $j.inArray( activity_id, bookacti.hidden_activities );
 
 		if( $j( this ).data( 'activity-visible' ) === 1 ) {

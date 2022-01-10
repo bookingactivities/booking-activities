@@ -1215,6 +1215,7 @@ add_filter( 'bookacti_booking_group_can_be_refunded', 'bookacti_woocommerce_book
 /**
  * Convert old booking refunds array
  * @since 1.9.0
+ * @version 1.12.9
  * @param array $refunds Use bookacti_format_booking_refunds() to format it
  * @param int $booking_id
  * @param string $booking_type
@@ -1254,8 +1255,8 @@ function bookacti_wc_format_booking_refunds( $refunds, $booking_id = 0, $booking
 				
 				$refund_id				= $wc_refund->get_id();
 				$refund[ 'date' ]		= $date_created;
-				$refund[ 'quantity' ]	= $refund_item ? abs( $refund_item->get_quantity() ) : 0;
-				$refund[ 'amount' ]		= $refund_item ? wc_format_decimal( abs( $refund_item->get_total() + $refund_item->get_total_tax() ) ) : wc_format_decimal( abs( $wc_refund->get_total() + $wc_refund->get_total_tax() ) );
+				$refund[ 'quantity' ]	= $refund_item ? abs( intval( $refund_item->get_quantity() ) ) : 0;
+				$refund[ 'amount' ]		= $refund_item ? wc_format_decimal( abs( (float) $refund_item->get_total() + (float) $refund_item->get_total_tax() ) ) : wc_format_decimal( abs( (float) $wc_refund->get_total() + (float) $wc_refund->get_total_tax() ) );
 				$refund[ 'method' ]		= $wc_refund->get_refunded_payment() ? 'auto' : 'manual';
 			}
 			
