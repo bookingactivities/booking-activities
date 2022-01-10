@@ -552,13 +552,13 @@ function bookacti_wc_get_cart_item_countdown_html( $cart_item_key ) {
 /**
  * Get formatted remaining time before expiration
  * @since 1.2.0
- * @version 1.9.0
+ * @version 1.12.9
  * @param string $expiration_date 
  * @param int $precision 
  * @return string
  */
 function bookacti_get_formatted_time_before_expiration( $expiration_date, $precision = 3 ) {
-	$seconds = round( abs( strtotime( $expiration_date ) - time() ) );
+	$seconds = round( abs( intval( strtotime( $expiration_date ) ) - time() ) );
 	$remaining_time = bookacti_format_delay( $seconds, $precision );
 	return apply_filters( 'bookacti_formatted_time_before_expiration', $remaining_time, $expiration_date, $precision );
 }
@@ -1793,7 +1793,7 @@ function bookacti_does_order_support_auto_refund( $order ) {
 /**
  * Update order bookings if a partial refund is perfomed (refund of one or more items)
  * @since 1.2.0 (was part of bookacti_update_booking_when_order_item_is_refunded before)
- * @version 1.11.5
+ * @version 1.12.9
  * @param WC_Order_Refund $refund
  */
 function bookacti_update_order_bookings_on_items_refund( $refund ) {
@@ -1824,7 +1824,7 @@ function bookacti_update_order_bookings_on_items_refund( $refund ) {
 		if( ! isset( $order_items[ $item_id ] ) ) { continue; }
 		
 		$refunded_qty = abs( intval( $refund_item->get_quantity() ) );
-		$refunded_amount = abs( round( $refund_item->get_total() + $refund_item->get_total_tax(), $price_decimals ) );
+		$refunded_amount = abs( round( (float) $refund_item->get_total() + (float) $refund_item->get_total_tax(), $price_decimals ) );
 		if( ! $refunded_qty || ! $refunded_amount ) { continue; }
 		
 		$refunded_items[ $item_id ] = $order_items[ $item_id ];
@@ -1893,7 +1893,7 @@ function bookacti_update_order_bookings_on_items_refund( $refund ) {
 /**
  * Update order bookings if a total refund is perfomed (refund of the whole order)
  * @since 1.2.0 (was part of bookacti_update_booking_when_order_item_is_refunded before)
- * @version 1.11.5
+ * @version 1.12.9
  * @param WC_Order_Refund $refund
  */
 function bookacti_update_order_bookings_on_order_refund( $refund ) {
@@ -1920,7 +1920,7 @@ function bookacti_update_order_bookings_on_order_refund( $refund ) {
 		if( empty( $items_bookings[ $item_id ] ) ) { continue; }
 		
 		// Get refunded qty and amount for each item
-		$refunded_qty = abs( $item->get_quantity() ) - abs( $order->get_qty_refunded_for_item( $item_id ) );
+		$refunded_qty = abs( intval( $item->get_quantity() ) ) - abs( intval( $order->get_qty_refunded_for_item( $item_id ) ) );
 		$refunded_amount = bookacti_wc_get_item_remaining_refund_amount( $item );
 		
 		foreach( $items_bookings[ $item_id ] as $item_booking ) {
@@ -1971,7 +1971,7 @@ function bookacti_update_order_bookings_on_order_refund( $refund ) {
 
 /**
  * Create a coupon to refund a booking
- * @version 1.9.0
+ * @version 1.12.9
  * @param array $bookings
  * @param string $booking_type Determine if the given id is a booking id or a booking group. Accepted values are 'single' or 'group'.
  * @param string $refund_message
@@ -2121,7 +2121,7 @@ function bookacti_refund_booking_with_coupon( $bookings, $booking_type, $refund_
 		$refund_date = $refund_date->format( 'Y-m-d H:i:s' );
 		
 		// Calculate the refunded quantity
-		$refunded_qty = abs( $item->get_quantity() ) - abs( $order->get_qty_refunded_for_item( $item->get_id() ) );
+		$refunded_qty = abs( intval( $item->get_quantity() ) ) - abs( intval( $order->get_qty_refunded_for_item( $item->get_id() ) ) );
 		
 		// Update refunds records array bound to the booking
 		$refunds[ $coupon[ 'coupon' ][ 'code' ] ] = apply_filters( 'bookacti_wc_booking_refund_data_coupon', array( 'date' => $refund_date, 'quantity' => $refunded_qty, 'amount' => $coupon[ 'coupon' ][ 'amount' ], 'method' => 'coupon', 'coupon' => $coupon[ 'coupon' ][ 'code' ] ), $coupon, $bookings, $booking_type, $refund_message );
@@ -2200,7 +2200,7 @@ add_filter( 'woocommerce_coupon_error', 'bookacti_wc_coupon_error_return_code', 
 
 /**
  * Auto refund (for supported gateway)
- * @version 1.9.0
+ * @version 1.12.9
  * @param array $bookings
  * @param string $booking_type Determine if the given id is a booking id or a booking group id. Accepted values are 'single' or 'group'.
  * @param string $refund_message
@@ -2239,7 +2239,7 @@ function bookacti_auto_refund_booking( $bookings, $booking_type, $refund_message
 	$refund_tax = array();
 	if( isset( $item_taxes[ 'total' ] ) ) {
 		foreach( $item_taxes[ 'total' ] as $tax_id => $total ) {
-			$refunded_tax_amount = abs( $order->get_tax_refunded_for_item( $order_item_id, $tax_id ) );
+			$refunded_tax_amount = abs( (float) $order->get_tax_refunded_for_item( $order_item_id, $tax_id ) );
 			$refund_tax[ $tax_id ] = wc_format_decimal( $total - $refunded_tax_amount );
 		}
 	} else {
@@ -2248,7 +2248,7 @@ function bookacti_auto_refund_booking( $bookings, $booking_type, $refund_message
 	
 	$line_items	= array();
 	$line_items[ $order_item_id ] = array(
-		'qty'			=> $item->get_quantity() - abs( $order->get_qty_refunded_for_item( $order_item_id ) ),
+		'qty'			=> $item->get_quantity() - abs( intval( $order->get_qty_refunded_for_item( $order_item_id ) ) ),
 		'refund_total'	=> round( $item->get_total(), $price_decimals ) - $refunded_amounts[ 'total' ],
 		'refund_tax'	=> $refund_tax
 	);
@@ -2274,6 +2274,7 @@ function bookacti_auto_refund_booking( $bookings, $booking_type, $refund_message
 /**
  * Get refunded amounts total and tax for an order item
  * @since 1.9.0
+ * @version 1.12.9
  * @param WC_Order_Item_Product $item
  * @param boolean $return_array
  * @return float|array
@@ -2289,8 +2290,8 @@ function bookacti_wc_get_item_total_refunded( $item, $return_array = false ) {
 	foreach( $order->get_refunds() as $refund ) {
 		foreach( $refund->get_items( 'line_item' ) as $refunded_item ) {
 			if( absint( $refunded_item->get_meta( '_refunded_item_id' ) ) === intval( $item_id ) ) {
-				$refunded[ 'total' ] += abs( $refunded_item->get_total() );
-				$refunded[ 'tax' ] += abs( $refunded_item->get_total_tax() );
+				$refunded[ 'total' ] += abs( (float) $refunded_item->get_total() );
+				$refunded[ 'tax' ] += abs( (float) $refunded_item->get_total_tax() );
 			}
 		}
 	}

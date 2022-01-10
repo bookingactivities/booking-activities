@@ -143,6 +143,7 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Hide filtered events
+	 * @version 1.12.9
 	 * @param {Event} e
 	 * @param {Object} event
 	 * @param {HTMLElement} element
@@ -150,12 +151,17 @@ $j( document ).ready( function() {
 	 */
 	booking_system.on( 'bookacti_event_render', function( e, event, element, view ) { 
 		element = element || undefined;
-
+		
 		// Check if the event is hidden
 		var activity_id			= bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event.id ][ 'activity_id' ];
 		var visible_activities	= $j( '#bookacti-booking-filter-activities' ).val() ? $j( '#bookacti-booking-filter-activities' ).val() : [];
-		if( visible_activities.length && $j.inArray( activity_id, visible_activities ) === -1 ) {
-			event.render = 0;
+		if( $j.isNumeric( visible_activities ) ) { visible_activities = [ visible_activities ]; }
+		
+		// Hide events according to the Activities filter values
+		if( visible_activities ) { 
+			if( $j.isArray( visible_activities ) ) {
+				if( visible_activities.length && $j.inArray( activity_id + '', visible_activities ) === -1 ) { event.render = 0; }
+			}
 		}
 		
 		// Add the total availability

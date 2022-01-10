@@ -3338,6 +3338,7 @@ function bookacti_fetch_events_of_group_of_events_occurrences( $groups_occurrenc
 /**
  * Get the bounding dates of groups of events without generating their occurrences. The result is theorical and may not be accurate.
  * @since 1.12.0 (was bookacti_fetch_grouped_events)
+ * @version 1.12.9
  * @global wpdb $wpdb
  * @param array $groups See bookacti_get_groups_of_events with data_only and get_exceptions
  * @param array $raw_args {
@@ -3397,7 +3398,7 @@ function bookacti_get_bounding_events_from_groups_of_events_heuristic( $groups, 
 			// Include started groups
 			if( $group[ 'delta_days' ] && $interval_start_dt ) {
 				$group_interval_start_dt = clone $interval_start_dt;
-				$group_interval_start_dt->sub( new DateInterval( 'P' . abs( $group[ 'delta_days' ] ) . 'D' ) );
+				$group_interval_start_dt->sub( new DateInterval( 'P' . abs( intval( $group[ 'delta_days' ] ) ) . 'D' ) );
 				$dummy_args[ 'interval' ][ 'start' ] = $group_interval_start_dt->format( 'Y-m-d H:i:s' );
 			}
 
@@ -3459,6 +3460,7 @@ function bookacti_get_bounding_events_from_groups_of_events_heuristic( $groups, 
 /**
  * Get occurrences of repeated events
  * @since 1.12.0
+ * @version 1.12.9
  * @param object $groups Groups data 
  * @param array $raw_args {
  *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
@@ -3582,7 +3584,7 @@ function bookacti_get_occurrences_of_repeated_groups_of_events( $groups, $raw_ar
 		// If the interval should include started groups
 		if( $args[ 'interval_started' ] && $group[ 'delta_days' ] && ! empty( $dummy_args[ 'interval' ][ 'start' ] ) ) {
 			$interval_start_dt = new DateTime( $dummy_args[ 'interval' ][ 'start' ] );
-			$interval_start_dt->sub( new DateInterval( 'P' . abs( $group[ 'delta_days' ] ) . 'D' ) );
+			$interval_start_dt->sub( new DateInterval( 'P' . abs( intval( $group[ 'delta_days' ] ) ) . 'D' ) );
 			$dummy_args[ 'interval' ][ 'start' ] = $interval_start_dt->format( 'Y-m-d H:i:s' );
 		}
 		
