@@ -207,6 +207,7 @@ function bookacti_decrypt( $string ) {
 /**
  * Generate CSV file
  * @since 1.8.0
+ * @version 1.12.10
  * @param array $items
  * @param array $headers
  * @return string
@@ -225,7 +226,7 @@ function bookacti_generate_csv( $items, $headers = array() ) {
 	foreach( $headers as $title ) {
 		if( $count ) { echo ','; }
 		++$count;
-		echo str_replace( ',', '', strip_tags( $title ) );
+		echo str_replace( ',', '', html_entity_decode( strip_tags( $title ) ) );
 	}
 
 	// Display rows
@@ -236,7 +237,7 @@ function bookacti_generate_csv( $items, $headers = array() ) {
 			if( $count ) { echo ','; }
 			++$count;
 			if( ! isset( $item[ $column_name ] ) ) { continue; }
-			echo str_replace( ',', '', strip_tags( $item[ $column_name ] ) );
+			echo str_replace( ',', '', html_entity_decode( strip_tags( $item[ $column_name ] ) ) );
 		}
 	}
 
@@ -1689,21 +1690,6 @@ function bookacti_substr( $string, $offset = 0, $length = null ) {
  */
 function bookacti_sort_array_by_order( $a, $b ) {
 	return $a['order'] - $b['order'];
-}
-
-
-/**
- * Sort array of arrays with a ['start'] index
- * @since 1.12.0
- * @param array $a
- * @param array $b
- * @return array 
- */
-function bookacti_sort_array_by_start( $a, $b ) {
-	if( $a[ 'start' ] === $b[ 'start' ] ) { return 0; }
-	$a_dt = new DateTime( $a[ 'start' ] );
-	$b_dt = new DateTime( $b[ 'start' ] );
-	return $a_dt < $b_dt ? -1 : 1;
 }
 
 

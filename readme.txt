@@ -321,6 +321,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.12.10 =
+* Fix - Decode HTML entities in csv exports
+
 = 1.12.9 - 2022/01/10 =
 * Fix - Activities filter not working in booking list
 * Fix - Cast to int or float before using abs to prevent PHP error with PHP 8
