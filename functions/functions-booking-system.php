@@ -1830,7 +1830,7 @@ function bookacti_is_picked_group_of_events_available_on_form( $picked_event_gro
 /**
  * Get array of events from raw events from database
  * @since 1.2.2
- * @version 1.12.0
+ * @version 1.13.0
  * @param array $events Array of objects events from database
  * @param array $raw_args {
  *  @type boolean $skip_exceptions Whether to retrieve occurrence on exceptions
@@ -1895,6 +1895,7 @@ function bookacti_get_events_array_from_db_events( $events, $raw_args = array() 
 			'repeat_on'			=> $event->repeat_on,
 			'repeat_from'		=> $event->repeat_from,
 			'repeat_to'			=> $event->repeat_to,
+			'repeat_exceptions'	=> maybe_unserialize( $event->repeat_exceptions ),
 			'settings'			=> isset( $events_meta[ $event_id ] ) ? $events_meta[ $event_id ] : array(),
 			'exceptions_dates'	=> $args[ 'get_exceptions' ] && ! empty( $exceptions_per_event[ $event_id ] ) ? $exceptions_per_event[ $event_id ] : array()
 		);
@@ -3169,6 +3170,7 @@ function bookacti_export_events_page( $atts, $calname = '', $caldesc = '', $sequ
 /**
  * Get array of groups of events from raw groups of events from database
  * @since 1.12.0
+ * @version 1.13.0
  * @param array $groups Array of objects groups from database
  * @param array $raw_args {
  *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
@@ -3223,6 +3225,7 @@ function bookacti_get_groups_of_events_array_from_db_groups_of_events( $groups, 
 			'repeat_step'		=> intval( $group->repeat_step ),
 			'repeat_on'			=> $group->repeat_on,
 			'repeat_from'		=> $group->repeat_from,
+			'repeat_exceptions'	=> maybe_unserialize( $group->repeat_exceptions ),
 			'repeat_to'			=> $group->repeat_to,
 			'events'			=> isset( $groups_events[ $group_id ] ) ? $groups_events[ $group_id ] : array(),
 			'settings'			=> isset( $groups_meta[ $group_id ] ) ? $groups_meta[ $group_id ] : array(),

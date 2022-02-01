@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Fetch events to display on calendar editor
  * @since 1.1.0 (replace bookacti_fetch_events)
- * @version 1.12.0
+ * @version 1.13.0
  * @global wpdb $wpdb
  * @param array $raw_args {
  *  @type array $templates Array of template IDs
@@ -42,7 +42,7 @@ function bookacti_fetch_events_for_calendar_editor( $raw_args = array() ) {
 	$user_timestamp_offset		= $current_datetime_object->format( 'P' );
 
 	// Select events
-	$query  = 'SELECT E.id as event_id, E.template_id, E.activity_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_step, E.repeat_on, E.repeat_from, E.repeat_to, E.availability, A.color ' 
+	$query  = 'SELECT E.id as event_id, E.template_id, E.activity_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_step, E.repeat_on, E.repeat_from, E.repeat_to, E.repeat_exceptions, E.availability, A.color ' 
 			. ' FROM ' . BOOKACTI_TABLE_EVENTS . ' as E, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A '
 			. ' WHERE E.activity_id = A.id '
 			. ' AND E.active = 1 ';
@@ -136,7 +136,7 @@ function bookacti_fetch_events_for_calendar_editor( $raw_args = array() ) {
 
 /**
  * Insert an event
- * @version 1.11.0
+ * @version 1.13.0
  * @global wpdb $wpdb
  * @param array $data Data sanitized with bookacti_sanitize_event_data
  * @return int
@@ -144,8 +144,8 @@ function bookacti_fetch_events_for_calendar_editor( $raw_args = array() ) {
 function bookacti_insert_event( $data ) {
 	global $wpdb;
 	
-	$query = ' INSERT INTO ' . BOOKACTI_TABLE_EVENTS . ' ( template_id, activity_id, title, availability, start, end, repeat_freq, repeat_step, repeat_on, repeat_from, repeat_to, active ) '
-			. ' VALUES ( %d, %d, %s, %d, %s, %s, %s, NULLIF( NULLIF( %d, -1 ), 0 ), NULLIF( NULLIF( %s, "null" ), "" ), NULLIF( NULLIF( %s, "null" ), "" ), NULLIF( NULLIF( %s, "null" ), "" ), 1 )';
+	$query = ' INSERT INTO ' . BOOKACTI_TABLE_EVENTS . ' ( template_id, activity_id, title, availability, start, end, repeat_freq, repeat_step, repeat_on, repeat_from, repeat_to, repeat_exceptions, active ) '
+			. ' VALUES ( %d, %d, %s, %d, %s, %s, %s, NULLIF( NULLIF( %d, -1 ), 0 ), NULLIF( NULLIF( %s, "null" ), "" ), NULLIF( NULLIF( %s, "null" ), "" ), NULLIF( NULLIF( %s, "null" ), "" ), NULLIF( NULLIF( %s, "null" ), "" ), 1 )';
 	
 	$variables = array( 
 		$data[ 'template_id' ], 
@@ -158,7 +158,8 @@ function bookacti_insert_event( $data ) {
 		$data[ 'repeat_step' ], 
 		$data[ 'repeat_on' ], 
 		$data[ 'repeat_from' ], 
-		$data[ 'repeat_to' ] 
+		$data[ 'repeat_to' ],
+		maybe_serialize( $data[ 'repeat_exceptions' ] )
 	);
 	
 	$query = $wpdb->prepare( $query, $variables );
@@ -172,7 +173,7 @@ function bookacti_insert_event( $data ) {
 
 /**
  * Duplicate an event
- * @version 1.11.0
+ * @version 1.13.0
  * @global wpdb $wpdb
  * @param int $event_id
  * @return int|false
@@ -180,8 +181,8 @@ function bookacti_insert_event( $data ) {
 function bookacti_duplicate_event( $event_id ) {
 	global $wpdb;
 
-	$query	= ' INSERT INTO ' . BOOKACTI_TABLE_EVENTS . ' ( template_id, activity_id, title, availability, start, end, repeat_freq, repeat_step, repeat_on, repeat_from, repeat_to, active ) '
-			. ' SELECT template_id, activity_id, title, availability, start, end, repeat_freq, repeat_step, repeat_on, repeat_from, repeat_to, active '
+	$query	= ' INSERT INTO ' . BOOKACTI_TABLE_EVENTS . ' ( template_id, activity_id, title, availability, start, end, repeat_freq, repeat_step, repeat_on, repeat_from, repeat_to, repeat_exceptions, active ) '
+			. ' SELECT template_id, activity_id, title, availability, start, end, repeat_freq, repeat_step, repeat_on, repeat_from, repeat_to, repeat_exceptions, active '
 			. ' FROM ' . BOOKACTI_TABLE_EVENTS 
 			. ' WHERE id = %d ';
 	$query	= $wpdb->prepare( $query, $event_id );
@@ -192,10 +193,47 @@ function bookacti_duplicate_event( $event_id ) {
 }
 
 
+/** 
+ * Duplicate template events
+ * @since 1.13.0
+ * @global wpdb $wpdb
+ * @param int $duplicated_template_id
+ * @param int $new_template_id
+ * @return int
+ */
+function bookacti_duplicate_template_events( $from_template_id, $to_template_id ) {
+	global $wpdb;
+
+	// Duplicate events and their metadata
+	$query_events = ' SELECT id FROM ' . BOOKACTI_TABLE_EVENTS . ' WHERE template_id = %d ';
+	$query_events = $wpdb->prepare( $query_events, $from_template_id );
+	$events	= $wpdb->get_results( $query_events, OBJECT );
+	
+	$duplicated = 0;
+	foreach( $events as $event ) {
+		$old_event_id = $event->id;
+
+		// Duplicate the event and get its id
+		$query	= ' INSERT INTO ' . BOOKACTI_TABLE_EVENTS . ' ( template_id, activity_id, title, start, end, availability, repeat_freq, repeat_step, repeat_on, repeat_from, repeat_to, repeat_exceptions ) '
+				. ' SELECT %d, activity_id, title, start, end, availability, repeat_freq, repeat_step, repeat_on, repeat_from, repeat_to, repeat_exceptions FROM ' . BOOKACTI_TABLE_EVENTS . ' WHERE id = %d AND active = 1';
+		$query = $wpdb->prepare( $query, $to_template_id, $event->id );
+		$wpdb->query( $query );
+
+		$new_event_id = $wpdb->insert_id;
+
+		bookacti_duplicate_metadata( 'event', $old_event_id, $new_event_id );
+		
+		++$duplicated;
+	}
+	
+	return $duplicated;
+}
+
+
 /**
  * Update event data
  * @since 1.2.2 (was bookacti_set_event_data)
- * @version 1.11.3
+ * @version 1.13.0
  * @global wpdb $wpdb
  * @param array $data Data sanitized with bookacti_sanitize_event_data
  * @return int|false
@@ -214,7 +252,8 @@ function bookacti_update_event( $data ) {
 				. ' repeat_step = NULLIF( IFNULL( NULLIF( %d, 0 ), repeat_step ), -1 ),'
 				. ' repeat_on = NULLIF( IFNULL( NULLIF( %s, "" ), repeat_on ), "null" ),'
 				. ' repeat_from = NULLIF( IFNULL( NULLIF( %s, "" ), repeat_from ), "null" ), '
-				. ' repeat_to = NULLIF( IFNULL( NULLIF( %s, "" ), repeat_to ), "null" ) '
+				. ' repeat_to = NULLIF( IFNULL( NULLIF( %s, "" ), repeat_to ), "null" ), '
+				. ' repeat_exceptions = NULLIF( IFNULL( NULLIF( %s, "" ), repeat_exceptions ), "null" ) '
 			. ' WHERE id = %d ';
 	
 	$variables = array( 
@@ -229,6 +268,7 @@ function bookacti_update_event( $data ) {
 		! is_null( $data[ 'repeat_on' ] ) ? $data[ 'repeat_on' ] : 'null',
 		! is_null( $data[ 'repeat_from' ] ) ? $data[ 'repeat_from' ] : 'null',
 		! is_null( $data[ 'repeat_to' ] ) ? $data[ 'repeat_to' ] : 'null',
+		! is_null( $data[ 'repeat_exceptions' ] ) ? maybe_serialize( $data[ 'repeat_exceptions' ] ) : 'null',
 		$data[ 'id' ]
 	);
 	
@@ -385,7 +425,7 @@ function bookacti_remove_exceptions( $object_id, $dates = array(), $object_type 
 /**
  * Insert a group of events
  * @since 1.1.0
- * @version 1.12.0
+ * @version 1.13.0
  * @global wpdb $wpdb
  * @param array $data sanitized with bookacti_sanitize_group_of_events_data
  * @return int
@@ -393,8 +433,8 @@ function bookacti_remove_exceptions( $object_id, $dates = array(), $object_type 
 function bookacti_insert_group_of_events( $data ) {
 	global $wpdb;
 	
-	$query = ' INSERT INTO ' . BOOKACTI_TABLE_EVENT_GROUPS . ' ( category_id, title, repeat_freq, repeat_step, repeat_on, repeat_from, repeat_to, active ) '
-			. ' VALUES ( %d, %s, %s, NULLIF( NULLIF( %d, -1 ), 0 ), NULLIF( NULLIF( %s, "null" ), "" ), NULLIF( NULLIF( %s, "null" ), "" ), NULLIF( NULLIF( %s, "null" ), "" ), 1 )';
+	$query = ' INSERT INTO ' . BOOKACTI_TABLE_EVENT_GROUPS . ' ( category_id, title, repeat_freq, repeat_step, repeat_on, repeat_from, repeat_to, repeat_exceptions, active ) '
+			. ' VALUES ( %d, %s, %s, NULLIF( NULLIF( %d, -1 ), 0 ), NULLIF( NULLIF( %s, "null" ), "" ), NULLIF( NULLIF( %s, "null" ), "" ), NULLIF( NULLIF( %s, "null" ), "" ), NULLIF( NULLIF( %s, "null" ), "" ), 1 )';
 	
 	$variables = array( 
 		$data[ 'category_id' ], 
@@ -403,7 +443,8 @@ function bookacti_insert_group_of_events( $data ) {
 		$data[ 'repeat_step' ], 
 		$data[ 'repeat_on' ], 
 		$data[ 'repeat_from' ], 
-		$data[ 'repeat_to' ] 
+		$data[ 'repeat_to' ],
+		maybe_serialize( $data[ 'repeat_exceptions' ] )
 	);
 	
 	$query = $wpdb->prepare( $query, $variables );
@@ -418,7 +459,7 @@ function bookacti_insert_group_of_events( $data ) {
 /**
  * Update a group of events
  * @since 1.1.0
- * @version 1.12.0
+ * @version 1.13.0
  * @global wpdb $wpdb
  * @param array $data sanitized with bookacti_sanitize_group_of_events_data
  * @return int|boolean
@@ -433,7 +474,8 @@ function bookacti_update_group_of_events( $data ) {
 				. ' repeat_step = NULLIF( IFNULL( NULLIF( %d, 0 ), repeat_step ), -1 ),'
 				. ' repeat_on = NULLIF( IFNULL( NULLIF( %s, "" ), repeat_on ), "null" ),'
 				. ' repeat_from = NULLIF( IFNULL( NULLIF( %s, "" ), repeat_from ), "null" ), '
-				. ' repeat_to = NULLIF( IFNULL( NULLIF( %s, "" ), repeat_to ), "null" ) '
+				. ' repeat_to = NULLIF( IFNULL( NULLIF( %s, "" ), repeat_to ), "null" ), '
+				. ' repeat_exceptions = NULLIF( IFNULL( NULLIF( %s, "" ), repeat_exceptions ), "null" ) '
 			. ' WHERE id = %d ';
 	
 	$variables = array( 
@@ -444,6 +486,7 @@ function bookacti_update_group_of_events( $data ) {
 		! is_null( $data[ 'repeat_on' ] ) ? $data[ 'repeat_on' ] : 'null', 
 		! is_null( $data[ 'repeat_from' ] ) ? $data[ 'repeat_from' ] : 'null', 
 		! is_null( $data[ 'repeat_to' ] ) ? $data[ 'repeat_to' ] : 'null', 
+		! is_null( $data[ 'repeat_exceptions' ] ) ? maybe_serialize( $data[ 'repeat_exceptions' ] ) : 'null', 
 		$data[ 'id' ]
 	);
 	
@@ -717,49 +760,6 @@ function bookacti_delete_activity_events_from_groups( $activity_id, $template_id
 	$deactivated = $wpdb->query( $query );
 
 	return $deactivated;
-}
-
-
-/**
- * Delete event occurrences that are beyond repeat dates from all groups
- * @since 1.8.4 (was bookacti_delete_out_of_range_occurences_from_groups)
- * @version 1.8.5
- * @global wpdb $wpdb
- * @param int $event_id
- * @param string $event_start
- * @param string $event_end
- * @return int|boolean|null
- */
-function bookacti_delete_out_of_range_occurrences_from_groups( $event_id ) {
-	global $wpdb;
-
-	$event_id = intval( $event_id );
-	if( ! $event_id ) { return false; }
-
-	// Get event
-	$query1	= 'SELECT * ' 
-			. ' FROM ' . BOOKACTI_TABLE_EVENTS
-			. ' WHERE id = %d ';
-	$prep1	= $wpdb->prepare( $query1, $event_id );
-	$event	= $wpdb->get_row( $prep1 );
-	
-	if( ! $event ) { return false; }
-	
-	// Delete occurrences that are before repeat from date, or after repeat to date
-	$query	= 'DELETE FROM ' . BOOKACTI_TABLE_GROUPS_EVENTS 
-			. ' WHERE event_id = %d '
-			. ' AND ('
-				. ' UNIX_TIMESTAMP( CONVERT_TZ( event_start, "+00:00", @@global.time_zone ) ) < '
-				. ' UNIX_TIMESTAMP( CONVERT_TZ( %s, "+00:00", @@global.time_zone ) ) '
-				. ' OR '
-				. ' UNIX_TIMESTAMP( CONVERT_TZ( ( event_end + INTERVAL -24 HOUR ), "+00:00", @@global.time_zone ) ) > '
-				. ' UNIX_TIMESTAMP( CONVERT_TZ( %s, "+00:00", @@global.time_zone ) ) '
-			. ' ) ';
-
-	$prep		= $wpdb->prepare( $query, $event_id, $event->repeat_from, $event->repeat_to );
-	$deleted	= $wpdb->query( $prep );
-
-	return $deleted;
 }
 
 
@@ -1102,70 +1102,6 @@ function bookacti_insert_template( $data ) {
 }
 
 
-/** 
- * Duplicate a template // TO BE REFACTORED 1.13.0
- * @version 1.12.0
- * @global wpdb $wpdb
- * @param int $duplicated_template_id
- * @param int $new_template_id
- */
-function bookacti_duplicate_template( $duplicated_template_id, $new_template_id ) {
-	global $wpdb;
-
-	if( $duplicated_template_id && $new_template_id ) {
-		// Duplicate events without exceptions and their metadata
-		$query_event_wo_excep	= ' SELECT id FROM ' . BOOKACTI_TABLE_EVENTS
-								. ' WHERE id NOT IN ( SELECT object_id FROM ' . BOOKACTI_TABLE_EXCEPTIONS . ' WHERE object_type = "event" ) ' 
-								. ' AND template_id = %d ';
-		$prep_event_wo_excep	= $wpdb->prepare( $query_event_wo_excep, $duplicated_template_id );
-		$events_wo_exceptions	= $wpdb->get_results( $prep_event_wo_excep, OBJECT );
-
-		foreach( $events_wo_exceptions as $event ) {
-			$old_event_id = $event->id;
-
-			// Duplicate the event and get its id 
-			$query_duplicate_event_wo_excep = ' INSERT INTO ' . BOOKACTI_TABLE_EVENTS . ' ( template_id, activity_id, title, start, end, availability, repeat_freq, repeat_step, repeat_on, repeat_from, repeat_to ) '
-											. ' SELECT %d, activity_id, title, start, end, availability, repeat_freq, repeat_step, repeat_on, repeat_from, repeat_to FROM ' . BOOKACTI_TABLE_EVENTS . ' WHERE id = %d AND active = 1 ';
-			$prep_duplicate_event_wo_excep	= $wpdb->prepare( $query_duplicate_event_wo_excep, $new_template_id, $event->id );
-			$wpdb->query( $prep_duplicate_event_wo_excep );
-
-			$new_event_id	= $wpdb->insert_id;
-
-			bookacti_duplicate_metadata( 'event', $old_event_id, $new_event_id);
-		}
-
-		// Duplicate events with exceptions, their exceptions and their metadata
-		$query_event_w_excep= ' SELECT id FROM ' . BOOKACTI_TABLE_EVENTS
-							. ' WHERE id IN ( SELECT object_id FROM ' . BOOKACTI_TABLE_EXCEPTIONS . ' WHERE object_type = "event" ) ' 
-							. ' AND template_id = %d ';
-		$prep_event_w_excep	= $wpdb->prepare( $query_event_w_excep, $duplicated_template_id );
-		$events_with_exceptions	= $wpdb->get_results( $prep_event_w_excep, OBJECT );
-
-		foreach( $events_with_exceptions as $event ) {
-			$old_event_id = $event->id;
-
-			// Duplicate the event and get its id 
-			$query_duplicate_event_w_excep	= ' INSERT INTO ' . BOOKACTI_TABLE_EVENTS . ' ( template_id, activity_id, title, start, end, availability, repeat_freq, repeat_step, repeat_on, repeat_from, repeat_to ) '
-											. ' SELECT %d, activity_id, title, start, end, availability, repeat_freq, repeat_step, repeat_on, repeat_from, repeat_to FROM ' . BOOKACTI_TABLE_EVENTS . ' WHERE id = %d AND active = 1';
-			$prep_duplicate_event_w_excep	= $wpdb->prepare( $query_duplicate_event_w_excep, $new_template_id, $event->id );
-			$wpdb->query( $prep_duplicate_event_w_excep );
-
-			$new_event_id	= $wpdb->insert_id;
-
-			bookacti_duplicate_exceptions( $old_event_id, $new_event_id );
-			bookacti_duplicate_metadata( 'event', $old_event_id, $new_event_id);
-		}
-
-
-		// Duplicate activities connection
-		$query_template_x_activity	= ' INSERT INTO ' . BOOKACTI_TABLE_TEMP_ACTI . ' ( template_id, activity_id ) '
-									. ' SELECT %d, activity_id FROM ' . BOOKACTI_TABLE_TEMP_ACTI . ' WHERE template_id = %d ';
-		$prep_template_x_activity	= $wpdb->prepare( $query_template_x_activity, $new_template_id, $duplicated_template_id );
-		$wpdb->query( $prep_template_x_activity );
-	}
-}
-
-
 /**
  * Deactivate a template
  * @version 1.12.0
@@ -1391,6 +1327,26 @@ function bookacti_insert_templates_x_activities( $template_ids, $activity_ids ) 
 	$inserted = $wpdb->query( $query );
 
 	return $inserted;
+}
+
+
+/** 
+ * Duplicate a template x activity association
+ * @since 1.13.0
+ * @global wpdb $wpdb
+ * @param int $duplicated_template_id
+ * @param int $new_template_id
+ * @return int|false
+ */
+function bookacti_duplicate_template_activities( $from_template_id, $to_template_id ) {
+	global $wpdb;
+
+	$query	= ' INSERT INTO ' . BOOKACTI_TABLE_TEMP_ACTI . ' ( template_id, activity_id ) '
+			. ' SELECT %d, activity_id FROM ' . BOOKACTI_TABLE_TEMP_ACTI . ' WHERE template_id = %d ';
+	$query	= $wpdb->prepare( $query, $to_template_id, $from_template_id );
+	$duplicated = $wpdb->query( $query );
+	
+	return $duplicated;
 }
 
 

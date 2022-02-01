@@ -296,7 +296,7 @@ add_action( 'wp_ajax_bookactiDuplicateEvent', 'bookacti_controller_duplicate_eve
 /**
  * AJAX Controller - Update event
  * @since 1.2.2 (was bookacti_controller_update_event_data)
- * @version 1.12.3
+ * @version 1.13.0
  */
 function bookacti_controller_update_event() {
 	// Check nonce
@@ -345,22 +345,12 @@ function bookacti_controller_update_event() {
 	// Update event data
 	$updated = bookacti_update_event( $event_data );
 
-	// If the repeat dates have changed, delete out of range grouped events
-	if( $event_data[ 'repeat_from' ] !== $old_event->repeat_from || $event_data[ 'repeat_to' ] !== $old_event->repeat_to ) {
-		bookacti_delete_out_of_range_occurrences_from_groups( $event_id );
-	}
-	// If the other repeat data have changed (repeat_freq, repeat_on, repeat_step), we don't know how groups are affected, so we just leave the group as is
-	
 	// Update meta
 	$meta = array_intersect_key( $event_data, bookacti_get_event_default_meta() );
 	if( $meta ) { 
 		$updated_meta = bookacti_update_metadata( 'event', $event_id, $meta );
 		if( is_numeric( $updated ) && is_numeric( $updated_meta ) ) { $updated += $updated_meta; }
 	}
-	
-	// Update exceptions
-	$updated_excep = bookacti_update_exceptions( $event_id, $event_data[ 'exceptions_dates' ] );
-	if( is_numeric( $updated ) && is_numeric( $updated_excep ) ) { $updated += $updated_excep; }
 	
 	// Check if the data has been updated
 	if( $updated === false ) { 
@@ -375,7 +365,7 @@ function bookacti_controller_update_event() {
 	$groups = bookacti_get_groups_of_events( array( 'templates' => array( $old_event->template_id ), 'nb_events' => array(), 'past_events' => 1, 'data_only' => 1, 'get_exceptions' => 1 ) );
 
 	do_action( 'bookacti_event_updated', $event_id, $events );
-
+	
 	bookacti_send_json( array( 
 		'status'			=> 'success', 
 		'events'			=> $events[ 'events' ] ? $events[ 'events' ] : array(),
@@ -1056,7 +1046,7 @@ add_action( 'wp_ajax_bookactiDeleteGroupCategory', 'bookacti_controller_delete_g
 
 /**
  * AJAX Controller - Create a new template
- * @version	1.12.0
+ * @version	1.13.0
  */
 function bookacti_controller_insert_template() {
 	// Check nonce
@@ -1085,9 +1075,10 @@ function bookacti_controller_insert_template() {
 	// Insert template managers
 	if( $template_data[ 'managers' ] ) { bookacti_insert_managers( 'template', $template_id, $template_data[ 'managers' ] ); }
 	
-	// Duplicate template
+	// Duplicate template events and activities
 	if( ! empty( $template_data[ 'duplicated_template_id' ] ) ) {
-		bookacti_duplicate_template( $template_data[ 'duplicated_template_id' ], $template_id );
+		bookacti_duplicate_template_events( $template_data[ 'duplicated_template_id' ], $template_id );
+		bookacti_duplicate_template_activities( $template_data[ 'duplicated_template_id' ], $template_id );
 	}
 	
 	do_action( 'bookacti_template_inserted', $template_id, $template_data );

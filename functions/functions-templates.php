@@ -308,6 +308,56 @@ function bookacti_get_mixed_template_data( $template_ids ) {
 }
 
 
+/**
+ * Display the calendar field Days off
+ * @since 1.13.0
+ * @param array $field
+ * @param string $field_name
+ */
+function bookacti_display_calendar_field_days_off( $field, $field_name ) {
+	if( ! in_array( $field_name, array( 'days_off', 'repeat_exceptions' ), true ) ) { return; }
+	if( empty( $field[ 'value' ] ) ) { $field[ 'value' ] = array( array( 'from' => '', 'to' => '' ) ); }
+?>
+	<div class='bookacti-field-container bookacti-days-off-container' id='<?php echo $field[ 'id' ] . '-container'; ?>'>
+		<label for='<?php echo esc_attr( sanitize_title_with_dashes( $field[ 'id' ] ) ); ?>' class='bookacti-fullwidth-label'>
+		<?php 
+			echo ! empty( $field[ 'title' ] ) ? $field[ 'title' ] : '';
+			bookacti_help_tip( $field[ 'tip' ] );
+		?>
+			<span class='dashicons dashicons-plus-alt bookacti-add-days-off'></span>
+		</label>
+		<div id='<?php echo $field[ 'id' ]; ?>' class='bookacti-days-off-table-container bookacti-custom-scrollbar' data-name='<?php echo $field[ 'name' ]; ?>' >
+			<table>
+				<thead>
+					<tr>
+						<th><?php echo esc_html_x( 'From', 'date', 'booking-activities' ); ?></th>
+						<th><?php echo esc_html_x( 'To', 'date', 'booking-activities' ); ?></th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+				<?php
+					$i = 0;
+					foreach( $field[ 'value' ] as $day_off ) {
+					?>
+						<tr>
+							<td><input type='date' name='<?php echo $field_name . '[' . $i . '][from]'; ?>' value='<?php if( ! empty( $day_off[ 'from' ] ) ) { echo $day_off[ 'from' ]; } ?>' class='bookacti-days-off-from'/></td>
+							<td><input type='date' name='<?php echo $field_name . '[' . $i . '][to]'; ?>' value='<?php if( ! empty( $day_off[ 'to' ] ) ) { echo $day_off[ 'to' ]; } ?>' class='bookacti-days-off-to'/></td>
+							<td><span class='dashicons dashicons-trash bookacti-delete-days-off'></span></td>
+						</tr>
+					<?php
+						++$i;
+					}
+				?>
+				</tbody>
+			</table>
+		</div>
+	</div>
+<?php
+}
+add_action( 'bookacti_display_custom_field', 'bookacti_display_calendar_field_days_off', 10, 2 );
+
+
 
 
 // TEMPLATES X ACTIVITIES ASSOCIATION

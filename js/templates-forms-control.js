@@ -10,51 +10,6 @@ $j( document ).ready( function() {
 	 */
     $j( '#bookacti-activity-data-dialog :input' ).on( 'keyup mouseup change', function() { bookacti_validate_activity_form(); });
     
-	
-	/**
-	 * Validate exception - on select
-	 * @since 1.9.0
-	 * @version 1.12.0
-	 */
-	$j( '.bookacti-exception-date-picker' ).on( 'change', function() { 
-		bookacti_validate_add_exception_form( $j( this ).closest( '.bookacti-template-dialog' ) );
-	});
-	
-	
-	/**
-	 * Add exception - on click
-	 * @version 1.12.0
-	 */
-	$j( '.bookacti-add-exception-button' ).on( 'click', function() { 
-		var container = $j( this ).closest( '.bookacti-template-dialog' );
-		var isFormValid = bookacti_validate_add_exception_form( container );
-		if( isFormValid ) {
-			var exception_date = moment.utc( container.find( '.bookacti-exception-date-picker' ).val() ).locale( 'en' ).format( 'YYYY-MM-DD' );
-			container.find( 'select.bookacti-exceptions-selectbox' ).append( "<option class='exception' value='" + exception_date + "' >" + exception_date + "</option>" );
-		}
-	});
-
-
-	/**
-	 * Remove exception - on click
-	 * @version 1.12.0
-	 */
-	$j( '.bookacti-delete-exception-button' ).on( 'click', function() { 
-		$j( this ).closest( '.bookacti-template-dialog' ).find( 'select.bookacti-exceptions-selectbox option:selected' ).remove();
-	});
-	
-
-	/**
-	 * Remove exception - on pressing 'Delete' key
-	 * @version 1.12.0
-	 * @param {Event} key
-	 */
-	$j( 'select.bookacti-exceptions-selectbox' ).on( 'keyup', function( key ) { 
-		if( key.which === 46 ) {
-			$j( this ).find( 'option:selected' ).remove();
-		}
-	});
-	
 
 	/**
 	 * Validate the repetition fields
@@ -64,6 +19,53 @@ $j( document ).ready( function() {
 	$j( 'select[name="repeat_freq"], input[name="repeat_from"], input[name="repeat_to"]' ).on( 'keyup mouseup change', function() { 
 		var object_type = $j( this ).closest( '#bookacti-group-of-events-dialog' ).length ? 'group' : 'event';
 		bookacti_validate_event_repetition_data( object_type );
+	});
+	
+	
+	/**
+	 * Add a Days off line
+	 * @since 1.13.0
+	 */
+	$j( '.bookacti-days-off-container' ).on( 'click', '.bookacti-add-days-off', function() {
+		console.log( $j( this ).closest( '.bookacti-days-off-container' ).find( '.bookacti-days-off-table-container' ).length );
+		bookacti_add_days_off_row( $j( this ).closest( '.bookacti-days-off-container' ).find( '.bookacti-days-off-table-container' ) );
+	});
+	
+	
+	/**
+	 * Delete a Days off line
+	 * @since 1.13.0
+	 */
+	$j( '.bookacti-days-off-container' ).on( 'click', '.bookacti-delete-days-off', function() {
+		bookacti_delete_days_off_row( $j( this ).closest( '.bookacti-days-off-container' ).find( '.bookacti-days-off-table-container' ), $j( this ).closest( 'tr' ) );
+	});
+	
+	
+	/**
+	 * Fill template's days off in calendar editor
+	 * @since 1.13.0
+	 */
+	$j( '#bookacti-template-data-dialog' ).on( 'bookacti_default_template_settings', function() {
+		bookacti_delete_days_off_rows( $j( '#bookacti-template-data-dialog .bookacti-days-off-table-container' ) );
+		
+		// Fill Days off option since the bookacti_fill_fields_from_array function won't do it
+		var template_data = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ];
+		if( ! $j.isEmptyObject( template_data.settings ) ) {
+			if( ! $j.isEmptyObject( template_data.settings.days_off ) ) {
+				bookacti_fill_days_off( $j( '#bookacti-template-data-dialog .bookacti-days-off-table-container' ), template_data.settings.days_off );
+			}
+		}
+	});
+	
+	
+	/**
+	 * Reset custom Days off
+	 * @since 1.13.0
+	 * @param {Event} e
+	 * @param {String} scope
+	 */
+	$j( 'body' ).on( 'bookacti_empty_all_dialogs_forms', function( e, scope ) {
+		bookacti_delete_days_off_rows( $j( scope + ' .bookacti-days-off-table-container' ) );
 	});
 });
 
@@ -457,64 +459,6 @@ function bookacti_validate_event_repetition_data( object_type ) {
 }
 
 
-/**
- * Check event date exceptions field
- * @version 1.12.0
- * @param {HTMLElement} container
- * @returns {boolean}
- */
-function bookacti_validate_add_exception_form( container ) {
-	var exception_date  = moment.utc( container.find( '.bookacti-exception-date-picker' ).val() ).locale( 'en' );
-	var repeat_from     = moment.utc( container.find( 'input[name="repeat_from"]' ).val() ).locale( 'en' );
-	var repeat_to       = moment.utc( container.find( 'input[name="repeat_to"]' ).val() ).locale( 'en' );
-
-	// Init boolean test variables
-	var valid_form = {
-		'isNewExcep'				: false,
-		'isNewExcepBetweenFromAndTo': false,
-		'isNewExcepDifferent'		: true,
-		'send'						: false
-	};
-
-	// Make the tests and change the booleans
-	if( ! isNaN( exception_date ) && exception_date !== '' && exception_date !== null )	{ valid_form.isNewExcep = true; }
-	if( valid_form.isNewExcep 
-	&&  exception_date.isSameOrAfter( repeat_from, 'day' ) 
-	&&  exception_date.isSameOrBefore( repeat_to, 'day' ) ) { valid_form.isNewExcepBetweenFromAndTo = true; }
-
-	// Detect duplicated exception
-	if( valid_form.isNewExcep ) {
-		container.find( '.exception' ).each( function() {
-			if( exception_date.format( 'YYYY-MM-DD' ) === moment.utc( $j( this ).val() ).locale( 'en' ).format( 'YYYY-MM-DD' ) ) { 
-				valid_form.isNewExcepDifferent = false;
-				$j( this ).effect( 'highlight', 'swing', { color: '#ffff99' }, 2000 );
-			}
-		});
-	}
-
-	if( valid_form.isNewExcep && valid_form.isNewExcepBetweenFromAndTo && valid_form.isNewExcepDifferent ) { valid_form.send = true; }
-	
-	// Allow third party to change results
-	container.trigger( 'bookacti_validate_add_exception', [ valid_form ] );
-	
-	// Clean old feedbacks
-	container.find( '.bookacti-add-exception-container .bookacti-form-error' ).remove();
-	container.find( '.bookacti-add-exception-container input' ).removeClass( 'bookacti-input-error' );
-
-	// Feedback errors
-	if( ! valid_form.isNewExcepBetweenFromAndTo ) { 
-		container.find( '.bookacti-exception-date-picker' ).addClass( 'bookacti-input-error' );
-		container.find( '.bookacti-add-exception-container' ).append( "<div class='bookacti-form-error'>" + bookacti_localized.error_excep_not_btw_from_and_to + "</div>" );
-	}
-	if( ! valid_form.isNewExcepDifferent ) { 
-		container.find( '.bookacti-exception-date-picker' ).addClass( 'bookacti-input-error' );
-		container.find( '.bookacti-add-exception-container' ).append( "<div class='bookacti-form-error'>" + bookacti_localized.error_excep_duplicated + "</div>" );
-	}
-
-	return valid_form.send;
-}
-
-
 
 
 // GROUP OF EVENTS
@@ -643,4 +587,84 @@ function bookacti_validate_group_category_form() {
 	}
 
 	return valid_form.send;
+}
+
+
+/**
+ * Fill default Days off fields
+ * @since 1.13.0
+ * @param {HTMLElement} container
+ * @param {Array} entries
+ */
+function bookacti_fill_days_off( container, entries ) {
+	if( typeof entries === 'undefined' ) { return; }
+	if( ! $j.isArray( entries ) && ! $j.isPlainObject( entries ) ) { return; }
+	if( entries.length <= 0 ) { return; }
+	
+	// Reset Days off table
+	bookacti_delete_days_off_rows( container );
+	
+	var tbody = container.find( 'tbody' );
+	
+	var i = 0;
+	$j.each( entries, function( j, entry ) {
+		if( i > 0 ) { bookacti_add_days_off_row( container ); }
+		tbody.find( 'tr:last .bookacti-days-off-from' ).val( entry.from );
+		tbody.find( 'tr:last .bookacti-days-off-to' ).val( entry.to );
+		++i;
+	});
+}
+
+
+/**
+ * Add a Days off row
+ * @since 1.13.0
+ * @param {HTMLElement} container
+ */
+function bookacti_add_days_off_row( container ) {
+	var tbody = container.find( 'tbody' );
+	var name_i = container.data( 'name' ) + '[' + tbody.find( 'tr' ).length + ']';
+	tbody.find( 'tr:first' ).clone().appendTo( tbody );
+	tbody.find( 'tr:last .bookacti-days-off-from' ).attr( 'name', name_i + '[from]' ).val( '' );
+	tbody.find( 'tr:last .bookacti-days-off-to' ).attr( 'name', name_i + '[to]' ).val( '' );
+}
+
+
+/**
+ * Delete a Days off row
+ * @since 1.13.0
+ * @param {HTMLElement} container
+ * @param {HTMLElement} row
+ */
+function bookacti_delete_days_off_row( container, row ) {
+	row = row || null;
+	var tbody = container.find( 'tbody' );
+	// If there is only one row, empty the fields
+	if( tbody.find( 'tr' ).length <= 1 ) {
+		tbody.find( 'tr:first .bookacti-days-off-from, tr:first .bookacti-days-off-to' ).val( '' );
+		
+	// Else, delete the whole row and reset indexes
+	} else if( row != null ) {
+		row.remove();
+		var i = 0;
+		var name = container.data( 'name' );
+		tbody.find( 'tr' ).each( function() {
+			var name_i = name + '[' + i + ']';
+			$j( this ).find( '.bookacti-days-off-from' ).attr( 'name', name_i + '[from]' );
+			$j( this ).find( '.bookacti-days-off-to' ).attr( 'name', name_i + '[to]' );
+			++i;
+		});
+	}
+}
+
+
+/**
+ * Delete all Days off rows
+ * @since 1.13.0
+ * @param {HTMLElement} container
+ */
+function bookacti_delete_days_off_rows( container ) {
+	var tbody = container.find( 'tbody' );
+	tbody.find( 'tr:not(:first)' ).remove();
+	bookacti_delete_days_off_row( container, tbody.find( 'tr:first' ) );
 }

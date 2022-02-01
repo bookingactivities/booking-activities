@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Create Booking Activities database tables
- * @version 1.12.0
+ * @version 1.13.0
  * @global wpdb $wpdb
  */
 function bookacti_create_tables() {
@@ -49,6 +49,7 @@ function bookacti_create_tables() {
 		repeat_on VARCHAR(32), 
 		repeat_from DATE, 
 		repeat_to DATE,
+		repeat_exceptions LONGTEXT,
 		active TINYINT(1) NOT NULL DEFAULT 1,
 		PRIMARY KEY ( id ) ) ' . $collate . ';';
 	
@@ -68,6 +69,7 @@ function bookacti_create_tables() {
 		repeat_on VARCHAR(32), 
 		repeat_from DATE, 
 		repeat_to DATE,
+		repeat_exceptions LONGTEXT,
 		active TINYINT(1) NOT NULL DEFAULT 1,
 		PRIMARY KEY ( id ) ) ' . $collate . ';';
 

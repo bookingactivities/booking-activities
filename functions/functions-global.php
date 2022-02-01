@@ -207,7 +207,7 @@ function bookacti_decrypt( $string ) {
 /**
  * Generate CSV file
  * @since 1.8.0
- * @version 1.12.10
+ * @version 1.13.0
  * @param array $items
  * @param array $headers
  * @return string

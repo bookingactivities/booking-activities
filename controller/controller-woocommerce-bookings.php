@@ -745,7 +745,7 @@ add_filter( 'bookacti_booking_list_items', 'bookacti_add_wc_data_to_booking_list
 /**
  * Fill WC bookings export columns
  * @since 1.6.0
- * @version 1.12.10
+ * @version 1.13.0
  * @param array $booking_items
  * @param array $bookings
  * @param array $booking_groups

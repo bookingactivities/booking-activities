@@ -316,7 +316,7 @@ add_filter( 'bookacti_html_form_field_login', 'bookacti_display_form_field_login
 /**
  * Display the form field "Login / Registration" when the user is already logged in
  * @since 1.5.0
- * @version 1.12.0
+ * @version 1.13.0
  * @param string $html
  * @param array $field
  * @param string $instance_id
@@ -349,7 +349,7 @@ function bookacti_display_form_field_login_when_logged_in( $html, $field, $insta
 					echo sprintf( esc_html__( 'You are currently logged in as %1$s (%2$s).', 'booking-activities' ), $user->display_name, $user->user_email );
 					?>
 				</span>
-				<a href='<?php echo wp_logout_url( get_permalink() ); ?>' class='bookacti-logout-link'>
+				<a href='<?php echo wp_logout_url( apply_filters( 'bookacti_logout_redirect_url', get_permalink(), $field, $instance_id, $context ) ); ?>' class='bookacti-logout-link'>
 					<?php esc_html_e( 'Click here to log out.', 'booking-activities' ); ?>
 				</a>
 			</div>

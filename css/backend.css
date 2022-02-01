@@ -120,12 +120,6 @@ ul[id$='-select-box-results'] li[aria-disabled='true'] { display: none; }
 .bookacti-licenses-settings-description strong		{ font-size: 14px; }
 .bookacti-licenses-settings-description + .submit	{ display: none; }
 
-.bookacti-duration-field-container	{ display: inline-block; vertical-align: middle; margin-right: 4px; }
-.bookacti-duration-field			{ width: 60px; }
-.bookacti-duration-field-label		{ display: block; }
-.bookacti-duration-hint				{ font-size: smaller; font-style: italic; }
-.bookacti-field-container .bookacti-duration-hint { text-align: right; }
-
 
 /** DIALOGS **/
 .bookacti-input-warning		{ border-color: #d80 !important; }
@@ -188,6 +182,16 @@ fieldset legend .bookacti-show-hide-advanced-options{ cursor: pointer; color: #0
 .bookacti-tabs .bookacti-tab-content .bookacti-display-inline-block { display: inline-block; }
 
 
+/* Specific fields */
+.bookacti-duration-field-container	{ display: inline-block; vertical-align: middle; margin-right: 4px; }
+.bookacti-duration-field			{ width: 60px; }
+.bookacti-duration-field-label		{ display: block; }
+.bookacti-duration-hint				{ font-size: smaller; font-style: italic; }
+.bookacti-field-container .bookacti-duration-hint { text-align: right; }
+
+.bookacti-delete-days-off							{ cursor: pointer; color: #565d61; }
+.bookacti-add-days-off								{ cursor: pointer; color: #418fb6; }
+.bookacti-days-off-table-container					{ max-height: 130px; overflow-y: auto; }
 
 
 /* ON / OFF Switch */

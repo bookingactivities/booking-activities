@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Fetch events by templates and / or activities
- * @version 1.12.0
+ * @version 1.13.0
  * @param array $raw_args {
  *  @type array $templates Array of template IDs
  *  @type array $activities Array of activity IDs
@@ -44,7 +44,7 @@ function bookacti_fetch_events( $raw_args = array() ) {
 	$variables					= array();
 
 	// Prepare the query
-	$query  = 'SELECT DISTINCT E.id as event_id, E.template_id, E.activity_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_step, E.repeat_on, E.repeat_from, E.repeat_to, E.availability, A.color '
+	$query  = 'SELECT DISTINCT E.id as event_id, E.template_id, E.activity_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_step, E.repeat_on, E.repeat_from, E.repeat_to, E.repeat_exceptions, E.availability, A.color '
 			. ' FROM ' . BOOKACTI_TABLE_EVENTS . ' as E '
 			. ' LEFT JOIN ' . BOOKACTI_TABLE_ACTIVITIES . ' as A ON E.activity_id = A.id '
 			. ' LEFT JOIN ' . BOOKACTI_TABLE_TEMPLATES . ' as T ON E.template_id = T.id '
@@ -172,7 +172,7 @@ function bookacti_fetch_events( $raw_args = array() ) {
 /**
  * Fetch booked events only
  * @since 1.2.2
- * @version 1.12.0
+ * @version 1.13.0
  * @global wpdb $wpdb
  * @param array $raw_args {
  *  @type array $templates Array of template IDs
@@ -218,7 +218,7 @@ function bookacti_fetch_booked_events( $raw_args = array() ) {
 	$variables					= array();
 
 	// Prepare the query
-	$query  = 'SELECT DISTINCT B.event_id, E.template_id, E.activity_id, E.title, B.event_start as start, B.event_end as end, "none" as repeat_freq, E.repeat_step, E.repeat_on, E.repeat_from, E.repeat_to, E.availability, A.color '
+	$query  = 'SELECT DISTINCT B.event_id, E.template_id, E.activity_id, E.title, B.event_start as start, B.event_end as end, "none" as repeat_freq, E.repeat_step, E.repeat_on, E.repeat_from, E.repeat_to, E.repeat_exceptions, E.availability, A.color '
 			. ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B '
 			. ' LEFT JOIN ' . BOOKACTI_TABLE_EVENTS . ' as E ON B.event_id = E.id '
 			. ' LEFT JOIN ' . BOOKACTI_TABLE_ACTIVITIES . ' as A ON E.activity_id = A.id '
@@ -325,7 +325,7 @@ function bookacti_fetch_booked_events( $raw_args = array() ) {
 
 /**
  * Get event by id
- * @version 1.12.0
+ * @version 1.13.0
  * @global wpdb $wpdb
  * @param int $event_id
  * @return object
@@ -333,7 +333,7 @@ function bookacti_fetch_booked_events( $raw_args = array() ) {
 function bookacti_get_event_by_id( $event_id ) {
 	global $wpdb;
 
-	$query	= 'SELECT E.id as event_id, E.template_id, E.activity_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_step, E.repeat_on, E.repeat_from, E.repeat_to, E.availability, E.active as event_active, A.color, A.active as activity_active, T.active as template_active ' 
+	$query	= 'SELECT E.id as event_id, E.template_id, E.activity_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_step, E.repeat_on, E.repeat_from, E.repeat_to, E.repeat_exceptions, E.availability, E.active as event_active, A.color, A.active as activity_active, T.active as template_active ' 
 			. ' FROM ' . BOOKACTI_TABLE_EVENTS . ' as E '
 			. ' LEFT JOIN ' . BOOKACTI_TABLE_ACTIVITIES . ' as A ON E.activity_id = A.id '
 			. ' LEFT JOIN ' . BOOKACTI_TABLE_TEMPLATES . ' as T ON E.template_id = T.id '
@@ -538,7 +538,7 @@ function bookacti_get_group_of_events( $group_id, $return_type = OBJECT ) {
 /**
  * Get groups of events data by template ids
  * @since 1.4.0 (was bookacti_get_groups_of_events_by_template and bookacti_get_groups_of_events_by_category)
- * @version 1.12.0
+ * @version 1.13.0
  * @global wpdb $wpdb
  * @param array $raw_args {
  *  @type array $templates
@@ -578,7 +578,7 @@ function bookacti_get_groups_of_events( $raw_args = array() ) {
 	$user_timestamp_offset		= $current_datetime_object->format( 'P' );
 	$variables					= array();
 
-	$query	= 'SELECT DISTINCT G.id, G.category_id, G.title, G.repeat_freq, G.repeat_step, G.repeat_on, G.repeat_from, G.repeat_to, GE.start, GE.end, GE.delta_days, C.template_id, M.started_groups_bookable '
+	$query	= 'SELECT DISTINCT G.id, G.category_id, G.title, G.repeat_freq, G.repeat_step, G.repeat_on, G.repeat_from, G.repeat_to, G.repeat_exceptions, GE.start, GE.end, GE.delta_days, C.template_id, M.started_groups_bookable '
 			. ' FROM ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as G ' 
 			. ' LEFT JOIN ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' as C ON C.id = G.category_id '
 			. ' LEFT JOIN ' . BOOKACTI_TABLE_TEMPLATES . ' as T ON T.id = C.template_id ';

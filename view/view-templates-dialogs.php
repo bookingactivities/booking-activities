@@ -1,7 +1,7 @@
 <?php 
 /**
  * Calendar editor dialogs
- * @version 1.12.3
+ * @version 1.13.0
  */
 
 // Exit if accessed directly
@@ -82,7 +82,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 		
 		/**
 		 * Display the 'Repetition' tab content of event settings
-		 * @version 1.12.0
+		 * @version 1.13.0
 		 * @param array $params
 		 */
 		function bookacti_fill_event_tab_repetition( $params ) {
@@ -197,27 +197,17 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 					'title'		=> esc_html__( 'Repeat to', 'booking-activities' ),
 					'options'	=> array( 'max' => '2037-12-31' ),
 					'tip'		=> esc_html__( 'Set the ending date of the repetition. The occurrences of the event will be added until this date.', 'booking-activities' )
+				),
+				'repeat_exceptions' => array(
+					'type'	=> 'custom',
+					'name'	=> 'repeat_exceptions',
+					'value'	=> array(),
+					'title'	=> esc_html__( 'Exceptions', 'booking-activities' ),
+					'tip'	=> esc_html__( 'You can add exception dates to the repetition. No event occurrences will be displayed on the exception dates.', 'booking-activities' )
 				)
 			);
 			bookacti_display_fields( $fields );
-		?>
-			<div id='bookacti-event-exceptions-container' class='bookacti-exceptions-container'>
-				<label class='bookacti-fullwidth-label'>
-				<?php 
-					esc_html_e( 'Exceptions', 'booking-activities' );
-					bookacti_help_tip( esc_html__( 'You can add exception dates to the repetition. No event occurrences will be displayed on the exception dates.', 'booking-activities' ) );
-				?>
-				</label>
-				<div id='bookacti-event-add-exception-container' class='bookacti-add-exception-container'>
-					<input type='date' id='bookacti-event-exception-date-picker' class='bookacti-exception-date-picker' max='2037-12-31' >
-					<button type='button' id='bookacti-event-add-exception-button' class='bookacti-add-exception-button'><?php esc_html_e( 'Add', 'booking-activities' ); ?></button>
-				</div>
-				<div>
-					<select multiple id='bookacti-event-exceptions-selectbox' class='bookacti-exceptions-selectbox' name='exceptions_dates[]'></select>
-					<button type='button' id='bookacti-event-delete-exceptions-button' class='bookacti-delete-exception-button'><?php esc_html_e( 'Delete selected', 'booking-activities' ); ?></button>
-				</div>
-			</div>
-		<?php 
+
 			do_action( 'bookacti_event_tab_repetition_after', $params );
 		}
 		?>
@@ -240,6 +230,10 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 						'callback'		=> 'bookacti_fill_template_tab_general',
 						'parameters'	=> array( 'templates_options' => $templates_options ),
 						'order'			=> 10 ),
+				array(	'label'			=> esc_html__( 'Availability', 'booking-activities' ),
+						'callback'		=> 'bookacti_fill_template_tab_availability',
+						'parameters'	=> array(),
+						'order'			=> 30 ),
 				array(	'label'			=> esc_html__( 'Editor', 'booking-activities' ),
 						'callback'		=> 'bookacti_fill_template_tab_editor',
 						'parameters'	=> array(),
@@ -285,7 +279,32 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 				bookacti_display_fields( $fields );
 				
 				do_action( 'bookacti_template_tab_general_after', $params );
-			} 
+			}
+			
+			
+			/**
+			 * Display the 'Availability' tab content of template settings
+			 * @since 1.13.0
+			 * @param array $params
+			 */
+			function bookacti_fill_template_tab_availability( $params = array() ) {
+				$templates_options = isset( $params[ 'templates_options' ] ) ? $params[ 'templates_options' ] : array();
+				do_action( 'bookacti_template_tab_availability_before', $params );
+				
+				$fields = array(
+					'days_off' => array(
+						'type'	=> 'custom',
+						'name'	=> 'days_off',
+						'value'	=> array(),
+						'title'	=> esc_html__( 'Days off', 'booking-activities' ),
+						'tip'	=> esc_html__( 'Enter your leave periods, no events will be displayed during them.', 'booking-activities' )
+					)
+				);
+				
+				bookacti_display_fields( $fields );
+				
+				do_action( 'bookacti_template_tab_availability_after', $params );
+			}
 			
 			
 			/**
@@ -811,6 +830,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 		/**
 		 * Display the 'Repetition' tab content of group of events settings
 		 * @since 1.12.0
+		 * @version 1.13.0
 		 * @param array $params
 		 */
 		function bookacti_fill_group_of_events_tab_repetition( $params ) {
@@ -925,29 +945,19 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 						'title'		=> esc_html__( 'Repeat to', 'booking-activities' ),
 						'options'	=> array( 'max' => '2037-12-31' ),
 						'tip'		=> esc_html__( 'Set the ending date of the repetition. The occurrences of the group of events starting after that date won\'t be generated.', 'booking-activities' )
+					),
+					'repeat_exceptions' => array(
+						'type'	=> 'custom',
+						'name'	=> 'repeat_exceptions',
+						'value'	=> array(),
+						'title'	=> esc_html__( 'Exceptions', 'booking-activities' ),
+						'tip'	=> esc_html__( 'You can add exception dates to the repetition. No event occurrences will be displayed on the exception dates.', 'booking-activities' )
 					)
 				);
 				bookacti_display_fields( $fields );
+			
+				do_action( 'bookacti_group_of_events_tab_repetition_after', $params );
 			?>
-		
-			<div id='bookacti-group-of-events-exceptions-container' class='bookacti-exceptions-container'>
-				<label class='bookacti-fullwidth-label'>
-				<?php 
-					esc_html_e( 'Exceptions', 'booking-activities' );
-					bookacti_help_tip( esc_html__( 'The occurrences of the group of events starting one of these dates won\'t be generated.', 'booking-activities' ) );
-				?>
-				</label>
-				<div id='bookacti-group-of-events-add-exception-container' class='bookacti-add-exception-container'>
-					<input type='date' id='bookacti-group-of-events-exception-date-picker' class='bookacti-exception-date-picker' max='2037-12-31'>
-					<button type='button' id='bookacti-group-of-events-add-exception-button' class='bookacti-add-exception-button'><?php esc_html_e( 'Add', 'booking-activities' ); ?></button>
-				</div>
-				<div>
-					<select multiple id='bookacti-group-of-events-exceptions-selectbox' class='bookacti-exceptions-selectbox' name='exceptions_dates[]'></select>
-					<button type='button' id='bookacti-group-of-events-delete-exceptions-button' class='bookacti-delete-exception-button'><?php esc_html_e( 'Delete selected', 'booking-activities' ); ?></button>
-				</div>
-			</div>
-		
-			<?php do_action( 'bookacti_group_of_events_tab_repetition_after', $params ); ?>
 		
 			<div class='bookacti-backend-settings-only-notice bookacti-info'>
 				<span class='dashicons dashicons-info'></span>

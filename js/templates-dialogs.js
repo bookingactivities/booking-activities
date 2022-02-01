@@ -1231,6 +1231,7 @@ function bookacti_dialog_unbind_event_occurrences( event ) {
 /**
  * Fill the repetition fields of the (group of) events dialog
  * @since 1.12.0
+ * @version 1.13.0
  * @param {Int} object_id
  * @param {String} object_type 'event' or 'group'
  */
@@ -1241,11 +1242,9 @@ function bookacti_fill_repetition_fields( object_id, object_type ) {
 	
 	var event = object_type === 'group' ? bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ][ 0 ] : bookacti.booking_system[ 'bookacti-template-calendar' ][ 'picked_events' ][ 0 ];
 	var event_start = moment.utc( event.start ).clone();
-	var repeat_data = { 'repeat_freq': 'none', 'repeat_step': 1, 'repeat_from': '', 'repeat_to': '', 'repeat_on': '', 'exceptions_dates': [] };
+	var repeat_data = { 'repeat_freq': 'none', 'repeat_step': 1, 'repeat_from': '', 'repeat_to': '', 'repeat_on': '', 'repeat_exceptions': [] };
 	if( object_id ) { repeat_data = object_type === 'group' ? bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_data' ][ object_id ] : bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ object_id ]; }
 	
-	var exceptions_dates = repeat_data.exceptions_dates;
-
 	var event_28_days	= event_start.clone().add( 28, 'd' ).locale( 'en' ); // The default repeat period duration is 28 days
 	var repeat_from     = event_start.clone().locale( 'en' ).format( 'YYYY-MM-DD' );
 	var repeat_to       = event_28_days.isBefore( moment.utc( '2037-12-31' ) ) ? event_28_days.format( 'YYYY-MM-DD' ) : '2037-12-31';
@@ -1271,7 +1270,6 @@ function bookacti_fill_repetition_fields( object_id, object_type ) {
 	$j( scope + ' input[name="repeat_freq"]' ).trigger( 'change' );
 	$j( scope + ' input[name="repeat_from"]' ).val( repeat_from );
 	$j( scope + ' input[name="repeat_to"]' ).val( repeat_to );
-	$j( scope + ' select[name="exceptions_dates[]"]' ).empty();
 	$j( scope + ' .bookacti-exception-date-picker' ).val( repeat_from );
 	if( ! exceptions_disabled ) {
 		$j( scope + ' .bookacti-exception-date-picker' ).attr( 'disabled', false );
@@ -1281,11 +1279,10 @@ function bookacti_fill_repetition_fields( object_id, object_type ) {
 		$j( scope + ' .bookacti-exception-date-picker' ).attr( 'disabled', true );
 	}
 	
-	// Fill the exceptions field
-	if( typeof exceptions_dates !== 'undefined' ) {
-		$j.each( exceptions_dates, function( i, value ) {
-			$j( scope + ' select[name="exceptions_dates[]"]' ).append( "<option class='bookacti-exception' value='" + value + "' >" + value + "</option>" );
-		});
+	// Fill the repeat exceptions
+	bookacti_delete_days_off_rows( $j( scope + ' .bookacti-days-off-table-container' ) );
+	if( ! $j.isEmptyObject( repeat_data.repeat_exceptions ) ) {
+		bookacti_fill_days_off( $j( scope + ' .bookacti-days-off-table-container' ), repeat_data.repeat_exceptions );
 	}
 	
 	// Fill the repeat_days checkboxes
