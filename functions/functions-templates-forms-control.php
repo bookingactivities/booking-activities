@@ -7,12 +7,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Get template default data
  * @since 1.12.0
+ * @version 1.13.0
  */
 function bookacti_get_template_default_data() {
 	return apply_filters( 'bookacti_template_default_data', array(
-		'id' => 0,
-		'title' => esc_html__( 'Calendar', 'booking-activities' ),
-		'active' => 1
+		'id'       => 0,
+		'title'    => esc_html__( 'Calendar', 'booking-activities' ),
+		'days_off' => array(),
+		'active'   => 1
 	));
 }
 
@@ -20,14 +22,12 @@ function bookacti_get_template_default_data() {
 /**
  * Get template default meta
  * @since 1.12.0
- * @version 1.13.0
  */
 function bookacti_get_template_default_meta() {
 	return apply_filters( 'bookacti_template_default_meta', array(
 		'minTime'		=> '00:00',
 		'maxTime'		=> '00:00',
-		'snapDuration'	=> '00:05',
-		'days_off'		=> array()
+		'snapDuration'	=> '00:05'
 	));
 }
 
@@ -137,12 +137,18 @@ function bookacti_sanitize_days_off( $days_off_raw ) {
 	// Sanitize dates
 	$days_off = array();
 	foreach( $days_off_raw as $off_period ) {
-		$from		= ! empty( $off_period[ 'from' ] ) && bookacti_sanitize_date( $off_period[ 'from' ] ) ? bookacti_sanitize_date( $off_period[ 'from' ] ) : '';
-		$to			= ! empty( $off_period[ 'to' ] ) && bookacti_sanitize_date( $off_period[ 'to' ] ) ? bookacti_sanitize_date( $off_period[ 'to' ] ) : '';
+		$from = ! empty( $off_period[ 'from' ] ) ? bookacti_sanitize_date( $off_period[ 'from' ] ) : '';
+		$to   = ! empty( $off_period[ 'to' ] ) ? bookacti_sanitize_date( $off_period[ 'to' ] ) : '';
 		
-		$from_dt	= $from ? new DateTime( $from ) : null;
-		$to_dt		= $to ? new DateTime( $to ) : null;
-		if( ! $from_dt || ! $to_dt ) { continue; } 
+		// If a field is empty, use the other field value
+		if( $from && ! $to ) { $to = $from; }
+		if( ! $from && $to ) { $from = $to; }
+		if( ! $from || ! $to ) { continue; }
+		
+		// If to is after from, revert the fields value
+		try { $from_dt = new DateTime( $from ); } catch ( Exception $e ) { continue; }
+		try { $to_dt = new DateTime( $to ); } catch ( Exception $e ) { continue; }
+		if( ! $from_dt || ! $to_dt ) { continue; }
 		if( $from_dt > $to_dt ) { $temp_from = $from; $from = $to; $to = $temp_from; } 
 		
 		$days_off[] = array( 'from' => $from, 'to' => $to );
@@ -183,27 +189,6 @@ function bookacti_sanitize_days_off( $days_off_raw ) {
 	return array_values( $days_off );
 }
 
-
-/**
- * Check if a date is in days off
- * @since 1.13.0
- * @param string $date YYYY-mm-dd
- * @param array $days_off (see bookacti_sanitize_days_off)
- * @return boolean
- */
-function bookacti_is_date_in_days_off( $date, $days_off ) {
-	try { $date_dt = new DateTime( $date ); }
-	catch ( Exception $ex ) { return true; }
-	
-	$in_days_off = false;
-	foreach( $days_off as $off_period ) {
-		$from_dt = new DateTime( $off_period[ 'from' ] );
-		$to_dt = new DateTime( $off_period[ 'to' ] );
-		if( $date_dt >= $from_dt && $date_dt <= $to_dt ) { $in_days_off = true; break; }
-	}
-	
-	return $in_days_off;
-}
 
 
 
@@ -488,7 +473,7 @@ function bookacti_sanitize_repeat_data( $object_data, $object_type = 'event' ) {
 		if( $object_type === 'group' ) {
 			// Get the occurrences
 			$group_i = $data[ 'id' ] ? $data[ 'id' ] : ( rand() * -1 );
-			$groups_occurrences = bookacti_get_occurrences_of_repeated_groups_of_events( array( $group_i => $data ), array( 'past_events' => true ) );
+			$groups_occurrences = bookacti_get_occurrences_of_repeated_groups_of_events( array( $group_i => $data ), array( 'past_events' => true, 'skip_exceptions' => false ) );
 			$group_occurrences = ! empty( $groups_occurrences[ $group_i ] ) ? $groups_occurrences[ $group_i ] : array();
 
 			// Get the first events of each group occurrence
@@ -504,7 +489,7 @@ function bookacti_sanitize_repeat_data( $object_data, $object_type = 'event' ) {
 		}
 		
 		// Restrict the repeat period to the actual first and last occurrences
-		$bounding_events = $object_type === 'event' ? bookacti_get_occurrences_of_repeated_event( (object) $data, array( 'repeat_exceptions' => $data[ 'repeat_exceptions' ], 'past_events' => true, 'bounding_only' => true ) ) : $group_occurrences_bounding_events;
+		$bounding_events = $object_type === 'event' ? bookacti_get_occurrences_of_repeated_event( (object) $data, array( 'past_events' => true, 'bounding_only' => true ) ) : $group_occurrences_bounding_events;
 		if( $bounding_events ) {
 			$bounding_events_keys = array_keys( $bounding_events );
 			$last_key = end( $bounding_events_keys );
@@ -543,7 +528,7 @@ function bookacti_sanitize_repeat_data( $object_data, $object_type = 'event' ) {
 			$repeat_from_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $data[ 'repeat_from' ] . ' 00:00:00' );
 			$repeat_to_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $data[ 'repeat_to' ] . ' 23:59:59' );
 			
-			$occurrences = $object_type === 'event' ? bookacti_get_occurrences_of_repeated_event( (object) $data, array( 'past_events' => true ) ) : $group_occurrences_events;
+			$occurrences = $object_type === 'event' ? bookacti_get_occurrences_of_repeated_event( (object) $data, array( 'past_events' => true, 'skip_exceptions' => false ) ) : $group_occurrences_events;
 			foreach( $data[ 'repeat_exceptions' ] as $i => $excep_period ) {
 				// Remove exceptions out of the repeat period
 				$excep_period_from_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $excep_period[ 'from' ] . ' 00:00:00' );
@@ -647,6 +632,7 @@ function bookacti_validate_event_data( $data ) {
 /**
  * Get group of events default data
  * @since 1.12.0
+ * @version 1.13.0
  */
 function bookacti_get_group_of_events_default_data() {
 	return apply_filters( 'bookacti_group_of_events_default_data', array(
@@ -658,6 +644,7 @@ function bookacti_get_group_of_events_default_data() {
 		'repeat_on' => '',
 		'repeat_from' => '',
 		'repeat_to' => '',
+		'repeat_exceptions' => array(),
 		'active' => 1
 	));
 }
@@ -690,6 +677,7 @@ function bookacti_sanitize_group_of_events_data( $raw_data ) {
 		'str'		=> array( 'category_title' ),
 		'str_id'	=> array( 'repeat_freq', 'repeat_on' ),
 		'date'		=> array( 'repeat_from', 'repeat_to' ),
+		'array'		=> array( 'repeat_exceptions' ),
 		'bool'		=> array( 'active' )
 	);
 	$data = bookacti_sanitize_values( array_merge( $default_data, $default_meta, array( 'category_title' => '' ) ), $raw_data, $keys_by_type );

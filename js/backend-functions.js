@@ -188,7 +188,7 @@ function bookacti_init_add_and_remove_items() {
 
 /**
  * Empty all dialog forms fields
- * @version 1.8.2
+ * @version 1.13.0
  * @param {string} scope
  */
 function bookacti_empty_all_dialog_forms( scope ) {
@@ -208,7 +208,6 @@ function bookacti_empty_all_dialog_forms( scope ) {
 	$j( scope + 'input[type="checkbox"]' ).prop( 'checked', false );
 	$j( scope + 'input[type="radio"]' ).prop( 'checked', false );
 	$j( scope + 'option' ).prop( 'selected', false );
-	$j( scope + '.exception' ).remove();
 	$j( scope + 'select.bookacti-add-new-items-select-box option' ).show().attr( 'disabled', false );
 	$j( scope + 'select.bookacti-items-select-box option' ).remove();
 	$j( scope + '.bookacti-duration-hint' ).remove();

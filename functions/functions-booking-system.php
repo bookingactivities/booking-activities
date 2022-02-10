@@ -102,7 +102,7 @@ function bookacti_get_booking_system( $atts ) {
 /**
  * Get booking system data
  * @since 1.7.4
- * @version 1.12.2
+ * @version 1.13.0
  * @param array $atts (see bookacti_format_booking_system_attributes())
  * @return array
  */
@@ -153,7 +153,7 @@ function bookacti_get_booking_system_data( $atts ) {
 			// Get bounding events
 			$bounding_events = array();
 			if( $atts[ 'groups_only' ] ) {
-				$bounding_groups = ! in_array( 'none', $atts[ 'group_categories' ], true ) ? bookacti_get_groups_of_events( array( 'templates' => $atts[ 'calendars' ], 'group_categories' => $atts[ 'group_categories' ], 'interval' => $availability_period, 'interval_started' => 1, 'past_events' => $atts[ 'past_events' ], 'get_exceptions' => 1, 'data_only' => 1 ) ) : array();
+				$bounding_groups = ! in_array( 'none', $atts[ 'group_categories' ], true ) ? bookacti_get_groups_of_events( array( 'templates' => $atts[ 'calendars' ], 'group_categories' => $atts[ 'group_categories' ], 'interval' => $availability_period, 'interval_started' => 1, 'past_events' => $atts[ 'past_events' ], 'data_only' => 1 ) ) : array();
 				$bounding_events = bookacti_get_bounding_events_from_groups_of_events_heuristic( $bounding_groups, array( 'past_events' => $atts[ 'past_events' ], 'interval' => $availability_period ) );
 			} else if( $atts[ 'bookings_only' ] ) {
 				$bounding_events = bookacti_fetch_booked_events( array( 'templates' => $atts[ 'calendars' ], 'activities' => $atts[ 'activities' ], 'status' => $atts[ 'status' ], 'users' => $atts[ 'user_id' ] ? array( $atts[ 'user_id' ] ) : array(), 'past_events' => $atts[ 'past_events' ], 'interval' => $availability_period, 'bounding_only' => 1 ) );
@@ -1834,7 +1834,6 @@ function bookacti_is_picked_group_of_events_available_on_form( $picked_event_gro
  * @param array $events Array of objects events from database
  * @param array $raw_args {
  *  @type boolean $skip_exceptions Whether to retrieve occurrence on exceptions
- *  @type boolean $get_exceptions Whether to add exceptions in events data
  *  @type boolean $past_events Whether to compute past events
  *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
  *  @type boolean $bounding_only Whether to retrieve the first and the last events only
@@ -1849,7 +1848,6 @@ function bookacti_get_events_array_from_db_events( $events, $raw_args = array() 
 	$default_args = array(
 		'interval' => array(),
 		'skip_exceptions' => 1,
-		'get_exceptions' => 0,
 		'past_events' => 0,
 		'bounding_only' => 0,
 		'data_only' => 0
@@ -1863,12 +1861,9 @@ function bookacti_get_events_array_from_db_events( $events, $raw_args = array() 
 		if( $event_id ) { $event_ids[] = $event_id; }
 	}
 	
-	// Get event exceptions
-	$exceptions_per_event = $args[ 'get_exceptions' ] || $args[ 'skip_exceptions' ] ? bookacti_get_exceptions_by_event( array( 'events' => $event_ids ) ) : array();
-	
 	// Keep only the first and the last events
 	if( $args[ 'bounding_only' ] && ! $args[ 'data_only' ] ) {
-		$events = bookacti_get_bounding_events_from_db_events( $events, array_merge( $args, array( 'exceptions' => $exceptions_per_event ) ) );
+		$events = bookacti_get_bounding_events_from_db_events( $events, $args );
 	}
 	if( ! $events ) { return $events_array; }
 	
@@ -1876,6 +1871,9 @@ function bookacti_get_events_array_from_db_events( $events, $raw_args = array() 
 	$events_meta = bookacti_get_metadata( 'event', $event_ids );
 	
 	foreach( $events as $event ) {
+		$event->repeat_exceptions = ! empty( $event->repeat_exceptions ) ? maybe_unserialize( $event->repeat_exceptions ) : array();
+		if( ! is_array( $event->repeat_exceptions ) ) { $event->repeat_exceptions = array(); }
+		
 		$event_id = ! empty( $event->event_id ) ? intval( $event->event_id ) : ( ! empty( $event->id ) ? intval( $event->id ) : 0 );
 		$event_fc_data = array(
 			'id'				=> $event_id,
@@ -1895,9 +1893,8 @@ function bookacti_get_events_array_from_db_events( $events, $raw_args = array() 
 			'repeat_on'			=> $event->repeat_on,
 			'repeat_from'		=> $event->repeat_from,
 			'repeat_to'			=> $event->repeat_to,
-			'repeat_exceptions'	=> maybe_unserialize( $event->repeat_exceptions ),
+			'repeat_exceptions'	=> $event->repeat_exceptions,
 			'settings'			=> isset( $events_meta[ $event_id ] ) ? $events_meta[ $event_id ] : array(),
-			'exceptions_dates'	=> $args[ 'get_exceptions' ] && ! empty( $exceptions_per_event[ $event_id ] ) ? $exceptions_per_event[ $event_id ] : array()
 		);
 		
 		// Build events data array
@@ -1908,7 +1905,6 @@ function bookacti_get_events_array_from_db_events( $events, $raw_args = array() 
 			if( $event->repeat_freq === 'none' ) {
 				$events_array[ 'events' ][] = $event_fc_data;
 			} else {
-				$args[ 'exceptions_dates' ]	= $args[ 'skip_exceptions' ] && ! empty( $exceptions_per_event[ $event_id ] ) ? $exceptions_per_event[ $event_id ] : array();
 				$new_occurrences			= bookacti_get_occurrences_of_repeated_event( $event, $args );
 				$events_array[ 'events' ]	= array_merge( $events_array[ 'events' ], $new_occurrences );
 			}
@@ -1922,11 +1918,10 @@ function bookacti_get_events_array_from_db_events( $events, $raw_args = array() 
 /**
  * Keep only the first and the last events
  * @since 1.8.0
- * @version 1.12.0
+ * @version 1.13.0
  * @param array $events
  * @param array $raw_args {
  *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
- *  @type array $exceptions array( event_id => array( 'Y-m-d', ... ) )
  *  @type boolean $skip_exceptions Whether to retrieve occurrence on exceptions
  *  @type boolean $past_events Whether to include past events
  * }
@@ -1937,7 +1932,6 @@ function bookacti_get_bounding_events_from_db_events( $events, $raw_args = array
 	
 	$default_args = array(
 		'interval' => array(),
-		'exceptions' => array(),
 		'skip_exceptions' => 1,
 		'past_events' => 0
 	);
@@ -1950,6 +1944,9 @@ function bookacti_get_bounding_events_from_db_events( $events, $raw_args = array
 	$max_event = false;
 	
 	foreach( $events as $event ) {
+		$event->repeat_exceptions = ! empty( $event->repeat_exceptions ) ? maybe_unserialize( $event->repeat_exceptions ) : array();
+		if( ! is_array( $event->repeat_exceptions ) ) { $event->repeat_exceptions = array(); }
+		
 		$event_id = ! empty( $event->event_id ) ? intval( $event->event_id ) : ( ! empty( $event->id ) ? intval( $event->id ) : 0 );
 		$single_events = array();
 		
@@ -1967,7 +1964,6 @@ function bookacti_get_bounding_events_from_db_events( $events, $raw_args = array
 			 && ! empty( $bounding_dates[ 'last' ] ) && $to_dt <= $bounding_dates[ 'last' ] ) { continue; }
 			
 			// Get bounding occurrences
-			$args[ 'exceptions_dates' ] = $args[ 'skip_exceptions' ] && ! empty( $args[ 'exceptions' ][ $event_id ] ) ? $args[ 'exceptions' ][ $event_id ] : array();
 			$occurrences = bookacti_get_occurrences_of_repeated_event( $event, $args );
 			
 			// Add occurrences as single events
@@ -2006,12 +2002,11 @@ function bookacti_get_bounding_events_from_db_events( $events, $raw_args = array
 /**
  * Get occurrences of repeated events
  * @since 1.8.4 (was bookacti_get_occurences_of_repeated_event)
- * @version 1.12.0
+ * @version 1.13.0
  * @param object $event Event data 
  * @param array $raw_args {
  *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
- *  @type array $exceptions_dates array( 'Y-m-d', ... )
- *  @type boolean $skip_exceptions Whether to generate events on exceptions dates
+ *  @type boolean $skip_exceptions Whether to generate events on repeat exceptions
  *  @type boolean $past_events Whether to compute past events
  *  @type boolean $bounding_only Whether to retrieve the first and the last events only
  * }
@@ -2022,7 +2017,6 @@ function bookacti_get_occurrences_of_repeated_event( $event, $raw_args = array()
 	
 	$default_args = array(
 		'interval' => array(),
-		'exceptions_dates' => array(),
 		'skip_exceptions' => 1,
 		'past_events' => 0,
 		'bounding_only' => 0
@@ -2050,6 +2044,7 @@ function bookacti_get_occurrences_of_repeated_event( $event, $raw_args = array()
 	$event_end			= new DateTime( $event->end, $timezone );
 	$event_duration		= $event_start->diff( $event_end );
 	$event_start_time	= substr( $event->start, 11 );
+	$repeat_exceptions	= ! empty( $event->repeat_exceptions ) && is_array( $event->repeat_exceptions ) ? $event->repeat_exceptions : array();
 	
 	// Permute start and end if start > end
 	if( $interval_start && $interval_end && $interval_start > $interval_end ) { $temp_interval_start = clone $interval_start; $interval_start = clone $interval_end; $interval_end = $temp_interval_start; }
@@ -2078,8 +2073,8 @@ function bookacti_get_occurrences_of_repeated_event( $event, $raw_args = array()
 		if( $operation === 'add' ) { $loop->add( $repeat_interval ); $iterate = $loop < $end_loop; } 
 		else { $loop->sub( $repeat_interval ); $iterate = $loop > $start_loop; }
 		
-		// Check if the occurrence is on an exception
-		if( in_array( $occurrence_start->format( 'Y-m-d' ), $args[ 'exceptions_dates' ], true ) ) { continue; }
+		// Check if the occurrence is in an exception
+		if( $args[ 'skip_exceptions' ] && $repeat_exceptions && bookacti_is_date_in_days_off( $occurrence_start->format( 'Y-m-d' ), $repeat_exceptions ) ) { continue; }
 		
 		// Check if the occurrence is in the interval to be rendered
 		if( $args[ 'interval' ] ) {
@@ -2802,40 +2797,24 @@ function bookacti_sanitize_events_interval( $interval_raw ) {
 
 
 /**
- * Get exceptions dates by event
- * @since 1.7.0
- * @version 1.12.6
- * @param array $raw_args {
- *  @type array $templates
- *  @type array $events
- *  @type array $event_groups
- *  @type array $type "event" or "group_of_events"
- * }
- * @return array
+ * Check if a date is in days off
+ * @since 1.13.0
+ * @param string $date YYYY-mm-dd
+ * @param array $days_off (see bookacti_sanitize_days_off)
+ * @return boolean
  */
-function bookacti_get_exceptions_by_event( $raw_args = array() ) {
-	$default_args = array(
-		'templates' => array(),
-		'events' => array(),
-		'event_groups' => array(),
-		'types' => array()
-	);
-	$args = wp_parse_args( $raw_args, $default_args );
+function bookacti_is_date_in_days_off( $date, $days_off ) {
+	try { $date_dt = new DateTime( $date ); }
+	catch ( Exception $ex ) { return false; }
 	
-	$exceptions = bookacti_get_exceptions( $args );
-	
-	// Order exceptions by event id
-	$exceptions_by_event = array();
-	if( $exceptions ) {
-		foreach( $exceptions as $exception ) {
-			if( ! $exception[ 'exception_value' ] ) { continue; }
-			$event_id = $exception[ 'object_type' ] === 'group_of_events' ? 'G' . $exception[ 'object_id' ] : $exception[ 'object_id' ];
-			if( ! isset( $exceptions_by_event[ $event_id ] ) ) { $exceptions_by_event[ $event_id ] = array(); }
-			$exceptions_by_event[ $event_id ][] = $exception[ 'exception_value' ];
-		}
+	$in_days_off = false;
+	foreach( $days_off as $off_period ) {
+		$from_dt = new DateTime( $off_period[ 'from' ] );
+		$to_dt = new DateTime( $off_period[ 'to' ] );
+		if( $date_dt >= $from_dt && $date_dt <= $to_dt ) { $in_days_off = true; break; }
 	}
 	
-	return apply_filters( 'bookacti_exceptions_by_event', $exceptions_by_event, $args );
+	return $in_days_off;
 }
 
 
@@ -3176,7 +3155,6 @@ function bookacti_export_events_page( $atts, $calname = '', $caldesc = '', $sequ
  *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
  *  @type boolean $interval_started Whether to retrieve started groups in interval
  *  @type boolean $skip_exceptions Whether to retrieve occurrence on exceptions
- *  @type boolean $get_exceptions Whether to add exceptions in groups data
  *  @type boolean $past_events Whether to compute past groups of events
  *  @type boolean $data_only Whether to retrieve the groups data only, not the occurrences
  * }
@@ -3190,7 +3168,6 @@ function bookacti_get_groups_of_events_array_from_db_groups_of_events( $groups, 
 		'interval' => array(),
 		'interval_started' => 0,
 		'skip_exceptions' => 1,
-		'get_exceptions' => 0,
 		'past_events' => 0,
 		'data_only' => 0
 	);
@@ -3200,9 +3177,6 @@ function bookacti_get_groups_of_events_array_from_db_groups_of_events( $groups, 
 	$group_ids = array();
 	foreach( $groups as $group ) { $group_ids[] = $group->id; }
 	
-	// Get group exceptions
-	$exceptions_per_group = $args[ 'get_exceptions' ] || $args[ 'skip_exceptions' ] ? bookacti_get_exceptions_by_event( array( 'event_groups' => $group_ids, 'types' => array( 'group_of_events' ) ) ) : array();
-	
 	// Get groups meta
 	$groups_meta = bookacti_get_metadata( 'group_of_events', $group_ids );
 	
@@ -3211,6 +3185,9 @@ function bookacti_get_groups_of_events_array_from_db_groups_of_events( $groups, 
 	
 	// Build groups data array
 	foreach( $groups as $group ) {
+		$group->repeat_exceptions = ! empty( $group->repeat_exceptions ) ? maybe_unserialize( $group->repeat_exceptions ) : array();
+		if( ! is_array( $group->repeat_exceptions ) ) { $group->repeat_exceptions = array(); }
+		
 		$group_id = intval( $group->id );
 		$groups_array[ 'data' ][ $group_id ] = array(
 			'id'				=> $group_id,
@@ -3225,16 +3202,14 @@ function bookacti_get_groups_of_events_array_from_db_groups_of_events( $groups, 
 			'repeat_step'		=> intval( $group->repeat_step ),
 			'repeat_on'			=> $group->repeat_on,
 			'repeat_from'		=> $group->repeat_from,
-			'repeat_exceptions'	=> maybe_unserialize( $group->repeat_exceptions ),
+			'repeat_exceptions'	=> $group->repeat_exceptions,
 			'repeat_to'			=> $group->repeat_to,
 			'events'			=> isset( $groups_events[ $group_id ] ) ? $groups_events[ $group_id ] : array(),
 			'settings'			=> isset( $groups_meta[ $group_id ] ) ? $groups_meta[ $group_id ] : array(),
-			'exceptions_dates'	=> $args[ 'get_exceptions' ] && ! empty( $exceptions_per_group[ 'G' . $group_id ] ) ? $exceptions_per_group[ 'G' . $group_id ] : array()
 		);
 		$groups_array[ 'data' ][ $group_id ][ 'settings' ][ 'started_groups_bookable' ] = ! empty( $group->started_groups_bookable ) ? 1 : 0;
 	}
 	
-	$args[ 'exceptions' ] = $exceptions_per_group;
 	$groups_array[ 'groups' ] = ! $args[ 'data_only' ] ? bookacti_get_occurrences_of_repeated_groups_of_events( $groups_array[ 'data' ], $args ) : array();
 	
 	return $groups_array;
@@ -3341,9 +3316,9 @@ function bookacti_fetch_events_of_group_of_events_occurrences( $groups_occurrenc
 /**
  * Get the bounding dates of groups of events without generating their occurrences. The result is theorical and may not be accurate.
  * @since 1.12.0 (was bookacti_fetch_grouped_events)
- * @version 1.12.9
+ * @version 1.13.0
  * @global wpdb $wpdb
- * @param array $groups See bookacti_get_groups_of_events with data_only and get_exceptions
+ * @param array $groups See bookacti_get_groups_of_events
  * @param array $raw_args {
  *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
  *  @type boolean $past_events Whether to take past events into account
@@ -3381,18 +3356,19 @@ function bookacti_get_bounding_events_from_groups_of_events_heuristic( $groups, 
 			// The occurrences of the groups are based on its first event, so compute the occurrences of the first event
 			$first_event = reset( $group[ 'events' ] );
 			$dummy_event = array( 
-				'start'			=> $first_event[ 'start' ],
-				'end'			=> $first_event[ 'end' ],
-				'repeat_freq'	=> $group[ 'repeat_freq' ],
-				'repeat_step'	=> $group[ 'repeat_step' ],
-				'repeat_on'		=> $group[ 'repeat_on' ],
-				'repeat_from'	=> $group[ 'repeat_from' ],
-				'repeat_to'		=> $group[ 'repeat_to' ],
+				'template_id'       => $group[ 'template_id' ],
+				'start'             => $first_event[ 'start' ],
+				'end'               => $first_event[ 'end' ],
+				'repeat_freq'       => $group[ 'repeat_freq' ],
+				'repeat_step'       => $group[ 'repeat_step' ],
+				'repeat_on'         => $group[ 'repeat_on' ],
+				'repeat_from'       => $group[ 'repeat_from' ],
+				'repeat_to'         => $group[ 'repeat_to' ],
+				'repeat_exceptions' => $group[ 'repeat_exceptions' ]
 			);
 
 			$dummy_args = array( 
 				'interval' => $args[ 'interval' ],
-				'exceptions_dates' => ! empty( $group[ 'exceptions_dates' ] ) ? array_filter( array_map( 'bookacti_sanitize_date', $group[ 'exceptions_dates' ] ) ) : array(),
 				'skip_exceptions' => 1,
 				'past_events' => 1, // Get past occurrences too, we need to make the past / started groups check later to take the whole group into account
 				'bounding_only' => 1
@@ -3463,13 +3439,12 @@ function bookacti_get_bounding_events_from_groups_of_events_heuristic( $groups, 
 /**
  * Get occurrences of repeated events
  * @since 1.12.0
- * @version 1.12.9
+ * @version 1.13.0
  * @param object $groups Groups data 
  * @param array $raw_args {
  *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
  *  @type boolean $interval_started Whether to retrieve started groups in interval
- *  @type array $exceptions array( group_id => array( 'Y-m-d', ... ), ... )
- *  @type boolean $skip_exceptions Whether to generate groups of events on exceptions dates
+ *  @type boolean $skip_exceptions Whether to generate groups of events on repeat exceptions
  *  @type boolean $past_events Whether to compute past groups of events
  * }
  * @return array
@@ -3481,7 +3456,6 @@ function bookacti_get_occurrences_of_repeated_groups_of_events( $groups, $raw_ar
 	// Sanitize args
 	$default_args = array(
 		'interval' => array(),
-		'exceptions' => array(),
 		'interval_started' => 0,
 		'skip_exceptions' => 1,
 		'past_events' => 0
@@ -3567,13 +3541,15 @@ function bookacti_get_occurrences_of_repeated_groups_of_events( $groups, $raw_ar
 		// The occurrences of the groups are based on its first event, so compute the occurrences of the first event
 		$first_event = reset( $group[ 'events' ] );
 		$dummy_event = array( 
-			'start'			=> $first_event[ 'start' ],
-			'end'			=> $first_event[ 'end' ],
-			'repeat_freq'	=> $group[ 'repeat_freq' ],
-			'repeat_step'	=> $group[ 'repeat_step' ],
-			'repeat_on'		=> $group[ 'repeat_on' ],
-			'repeat_from'	=> $group[ 'repeat_from' ],
-			'repeat_to'		=> $group[ 'repeat_to' ],
+			'template_id'       => $group[ 'template_id' ],
+			'start'             => $first_event[ 'start' ],
+			'end'               => $first_event[ 'end' ],
+			'repeat_freq'       => $group[ 'repeat_freq' ],
+			'repeat_step'       => $group[ 'repeat_step' ],
+			'repeat_on'         => $group[ 'repeat_on' ],
+			'repeat_from'       => $group[ 'repeat_from' ],
+			'repeat_to'         => $group[ 'repeat_to' ],
+			'repeat_exceptions' => $group[ 'repeat_exceptions' ],
 		);
 		
 		// Get the occurrences of the first event of the group (it will determine the other group occurrences)
@@ -3581,7 +3557,6 @@ function bookacti_get_occurrences_of_repeated_groups_of_events( $groups, $raw_ar
 			'interval' => $args[ 'interval' ],
 			'skip_exceptions' => $args[ 'skip_exceptions' ],
 			'past_events' => 1, // Get past occurrences too, we need to make the past / started groups check later to take the whole group into account
-			'exceptions_dates' => $args[ 'skip_exceptions' ] && ! empty( $args[ 'exceptions' ][ 'G' . $group_id ] ) ? array_filter( array_map( 'bookacti_sanitize_date', $args[ 'exceptions' ][ 'G' . $group_id ] ) ) : array()
 		);
 		
 		// If the interval should include started groups

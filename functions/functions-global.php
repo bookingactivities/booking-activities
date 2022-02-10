@@ -339,7 +339,7 @@ function bookacti_generate_ical( $vevents, $vcalendar = array() ) {
 /**
  * Get the variables used with javascript
  * @since 1.8.0
- * @version 1.12.4
+ * @version 1.13.0
  * @return array
  */
 function bookacti_get_js_variables() {
@@ -485,8 +485,6 @@ function bookacti_get_js_variables() {
 				'error_activity_duration_is_null'	=> esc_html__( 'The activity duration should not be null.', 'booking-activities' ),
 				'error_event_not_btw_from_and_to'	=> esc_html__( 'The selected event should be included in the period in which it will be repeated.', 'booking-activities' ),
 				'error_freq_not_allowed'			=> esc_html__( 'Error: The repetition frequency is not a valid value.', 'booking-activities' ),
-				'error_excep_not_btw_from_and_to'	=> esc_html__( 'Exception dates should be included in the repetition period.', 'booking-activities' ),
-				'error_excep_duplicated'			=> esc_html__( 'Exceptions should all have a different date.', 'booking-activities' ),
 				'error_no_templates_for_activity'	=> esc_html__( 'The activity must be bound to at least one calendar.', 'booking-activities' ),
 				'error_select_at_least_two_events'	=> esc_html__( 'You must select at least two events.', 'booking-activities' ),
 				'error_no_template_selected'		=> esc_html__( 'You must select a calendar first.', 'booking-activities' ),
@@ -1928,33 +1926,6 @@ function bookacti_format_delay( $seconds, $precision = 3 ) {
 	}
 
 	return apply_filters( 'bookacti_formatted_delay', $formatted_delay, $seconds, $precision );
-}
-
-
-/**
- * Sanitize array of dates
- * @since 1.2.0 (replace bookacti_sanitize_exceptions)
- * @version 1.7.13
- * @param array|string $exceptions Date array expected (format "Y-m-d")
- * @return array
- */
-function bookacti_sanitize_date_array( $exceptions ) {
-	if( ! empty( $exceptions ) ) {
-		if( is_array( $exceptions ) ) {
-			// Remove entries that do not correspond to a date
-			foreach( $exceptions as $i => $exception ) {
-				$exceptions[ $i ] = bookacti_sanitize_date( $exception );
-				if( ! $exceptions[ $i ] ) { unset( $exceptions[ $i ] ); }
-			}
-			return $exceptions;
-		} else {
-			$exceptions = bookacti_sanitize_date( $exceptions );
-			if( $exceptions ) {
-				return array( $exceptions );
-			}
-		}
-	}
-	return array();
 }
 
 

@@ -201,9 +201,11 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 				'repeat_exceptions' => array(
 					'type'	=> 'custom',
 					'name'	=> 'repeat_exceptions',
+					'id'	=> 'bookacti-event-repeat-exceptions',
+					'class'	=> 'bookacti-repeat_exceptions',
 					'value'	=> array(),
 					'title'	=> esc_html__( 'Exceptions', 'booking-activities' ),
-					'tip'	=> esc_html__( 'You can add exception dates to the repetition. No event occurrences will be displayed on the exception dates.', 'booking-activities' )
+					'tip'	=> esc_html__( 'No occurrences will be displayed between these dates.', 'booking-activities' )
 				)
 			);
 			bookacti_display_fields( $fields );
@@ -907,7 +909,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 						'name'		=> 'repeat_monthly_type',
 						'type'		=> 'select',
 						'id'		=> 'bookacti-group-of-events-repeat-monthly_type',
-						'id'		=> 'bookacti-repeat-monthly_type',
+						'class'		=> 'bookacti-repeat-monthly_type',
 						/* translators: followed by a selectox with the following values. E.g.: Repeat on the 21st of each month / Repeat on the 2nd Monday of each month / Repeat on the last day of each month / Repeat on the last Monday of each month */
 						'title'		=> esc_html_x( 'Repeat on', 'monthly repetition', 'booking-activities' ),
 						'options'	=> array( 
@@ -949,9 +951,11 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 					'repeat_exceptions' => array(
 						'type'	=> 'custom',
 						'name'	=> 'repeat_exceptions',
+						'id'	=> 'bookacti-group-of-events-repeat-exceptions',
+						'class'	=> 'bookacti-repeat_exceptions',
 						'value'	=> array(),
 						'title'	=> esc_html__( 'Exceptions', 'booking-activities' ),
-						'tip'	=> esc_html__( 'You can add exception dates to the repetition. No event occurrences will be displayed on the exception dates.', 'booking-activities' )
+						'tip'	=> esc_html__( 'No occurrences will be displayed between these dates.', 'booking-activities' )
 					)
 				);
 				bookacti_display_fields( $fields );

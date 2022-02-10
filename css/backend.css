@@ -126,7 +126,6 @@ ul[id$='-select-box-results'] li[aria-disabled='true'] { display: none; }
 .bookacti-input-error		{ border-color: #f00 !important; }
 .bookacti-form-error		{ color: #f00; font-style: italic; }
 .bookacti-form-warning		{ color: orange; font-style: italic; }
-.bookacti-error-exception	{ color: orange; }
 
 .bookacti-backend-dialog	{ display: none; }
 

@@ -81,7 +81,7 @@ add_action( 'wp_ajax_bookactiInsertEvent', 'bookacti_controller_insert_event' );
 /**
  * AJAX Controller - Update event dates (move or resize an event in the editor)
  * @since 1.10.0 (was bookacti_controller_move_or_resize_event)
- * @version 1.12.0
+ * @version 1.13.0
  */
 function bookacti_controller_update_event_dates() {
 	// Check nonce
@@ -120,9 +120,7 @@ function bookacti_controller_update_event_dates() {
 	$delta_seconds = $new_event_start_dt->format( 'U' ) - $old_event_start_dt->format( 'U' );
 	
 	// Get the event's occurrences
-	$events_exceptions = bookacti_get_exceptions_by_event( array( 'events' => array( $event_id ) ) );
-	$event_exceptions = isset( $events_exceptions[ $event_id ] ) ? $events_exceptions[ $event_id ] : array();
-	$occurrences = bookacti_get_occurrences_of_repeated_event( $old_event, array( 'exceptions_dates' => $event_exceptions, 'past_events' => 1 ) );
+	$occurrences = bookacti_get_occurrences_of_repeated_event( $old_event, array( 'past_events' => 1 ) );
 	
 	// Get the bookings to reschedule
 	$filters = bookacti_format_booking_filters( array( 'event_id' => $event_id ) );
@@ -180,16 +178,13 @@ function bookacti_controller_update_event_dates() {
 	
 	// Update the event
 	$event_data = array_merge( (array) $old_event, array( 'start' => $new_event_start, 'end' => $new_event_end, 'repeat_from' => $new_event_repeat_from, 'repeat_to' => $new_event_repeat_to ) );
-	$event_data = bookacti_sanitize_event_data( array_merge( $event_data, array( 'exceptions_dates' => $event_exceptions ) ) );
+	$event_data = bookacti_sanitize_event_data( $event_data );
 	$updated = bookacti_update_event( $event_data );
 
 	if( $updated === false ){ bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_updated' ), 'update_event_dates' ); }
 	if( $updated === 0 )	{ bookacti_send_json( array( 'status' => 'no_changes' ), 'update_event_dates' ); }
 	
-	// Update exceptions
 	$new_event = (object) $event_data;
-	$updated_excep = bookacti_update_exceptions( $event_id, $event_data[ 'exceptions_dates' ] );
-	
 	$new_event_start_time = substr( $new_event->start, 11, 8 );
 	$new_event_end_time	= substr( $new_event->end, 11, 8 );
 	
@@ -224,7 +219,7 @@ add_action( 'wp_ajax_bookactiUpdateEventDates', 'bookacti_controller_update_even
 /**
  * AJAX Controller - Duplicate an event
  * @since 1.10.0
- * @version 1.12.0
+ * @version 1.13.0
  */
 function bookacti_controller_duplicate_event() {
 	// Check nonce
@@ -259,13 +254,9 @@ function bookacti_controller_duplicate_event() {
 	$new_event_repeat_from	= $repeat_from_dt ? $repeat_from_dt->format( 'Y-m-d' ) : 'null';
 	$new_event_repeat_to	= $repeat_to_dt ? $repeat_to_dt->format( 'Y-m-d' ) : 'null';
 	
-	// Get event exceptions
-	$events_exceptions = bookacti_get_exceptions_by_event( array( 'events' => array( $event_id ) ) );
-	$event_exceptions = isset( $events_exceptions[ $event_id ] ) ? $events_exceptions[ $event_id ] : array();
-	
 	// Get new event data
 	$event_data = array_merge( (array) $event, array( 'start' => $new_event_start, 'end' => $new_event_end, 'repeat_from' => $new_event_repeat_from, 'repeat_to' => $new_event_repeat_to ) );
-	$event_data = bookacti_sanitize_event_data( array_merge( $event_data, array( 'exceptions_dates' => $event_exceptions ) ) );
+	$event_data = bookacti_sanitize_event_data( $event_data );
 	
 	// Insert the new event
 	$new_event_id = bookacti_insert_event( $event_data );
@@ -274,10 +265,7 @@ function bookacti_controller_duplicate_event() {
 	// Duplicate event metadata
 	bookacti_duplicate_metadata( 'event', $event_id, $new_event_id );
 	
-	// Update exceptions
-	$updated_excep = bookacti_update_exceptions( $new_event_id, $event_data[ 'exceptions_dates' ] );
-	
-	// Fetch new events and exceptions
+	// Fetch new events
 	$interval	= ! empty( $_POST[ 'interval' ] ) ? bookacti_sanitize_events_interval( $_POST[ 'interval' ] ) : array();
 	$events		= bookacti_fetch_events_for_calendar_editor( array( 'events' => array( $new_event_id ), 'interval' => $interval ) );
 	
@@ -362,7 +350,7 @@ function bookacti_controller_update_event() {
 	$events		= bookacti_fetch_events_for_calendar_editor( array( 'events' => array( $event_id ), 'interval' => $interval ) );
 
 	// Retrieve groups of events
-	$groups = bookacti_get_groups_of_events( array( 'templates' => array( $old_event->template_id ), 'nb_events' => array(), 'past_events' => 1, 'data_only' => 1, 'get_exceptions' => 1 ) );
+	$groups = bookacti_get_groups_of_events( array( 'templates' => array( $old_event->template_id ), 'nb_events' => array(), 'past_events' => 1, 'data_only' => 1 ) );
 
 	do_action( 'bookacti_event_updated', $event_id, $events );
 	
@@ -372,9 +360,7 @@ function bookacti_controller_update_event() {
 		'events_data'		=> $events[ 'data' ] ? $events[ 'data' ] : array(),
 		'groups_data'		=> $groups[ 'data' ],
 		'updated'			=> $updated
-	), 'update_event' ); 
-	
-	bookacti_send_json( array( 'status' => 'failed', 'error' => 'unknown_error', 'updated' => $updated ), 'update_event' ); 
+	), 'update_event' );
 }
 add_action( 'wp_ajax_bookactiUpdateEvent', 'bookacti_controller_update_event' );
 
@@ -418,7 +404,7 @@ add_action( 'wp_ajax_bookactiBeforeDeleteEvent', 'bookacti_controller_before_del
 
 /**
  * AJAX Controller - Delete an event if it doesn't have bookings
- * @version 1.10.0
+ * @version 1.13.0
  */
 function bookacti_controller_delete_event() {
 	// Check nonce
@@ -462,7 +448,7 @@ function bookacti_controller_delete_event() {
 	
 	do_action( 'bookacti_event_deactivated', $event, $cancel_bookings, $send_notifications );
 	
-	$groups = bookacti_get_groups_of_events( array( 'templates' => array( $event->template_id ), 'nb_events' => array(), 'past_events' => 1, 'data_only' => 1, 'get_exceptions' => 1 ) );
+	$groups = bookacti_get_groups_of_events( array( 'templates' => array( $event->template_id ), 'nb_events' => array(), 'past_events' => 1, 'data_only' => 1 ) );
 	
 	bookacti_send_json( array( 'status' => 'success', 'groups_data' => $groups[ 'data' ] ), 'deactivate_event' );
 }
@@ -471,7 +457,7 @@ add_action( 'wp_ajax_bookactiDeleteEvent', 'bookacti_controller_delete_event' );
 
 /**
  * AJAX Controller - Unbind occurrences of an event
- * @version 1.12.0
+ * @version 1.13.0
  */
 function bookacti_controller_unbind_event_occurrences() {
 	// Check nonce
@@ -519,7 +505,7 @@ function bookacti_controller_unbind_event_occurrences() {
 
 	// Retrieve affected data
 	$events					= bookacti_fetch_events_for_calendar_editor( array( 'events' => $new_events_ids, 'interval' => $interval ) );
-	$groups					= bookacti_get_groups_of_events( array( 'templates' => array( $event->template_id ), 'nb_events' => array(), 'past_events' => 1, 'data_only' => 1, 'get_exceptions' => 1 ) );
+	$groups					= bookacti_get_groups_of_events( array( 'templates' => array( $event->template_id ), 'nb_events' => array(), 'past_events' => 1, 'data_only' => 1 ) );
 	$bookings_nb_per_event	= bookacti_get_number_of_bookings_per_event( array( 'templates' => array( $event->template_id ) ) );
 	
 	$return_data = apply_filters( 'bookacti_event_occurrences_unbound', array( 
@@ -543,7 +529,7 @@ add_action( 'wp_ajax_bookactiUnbindEventOccurrences', 'bookacti_controller_unbin
 /**
  * Create a group of events with AJAX
  * @since 1.1.0
- * @version 1.12.0
+ * @version 1.13.0
  */
 function bookacti_controller_insert_group_of_events() {
 	// Check nonce
@@ -605,13 +591,10 @@ function bookacti_controller_insert_group_of_events() {
 	$meta = array_intersect_key( $group_of_events_data, bookacti_get_group_of_events_default_meta() );
 	if( $meta ) { bookacti_insert_metadata( 'group_of_events', $group_id, $meta ); }
 	
-	// Insert exceptions
-	if( $group_of_events_data[ 'exceptions_dates' ] ) { bookacti_insert_exceptions( $group_id, $group_of_events_data[ 'exceptions_dates' ], 'group_of_events' ); }
-		
 	$category_data	= bookacti_get_group_category( $category_id );
 	$interval		= isset( $_POST[ 'interval' ] ) ? ( is_array( $_POST[ 'interval' ] ) ? $_POST[ 'interval' ] : ( is_string( $_POST[ 'interval' ] ) ? bookacti_maybe_decode_json( stripslashes( $_POST[ 'interval' ] ), true ) : array() ) ) : array();
 	$interval		= bookacti_sanitize_events_interval( $interval );
-	$groups			= bookacti_get_groups_of_events( array( 'event_groups' => array( $group_id ), 'past_events' => 1, 'interval' => $interval, 'interval_started' => 1, 'get_exceptions' => 1 ) );
+	$groups			= bookacti_get_groups_of_events( array( 'event_groups' => array( $group_id ), 'past_events' => 1, 'interval' => $interval, 'interval_started' => 1 ) );
 	$group_data		= isset( $groups[ 'data' ][ $group_id ] ) ? $groups[ 'data' ][ $group_id ] : array();
 	$group_events	= isset( $groups[ 'groups' ][ $group_id ] ) ? $groups[ 'groups' ][ $group_id ] : array();
 	$group_title_raw= strip_tags( $group_data[ 'title' ] );
@@ -633,7 +616,7 @@ add_action( 'wp_ajax_bookactiInsertGroupOfEvents', 'bookacti_controller_insert_g
 /**
  * Update group of events data with AJAX
  * @since 1.1.0
- * @version 1.12.3
+ * @version 1.13.0
  */
 function bookacti_controller_update_group_of_events() {
 	// Check nonce
@@ -698,10 +681,6 @@ function bookacti_controller_update_group_of_events() {
 		if( is_numeric( $updated ) && is_numeric( $updated_meta ) ) { $updated += $updated_meta; }
 	}
 	
-	// Update exceptions
-	$updated_excep = bookacti_update_exceptions( $group_id, $group_of_events_data[ 'exceptions_dates' ], 'group_of_events' );
-	if( is_numeric( $updated ) && is_numeric( $updated_excep ) ) { $updated += $updated_excep; }
-	
 	// Check if the data has been updated
 	if( $updated === false ) {
 		bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_updated', 'group_data' => $group_of_events_data ), 'update_group_of_events' );
@@ -710,7 +689,7 @@ function bookacti_controller_update_group_of_events() {
 	$category_data	= bookacti_get_group_category( $category_id );
 	$interval		= isset( $_POST[ 'interval' ] ) ? ( is_array( $_POST[ 'interval' ] ) ? $_POST[ 'interval' ] : ( is_string( $_POST[ 'interval' ] ) ? bookacti_maybe_decode_json( stripslashes( $_POST[ 'interval' ] ), true ) : array() ) ) : array();
 	$interval		= bookacti_sanitize_events_interval( $interval );
-	$groups			= bookacti_get_groups_of_events( array( 'event_groups' => array( $group_id ), 'past_events' => 1, 'interval' => $interval, 'interval_started' => 1, 'get_exceptions' => 1 ) );
+	$groups			= bookacti_get_groups_of_events( array( 'event_groups' => array( $group_id ), 'past_events' => 1, 'interval' => $interval, 'interval_started' => 1 ) );
 	$group_data		= isset( $groups[ 'data' ][ $group_id ] ) ? $groups[ 'data' ][ $group_id ] : array();
 	$group_events	= isset( $groups[ 'groups' ][ $group_id ] ) ? $groups[ 'groups' ][ $group_id ] : array();
 	$group_title_raw= strip_tags( $group_data[ 'title' ] );
@@ -731,6 +710,7 @@ add_action( 'wp_ajax_bookactiUpdateGroupOfEvents', 'bookacti_controller_update_g
 /**
  * AJAX Controller - Get group of events data and occurrences
  * @since 1.12.0
+ * @version 1.13.0
  */
 function bookacti_controller_get_group_of_events() {
 	// Check nonce
@@ -741,7 +721,7 @@ function bookacti_controller_get_group_of_events() {
 	$group_id = intval( $_POST[ 'group_id' ] );
 	$interval = isset( $_POST[ 'interval' ] ) ? ( is_array( $_POST[ 'interval' ] ) ? $_POST[ 'interval' ] : ( is_string( $_POST[ 'interval' ] ) ? bookacti_maybe_decode_json( stripslashes( $_POST[ 'interval' ] ), true ) : array() ) ) : array();
 	$interval = bookacti_sanitize_events_interval( $interval );
-	$groups = bookacti_get_groups_of_events( array( 'event_groups' => array( $group_id ), 'past_events' => 1, 'interval' => $interval, 'interval_started' => 1, 'get_exceptions' => 1 ) );
+	$groups = bookacti_get_groups_of_events( array( 'event_groups' => array( $group_id ), 'past_events' => 1, 'interval' => $interval, 'interval_started' => 1 ) );
 	$group_data = isset( $groups[ 'data' ][ $group_id ] ) ? $groups[ 'data' ][ $group_id ] : array();
 	if( ! $group_data ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'group_of_events_not_found', 'message' => esc_html__( 'Invalid group of events ID.', 'booking-activities' ) ), 'get_group_of_events' ); }
 	
@@ -758,7 +738,7 @@ add_action( 'wp_ajax_bookactiGetGroupOfEvents', 'bookacti_controller_get_group_o
 /**
  * AJAX Controller - Check if the group of events is booked before deleting it
  * @since 1.10.0
- * @version 1.12.0
+ * @version 1.13.0
  */
 function bookacti_controller_before_delete_group_of_events() {
 	// Check nonce
@@ -767,7 +747,7 @@ function bookacti_controller_before_delete_group_of_events() {
 	
 	// Check if group exists
 	$group_id = intval( $_POST[ 'group_id' ] );
-	$groups = bookacti_get_groups_of_events( array( 'event_groups' => array( $group_id ), 'nb_events' => array(), 'past_events' => 1, 'data_only' => 1, 'get_exceptions' => 1 ) );
+	$groups = bookacti_get_groups_of_events( array( 'event_groups' => array( $group_id ), 'nb_events' => array(), 'past_events' => 1, 'data_only' => 1 ) );
 	$group = isset( $groups[ 'data' ][ $group_id ] ) ? $groups[ 'data' ][ $group_id ] : array();
 	if( ! $group ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'group_of_events_not_found', 'message' => esc_html__( 'Invalid group of events ID.', 'booking-activities' ) ), 'before_deactivate_group_of_events' ); }
 	
@@ -808,7 +788,7 @@ add_action( 'wp_ajax_bookactiBeforeDeleteGroupOfEvents', 'bookacti_controller_be
 /**
  * Delete a group of events with AJAX
  * @since 1.1.0
- * @version 1.12.0
+ * @version 1.13.0
  */
 function bookacti_controller_delete_group_of_events() {
 	// Check nonce
@@ -817,7 +797,7 @@ function bookacti_controller_delete_group_of_events() {
 	
 	// Check if group exists
 	$group_id = intval( $_POST[ 'group_id' ] );
-	$groups = bookacti_get_groups_of_events( array( 'event_groups' => array( $group_id ), 'nb_events' => array(), 'past_events' => 1, 'data_only' => 1, 'get_exceptions' => 1 ) );
+	$groups = bookacti_get_groups_of_events( array( 'event_groups' => array( $group_id ), 'nb_events' => array(), 'past_events' => 1, 'data_only' => 1 ) );
 	$group = isset( $groups[ 'data' ][ $group_id ] ) ? $groups[ 'data' ][ $group_id ] : false;
 	if( ! $group ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'group_of_events_not_found', 'message' => esc_html__( 'Invalid group of events ID.', 'booking-activities' ) ), 'deactivate_group_of_events' ); }
 	
@@ -867,6 +847,7 @@ add_action( 'wp_ajax_bookactiDeleteGroupOfEvents', 'bookacti_controller_delete_g
 /**
  * AJAX Controller - Unbind occurrences of a group of events
  * @since 1.12.0
+ * @version 1.13.0
  */
 function bookacti_controller_unbind_group_of_events_occurrences() {
 	// Check nonce
@@ -917,7 +898,7 @@ function bookacti_controller_unbind_group_of_events_occurrences() {
 
 	// Get updated data
 	$group_categories		= bookacti_get_group_categories( array( 'templates' => array( $template_id ), 'group_categories' => array( $category_id ) ) );
-	$groups					= bookacti_get_groups_of_events( array( 'templates' => array( $template_id ), 'group_categories' => array( $category_id ), 'past_events' => 1, 'data_only' => 1, 'get_exceptions' => 1 ) );
+	$groups					= bookacti_get_groups_of_events( array( 'templates' => array( $template_id ), 'group_categories' => array( $category_id ), 'past_events' => 1, 'data_only' => 1 ) );
 	$bookings_nb_per_event	= bookacti_get_number_of_bookings_per_event( array( 'templates' => array( $template_id ) ) );
 	$groups_list			= bookacti_get_template_groups_of_events_list( $group_categories, $groups, $template_id );
 	
@@ -1346,7 +1327,7 @@ add_action( 'wp_ajax_bookactiImportActivities', 'bookacti_controller_import_acti
 
 /**
  * AJAX Controller - Deactivate an activity
- * @version 1.12.0
+ * @version 1.13.0
  */
 function bookacti_controller_deactivate_activity() {
 	// Check nonce
@@ -1386,7 +1367,7 @@ function bookacti_controller_deactivate_activity() {
 			bookacti_send_json( array( 'status' => 'failed', 'error' => 'cannot_delete_events_or_groups' ), 'deactivate_activity' );
 		}
 		
-		$groups = bookacti_get_groups_of_events( array( 'templates' => array( $template_id ), 'nb_events' => array(), 'past_events' => 1, 'data_only' => 1, 'get_exceptions' => 1 ) );
+		$groups = bookacti_get_groups_of_events( array( 'templates' => array( $template_id ), 'nb_events' => array(), 'past_events' => 1, 'data_only' => 1 ) );
 	
 		do_action( 'bookacti_activity_events_deactivated', $template_id, $activity_id );
 	}

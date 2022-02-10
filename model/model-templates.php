@@ -14,7 +14,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  *  @type array events Array of event IDs
  *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
  *  @type boolean $skip_exceptions Whether to retrieve occurrence on exceptions
- *  @type boolean $get_exceptions Whether to add exceptions in events data
  *  @type boolean $past_events Whether to compute past events
  *  @type boolean $bounding_only Whether to retrieve the first and the last events only
  *  @type boolean $data_only Whether to retrieve the events data only, not occurrences
@@ -27,7 +26,6 @@ function bookacti_fetch_events_for_calendar_editor( $raw_args = array() ) {
 		'events' => array(),
 		'interval' => array(),
 		'skip_exceptions' => 0,
-		'get_exceptions' => 1,
 		'past_events' => 1,
 		'bounding_only' => 0,
 		'data_only' => 0
@@ -292,129 +290,6 @@ function bookacti_deactivate_event( $event_id ) {
 	$query = $wpdb->prepare( $query, $event_id );
 	$deactivated = $wpdb->query( $query );
 	return $deactivated;
-}
-
-
-
-
-// EXCEPTIONS
-
-/**
- * Insert event repeat exceptions
- * @since 1.7.0 (was bookacti_insert_exeptions before)
- * @version 1.12.0
- * @global wpdb $wpdb
- * @param int $object_id
- * @param array $dates
- * @param string $object_type 'event' or 'group_of_events'
- * @return int|false
- */
-function bookacti_insert_exceptions( $object_id, $dates, $object_type = 'event' ) {
-	global $wpdb;
-
-	$query = 'INSERT INTO ' . BOOKACTI_TABLE_EXCEPTIONS . ' ( object_type, object_id, exception_value ) VALUES ';
-	$variables = array();
-
-	$i = 1;
-	$len = count( $dates );
-	foreach( $dates as $date ) {
-		$query .= '( %s, %d, %s )';
-		if( $i < $len ) { $query .= ', '; }
-		$variables[] = $object_type;
-		$variables[] = $object_id;
-		$variables[] = $date;
-		++$i;
-	}
-
-	$query = $wpdb->prepare( $query, $variables );
-	$inserted = $wpdb->query( $query );
-
-	return $inserted;
-}
-
-
-/**
- * Duplicate event repeat exceptions for another event
- * @version 1.12.0
- * @global wpdb $wpdb
- * @param int $old_object_id
- * @param int $new_object_id
- * @param string $object_type 'event' or 'group_of_events'
- * @param string $from Y-m-d (incl.)
- * @param string $to Y-m-d (incl.)
- * @return int|false
- */
-function bookacti_duplicate_exceptions( $old_object_id, $new_object_id, $object_type = 'event', $from = '', $to = '' ) {
-	global $wpdb;
-	
-	// Duplicate the exceptions and bind them to the newly created event
-	$query	= ' INSERT INTO ' . BOOKACTI_TABLE_EXCEPTIONS . ' ( object_type, object_id, exception_value ) '
-			. ' SELECT object_type, %d, exception_value ' 
-			. ' FROM ' . BOOKACTI_TABLE_EXCEPTIONS
-			. ' WHERE object_id = %d AND object_type = %s ';
-	
-	$variables = array( $new_object_id, $old_object_id, $object_type );
-	
-	if( $from ) {
-		$query .= ' AND DATE( exception_value ) >= DATE( %s ) ';
-		$variables[] = $from;
-	}
-	
-	if( $to ) {
-		$query .= ' AND DATE( exception_value ) <= DATE( %s ) ';
-		$variables[] = $to;
-	}
-	
-	$query_prep	= $wpdb->prepare( $query, $variables );
-	$inserted	= $wpdb->query( $query_prep );
-
-	return $inserted;
-}
-
-
-/**
- * Remove event repeat exceptions
- * @version 1.12.0
- * @global wpdb $wpdb
- * @param int $object_id
- * @param array $dates
- * @param string $object_type 'event' or 'group_of_events'
- * @param string $from Date 'Y-m-d' (incl.)
- * @param string $to Date 'Y-m-d' (incl.)
- * @return int|false
- */
-function bookacti_remove_exceptions( $object_id, $dates = array(), $object_type = 'event', $from = '', $to = '' ) {
-	global $wpdb;
-
-	$query = 'DELETE FROM ' . BOOKACTI_TABLE_EXCEPTIONS . ' WHERE object_id = %d AND object_type = %s ';
-	$variables = array( $object_id, $object_type );
-	
-	if( $dates ) {
-		$query .= ' AND exception_value IN ( %s ';
-		$array_count = count( $dates );
-		if( $array_count >= 2 ) {
-			for( $i=1; $i<$array_count; ++$i ) {
-				$query .= ', %s ';
-			}
-		}
-		$query .= ' ) ';
-		$variables = array_merge( $variables, $dates );
-	}
-	
-	if( $from ) {
-		$query .= ' AND DATE( exception_value ) >= DATE( %s ) ';
-		$variables[] = $from;
-	}
-	
-	if( $to ) {
-		$query .= ' AND DATE( exception_value ) <= DATE( %s ) ';
-		$variables[] = $to;
-	}
-
-	$query = $wpdb->prepare( $query, $variables );
-	$deleted = $wpdb->query( $query );
-
-	return $deleted;
 }
 
 
@@ -978,7 +853,7 @@ function bookacti_get_group_category_template_id( $category_id ) {
 
 /**
  * Get templates
- * @version 1.12.0
+ * @version 1.13.0
  * @global wpdb $wpdb
  * @param array $template_ids
  * @param boolean $ignore_permissions
@@ -1001,11 +876,11 @@ function bookacti_fetch_templates( $template_ids = array(), $ignore_permissions 
 	$variables = array();
 
 	if( $ignore_permissions ) {
-		$query = 'SELECT T.id, T.title, T.active '
+		$query = 'SELECT T.id, T.title, T.days_off, T.active '
 			. ' FROM ' . BOOKACTI_TABLE_TEMPLATES . ' as T '
 			. ' WHERE T.active = 1 ';
 	} else {
-		$query = 'SELECT T.id, T.title, T.active '
+		$query = 'SELECT T.id, T.title, T.days_off, T.active '
 			. ' FROM ' . BOOKACTI_TABLE_TEMPLATES . ' as T, ' . BOOKACTI_TABLE_PERMISSIONS . ' as P '
 			. ' WHERE T.active = 1 '
 			. ' AND T.id = P.object_id '
@@ -1040,6 +915,8 @@ function bookacti_fetch_templates( $template_ids = array(), $ignore_permissions 
 
 	$templates_by_id = array();
 	foreach( $templates as $template ) {
+		$template[ 'days_off' ] = ! empty( $template[ 'days_off' ] ) ? maybe_unserialize( $template[ 'days_off' ] ) : array();
+		if( ! is_array( $template[ 'days_off' ] ) ) { $template[ 'days_off' ] = array(); }
 		$templates_by_id[ $template[ 'id' ] ] = $template;
 	}
 
@@ -1048,39 +925,8 @@ function bookacti_fetch_templates( $template_ids = array(), $ignore_permissions 
 
 
 /**
- * Get template data, metadata and managers
- * @version 1.9.2
- * @global wpdb $wpdb
- * @param int $template_id
- * @param OBJECT|ARRAY_A $return_type
- * @return object|array
- */
-function bookacti_get_template( $template_id, $return_type = OBJECT ) {
-
-	$return_type = $return_type === OBJECT ? OBJECT : ARRAY_A;
-
-	global $wpdb;
-
-	$query		= 'SELECT * FROM ' . BOOKACTI_TABLE_TEMPLATES . ' WHERE id = %d ';
-	$prep		= $wpdb->prepare( $query, $template_id );
-	$template	= $wpdb->get_row( $prep, $return_type );
-
-	// Get template settings and managers
-	if( $return_type === ARRAY_A ) {
-		$template[ 'admin' ]	= bookacti_get_template_managers( $template_id );
-		$template[ 'settings' ] = bookacti_get_metadata( 'template', $template_id );
-	} else {
-		$template->admin		= bookacti_get_template_managers( $template_id );
-		$template->settings		= bookacti_get_metadata( 'template', $template_id );
-	}
-
-	return $template;
-}
-
-
-/**
  * Create a new template
- * @version 1.12.0
+ * @version 1.13.0
  * @global wpdb $wpdb
  * @param array $data Data sanitized with bookacti_sanitize_template_data
  * @return int
@@ -1088,10 +934,13 @@ function bookacti_get_template( $template_id, $return_type = OBJECT ) {
 function bookacti_insert_template( $data ) { 
 	global $wpdb;
 
-	$query = ' INSERT INTO ' . BOOKACTI_TABLE_TEMPLATES . ' ( title, active ) '
-			. ' VALUES ( %s, 1 )';
+	$query = ' INSERT INTO ' . BOOKACTI_TABLE_TEMPLATES . ' ( title, days_off, active ) '
+			. ' VALUES ( %s, NULLIF( NULLIF( %s, "null" ), "" ), 1 )';
 
-	$variables = array( $data[ 'title' ] );
+	$variables = array( 
+		$data[ 'title' ], 
+		maybe_serialize( $data[ 'days_off' ] )
+	);
 
 	$query = $wpdb->prepare( $query, $variables );
 	$wpdb->query( $query );
@@ -1120,7 +969,7 @@ function bookacti_deactivate_template( $template_id ) {
 
 /**
  * Update template
- * @version 1.12.0
+ * @version 1.13.0
  * @global wpdb $wpdb
  * @param array $data
  * @return int|false
@@ -1129,10 +978,15 @@ function bookacti_update_template( $data ) {
 	global $wpdb;
 	
 	$query = ' UPDATE ' . BOOKACTI_TABLE_TEMPLATES . ' SET '
-				. ' title = IFNULL( NULLIF( %s, "" ), title ) '
+				. ' title = IFNULL( NULLIF( %s, "" ), title ), '
+				. ' days_off = NULLIF( IFNULL( NULLIF( %s, "" ), days_off ), "null" ) '
 			. ' WHERE id = %d ';
 	
-	$variables = array( $data[ 'title' ], $data[ 'id' ] );
+	$variables = array( 
+		$data[ 'title' ], 
+		! is_null( $data[ 'days_off' ] ) ? maybe_serialize( $data[ 'days_off' ] ) : 'null', 
+		$data[ 'id' ]
+	);
 	
 	$query = $wpdb->prepare( $query, $variables );
 	$updated = $wpdb->query( $query );
@@ -1592,8 +1446,7 @@ function bookacti_get_activity_ids_by_template( $template_ids = array(), $based_
 
 /**
  * Get templates by activity
- * 
- * @version 1.7.0
+ * @version 1.13.0
  * @global wpdb $wpdb
  * @param array $activity_ids
  * @param boolean $id_only
@@ -1637,6 +1490,8 @@ function bookacti_get_templates_by_activity( $activity_ids, $id_only = true ) {
 		if( $id_only ){
 			$templates_array[] = $template->id;
 		} else {
+			$template[ 'days_off' ] = ! empty( $template[ 'days_off' ] ) ? maybe_unserialize( $template[ 'days_off' ] ) : array();
+			if( ! is_array( $template[ 'days_off' ] ) ) { $template[ 'days_off' ] = array(); }
 			$templates_array[] = $template;
 		}
 	}

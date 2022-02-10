@@ -47,12 +47,13 @@ $j( document ).ready( function() {
 	 */
 	$j( '#bookacti-template-data-dialog' ).on( 'bookacti_default_template_settings', function() {
 		bookacti_delete_days_off_rows( $j( '#bookacti-template-data-dialog .bookacti-days-off-table-container' ) );
+		$j( '#bookacti-template-data-dialog input.bookacti-days-off-from, #bookacti-template-data-dialog input.bookacti-days-off-to' ).attr( 'min', '' ).attr( 'max', '' );
 		
 		// Fill Days off option since the bookacti_fill_fields_from_array function won't do it
 		var template_data = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ];
 		if( ! $j.isEmptyObject( template_data.settings ) ) {
-			if( ! $j.isEmptyObject( template_data.settings.days_off ) ) {
-				bookacti_fill_days_off( $j( '#bookacti-template-data-dialog .bookacti-days-off-table-container' ), template_data.settings.days_off );
+			if( ! $j.isEmptyObject( template_data.days_off ) ) {
+				bookacti_fill_days_off( $j( '#bookacti-template-data-dialog .bookacti-days-off-table-container' ), template_data.days_off );
 			}
 		}
 	});
@@ -66,6 +67,7 @@ $j( document ).ready( function() {
 	 */
 	$j( 'body' ).on( 'bookacti_empty_all_dialogs_forms', function( e, scope ) {
 		bookacti_delete_days_off_rows( $j( scope + ' .bookacti-days-off-table-container' ) );
+		$j( scope + ' input.bookacti-days-off-from, ' + scope + ' input.bookacti-days-off-to' ).attr( 'min', '' ).attr( 'max', '' );
 	});
 });
 
@@ -326,7 +328,7 @@ function bookacti_validate_event_general_data() {
 
 /**
  * Check event fields - Repetition tab
- * @version 1.12.0
+ * @version 1.13.0
  * @param {String} object_type 'event' or 'group'
  * @returns {boolean}
  */
@@ -351,8 +353,6 @@ function bookacti_validate_event_repetition_data( object_type ) {
 		'isRepeatTo'				: false,
 		'isFromBeforeTo'			: false,
 		'isEventBetweenFromAndTo'	: false,
-		'areExcep'					: false,
-		'areExcepBetweenFromAndTo'	: true,
 		'send'						: false
 	};
 
@@ -364,7 +364,6 @@ function bookacti_validate_event_repetition_data( object_type ) {
 	if( valid_form.isRepeated 
 	&& repeat_from.isSameOrBefore( event_start, 'day' )
 	&& repeat_to.isSameOrAfter( event_start, 'day' ) )									{ valid_form.isEventBetweenFromAndTo = true; }
-	if( $j( scope + ' .exception' ).length )											{ valid_form.areExcep = true; }
 	
 	if( ! valid_form.isRepeated || ( valid_form.isRepeated && valid_form.isRepeatFrom && valid_form.isRepeatTo && valid_form.isFromBeforeTo && valid_form.isEventBetweenFromAndTo ) ) {
 		valid_form.send = true;
@@ -375,14 +374,12 @@ function bookacti_validate_event_repetition_data( object_type ) {
 		$j( scope + ' input[name="repeat_from"]' ).prop( 'disabled', true );
 		$j( scope + ' input[name="repeat_to"]' ).prop( 'disabled', true );
 	}
-	$j( scope + ' input.bookacti-exception-date-picker' ).prop( 'disabled', true );
-	$j( scope + ' input.bookacti-add-exception-button' ).prop( 'disabled', true );
-	$j( scope + ' select.bookacti-exceptions-selectbox' ).prop( 'disabled', true );
 	$j( scope + ' div[id$="-repeat-days-container"]' ).hide();
 	$j( scope + ' div[id$="-repeat-monthly_type-container"]' ).hide();
 	$j( scope + ' div[id$="-repeat-from-container"]' ).hide();
 	$j( scope + ' div[id$="-repeat-to-container"]' ).hide();
-	$j( scope + ' .bookacti-exceptions-container' ).hide();
+	$j( scope + ' div[id$="-repeat-exceptions-container"]' ).hide();
+	$j( scope + ' input.bookacti-days-off-from, ' + scope + ' input.bookacti-days-off-to' ).attr( 'min', '' ).attr( 'max', '' );
 	$j( '#bookacti-group-of-events-repetition-first-event-notice' ).hide();
 	
 	var exceptions_disabled = false;
@@ -391,19 +388,9 @@ function bookacti_validate_event_repetition_data( object_type ) {
 	if( exceptions_min.isAfter( exceptions_max ) ) { exceptions_disabled = true; };
 	
 	if( ! exceptions_disabled ) {
-		if( valid_form.isRepeatFrom )	{ $j( scope + ' input.bookacti-exception-date-picker' ).attr( 'min', exceptions_min.format( 'YYYY-MM-DD' ) ); }
-		if( valid_form.isRepeatTo )		{ $j( scope + ' input.bookacti-exception-date-picker' ).attr( 'max', exceptions_max.format( 'YYYY-MM-DD' ) ); }
+		if( valid_form.isRepeatFrom )	{ $j( scope + ' input.bookacti-days-off-from, ' + scope + ' input.bookacti-days-off-to' ).attr( 'min', exceptions_min.format( 'YYYY-MM-DD' ) ); }
+		if( valid_form.isRepeatTo )		{ $j( scope + ' input.bookacti-days-off-from, ' + scope + ' input.bookacti-days-off-to' ).attr( 'max', exceptions_max.format( 'YYYY-MM-DD' ) ); }
 	}
-	
-	// Detect out-of-the-repeat-period existing exceptions and alert user
-	$j( scope + ' .exception' ).removeClass( 'bookacti-error-exception bookacti-out-of-period-exception' );
-	$j( scope + ' .exception' ).each( function() {
-		var exception_date = moment.utc( $j( this ).val() );
-		if( valid_form.isFromBeforeTo && ( exception_date < repeat_from || exception_date > repeat_to ) ) {
-			valid_form.areExcepBetweenFromAndTo = false;
-			$j( this ).addClass( 'bookacti-error-exception bookacti-out-of-period-exception' );
-		}
-	});
 
 	// Clean the feedbacks before displaying new feedbacks
 	$j( scope + ' .bookacti-input-error, ' + scope + ' .bookacti-input-warning' ).removeClass( 'bookacti-input-error bookacti-input-warning' );
@@ -433,10 +420,7 @@ function bookacti_validate_event_repetition_data( object_type ) {
 		
 		if( valid_form.isFromBeforeTo && valid_form.isEventBetweenFromAndTo ) {
 			// Enable the exception fields
-			$j( scope + ' input.bookacti-exception-date-picker' ).prop( 'disabled', exceptions_disabled );
-			$j( scope + ' input.bookacti-add-exception-button' ).prop( 'disabled', false );
-			$j( scope + ' select.bookacti-exceptions-selectbox' ).prop( 'disabled', false );
-			$j( scope + ' .bookacti-exceptions-container' ).show();
+			$j( scope + ' div[id$="-repeat-exceptions-container"]' ).show();
 
 		} else {
 			$j( scope + ' input[name="repeat_from"], ' + scope + ' input[name="repeat_to"]' ).addClass( 'bookacti-input-error' );
@@ -448,11 +432,6 @@ function bookacti_validate_event_repetition_data( object_type ) {
 		}
 	}
 
-	if( valid_form.areExcep && ! valid_form.areExcepBetweenFromAndTo ) { 
-		$j( scope + ' select.bookacti-exceptions-selectbox' ).addClass( 'bookacti-input-warning' );
-		$j( scope + ' .bookacti-error-list' ).append( '<li class="bookacti-repeat-error">' + bookacti_localized.error_excep_not_btw_from_and_to + '</li>' );
-	}
-	
 	$j( scope + ' .bookacti-notices' ).toggle( $j( scope + ' .bookacti-notices li' ).length > 0 );
 	
 	return valid_form.send;

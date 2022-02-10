@@ -539,7 +539,7 @@ function bookacti_format_bookings_calendar_settings( $raw_settings = array() ) {
 /**
  * Get the bookings to be removed when an whole event is deleted / cancelled
  * @since 1.10.0
- * @version 1.12.0
+ * @version 1.13.0
  * @param object $event
  * @return array
  */
@@ -550,9 +550,7 @@ function bookacti_get_removed_event_bookings_to_cancel( $event ) {
 	$from = $event->repeat_freq && $event->repeat_freq !== 'none' ? $now_dt->format( 'Y-m-d H:i:s' ) : '';
 
 	// Get the event future occurrences
-	$events_exceptions = bookacti_get_exceptions_by_event( array( 'events' => array( $event->event_id ) ) );
-	$event_exceptions = isset( $events_exceptions[ $event->event_id ] ) ? $events_exceptions[ $event->event_id ] : array();
-	$occurrences = bookacti_get_occurrences_of_repeated_event( $event, array( 'exceptions_dates' => $event_exceptions, 'past_events' => $from ? 0 : 1 ) );
+	$occurrences = bookacti_get_occurrences_of_repeated_event( $event, array( 'past_events' => $from ? 0 : 1 ) );
 
 	// Get bookings to cancel before cancelling them
 	$filters = bookacti_format_booking_filters( array( 'event_id' => $event->event_id, 'from' => $from, 'active' => 1 ) );
