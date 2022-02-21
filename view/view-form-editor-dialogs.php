@@ -2,7 +2,7 @@
 /**
  * Form editor dialogs
  * @since 1.5.0
- * @version 1.12.4
+ * @version 1.13.0
  */
 
 // Exit if accessed directly
@@ -328,7 +328,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 		/**
 		 * Display the content of the "Availability" tab of the "Calendar" dialog
 		 * @since 1.5.0
-		 * @version 1.9.3
+		 * @version 1.13.0
 		 * @param array $params
 		 */
 		function bookacti_fill_calendar_dialog_availability_tab( $params ) {
@@ -345,6 +345,12 @@ foreach( $fields_data as $field_name => $field_data ) {
 			<div style='margin-bottom:10px;'><em><?php /* translators: "they" refers to "the events" (E.g.: The events will be bookable at the latest 2 days before the event and at the earliest 14 days before the event, Provided they start between these dates: 2020-09-10 and 2020-09-20. */ esc_html_e( 'Provided they start between these dates:', 'booking-activities' ); ?></em></div>
 			<?php 
 				$fields = bookacti_get_booking_system_fields_default_data( array( 'start', 'end' ) );
+				bookacti_display_fields( $fields );
+			?>
+			<hr/>
+			<div style='margin-bottom:10px;'><em><?php /* translators: "they" refers to "the events" (E.g.: The events will be bookable at the latest 2 days before the event and at the earliest 14 days before the event, Provided they start between these dates: 2022-02-11 and 2022-02-22, Except if they start during your leave periods: 2022-02-15 and 2022-02-17. */ esc_html_e( 'Except if they start during your leave periods:', 'booking-activities' ); ?></em></div>
+			<?php 
+				$fields = bookacti_get_booking_system_fields_default_data( array( 'days_off' ) );
 				bookacti_display_fields( $fields );
 			?>
 			<hr/>
@@ -368,7 +374,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 		/**
 		 * Display the content of the "Calendar" tab of the "Calendar" dialog
 		 * @since 1.5.0
-		 * @version 1.9.3
+		 * @version 1.13.0
 		 * @param array $params
 		 */
 		function bookacti_fill_calendar_dialog_calendar_tab( $params ) {
@@ -377,7 +383,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 		<fieldset id='bookacti-working-time-fieldset'>
 			<legend><?php esc_html_e( 'Working time', 'booking-activities' ); ?></legend>
 			<?php 
-				$fields = bookacti_get_calendar_fields_default_data( array( 'minTime', 'maxTime' ) );
+				$fields = bookacti_get_fullcalendar_fields_default_data( array( 'minTime', 'maxTime' ) );
 				bookacti_display_fields( $fields );
 			?>
 		</fieldset>

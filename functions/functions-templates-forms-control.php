@@ -7,14 +7,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Get template default data
  * @since 1.12.0
- * @version 1.13.0
  */
 function bookacti_get_template_default_data() {
 	return apply_filters( 'bookacti_template_default_data', array(
-		'id'       => 0,
-		'title'    => esc_html__( 'Calendar', 'booking-activities' ),
-		'days_off' => array(),
-		'active'   => 1
+		'id'     => 0,
+		'title'  => esc_html__( 'Calendar', 'booking-activities' ),
+		'active' => 1
 	));
 }
 
@@ -22,12 +20,14 @@ function bookacti_get_template_default_data() {
 /**
  * Get template default meta
  * @since 1.12.0
+ * @version 1.13.0
  */
 function bookacti_get_template_default_meta() {
 	return apply_filters( 'bookacti_template_default_meta', array(
-		'minTime'		=> '00:00',
-		'maxTime'		=> '00:00',
-		'snapDuration'	=> '00:05'
+		'minTime'      => '00:00',
+		'maxTime'      => '00:00',
+		'snapDuration' => '00:05',
+		'days_off'     => array()
 	));
 }
 
@@ -35,7 +35,6 @@ function bookacti_get_template_default_meta() {
 /**
  * Sanitize template data
  * @since 1.12.0 (was bookacti_sanitize_template_settings)
- * @version 1.13.0
  * @param array $raw_data
  * @return array
  */
@@ -45,10 +44,10 @@ function bookacti_sanitize_template_data( $raw_data ) {
 	
 	// Sanitize common values
 	$keys_by_type = array( 
-		'absint'=> array( 'id', 'duplicated_template_id' ),
-		'str'	=> array( 'title', 'minTime', 'maxTime', 'snapDuration' ),
-		'array'	=> array( 'managers', 'days_off' ),
-		'bool'	=> array( 'active' )
+		'absint' => array( 'id', 'duplicated_template_id' ),
+		'str'    => array( 'title', 'minTime', 'maxTime', 'snapDuration' ),
+		'array'  => array( 'managers', 'days_off' ),
+		'bool'   => array( 'active' )
 	);
 	$data = bookacti_sanitize_values( array_merge( $default_data, $default_meta, array( 'managers' => array() ) ), $raw_data, $keys_by_type );
 	
@@ -124,69 +123,6 @@ function bookacti_sanitize_template_managers( $template_managers ) {
 	}
 	
 	return apply_filters( 'bookacti_template_managers', $template_managers );
-}
-
-
-/**
- * Sanitize days off
- * @since 1.13.0
- * @param array $days_off_raw [ ['from' => 'YYYY-mm-dd', 'to' => 'YYYY-mm-dd'], ['from' => ...], ...]
- * @return array
- */
-function bookacti_sanitize_days_off( $days_off_raw ) {
-	// Sanitize dates
-	$days_off = array();
-	foreach( $days_off_raw as $off_period ) {
-		$from = ! empty( $off_period[ 'from' ] ) ? bookacti_sanitize_date( $off_period[ 'from' ] ) : '';
-		$to   = ! empty( $off_period[ 'to' ] ) ? bookacti_sanitize_date( $off_period[ 'to' ] ) : '';
-		
-		// If a field is empty, use the other field value
-		if( $from && ! $to ) { $to = $from; }
-		if( ! $from && $to ) { $from = $to; }
-		if( ! $from || ! $to ) { continue; }
-		
-		// If to is after from, revert the fields value
-		try { $from_dt = new DateTime( $from ); } catch ( Exception $e ) { continue; }
-		try { $to_dt = new DateTime( $to ); } catch ( Exception $e ) { continue; }
-		if( ! $from_dt || ! $to_dt ) { continue; }
-		if( $from_dt > $to_dt ) { $temp_from = $from; $from = $to; $to = $temp_from; } 
-		
-		$days_off[] = array( 'from' => $from, 'to' => $to );
-	}
-	
-	// Merge overlapping intervals
-	$merged_indexes = array();
-	foreach( $days_off as $i => $off_period1 ) {
-		if( in_array( $i, $merged_indexes, true ) ) { continue; }
-		$days_off2 = $days_off;
-		$from1 = new DateTime( $off_period1[ 'from' ] );
-		$to1 = new DateTime( $off_period1[ 'to' ] );
-		foreach( $days_off2 as $j => $off_period2 ) {
-			if( $j === $i ) { continue; }
-			$merged = false;
-			$merged_day_off = array( 'from' => $from1->format( 'Y-m-d' ), 'to' => $to1->format( 'Y-m-d' ) );
-			$from2 = new DateTime( $off_period2[ 'from' ] );
-			$to2 = new DateTime( $off_period2[ 'to' ] );
-			$day_before_from2 = clone $from2;
-			$day_before_from2->sub( new DateInterval( 'P1D' ) );
-			$day_after_to2 = clone $to2;
-			$day_after_to2->add( new DateInterval( 'P1D' ) );
-			if( $from2 <= $from1 && $day_after_to2 >= $from1 )	{ $merged_day_off[ 'from' ] = $off_period2[ 'from' ]; $from1 = clone $from2; $merged = true; }
-			if( $day_before_from2 <= $to1 && $to2 >= $to1 )		{ $merged_day_off[ 'to' ] = $off_period2[ 'to' ]; $to1 = clone $to2; $merged = true; }
-			if( $from2 >= $from1 && $to2 <= $to1 )				{ $merged = true; }
-			if( $merged ) { $merged_indexes[] = $j; $days_off[ $i ] = $merged_day_off; unset( $days_off[ $j ] ); }
-		}
-	}
-	
-	// Sort by date (desc)
-	usort( $days_off, function( $a, $b ) {
-		$idx = $a[ 'from' ] === $b[ 'from' ] ? 'to' : 'from';
-		$a_dt = new DateTime( $a[ $idx ] );
-		$b_dt = new DateTime( $b[ $idx ] );
-		return $a_dt < $b_dt ? 1 : -1;
-	});
-	
-	return array_values( $days_off );
 }
 
 

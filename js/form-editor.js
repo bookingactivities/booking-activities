@@ -81,6 +81,26 @@ $j( document ).ready( function() {
 	
 	
 	/**
+	 * Calendar field settings: Fill days off
+	 * @since 1.13.0
+	 * @param {Event} e
+	 * @param {Int} field_id
+	 * @param {String} field_name
+	 */
+	$j( '#bookacti-form-editor' ).on( 'bookacti_field_update_dialog', function( e, field_id, field_name ) {
+		if( field_name !== 'calendar' ) { return; }
+		bookacti_delete_days_off_rows( $j( '#bookacti-form-field-dialog-calendar .bookacti-date-intervals-table-container' ) );
+		$j( '#bookacti-form-field-dialog-calendar input.bookacti-date-interval-from, #bookacti-form-field-dialog-calendar input.bookacti-date-interval-to' ).attr( 'min', '' ).attr( 'max', '' );
+		
+		// Fill Days off option since the bookacti_fill_fields_from_array function won't do it
+		var field_data = bookacti.form_editor.fields[ field_id ];
+		if( ! $j.isEmptyObject( field_data.days_off ) ) {
+			bookacti_fill_days_off( $j( '#bookacti-form-field-dialog-calendar .bookacti-date-intervals-table-container' ), field_data.days_off );
+		}
+	});
+	
+	
+	/**
 	 * Add / remove activity row in the "redirect URL" table according to the currently selected activities
 	 * @since 1.7.0
 	 * @version 1.7.19

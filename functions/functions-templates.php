@@ -196,12 +196,12 @@ function bookacti_get_templates_data( $template_ids = array(), $ignore_permissio
 
 	$retrieved_template_ids = array_keys( $templates );
 
-	$templates_meta		= bookacti_get_metadata( 'template', $retrieved_template_ids );
-	$templates_managers	= bookacti_get_managers( 'template', $retrieved_template_ids );
+	$templates_meta     = bookacti_get_metadata( 'template', $retrieved_template_ids );
+	$templates_managers = bookacti_get_managers( 'template', $retrieved_template_ids );
 
 	foreach( $templates as $template_id => $template ) {
-		$templates[ $template_id ][ 'settings' ]	= isset( $templates_meta[ $template_id ] ) ? $templates_meta[ $template_id ] : array();
-		$templates[ $template_id ][ 'admin' ]	= isset( $templates_managers[ $template_id ] ) ? $templates_managers[ $template_id ] : array();
+		$templates[ $template_id ][ 'settings' ] = isset( $templates_meta[ $template_id ] ) ? $templates_meta[ $template_id ] : array();
+		$templates[ $template_id ][ 'admin' ]    = isset( $templates_managers[ $template_id ] ) ? $templates_managers[ $template_id ] : array();
 	}
 
 	return $templates;
@@ -209,64 +209,11 @@ function bookacti_get_templates_data( $template_ids = array(), $ignore_permissio
 
 
 /**
- * Get additional calendar fields default data
- * @since 1.5.0
- * @version 1.8.0
- * @param array $fields
- * @return array
- */
-function bookacti_get_calendar_fields_default_data( $fields = array() ) {
-	if( ! is_array( $fields ) ) { $fields = array(); }
-	$defaults = array();
-
-	// Day Begin
-	if( ! $fields || in_array( 'minTime', $fields, true ) ) {
-		$defaults[ 'minTime' ] = array(
-			'type'			=> 'time',
-			'name'			=> 'minTime',
-			'value'			=> '08:00',
-			/* translators: Refers to the first hour displayed on calendar. More information: http://fullcalendar.io/docs/agenda/minTime/ */
-			'title'			=> esc_html__( 'Day begin', 'booking-activities' ),
-			'tip'			=> esc_html__( 'Set when you want the days to begin on the calendar. E.g.: "06:00" Days will begin at 06:00am.', 'booking-activities' )
-		);
-	}
-
-	// Day end
-	if( ! $fields || in_array( 'maxTime', $fields, true ) ) {
-		$defaults[ 'maxTime' ] = array(
-			'type'			=> 'time',
-			'name'			=> 'maxTime',
-			'value'			=> '20:00',
-			/* translators: Refers to the last hour displayed on calendar. More information: http://fullcalendar.io/docs/agenda/maxTime/ */
-			'title'			=> esc_html__( 'Day end', 'booking-activities' ),
-			'tip'			=> esc_html__( 'Set when you want the days to end on the calendar. E.g.: "18:00" Days will end at 06:00pm.', 'booking-activities' )
-		);
-	}
-
-	// Snap Duration
-	if( ! $fields || in_array( 'snapDuration', $fields, true ) ) {
-		$defaults[ 'snapDuration' ] = array(
-			'type'			=> 'text',
-			'name'			=> 'snapDuration',
-			'class'			=> 'bookacti-time-field',
-			'placeholder'	=> '23:59',
-			'value'			=> '00:05',
-			/* translators: Refers to the time interval at which a dragged event will snap to the agenda view time grid. E.g.: 00:20', you will be able to drop an event every 20 minutes (at 6:00am, 6:20am, 6:40am...). More information: http://fullcalendar.io/docs/agenda/snapDuration/ */
-			'title'			=> esc_html__( 'Snap frequency', 'booking-activities' ),
-			'tip'			=> esc_html__( 'The time interval at which a dragged event will snap to the agenda view time grid. E.g.: "00:20", you will be able to drop an event every 20 minutes (at 6:00am, 6:20am, 6:40am...).', 'booking-activities' )
-		);
-	}
-
-	return apply_filters( 'bookacti_calendar_fields_default_data', $defaults, $fields );
-}
-
-
-/**
  * Get a unique template setting made from a combination of multiple template settings
- * @since	1.2.2 (was bookacti_get_mixed_template_settings)
- * @version 1.12.0
- * @param	arrayr|int $template_ids Array of template ids or single template id
- * @return	array
+ * @since 1.2.2 (was bookacti_get_mixed_template_settings)
+ * @version 1.13.0
+ * @param array $template_ids Array of template ids
+ * @return array
  */
 function bookacti_get_mixed_template_data( $template_ids ) {
 	$templates_data = bookacti_get_templates_data( $template_ids, true );
@@ -297,65 +244,23 @@ function bookacti_get_mixed_template_data( $template_ids ) {
 				|| isset( $mixed_settings[ 'snapDuration' ] ) && strtotime( $settings[ 'snapDuration' ] ) < strtotime( $mixed_settings[ 'snapDuration' ] ) ) {
 
 				$mixed_settings[ 'snapDuration' ] = $settings[ 'snapDuration' ];
-			} 
+			}
+		}
+		if( isset( $settings[ 'days_off' ] ) ) {
+			// Merge the days off
+			if( ! isset( $mixed_settings[ 'days_off' ] ) ) { $mixed_settings[ 'days_off' ] = array(); }
+			$mixed_settings[ 'days_off' ] = array_merge( $mixed_settings[ 'days_off' ], $settings[ 'days_off' ] );
 		}
 	}
+	
+	// Snaitize merged days off
+	if( ! empty( $mixed_settings[ 'days_off' ] ) ) { $mixed_settings[ 'days_off' ] = bookacti_sanitize_days_off( $mixed_settings[ 'days_off' ] ); }
 
 	// Add mixed settings
 	$mixed_data[ 'settings' ] = $mixed_settings;
 
 	return apply_filters( 'bookacti_mixed_template_settings', $mixed_data, $templates_data, $template_ids );
 }
-
-
-/**
- * Display the Days off field
- * @since 1.13.0
- * @param array $field
- * @param string $field_name
- */
-function bookacti_display_days_off_field( $field, $field_name ) {
-	if( ! in_array( $field_name, array( 'days_off', 'repeat_exceptions' ), true ) ) { return; }
-	if( empty( $field[ 'value' ] ) ) { $field[ 'value' ] = array( array( 'from' => '', 'to' => '' ) ); }
-?>
-	<div class='bookacti-field-container bookacti-days-off-container' id='<?php echo $field[ 'id' ] . '-container'; ?>'>
-		<label for='<?php echo esc_attr( sanitize_title_with_dashes( $field[ 'id' ] ) ); ?>' class='bookacti-fullwidth-label'>
-		<?php 
-			echo ! empty( $field[ 'title' ] ) ? $field[ 'title' ] : '';
-			bookacti_help_tip( $field[ 'tip' ] );
-		?>
-			<span class='dashicons dashicons-plus-alt bookacti-add-days-off'></span>
-		</label>
-		<div id='<?php echo $field[ 'id' ]; ?>' class='bookacti-days-off-table-container bookacti-custom-scrollbar' data-name='<?php echo $field[ 'name' ]; ?>' >
-			<table>
-				<thead>
-					<tr>
-						<th><?php echo esc_html_x( 'From', 'date', 'booking-activities' ); ?></th>
-						<th><?php echo esc_html_x( 'To', 'date', 'booking-activities' ); ?></th>
-						<th></th>
-					</tr>
-				</thead>
-				<tbody>
-				<?php
-					$i = 0;
-					foreach( $field[ 'value' ] as $day_off ) {
-					?>
-						<tr>
-							<td><input type='date' name='<?php echo $field_name . '[' . $i . '][from]'; ?>' value='<?php if( ! empty( $day_off[ 'from' ] ) ) { echo $day_off[ 'from' ]; } ?>' class='bookacti-days-off-from'/></td>
-							<td><input type='date' name='<?php echo $field_name . '[' . $i . '][to]'; ?>' value='<?php if( ! empty( $day_off[ 'to' ] ) ) { echo $day_off[ 'to' ]; } ?>' class='bookacti-days-off-to'/></td>
-							<td><span class='dashicons dashicons-trash bookacti-delete-days-off'></span></td>
-						</tr>
-					<?php
-						++$i;
-					}
-				?>
-				</tbody>
-			</table>
-		</div>
-	</div>
-<?php
-}
-add_action( 'bookacti_display_custom_field', 'bookacti_display_days_off_field', 10, 2 );
 
 
 

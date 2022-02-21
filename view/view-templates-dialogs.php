@@ -8,7 +8,7 @@
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 // Templates options list
-$templates = bookacti_fetch_templates();
+if( empty( $templates ) ) { $templates = bookacti_fetch_templates(); }
 $templates_options = array();
 foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = esc_html( $template[ 'title' ] ); }
 ?>
@@ -199,7 +199,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 					'tip'		=> esc_html__( 'Set the ending date of the repetition. The occurrences of the event will be added until this date.', 'booking-activities' )
 				),
 				'repeat_exceptions' => array(
-					'type'	=> 'custom',
+					'type'	=> 'custom_date_intervals',
 					'name'	=> 'repeat_exceptions',
 					'id'	=> 'bookacti-event-repeat-exceptions',
 					'class'	=> 'bookacti-repeat_exceptions',
@@ -232,10 +232,6 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 						'callback'		=> 'bookacti_fill_template_tab_general',
 						'parameters'	=> array( 'templates_options' => $templates_options ),
 						'order'			=> 10 ),
-				array(	'label'			=> esc_html__( 'Availability', 'booking-activities' ),
-						'callback'		=> 'bookacti_fill_template_tab_availability',
-						'parameters'	=> array(),
-						'order'			=> 30 ),
 				array(	'label'			=> esc_html__( 'Editor', 'booking-activities' ),
 						'callback'		=> 'bookacti_fill_template_tab_editor',
 						'parameters'	=> array(),
@@ -285,34 +281,9 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			
 			
 			/**
-			 * Display the 'Availability' tab content of template settings
-			 * @since 1.13.0
-			 * @param array $params
-			 */
-			function bookacti_fill_template_tab_availability( $params = array() ) {
-				$templates_options = isset( $params[ 'templates_options' ] ) ? $params[ 'templates_options' ] : array();
-				do_action( 'bookacti_template_tab_availability_before', $params );
-				
-				$fields = array(
-					'days_off' => array(
-						'type'	=> 'custom',
-						'name'	=> 'days_off',
-						'value'	=> array(),
-						'title'	=> esc_html__( 'Days off', 'booking-activities' ),
-						'tip'	=> esc_html__( 'Enter your leave periods, no events will be displayed during them.', 'booking-activities' )
-					)
-				);
-				
-				bookacti_display_fields( $fields );
-				
-				do_action( 'bookacti_template_tab_availability_after', $params );
-			}
-			
-			
-			/**
 			 * Fill the "Editor" tab in calendar settings
 			 * @since 1.7.18 (was bookacti_fill_template_tab_agenda)
-			 * @version 1.12.0
+			 * @version 1.13.0
 			 * @param array $params
 			 */
 			function bookacti_fill_template_tab_editor( $params = array() ) {
@@ -333,7 +304,15 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 					<legend><?php esc_html_e( 'Agenda views', 'booking-activities' ); ?></legend>
 					<?php
 						$agenda_fields = array( 'minTime', 'maxTime', 'snapDuration' );
-						$fields = apply_filters( 'bookacti_template_tab_editor_agenda_fields', bookacti_get_calendar_fields_default_data( $agenda_fields ) );
+						$fields = apply_filters( 'bookacti_template_tab_editor_agenda_fields', bookacti_get_fullcalendar_fields_default_data( $agenda_fields ) );
+						bookacti_display_fields( $fields );
+					?>
+				</fieldset>
+				<fieldset>
+					<legend><?php esc_html_e( 'Display', 'booking-activities' ); ?></legend>
+					<?php
+						$display_fields = array( 'days_off' );
+						$fields = apply_filters( 'bookacti_template_tab_editor_display_fields', bookacti_get_booking_system_fields_default_data( $display_fields ) );
 						bookacti_display_fields( $fields );
 					?>
 				</fieldset>
@@ -949,7 +928,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 						'tip'		=> esc_html__( 'Set the ending date of the repetition. The occurrences of the group of events starting after that date won\'t be generated.', 'booking-activities' )
 					),
 					'repeat_exceptions' => array(
-						'type'	=> 'custom',
+						'type'	=> 'custom_date_intervals',
 						'name'	=> 'repeat_exceptions',
 						'id'	=> 'bookacti-group-of-events-repeat-exceptions',
 						'class'	=> 'bookacti-repeat_exceptions',

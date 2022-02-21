@@ -188,9 +188,9 @@ fieldset legend .bookacti-show-hide-advanced-options{ cursor: pointer; color: #0
 .bookacti-duration-hint				{ font-size: smaller; font-style: italic; }
 .bookacti-field-container .bookacti-duration-hint { text-align: right; }
 
-.bookacti-delete-days-off							{ cursor: pointer; color: #565d61; }
-.bookacti-add-days-off								{ cursor: pointer; color: #418fb6; }
-.bookacti-days-off-table-container					{ max-height: 130px; overflow-y: auto; }
+.bookacti-delete-date-interval							{ cursor: pointer; color: #565d61; }
+.bookacti-add-date-interval								{ cursor: pointer; color: #418fb6; }
+.bookacti-date-intervals-table-container					{ max-height: 130px; overflow-y: auto; }
 
 
 /* ON / OFF Switch */

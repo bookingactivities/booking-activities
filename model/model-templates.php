@@ -853,7 +853,7 @@ function bookacti_get_group_category_template_id( $category_id ) {
 
 /**
  * Get templates
- * @version 1.13.0
+ * @version 1.12.0
  * @global wpdb $wpdb
  * @param array $template_ids
  * @param boolean $ignore_permissions
@@ -876,11 +876,11 @@ function bookacti_fetch_templates( $template_ids = array(), $ignore_permissions 
 	$variables = array();
 
 	if( $ignore_permissions ) {
-		$query = 'SELECT T.id, T.title, T.days_off, T.active '
+		$query = 'SELECT T.id, T.title, T.active '
 			. ' FROM ' . BOOKACTI_TABLE_TEMPLATES . ' as T '
 			. ' WHERE T.active = 1 ';
 	} else {
-		$query = 'SELECT T.id, T.title, T.days_off, T.active '
+		$query = 'SELECT T.id, T.title, T.active '
 			. ' FROM ' . BOOKACTI_TABLE_TEMPLATES . ' as T, ' . BOOKACTI_TABLE_PERMISSIONS . ' as P '
 			. ' WHERE T.active = 1 '
 			. ' AND T.id = P.object_id '
@@ -915,8 +915,6 @@ function bookacti_fetch_templates( $template_ids = array(), $ignore_permissions 
 
 	$templates_by_id = array();
 	foreach( $templates as $template ) {
-		$template[ 'days_off' ] = ! empty( $template[ 'days_off' ] ) ? maybe_unserialize( $template[ 'days_off' ] ) : array();
-		if( ! is_array( $template[ 'days_off' ] ) ) { $template[ 'days_off' ] = array(); }
 		$templates_by_id[ $template[ 'id' ] ] = $template;
 	}
 
@@ -926,7 +924,7 @@ function bookacti_fetch_templates( $template_ids = array(), $ignore_permissions 
 
 /**
  * Create a new template
- * @version 1.13.0
+ * @version 1.12.0
  * @global wpdb $wpdb
  * @param array $data Data sanitized with bookacti_sanitize_template_data
  * @return int
@@ -934,13 +932,10 @@ function bookacti_fetch_templates( $template_ids = array(), $ignore_permissions 
 function bookacti_insert_template( $data ) { 
 	global $wpdb;
 
-	$query = ' INSERT INTO ' . BOOKACTI_TABLE_TEMPLATES . ' ( title, days_off, active ) '
-			. ' VALUES ( %s, NULLIF( NULLIF( %s, "null" ), "" ), 1 )';
+	$query = ' INSERT INTO ' . BOOKACTI_TABLE_TEMPLATES . ' ( title, active ) '
+			. ' VALUES ( %s, 1 )';
 
-	$variables = array( 
-		$data[ 'title' ], 
-		maybe_serialize( $data[ 'days_off' ] )
-	);
+	$variables = array( $data[ 'title' ] );
 
 	$query = $wpdb->prepare( $query, $variables );
 	$wpdb->query( $query );
@@ -969,7 +964,7 @@ function bookacti_deactivate_template( $template_id ) {
 
 /**
  * Update template
- * @version 1.13.0
+ * @version 1.12.0
  * @global wpdb $wpdb
  * @param array $data
  * @return int|false
@@ -978,15 +973,10 @@ function bookacti_update_template( $data ) {
 	global $wpdb;
 	
 	$query = ' UPDATE ' . BOOKACTI_TABLE_TEMPLATES . ' SET '
-				. ' title = IFNULL( NULLIF( %s, "" ), title ), '
-				. ' days_off = NULLIF( IFNULL( NULLIF( %s, "" ), days_off ), "null" ) '
+				. ' title = IFNULL( NULLIF( %s, "" ), title ) '
 			. ' WHERE id = %d ';
 	
-	$variables = array( 
-		$data[ 'title' ], 
-		! is_null( $data[ 'days_off' ] ) ? maybe_serialize( $data[ 'days_off' ] ) : 'null', 
-		$data[ 'id' ]
-	);
+	$variables = array( $data[ 'title' ], $data[ 'id' ] );
 	
 	$query = $wpdb->prepare( $query, $variables );
 	$updated = $wpdb->query( $query );
@@ -1446,7 +1436,7 @@ function bookacti_get_activity_ids_by_template( $template_ids = array(), $based_
 
 /**
  * Get templates by activity
- * @version 1.13.0
+ * @version 1.7.0
  * @global wpdb $wpdb
  * @param array $activity_ids
  * @param boolean $id_only
@@ -1490,8 +1480,6 @@ function bookacti_get_templates_by_activity( $activity_ids, $id_only = true ) {
 		if( $id_only ){
 			$templates_array[] = $template->id;
 		} else {
-			$template[ 'days_off' ] = ! empty( $template[ 'days_off' ] ) ? maybe_unserialize( $template[ 'days_off' ] ) : array();
-			if( ! is_array( $template[ 'days_off' ] ) ) { $template[ 'days_off' ] = array(); }
 			$templates_array[] = $template;
 		}
 	}

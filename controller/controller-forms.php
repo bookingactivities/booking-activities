@@ -814,7 +814,7 @@ add_action( 'wp_ajax_nopriv_bookactiSubmitLoginForm', 'bookacti_controller_valid
 /**
  * Check if booking form is correct and then book the event, or send the error message
  * @since 1.5.0
- * @version 1.12.4
+ * @version 1.13.0
  */
 function bookacti_controller_validate_booking_form() {
 	// Check nonce
@@ -931,6 +931,20 @@ function bookacti_controller_validate_booking_form() {
 		// Book without account
 		} else if( $login_values[ 'login_type' ] === 'no_account' ) {
 			$return_array[ 'user_id' ] = ! empty( $login_values[ 'email' ] ) ? $login_values[ 'email' ] : esc_attr( apply_filters( 'bookacti_unknown_user_id', 'unknown_user' ) );
+			
+			// Check if the user exists
+			if( is_email( $return_array[ 'user_id' ] ) ) {
+				$user = get_user_by( 'email', $return_array[ 'user_id' ] );
+				if( is_a( $user, 'WP_User' ) ) {
+					$return_array[ 'error' ] = 'user_already_exists';
+					$return_array[ 'messages' ][ 'user_already_exists' ] = sprintf(
+						__( '<strong>Error:</strong> This email address is already registered. <a href="%s">Log in</a> with this address or choose another one.' ),
+						wp_login_url()
+					);
+					$return_array[ 'message' ] = implode( '</li><li>', $return_array[ 'messages' ] );
+					bookacti_send_json( $return_array, 'submit_booking_form' );
+				}
+			}
 			
 			// Check that required register fields are filled
 			$register_fields_errors = array();
@@ -1101,6 +1115,19 @@ function bookacti_save_no_account_user_data( $return_array, $booking_form_values
 }
 add_action( 'bookacti_booking_form_validated', 'bookacti_save_no_account_user_data', 10, 3 );
 
+
+/**
+ * Assign the bookings made without account to the account having the same email address
+ * @since 1.13.0
+ * @param int $user_id
+ */
+function bookacti_assign_bookings_made_without_account_to_user( $user_id ) {
+	$user = get_user_by( 'id', $user_id );
+	if( $user && ! empty( $user->user_email ) ) {
+		bookacti_update_bookings_user_id( $user_id, $user->user_email );
+	}
+}
+add_action( 'user_register', 'bookacti_assign_bookings_made_without_account_to_user', 10, 1 );
 
 
 

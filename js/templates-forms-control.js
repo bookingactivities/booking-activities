@@ -23,51 +23,22 @@ $j( document ).ready( function() {
 	
 	
 	/**
-	 * Add a Days off line
-	 * @since 1.13.0
-	 */
-	$j( '.bookacti-days-off-container' ).on( 'click', '.bookacti-add-days-off', function() {
-		console.log( $j( this ).closest( '.bookacti-days-off-container' ).find( '.bookacti-days-off-table-container' ).length );
-		bookacti_add_days_off_row( $j( this ).closest( '.bookacti-days-off-container' ).find( '.bookacti-days-off-table-container' ) );
-	});
-	
-	
-	/**
-	 * Delete a Days off line
-	 * @since 1.13.0
-	 */
-	$j( '.bookacti-days-off-container' ).on( 'click', '.bookacti-delete-days-off', function() {
-		bookacti_delete_days_off_row( $j( this ).closest( '.bookacti-days-off-container' ).find( '.bookacti-days-off-table-container' ), $j( this ).closest( 'tr' ) );
-	});
-	
-	
-	/**
 	 * Fill template's days off in calendar editor
 	 * @since 1.13.0
 	 */
 	$j( '#bookacti-template-data-dialog' ).on( 'bookacti_default_template_settings', function() {
-		bookacti_delete_days_off_rows( $j( '#bookacti-template-data-dialog .bookacti-days-off-table-container' ) );
+		bookacti_delete_days_off_rows( $j( '#bookacti-template-data-dialog .bookacti-date-intervals-table-container' ) );
 		$j( '#bookacti-template-data-dialog input.bookacti-days-off-from, #bookacti-template-data-dialog input.bookacti-days-off-to' ).attr( 'min', '' ).attr( 'max', '' );
 		
 		// Fill Days off option since the bookacti_fill_fields_from_array function won't do it
 		var template_data = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ];
-		if( ! $j.isEmptyObject( template_data.settings ) ) {
-			if( ! $j.isEmptyObject( template_data.days_off ) ) {
-				bookacti_fill_days_off( $j( '#bookacti-template-data-dialog .bookacti-days-off-table-container' ), template_data.days_off );
+		if( typeof template_data.settings !== 'undefined' ) {
+			if( typeof template_data.settings.days_off !== 'undefined' ) {
+				if( ! $j.isEmptyObject( template_data.settings.days_off ) ) {
+					bookacti_fill_days_off( $j( '#bookacti-template-data-dialog .bookacti-date-intervals-table-container' ), template_data.settings.days_off );
+				}
 			}
 		}
-	});
-	
-	
-	/**
-	 * Reset custom Days off
-	 * @since 1.13.0
-	 * @param {Event} e
-	 * @param {String} scope
-	 */
-	$j( 'body' ).on( 'bookacti_empty_all_dialogs_forms', function( e, scope ) {
-		bookacti_delete_days_off_rows( $j( scope + ' .bookacti-days-off-table-container' ) );
-		$j( scope + ' input.bookacti-days-off-from, ' + scope + ' input.bookacti-days-off-to' ).attr( 'min', '' ).attr( 'max', '' );
 	});
 });
 
@@ -379,7 +350,7 @@ function bookacti_validate_event_repetition_data( object_type ) {
 	$j( scope + ' div[id$="-repeat-from-container"]' ).hide();
 	$j( scope + ' div[id$="-repeat-to-container"]' ).hide();
 	$j( scope + ' div[id$="-repeat-exceptions-container"]' ).hide();
-	$j( scope + ' input.bookacti-days-off-from, ' + scope + ' input.bookacti-days-off-to' ).attr( 'min', '' ).attr( 'max', '' );
+	$j( scope + ' input.bookacti-date-interval-from, ' + scope + ' input.bookacti-date-interval-to' ).attr( 'min', '' ).attr( 'max', '' );
 	$j( '#bookacti-group-of-events-repetition-first-event-notice' ).hide();
 	
 	var exceptions_disabled = false;
@@ -388,8 +359,8 @@ function bookacti_validate_event_repetition_data( object_type ) {
 	if( exceptions_min.isAfter( exceptions_max ) ) { exceptions_disabled = true; };
 	
 	if( ! exceptions_disabled ) {
-		if( valid_form.isRepeatFrom )	{ $j( scope + ' input.bookacti-days-off-from, ' + scope + ' input.bookacti-days-off-to' ).attr( 'min', exceptions_min.format( 'YYYY-MM-DD' ) ); }
-		if( valid_form.isRepeatTo )		{ $j( scope + ' input.bookacti-days-off-from, ' + scope + ' input.bookacti-days-off-to' ).attr( 'max', exceptions_max.format( 'YYYY-MM-DD' ) ); }
+		if( valid_form.isRepeatFrom )	{ $j( scope + ' input.bookacti-date-interval-from, ' + scope + ' input.bookacti-date-interval-to' ).attr( 'min', exceptions_min.format( 'YYYY-MM-DD' ) ); }
+		if( valid_form.isRepeatTo )		{ $j( scope + ' input.bookacti-date-interval-from, ' + scope + ' input.bookacti-date-interval-to' ).attr( 'max', exceptions_max.format( 'YYYY-MM-DD' ) ); }
 	}
 
 	// Clean the feedbacks before displaying new feedbacks
@@ -566,84 +537,4 @@ function bookacti_validate_group_category_form() {
 	}
 
 	return valid_form.send;
-}
-
-
-/**
- * Fill default Days off fields
- * @since 1.13.0
- * @param {HTMLElement} container
- * @param {Array} entries
- */
-function bookacti_fill_days_off( container, entries ) {
-	if( typeof entries === 'undefined' ) { return; }
-	if( ! $j.isArray( entries ) && ! $j.isPlainObject( entries ) ) { return; }
-	if( entries.length <= 0 ) { return; }
-	
-	// Reset Days off table
-	bookacti_delete_days_off_rows( container );
-	
-	var tbody = container.find( 'tbody' );
-	
-	var i = 0;
-	$j.each( entries, function( j, entry ) {
-		if( i > 0 ) { bookacti_add_days_off_row( container ); }
-		tbody.find( 'tr:last .bookacti-days-off-from' ).val( entry.from );
-		tbody.find( 'tr:last .bookacti-days-off-to' ).val( entry.to );
-		++i;
-	});
-}
-
-
-/**
- * Add a Days off row
- * @since 1.13.0
- * @param {HTMLElement} container
- */
-function bookacti_add_days_off_row( container ) {
-	var tbody = container.find( 'tbody' );
-	var name_i = container.data( 'name' ) + '[' + tbody.find( 'tr' ).length + ']';
-	tbody.find( 'tr:first' ).clone().appendTo( tbody );
-	tbody.find( 'tr:last .bookacti-days-off-from' ).attr( 'name', name_i + '[from]' ).val( '' );
-	tbody.find( 'tr:last .bookacti-days-off-to' ).attr( 'name', name_i + '[to]' ).val( '' );
-}
-
-
-/**
- * Delete a Days off row
- * @since 1.13.0
- * @param {HTMLElement} container
- * @param {HTMLElement} row
- */
-function bookacti_delete_days_off_row( container, row ) {
-	row = row || null;
-	var tbody = container.find( 'tbody' );
-	// If there is only one row, empty the fields
-	if( tbody.find( 'tr' ).length <= 1 ) {
-		tbody.find( 'tr:first .bookacti-days-off-from, tr:first .bookacti-days-off-to' ).val( '' );
-		
-	// Else, delete the whole row and reset indexes
-	} else if( row != null ) {
-		row.remove();
-		var i = 0;
-		var name = container.data( 'name' );
-		tbody.find( 'tr' ).each( function() {
-			var name_i = name + '[' + i + ']';
-			$j( this ).find( '.bookacti-days-off-from' ).attr( 'name', name_i + '[from]' );
-			$j( this ).find( '.bookacti-days-off-to' ).attr( 'name', name_i + '[to]' );
-			++i;
-		});
-	}
-}
-
-
-/**
- * Delete all Days off rows
- * @since 1.13.0
- * @param {HTMLElement} container
- */
-function bookacti_delete_days_off_rows( container ) {
-	var tbody = container.find( 'tbody' );
-	tbody.find( 'tr:not(:first)' ).remove();
-	bookacti_delete_days_off_row( container, tbody.find( 'tr:first' ) );
 }

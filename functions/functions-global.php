@@ -908,7 +908,7 @@ function bookacti_convert_wp_locale_to_fc_locale( $wp_locale = false ) {
 /**
  * Display fields
  * @since 1.5.0
- * @version 1.12.6
+ * @version 1.13.0
  * @param array $args
  */
 function bookacti_display_fields( $fields, $args = array() ) {
@@ -932,7 +932,7 @@ function bookacti_display_fields( $fields, $args = array() ) {
 		if( $field[ 'type' ] === 'select_items' )	{ $wrap_class .= ' bookacti-items-container'; } 
 		
 		// If custom type, call another function to display this field
-		if( $field[ 'type' ] === 'custom' ) {
+		if( substr( $field[ 'type' ], 0, 6 ) === 'custom' ) {
 			do_action( 'bookacti_display_custom_field', $field, $field_name );
 			continue;
 		}
@@ -1232,6 +1232,11 @@ function bookacti_display_field( $args ) {
 	// User ID
 	else if( $args[ 'type' ] === 'user_id' ) {
 		bookacti_display_user_selectbox( $args[ 'options' ] );
+	}
+
+	// Custom
+	else {
+		do_action( 'bookacti_display_field', $args );
 	}
 
 	// Display the tip
@@ -1624,6 +1629,56 @@ function bookacti_display_table_from_array( $array ) {
 	</table>
 	<?php
 }
+
+
+/**
+ * Display the Days off field
+ * @since 1.13.0
+ * @param array $field
+ * @param string $field_name
+ */
+function bookacti_display_date_intervals_field( $field, $field_name ) {
+	if( $field[ 'type' ] !== 'custom_date_intervals' ) { return; }
+	if( empty( $field[ 'value' ] ) ) { $field[ 'value' ] = array( array( 'from' => '', 'to' => '' ) ); }
+?>
+	<div class='bookacti-field-container bookacti-date-intervals-container' id='<?php echo $field[ 'id' ] . '-container'; ?>'>
+		<label for='<?php echo esc_attr( sanitize_title_with_dashes( $field[ 'id' ] ) ); ?>' class='bookacti-fullwidth-label'>
+		<?php 
+			echo ! empty( $field[ 'title' ] ) ? $field[ 'title' ] : '';
+			bookacti_help_tip( $field[ 'tip' ] );
+		?>
+			<span class='dashicons dashicons-plus-alt bookacti-add-date-interval'></span>
+		</label>
+		<div id='<?php echo $field[ 'id' ]; ?>' class='bookacti-date-intervals-table-container bookacti-custom-scrollbar' data-name='<?php echo $field[ 'name' ]; ?>' >
+			<table>
+				<thead>
+					<tr>
+						<th><?php echo esc_html_x( 'From', 'date', 'booking-activities' ); ?></th>
+						<th><?php echo esc_html_x( 'To', 'date', 'booking-activities' ); ?></th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+				<?php
+					$i = 0;
+					foreach( $field[ 'value' ] as $day_off ) {
+					?>
+						<tr>
+							<td><input type='date' name='<?php echo $field[ 'name' ] . '[' . $i . '][from]'; ?>' value='<?php if( ! empty( $day_off[ 'from' ] ) ) { echo $day_off[ 'from' ]; } ?>' class='bookacti-date-interval-from'/></td>
+							<td><input type='date' name='<?php echo $field[ 'name' ] . '[' . $i . '][to]'; ?>' value='<?php if( ! empty( $day_off[ 'to' ] ) ) { echo $day_off[ 'to' ]; } ?>' class='bookacti-date-interval-to'/></td>
+							<td><span class='dashicons dashicons-trash bookacti-delete-date-interval'></span></td>
+						</tr>
+					<?php
+						++$i;
+					}
+				?>
+				</tbody>
+			</table>
+		</div>
+	</div>
+<?php
+}
+add_action( 'bookacti_display_custom_field', 'bookacti_display_date_intervals_field', 10, 2 );
 
 
 

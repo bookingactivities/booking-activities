@@ -996,7 +996,7 @@ function bookacti_dialog_update_event_dates( event ) {
 
 /**
  * Dialog Delete Event
- * @version 1.12.0
+ * @version 1.13.0
  * @param {object} event
  */
 function bookacti_dialog_delete_event( event ) {
@@ -1047,12 +1047,13 @@ function bookacti_dialog_delete_event( event ) {
 							bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ] = [];
 							
 							// We use both event._id and event.id to make sure both existing and newly added event are deleted
-							if( event._id !== undefined ) {
-								if( event._id.indexOf('_') >= 0 ) {
+							if( typeof event._id !== 'undefined' ) {
+								if( event._id.indexOf( '_' ) >= 0 ) {
 									$j( '#bookacti-template-calendar' ).fullCalendar( 'removeEvents', event._id );
 								}
+							} else if( typeof event.id !== 'undefined' ) {
+								$j( '#bookacti-template-calendar' ).fullCalendar( 'removeEvents', event.id );
 							}
-							$j( '#bookacti-template-calendar' ).fullCalendar( 'removeEvents', event.id );
 							$j( '#bookacti-template-calendar' ).fullCalendar( 'refetchEvents' );
 							
 							$j( '#bookacti-delete-event-dialog' ).trigger( 'bookacti_event_deactivated', [ event, response, data ] );
@@ -1271,13 +1272,13 @@ function bookacti_fill_repetition_fields( object_id, object_type ) {
 	$j( scope + ' input[name="repeat_to"]' ).val( repeat_to );
 	
 	// Fill the repeat exceptions
-	bookacti_delete_days_off_rows( $j( scope + ' .bookacti-days-off-table-container' ) );
-	$j( scope + ' input.bookacti-days-off-from, ' + scope + ' input.bookacti-days-off-to' ).attr( 'min', '' ).attr( 'max', '' );
+	bookacti_delete_days_off_rows( $j( scope + ' .bookacti-date-intervals-table-container' ) );
+	$j( scope + ' input.bookacti-date-interval-from, ' + scope + ' input.bookacti-date-interval-to' ).attr( 'min', '' ).attr( 'max', '' );
 	if( ! exceptions_disabled ) {
-		$j( scope + ' input.bookacti-days-off-from, ' + scope + ' input.bookacti-days-off-to' ).attr( 'min', exceptions_min.format( 'YYYY-MM-DD' ) ).attr( 'max', exceptions_max.format( 'YYYY-MM-DD' ) );
+		$j( scope + ' input.bookacti-date-interval-from, ' + scope + ' input.bookacti-date-interval-to' ).attr( 'min', exceptions_min.format( 'YYYY-MM-DD' ) ).attr( 'max', exceptions_max.format( 'YYYY-MM-DD' ) );
 	}
 	if( ! $j.isEmptyObject( repeat_data.repeat_exceptions ) ) {
-		bookacti_fill_days_off( $j( scope + ' .bookacti-days-off-table-container' ), repeat_data.repeat_exceptions );
+		bookacti_fill_days_off( $j( scope + ' .bookacti-date-intervals-table-container' ), repeat_data.repeat_exceptions );
 	}
 	
 	// Fill the repeat_days checkboxes

@@ -18,7 +18,6 @@ function bookacti_create_tables() {
 	$table_templates_query = 'CREATE TABLE ' . BOOKACTI_TABLE_TEMPLATES . ' ( 
 		id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, 
 		title TEXT,
-		days_off LONGTEXT,
 		active TINYINT(1) UNSIGNED NOT NULL DEFAULT 1,
 		PRIMARY KEY ( id ) ) ' . $collate . ';';
 
