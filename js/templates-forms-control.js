@@ -40,6 +40,60 @@ $j( document ).ready( function() {
 			}
 		}
 	});
+	
+	
+	/**
+	 * Toggle activity user roles - on check box
+	 * @since 1.13.0
+	 */
+	$j( '#bookacti-activity-data-dialog' ).on( 'change', '#bookacti-display-activity-user-roles', function() {
+		$j( '#bookacti-activity-roles, #bookacti-activity-data-dialog .bookacti-roles-notice' ).toggle( $j( this ).prop( 'checked' ) );
+	});
+	
+	
+	/**
+	 * Toggle group category user roles - on check box
+	 * @since 1.13.0
+	 */
+	$j( '#bookacti-group-category-dialog' ).on( 'change', '#bookacti-display-group-category-user-roles', function() {
+		$j( '#bookacti-group-category-roles, #bookacti-group-category-dialog .bookacti-roles-notice' ).toggle( $j( this ).prop( 'checked' ) );
+	});
+	
+	
+	/**
+	 * Toggle activity user roles - on open
+	 * @since 1.13.0
+	 */
+	$j( '#bookacti-activity-data-dialog' ).on( 'bookacti_activity_update_dialog', function() {
+		if( $j( '#bookacti-activity-roles option:selected' ).length ) {
+			$j( '#bookacti-display-activity-user-roles' ).prop( 'checked', true );
+			$j( '#bookacti-activity-roles, #bookacti-activity-data-dialog .bookacti-roles-notice' ).show();
+		}
+	});
+	
+	
+	/**
+	 * Toggle group category user roles - on open
+	 * @since 1.13.0
+	 */
+	$j( '#bookacti-group-category-dialog' ).on( 'bookacti_group_category_update_dialog', function() {
+		if( $j( '#bookacti-group-category-roles option:selected' ).length ) {
+			$j( '#bookacti-display-group-category-user-roles' ).prop( 'checked', true );
+			$j( '#bookacti-group-category-roles, #bookacti-group-category-dialog .bookacti-roles-notice' ).show();
+		}
+	});
+	
+	
+	/**
+	 * Toggle activity user roles - on close
+	 * @since 1.13.0
+	 * @param {Event} e
+	 * @param {String} scope
+	 */
+	$j( 'body' ).on( 'bookacti_empty_all_dialogs_forms', function( e, scope ) {
+		$j( scope + ' #bookacti-display-activity-user-roles, ' + scope + ' #bookacti-display-group-category-user-roles' ).prop( 'checked', false );
+		$j( scope + ' #bookacti-activity-roles, ' + scope + ' #bookacti-group-category-roles, ' + scope + ' .bookacti-roles-notice' ).hide();
+	});
 });
 
 

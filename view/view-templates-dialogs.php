@@ -572,7 +572,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			
 			/**
 			 * Display the fields in the "Permissions" tab of the Activity dialog
-			 * @version 1.12.0
+			 * @version 1.13.0
 			 * @param array $params
 			 */
 			function bookacti_fill_activity_tab_permissions( $params = array() ) {
@@ -582,29 +582,37 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 				$roles = get_editable_roles();
 				$roles_options = array();
 				foreach( $roles as $role_id => $role ) { $roles_options[ $role_id ] = $role[ 'name' ]; }
-				
-				$allowed_roles = array( 
-					'type'		=> 'select',
-					'multiple'	=> 1,
-					'name'		=> 'allowed_roles',
-					'id'		=> 'bookacti-activity-roles',
-					'title'		=> esc_html__( 'Who can book this activity?', 'booking-activities' ),
-					'fullwidth'	=> 1,
-					'options'	=> array_merge( $roles_options, array( 'all' => esc_html__( 'Everybody', 'booking-activities' ) ) ),
-					'tip'		=> esc_html__( 'Choose who is allowed to book the events of this activity.', 'booking-activities' )
-								. '<br/>' . esc_html__( 'Use CTRL+Click to pick or unpick a role.', 'booking-activities' ) 
-								. ' ' . esc_html__( 'Don\'t pick any role to allow everybody.', 'booking-activities' )
-				);
-				bookacti_display_fields( array( 'allowed_roles' => $allowed_roles ) );
 				?>
+				<div class='bookacti-field-container' id='bookacti-activity-roles-container'>
+					<input type='checkbox' id='bookacti-display-activity-user-roles'/>
+					<label for='bookacti-display-activity-user-roles' class='bookacti-fullwidth-label'>
+						<strong><?php esc_html_e( 'I want to restrict this activity to certain users only', 'booking-activities' ); ?></strong>
+					</label>
+					<?php
+					$tip = esc_html__( 'Choose who is allowed to book the events of this activity.', 'booking-activities' )
+						 . '<br/>' . esc_html__( 'Use CTRL+Click to pick or unpick a role.', 'booking-activities' ) 
+						 . ' ' . esc_html__( 'Don\'t pick any role to allow everybody.', 'booking-activities' );
+					bookacti_help_tip( $tip );
 				
-				<div class='bookacti-roles-notice bookacti-warning' style='margin-bottom:0;'>
-					<span class='dashicons dashicons-info'></span>
-					<span><?php esc_html_e( 'Don\'t pick any role to allow everybody.', 'booking-activities' ); ?></span>
-				</div>
-				<div class='bookacti-roles-notice bookacti-info'>
-					<span class='dashicons dashicons-info'></span>
-					<span><?php esc_html_e( 'Use CTRL+Click to pick or unpick a role.', 'booking-activities' ); ?></span>
+					$allowed_roles = array( 
+						'type'		=> 'select',
+						'multiple'	=> 1,
+						'name'		=> 'allowed_roles',
+						'id'		=> 'bookacti-activity-roles',
+						'fullwidth'	=> 1,
+						'options'	=> array_merge( $roles_options, array( 'all' => esc_html__( 'Everybody', 'booking-activities' ) ) )
+					);
+					bookacti_display_field( $allowed_roles );
+					?>
+				
+					<div class='bookacti-roles-notice bookacti-warning' style='margin-bottom:0;'>
+						<span class='dashicons dashicons-info'></span>
+						<span><?php esc_html_e( 'Don\'t pick any role to allow everybody.', 'booking-activities' ); ?></span>
+					</div>
+					<div class='bookacti-roles-notice bookacti-info'>
+						<span class='dashicons dashicons-info'></span>
+						<span><?php esc_html_e( 'Use CTRL+Click to pick or unpick a role.', 'booking-activities' ); ?></span>
+					</div>
 				</div>
 				
 				<?php
@@ -1079,7 +1087,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			
 			/**
 			 * Display the fields in the "Permissions" tab of the Group Category dialog
-			 * @version 1.12.0
+			 * @version 1.13.0
 			 * @param array $params
 			 */
 			function bookacti_fill_group_category_tab_permissions( $params = array() ) {
@@ -1089,30 +1097,38 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 				$roles = get_editable_roles();
 				$roles_options = array();
 				foreach( $roles as $role_id => $role ) { $roles_options[ $role_id ] = $role[ 'name' ]; }
-				
-				$allowed_roles = array( 
-					'type'		=> 'select',
-					'multiple'	=> 1,
-					'name'		=> 'allowed_roles',
-					'id'		=> 'bookacti-group-category-roles',
-					'title'		=> esc_html__( 'Who can book this category of groups?', 'booking-activities' ),
-					'fullwidth'	=> 1,
-					'options'	=> array_merge( $roles_options, array( 'all' => esc_html__( 'Everybody', 'booking-activities' ) ) ),
-					'tip'		=> esc_html__( 'Choose who is allowed to book the groups of this category.', 'booking-activities' )
-								. '<br/>' . esc_html__( 'Use CTRL+Click to pick or unpick a role.', 'booking-activities' ) 
-								. ' ' . esc_html__( 'Don\'t pick any role to allow everybody.', 'booking-activities' )
-				);
-				bookacti_display_fields( array( 'allowed_roles' => $allowed_roles ) );
-			?>		
-				<div class='bookacti-roles-notice bookacti-warning' style='margin-bottom:0;'>
-					<span class='dashicons dashicons-info'></span>
-					<span><?php esc_html_e( 'Don\'t pick any role to allow everybody.', 'booking-activities' ); ?></span>
+				?>
+				<div class='bookacti-field-container' id='bookacti-group-category-roles-container'>
+					<input type='checkbox' id='bookacti-display-group-category-user-roles'/>
+					<label for='bookacti-display-group-category-user-roles' class='bookacti-fullwidth-label'>
+						<strong><?php esc_html_e( 'I want to restrict this group category to certain users only', 'booking-activities' ); ?></strong>
+					</label>
+					<?php
+					$tip = esc_html__( 'Choose who is allowed to book the groups of this category.', 'booking-activities' )
+						 . '<br/>' . esc_html__( 'Use CTRL+Click to pick or unpick a role.', 'booking-activities' ) 
+						 . ' ' . esc_html__( 'Don\'t pick any role to allow everybody.', 'booking-activities' );
+					bookacti_help_tip( $tip );
+
+					$allowed_roles = array( 
+						'type'		=> 'select',
+						'multiple'	=> 1,
+						'name'		=> 'allowed_roles',
+						'id'		=> 'bookacti-group-category-roles',
+						'fullwidth'	=> 1,
+						'options'	=> array_merge( $roles_options, array( 'all' => esc_html__( 'Everybody', 'booking-activities' ) ) )
+					);
+					bookacti_display_field( $allowed_roles );
+				?>		
+					<div class='bookacti-roles-notice bookacti-warning' style='margin-bottom:0;'>
+						<span class='dashicons dashicons-info'></span>
+						<span><?php esc_html_e( 'Don\'t pick any role to allow everybody.', 'booking-activities' ); ?></span>
+					</div>
+					<div class='bookacti-roles-notice bookacti-info'>
+						<span class='dashicons dashicons-info'></span>
+						<span><?php esc_html_e( 'Use CTRL+Click to pick or unpick a role.', 'booking-activities' ); ?></span>
+					</div>
 				</div>
-				<div class='bookacti-roles-notice bookacti-info'>
-					<span class='dashicons dashicons-info'></span>
-					<span><?php esc_html_e( 'Use CTRL+Click to pick or unpick a role.', 'booking-activities' ); ?></span>
-				</div>
-			<?php
+				<?php
 				do_action( 'bookacti_group_category_tab_permissions_after', $params );
 			}
 		?>
