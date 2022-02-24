@@ -584,7 +584,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 				foreach( $roles as $role_id => $role ) { $roles_options[ $role_id ] = $role[ 'name' ]; }
 				?>
 				<div class='bookacti-field-container' id='bookacti-activity-roles-container'>
-					<input type='checkbox' id='bookacti-display-activity-user-roles'/>
+					<input type='checkbox' name='is_restricted' id='bookacti-display-activity-user-roles'/>
 					<label for='bookacti-display-activity-user-roles' class='bookacti-fullwidth-label'>
 						<strong><?php esc_html_e( 'I want to restrict this activity to certain users only', 'booking-activities' ); ?></strong>
 					</label>
@@ -683,9 +683,9 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			wp_nonce_field( 'bookacti_import_activity', 'nonce_import_activity', false );
 			
 			$fields = array(
-				'duplicated_template_id' => array(
+				'template_to_import_activities_from' => array(
 					'type'		=> 'select',
-					'name'		=> 'template-import-bound-activities',
+					'name'		=> 'template_to_import_activities_from',
 					'id'		=> 'template-import-bound-activities',
 					'class'		=> 'bookacti-template-select-box',
 					/* translators: the user is asked to select a calendar to display its bound activities. This is the label of the select box. */
@@ -1099,7 +1099,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 				foreach( $roles as $role_id => $role ) { $roles_options[ $role_id ] = $role[ 'name' ]; }
 				?>
 				<div class='bookacti-field-container' id='bookacti-group-category-roles-container'>
-					<input type='checkbox' id='bookacti-display-group-category-user-roles'/>
+					<input type='checkbox' name='is_restricted' id='bookacti-display-group-category-user-roles'/>
 					<label for='bookacti-display-group-category-user-roles' class='bookacti-fullwidth-label'>
 						<strong><?php esc_html_e( 'I want to restrict this group category to certain users only', 'booking-activities' ); ?></strong>
 					</label>

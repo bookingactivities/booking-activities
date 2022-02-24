@@ -144,18 +144,18 @@ function bookacti_format_form_data( $raw_form_data = array() ) {
 /**
  * Sanitize form data
  * @since 1.5.0
+ * @version 1.13.0
  * @param array|string $raw_form_data
  * @return array|false
  */
 function bookacti_sanitize_form_data( $raw_form_data ) {
-	
 	// Check if name and type are set
-	if( ! is_array( $raw_form_data ) ) { return false; }
+	if( ! is_array( $raw_form_data ) ) { return array(); }
 	
 	$default_data	= bookacti_get_default_form_data();
 	$default_meta	= bookacti_get_default_form_meta();
 	
-	if( ! $default_data ) { return false; }
+	if( ! $default_data ) { return array(); }
 	
 	$form_data	= array();
 	$form_meta	= array();
@@ -171,6 +171,7 @@ function bookacti_sanitize_form_data( $raw_form_data ) {
 	$keys_by_type = array( 
 		'int'		=> array( 'form_id', 'user_id' ),
 		'str_id'	=> array( 'status' ),
+		'str'		=> array( 'title' ),
 		'datetime'	=> array( 'creation_date' ),
 		'bool'		=> array( 'active' )
 	);
@@ -670,16 +671,16 @@ function bookacti_get_available_form_action_triggers() {
  * @since 1.5.0
  * @version 1.13.0
  * @param array|string $raw_field_data
- * @return array|false
+ * @return array
  */
 function bookacti_format_form_field_data( $raw_field_data ) {
 	// Check if name and type are set
-	if( ! is_array( $raw_field_data ) || empty( $raw_field_data[ 'name' ] ) || empty( $raw_field_data[ 'type' ] ) ) { return false; }
+	if( ! is_array( $raw_field_data ) || empty( $raw_field_data[ 'name' ] ) || empty( $raw_field_data[ 'type' ] ) ) { return array(); }
 	
 	$default_data = bookacti_get_default_form_fields_data( $raw_field_data[ 'name' ] );
 	$default_meta = bookacti_get_default_form_fields_meta( $raw_field_data[ 'name' ] );
 
-	if( ! $default_data ) { return false; }
+	if( ! $default_data ) { return array(); }
 	
 	$field_data	= array();
 	$field_meta	= array();
@@ -824,16 +825,16 @@ function bookacti_format_form_field_data( $raw_field_data ) {
  * @since 1.5.0
  * @version 1.13.0
  * @param array|string $raw_field_data
- * @return array|false
+ * @return array
  */
 function bookacti_sanitize_form_field_data( $raw_field_data ) {
 	// Check if name and type are set
-	if( ! is_array( $raw_field_data ) || empty( $raw_field_data[ 'name' ] ) || empty( $raw_field_data[ 'type' ] ) ) { return false; }
+	if( ! is_array( $raw_field_data ) || empty( $raw_field_data[ 'name' ] ) || empty( $raw_field_data[ 'type' ] ) ) { return array(); }
 	
 	$default_data = bookacti_get_default_form_fields_data( $raw_field_data[ 'name' ] );
 	$default_meta = bookacti_get_default_form_fields_meta( $raw_field_data[ 'name' ] );
 	
-	if( ! $default_data ) { return false; }
+	if( ! $default_data ) { return array(); }
 	
 	$field_data	= array();
 	$field_meta	= array();

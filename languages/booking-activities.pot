@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2022-02-24T09:31:14+00:00\n"
+"POT-Creation-Date: 2022-02-24T14:07:41+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.3.0\n"
 "X-Domain: booking-activities\n"
@@ -279,7 +279,7 @@ msgstr ""
 
 #: class/class-forms-list.php:328
 #: functions/functions-booking-system.php:1719
-#: functions/functions-booking-system.php:1839
+#: functions/functions-booking-system.php:1844
 msgid "F d, Y"
 msgstr ""
 
@@ -425,14 +425,14 @@ msgstr ""
 #: controller/controller-bookings.php:1104
 #: controller/controller-bookings.php:1221
 #: controller/controller-bookings.php:1284
-#: controller/controller-forms.php:1841
+#: controller/controller-forms.php:1839
 msgid "Missing secret key."
 msgstr ""
 
 #: controller/controller-bookings.php:1108
 #: controller/controller-bookings.php:1225
 #: controller/controller-bookings.php:1288
-#: controller/controller-forms.php:1845
+#: controller/controller-forms.php:1843
 msgid "Invalid secret key."
 msgstr ""
 
@@ -451,7 +451,7 @@ msgstr ""
 #: controller/controller-bookings.php:1130
 #: controller/controller-bookings.php:1229
 #: controller/controller-bookings.php:1292
-#: controller/controller-forms.php:1870
+#: controller/controller-forms.php:1868
 msgid "Invalid filename."
 msgstr ""
 
@@ -546,7 +546,7 @@ msgstr ""
 #: controller/controller-forms.php:718
 #: controller/controller-forms.php:727
 #: controller/controller-forms.php:843
-#: controller/controller-forms.php:1837
+#: controller/controller-forms.php:1835
 #: functions/functions-forms.php:1343
 msgid "Invalid form ID."
 msgstr ""
@@ -605,7 +605,7 @@ msgid "You are not allowed to create booking forms."
 msgstr ""
 
 #: controller/controller-forms.php:1208
-#: controller/controller-forms.php:1312
+#: controller/controller-forms.php:1313
 msgid "Error occurs when trying to create the form."
 msgstr ""
 
@@ -619,12 +619,12 @@ msgstr ""
 msgid "The booking form has been updated."
 msgstr ""
 
-#: controller/controller-forms.php:1302
+#: controller/controller-forms.php:1303
 msgid "An error occurred while trying to duplicate a booking form."
 msgstr ""
 
 #. translators: %s is the original title
-#: controller/controller-forms.php:1309
+#: controller/controller-forms.php:1310
 msgid "%s - Copy"
 msgstr ""
 
@@ -672,21 +672,30 @@ msgstr ""
 msgid "An error occurred while trying to insert the form field."
 msgstr ""
 
-#: controller/controller-forms.php:1656
+#: controller/controller-forms.php:1566
+msgid "An error occurs while trying to remove the field."
+msgstr ""
+
+#: controller/controller-forms.php:1639
+#: controller/controller-forms.php:1655
 msgid "An error occurs while trying to update the field."
 msgstr ""
 
-#: controller/controller-forms.php:1767
+#: controller/controller-forms.php:1685
+msgid "An error occurs while trying to reset the field."
+msgstr ""
+
+#: controller/controller-forms.php:1765
 msgid "Export events"
 msgstr ""
 
-#: controller/controller-forms.php:1768
+#: controller/controller-forms.php:1766
 #: view/view-form-editor-dialogs.php:1252
 msgid "Need help?"
 msgstr ""
 
 #. translators: %s = [bookingactivities_list]
-#: controller/controller-forms.php:1768
+#: controller/controller-forms.php:1766
 #: functions/functions-settings.php:150
 #: functions/functions-settings.php:688
 #: view/view-bookings.php:294
@@ -694,27 +703,27 @@ msgctxt "button label"
 msgid "Help"
 msgstr ""
 
-#: controller/controller-forms.php:1782
+#: controller/controller-forms.php:1780
 #: view/view-form-editor-dialogs.php:1258
 msgid "Login / registration form shortcode"
 msgstr ""
 
-#: controller/controller-forms.php:1820
+#: controller/controller-forms.php:1818
 msgid "The secret key has been changed. The old link won't work anymore. Use the new link above to export your events."
 msgstr ""
 
-#: controller/controller-forms.php:1849
+#: controller/controller-forms.php:1847
 msgid "Cannot find the calendar field of the requested form."
 msgstr ""
 
 #. translators: %d is the form id
-#: controller/controller-forms.php:1854
+#: controller/controller-forms.php:1852
 #: model/model-forms.php:213
 msgid "Form #%d"
 msgstr ""
 
 #. translators: %s is the form title
-#: controller/controller-forms.php:1856
+#: controller/controller-forms.php:1854
 msgid "Form \"%s\""
 msgstr ""
 
@@ -993,7 +1002,7 @@ msgstr ""
 #: controller/controller-templates.php:752
 #: controller/controller-templates.php:802
 #: controller/controller-templates.php:861
-#: functions/functions-booking-system.php:1788
+#: functions/functions-booking-system.php:1793
 msgid "Invalid group of events ID."
 msgstr ""
 
@@ -1552,12 +1561,12 @@ msgid "Loading"
 msgstr ""
 
 #: functions/functions-booking-system.php:230
-#: functions/functions-templates-forms-control.php:577
+#: functions/functions-templates-forms-control.php:578
 msgid "Group of events"
 msgstr ""
 
 #: functions/functions-booking-system.php:232
-#: functions/functions-templates-forms-control.php:270
+#: functions/functions-templates-forms-control.php:271
 #: functions/functions-woocommerce.php:717
 msgid "Event"
 msgid_plural "Events"
@@ -1585,7 +1594,7 @@ msgid "None"
 msgstr ""
 
 #: functions/functions-booking-system.php:967
-#: functions/functions-templates-forms-control.php:709
+#: functions/functions-templates-forms-control.php:710
 #: view/view-templates-dialogs.php:766
 msgid "Group category"
 msgstr ""
@@ -1905,7 +1914,7 @@ msgid "The event \"%s\" is restricted to certain categories of users. Please log
 msgstr ""
 
 #: functions/functions-booking-system.php:1665
-#: functions/functions-booking-system.php:1796
+#: functions/functions-booking-system.php:1801
 msgid "Failed to retrieve the requested form data."
 msgstr ""
 
@@ -1921,53 +1930,63 @@ msgstr ""
 msgid "The selected event is part of a group and cannot be booked alone."
 msgstr ""
 
+#. translators: %s is a formatted date and time (e.g.: "February 15, 2022 11:06 am")
+#: functions/functions-booking-system.php:1729
+msgid "You cannot book an event taking place on %s."
+msgstr ""
+
 #. translators: %1$s and %2$s are formatted dates and times (e.g.: "February 15, 2022 11:06 am")
-#: functions/functions-booking-system.php:1728
+#: functions/functions-booking-system.php:1732
 msgid "You cannot book an event taking place between %1$s and %2$s."
 msgstr ""
 
-#: functions/functions-booking-system.php:1743
+#: functions/functions-booking-system.php:1748
 msgid "You cannot book a past event."
 msgstr ""
 
 #. translators: %s is a formatted date and hour (e.g.: "January 20, 2018 10:53 am")
-#: functions/functions-booking-system.php:1755
+#: functions/functions-booking-system.php:1760
 msgid "You cannot book an event starting before %s."
 msgstr ""
 
 #. translators: %s is a formatted date and time (e.g.: "January 20, 2018 10:53 am")
-#: functions/functions-booking-system.php:1762
+#: functions/functions-booking-system.php:1767
 msgid "You cannot book an event taking place after %s."
 msgstr ""
 
-#: functions/functions-booking-system.php:1807
+#: functions/functions-booking-system.php:1812
 msgid "The selected events are not supposed to be available on this form."
 msgstr ""
 
-#: functions/functions-booking-system.php:1813
+#: functions/functions-booking-system.php:1818
 msgid "You cannot book groups of events with this form, you must select a single event."
 msgstr ""
 
-#: functions/functions-booking-system.php:1826
+#: functions/functions-booking-system.php:1831
 msgid "The selected goup of events is not supposed to be available on this form."
 msgstr ""
 
+#. translators: %s is a formatted date and time (e.g.: "February 15, 2022 11:06 am")
+#: functions/functions-booking-system.php:1856
+msgid "You cannot book a group if any of its events takes place on %s."
+msgstr ""
+
 #. translators: %1$s and %2$s are formatted dates and times (e.g.: "February 15, 2022 11:06 am")
-#: functions/functions-booking-system.php:1850
+#: functions/functions-booking-system.php:1859
 msgid "You cannot book a group if any of its events takes place between %1$s and %2$s."
 msgstr ""
 
-#: functions/functions-booking-system.php:1869
+#: functions/functions-booking-system.php:1879
 msgid "You cannot book a group of events if any of its events is past."
 msgstr ""
 
 #. translators: %s is a formatted date (e.g.: "January 20, 2018 10:53 am")
-#: functions/functions-booking-system.php:1882
+#: functions/functions-booking-system.php:1892
 msgid "You cannot book a group if any of its events starts before %s."
 msgstr ""
 
 #. translators: %s is a formatted date (e.g.: "January 20, 2018 10:53 am")
-#: functions/functions-booking-system.php:1889
+#: functions/functions-booking-system.php:1899
 msgid "You cannot book a group if any of its events takes place after %s."
 msgstr ""
 
@@ -2684,7 +2703,7 @@ msgid "The activity duration should not be null."
 msgstr ""
 
 #: functions/functions-global.php:486
-#: functions/functions-templates-forms-control.php:677
+#: functions/functions-templates-forms-control.php:678
 msgid "The selected event should be included in the period in which it will be repeated."
 msgstr ""
 
@@ -2697,7 +2716,7 @@ msgid "The activity must be bound to at least one calendar."
 msgstr ""
 
 #: functions/functions-global.php:489
-#: functions/functions-templates-forms-control.php:690
+#: functions/functions-templates-forms-control.php:691
 msgid "You must select at least two events."
 msgstr ""
 
@@ -3748,44 +3767,44 @@ msgstr ""
 msgid "The bookings made without account may have not been anonymized."
 msgstr ""
 
-#: functions/functions-templates-forms-control.php:300
+#: functions/functions-templates-forms-control.php:301
 msgid "Do not repeat"
 msgstr ""
 
-#: functions/functions-templates-forms-control.php:301
+#: functions/functions-templates-forms-control.php:302
 msgid "Day"
 msgstr ""
 
-#: functions/functions-templates-forms-control.php:302
+#: functions/functions-templates-forms-control.php:303
 msgid "Week"
 msgstr ""
 
-#: functions/functions-templates-forms-control.php:303
+#: functions/functions-templates-forms-control.php:304
 msgid "Month"
 msgstr ""
 
-#: functions/functions-templates-forms-control.php:667
+#: functions/functions-templates-forms-control.php:668
 #: view/view-templates-dialogs.php:758
 msgid "Group title"
 msgstr ""
 
-#: functions/functions-templates-forms-control.php:668
+#: functions/functions-templates-forms-control.php:669
 #: view/view-templates-dialogs.php:1007
 msgid "Category title"
 msgstr ""
 
 #. translators: %s is a comma-sperated list of field labels
-#: functions/functions-templates-forms-control.php:685
-#: functions/functions-templates-forms-control.php:770
+#: functions/functions-templates-forms-control.php:686
+#: functions/functions-templates-forms-control.php:772
 msgid "You must fill these fields: %s"
 msgstr ""
 
-#: functions/functions-templates-forms-control.php:770
+#: functions/functions-templates-forms-control.php:772
 #: view/view-templates-dialogs.php:786
 msgid "New category title"
 msgstr ""
 
-#: functions/functions-templates-forms-control.php:775
+#: functions/functions-templates-forms-control.php:777
 msgid "Invalid calendar ID."
 msgstr ""
 

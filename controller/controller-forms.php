@@ -1271,7 +1271,7 @@ add_action( 'wp_ajax_bookactiUpdateForm', 'bookacti_controller_update_form' );
 /**
  * Duplicate a booking form
  * @since 1.7.18
- * @version 1.9.2
+ * @version 1.13.0
  */
 function bookacti_controller_duplicate_form() {
 	if( empty( $_REQUEST[ 'form_id' ] ) || empty( $_REQUEST[ 'action' ] ) || empty( $_REQUEST[ 'page' ] ) 
@@ -1298,6 +1298,7 @@ function bookacti_controller_duplicate_form() {
 	
 	// Gget original form data
 	$original_form_data = bookacti_get_form_data( $original_form_id );
+	$original_form_data = $original_form_data ? bookacti_sanitize_form_data( $original_form_data ) : array();
 	if( ! $original_form_data ) {
 		$notice[ 'message' ] = esc_html__( 'An error occurred while trying to duplicate a booking form.', 'booking-activities' );
 		bookacti_display_admin_notice( $notice, 'duplicate_form' );
@@ -1327,7 +1328,7 @@ function bookacti_controller_duplicate_form() {
 		foreach( $original_fields_ordered as $original_field ) {
 			// Duplicate field
 			$sanitized_data	= bookacti_sanitize_form_field_data( $original_field );
-			$field_id = bookacti_insert_form_field( $form_id, $sanitized_data );
+			$field_id = $sanitized_data ? bookacti_insert_form_field( $form_id, $sanitized_data ) : 0;
 			if( ! $field_id ) { continue; }
 			$field_order[] = $field_id;
 					
@@ -1339,8 +1340,7 @@ function bookacti_controller_duplicate_form() {
 	}
 	
 	// Duplicate form meta
-	$sanitized_data	= bookacti_sanitize_form_data( $original_form_data );
-	$form_meta		= array_intersect_key( $sanitized_data, bookacti_get_default_form_meta() );
+	$form_meta = array_intersect_key( $original_form_data, bookacti_get_default_form_meta() );
 	if( $field_order ) { $form_meta[ 'field_order' ] = $field_order; }
 	bookacti_update_metadata( 'form', $form_id, $form_meta );
 	
@@ -1478,7 +1478,7 @@ add_action( 'wp_ajax_bookactiUpdateFormMeta', 'bookacti_controller_update_form_m
 /**
  * AJAX Controller - Insert a form field
  * @since 1.5.0
- * @version 1.12.0
+ * @version 1.13.0
  */
 function bookacti_controller_insert_form_field() {
 	// Check nonce
@@ -1524,9 +1524,10 @@ function bookacti_controller_insert_form_field() {
 	}
 
 	// Insert form field
-	$field_id = bookacti_insert_form_field( $form_id, $field_name );
+	$field_default_data = bookacti_get_default_form_fields_data( $field_name );
+	$field_id = $field_default_data ? bookacti_insert_form_field( $form_id, $field_default_data ) : 0;
 
-	if( $field_id === false ) {
+	if( ! $field_id ) {
 		bookacti_send_json( array( 
 			'status' => 'failed', 
 			'error' => 'not_inserted', 
@@ -1557,11 +1558,13 @@ add_action( 'wp_ajax_bookactiInsertFormField', 'bookacti_controller_insert_form_
 /**
  * AJAX Controller - Remove a form field
  * @since 1.5.0
- * @version 1.12.3
+ * @version 1.13.0
  */
 function bookacti_controller_remove_form_field() {
-	$field_id	= intval( $_POST[ 'field_id' ] );
-	$field		= bookacti_get_form_field( $field_id );
+	$field_id = intval( $_POST[ 'field_id' ] );
+	$field    = bookacti_get_form_field( $field_id );
+	
+	if( ! $field ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'field_not_found', 'message' => esc_html__( 'An error occurs while trying to remove the field.', 'booking-activities' )  ), 'remove_form_field' ); }
 	
 	// Check nonce and capabilities
 	$is_nonce_valid = check_ajax_referer( 'bookacti_remove_form_field', 'nonce', false );
@@ -1569,7 +1572,7 @@ function bookacti_controller_remove_form_field() {
 	
 	$is_allowed = current_user_can( 'bookacti_edit_forms' ) && bookacti_user_can_manage_form( $field[ 'form_id' ] );
 	if( ! $is_allowed || ! $field_id ) { bookacti_send_json_not_allowed( 'remove_form_field' ); }
-		
+	
 	// Remove the form field and its metadata
 	$removed = bookacti_delete_form_field( $field_id );
 
@@ -1625,45 +1628,40 @@ add_action( 'wp_ajax_bookactiSaveFormFieldOrder', 'bookacti_controller_save_form
 /**
  * AJAX Controller - Update a field
  * @since 1.5.0
- * @version 1.7.17
+ * @version 1.13.0
  */
 function bookacti_controller_update_form_field() {
 	// Check nonce
-	if( ! check_ajax_referer( 'bookacti_update_form_field', 'nonce', false ) ) {
-		bookacti_send_json_invalid_nonce( 'update_form_field' );
-	}
+	if( ! check_ajax_referer( 'bookacti_update_form_field', 'nonce', false ) ) { bookacti_send_json_invalid_nonce( 'update_form_field' ); }
 	
-	$field_id	= intval( $_POST[ 'field_id' ] );
-	$field		= bookacti_get_form_field( $field_id );
-	$form_id	= $field[ 'form_id' ];
+	$field_id = intval( $_POST[ 'field_id' ] );
+	$field    = bookacti_get_form_field( $field_id );
+	
+	if( ! $field ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'field_not_found', 'message' => esc_html__( 'An error occurs while trying to update the field.', 'booking-activities' )  ), 'update_form_field' ); }
 	
 	// Check nonce and capabilities
-	if( ! current_user_can( 'bookacti_edit_forms' ) || ! bookacti_user_can_manage_form( $form_id ) ) {
-		bookacti_send_json_not_allowed( 'update_form_field' );
-	}
+	if( ! current_user_can( 'bookacti_edit_forms' ) || ! bookacti_user_can_manage_form( $field[ 'form_id' ] ) ) { bookacti_send_json_not_allowed( 'update_form_field' ); }
 	
 	// Sanitize data
 	$_POST[ 'name' ] = $field[ 'name' ]; $_POST[ 'type' ] = $field[ 'type' ];
 	$sanitized_data	= bookacti_sanitize_form_field_data( $_POST );
 	
 	// Update form field
-	$updated = bookacti_update_form_field( $sanitized_data );
+	$updated = $sanitized_data ? bookacti_update_form_field( $sanitized_data ) : false;
 
 	if( $updated === false ) {
 		bookacti_send_json( array( 
-				'status' => 'failed', 
-				'error' => 'not_updated', 
-				'message' => esc_html__( 'An error occurs while trying to update the field.', 'booking-activities' ) 
-			), 'update_form_field' );
+			'status' => 'failed', 
+			'error' => 'not_updated', 
+			'message' => esc_html__( 'An error occurs while trying to update the field.', 'booking-activities' ) 
+		), 'update_form_field' );
 	}
 	
 	// Extract metadata only
 	$field_meta = array_intersect_key( $sanitized_data, bookacti_get_default_form_fields_meta( $field[ 'name' ] ) );
 	
 	// Update field metadata
-	if( $field_meta ) {
-		bookacti_update_metadata( 'form_field', $field_id, $field_meta );
-	}
+	if( $field_meta ) { bookacti_update_metadata( 'form_field', $field_id, $field_meta ); }
 
 	do_action( 'bookacti_form_field_updated', $field, $sanitized_data );
 
@@ -1677,26 +1675,27 @@ add_action( 'wp_ajax_bookactiUpdateFormField', 'bookacti_controller_update_form_
 
 
 /**
- * AJAX Controller - Reset form meta
+ * AJAX Controller - Reset form field data
  * @since 1.5.0
- * @version 1.12.4
+ * @version 1.13.0
  */
 function bookacti_controller_reset_form_field() {
-	$field_id	= intval( $_POST[ 'field_id' ] );
-	$field		= bookacti_get_form_field_data( $field_id );
-	$form_id	= $field[ 'form_id' ];
+	$field_id = intval( $_POST[ 'field_id' ] );
+	$field    = bookacti_get_form_field_data( $field_id );
+	
+	if( ! $field ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'field_not_found', 'message' => esc_html__( 'An error occurs while trying to reset the field.', 'booking-activities' )  ), 'reset_form_field' ); }
 	
 	// Check nonce and capabilities
 	$is_nonce_valid = check_ajax_referer( 'bookacti_update_form_field', 'nonce', false );
 	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'reset_form_field' ); }
 	
-	$is_allowed = current_user_can( 'bookacti_edit_forms' ) && bookacti_user_can_manage_form( $form_id );
-	if( ! $is_allowed || ! $form_id ) { bookacti_send_json_not_allowed( 'reset_form_field' ); }
+	$is_allowed = current_user_can( 'bookacti_edit_forms' ) && bookacti_user_can_manage_form( $field[ 'form_id' ] );
+	if( ! $is_allowed || ! $field[ 'form_id' ] ) { bookacti_send_json_not_allowed( 'reset_form_field' ); }
 
 	// Update form field with default values
 	$defaults_data = bookacti_sanitize_form_field_data( bookacti_get_default_form_fields_data( $field[ 'name' ] ) );
-	$defaults_data[ 'field_id' ] = $field_id;
-	$updated = bookacti_update_form_field( $defaults_data );
+	if( $defaults_data ) { $defaults_data[ 'field_id' ] = $field_id; }
+	$updated = $defaults_data ? bookacti_update_form_field( $defaults_data ) : false;
 	
 	if( $updated === false ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_updated' ), 'reset_form_field' ); }
 	

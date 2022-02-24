@@ -195,8 +195,8 @@ function bookacti_duplicate_event( $event_id ) {
  * Duplicate template events
  * @since 1.13.0
  * @global wpdb $wpdb
- * @param int $duplicated_template_id
- * @param int $new_template_id
+ * @param int $from_template_id
+ * @param int $to_template_id
  * @return int
  */
 function bookacti_duplicate_template_events( $from_template_id, $to_template_id ) {
@@ -1178,8 +1178,8 @@ function bookacti_insert_templates_x_activities( $template_ids, $activity_ids ) 
  * Duplicate a template x activity association
  * @since 1.13.0
  * @global wpdb $wpdb
- * @param int $duplicated_template_id
- * @param int $new_template_id
+ * @param int $from_template_id
+ * @param int $to_template_id
  * @return int|false
  */
 function bookacti_duplicate_template_activities( $from_template_id, $to_template_id ) {

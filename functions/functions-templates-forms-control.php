@@ -168,6 +168,7 @@ function bookacti_get_activity_default_meta() {
 /**
  * Sanitize activity data
  * @since 1.12.0 (was bookacti_format_activity_settings)
+ * @version 1.13.0
  * @param array $raw_data
  * @return array
  */
@@ -186,7 +187,7 @@ function bookacti_sanitize_activity_data( $raw_data ) {
 	$data = bookacti_sanitize_values( array_merge( $default_data, $default_meta, array( 'managers' => array() ) ), $raw_data, $keys_by_type );
 	
 	if( ! $data[ 'id' ] && ! empty( $raw_data[ 'activity_id' ] ) ) { $data[ 'id' ] = intval( $raw_data[ 'activity_id' ] ); }
-	if( ! empty( $raw_data[ 'duplicated_template_id' ] ) ) { $data[ 'duplicated_template_id' ] = intval( $raw_data[ 'duplicated_template_id' ] ); }
+	if( empty( $raw_data[ 'is_restricted' ] ) ) { $data[ 'allowed_roles' ] = array(); }
 	
 	// Convert duration from seconds to timespan
 	$data[ 'duration' ] = $data[ 'duration' ] ? bookacti_format_duration( $data[ 'duration' ], 'timespan' ) : bookacti_format_duration( $default_data[ 'duration' ], 'timespan' );
@@ -731,7 +732,7 @@ function bookacti_get_group_category_default_meta() {
 /**
  * Sanitize group category data
  * @since 1.1.0
- * @version 1.12.0
+ * @version 1.13.0
  * @param array $raw_data
  * @return array
  */
@@ -749,6 +750,7 @@ function bookacti_sanitize_group_category_data( $raw_data ) {
 	$data = bookacti_sanitize_values( array_merge( $default_data, $default_meta ), $raw_data, $keys_by_type );
 	
 	if( ! $data[ 'id' ] && ! empty( $raw_data[ 'category_id' ] ) ) { $data[ 'id' ] = intval( $raw_data[ 'category_id' ] ); }
+	if( empty( $raw_data[ 'is_restricted' ] ) ) { $data[ 'allowed_roles' ] = array(); }
 	
 	return apply_filters( 'bookacti_sanitized_group_category_data', $data, $raw_data );
 }

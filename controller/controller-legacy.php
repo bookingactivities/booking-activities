@@ -13,10 +13,13 @@ function bookacti_move_repeat_exceptions_when_updating_to_1_13_0( $old_version )
 	// Do it only once, when Booking Activities is updated for the first time after 1.13.0
 	if( version_compare( $old_version, '1.13.0', '>=' ) ) { return; }
 	
+	// Increase max ececution time in case there are a lot of repeat exceptions to convert
+	bookacti_increase_max_execution_time( 'upgrade_database_to_1_13_0' );
+	
 	global $wpdb;
 	
 	// Get repeat exceptions per event / group
-	$query = 'SELECT * FROM ' . BOOKACTI_TABLE_EXCEPTIONS . ' WHERE exception_value >= CURDATE() ORDER BY object_type, object_id';
+	$query = 'SELECT * FROM ' . BOOKACTI_TABLE_EXCEPTIONS . ' ORDER BY object_type, object_id';
 	$results = $wpdb->get_results( $query );
 	if( ! $results ) { return; }
 	

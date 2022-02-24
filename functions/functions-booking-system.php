@@ -1724,8 +1724,13 @@ function bookacti_is_picked_event_available_on_form( $picked_event, $event_data,
 				$validated[ 'error' ] = 'event_in_days_off';
 				$off_from_formatted = bookacti_format_datetime( $off_from->format( 'Y-m-d H:i:s' ), $date_format );
 				$off_to_formatted   = bookacti_format_datetime( $off_to->format( 'Y-m-d H:i:s' ), $date_format );
-				/* translators: %1$s and %2$s are formatted dates and times (e.g.: "February 15, 2022 11:06 am") */
-				$validated[ 'message' ] = sprintf( esc_html__( 'You cannot book an event taking place between %1$s and %2$s.', 'booking-activities' ), $off_from_formatted, $off_to_formatted );
+				if( $off_from_formatted === $off_to_formatted ) {
+					/* translators: %s is a formatted date and time (e.g.: "February 15, 2022 11:06 am") */
+					$validated[ 'message' ] = sprintf( esc_html__( 'You cannot book an event taking place on %s.', 'booking-activities' ), $off_from_formatted );
+				} else {
+					/* translators: %1$s and %2$s are formatted dates and times (e.g.: "February 15, 2022 11:06 am") */
+					$validated[ 'message' ] = sprintf( esc_html__( 'You cannot book an event taking place between %1$s and %2$s.', 'booking-activities' ), $off_from_formatted, $off_to_formatted );
+				}
 				return $validated;
 			}
 		}
@@ -1846,8 +1851,13 @@ function bookacti_is_picked_group_of_events_available_on_form( $picked_event_gro
 					$validated[ 'error' ] = 'event_in_days_off';
 					$off_from_formatted = bookacti_format_datetime( $off_from->format( 'Y-m-d H:i:s' ), $date_format );
 					$off_to_formatted   = bookacti_format_datetime( $off_to->format( 'Y-m-d H:i:s' ), $date_format );
-					/* translators: %1$s and %2$s are formatted dates and times (e.g.: "February 15, 2022 11:06 am") */
-					$validated[ 'message' ] = sprintf( esc_html__( 'You cannot book a group if any of its events takes place between %1$s and %2$s.', 'booking-activities' ), $off_from_formatted, $off_to_formatted );
+					if( $off_from_formatted === $off_to_formatted ) {
+						/* translators: %s is a formatted date and time (e.g.: "February 15, 2022 11:06 am") */
+						$validated[ 'message' ] = sprintf( esc_html__( 'You cannot book a group if any of its events takes place on %s.', 'booking-activities' ), $off_from_formatted );
+					} else {
+						/* translators: %1$s and %2$s are formatted dates and times (e.g.: "February 15, 2022 11:06 am") */
+						$validated[ 'message' ] = sprintf( esc_html__( 'You cannot book a group if any of its events takes place between %1$s and %2$s.', 'booking-activities' ), $off_from_formatted, $off_to_formatted );
+					}
 					return $validated;
 				}
 			}
