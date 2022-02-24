@@ -171,7 +171,7 @@ function bookacti_get_booking_by_id( $booking_id, $fetch_meta = false ) {
 /**
  * Check if a booking is whithin the authorized delay as of now
  * @since 1.1.0
- * @version 1.12.0
+ * @version 1.13.0
  * @param object|int $booking
  * @param string $context
  * @return boolean
@@ -181,9 +181,9 @@ function bookacti_is_booking_in_delay( $booking, $context = '' ) {
 	if( is_numeric( $booking ) ) { $booking = bookacti_get_booking_by_id( $booking, true ); }
 	if( ! $booking ) { return false; }
 
-	$is_in_delay	= false;
-	$delay_global	= bookacti_get_setting_value( 'bookacti_cancellation_settings', 'booking_changes_deadline' );
-	$timezone		= bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' );
+	$is_in_delay  = false;
+	$delay_global = bookacti_get_setting_value( 'bookacti_cancellation_settings', 'booking_changes_deadline' );
+	$timezone     = bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' );
 	
 	// Get the more specific per activity / group category delay
 	$delay_specific = false;
@@ -200,8 +200,8 @@ function bookacti_is_booking_in_delay( $booking, $context = '' ) {
 	}
 
 	// Sanitize
-	if( ! is_numeric( $delay_specific ) || $delay_specific < 0 ){ $delay_specific = false; } 
-	if( ! is_numeric( $delay_global ) || $delay_global < 0 )	{ $delay_global = 0; } 
+	if( ! is_numeric( $delay_specific ) || $delay_specific < 0 ) { $delay_specific = false; } 
+	if( ! is_numeric( $delay_global ) || $delay_global < 0 )     { $delay_global = 0; } 
 
 	// Choose the most specific defined value
 	$delay = $delay_specific !== false ? $delay_specific : $delay_global;
@@ -209,11 +209,11 @@ function bookacti_is_booking_in_delay( $booking, $context = '' ) {
 	// Convert delay to a valid DateInterval constructor
 	$date_interval_constructor = bookacti_format_duration( floatval( $delay ), 'iso8601' );
 
-	$date_interval		= apply_filters( 'bookacti_booking_changes_deadline_date_interval', new DateInterval( $date_interval_constructor ), $booking, $delay, $context );
-	$delay_datetime		= DateTime::createFromFormat( 'Y-m-d H:i:s', $booking->event_start, new DateTimeZone( $timezone ) );
+	$current_datetime = new DateTime( 'now', new DateTimeZone( $timezone ) );
+	$date_interval    = apply_filters( 'bookacti_booking_changes_deadline_date_interval', new DateInterval( $date_interval_constructor ), $booking, $delay, $context );
+	$delay_datetime   = DateTime::createFromFormat( 'Y-m-d H:i:s', $booking->event_start, new DateTimeZone( $timezone ) );
 	$delay_datetime->sub( $date_interval );
-	$current_datetime	= new DateTime( 'now', new DateTimeZone( $timezone ) );
-
+	
 	if( $current_datetime < $delay_datetime ) { $is_in_delay = true; }
 
 	return apply_filters( 'bookacti_is_booking_in_delay', $is_in_delay, $booking, $delay, $context );
