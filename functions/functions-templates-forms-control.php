@@ -10,8 +10,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  */
 function bookacti_get_template_default_data() {
 	return apply_filters( 'bookacti_template_default_data', array(
-		'id' => 0,
-		'title' => esc_html__( 'Calendar', 'booking-activities' ),
+		'id'     => 0,
+		'title'  => esc_html__( 'Calendar', 'booking-activities' ),
 		'active' => 1
 	));
 }
@@ -20,12 +20,14 @@ function bookacti_get_template_default_data() {
 /**
  * Get template default meta
  * @since 1.12.0
+ * @version 1.13.0
  */
 function bookacti_get_template_default_meta() {
 	return apply_filters( 'bookacti_template_default_meta', array(
-		'minTime'		=> '00:00',
-		'maxTime'		=> '00:00',
-		'snapDuration'	=> '00:05'
+		'minTime'      => '00:00',
+		'maxTime'      => '00:00',
+		'snapDuration' => '00:05',
+		'days_off'     => array()
 	));
 }
 
@@ -42,10 +44,10 @@ function bookacti_sanitize_template_data( $raw_data ) {
 	
 	// Sanitize common values
 	$keys_by_type = array( 
-		'absint'=> array( 'id', 'duplicated_template_id' ),
-		'str'	=> array( 'title', 'minTime', 'maxTime', 'snapDuration' ),
-		'array'	=> array( 'managers' ),
-		'bool'	=> array( 'active' )
+		'absint' => array( 'id', 'duplicated_template_id' ),
+		'str'    => array( 'title', 'minTime', 'maxTime', 'snapDuration' ),
+		'array'  => array( 'managers', 'days_off' ),
+		'bool'   => array( 'active' )
 	);
 	$data = bookacti_sanitize_values( array_merge( $default_data, $default_meta, array( 'managers' => array() ) ), $raw_data, $keys_by_type );
 	
@@ -67,6 +69,9 @@ function bookacti_sanitize_template_data( $raw_data ) {
 	
 	// Make sure snapDuration is not null
 	if( $data[ 'snapDuration' ] === '00:00' ) { $data[ 'snapDuration' ] = '00:01'; }
+	
+	// Sanitize Days off
+	$data[ 'days_off' ] = bookacti_sanitize_days_off( $data[ 'days_off' ] );
 	
 	return apply_filters( 'bookacti_sanitized_template_data', $data, $raw_data );
 }
@@ -163,6 +168,7 @@ function bookacti_get_activity_default_meta() {
 /**
  * Sanitize activity data
  * @since 1.12.0 (was bookacti_format_activity_settings)
+ * @version 1.13.0
  * @param array $raw_data
  * @return array
  */
@@ -181,7 +187,7 @@ function bookacti_sanitize_activity_data( $raw_data ) {
 	$data = bookacti_sanitize_values( array_merge( $default_data, $default_meta, array( 'managers' => array() ) ), $raw_data, $keys_by_type );
 	
 	if( ! $data[ 'id' ] && ! empty( $raw_data[ 'activity_id' ] ) ) { $data[ 'id' ] = intval( $raw_data[ 'activity_id' ] ); }
-	if( ! empty( $raw_data[ 'duplicated_template_id' ] ) ) { $data[ 'duplicated_template_id' ] = intval( $raw_data[ 'duplicated_template_id' ] ); }
+	if( empty( $raw_data[ 'is_restricted' ] ) ) { $data[ 'allowed_roles' ] = array(); }
 	
 	// Convert duration from seconds to timespan
 	$data[ 'duration' ] = $data[ 'duration' ] ? bookacti_format_duration( $data[ 'duration' ], 'timespan' ) : bookacti_format_duration( $default_data[ 'duration' ], 'timespan' );
@@ -251,7 +257,7 @@ function bookacti_sanitize_activity_managers( $activity_managers = array() ) {
 /**
  * Get event default data
  * @since 1.8.0
- * @version 1.11.0
+ * @version 1.13.0
  */
 function bookacti_get_event_default_data() {
 	$dt = new DateTime();
@@ -271,6 +277,7 @@ function bookacti_get_event_default_data() {
 		'repeat_on' => '',
 		'repeat_from' => '',
 		'repeat_to' => '',
+		'repeat_exceptions' => array(),
 		'active' => 1
 	));
 }
@@ -302,7 +309,7 @@ function bookacti_get_event_repeat_periods() {
 /**
  * Sanitize event data
  * @since 1.8.0
- * @version 1.12.0
+ * @version 1.13.0
  */
 function bookacti_sanitize_event_data( $raw_data ) {
 	$default_data = bookacti_get_event_default_data();
@@ -315,12 +322,12 @@ function bookacti_sanitize_event_data( $raw_data ) {
 		'datetime'	=> array( 'start', 'end' ),
 		'str_id'	=> array( 'repeat_freq', 'repeat_on' ),
 		'date'		=> array( 'repeat_from', 'repeat_to' ),
+		'array'		=> array( 'repeat_exceptions' ),
 		'bool'		=> array( 'active' )
 	);
 	$data = bookacti_sanitize_values( array_merge( $default_data, $default_meta ), $raw_data, $keys_by_type );
 	
 	if( ! $data[ 'id' ] && ! empty( $raw_data[ 'event_id' ] ) ) { $data[ 'id' ] = intval( $raw_data[ 'event_id' ] ); }
-	$data[ 'exceptions_dates' ] = ! empty( $raw_data[ 'exceptions_dates' ] ) ? $raw_data[ 'exceptions_dates' ] : array();
 	
 	// Make sure start AND end are set
 	if( ! $data[ 'start' ] || ! $data[ 'end' ] ) { 
@@ -349,6 +356,7 @@ function bookacti_sanitize_event_data( $raw_data ) {
 /**
  * Sanitize (group of) events repeat data
  * @since 1.12.0
+ * @version 1.13.0
  * @param array $object_data see bookacti_get_group_of_events_default_data or bookacti_get_event_default_data
  * @param string $object_type "event" or "group"
  * @return array
@@ -360,10 +368,10 @@ function bookacti_sanitize_repeat_data( $object_data, $object_type = 'event' ) {
 	$keys_by_type = array( 
 		'int'		=> array( 'repeat_step' ),
 		'str_id'	=> array( 'repeat_freq', 'repeat_on' ),
-		'date'		=> array( 'repeat_from', 'repeat_to' )
+		'date'		=> array( 'repeat_from', 'repeat_to' ),
+		'array'		=> array( 'repeat_exceptions' )
 	);
 	$data = array_merge( $object_data, bookacti_sanitize_values( $default_data, $object_data, $keys_by_type ) );
-	$data[ 'exceptions_dates' ] = ! empty( $object_data[ 'exceptions_dates' ] ) ? bookacti_sanitize_date_array( $object_data[ 'exceptions_dates' ] ) : array();
 	
 	// Make sure repeat_step is positive
 	if( $data[ 'repeat_step' ] < 0 ) { $data[ 'repeat_step' ] = $default_data[ 'repeat_step' ]; }
@@ -391,6 +399,9 @@ function bookacti_sanitize_repeat_data( $object_data, $object_type = 'event' ) {
 		$data[ 'repeat_on' ] = 'null';
 	}
 	
+	// Sanitize repeat exceptions
+	$data[ 'repeat_exceptions' ] = bookacti_sanitize_days_off( $data[ 'repeat_exceptions' ] );
+	
 	// Check the consistency between the event date and the repeat period
 	$data = bookacti_sanitize_event_date_and_repeat_period( $data, $object_type );
 	
@@ -399,7 +410,7 @@ function bookacti_sanitize_repeat_data( $object_data, $object_type = 'event' ) {
 		if( $object_type === 'group' ) {
 			// Get the occurrences
 			$group_i = $data[ 'id' ] ? $data[ 'id' ] : ( rand() * -1 );
-			$groups_occurrences = bookacti_get_occurrences_of_repeated_groups_of_events( array( $group_i => $data ), array( 'past_events' => true ) );
+			$groups_occurrences = bookacti_get_occurrences_of_repeated_groups_of_events( array( $group_i => $data ), array( 'past_events' => true, 'skip_exceptions' => false ) );
 			$group_occurrences = ! empty( $groups_occurrences[ $group_i ] ) ? $groups_occurrences[ $group_i ] : array();
 
 			// Get the first events of each group occurrence
@@ -408,14 +419,14 @@ function bookacti_sanitize_repeat_data( $object_data, $object_type = 'event' ) {
 			foreach( $group_occurrences as $group_date => $group_events ) {
 				if( empty( $group_events[ 0 ] ) ) { continue; }
 				$group_occurrences_events[ $group_date ] = $group_events[ 0 ];
-				if( ! in_array( $group_date, $data[ 'exceptions_dates' ], true ) ) { $group_occurrences_bounding_events[ $group_date ] = $group_events[ 0 ]; }
+				if( ! bookacti_is_date_in_days_off( $group_date, $data[ 'repeat_exceptions' ] ) ) { $group_occurrences_bounding_events[ $group_date ] = $group_events[ 0 ]; }
 			}
 			ksort( $group_occurrences_events );
 			ksort( $group_occurrences_bounding_events );
 		}
 		
 		// Restrict the repeat period to the actual first and last occurrences
-		$bounding_events = $object_type === 'event' ? bookacti_get_occurrences_of_repeated_event( (object) $data, array( 'exceptions_dates' => $data[ 'exceptions_dates' ], 'past_events' => true, 'bounding_only' => true ) ) : $group_occurrences_bounding_events;
+		$bounding_events = $object_type === 'event' ? bookacti_get_occurrences_of_repeated_event( (object) $data, array( 'past_events' => true, 'bounding_only' => true ) ) : $group_occurrences_bounding_events;
 		if( $bounding_events ) {
 			$bounding_events_keys = array_keys( $bounding_events );
 			$last_key = end( $bounding_events_keys );
@@ -450,16 +461,17 @@ function bookacti_sanitize_repeat_data( $object_data, $object_type = 'event' ) {
 		if( $data[ 'repeat_from' ] === $data[ 'repeat_to' ] ) { $data[ 'repeat_freq' ] = 'none'; }
 		
 		// Remove exceptions out of the repeat period and if they are not on an occurrence
-		else if( $data[ 'exceptions_dates' ] ) {
+		else if( $data[ 'repeat_exceptions' ] ) {
 			$repeat_from_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $data[ 'repeat_from' ] . ' 00:00:00' );
 			$repeat_to_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $data[ 'repeat_to' ] . ' 23:59:59' );
 			
-			$occurrences = $object_type === 'event' ? bookacti_get_occurrences_of_repeated_event( (object) $data, array( 'past_events' => true ) ) : $group_occurrences_events;
-			foreach( $data[ 'exceptions_dates' ] as $i => $excep_date ) {
+			$occurrences = $object_type === 'event' ? bookacti_get_occurrences_of_repeated_event( (object) $data, array( 'past_events' => true, 'skip_exceptions' => false ) ) : $group_occurrences_events;
+			foreach( $data[ 'repeat_exceptions' ] as $i => $excep_period ) {
 				// Remove exceptions out of the repeat period
-				$excep_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $excep_date . ' 00:00:00' );
-				if( $excep_dt < $repeat_from_dt || $excep_dt > $repeat_to_dt ) {
-					unset( $data[ 'exceptions_dates' ][ $i ] );
+				$excep_period_from_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $excep_period[ 'from' ] . ' 00:00:00' );
+				$excep_period_to_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $excep_period[ 'to' ] . ' 23:59:59' );
+				if( $excep_period_to_dt < $repeat_from_dt || $excep_period_from_dt > $repeat_to_dt ) {
+					unset( $data[ 'repeat_exceptions' ][ $i ] );
 					continue;
 				}
 				
@@ -467,12 +479,13 @@ function bookacti_sanitize_repeat_data( $object_data, $object_type = 'event' ) {
 				$is_on_occurrence = false;
 				foreach( $occurrences as $occurrence ) {
 					$occurrence_date = substr( $occurrence[ 'start' ], 0, 10 );
-					if( $excep_date === $occurrence_date ) { $is_on_occurrence = true; break; }
+					if( bookacti_is_date_in_days_off( $occurrence_date, array( $excep_period ) ) ) { $is_on_occurrence = true; break; }
 				}
-				if( ! $is_on_occurrence ) {
-					unset( $data[ 'exceptions_dates' ][ $i ] );
+				if( ! $is_on_occurrence ) { 
+					unset( $data[ 'repeat_exceptions' ][ $i ] );
 				}
 			}
+			$data[ 'repeat_exceptions' ] = array_values( $data[ 'repeat_exceptions' ] );
 		}
 	}
 	
@@ -482,7 +495,7 @@ function bookacti_sanitize_repeat_data( $object_data, $object_type = 'event' ) {
 		$data[ 'repeat_on' ] = 'null';
 		$data[ 'repeat_from' ] = 'null';
 		$data[ 'repeat_to' ] = 'null';
-		$data[ 'exceptions_dates' ] = array();
+		$data[ 'repeat_exceptions' ] = 'null';
 	}
 	
 	return $data;
@@ -556,6 +569,7 @@ function bookacti_validate_event_data( $data ) {
 /**
  * Get group of events default data
  * @since 1.12.0
+ * @version 1.13.0
  */
 function bookacti_get_group_of_events_default_data() {
 	return apply_filters( 'bookacti_group_of_events_default_data', array(
@@ -567,6 +581,7 @@ function bookacti_get_group_of_events_default_data() {
 		'repeat_on' => '',
 		'repeat_from' => '',
 		'repeat_to' => '',
+		'repeat_exceptions' => array(),
 		'active' => 1
 	));
 }
@@ -584,6 +599,7 @@ function bookacti_get_group_of_events_default_meta() {
 /**
  * Sanitize group of events data
  * @since 1.12.0
+ * @version 1.13.0
  * @param array $raw_data
  * @return array
  */
@@ -598,13 +614,13 @@ function bookacti_sanitize_group_of_events_data( $raw_data ) {
 		'str'		=> array( 'category_title' ),
 		'str_id'	=> array( 'repeat_freq', 'repeat_on' ),
 		'date'		=> array( 'repeat_from', 'repeat_to' ),
+		'array'		=> array( 'repeat_exceptions' ),
 		'bool'		=> array( 'active' )
 	);
 	$data = bookacti_sanitize_values( array_merge( $default_data, $default_meta, array( 'category_title' => '' ) ), $raw_data, $keys_by_type );
 	
 	if( ! $data[ 'id' ] && ! empty( $raw_data[ 'group_id' ] ) ) { $data[ 'id' ] = intval( $raw_data[ 'group_id' ] ); }
 	$data[ 'template_id' ] = ! empty( $raw_data[ 'template_id' ] ) ? abs( intval( $raw_data[ 'template_id' ] ) ) : 0;
-	$data[ 'exceptions_dates' ] = ! empty( $raw_data[ 'exceptions_dates' ] ) ? $raw_data[ 'exceptions_dates' ] : array();
 	
 	// Sanitize array of events
 	$raw_events = isset( $raw_data[ 'events' ] ) ? ( is_array( $raw_data[ 'events' ] ) ? $raw_data[ 'events' ] : ( is_string( $raw_data[ 'events' ] ) ? bookacti_maybe_decode_json( stripslashes( $raw_data[ 'events' ] ), true ) : array() ) ) : array();
@@ -622,7 +638,12 @@ function bookacti_sanitize_group_of_events_data( $raw_data ) {
 			$data[ 'events' ][] = $event;
 		}
 	}
-	usort( $data[ 'events' ], 'bookacti_sort_array_by_start' );
+	usort( $data[ 'events' ], function( $a, $b ) {
+		if( $a[ 'start' ] === $b[ 'start' ] ) { return 0; }
+		$a_dt = new DateTime( $a[ 'start' ] );
+		$b_dt = new DateTime( $b[ 'start' ] );
+		return $a_dt < $b_dt ? -1 : 1;
+	});
 	
 	// Group start (used for sanitizing repeat data)
 	$data[ 'start' ] = isset( $data[ 'events' ][ 0 ][ 'start' ] ) ? $data[ 'events' ][ 0 ][ 'start' ] : '';
@@ -711,7 +732,7 @@ function bookacti_get_group_category_default_meta() {
 /**
  * Sanitize group category data
  * @since 1.1.0
- * @version 1.12.0
+ * @version 1.13.0
  * @param array $raw_data
  * @return array
  */
@@ -729,6 +750,7 @@ function bookacti_sanitize_group_category_data( $raw_data ) {
 	$data = bookacti_sanitize_values( array_merge( $default_data, $default_meta ), $raw_data, $keys_by_type );
 	
 	if( ! $data[ 'id' ] && ! empty( $raw_data[ 'category_id' ] ) ) { $data[ 'id' ] = intval( $raw_data[ 'category_id' ] ); }
+	if( empty( $raw_data[ 'is_restricted' ] ) ) { $data[ 'allowed_roles' ] = array(); }
 	
 	return apply_filters( 'bookacti_sanitized_group_category_data', $data, $raw_data );
 }

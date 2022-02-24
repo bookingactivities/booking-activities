@@ -209,7 +209,7 @@ $j( document ).ready( function() {
 
 /**
  * Initialize the calendar
- * @version 1.12.3
+ * @version 1.13.0
  * @param {HTMLElement} booking_system
  * @param {boolean} reload_events
  */
@@ -272,6 +272,24 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 			if( view.name.indexOf( 'agenda' ) > -1 ){
 				var event_overlap = typeof display_data.slotEventOverlap !== 'undefined' ? display_data.slotEventOverlap : calendar.fullCalendar( 'option', 'slotEventOverlap' );
 				if( event_overlap ) { element.addClass( 'bookacti-events-overlap' ); }
+			}
+			
+			// Gray out days off
+			var days_off = bookacti.booking_system[ booking_system_id ][ 'days_off' ];
+			if( typeof days_off !== 'undefined' ) {
+				$j.each( days_off, function ( i, off_period ) {
+					var off_from = moment.utc( off_period.from + ' 00:00:00' );
+					var off_to   = moment.utc( off_period.to + ' 23:59:59' );
+					if( off_to.isBefore( view.start ) || off_from.isAfter( view.end ) ) { return true; } // continue
+
+					do {
+						var disabled_date  = off_from.format( 'YYYY-MM-DD' );
+						var disabled_cells = calendar.find( 'th[data-date="' + disabled_date + '"], td[data-date="' + disabled_date + '"]' );
+						disabled_cells.addClass( 'fc-disabled-day' );
+						disabled_cells.find( 'a' ).contents().unwrap();
+						off_from.add( 1, 'days' );
+					} while ( off_from.isSameOrBefore( off_to ) );
+				});
 			}
 			
 			booking_system.trigger( 'bookacti_view_render', [ view, element ] );

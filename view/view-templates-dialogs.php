@@ -1,14 +1,14 @@
 <?php 
 /**
  * Calendar editor dialogs
- * @version 1.12.3
+ * @version 1.13.0
  */
 
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 // Templates options list
-$templates = bookacti_fetch_templates();
+if( empty( $templates ) ) { $templates = bookacti_fetch_templates(); }
 $templates_options = array();
 foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = esc_html( $template[ 'title' ] ); }
 ?>
@@ -82,7 +82,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 		
 		/**
 		 * Display the 'Repetition' tab content of event settings
-		 * @version 1.12.0
+		 * @version 1.13.0
 		 * @param array $params
 		 */
 		function bookacti_fill_event_tab_repetition( $params ) {
@@ -197,27 +197,19 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 					'title'		=> esc_html__( 'Repeat to', 'booking-activities' ),
 					'options'	=> array( 'max' => '2037-12-31' ),
 					'tip'		=> esc_html__( 'Set the ending date of the repetition. The occurrences of the event will be added until this date.', 'booking-activities' )
+				),
+				'repeat_exceptions' => array(
+					'type'	=> 'custom_date_intervals',
+					'name'	=> 'repeat_exceptions',
+					'id'	=> 'bookacti-event-repeat-exceptions',
+					'class'	=> 'bookacti-repeat_exceptions',
+					'value'	=> array(),
+					'title'	=> esc_html__( 'Exceptions', 'booking-activities' ),
+					'tip'	=> esc_html__( 'No occurrences will be displayed between these dates.', 'booking-activities' )
 				)
 			);
 			bookacti_display_fields( $fields );
-		?>
-			<div id='bookacti-event-exceptions-container' class='bookacti-exceptions-container'>
-				<label class='bookacti-fullwidth-label'>
-				<?php 
-					esc_html_e( 'Exceptions', 'booking-activities' );
-					bookacti_help_tip( esc_html__( 'You can add exception dates to the repetition. No event occurrences will be displayed on the exception dates.', 'booking-activities' ) );
-				?>
-				</label>
-				<div id='bookacti-event-add-exception-container' class='bookacti-add-exception-container'>
-					<input type='date' id='bookacti-event-exception-date-picker' class='bookacti-exception-date-picker' max='2037-12-31' >
-					<button type='button' id='bookacti-event-add-exception-button' class='bookacti-add-exception-button'><?php esc_html_e( 'Add', 'booking-activities' ); ?></button>
-				</div>
-				<div>
-					<select multiple id='bookacti-event-exceptions-selectbox' class='bookacti-exceptions-selectbox' name='exceptions_dates[]'></select>
-					<button type='button' id='bookacti-event-delete-exceptions-button' class='bookacti-delete-exception-button'><?php esc_html_e( 'Delete selected', 'booking-activities' ); ?></button>
-				</div>
-			</div>
-		<?php 
+
 			do_action( 'bookacti_event_tab_repetition_after', $params );
 		}
 		?>
@@ -285,13 +277,13 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 				bookacti_display_fields( $fields );
 				
 				do_action( 'bookacti_template_tab_general_after', $params );
-			} 
+			}
 			
 			
 			/**
 			 * Fill the "Editor" tab in calendar settings
 			 * @since 1.7.18 (was bookacti_fill_template_tab_agenda)
-			 * @version 1.12.0
+			 * @version 1.13.0
 			 * @param array $params
 			 */
 			function bookacti_fill_template_tab_editor( $params = array() ) {
@@ -312,7 +304,15 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 					<legend><?php esc_html_e( 'Agenda views', 'booking-activities' ); ?></legend>
 					<?php
 						$agenda_fields = array( 'minTime', 'maxTime', 'snapDuration' );
-						$fields = apply_filters( 'bookacti_template_tab_editor_agenda_fields', bookacti_get_calendar_fields_default_data( $agenda_fields ) );
+						$fields = apply_filters( 'bookacti_template_tab_editor_agenda_fields', bookacti_get_fullcalendar_fields_default_data( $agenda_fields ) );
+						bookacti_display_fields( $fields );
+					?>
+				</fieldset>
+				<fieldset>
+					<legend><?php esc_html_e( 'Display', 'booking-activities' ); ?></legend>
+					<?php
+						$display_fields = array( 'days_off' );
+						$fields = apply_filters( 'bookacti_template_tab_editor_display_fields', bookacti_get_booking_system_fields_default_data( $display_fields ) );
 						bookacti_display_fields( $fields );
 					?>
 				</fieldset>
@@ -572,7 +572,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			
 			/**
 			 * Display the fields in the "Permissions" tab of the Activity dialog
-			 * @version 1.12.0
+			 * @version 1.13.0
 			 * @param array $params
 			 */
 			function bookacti_fill_activity_tab_permissions( $params = array() ) {
@@ -582,29 +582,37 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 				$roles = get_editable_roles();
 				$roles_options = array();
 				foreach( $roles as $role_id => $role ) { $roles_options[ $role_id ] = $role[ 'name' ]; }
-				
-				$allowed_roles = array( 
-					'type'		=> 'select',
-					'multiple'	=> 1,
-					'name'		=> 'allowed_roles',
-					'id'		=> 'bookacti-activity-roles',
-					'title'		=> esc_html__( 'Who can book this activity?', 'booking-activities' ),
-					'fullwidth'	=> 1,
-					'options'	=> array_merge( $roles_options, array( 'all' => esc_html__( 'Everybody', 'booking-activities' ) ) ),
-					'tip'		=> esc_html__( 'Choose who is allowed to book the events of this activity.', 'booking-activities' )
-								. '<br/>' . esc_html__( 'Use CTRL+Click to pick or unpick a role.', 'booking-activities' ) 
-								. ' ' . esc_html__( 'Don\'t pick any role to allow everybody.', 'booking-activities' )
-				);
-				bookacti_display_fields( array( 'allowed_roles' => $allowed_roles ) );
 				?>
+				<div class='bookacti-field-container' id='bookacti-activity-roles-container'>
+					<input type='checkbox' name='is_restricted' id='bookacti-display-activity-user-roles'/>
+					<label for='bookacti-display-activity-user-roles' class='bookacti-fullwidth-label'>
+						<strong><?php esc_html_e( 'I want to restrict this activity to certain users only', 'booking-activities' ); ?></strong>
+					</label>
+					<?php
+					$tip = esc_html__( 'Choose who is allowed to book the events of this activity.', 'booking-activities' )
+						 . '<br/>' . esc_html__( 'Use CTRL+Click to pick or unpick a role.', 'booking-activities' ) 
+						 . ' ' . esc_html__( 'Don\'t pick any role to allow everybody.', 'booking-activities' );
+					bookacti_help_tip( $tip );
 				
-				<div class='bookacti-roles-notice bookacti-warning' style='margin-bottom:0;'>
-					<span class='dashicons dashicons-info'></span>
-					<span><?php esc_html_e( 'Don\'t pick any role to allow everybody.', 'booking-activities' ); ?></span>
-				</div>
-				<div class='bookacti-roles-notice bookacti-info'>
-					<span class='dashicons dashicons-info'></span>
-					<span><?php esc_html_e( 'Use CTRL+Click to pick or unpick a role.', 'booking-activities' ); ?></span>
+					$allowed_roles = array( 
+						'type'		=> 'select',
+						'multiple'	=> 1,
+						'name'		=> 'allowed_roles',
+						'id'		=> 'bookacti-activity-roles',
+						'fullwidth'	=> 1,
+						'options'	=> array_merge( $roles_options, array( 'all' => esc_html__( 'Everybody', 'booking-activities' ) ) )
+					);
+					bookacti_display_field( $allowed_roles );
+					?>
+				
+					<div class='bookacti-roles-notice bookacti-warning' style='margin-bottom:0;'>
+						<span class='dashicons dashicons-info'></span>
+						<span><?php esc_html_e( 'Don\'t pick any role to allow everybody.', 'booking-activities' ); ?></span>
+					</div>
+					<div class='bookacti-roles-notice bookacti-info'>
+						<span class='dashicons dashicons-info'></span>
+						<span><?php esc_html_e( 'Use CTRL+Click to pick or unpick a role.', 'booking-activities' ); ?></span>
+					</div>
 				</div>
 				
 				<?php
@@ -675,9 +683,9 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			wp_nonce_field( 'bookacti_import_activity', 'nonce_import_activity', false );
 			
 			$fields = array(
-				'duplicated_template_id' => array(
+				'template_to_import_activities_from' => array(
 					'type'		=> 'select',
-					'name'		=> 'template-import-bound-activities',
+					'name'		=> 'template_to_import_activities_from',
 					'id'		=> 'template-import-bound-activities',
 					'class'		=> 'bookacti-template-select-box',
 					/* translators: the user is asked to select a calendar to display its bound activities. This is the label of the select box. */
@@ -811,6 +819,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 		/**
 		 * Display the 'Repetition' tab content of group of events settings
 		 * @since 1.12.0
+		 * @version 1.13.0
 		 * @param array $params
 		 */
 		function bookacti_fill_group_of_events_tab_repetition( $params ) {
@@ -887,7 +896,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 						'name'		=> 'repeat_monthly_type',
 						'type'		=> 'select',
 						'id'		=> 'bookacti-group-of-events-repeat-monthly_type',
-						'id'		=> 'bookacti-repeat-monthly_type',
+						'class'		=> 'bookacti-repeat-monthly_type',
 						/* translators: followed by a selectox with the following values. E.g.: Repeat on the 21st of each month / Repeat on the 2nd Monday of each month / Repeat on the last day of each month / Repeat on the last Monday of each month */
 						'title'		=> esc_html_x( 'Repeat on', 'monthly repetition', 'booking-activities' ),
 						'options'	=> array( 
@@ -925,29 +934,21 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 						'title'		=> esc_html__( 'Repeat to', 'booking-activities' ),
 						'options'	=> array( 'max' => '2037-12-31' ),
 						'tip'		=> esc_html__( 'Set the ending date of the repetition. The occurrences of the group of events starting after that date won\'t be generated.', 'booking-activities' )
+					),
+					'repeat_exceptions' => array(
+						'type'	=> 'custom_date_intervals',
+						'name'	=> 'repeat_exceptions',
+						'id'	=> 'bookacti-group-of-events-repeat-exceptions',
+						'class'	=> 'bookacti-repeat_exceptions',
+						'value'	=> array(),
+						'title'	=> esc_html__( 'Exceptions', 'booking-activities' ),
+						'tip'	=> esc_html__( 'No occurrences will be displayed between these dates.', 'booking-activities' )
 					)
 				);
 				bookacti_display_fields( $fields );
+			
+				do_action( 'bookacti_group_of_events_tab_repetition_after', $params );
 			?>
-		
-			<div id='bookacti-group-of-events-exceptions-container' class='bookacti-exceptions-container'>
-				<label class='bookacti-fullwidth-label'>
-				<?php 
-					esc_html_e( 'Exceptions', 'booking-activities' );
-					bookacti_help_tip( esc_html__( 'The occurrences of the group of events starting one of these dates won\'t be generated.', 'booking-activities' ) );
-				?>
-				</label>
-				<div id='bookacti-group-of-events-add-exception-container' class='bookacti-add-exception-container'>
-					<input type='date' id='bookacti-group-of-events-exception-date-picker' class='bookacti-exception-date-picker' max='2037-12-31'>
-					<button type='button' id='bookacti-group-of-events-add-exception-button' class='bookacti-add-exception-button'><?php esc_html_e( 'Add', 'booking-activities' ); ?></button>
-				</div>
-				<div>
-					<select multiple id='bookacti-group-of-events-exceptions-selectbox' class='bookacti-exceptions-selectbox' name='exceptions_dates[]'></select>
-					<button type='button' id='bookacti-group-of-events-delete-exceptions-button' class='bookacti-delete-exception-button'><?php esc_html_e( 'Delete selected', 'booking-activities' ); ?></button>
-				</div>
-			</div>
-		
-			<?php do_action( 'bookacti_group_of_events_tab_repetition_after', $params ); ?>
 		
 			<div class='bookacti-backend-settings-only-notice bookacti-info'>
 				<span class='dashicons dashicons-info'></span>
@@ -1086,7 +1087,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			
 			/**
 			 * Display the fields in the "Permissions" tab of the Group Category dialog
-			 * @version 1.12.0
+			 * @version 1.13.0
 			 * @param array $params
 			 */
 			function bookacti_fill_group_category_tab_permissions( $params = array() ) {
@@ -1096,30 +1097,38 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 				$roles = get_editable_roles();
 				$roles_options = array();
 				foreach( $roles as $role_id => $role ) { $roles_options[ $role_id ] = $role[ 'name' ]; }
-				
-				$allowed_roles = array( 
-					'type'		=> 'select',
-					'multiple'	=> 1,
-					'name'		=> 'allowed_roles',
-					'id'		=> 'bookacti-group-category-roles',
-					'title'		=> esc_html__( 'Who can book this category of groups?', 'booking-activities' ),
-					'fullwidth'	=> 1,
-					'options'	=> array_merge( $roles_options, array( 'all' => esc_html__( 'Everybody', 'booking-activities' ) ) ),
-					'tip'		=> esc_html__( 'Choose who is allowed to book the groups of this category.', 'booking-activities' )
-								. '<br/>' . esc_html__( 'Use CTRL+Click to pick or unpick a role.', 'booking-activities' ) 
-								. ' ' . esc_html__( 'Don\'t pick any role to allow everybody.', 'booking-activities' )
-				);
-				bookacti_display_fields( array( 'allowed_roles' => $allowed_roles ) );
-			?>		
-				<div class='bookacti-roles-notice bookacti-warning' style='margin-bottom:0;'>
-					<span class='dashicons dashicons-info'></span>
-					<span><?php esc_html_e( 'Don\'t pick any role to allow everybody.', 'booking-activities' ); ?></span>
+				?>
+				<div class='bookacti-field-container' id='bookacti-group-category-roles-container'>
+					<input type='checkbox' name='is_restricted' id='bookacti-display-group-category-user-roles'/>
+					<label for='bookacti-display-group-category-user-roles' class='bookacti-fullwidth-label'>
+						<strong><?php esc_html_e( 'I want to restrict this group category to certain users only', 'booking-activities' ); ?></strong>
+					</label>
+					<?php
+					$tip = esc_html__( 'Choose who is allowed to book the groups of this category.', 'booking-activities' )
+						 . '<br/>' . esc_html__( 'Use CTRL+Click to pick or unpick a role.', 'booking-activities' ) 
+						 . ' ' . esc_html__( 'Don\'t pick any role to allow everybody.', 'booking-activities' );
+					bookacti_help_tip( $tip );
+
+					$allowed_roles = array( 
+						'type'		=> 'select',
+						'multiple'	=> 1,
+						'name'		=> 'allowed_roles',
+						'id'		=> 'bookacti-group-category-roles',
+						'fullwidth'	=> 1,
+						'options'	=> array_merge( $roles_options, array( 'all' => esc_html__( 'Everybody', 'booking-activities' ) ) )
+					);
+					bookacti_display_field( $allowed_roles );
+				?>		
+					<div class='bookacti-roles-notice bookacti-warning' style='margin-bottom:0;'>
+						<span class='dashicons dashicons-info'></span>
+						<span><?php esc_html_e( 'Don\'t pick any role to allow everybody.', 'booking-activities' ); ?></span>
+					</div>
+					<div class='bookacti-roles-notice bookacti-info'>
+						<span class='dashicons dashicons-info'></span>
+						<span><?php esc_html_e( 'Use CTRL+Click to pick or unpick a role.', 'booking-activities' ); ?></span>
+					</div>
 				</div>
-				<div class='bookacti-roles-notice bookacti-info'>
-					<span class='dashicons dashicons-info'></span>
-					<span><?php esc_html_e( 'Use CTRL+Click to pick or unpick a role.', 'booking-activities' ); ?></span>
-				</div>
-			<?php
+				<?php
 				do_action( 'bookacti_group_category_tab_permissions_after', $params );
 			}
 		?>

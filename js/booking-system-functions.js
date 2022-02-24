@@ -1843,43 +1843,14 @@ function bookacti_redirect_to_group_category_url( booking_system, group_id ) {
 /**
  * Redirect to url with the booking form values as parameters
  * @since 1.7.10
- * @version 1.12.7
+ * @version 1.13.0
  * @param {HTMLElement} booking_system
  * @param {string} redirect_url
  */
 function bookacti_redirect_booking_system_to_url( booking_system, redirect_url ) {
 	if( ! redirect_url ) { return; }
 	
-	// Do not send password via URL
-	booking_system.closest( 'form, .bookacti-form-fields' ).find( 'input[type="password"][disabled]' ).addClass( 'bookacti-was-disabled' );
-	booking_system.closest( 'form, .bookacti-form-fields' ).find( 'input[type="password"]' ).prop( 'disabled', true );
-	
-	// Add form parameters to the URL
-	var url_params = '';
-	if( ! booking_system.closest( 'form' ).length ) {
-		booking_system.closest( '.bookacti-form-fields' ).wrap( '<form class="bookacti-temporary-form"></form>' );
-		url_params	= booking_system.closest( 'form' ).serialize();
-		booking_system.closest( '.bookacti-form-fields' ).unwrap( 'form.bookacti-temporary-form' );
-	} else {
-		url_params	= booking_system.closest( 'form' ).serialize();
-	}
-	
-	// Enable password fields again
-	booking_system.closest( 'form, .bookacti-form-fields' ).find( 'input[type="password"]:not(.bookacti-was-disabled)' ).prop( 'disabled', false );
-	booking_system.closest( 'form, .bookacti-form-fields' ).find( 'input[type="password"].bookacti-was-disabled' ).removeClass( 'bookacti-was-disabled' );
-	
-	var redirect = { 'url': redirect_url, 'redirect_url': redirect_url, 'params': url_params, 'anchor': '' };
-	var anchor_pos = redirect.url.indexOf( '#' );
-	if( anchor_pos >= 0 ) {
-		redirect.anchor = redirect.url.substring( anchor_pos );
-		redirect.url = redirect.url.substring( 0, anchor_pos );
-	}
-	redirect.url += redirect.url.indexOf( '?' ) >= 0 ? '&' + url_params : '?' + url_params;
-	redirect.url += redirect.anchor;
-	
-	booking_system.trigger( 'bookacti_before_redirect', [ redirect ] );
-	
-	// Disable the submit button to avoid multiple booking
+	// Disable the submit button to avoid multiple redirect
 	var form = booking_system.closest( 'form' ).length ? booking_system.closest( 'form' ) : booking_system.closest( '.bookacti-form-fields' );	
 	var submit_button = form.find( 'input[type="submit"]' );
 	if( submit_button.length ) { submit_button.prop( 'disabled', true ); }
@@ -1896,8 +1867,26 @@ function bookacti_redirect_booking_system_to_url( booking_system, redirect_url )
 		submit_button.after( loading_div );
 	}
 	
-	// Redirect to URL
-	window.location.href = redirect.url;
+	var redirect_form_attr = { 'method': 'post', 'action': redirect_url, 'class': 'bookacti-temporary-form', 'id': '', 'data-redirect-timeout': 15000 };
+	
+	booking_system.trigger( 'bookacti_before_redirect', [ redirect_form_attr ] );
+	
+	// Redirect via POST method
+	if( booking_system.closest( 'form' ).length ) {
+		var form_attr = {};
+		$j.each( redirect_form_attr, function( attr_name, attr_value ) { form_attr[ attr_name ] = form.attr( attr_name ); });
+		
+		form.attr( redirect_form_attr );
+		form.submit();
+		form.attr( form_attr );
+		
+	} else {
+		booking_system.closest( '.bookacti-form-fields' ).wrap( '<form></form>' );
+		booking_system.closest( 'form' ).attr( redirect_form_attr ).submit();
+		booking_system.closest( '.bookacti-form-fields' ).unwrap( 'form.bookacti-temporary-form' );
+	}
+	
+	booking_system.trigger( 'bookacti_after_redirect', [ redirect_form_attr ] );
 	
 	// Stop loading if nothing happened after 15 seconds
 	setTimeout( function() { 
@@ -1906,5 +1895,5 @@ function bookacti_redirect_booking_system_to_url( booking_system, redirect_url )
 			submit_button.next( '.bookacti-loading-alt' ).remove();
 			submit_button.prop( 'disabled', false );
 		}
-	}, 15000 );
+	}, redirect_form_attr[ 'data-redirect-timeout' ] );
 }

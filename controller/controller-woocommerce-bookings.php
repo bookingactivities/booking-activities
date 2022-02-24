@@ -745,7 +745,7 @@ add_filter( 'bookacti_booking_list_items', 'bookacti_add_wc_data_to_booking_list
 /**
  * Fill WC bookings export columns
  * @since 1.6.0
- * @version 1.11.0
+ * @version 1.13.0
  * @param array $booking_items
  * @param array $bookings
  * @param array $booking_groups
@@ -827,8 +827,8 @@ function bookacti_fill_wc_columns_in_bookings_export( $booking_items, $bookings,
 				$booking_items[ $booking_id ][ 'product_id' ]		= $order_item->get_product_id();
 				$booking_items[ $booking_id ][ 'variation_id' ]		= $order_item->get_variation_id();
 				$booking_items[ $booking_id ][ 'order_item_title' ]	= apply_filters( 'bookacti_translate_text', $order_item->get_name(), $args[ 'locale' ] );
-				$booking_items[ $booking_id ][ 'order_item_price' ]	= $args[ 'raw' ] ? $order_item->get_total() : wc_price( $order_item->get_total() );
-				$booking_items[ $booking_id ][ 'order_item_tax' ]	= $args[ 'raw' ] ? $order_item->get_total_tax() : wc_price( $order_item->get_total_tax() );
+				$booking_items[ $booking_id ][ 'order_item_price' ]	= $args[ 'raw' ] ? $order_item->get_total() : html_entity_decode( wc_price( $order_item->get_total() ) );
+				$booking_items[ $booking_id ][ 'order_item_tax' ]	= $args[ 'raw' ] ? $order_item->get_total_tax() : html_entity_decode( wc_price( $order_item->get_total_tax() ) );
 			}
 		}
 	}

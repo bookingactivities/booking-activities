@@ -357,6 +357,7 @@ function bookacti_delete_form( $form_id ) {
 
 /**
  * Insert default form fields
+ * @version 1.13.0
  * @global wpdb $wpdb
  * @param int $form_id
  * @param array $to_insert Default field name to insert
@@ -372,7 +373,9 @@ function bookacti_insert_default_form_fields( $form_id, $to_insert = array() ) {
 		if( empty( $default_field[ 'compulsory' ] ) && empty( $default_field[ 'default' ] ) ) { continue; }
 		if( $to_insert && ! in_array( $default_field[ 'name' ], $to_insert ) ) { continue; }
 		// Sanitize default data
-		$fields_to_insert[] = bookacti_sanitize_form_field_data( $default_field );
+		$sanitized_data = bookacti_sanitize_form_field_data( $default_field );
+		if( ! $sanitized_data ) { continue; }
+		$fields_to_insert[] = $sanitized_data;
 	}
 	
 	if( ! $fields_to_insert ) { return 0; }
@@ -413,18 +416,14 @@ function bookacti_insert_default_form_fields( $form_id, $to_insert = array() ) {
 /**
  * Insert a form field
  * @since 1.5.0
- * @version 1.7.18
+ * @version 1.13.0
  * @global wpdb $wpdb
  * @param int $form_id
- * @param string $field_data
+ * @param array $field_data
  * @return int|false
  */
 function bookacti_insert_form_field( $form_id, $field_data ) {
 	global $wpdb;
-	
-	if( ! is_array( $field_data ) ) {
-		$field_data = bookacti_sanitize_form_field_data( bookacti_get_default_form_fields_data( $field_data ) );
-	}
 	
 	// Insert the form field
 	$created = $wpdb->insert( 

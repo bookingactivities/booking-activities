@@ -3,6 +3,62 @@
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
+ * Update changes to 1.13.0
+ * This function is temporary
+ * @since 1.13.0
+ * @global wpdb $wpdb
+ * @param string $old_version
+ */
+function bookacti_move_repeat_exceptions_when_updating_to_1_13_0( $old_version ) {
+	// Do it only once, when Booking Activities is updated for the first time after 1.13.0
+	if( version_compare( $old_version, '1.13.0', '>=' ) ) { return; }
+	
+	// Increase max ececution time in case there are a lot of repeat exceptions to convert
+	bookacti_increase_max_execution_time( 'upgrade_database_to_1_13_0' );
+	
+	global $wpdb;
+	
+	// Get repeat exceptions per event / group
+	$query = 'SELECT * FROM ' . BOOKACTI_TABLE_EXCEPTIONS . ' ORDER BY object_type, object_id';
+	$results = $wpdb->get_results( $query );
+	if( ! $results ) { return; }
+	
+	// Build repeat exceptions array per event / group
+	$exceptions_per_event = array();
+	$exceptions_per_group = array();
+	foreach( $results as $result ) {
+		$id = intval( $result->object_id );
+		$date = bookacti_sanitize_date( $result->exception_value );
+		if( ! $id || ! $date ) { continue; }
+		if( $result->object_type === 'group_of_events' ) {
+			if( ! isset( $exceptions_per_group[ $id ] ) ) { $exceptions_per_group[ $id ] = array(); }
+			$exceptions_per_group[ $id ][] = array( 'from' => $date, 'to' => $date );
+		} else {
+			if( ! isset( $exceptions_per_event[ $id ] ) ) { $exceptions_per_event[ $id ] = array(); }
+			$exceptions_per_event[ $id ][] = array( 'from' => $date, 'to' => $date );
+		}
+	}
+	
+	// Update events / groups repeat exceptions
+	foreach( $exceptions_per_event as $event_id => $repeat_exceptions ) {
+		$repeat_exceptions_sanitized = bookacti_sanitize_days_off( $repeat_exceptions );
+		if( ! $repeat_exceptions_sanitized ) { continue; }
+		$query = 'UPDATE ' . BOOKACTI_TABLE_EVENTS . ' SET repeat_exceptions = %s WHERE id = %d';
+		$query = $wpdb->prepare( $query, array( maybe_serialize( $repeat_exceptions_sanitized ), $event_id ) );
+		$wpdb->query( $query );
+	}
+	foreach( $exceptions_per_group as $group_id => $repeat_exceptions ) {
+		$repeat_exceptions_sanitized = bookacti_sanitize_days_off( $repeat_exceptions );
+		if( ! $repeat_exceptions_sanitized ) { continue; }
+		$query = 'UPDATE ' . BOOKACTI_TABLE_EVENT_GROUPS . ' SET repeat_exceptions = %s WHERE id = %d';
+		$query = $wpdb->prepare( $query, array( maybe_serialize( $repeat_exceptions_sanitized ), $group_id ) );
+		$wpdb->query( $query );
+	}
+}
+add_action( 'bookacti_updated', 'bookacti_move_repeat_exceptions_when_updating_to_1_13_0', 70 );
+
+
+/**
  * Update changes to 1.12.0
  * This function is temporary
  * @since 1.12.0

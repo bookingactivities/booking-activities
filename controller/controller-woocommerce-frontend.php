@@ -39,7 +39,7 @@ add_filter( 'bookacti_translation_array', 'bookacti_woocommerce_translation_arra
 
 /**
  * Change 'user_id' of bookings from customer id to user id when he logs in
- * @version 1.9.0
+ * @version 1.13.0
  * @global WooCommerce $woocommerce
  * @param string $user_login
  * @param WP_User $user
@@ -54,7 +54,13 @@ function bookacti_change_customer_id_to_user_id( $user_login, $user ) {
 		// If the customer was already logged in, do nothing (user switching between two accounts)
 		if( is_numeric( $customer_id ) && get_user_by( 'id', $customer_id ) ) { return; } 
 		
-		bookacti_update_bookings_user_id( $user->ID, $customer_id );
+		/**
+		 * When not logged-in people add a booking to cart or go to checkout, their booking and order are associated with their customer id
+		 * This changes customer id by user id for all bookings made whithin the 31 past days as they log in which correspond to WC cart cookie
+		 * We can't go further because customer ids are generated randomly, regardless of existing ones in database
+		 * Limiting to 31 days make it very improbable that two customers with the same id create an account or log in
+		 */
+		bookacti_update_bookings_user_id( $user->ID, $customer_id, 31 );
 	}
 
 	// Update the cart expiration date if the user is logged in

@@ -1596,21 +1596,15 @@ function bookacti_cancel_group_of_events_bookings( $event_group_id, $filters = a
 
 
 /** 
- * Update all bookings of a customer_id with a new user_id
- * 
- * When not logged-in people add a booking to cart or go to checkout, their booking and order are associated with their customer id
- * This changes customer id by user id for all bookings made whithin the 31 past days as they log in which correspond to WC cart cookie
- * We can't go further because customer ids are generated randomly, regardless of existing ones in database
- * Limiting to 31 days make it very improbable that two customers with the same id create an account or log in
- * 
- * @version 1.9.0
+ * Replace all bookings (groups) user_id with another ID
+ * @version 1.13.0
  * @global wpdb $wpdb
  * @param int|string $user_id
  * @param int|string $old_user_id
- * @param int $expiration_date_delay
+ * @param int|false $expiration_date_delay
  * @return false|int
  */
-function bookacti_update_bookings_user_id( $user_id, $old_user_id, $expiration_date_delay = 31 ) {
+function bookacti_update_bookings_user_id( $user_id, $old_user_id, $expiration_date_delay = false ) {
 	global $wpdb;
 	
 	// Single Bookings

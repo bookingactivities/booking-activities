@@ -133,9 +133,11 @@
 
 /* Activity dialog */
 #bookacti-activity-import-dialog label { display: inline-block; width: 150px; font-weight: bold; }
-#bookacti-delete-activity-options	{ margin-top: 20px; }
+#bookacti-delete-activity-options { margin-top: 20px; }
 #bookacti-activity-duration-container .bookacti-duration-hint { display: none !important; }
-.bookacti-roles-notice { margin-top: 10px; margin-bottom: 20px; }
+.bookacti-roles-notice { display: none; margin-top: 10px; margin-bottom: 20px; }
+#bookacti-activity-roles, #bookacti-group-category-roles { display: none; }
+#bookacti-activity-roles-container label, #bookacti-group-category-roles-container label { cursor: pointer; }
 
 /* Event dialog */
 .bookacti-repeat-freq-start-of-week-notice { display: none; margin-top: 10px; }

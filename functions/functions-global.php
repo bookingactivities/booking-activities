@@ -207,6 +207,7 @@ function bookacti_decrypt( $string ) {
 /**
  * Generate CSV file
  * @since 1.8.0
+ * @version 1.13.0
  * @param array $items
  * @param array $headers
  * @return string
@@ -225,7 +226,7 @@ function bookacti_generate_csv( $items, $headers = array() ) {
 	foreach( $headers as $title ) {
 		if( $count ) { echo ','; }
 		++$count;
-		echo str_replace( ',', '', strip_tags( $title ) );
+		echo str_replace( ',', '', html_entity_decode( strip_tags( $title ) ) );
 	}
 
 	// Display rows
@@ -236,7 +237,7 @@ function bookacti_generate_csv( $items, $headers = array() ) {
 			if( $count ) { echo ','; }
 			++$count;
 			if( ! isset( $item[ $column_name ] ) ) { continue; }
-			echo str_replace( ',', '', strip_tags( $item[ $column_name ] ) );
+			echo str_replace( ',', '', html_entity_decode( strip_tags( $item[ $column_name ] ) ) );
 		}
 	}
 
@@ -338,7 +339,7 @@ function bookacti_generate_ical( $vevents, $vcalendar = array() ) {
 /**
  * Get the variables used with javascript
  * @since 1.8.0
- * @version 1.12.4
+ * @version 1.13.0
  * @return array
  */
 function bookacti_get_js_variables() {
@@ -484,8 +485,6 @@ function bookacti_get_js_variables() {
 				'error_activity_duration_is_null'	=> esc_html__( 'The activity duration should not be null.', 'booking-activities' ),
 				'error_event_not_btw_from_and_to'	=> esc_html__( 'The selected event should be included in the period in which it will be repeated.', 'booking-activities' ),
 				'error_freq_not_allowed'			=> esc_html__( 'Error: The repetition frequency is not a valid value.', 'booking-activities' ),
-				'error_excep_not_btw_from_and_to'	=> esc_html__( 'Exception dates should be included in the repetition period.', 'booking-activities' ),
-				'error_excep_duplicated'			=> esc_html__( 'Exceptions should all have a different date.', 'booking-activities' ),
 				'error_no_templates_for_activity'	=> esc_html__( 'The activity must be bound to at least one calendar.', 'booking-activities' ),
 				'error_select_at_least_two_events'	=> esc_html__( 'You must select at least two events.', 'booking-activities' ),
 				'error_no_template_selected'		=> esc_html__( 'You must select a calendar first.', 'booking-activities' ),
@@ -528,7 +527,7 @@ function bookacti_get_active_add_ons( $prefix = '', $exclude = array( 'balau' ) 
 /**
  * Get add-on data by prefix
  * @since 1.7.14
- * @version 1.12.3
+ * @version 1.13.0
  * @param string $prefix
  * @param array $exclude
  * @return array
@@ -541,7 +540,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name'	=> 'ba-display-pack', 
 			'end_of_life'	=> '', 
 			'download_id'	=> 482,
-			'min_version'	=> '1.4.19'
+			'min_version'	=> '1.4.23'
 		),
 		'banp'	=> array( 
 			'title'			=> 'Notification Pack', 
@@ -557,7 +556,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name'	=> 'ba-prices-and-credits', 
 			'end_of_life'	=> '', 
 			'download_id'	=> 438,
-			'min_version'	=> '1.5.1'
+			'min_version'	=> '1.7.5'
 		),
 		'baaf' => array( 
 			'title'			=> 'Advanced Forms', 
@@ -909,7 +908,7 @@ function bookacti_convert_wp_locale_to_fc_locale( $wp_locale = false ) {
 /**
  * Display fields
  * @since 1.5.0
- * @version 1.12.6
+ * @version 1.13.0
  * @param array $args
  */
 function bookacti_display_fields( $fields, $args = array() ) {
@@ -933,7 +932,7 @@ function bookacti_display_fields( $fields, $args = array() ) {
 		if( $field[ 'type' ] === 'select_items' )	{ $wrap_class .= ' bookacti-items-container'; } 
 		
 		// If custom type, call another function to display this field
-		if( $field[ 'type' ] === 'custom' ) {
+		if( substr( $field[ 'type' ], 0, 6 ) === 'custom' ) {
 			do_action( 'bookacti_display_custom_field', $field, $field_name );
 			continue;
 		}
@@ -1233,6 +1232,11 @@ function bookacti_display_field( $args ) {
 	// User ID
 	else if( $args[ 'type' ] === 'user_id' ) {
 		bookacti_display_user_selectbox( $args[ 'options' ] );
+	}
+
+	// Custom
+	else {
+		do_action( 'bookacti_display_field', $args );
 	}
 
 	// Display the tip
@@ -1627,6 +1631,56 @@ function bookacti_display_table_from_array( $array ) {
 }
 
 
+/**
+ * Display the Days off field
+ * @since 1.13.0
+ * @param array $field
+ * @param string $field_name
+ */
+function bookacti_display_date_intervals_field( $field, $field_name ) {
+	if( $field[ 'type' ] !== 'custom_date_intervals' ) { return; }
+	if( empty( $field[ 'value' ] ) ) { $field[ 'value' ] = array( array( 'from' => '', 'to' => '' ) ); }
+?>
+	<div class='bookacti-field-container bookacti-date-intervals-container' id='<?php echo $field[ 'id' ] . '-container'; ?>'>
+		<label for='<?php echo esc_attr( sanitize_title_with_dashes( $field[ 'id' ] ) ); ?>' class='bookacti-fullwidth-label'>
+		<?php 
+			echo ! empty( $field[ 'title' ] ) ? $field[ 'title' ] : '';
+			bookacti_help_tip( $field[ 'tip' ] );
+		?>
+			<span class='dashicons dashicons-plus-alt bookacti-add-date-interval'></span>
+		</label>
+		<div id='<?php echo $field[ 'id' ]; ?>' class='bookacti-date-intervals-table-container bookacti-custom-scrollbar' data-name='<?php echo $field[ 'name' ]; ?>' >
+			<table>
+				<thead>
+					<tr>
+						<th><?php echo esc_html_x( 'From', 'date', 'booking-activities' ); ?></th>
+						<th><?php echo esc_html_x( 'To', 'date', 'booking-activities' ); ?></th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+				<?php
+					$i = 0;
+					foreach( $field[ 'value' ] as $day_off ) {
+					?>
+						<tr>
+							<td><input type='date' name='<?php echo $field[ 'name' ] . '[' . $i . '][from]'; ?>' value='<?php if( ! empty( $day_off[ 'from' ] ) ) { echo $day_off[ 'from' ]; } ?>' class='bookacti-date-interval-from'/></td>
+							<td><input type='date' name='<?php echo $field[ 'name' ] . '[' . $i . '][to]'; ?>' value='<?php if( ! empty( $day_off[ 'to' ] ) ) { echo $day_off[ 'to' ]; } ?>' class='bookacti-date-interval-to'/></td>
+							<td><span class='dashicons dashicons-trash bookacti-delete-date-interval'></span></td>
+						</tr>
+					<?php
+						++$i;
+					}
+				?>
+				</tbody>
+			</table>
+		</div>
+	</div>
+<?php
+}
+add_action( 'bookacti_display_custom_field', 'bookacti_display_date_intervals_field', 10, 2 );
+
+
 
 
 // FORMATING AND SANITIZING
@@ -1689,21 +1743,6 @@ function bookacti_substr( $string, $offset = 0, $length = null ) {
  */
 function bookacti_sort_array_by_order( $a, $b ) {
 	return $a['order'] - $b['order'];
-}
-
-
-/**
- * Sort array of arrays with a ['start'] index
- * @since 1.12.0
- * @param array $a
- * @param array $b
- * @return array 
- */
-function bookacti_sort_array_by_start( $a, $b ) {
-	if( $a[ 'start' ] === $b[ 'start' ] ) { return 0; }
-	$a_dt = new DateTime( $a[ 'start' ] );
-	$b_dt = new DateTime( $b[ 'start' ] );
-	return $a_dt < $b_dt ? -1 : 1;
 }
 
 
@@ -1942,33 +1981,6 @@ function bookacti_format_delay( $seconds, $precision = 3 ) {
 	}
 
 	return apply_filters( 'bookacti_formatted_delay', $formatted_delay, $seconds, $precision );
-}
-
-
-/**
- * Sanitize array of dates
- * @since 1.2.0 (replace bookacti_sanitize_exceptions)
- * @version 1.7.13
- * @param array|string $exceptions Date array expected (format "Y-m-d")
- * @return array
- */
-function bookacti_sanitize_date_array( $exceptions ) {
-	if( ! empty( $exceptions ) ) {
-		if( is_array( $exceptions ) ) {
-			// Remove entries that do not correspond to a date
-			foreach( $exceptions as $i => $exception ) {
-				$exceptions[ $i ] = bookacti_sanitize_date( $exception );
-				if( ! $exceptions[ $i ] ) { unset( $exceptions[ $i ] ); }
-			}
-			return $exceptions;
-		} else {
-			$exceptions = bookacti_sanitize_date( $exceptions );
-			if( $exceptions ) {
-				return array( $exceptions );
-			}
-		}
-	}
-	return array();
 }
 
 

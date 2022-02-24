@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Create Booking Activities database tables
- * @version 1.12.0
+ * @version 1.13.0
  * @global wpdb $wpdb
  */
 function bookacti_create_tables() {
@@ -49,14 +49,8 @@ function bookacti_create_tables() {
 		repeat_on VARCHAR(32), 
 		repeat_from DATE, 
 		repeat_to DATE,
+		repeat_exceptions LONGTEXT,
 		active TINYINT(1) NOT NULL DEFAULT 1,
-		PRIMARY KEY ( id ) ) ' . $collate . ';';
-	
-	$table_exceptions_query = 'CREATE TABLE ' . BOOKACTI_TABLE_EXCEPTIONS . ' ( 
-		id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, 
-		object_type VARCHAR(128) DEFAULT "event", 
-		object_id BIGINT UNSIGNED, 
-		exception_value DATE,
 		PRIMARY KEY ( id ) ) ' . $collate . ';';
 	
 	$table_event_groups_query = 'CREATE TABLE ' . BOOKACTI_TABLE_EVENT_GROUPS . ' ( 
@@ -68,6 +62,7 @@ function bookacti_create_tables() {
 		repeat_on VARCHAR(32), 
 		repeat_from DATE, 
 		repeat_to DATE,
+		repeat_exceptions LONGTEXT,
 		active TINYINT(1) NOT NULL DEFAULT 1,
 		PRIMARY KEY ( id ) ) ' . $collate . ';';
 
@@ -179,7 +174,6 @@ function bookacti_create_tables() {
 			. $table_activities_query 
 			. $table_templates_activities_query 
 			. $table_events_query 
-			. $table_exceptions_query 
 			. $table_event_groups_query 
 			. $table_groups_events_query 
 			. $table_group_categories_query 
