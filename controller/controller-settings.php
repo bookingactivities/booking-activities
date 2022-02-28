@@ -546,7 +546,7 @@ add_filter( 'plugin_row_meta', 'bookacti_meta_links_in_plugins_table', 10, 2 );
 /**
  * Display an admin error notice if an add-on is outdated and will cause malfunction
  * @since 1.9.0
- * @version 1.12.3
+ * @version 1.13.0
  */
 function bookacti_add_ons_compatibility_error_notice() {
 	$add_ons = bookacti_get_active_add_ons( '', array() );
@@ -566,13 +566,13 @@ function bookacti_add_ons_compatibility_error_notice() {
 		}
 	}
 	if( ! $outdated_add_ons ) { return; }
-	
-	?>
+?>
 	<div class='notice notice-error bookacti-add-ons-compatibility-notice' >
 		<p>
 			<?php
-				/* translators: %s = Plugin name (Booking Actiities) */
-				echo sprintf( esc_html__( '%s is experiencing major compatibility issues. You need to update the following plugins now.', 'booking-activities' ), '<strong>Booking Activities</strong>' );
+				/* translators: %s = Plugin name (Booking Activities) */
+				echo sprintf( esc_html__( '%s is experiencing major compatibility issues.', 'booking-activities' ), '<strong>Booking Activities</strong>' );
+				echo ' ' . esc_html__( 'You need to update the following plugins now.', 'booking-activities' );
 			?>
 		</p>
 		<ul>
@@ -599,9 +599,39 @@ function bookacti_add_ons_compatibility_error_notice() {
 			?>
 		</p>
 	</div>
-	<?php
+<?php
 }
 add_action( 'all_admin_notices', 'bookacti_add_ons_compatibility_error_notice' );
+
+
+/**
+ * Display an admin error notice if Object Cache is in use
+ * @since 1.13.0
+ */
+function bookacti_object_cache_compatibility_error_notice() {
+	if( ! (bool) wp_using_ext_object_cache() ) { return; }
+?>
+	<div class='notice notice-error bookacti-add-ons-compatibility-notice' >
+		<p>
+			<?php
+				echo sprintf( esc_html__( '%s is experiencing major compatibility issues.', 'booking-activities' ), '<strong>Booking Activities</strong>' );
+				echo ' ' . esc_html__( 'You must disable your Object Cache tool now.', 'booking-activities' );
+			?>
+		</p>
+		<p>
+			<?php
+				$docs_link = 'https://booking-activities.fr/en/faq/booking-activities-doesnt-work-as-it-should/';
+				$docs_link_html = '<a href="' . $docs_link . '" target="_blank">' . esc_html__( 'troubleshoot', 'booking-activities' ) . '</a>';
+				/* translators: %s = Link to the "troubleshoot" instructions */
+				echo sprintf( esc_html__( 'Follow the instructions here: %s.', 'booking-activities' ), '<strong>' . $docs_link_html . '</strong>' ) . '<br/>';
+				/* translators: %s = Plugin name (Booking Activities) */
+				echo sprintf( esc_html__( 'If this error message is still displayed when all your plugins (except %s) are disabled, contact your webhost.', 'booking-activities' ), '<strong>Booking Activities</strong>' );
+			?>
+		</p>
+	</div>
+<?php
+}
+add_action( 'all_admin_notices', 'bookacti_object_cache_compatibility_error_notice' );
 
 
 /** 

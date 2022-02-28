@@ -674,7 +674,7 @@ function bookacti_wc_get_item_bookings_events_list_html( $item_bookings, $show_q
 /**
  * Get array of displayed attributes per booking
  * @since 1.9.0
- * @version 1.11.0
+ * @version 1.13.0
  * @global boolean $bookacti_is_email
  * @param array $item_bookings
  * @return array
@@ -684,85 +684,78 @@ function bookacti_wc_get_item_bookings_attributes( $item_bookings ) {
 	if( ! $item_bookings ) { return $bookings_attributes; }
 	
 	foreach( $item_bookings as $i => $item_booking ) {
-		// Handle item_booking_id arrays too
-		$dummy_booking = array();
-		if( ! isset( $item_booking[ 'bookings' ] ) ) {
-			$dummy_booking = $item_booking[ 'type' ] === 'group' ? array( 'group_id' => $item_booking[ 'id' ] ) : array( 'id' => $item_booking[ 'id' ] );
-			$dummy_booking_obj = (object) bookacti_sanitize_booking_data( $dummy_booking );
-			$item_booking[ 'bookings' ] = array( $dummy_booking_obj );
-			$item_bookings[ $i ][ 'bookings' ] = $item_booking[ 'bookings' ];
-		}
-		
-		$booking_attributes = array();
+		if( empty( $item_booking[ 'id' ] ) || empty( $item_booking[ 'type' ] ) ) { continue; }
 		
 		// Booking ID
-		$booking_attributes[ 'id' ] = array( 
-			'label' => $item_booking[ 'type' ] === 'group' ? esc_html__( 'Booking group ID', 'booking-activities' ) : esc_html__( 'Booking ID', 'booking-activities' ), 
-			'value' => $item_booking[ 'id' ],
-			'type' => $item_booking[ 'type' ]
+		$booking_attributes = array(
+			'id' => array( 
+				'label' => $item_booking[ 'type' ] === 'group' ? esc_html__( 'Booking group ID', 'booking-activities' ) : esc_html__( 'Booking ID', 'booking-activities' ), 
+				'value' => $item_booking[ 'id' ],
+				'type' => $item_booking[ 'type' ]
+			)
 		);
 		
-		// Booking status
-		$status = $item_booking[ 'type' ] === 'group' ? ( ! empty( $item_booking[ 'bookings' ][ 0 ]->group_state ) ? $item_booking[ 'bookings' ][ 0 ]->group_state : '' ) : $item_booking[ 'bookings' ][ 0 ]->state;
-		if( $status ) {
-			$booking_attributes[ 'status' ] = array( 
-				'label' => esc_html__( 'Status', 'booking-activities' ), 
-				'value' => bookacti_format_booking_state( $status )
-			);
-		}
+		if( ! empty( $item_booking[ 'bookings' ] ) ) {
+			// Booking status
+			$status = $item_booking[ 'type' ] === 'group' ? ( ! empty( $item_booking[ 'bookings' ][ 0 ]->group_state ) ? $item_booking[ 'bookings' ][ 0 ]->group_state : '' ) : $item_booking[ 'bookings' ][ 0 ]->state;
+			if( $status ) {
+				$booking_attributes[ 'status' ] = array( 
+					'label' => esc_html__( 'Status', 'booking-activities' ), 
+					'value' => bookacti_format_booking_state( $status )
+				);
+			}
 		
-		// Booking events
-		if( ! $dummy_booking ) {
+			// Booking events
 			$booking_attributes[ 'events' ] = array( 
 				'label' => esc_html( _n( 'Event', 'Events', count( $item_booking[ 'bookings' ] ), 'booking-activities' ) ), 
 				'value' => bookacti_wc_get_item_bookings_events_list_html( array( $item_booking ), true ),
 				'fullwidth' => 1
 			);
-		}
 		
-		// Refund data
-		if( ! empty( $item_booking[ 'bookings' ][ 0 ]->refunds ) ) {
-			$refunds_formatted = bookacti_format_booking_refunds( $item_booking[ 'bookings' ][ 0 ]->refunds );
-			$refunds_html = bookacti_get_booking_refunds_html( $refunds_formatted );
-			if( $refunds_html ) {
-				$booking_attributes[ 'refunds' ] = array( 
-					'label' => esc_html( _n( 'Refund', 'Refunds', count( $refunds_formatted ), 'booking-activities' ) ), 
-					'value' => $refunds_html,
-					'fullwidth' => 1
-				);
+			// Refund data
+			if( ! empty( $item_booking[ 'bookings' ][ 0 ]->refunds ) ) {
+				$refunds_formatted = bookacti_format_booking_refunds( $item_booking[ 'bookings' ][ 0 ]->refunds );
+				$refunds_html = bookacti_get_booking_refunds_html( $refunds_formatted );
+				if( $refunds_html ) {
+					$booking_attributes[ 'refunds' ] = array( 
+						'label' => esc_html( _n( 'Refund', 'Refunds', count( $refunds_formatted ), 'booking-activities' ) ), 
+						'value' => $refunds_html,
+						'fullwidth' => 1
+					);
+				}
 			}
-		}
 		
-		// Allow plugins to add more item booking attributes to be displayed (before the booking actions)
-		$booking_attributes = apply_filters( 'bookacti_wc_item_booking_attributes', $booking_attributes, $item_booking );
+			// Allow plugins to add more item booking attributes to be displayed (before the booking actions)
+			$booking_attributes = apply_filters( 'bookacti_wc_item_booking_attributes', $booking_attributes, $item_booking );
 		
-		// Display admin actions
-		$is_order_edit_page = ( ! empty( $_REQUEST[ 'action' ] ) 
-		&& in_array( $_REQUEST[ 'action' ], array( 'edit', 'woocommerce_refund_line_items', 'woocommerce_load_order_items' ), true )
-		&& ! did_action( 'woocommerce_order_fully_refunded_notification' ) 
-		&& ! did_action( 'woocommerce_order_partially_refunded_notification' ) );
-		if( $is_order_edit_page ) {
-			$actions_html_array = bookacti_wc_get_item_booking_actions_html( $item_booking, true );
-			if( $actions_html_array ) {
-				$booking_attributes[ 'actions' ] = array( 
-					'label' => esc_html( _n( 'Action', 'Actions', count( $actions_html_array ), 'booking-activities' ) ),
-					'value' => implode( ' | ', $actions_html_array ),
-					'fullwidth' => 1
-				);
+			// Display admin actions
+			$is_order_edit_page = ( ! empty( $_REQUEST[ 'action' ] ) 
+			&& in_array( $_REQUEST[ 'action' ], array( 'edit', 'woocommerce_refund_line_items', 'woocommerce_load_order_items' ), true )
+			&& ! did_action( 'woocommerce_order_fully_refunded_notification' ) 
+			&& ! did_action( 'woocommerce_order_partially_refunded_notification' ) );
+			if( $is_order_edit_page ) {
+				$actions_html_array = bookacti_wc_get_item_booking_actions_html( $item_booking, true );
+				if( $actions_html_array ) {
+					$booking_attributes[ 'actions' ] = array( 
+						'label' => esc_html( _n( 'Action', 'Actions', count( $actions_html_array ), 'booking-activities' ) ),
+						'value' => implode( ' | ', $actions_html_array ),
+						'fullwidth' => 1
+					);
+				}
 			}
-		}
-		
-		// Booking actions
-		// Don't display booking actions in emails, on the backend, and on payment page
-		global $bookacti_is_email;
-		if( ! $bookacti_is_email && ! $is_order_edit_page && empty( $_REQUEST[ 'pay_for_order' ] ) ) {
-			$actions_html_array = $item_booking[ 'type' ] === 'group' ? bookacti_get_booking_group_actions_html( $item_booking[ 'bookings' ], 'front', array(), true, true ) : ( $item_booking[ 'type' ] === 'single' ? bookacti_get_booking_actions_html( $item_booking[ 'bookings' ][ 0 ], 'front', array(), true, true ) : '' );
-			if( $actions_html_array ) {
-				$booking_attributes[ 'actions' ] = array( 
-					'label' => esc_html( _n( 'Action', 'Actions', count( $actions_html_array ), 'booking-activities' ) ),
-					'value' => implode( ' | ', $actions_html_array ),
-					'fullwidth' => 1
-				);
+
+			// Booking actions
+			// Don't display booking actions in emails, on the backend, and on payment page
+			global $bookacti_is_email;
+			if( ! $bookacti_is_email && ! $is_order_edit_page && empty( $_REQUEST[ 'pay_for_order' ] ) ) {
+				$actions_html_array = $item_booking[ 'type' ] === 'group' ? bookacti_get_booking_group_actions_html( $item_booking[ 'bookings' ], 'front', array(), true, true ) : ( $item_booking[ 'type' ] === 'single' ? bookacti_get_booking_actions_html( $item_booking[ 'bookings' ][ 0 ], 'front', array(), true, true ) : '' );
+				if( $actions_html_array ) {
+					$booking_attributes[ 'actions' ] = array( 
+						'label' => esc_html( _n( 'Action', 'Actions', count( $actions_html_array ), 'booking-activities' ) ),
+						'value' => implode( ' | ', $actions_html_array ),
+						'fullwidth' => 1
+					);
+				}
 			}
 		}
 		
@@ -836,19 +829,12 @@ function bookacti_wc_get_item_bookings_attributes_html( $item_bookings, $locale 
 /**
  * Get item booking array of possible actions
  * @since 1.9.0
+ * @version 1.13.0
  * @param array $item_booking
  * @return array
  */
 function bookacti_wc_get_item_booking_actions( $item_booking ) {
-	if( ! isset( $item_booking[ 'id' ] ) || ! isset( $item_booking[ 'type' ] ) ) { return array(); }
-	
-	// Handle item_booking_id arrays too
-	if( ! isset( $item_booking[ 'bookings' ] ) ) {
-		$dummy_booking = $item_booking[ 'type' ] === 'group' ? array( 'group_id' => $item_booking[ 'id' ] ) : array( 'id' => $item_booking[ 'id' ] );
-		$dummy_booking_obj = (object) bookacti_sanitize_booking_data( $dummy_booking );
-		$item_booking[ 'bookings' ] = array( $dummy_booking_obj );
-		$item_bookings[ $i ][ 'bookings' ] = $item_booking[ 'bookings' ];
-	}
+	if( empty( $item_booking[ 'id' ] ) || empty( $item_booking[ 'type' ] ) ) { return array(); }
 	
 	// Get the link to the booking edit page
 	$link_to_booking = admin_url( 'admin.php?page=bookacti_bookings&status%5B0%5D=all&keep_default_status=1' );
