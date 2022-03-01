@@ -321,11 +321,14 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.13.0 - 2022/02/25 =
+= 1.13.0 - 2022/03/01 =
 * **[See the user-friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-13-days-off/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
 * Feature - Set up leave periods where no events will be displayed whatsoever (also replaces repeat exceptions)
 * Tweak - Assign existing bookings to the account when it is created, and prevent booking without account if the email address exists
 * Tweak - Add a confirm box in the "Who can booking this activity?" option in activity and group category settings
+* Tweak - Display an error message in admin pannel if Object Cache is used
+* Tweak - Change icon to unpick an event
+* Fix - PHP error when displaying an order item bound to a deleted booking
 * Fix - Form redirect now uses POST method instead of GET to avoid error 414
 * Fix - Decode HTML entities in csv exports
 * Dev - Add bookacti_logout_redirect_url hook

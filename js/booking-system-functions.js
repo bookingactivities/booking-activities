@@ -923,7 +923,7 @@ function bookacti_get_picked_events_list_items( booking_system ) {
 
 /**
  * Display a list of picked events
- * @version 1.12.4
+ * @version 1.13.0
  * @param {HTMLElement} booking_system
  */
 function bookacti_fill_picked_events_list( booking_system ) {
@@ -947,7 +947,13 @@ function bookacti_fill_picked_events_list( booking_system ) {
 	
 	$j.each( list_items, function( i, list_item_data ) {
 		var list_element = list_item_data.list_element;
-		if( multiple_bookings ) { list_element.prepend( '<span class="bookacti-unpick-event-icon"></span>' ); }
+		if( multiple_bookings ) {
+			if( list_element.find( '.bookacti-picked-group-of-events-title' ).length ) {
+				list_element.find( '.bookacti-picked-group-of-events-title' ).after( '<span class="bookacti-unpick-event-icon"></span>' );
+			} else {
+				list_element.append( '<span class="bookacti-unpick-event-icon"></span>' );
+			}
+		}
 		event_list.append( list_element );
 	});
 	
