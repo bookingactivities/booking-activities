@@ -102,7 +102,7 @@ function bookacti_get_booking_system( $atts ) {
 /**
  * Get booking system data
  * @since 1.7.4
- * @version 1.13.0
+ * @version 1.14.0
  * @param array $atts (see bookacti_format_booking_system_attributes())
  * @return array
  */
@@ -129,7 +129,7 @@ function bookacti_get_booking_system_data( $atts ) {
 	// Get the availability period
 	$availability_period            = bookacti_get_booking_system_availability_period( $booking_system_data );
 	$booking_system_data[ 'start' ] = $availability_period[ 'start' ];
-	$booking_system_data[ 'end' ]   = $availability_period[ 'end' ];
+	$booking_system_data[ 'end' ]   = $availability_period[ 'end_last' ];
 	
 	// Check if the availability period starts before it ends
 	$start_dt = new DateTime( $booking_system_data[ 'start' ] );
@@ -1983,7 +1983,7 @@ function bookacti_get_events_array_from_db_events( $events, $raw_args = array() 
 		
 		// Build events data array
 		$events_array[ 'data' ][ $event_id ] = array_merge( $event_fc_data, $event_bookacti_data );
-
+		
 		// Build events array
 		if( ! $args[ 'data_only' ] ) {
 			if( $event->repeat_freq === 'none' ) {
@@ -2853,16 +2853,21 @@ function bookacti_get_availability_period( $absolute_period = array(), $relative
 /**
  * Get booking system trimmed availability period
  * @since 1.13.0
+ * @version 1.14.0
  * @param array $booking_system_data
  * @return array
  */
 function bookacti_get_booking_system_availability_period( $booking_system_data ) {
-	$availability_period = array( 'start' => $booking_system_data[ 'start' ], 'end' => $booking_system_data[ 'end' ] );
+	$availability_period = array( 
+		'start'    => $booking_system_data[ 'start' ], 
+		'end'      => $booking_system_data[ 'end' ],
+		'end_last' => $booking_system_data[ 'end' ]
+	);
 	
 	// Check if the availability period starts before it ends
 	$start_dt = new DateTime( $availability_period[ 'start' ] );
 	$end_dt   = new DateTime( $availability_period[ 'end' ] );
-	if( $start_dt >= $end_dt ) { $availability_period[ 'start' ] = $availability_period[ 'end' ]; }
+	if( $start_dt >= $end_dt ) { $availability_period[ 'start' ] = $availability_period[ 'end_last' ] = $availability_period[ 'end' ]; }
 	
 	// Trim the availability period
 	else if( $booking_system_data[ 'trim' ] ) {
@@ -2896,32 +2901,38 @@ function bookacti_get_booking_system_availability_period( $booking_system_data )
 				'start_last' => new DateTime( $bounding_events[ $last_key ][ 'start' ] ),
 				'end'        => new DateTime( $bounding_events[ $last_key ][ 'end' ] ),
 			);
-
+			
 			// Replace availability period with events bounding dates
 			if( $bounding_dt[ 'start' ] > $start_dt ) { $start_dt = clone $bounding_dt[ 'start' ]; }
 			if( $bounding_dt[ 'end' ] < $end_dt )     { $end_dt   = clone $bounding_dt[ 'end' ]; }
 			if( $start_dt > $end_dt )                 { $start_dt = clone $end_dt; }
-
+			
 			// Display the last event entirely
+			$end_last_dt = clone $end_dt;
 			if( $bounding_dt[ 'start_last' ] < $end_dt 
-			&&  $bounding_dt[ 'end' ] > $end_dt )     { $end_dt = clone $bounding_dt[ 'end' ]; }
-
+			&&  $bounding_dt[ 'end' ] > $end_dt )     { $end_last_dt = clone $bounding_dt[ 'end' ]; }
+			
 			// Trim days off
 			if( $booking_system_data[ 'days_off' ] ) {
 				foreach( $booking_system_data[ 'days_off' ] as $off_period ) {
 					$off_from = new DateTime( $off_period[ 'from' ] . ' 00:00:00' );
 					$off_to   = new DateTime( $off_period[ 'to' ] . ' 23:59:59' );
-					if( $off_from <= $start_dt && $off_to >= $start_dt ) { $start_dt = clone $off_to; }
-					if( $off_from <= $end_dt && $off_to >= $end_dt )     { $end_dt = clone $off_from; }
-					if( $start_dt >= $end_dt ) { $start_dt = clone $end_dt; break; }
+					if( $off_from <= $start_dt && $off_to >= $start_dt )       { $start_dt    = clone $off_to; }
+					if( $off_from <= $end_dt && $off_to >= $end_dt )           { $end_dt      = clone $off_from; }
+					if( $off_from <= $end_last_dt && $off_to >= $end_last_dt ) { $end_last_dt = clone $off_from; }
+					if( $start_dt >= $end_dt )                                 { $start_dt    = clone $end_dt; break; }
 				}
 			}
 
 			// Trim the availability period
-			$availability_period = array( 'start' => $start_dt->format( 'Y-m-d H:i:s' ), 'end' => $end_dt->format( 'Y-m-d H:i:s' ) );
+			$availability_period = array( 
+				'start'    => $start_dt->format( 'Y-m-d H:i:s' ), 
+				'end'      => $end_dt->format( 'Y-m-d H:i:s' ),
+				'end_last' => $end_last_dt->format( 'Y-m-d H:i:s' )
+			);
 			
 		// If there are no bounding events, it means that there are no events at all
-		} else { $availability_period[ 'start' ] = $availability_period[ 'end' ]; }
+		} else { $availability_period[ 'start' ] = $availability_period[ 'end_last' ] = $availability_period[ 'end' ]; }
 	}
 	
 	return apply_filters( 'bookacti_booking_system_availability_period', $availability_period, $booking_system_data );

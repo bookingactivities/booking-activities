@@ -328,6 +328,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - WC customer data may not be exported in bookings exports
 * Fix - Bookings were not rescheduled when a booked event was resized
 * Fix - Bookings were not cancelled when a past single booked event was cancelled
+* Fix - Some events may appear twice if Trim empty days option is ON
 
 = 1.13.0 - 2022/03/01 =
 * **[See the user-friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-13-days-off/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
