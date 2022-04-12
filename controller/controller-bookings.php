@@ -237,7 +237,7 @@ add_action( 'wp_ajax_nopriv_bookactiRefundBooking', 'bookacti_controller_refund_
 
 /**
  * AJAX Controller - Change booking state
- * @version 1.12.3
+ * @version 1.14.0
  */
 function bookacti_controller_change_booking_state() {
 	$booking_id = intval( $_POST[ 'booking_id' ] );
@@ -280,7 +280,7 @@ function bookacti_controller_change_booking_state() {
 			bookacti_send_json( array( 'status' => 'failed', 'error' => 'error_update_booking_status', 'message' => esc_html__( 'An error occurred while trying to change the booking status.', 'booking-activities' ) ), 'change_booking_status' );
 		}
 
-		do_action( 'bookacti_booking_state_changed', $booking, $new_booking_state, array( 'is_admin' => $is_admin, 'active' => $active, 'send_notifications' => $send_notifications ) );
+		do_action( 'bookacti_booking_state_changed', $booking, $new_booking_state, array( 'is_admin' => $is_admin, 'send_notifications' => $send_notifications ) );
 	}
 
 	// Change payment status
@@ -354,7 +354,7 @@ add_action( 'wp_ajax_bookactiChangeBookingQuantity', 'bookacti_controller_change
 /**
  * AJAX Controller - Get reschedule booking system data by booking ID
  * @since 1.8.0 (was bookacti_controller_get_booking_data)
- * @version 1.12.0
+ * @version 1.14.0
  */
 function bookacti_controller_get_reschedule_booking_system_data() {
 	$booking_id	= intval( $_POST[ 'booking_id' ] );
@@ -406,7 +406,7 @@ function bookacti_controller_get_reschedule_booking_system_data() {
 	}
 
 	// Add the rescheduled booking data to the booking system data
-	$atts[ 'rescheduled_booking_data' ] = (array) apply_filters( 'bookacti_rescheduled_booking_data', $booking, $is_admin ? 'admin' : 'front' );
+	$atts[ 'rescheduled_booking_data' ] = (array) apply_filters( 'bookacti_rescheduled_booking_data', $booking );
 
 	$atts = apply_filters( 'bookacti_reschedule_booking_system_attributes', $atts, $booking, $init_atts, $mixed_data );
 
@@ -742,7 +742,7 @@ add_action( 'wp_ajax_nopriv_bookactiRefundBookingGroup', 'bookacti_controller_re
 /**
  * AJAX Controller - Change booking group state
  * @since 1.1.0
- * @version 1.12.3
+ * @version 1.14.0
  */
 function bookacti_controller_change_booking_group_state() {
 	$booking_group_id = intval( $_POST[ 'booking_id' ] );
@@ -787,7 +787,7 @@ function bookacti_controller_change_booking_group_state() {
 			bookacti_send_json( array( 'status' => 'failed', 'error' => 'error_update_booking_group_status', 'message' => esc_html__( 'An error occurred while trying to change the booking group status.', 'booking-activities' ) ), 'change_booking_group_status' );
 		}
 
-		do_action( 'bookacti_booking_group_state_changed', $booking_group_id, $bookings, $new_booking_state, array( 'is_admin' => $is_admin, 'active' => $active, 'send_notifications' => $send_notifications ) );
+		do_action( 'bookacti_booking_group_state_changed', $booking_group_id, $bookings, $new_booking_state, array( 'is_admin' => $is_admin, 'send_notifications' => $send_notifications ) );
 	}
 
 	// Change payment status

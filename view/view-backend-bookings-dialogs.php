@@ -251,8 +251,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		<?php
 		// Display tabs
 		$user_settings = bookacti_get_bookings_export_settings();
-		$export_columns_raw = bookacti_get_bookings_export_columns();
-		$export_columns = array_combine( array_keys( $export_columns_raw ), array_map( 'bookacti_translate_text', $export_columns_raw ) );
+		$export_columns = bookacti_get_bookings_export_columns();
 		$export_tabs = apply_filters( 'bookacti_export_bookings_dialog_tabs', array(
 			array( 
 				'label'		=> esc_html__( 'CSV', 'booking-activities' ),

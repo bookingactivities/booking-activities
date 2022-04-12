@@ -2,16 +2,17 @@
 /**
  * Form editor dialogs
  * @since 1.5.0
- * @version 1.13.0
+ * @version 1.14.0
  */
 
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-$fields_data = bookacti_get_default_form_fields_data();
-$fields_meta = bookacti_get_default_form_fields_meta();
-foreach( $fields_data as $field_name => $field_data ) {
-	if( $fields_meta[ $field_name ] ) { $fields_data[ $field_name ] = array_merge( $field_data, $fields_meta[ $field_name ] ); }
+// Get default fields data
+$fields_default      = bookacti_get_default_form_fields_data();
+$fields_meta_default = bookacti_get_default_form_fields_meta();
+foreach( $fields_default as $field_name => $field_data ) {
+	if( ! empty( $fields_meta_default[ $field_name ] ) ) { $fields_default[ $field_name ] = array_merge( $field_data, $fields_meta_default[ $field_name ] ); }
 }
 ?>
 
@@ -21,7 +22,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 		<input type='hidden' name='action' value='bookactiInsertFormField' />
 		<?php 
 			wp_nonce_field( 'bookacti_insert_form_field', 'nonce_insert_form_field', false ); 
-			do_action( 'bookacti_insert_form_field_dialog_before', $form, $form_fields );
+			do_action( 'bookacti_insert_form_field_dialog_before', $form_edit, $form_fields_edit );
 		?>
 		<div id='bookacti-insert-form-field-selectbox-container'>
 			<p class='bookacti-dialog-intro'><?php esc_html_e( 'Pick the field to add to your form:', 'booking-activities' ); ?></p>
@@ -30,21 +31,21 @@ foreach( $fields_data as $field_name => $field_data ) {
 			<?php 
 				// Get fields already added
 				$field_already_added = array();
-				foreach( $form_fields as $form_field ) { $field_already_added[] = $form_field[ 'name' ]; }
+				foreach( $form_fields_edit as $form_field ) { $field_already_added[] = $form_field[ 'name' ]; }
 
 				// Display available fields options
-				foreach( $fields_data as $field_data ) {
+				foreach( $fields_default as $field_default ) {
 					// Add the field if it isn't already in the form, or if it is not unique
-					$disabled = in_array( $field_data[ 'name' ], $field_already_added, true ) && $field_data[ 'unique' ] ? 'disabled' : '';
-					if( ! $field_data[ 'compulsory' ] ) {
-						echo '<option value="' . $field_data[ 'name' ] . '" data-unique="' . $field_data[ 'unique' ] . '" ' . $disabled . '>' . apply_filters( 'bookacti_translate_text', $field_data[ 'title' ] ) . '</option>';
+					$disabled = in_array( $field_default[ 'name' ], $field_already_added, true ) && $field_default[ 'unique' ] ? 'disabled' : '';
+					if( ! $field_default[ 'compulsory' ] ) {
+						echo '<option value="' . $field_default[ 'name' ] . '" data-unique="' . $field_default[ 'unique' ] . '" ' . $disabled . '>' . $field_default[ 'title' ] . '</option>';
 					}
 				}
 			?>
 			</select>
 		</div>
 		<?php 
-			do_action( 'bookacti_insert_form_field_dialog_after', $form, $form_fields );
+			do_action( 'bookacti_insert_form_field_dialog_after', $form_edit, $form_fields_edit );
 			bookacti_display_baaf_promo();
 		?>
 	</form>
@@ -68,18 +69,18 @@ foreach( $fields_data as $field_name => $field_data ) {
 		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_update_form' ); ?>' />
 		<input type='hidden' name='form_id' value='<?php $form_id ?>' />
 		<?php
-			do_action( 'bookacti_form_meta_dialog_before', $form, $form_fields );
+			do_action( 'bookacti_form_meta_dialog_before', $form_edit, $form_fields_edit );
 		?>
 		<div id='bookacti-form-meta-dialog-lang-switcher' class='bookacti-lang-switcher' ></div>
 		<div>
 			<label for='bookacti-form-meta-id'><?php esc_html_e( 'ID', 'booking-activities' ); ?></label>
 			<?php 
 				$args = array(
-					'type'	=> 'text',
-					'name'	=> 'id',
-					'id'	=> 'bookacti-form-meta-id',
-					'value'	=> $form[ 'id' ],
-					'tip'	=> esc_html__( 'Set the form CSS id. Leave this empty if you display this form multiple times on the same page.', 'booking-activities' )
+					'type'  => 'text',
+					'name'  => 'id',
+					'id'    => 'bookacti-form-meta-id',
+					'value' => ! empty( $form_edit[ 'id' ] ) ? $form_edit[ 'id' ] : '',
+					'tip'   => esc_html__( 'Set the form CSS id. Leave this empty if you display this form multiple times on the same page.', 'booking-activities' )
 				);
 				bookacti_display_field( $args );
 			?>
@@ -88,11 +89,11 @@ foreach( $fields_data as $field_name => $field_data ) {
 			<label for='bookacti-form-meta-class'><?php esc_html_e( 'Class', 'booking-activities' ); ?></label>
 			<?php 
 				$args = array(
-					'type'	=> 'text',
-					'name'	=> 'class',
-					'id'	=> 'bookacti-form-meta-class',
-					'value'	=> $form[ 'class' ],
-					'tip'	=> esc_html__( 'Set the form CSS classes. Leave an empty space between each class.', 'booking-activities' )
+					'type'  => 'text',
+					'name'  => 'class',
+					'id'    => 'bookacti-form-meta-class',
+					'value' => ! empty( $form_edit[ 'class' ] ) ? $form_edit[ 'class' ] : '',
+					'tip'   => esc_html__( 'Set the form CSS classes. Leave an empty space between each class.', 'booking-activities' )
 				);
 				bookacti_display_field( $args );
 			?>
@@ -101,24 +102,24 @@ foreach( $fields_data as $field_name => $field_data ) {
 			<label for='bookacti-form-meta-redirect_url'><?php esc_html_e( 'Redirect URL', 'booking-activities' ); ?></label>
 			<?php 
 				$args = array(
-					'type'	=> 'text',
-					'name'	=> 'redirect_url',
-					'id'	=> 'bookacti-form-meta-redirect_url',
-					'value'	=> $form[ 'redirect_url' ],
-					'tip'	=> esc_html__( 'Page URL where the customer will be redirected after submitting the booking form.', 'booking-activities' )
+					'type'  => 'text',
+					'name'  => 'redirect_url',
+					'id'    => 'bookacti-form-meta-redirect_url',
+					'value' => ! empty( $form_edit[ 'redirect_url' ] ) ? $form_edit[ 'redirect_url' ] : '',
+					'tip'   => esc_html__( 'Page URL where the customer will be redirected after submitting the booking form.', 'booking-activities' )
 				);
 				bookacti_display_field( $args );
 			?>
 		</div>
 		<?php 
-			do_action( 'bookacti_form_meta_dialog_after', $form, $form_fields );
+			do_action( 'bookacti_form_meta_dialog_after', $form_edit, $form_fields_edit );
 		?>
 	</form>
 </div>
 
 
 <!-- Calendar field dialog -->
-<div id='bookacti-form-field-dialog-calendar' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php /* translators: Title of the Update field dialog. %s is the field title. */ echo sprintf( esc_html__( '%s options', 'booking-activities' ), strip_tags( $fields_data[ 'calendar' ][ 'title' ] ) ); ?>' >
+<div id='bookacti-form-field-dialog-calendar' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php /* translators: Title of the Update field dialog. %s is the field title. */ echo sprintf( esc_html__( '%s options', 'booking-activities' ), strip_tags( $fields_default[ 'calendar' ][ 'title' ] ) ); ?>' >
 	<form id='bookacti-form-field-form-calendar' >
 		<input type='hidden' name='action' value='bookactiUpdateFormField' />
 		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_update_form_field' ); ?>' />
@@ -129,37 +130,36 @@ foreach( $fields_data as $field_name => $field_data ) {
 		<?php
 		
 		$calendar_field_id = 0;
-		foreach( $form_fields as $field_id => $field_data ) {
-			if( $field_data[ 'name' ] === 'calendar' ) { $calendar_field_id = $field_id; break; }
-		}
+		foreach( $form_fields_edit as $field_id => $field_data ) { if( $field_data[ 'name' ] === 'calendar' ) { $calendar_field_id = $field_id; break; } }
+		$calendar_field_edit = $calendar_field_id && ! empty( $form_fields_edit[ $calendar_field_id ] ) ? $form_fields_edit[ $calendar_field_id ] : ( ! empty( $fields_default[ 'calendar' ] ) ? $fields_default[ 'calendar' ] : array() );
 		
 		// Fill the array of tabs with their label, callback for content and display order
 		$calendar_tabs = apply_filters( 'bookacti_form_field_calendar_dialog_tabs', array (
-			array(	'label'			=> esc_html__( 'Filters', 'booking-activities' ),
-					'id'			=> 'filters',
-					'callback'		=> 'bookacti_fill_calendar_dialog_filters_tab',
-					'parameters'	=> array( 'form' => $form, 'calendar_data' => $form_fields[ $calendar_field_id ], 'fields_data' => $fields_data ),
-					'order'			=> 10 ),
-			array(	'label'			=> esc_html__( 'Availability', 'booking-activities' ),
-					'id'			=> 'availability',
-					'callback'		=> 'bookacti_fill_calendar_dialog_availability_tab',
-					'parameters'	=> array( 'form' => $form, 'calendar_data' => $form_fields[ $calendar_field_id ], 'fields_data' => $fields_data ),
-					'order'			=> 20 ),
-			array(	'label'			=> esc_html__( 'Actions', 'booking-activities' ),
-					'id'			=> 'actions',
-					'callback'		=> 'bookacti_fill_calendar_dialog_actions_tab',
-					'parameters'	=> array( 'form' => $form, 'calendar_data' => $form_fields[ $calendar_field_id ], 'fields_data' => $fields_data ),
-					'order'			=> 30 ),
-			array(	'label'			=> esc_html__( 'Display', 'booking-activities' ),
-					'id'			=> 'display',
-					'callback'		=> 'bookacti_fill_calendar_dialog_display_tab',
-					'parameters'	=> array( 'form' => $form, 'calendar_data' => $form_fields[ $calendar_field_id ], 'fields_data' => $fields_data ),
-					'order'			=> 40 ),
-			array(	'label'			=> esc_html__( 'Calendar', 'booking-activities' ),
-					'id'			=> 'calendar',
-					'callback'		=> 'bookacti_fill_calendar_dialog_calendar_tab',
-					'parameters'	=> array( 'form' => $form, 'calendar_data' => $form_fields[ $calendar_field_id ], 'fields_data' => $fields_data ),
-					'order'			=> 50 )
+			array(	'label'      => esc_html__( 'Filters', 'booking-activities' ),
+					'id'         => 'filters',
+					'callback'   => 'bookacti_fill_calendar_dialog_filters_tab',
+					'parameters' => array( 'form' => $form_edit, 'calendar_data' => $calendar_field_edit ),
+					'order'      => 10 ),
+			array(	'label'      => esc_html__( 'Availability', 'booking-activities' ),
+					'id'         => 'availability',
+					'callback'   => 'bookacti_fill_calendar_dialog_availability_tab',
+					'parameters' => array( 'form' => $form_edit, 'calendar_data' => $calendar_field_edit ),
+					'order'      => 20 ),
+			array(	'label'      => esc_html__( 'Actions', 'booking-activities' ),
+					'id'         => 'actions',
+					'callback'   => 'bookacti_fill_calendar_dialog_actions_tab',
+					'parameters' => array( 'form' => $form_edit, 'calendar_data' => $calendar_field_edit ),
+					'order'      => 30 ),
+			array(	'label'      => esc_html__( 'Display', 'booking-activities' ),
+					'id'         => 'display',
+					'callback'   => 'bookacti_fill_calendar_dialog_display_tab',
+					'parameters' => array( 'form' => $form_edit, 'calendar_data' => $calendar_field_edit ),
+					'order'      => 40 ),
+			array(	'label'      => esc_html__( 'Calendar', 'booking-activities' ),
+					'id'         => 'calendar',
+					'callback'   => 'bookacti_fill_calendar_dialog_calendar_tab',
+					'parameters' => array( 'form' => $form_edit, 'calendar_data' => $calendar_field_edit ),
+					'order'      => 50 )
 		) );
 		
 		// Display tabs
@@ -222,11 +222,11 @@ foreach( $fields_data as $field_name => $field_data ) {
 			<label for='bookacti-form_action'><?php esc_html_e( 'Form action', 'booking-activities' ); ?></label>
 			<?php 
 				$args = array(
-					'type'		=> 'select',
-					'name'		=> 'form_action',
-					'id'		=> 'bookacti-form_action',
-					'options'	=> apply_filters( 'bookacti_form_action_options', array( 
-						'default' => esc_html__( 'Default behavior', 'booking-activities' ),
+					'type'    => 'select',
+					'name'    => 'form_action',
+					'id'      => 'bookacti-form_action',
+					'options' => apply_filters( 'bookacti_form_action_options', array( 
+						'default'         => esc_html__( 'Default behavior', 'booking-activities' ),
 						'redirect_to_url' => esc_html__( 'Redirect to a URL', 'booking-activities' )
 					), $params ),
 					'tip'		=> esc_html__( 'What action should this form perform?', 'booking-activities' )
@@ -238,11 +238,11 @@ foreach( $fields_data as $field_name => $field_data ) {
 			<label for='bookacti-when_perform_form_action'><?php esc_html_e( 'When to perform the action', 'booking-activities' ); ?></label>
 			<?php 
 				$args = array(
-					'type'		=> 'select',
-					'name'		=> 'when_perform_form_action',
-					'id'		=> 'bookacti-when_perform_form_action',
-					'options'	=> apply_filters( 'bookacti_when_perform_form_action_options', array( 
-						'on_submit' => esc_html__( 'When the form is submitted', 'booking-activities' ),
+					'type'    => 'select',
+					'name'    => 'when_perform_form_action',
+					'id'      => 'bookacti-when_perform_form_action',
+					'options' => apply_filters( 'bookacti_when_perform_form_action_options', array( 
+						'on_submit'      => esc_html__( 'When the form is submitted', 'booking-activities' ),
 						'on_event_click' => esc_html__( 'When an event is clicked', 'booking-activities' )
 					), $params ),
 					'tip'		=> esc_html__( 'When do you want to perform the form action?', 'booking-activities' )
@@ -260,14 +260,14 @@ foreach( $fields_data as $field_name => $field_data ) {
 				$redirect_url_by_activity = ! empty( $params[ 'calendar_data' ][ 'redirect_url_by_activity' ] ) && is_array( $params[ 'calendar_data' ][ 'redirect_url_by_activity' ] ) ? $params[ 'calendar_data' ][ 'redirect_url_by_activity' ] : array( 0 => '' );
 				foreach( $redirect_url_by_activity as $activity_id => $redirect_url ) {
 					$activities_url_rows[] = array( 
-						'activity' => intval( $activity_id ),
+						'activity'     => intval( $activity_id ),
 						'redirect_url' => '<input type="text" name="redirect_url_by_activity[' . intval( $activity_id ) . ']" value="' . esc_url( $redirect_url ) . '" />'
 					);
 				}
 				
 				$activities_url_array = apply_filters( 'bookacti_activity_redirect_url_table', array(
 					'head' => array( 
-						'activity' => esc_html__( 'Activity', 'booking-activities' ),
+						'activity'     => esc_html__( 'Activity', 'booking-activities' ),
 						'redirect_url' => esc_html__( 'Redirect URL', 'booking-activities' )
 					),
 					'body' => $activities_url_rows,
@@ -283,14 +283,14 @@ foreach( $fields_data as $field_name => $field_data ) {
 				foreach( $redirect_url_by_group_category as $group_category_id => $redirect_url ) {
 					$group_categories_url_rows[] = array( 
 						'group_category' => intval( $group_category_id ),
-						'redirect_url' => '<input type="text" name="redirect_url_by_group_category[' . intval( $group_category_id ) . ']" value="' . esc_url( $redirect_url ) . '" />'
+						'redirect_url'   => '<input type="text" name="redirect_url_by_group_category[' . intval( $group_category_id ) . ']" value="' . esc_url( $redirect_url ) . '" />'
 					);
 				}
 				
 				$categories_url_array = apply_filters( 'bookacti_group_category_redirect_url_table', array(
 					'head' => array( 
 						'group_category' => esc_html__( 'Category', 'booking-activities' ),
-						'redirect_url' => esc_html__( 'Redirect URL', 'booking-activities' )
+						'redirect_url'   => esc_html__( 'Redirect URL', 'booking-activities' )
 					),
 					'body' => $group_categories_url_rows,
 				), $params );
@@ -404,7 +404,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 
 
 <!-- Login field dialog -->
-<div id='bookacti-form-field-dialog-login' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php echo sprintf( esc_html__( '%s options', 'booking-activities' ), strip_tags( $fields_data[ 'login' ][ 'title' ] ) ); ?>' >
+<div id='bookacti-form-field-dialog-login' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php echo sprintf( esc_html__( '%s options', 'booking-activities' ), strip_tags( $fields_default[ 'login' ][ 'title' ] ) ); ?>' >
 	<form id='bookacti-form-field-form-login' >
 		<input type='hidden' name='action' value='bookactiUpdateFormField' />
 		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_update_form_field' ); ?>' />
@@ -413,29 +413,33 @@ foreach( $fields_data as $field_name => $field_data ) {
 		<div id='bookacti-form-field-dialog-login-lang-switcher' class='bookacti-lang-switcher' ></div>
 		
 		<?php
+		$login_field_id = 0;
+		foreach( $form_fields_edit as $field_id => $field_data ) { if( $field_data[ 'name' ] === 'login' ) { $login_field_id = $field_id; break; }}
+		$login_field_edit = $login_field_id && ! empty( $form_fields_edit[ $login_field_id ] ) ? $form_fields_edit[ $login_field_id ] : ( ! empty( $fields_default[ 'login' ] ) ? $fields_default[ 'login' ] : array() );
+		
 		//Fill the array of tabs with their label, callback for content and display order
 		$login_tabs = apply_filters( 'bookacti_form_field_login_dialog_tabs', array (
-			array(	'label'			=> esc_html__( 'Fields', 'booking-activities' ),
-					'id'			=> 'fields',
-					'callback'		=> 'bookacti_fill_login_dialog_fields_tab',
-					'parameters'	=> array( 'form' => $form, 'fields' => $form_fields, 'fields_data' => $fields_data ),
-					'order'			=> 10 ),
-			array(	'label'			=> esc_html__( 'Login', 'booking-activities' ),
-					'id'			=> 'login',
-					'callback'		=> 'bookacti_fill_login_dialog_login_tab',
-					'parameters'	=> array( 'form' => $form, 'fields' => $form_fields, 'fields_data' => $fields_data ),
-					'order'			=> 20 ),
-			array(	'label'			=> esc_html__( 'Registration', 'booking-activities' ),
-					'id'			=> 'register',
-					'callback'		=> 'bookacti_fill_login_dialog_register_tab',
-					'parameters'	=> array( 'form' => $form, 'fields' => $form_fields, 'fields_data' => $fields_data ),
-					'order'			=> 30 ),
-			array(	'label'			=> esc_html__( 'No account', 'booking-activities' ),
-					'id'			=> 'no_account',
-					'callback'		=> 'bookacti_fill_login_dialog_no_account_tab',
-					'parameters'	=> array( 'form' => $form, 'fields' => $form_fields, 'fields_data' => $fields_data ),
-					'order'			=> 40 )
-		) );
+			array(	'label'      => esc_html__( 'Fields', 'booking-activities' ),
+					'id'         => 'fields',
+					'callback'   => 'bookacti_fill_login_dialog_fields_tab',
+					'parameters' => array( 'form' => $form_edit, 'login_data' => $login_field_edit ),
+					'order'      => 10 ),
+			array(	'label'      => esc_html__( 'Login', 'booking-activities' ),
+					'id'         => 'login',
+					'callback'   => 'bookacti_fill_login_dialog_login_tab',
+					'parameters' => array( 'form' => $form_edit, 'login_data' => $login_field_edit ),
+					'order'      => 20 ),
+			array(	'label'      => esc_html__( 'Registration', 'booking-activities' ),
+					'id'         => 'register',
+					'callback'   => 'bookacti_fill_login_dialog_register_tab',
+					'parameters' => array( 'form' => $form_edit, 'login_data' => $login_field_edit ),
+					'order'      => 30 ),
+			array(	'label'      => esc_html__( 'No account', 'booking-activities' ),
+					'id'         => 'no_account',
+					'callback'   => 'bookacti_fill_login_dialog_no_account_tab',
+					'parameters' => array( 'form' => $form_edit, 'login_data' => $login_field_edit ),
+					'order'      => 40 )
+		));
 		
 		// Display tabs
 		bookacti_display_tabs( $login_tabs, 'login' );
@@ -456,10 +460,10 @@ foreach( $fields_data as $field_name => $field_data ) {
 					<label for='bookacti-email-label'><?php esc_html_e( 'Label', 'booking-activities' ); ?></label>
 					<?php 
 						$args = array(
-							'type'	=> 'text',
-							'name'	=> 'label[email]',
-							'id'	=> 'bookacti-email-label',
-							'tip'	=> esc_html__( 'Text displayed before the field.', 'booking-activities' )
+							'type' => 'text',
+							'name' => 'label[email]',
+							'id'   => 'bookacti-email-label',
+							'tip'  => esc_html__( 'Text displayed before the field.', 'booking-activities' )
 						);
 						bookacti_display_field( $args );
 					?>
@@ -468,10 +472,10 @@ foreach( $fields_data as $field_name => $field_data ) {
 					<label for='bookacti-email-placeholder'><?php esc_html_e( 'Placeholder', 'booking-activities' ); ?></label>
 					<?php 
 						$args = array(
-							'type'	=> 'text',
-							'name'	=> 'placeholder[email]',
-							'id'	=> 'bookacti-email-placeholder',
-							'tip'	=> esc_html__( 'Text displayed in transparency in the field when it is empty.', 'booking-activities' )
+							'type' => 'text',
+							'name' => 'placeholder[email]',
+							'id'   => 'bookacti-email-placeholder',
+							'tip'  => esc_html__( 'Text displayed in transparency in the field when it is empty.', 'booking-activities' )
 						);
 						bookacti_display_field( $args );
 					?>
@@ -480,10 +484,10 @@ foreach( $fields_data as $field_name => $field_data ) {
 					<label for='bookacti-email-tip'><?php esc_html_e( 'Tooltip', 'booking-activities' ); ?></label>
 					<?php 
 						$args = array(
-							'type'	=> 'text',
-							'name'	=> 'tip[email]',
-							'id'	=> 'bookacti-email-tip',
-							'tip'	=> esc_html__( 'Text displayed in the tooltip next to the field.', 'booking-activities' )
+							'type' => 'text',
+							'name' => 'tip[email]',
+							'id'   => 'bookacti-email-tip',
+							'tip'  => esc_html__( 'Text displayed in the tooltip next to the field.', 'booking-activities' )
 						);
 						bookacti_display_field( $args );
 					?>
@@ -495,10 +499,10 @@ foreach( $fields_data as $field_name => $field_data ) {
 					<label for='bookacti-password-label'><?php esc_html_e( 'Label', 'booking-activities' ); ?></label>
 					<?php 
 						$args = array(
-							'type'	=> 'text',
-							'name'	=> 'label[password]',
-							'id'	=> 'bookacti-password-label',
-							'tip'	=> esc_html__( 'Text displayed before the field.', 'booking-activities' )
+							'type' => 'text',
+							'name' => 'label[password]',
+							'id'   => 'bookacti-password-label',
+							'tip'  => esc_html__( 'Text displayed before the field.', 'booking-activities' )
 						);
 						bookacti_display_field( $args );
 					?>
@@ -507,10 +511,10 @@ foreach( $fields_data as $field_name => $field_data ) {
 					<label for='bookacti-password-placeholder'><?php esc_html_e( 'Placeholder', 'booking-activities' ); ?></label>
 					<?php 
 						$args = array(
-							'type'	=> 'text',
-							'name'	=> 'placeholder[password]',
-							'id'	=> 'bookacti-password-placeholder',
-							'tip'	=> esc_html__( 'Text displayed in transparency in the field when it is empty.', 'booking-activities' )
+							'type' => 'text',
+							'name' => 'placeholder[password]',
+							'id'   => 'bookacti-password-placeholder',
+							'tip'  => esc_html__( 'Text displayed in transparency in the field when it is empty.', 'booking-activities' )
 						);
 						bookacti_display_field( $args );
 					?>
@@ -519,10 +523,10 @@ foreach( $fields_data as $field_name => $field_data ) {
 					<label for='bookacti-password-tip'><?php esc_html_e( 'Tooltip', 'booking-activities' ); ?></label>
 					<?php 
 						$args = array(
-							'type'	=> 'text',
-							'name'	=> 'tip[password]',
-							'id'	=> 'bookacti-password-tip',
-							'tip'	=> esc_html__( 'Text displayed in the tooltip next to the field.', 'booking-activities' )
+							'type' => 'text',
+							'name' => 'tip[password]',
+							'id'   => 'bookacti-password-tip',
+							'tip'  => esc_html__( 'Text displayed in the tooltip next to the field.', 'booking-activities' )
 						);
 						bookacti_display_field( $args );
 					?>
@@ -534,10 +538,10 @@ foreach( $fields_data as $field_name => $field_data ) {
 					<label for='bookacti-displayed_fields-remember'><?php esc_html_e( 'Displayed', 'booking-activities' ); ?></label>
 					<?php 
 						$args = array(
-							'type'	=> 'checkbox',
-							'name'	=> 'displayed_fields[remember]',
-							'id'	=> 'bookacti-displayed_fields-remember',
-							'tip'	=> esc_html__( 'Whether this field is displayed in the form.', 'booking-activities' )
+							'type' => 'checkbox',
+							'name' => 'displayed_fields[remember]',
+							'id'   => 'bookacti-displayed_fields-remember',
+							'tip'  => esc_html__( 'Whether this field is displayed in the form.', 'booking-activities' )
 						);
 						bookacti_display_field( $args );
 					?>
@@ -546,10 +550,10 @@ foreach( $fields_data as $field_name => $field_data ) {
 					<label for='bookacti-label-remember'><?php esc_html_e( 'Label', 'booking-activities' ); ?></label>
 					<?php 
 						$args = array(
-							'type'	=> 'text',
-							'name'	=> 'label[remember]',
-							'id'	=> 'bookacti-label-remember',
-							'tip'	=> esc_html__( 'Text displayed before the field.', 'booking-activities' )
+							'type' => 'text',
+							'name' => 'label[remember]',
+							'id'   => 'bookacti-label-remember',
+							'tip'  => esc_html__( 'Text displayed before the field.', 'booking-activities' )
 						);
 						bookacti_display_field( $args );
 					?>
@@ -558,10 +562,10 @@ foreach( $fields_data as $field_name => $field_data ) {
 					<label for='bookacti-tip-remember'><?php esc_html_e( 'Tooltip', 'booking-activities' ); ?></label>
 					<?php 
 						$args = array(
-							'type'	=> 'text',
-							'name'	=> 'tip[remember]',
-							'id'	=> 'bookacti-tip-remember',
-							'tip'	=> esc_html__( 'Text displayed in the tooltip next to the field.', 'booking-activities' )
+							'type' => 'text',
+							'name' => 'tip[remember]',
+							'id'   => 'bookacti-tip-remember',
+							'tip'  => esc_html__( 'Text displayed in the tooltip next to the field.', 'booking-activities' )
 						);
 						bookacti_display_field( $args );
 					?>
@@ -570,10 +574,10 @@ foreach( $fields_data as $field_name => $field_data ) {
 					<label for='bookacti-placeholder-remember'><?php esc_html_e( 'Value', 'booking-activities' ); ?></label>
 					<?php 
 						$args = array(
-							'type'	=> 'checkbox',
-							'name'	=> 'placeholder[remember]',
-							'id'	=> 'bookacti-placeholder-remember',
-							'tip'	=> esc_html__( 'Default field value.', 'booking-activities' )
+							'type' => 'checkbox',
+							'name' => 'placeholder[remember]',
+							'id'   => 'bookacti-placeholder-remember',
+							'tip'  => esc_html__( 'Default field value.', 'booking-activities' )
 						);
 						bookacti_display_field( $args );
 					?>
@@ -589,47 +593,47 @@ foreach( $fields_data as $field_name => $field_data ) {
 					<?php
 						$sub_fields = array(
 							'displayed_fields' => array(
-								'type'	=> 'checkbox',
-								'name'	=> 'displayed_fields[' . $register_field_name . ']',
-								'id'	=> 'bookacti-displayed_fields-' . $register_field_name,
-								'value'	=> 0,
-								'title'	=> esc_html__( 'Displayed', 'booking-activities' ),
-								'tip'	=> esc_html__( 'Whether this field is displayed in the form.', 'booking-activities' )
+								'type'  => 'checkbox',
+								'name'  => 'displayed_fields[' . $register_field_name . ']',
+								'id'    => 'bookacti-displayed_fields-' . $register_field_name,
+								'value' => 0,
+								'title' => esc_html__( 'Displayed', 'booking-activities' ),
+								'tip'   => esc_html__( 'Whether this field is displayed in the form.', 'booking-activities' )
 							),
 							'label' => array(
-								'type'	=> 'text',
-								'name'	=> 'label[' . $register_field_name . ']',
-								'id'	=> 'bookacti-label-' . $register_field_name,
-								'title'	=> esc_html__( 'Label', 'booking-activities' ),
-								'tip'	=> esc_html__( 'Text displayed before the field.', 'booking-activities' )
+								'type'  => 'text',
+								'name'  => 'label[' . $register_field_name . ']',
+								'id'    => 'bookacti-label-' . $register_field_name,
+								'title' => esc_html__( 'Label', 'booking-activities' ),
+								'tip'   => esc_html__( 'Text displayed before the field.', 'booking-activities' )
 							),
 							'placeholder' => array(
-								'type'	=> 'text',
-								'name'	=> 'placeholder[' . $register_field_name . ']',
-								'id'	=> 'bookacti-placeholder-' . $register_field_name,
-								'title'	=> esc_html__( 'Placeholder', 'booking-activities' ),
-								'tip'	=> esc_html__( 'Text displayed in transparency in the field when it is empty.', 'booking-activities' )
+								'type'  => 'text',
+								'name'  => 'placeholder[' . $register_field_name . ']',
+								'id'    => 'bookacti-placeholder-' . $register_field_name,
+								'title' => esc_html__( 'Placeholder', 'booking-activities' ),
+								'tip'   => esc_html__( 'Text displayed in transparency in the field when it is empty.', 'booking-activities' )
 							),
 							'tip' => array(
-								'type'	=> 'text',
-								'name'	=> 'tip[' . $register_field_name . ']',
-								'id'	=> 'bookacti-tip-' . $register_field_name,
-								'title'	=> esc_html__( 'Tooltip', 'booking-activities' ),
-								'tip'	=> esc_html__( 'Text displayed in the tooltip next to the field.', 'booking-activities' )
+								'type'  => 'text',
+								'name'  => 'tip[' . $register_field_name . ']',
+								'id'    => 'bookacti-tip-' . $register_field_name,
+								'title' => esc_html__( 'Tooltip', 'booking-activities' ),
+								'tip'   => esc_html__( 'Text displayed in the tooltip next to the field.', 'booking-activities' )
 							),
 							'required_fields' => array(
-								'type'	=> 'checkbox',
-								'name'	=> 'required_fields[' . $register_field_name . ']',
-								'id'	=> 'bookacti-required_fields-' . $register_field_name,
-								'value'	=> 0,
-								'title'	=> esc_html__( 'Required', 'booking-activities' ),
-								'tip'	=> esc_html__( 'Whether this field is compulsory.', 'booking-activities' )
+								'type'  => 'checkbox',
+								'name'  => 'required_fields[' . $register_field_name . ']',
+								'id'    => 'bookacti-required_fields-' . $register_field_name,
+								'value' => 0,
+								'title' => esc_html__( 'Required', 'booking-activities' ),
+								'tip'   => esc_html__( 'Whether this field is compulsory.', 'booking-activities' )
 							)
 						);
 						
 						$field_options = apply_filters( 'bookacti_login_dialog_register_field_fields', array(
 							'fields' => $sub_fields,
-							'param' => array( 'hidden' => array( 'placeholder', 'tip', 'required_fields' ) )
+							'param'  => array( 'hidden' => array( 'placeholder', 'tip', 'required_fields' ) )
 						), $register_field, $register_field_name );
 
 						bookacti_display_fields( $field_options[ 'fields' ], $field_options[ 'param' ] );
@@ -666,11 +670,11 @@ foreach( $fields_data as $field_name => $field_data ) {
 						<label for='bookacti-displayed_fields-<?php echo $login_type_name; ?>'><?php esc_html_e( 'Allowed', 'booking-activities' ); ?></label>
 						<?php 
 							$args = array(
-								'type'	=> 'checkbox',
-								'name'	=> 'displayed_fields[' . $login_type_name . ']',
-								'id'	=> 'bookacti-displayed_fields-' . $login_type_name,
-								'value'	=> 1,
-								'tip'	=> esc_html__( 'Whether to allow this login type. If only one login type is allowed, it will be selected by default and the field will be hidden.', 'booking-activities' )
+								'type'  => 'checkbox',
+								'name'  => 'displayed_fields[' . $login_type_name . ']',
+								'id'    => 'bookacti-displayed_fields-' . $login_type_name,
+								'value' => 1,
+								'tip'   => esc_html__( 'Whether to allow this login type. If only one login type is allowed, it will be selected by default and the field will be hidden.', 'booking-activities' )
 							);
 							bookacti_display_field( $args );
 						?>
@@ -679,10 +683,10 @@ foreach( $fields_data as $field_name => $field_data ) {
 						<label for='bookacti-label-<?php echo $login_type_name; ?>'><?php esc_html_e( 'Label', 'booking-activities' ); ?></label>
 						<?php 
 							$args = array(
-								'type'	=> 'text',
-								'name'	=> 'label[' . $login_type_name . ']',
-								'id'	=> 'bookacti-label-' . $login_type_name,
-								'tip'	=> esc_html__( 'Text displayed before the field.', 'booking-activities' )
+								'type' => 'text',
+								'name' => 'label[' . $login_type_name . ']',
+								'id'   => 'bookacti-label-' . $login_type_name,
+								'tip'  => esc_html__( 'Text displayed before the field.', 'booking-activities' )
 							);
 							bookacti_display_field( $args );
 						?>
@@ -691,10 +695,10 @@ foreach( $fields_data as $field_name => $field_data ) {
 						<label for='bookacti-tip-<?php echo $login_type_name; ?>'><?php esc_html_e( 'Tooltip', 'booking-activities' ); ?></label>
 						<?php 
 							$args = array(
-								'type'	=> 'text',
-								'name'	=> 'tip[' . $login_type_name . ']',
-								'id'	=> 'bookacti-tip-' . $login_type_name,
-								'tip'	=> esc_html__( 'Text displayed in the tooltip next to the field.', 'booking-activities' )
+								'type' => 'text',
+								'name' => 'tip[' . $login_type_name . ']',
+								'id'   => 'bookacti-tip-' . $login_type_name,
+								'tip'  => esc_html__( 'Text displayed in the tooltip next to the field.', 'booking-activities' )
 							);
 							bookacti_display_field( $args );
 						?>
@@ -723,12 +727,12 @@ foreach( $fields_data as $field_name => $field_data ) {
 					<label for='bookacti-displayed_fields-forgotten_password'><?php esc_html_e( 'Displayed', 'booking-activities' ); ?></label>
 					<?php 
 						$args = array(
-							'type'	=> 'checkbox',
-							'name'	=> 'displayed_fields[forgotten_password]',
-							'id'	=> 'bookacti-displayed_fields-forgotten_password',
-							'value'	=> 0,
-							'title'	=> esc_html__( 'Displayed', 'booking-activities' ),
-							'tip'	=> esc_html__( 'Whether this field is displayed in the form.', 'booking-activities' )
+							'type'  => 'checkbox',
+							'name'  => 'displayed_fields[forgotten_password]',
+							'id'    => 'bookacti-displayed_fields-forgotten_password',
+							'value' => 0,
+							'title' => esc_html__( 'Displayed', 'booking-activities' ),
+							'tip'   => esc_html__( 'Whether this field is displayed in the form.', 'booking-activities' )
 						);
 						bookacti_display_field( $args );
 					?>
@@ -737,10 +741,10 @@ foreach( $fields_data as $field_name => $field_data ) {
 					<label for='bookacti-forgotten_password-label'><?php esc_html_e( 'Label', 'booking-activities' ); ?></label>
 					<?php 
 						$args = array(
-							'type'	=> 'text',
-							'name'	=> 'label[forgotten_password]',
-							'id'	=> 'bookacti-forgotten_password-label',
-							'tip'	=> esc_html__( 'Text displayed before the field.', 'booking-activities' )
+							'type' => 'text',
+							'name' => 'label[forgotten_password]',
+							'id'   => 'bookacti-forgotten_password-label',
+							'tip'  => esc_html__( 'Text displayed before the field.', 'booking-activities' )
 						);
 						bookacti_display_field( $args );
 					?>
@@ -749,10 +753,10 @@ foreach( $fields_data as $field_name => $field_data ) {
 					<label for='bookacti-forgotten_password-placeholder'><?php esc_html_e( 'Redirect URL', 'booking-activities' ); ?></label>
 					<?php 
 						$args = array(
-							'type'	=> 'text',
-							'name'	=> 'placeholder[forgotten_password]',
-							'id'	=> 'bookacti-forgotten_password-placeholder',
-							'tip'	=> esc_html__( 'Page URL where the customer will be redirected after clicking the link.', 'booking-activities' )
+							'type' => 'text',
+							'name' => 'placeholder[forgotten_password]',
+							'id'   => 'bookacti-forgotten_password-placeholder',
+							'tip'  => esc_html__( 'Page URL where the customer will be redirected after clicking the link.', 'booking-activities' )
 						);
 						bookacti_display_field( $args );
 					?>
@@ -761,10 +765,10 @@ foreach( $fields_data as $field_name => $field_data ) {
 					<label for='bookacti-forgotten_password-tip'><?php esc_html_e( 'Tooltip', 'booking-activities' ); ?></label>
 					<?php 
 						$args = array(
-							'type'	=> 'text',
-							'name'	=> 'tip[forgotten_password]',
-							'id'	=> 'bookacti-forgotten_password-tip',
-							'tip'	=> esc_html__( 'Text displayed in the tooltip next to the field.', 'booking-activities' )
+							'type' => 'text',
+							'name' => 'tip[forgotten_password]',
+							'id'   => 'bookacti-forgotten_password-tip',
+							'tip'  => esc_html__( 'Text displayed in the tooltip next to the field.', 'booking-activities' )
 						);
 						bookacti_display_field( $args );
 					?>
@@ -776,10 +780,10 @@ foreach( $fields_data as $field_name => $field_data ) {
 					<label for='bookacti-login_button_displayed'><?php esc_html_e( 'Displayed', 'booking-activities' ); ?></label>
 					<?php 
 						$args = array(
-							'type'	=> 'checkbox',
-							'name'	=> 'login_button',
-							'id'	=> 'bookacti-login_button_displayed',
-							'tip'	=> esc_html__( 'If you display the login button, the users will be able to log in / register before they submit the booking form.', 'booking-activities' )
+							'type' => 'checkbox',
+							'name' => 'login_button',
+							'id'   => 'bookacti-login_button_displayed',
+							'tip'  => esc_html__( 'If you display the login button, the users will be able to log in / register before they submit the booking form.', 'booking-activities' )
 						);
 						bookacti_display_field( $args );
 					?>
@@ -788,10 +792,10 @@ foreach( $fields_data as $field_name => $field_data ) {
 					<label for='bookacti-login_button_label'><?php echo esc_html__( 'Label', 'booking-activities' ) . ' (' . esc_html__( 'Login', 'booking-activities' ) . ')'; ?></label>
 					<?php 
 						$args = array(
-							'type'	=> 'text',
-							'name'	=> 'login_button_label',
-							'id'	=> 'bookacti-login_button_label',
-							'tip'	=> esc_html__( 'Login button label.', 'booking-activities' )
+							'type' => 'text',
+							'name' => 'login_button_label',
+							'id'   => 'bookacti-login_button_label',
+							'tip'  => esc_html__( 'Login button label.', 'booking-activities' )
 						);
 						bookacti_display_field( $args );
 					?>
@@ -800,10 +804,10 @@ foreach( $fields_data as $field_name => $field_data ) {
 					<label for='bookacti-register_button_label'><?php echo esc_html__( 'Label', 'booking-activities' ) . ' (' . esc_html__( 'Registration', 'booking-activities' ) . ')'; ?></label>
 					<?php 
 						$args = array(
-							'type'	=> 'text',
-							'name'	=> 'register_button_label',
-							'id'	=> 'bookacti-register_button_label',
-							'tip'	=> esc_html__( 'Register button label.', 'booking-activities' )
+							'type' => 'text',
+							'name' => 'register_button_label',
+							'id'   => 'bookacti-register_button_label',
+							'tip'  => esc_html__( 'Register button label.', 'booking-activities' )
 						);
 						bookacti_display_field( $args );
 					?>
@@ -812,10 +816,10 @@ foreach( $fields_data as $field_name => $field_data ) {
 					<label for='bookacti-login_first'><?php esc_html_e( 'Users must log in first', 'booking-activities' ); ?></label>
 					<?php 
 						$args = array(
-							'type'	=> 'checkbox',
-							'name'	=> 'login_first',
-							'id'	=> 'bookacti-login_first',
-							'tip'	=> esc_html__( 'Only the login form will be displayed if the user is not logged in.', 'booking-activities' )
+							'type' => 'checkbox',
+							'name' => 'login_first',
+							'id'   => 'bookacti-login_first',
+							'tip'  => esc_html__( 'Only the login form will be displayed if the user is not logged in.', 'booking-activities' )
 						);
 						bookacti_display_field( $args );
 					?>
@@ -825,11 +829,11 @@ foreach( $fields_data as $field_name => $field_data ) {
 				<label for='bookacti-password-required'><?php esc_html_e( 'Password required', 'booking-activities' ); ?></label>
 				<?php 
 					$args = array(
-						'type'	=> 'checkbox',
-						'name'	=> 'required_fields[password]',
-						'id'	=> 'bookacti-required_fields-password',
-						'value'	=> 1,
-						'tip'	=> esc_html__( 'Disable this option to allow your customers to book without password authentication. They will simply have to give their e-mail address for the reservation to be made on their account. Becareful, anyone will be able to book on someone else\'s behalf with his email address only.', 'booking-activities' )
+						'type'  => 'checkbox',
+						'name'  => 'required_fields[password]',
+						'id'    => 'bookacti-required_fields-password',
+						'value' => 1,
+						'tip'   => esc_html__( 'Disable this option to allow your customers to book without password authentication. They will simply have to give their e-mail address for the reservation to be made on their account. Becareful, anyone will be able to book on someone else\'s behalf with his email address only.', 'booking-activities' )
 					);
 					bookacti_display_field( $args );
 				?>
@@ -838,11 +842,11 @@ foreach( $fields_data as $field_name => $field_data ) {
 				<label for='bookacti-automatic-login'><?php esc_html_e( 'Automatic login', 'booking-activities' ); ?></label>
 				<?php 
 					$args = array(
-						'type'	=> 'checkbox',
-						'name'	=> 'automatic_login',
-						'id'	=> 'bookacti-automatic-login',
-						'value'	=> 1,
-						'tip'	=> esc_html__( 'Whether to automatically log the customer into his account after making a reservation.', 'booking-activities' )
+						'type'  => 'checkbox',
+						'name'  => 'automatic_login',
+						'id'    => 'bookacti-automatic-login',
+						'value' => 1,
+						'tip'   => esc_html__( 'Whether to automatically log the customer into his account after making a reservation.', 'booking-activities' )
 					);
 					bookacti_display_field( $args );
 				?>
@@ -867,11 +871,11 @@ foreach( $fields_data as $field_name => $field_data ) {
 				<label for='bookacti-generate-password'><?php esc_html_e( 'Generate Password', 'booking-activities' ); ?></label>
 				<?php 
 					$args = array(
-						'type'	=> 'checkbox',
-						'name'	=> 'generate_password',
-						'id'	=> 'bookacti-generate-password',
-						'value'	=> 0,
-						'tip'	=> esc_html__( 'Whether to automatically generate the password.', 'booking-activities' )
+						'type'  => 'checkbox',
+						'name'  => 'generate_password',
+						'id'    => 'bookacti-generate-password',
+						'value' => 0,
+						'tip'   => esc_html__( 'Whether to automatically generate the password.', 'booking-activities' )
 					);
 					bookacti_display_field( $args );
 				?>
@@ -880,17 +884,17 @@ foreach( $fields_data as $field_name => $field_data ) {
 				<label for='bookacti-min_password_strength'><?php esc_html_e( 'Min. password strength', 'booking-activities' ); ?></label>
 				<?php 
 					$args = array(
-						'type'		=> 'select',
-						'name'		=> 'min_password_strength',
-						'id'		=> 'bookacti-min_password_strength',
-						'options'	=> array(
-											1 => esc_html_x( 'Very weak', 'password strength' ),
-											2 => esc_html_x( 'Weak', 'password strength' ),
-											3 => esc_html_x( 'Medium', 'password strength' ),
-											4 => esc_html_x( 'Strong', 'password strength' )
-										),
-						'value'		=> 1,
-						'tip'		=> esc_html__( 'How strong the user password must be if it is not generated?', 'booking-activities' )
+						'type'    => 'select',
+						'name'    => 'min_password_strength',
+						'id'      => 'bookacti-min_password_strength',
+						'options' => array(
+										1 => esc_html_x( 'Very weak', 'password strength' ),
+										2 => esc_html_x( 'Weak', 'password strength' ),
+										3 => esc_html_x( 'Medium', 'password strength' ),
+										4 => esc_html_x( 'Strong', 'password strength' )
+									),
+						'value'   => 1,
+						'tip'     => esc_html__( 'How strong the user password must be if it is not generated?', 'booking-activities' )
 					);
 					bookacti_display_field( $args );
 				?>
@@ -899,11 +903,11 @@ foreach( $fields_data as $field_name => $field_data ) {
 				<label for='bookacti-send-new-account-email'><?php esc_html_e( 'Send new account email', 'booking-activities' ); ?></label>
 				<?php 
 					$args = array(
-						'type'	=> 'checkbox',
-						'name'	=> 'send_new_account_email',
-						'id'	=> 'bookacti-send-new-account-email',
-						'value'	=> 0,
-						'tip'	=> esc_html__( 'Whether to automatically send an email to the user if the user has created an account with the booking form.', 'booking-activities' )
+						'type'  => 'checkbox',
+						'name'  => 'send_new_account_email',
+						'id'    => 'bookacti-send-new-account-email',
+						'value' => 0,
+						'tip'   => esc_html__( 'Whether to automatically send an email to the user if the user has created an account with the booking form.', 'booking-activities' )
 					);
 					bookacti_display_field( $args );
 				?>
@@ -920,12 +924,12 @@ foreach( $fields_data as $field_name => $field_data ) {
 					foreach( $roles as $role_id => $role ) { $roles_options[ $role_id ] = $role[ 'name' ]; }
 
 					$args = array(
-						'type'		=> 'select',
-						'name'		=> 'new_user_role',
-						'id'		=> 'bookacti-new-user-role',
-						'options'	=> $roles_options,
-						'value'		=> 'default',
-						'tip'		=> esc_html__( 'Choose a role to give to a user who has registered while booking an event with this form.', 'booking-activities' )
+						'type'    => 'select',
+						'name'    => 'new_user_role',
+						'id'      => 'bookacti-new-user-role',
+						'options' => $roles_options,
+						'value'   => 'default',
+						'tip'     => esc_html__( 'Choose a role to give to a user who has registered while booking an event with this form.', 'booking-activities' )
 									/* translators: %1$s = "Default role". %2$s = link to "New User Default Role". */
 									. ' ' . sprintf( esc_html__( 'Select "%1$s" to use the "%2$s" option in Wordpress General settings.', 'booking-activities' ), esc_html__( 'Default role', 'booking-activities' ), '<a href="' . admin_url( 'options-general.php' ) . '">' . esc_html__( 'New User Default Role' ) . '</a>' )
 					);
@@ -962,23 +966,23 @@ foreach( $fields_data as $field_name => $field_data ) {
 
 
 <!-- Quantity field dialog -->
-<div id='bookacti-form-field-dialog-quantity' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php echo sprintf( esc_html__( '%s options', 'booking-activities' ), strip_tags( $fields_data[ 'quantity' ][ 'title' ] ) ); ?>' >
+<div id='bookacti-form-field-dialog-quantity' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php echo sprintf( esc_html__( '%s options', 'booking-activities' ), strip_tags( $fields_default[ 'quantity' ][ 'title' ] ) ); ?>' >
 	<form id='bookacti-form-field-form-quantity' >
 		<input type='hidden' name='action' value='bookactiUpdateFormField' />
 		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_update_form_field' ); ?>' />
 		<input type='hidden' name='field_id' value='' />
 		<?php 
-			do_action( 'bookacti_quantity_dialog_before', $form, $form_fields );
+			do_action( 'bookacti_quantity_dialog_before', $form_edit, $form_fields_edit );
 		?>
 		<div id='bookacti-form-field-dialog-quantity-lang-switcher' class='bookacti-lang-switcher' ></div>
 		<div>
 			<label for='bookacti-quantity-label'><?php esc_html_e( 'Label', 'booking-activities' ); ?></label>
 			<?php 
 				$args = array(
-					'type'	=> 'text',
-					'name'	=> 'label',
-					'id'	=> 'bookacti-quantity-label',
-					'tip'	=> esc_html__( 'Text displayed before the field.', 'booking-activities' )
+					'type' => 'text',
+					'name' => 'label',
+					'id'   => 'bookacti-quantity-label',
+					'tip' => esc_html__( 'Text displayed before the field.', 'booking-activities' )
 				);
 				bookacti_display_field( $args );
 			?>
@@ -987,10 +991,10 @@ foreach( $fields_data as $field_name => $field_data ) {
 			<label for='bookacti-quantity-placeholder'><?php esc_html_e( 'Placeholder', 'booking-activities' ); ?></label>
 			<?php 
 				$args = array(
-					'type'	=> 'text',
-					'name'	=> 'placeholder',
-					'id'	=> 'bookacti-quantity-placeholder',
-					'tip'	=> esc_html__( 'Text displayed in transparency in the field when it is empty.', 'booking-activities' )
+					'type' => 'text',
+					'name' => 'placeholder',
+					'id'   => 'bookacti-quantity-placeholder',
+					'tip'  => esc_html__( 'Text displayed in transparency in the field when it is empty.', 'booking-activities' )
 				);
 				bookacti_display_field( $args );
 			?>
@@ -999,16 +1003,16 @@ foreach( $fields_data as $field_name => $field_data ) {
 			<label for='bookacti-quantity-tip'><?php esc_html_e( 'Tooltip', 'booking-activities' ); ?></label>
 			<?php 
 				$args = array(
-					'type'	=> 'text',
-					'name'	=> 'tip',
-					'id'	=> 'bookacti-quantity-tip',
-					'tip'	=> esc_html__( 'Text displayed in the tooltip next to the field.', 'booking-activities' )
+					'type' => 'text',
+					'name' => 'tip',
+					'id'   => 'bookacti-quantity-tip',
+					'tip'  => esc_html__( 'Text displayed in the tooltip next to the field.', 'booking-activities' )
 				);
 				bookacti_display_field( $args );
 			?>
 		</div>
 		<?php 
-			do_action( 'bookacti_quantity_dialog_after', $form, $form_fields );
+			do_action( 'bookacti_quantity_dialog_after', $form_edit, $form_fields_edit );
 		?>
 		<p>
 		<?php
@@ -1021,52 +1025,52 @@ foreach( $fields_data as $field_name => $field_data ) {
 
 
 <!-- Submit button dialog -->
-<div id='bookacti-form-field-dialog-submit' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php echo sprintf( __( '%s options', 'booking-activities' ), strip_tags( $fields_data[ 'submit' ][ 'title' ] ) ); ?>' >
+<div id='bookacti-form-field-dialog-submit' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php echo sprintf( __( '%s options', 'booking-activities' ), strip_tags( $fields_default[ 'submit' ][ 'title' ] ) ); ?>' >
 	<form id='bookacti-form-field-form-submit' >
 		<input type='hidden' name='action' value='bookactiUpdateFormField' />
 		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_update_form_field' ); ?>' />
 		<input type='hidden' name='field_id' value='' />
 		<?php 
-			do_action( 'bookacti_submit_dialog_before', $form, $form_fields );
+			do_action( 'bookacti_submit_dialog_before', $form_edit, $form_fields_edit );
 		?>
 		<div id='bookacti-form-field-dialog-submit-lang-switcher' class='bookacti-lang-switcher' ></div>
 		<div>
 			<label for='bookacti-submit-value'><?php esc_html_e( 'Button text', 'booking-activities' ); ?></label>
 			<?php 
 				$args = array(
-					'type'	=> 'text',
-					'name'	=> 'value',
-					'id'	=> 'bookacti-submit-value',
-					'tip'	=> esc_html__( 'Text displayed on the button.', 'booking-activities' )
+					'type' => 'text',
+					'name' => 'value',
+					'id'   => 'bookacti-submit-value',
+					'tip'  => esc_html__( 'Text displayed on the button.', 'booking-activities' )
 				);
 				bookacti_display_field( $args );
 			?>
 		</div>
 		<?php 
-			do_action( 'bookacti_submit_dialog_after', $form, $form_fields );
+			do_action( 'bookacti_submit_dialog_after', $form_edit, $form_fields_edit );
 		?>
 	</form>
 </div>
 
 
 <!-- Free text field dialog -->
-<div id='bookacti-form-field-dialog-free_text' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php echo sprintf( esc_html__( '%s options', 'booking-activities' ), strip_tags( $fields_data[ 'free_text' ][ 'title' ] ) ); ?>' >
+<div id='bookacti-form-field-dialog-free_text' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php echo sprintf( esc_html__( '%s options', 'booking-activities' ), strip_tags( $fields_default[ 'free_text' ][ 'title' ] ) ); ?>' >
 	<form id='bookacti-form-field-form-free_text' >
 		<input type='hidden' name='action' value='bookactiUpdateFormField' />
 		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_update_form_field' ); ?>' />
 		<input type='hidden' name='field_id' value='' />
 		<?php 
-			do_action( 'bookacti_free_text_dialog_before', $form, $form_fields );
+			do_action( 'bookacti_free_text_dialog_before', $form_edit, $form_fields_edit );
 		?>
 		<div id='bookacti-form-field-dialog-free_text-lang-switcher' class='bookacti-lang-switcher' ></div>
 		<div>
 			<label for='bookacti-free_text-title'><?php esc_html_e( 'Title', 'booking-activities' ); ?></label>
 			<?php 
 				$args = array(
-					'type'	=> 'text',
-					'name'	=> 'title',
-					'id'	=> 'bookacti-free_text-title',
-					'tip'	=> esc_html__( 'Field title displayed in form editor only.', 'booking-activities' )
+					'type' => 'text',
+					'name' => 'title',
+					'id'   => 'bookacti-free_text-title',
+					'tip'  => esc_html__( 'Field title displayed in form editor only.', 'booking-activities' )
 				);
 				bookacti_display_field( $args );
 			?>
@@ -1075,38 +1079,38 @@ foreach( $fields_data as $field_name => $field_data ) {
 			<label for='bookacti-free_text-value' class='bookacti-fullwidth-label' ><?php esc_html_e( 'Free text', 'booking-activities' ); ?></label>
 			<?php 
 				$args = array(
-					'type'	=> 'editor',
-					'name'	=> 'value',
-					'id'	=> 'bookacti-free_text-value',
+					'type' => 'editor',
+					'name' => 'value',
+					'id'   => 'bookacti-free_text-value',
 				);
 				bookacti_display_field( $args );
 			?>
 		</div>
 		<?php 
-			do_action( 'bookacti_free_text_dialog_after', $form, $form_fields );
+			do_action( 'bookacti_free_text_dialog_after', $form_edit, $form_fields_edit );
 		?>
 	</form>
 </div>
 
 
 <!-- Total price field dialog -->
-<div id='bookacti-form-field-dialog-total_price' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php echo sprintf( esc_html__( '%s options', 'booking-activities' ), strip_tags( $fields_data[ 'free_text' ][ 'title' ] ) ); ?>' >
+<div id='bookacti-form-field-dialog-total_price' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php echo sprintf( esc_html__( '%s options', 'booking-activities' ), isset( $fields_default[ 'total_price' ][ 'title' ] ) ? strip_tags( $fields_default[ 'total_price' ][ 'title' ] ) : '' ); ?>' >
 	<form id='bookacti-form-field-form-total_price' >
 		<input type='hidden' name='action' value='bookactiUpdateFormField'/>
 		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_update_form_field' ); ?>'/>
 		<input type='hidden' name='field_id' value=''/>
 		<?php 
-			do_action( 'bookacti_total_price_dialog_before', $form, $form_fields );
+			do_action( 'bookacti_total_price_dialog_before', $form_edit, $form_fields_edit );
 		?>
 		<div id='bookacti-form-field-dialog-total_price-lang-switcher' class='bookacti-lang-switcher' ></div>
 		<div>
 			<label for='bookacti-total_price-label'><?php esc_html_e( 'Label', 'booking-activities' ); ?></label>
 			<?php 
 				$args = array(
-					'type'	=> 'text',
-					'name'	=> 'label',
-					'id'	=> 'bookacti-total_price-label',
-					'tip'	=> esc_html__( 'Text displayed before the field.', 'booking-activities' )
+					'type' => 'text',
+					'name' => 'label',
+					'id'   => 'bookacti-total_price-label',
+					'tip'  => esc_html__( 'Text displayed before the field.', 'booking-activities' )
 				);
 				bookacti_display_field( $args );
 			?>
@@ -1115,10 +1119,10 @@ foreach( $fields_data as $field_name => $field_data ) {
 			<label for='bookacti-total_price-tip'><?php esc_html_e( 'Tooltip', 'booking-activities' ); ?></label>
 			<?php 
 				$args = array(
-					'type'	=> 'text',
-					'name'	=> 'tip',
-					'id'	=> 'bookacti-total_price-tip',
-					'tip'	=> esc_html__( 'Text displayed in the tooltip next to the field.', 'booking-activities' )
+					'type' => 'text',
+					'name' => 'tip',
+					'id'   => 'bookacti-total_price-tip',
+					'tip'  => esc_html__( 'Text displayed in the tooltip next to the field.', 'booking-activities' )
 				);
 				bookacti_display_field( $args );
 			?>
@@ -1127,39 +1131,39 @@ foreach( $fields_data as $field_name => $field_data ) {
 			<label for='bookacti-total_price-price_breakdown'><?php esc_html_e( 'Show price breakdown', 'booking-activities' ); ?></label>
 			<?php 
 				$args = array(
-					'type'	=> 'checkbox',
-					'name'	=> 'price_breakdown',
-					'id'	=> 'bookacti-total_price-price_breakdown',
-					'tip'	=> esc_html__( 'Display a table that summarizes the price of each paid item in the reservation. Else, only the total price will be displayed.', 'booking-activities' )
+					'type' => 'checkbox',
+					'name' => 'price_breakdown',
+					'id'   => 'bookacti-total_price-price_breakdown',
+					'tip'  => esc_html__( 'Display a table that summarizes the price of each paid item in the reservation. Else, only the total price will be displayed.', 'booking-activities' )
 				);
 				bookacti_display_field( $args );
 			?>
 		</div>
 		<?php 
-			do_action( 'bookacti_total_price_dialog_after', $form, $form_fields );
+			do_action( 'bookacti_total_price_dialog_after', $form_edit, $form_fields_edit );
 		?>
 	</form>
 </div>
 
 
 <!-- Terms field dialog -->
-<div id='bookacti-form-field-dialog-terms' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php echo sprintf( esc_html__( '%s options', 'booking-activities' ), strip_tags( $fields_data[ 'terms' ][ 'title' ] ) ); ?>' >
+<div id='bookacti-form-field-dialog-terms' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php echo sprintf( esc_html__( '%s options', 'booking-activities' ), strip_tags( $fields_default[ 'terms' ][ 'title' ] ) ); ?>' >
 	<form id='bookacti-form-field-form-terms' >
 		<input type='hidden' name='action' value='bookactiUpdateFormField' />
 		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_update_form_field' ); ?>' />
 		<input type='hidden' name='field_id' value='' />
 		<?php 
-			do_action( 'bookacti_terms_dialog_before', $form, $form_fields );
+			do_action( 'bookacti_terms_dialog_before', $form_edit, $form_fields_edit );
 		?>
 		<div id='bookacti-form-field-dialog-terms-lang-switcher' class='bookacti-lang-switcher' ></div>
 		<div>
 			<label for='bookacti-terms-value'><?php esc_html_e( 'Checked by default', 'booking-activities' ); ?></label>
 			<?php 
 				$args = array(
-					'type'	=> 'checkbox',
-					'name'	=> 'value',
-					'id'	=> 'bookacti-terms-value',
-					'tip'	=> esc_html__( 'Whether the checkbox should be checked by default.', 'booking-activities' )
+					'type' => 'checkbox',
+					'name' => 'value',
+					'id'   => 'bookacti-terms-value',
+					'tip'  => esc_html__( 'Whether the checkbox should be checked by default.', 'booking-activities' )
 				);
 				bookacti_display_field( $args );
 			?>
@@ -1168,15 +1172,15 @@ foreach( $fields_data as $field_name => $field_data ) {
 			<label for='bookacti-terms-label' class='bookacti-fullwidth-label' ><?php esc_html_e( 'Label', 'booking-activities' ); ?></label>
 			<?php 
 				$args = array(
-					'type'	=> 'editor',
-					'name'	=> 'label',
-					'id'	=> 'bookacti-terms-label',
+					'type' => 'editor',
+					'name' => 'label',
+					'id'   => 'bookacti-terms-label',
 				);
 				bookacti_display_field( $args );
 			?>
 		</div>
 		<?php 
-			do_action( 'bookacti_terms_dialog_after', $form, $form_fields );
+			do_action( 'bookacti_terms_dialog_after', $form_edit, $form_fields_edit );
 		?>
 	</form>
 </div>
@@ -1197,10 +1201,10 @@ foreach( $fields_data as $field_name => $field_data ) {
 			
 			$ical_url = esc_url( home_url( '?action=bookacti_export_form_events&filename=booking-activities-events-form-' . $form_id . '&form_id=' . $form_id . '&key=' . $secret_key . '&past_events=auto&lang=' . $lang ) );
 			
-			$gcal_import_ical	= '<a href="https://support.google.com/calendar/answer/37118" target="_blank">' . esc_html_x( 'import', 'verb', 'booking-activities' ) . '</a>';
-			$gcal_sync_ical		= '<a href="https://support.google.com/calendar/answer/37100" target="_blank">' . esc_html_x( 'sync', 'verb', 'booking-activities' ) . '</a>';
-			$outlook_com_ical	= '<a href="https://support.office.com/en-us/article/import-or-subscribe-to-a-calendar-in-outlook-com-cff1429c-5af6-41ec-a5b4-74f2c278e98c" target="_blank">' . esc_html_x( 'import', 'verb', 'booking-activities' ) . ' / ' . esc_html_x( 'sync', 'verb', 'booking-activities' ) . '</a>';
-			$outlook_ms_ical	= '<a href="https://support.office.com/en-us/article/video-import-calendars-8e8364e1-400e-4c0f-a573-fe76b5a2d379" target="_blank">' . esc_html_x( 'import', 'verb', 'booking-activities' ) . ' / ' . esc_html_x( 'sync', 'verb', 'booking-activities' ) . '</a>';
+			$gcal_import_ical = '<a href="https://support.google.com/calendar/answer/37118" target="_blank">' . esc_html_x( 'import', 'verb', 'booking-activities' ) . '</a>';
+			$gcal_sync_ical   = '<a href="https://support.google.com/calendar/answer/37100" target="_blank">' . esc_html_x( 'sync', 'verb', 'booking-activities' ) . '</a>';
+			$outlook_com_ical = '<a href="https://support.office.com/en-us/article/import-or-subscribe-to-a-calendar-in-outlook-com-cff1429c-5af6-41ec-a5b4-74f2c278e98c" target="_blank">' . esc_html_x( 'import', 'verb', 'booking-activities' ) . ' / ' . esc_html_x( 'sync', 'verb', 'booking-activities' ) . '</a>';
+			$outlook_ms_ical  = '<a href="https://support.office.com/en-us/article/video-import-calendars-8e8364e1-400e-4c0f-a573-fe76b5a2d379" target="_blank">' . esc_html_x( 'import', 'verb', 'booking-activities' ) . ' / ' . esc_html_x( 'sync', 'verb', 'booking-activities' ) . '</a>';
 		?>
 		
 		<div class='bookacti-info'>
@@ -1254,7 +1258,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 </div>
 
 
-<!-- Login form dialog -->
+<!-- Login form shortcode dialog -->
 <div id='bookacti-login-form-shortcode-dialog' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php esc_attr_e( 'Login / registration form shortcode', 'booking-activities' ); ?>'>
 	<p><?php esc_html_e( 'You can display this login / registration form separately.', 'booking-activities' ) ?></p>
 	<h4><?php esc_html_e( 'Integrate in a post, page, or text widget', 'booking-activities' ) ?></h4>
@@ -1265,4 +1269,4 @@ foreach( $fields_data as $field_name => $field_data ) {
 </div>
 
 <?php
-do_action( 'bookacti_form_editor_dialogs', $form, $form_fields );
+do_action( 'bookacti_form_editor_dialogs', $form_edit, $form_fields_edit );

@@ -178,43 +178,33 @@ function bookacti_get_form( $form_id ) {
 /**
  * Create a form
  * @since 1.5.0
+ * @version 1.14.0
  * @global wpdb $wpdb
  * @param int $form_id
  * @param string $title
- * @param string $status
- * @param int $active
  * @return int|false
  */
-function bookacti_insert_form( $title = '', $status = 'publish', $active = 1 ) {
+function bookacti_insert_form( $title = '' ) {
 	global $wpdb;
 	
 	// Get current UTC datetime
-	$utc_timezone				= new DateTimeZone( 'UTC' );
-	$current_datetime_object	= new DateTime( 'now', $utc_timezone );
+	$utc_timezone            = new DateTimeZone( 'UTC' );
+	$current_datetime_object = new DateTime( 'now', $utc_timezone );
 	
-	$created = $wpdb->insert( 
-		BOOKACTI_TABLE_FORMS, 
-		array( 
-			'title' => $title,
-			'user_id' => get_current_user_id(),
-			'creation_date' => $current_datetime_object->format( 'Y-m-d H:i:s' ),
-			'status' => $status,
-			'active' => intval( $active )
-		),
-		array( '%s', '%d', '%s', '%s', '%d' )
+	$query = 'INSERT INTO ' . BOOKACTI_TABLE_FORMS
+	       . ' ( title, user_id, creation_date, status, active ) '
+	       . ' VALUES ( %s, %d, %s, "publish", 1 )';
+	
+	$variables = array(
+		$title,
+		get_current_user_id(),
+		$current_datetime_object->format( 'Y-m-d H:i:s' )
 	);
-	if( ! $created ) { return $created; }
 	
-	$form_id = $wpdb->insert_id;
+	$query = $wpdb->prepare( $query, $variables );
+	$created = $wpdb->query( $query );
 	
-	// Set a default title if empty
-	if( ! $title ) { 
-		/* translators: %d is the form id */
-		$title = sprintf( __( 'Form #%d', 'booking-activities' ), $form_id ); 
-		bookacti_update_form( $form_id, $title );
-	}
-	
-	return $form_id;
+	return $created ? $wpdb->insert_id : $created;
 }
 
 
@@ -357,13 +347,13 @@ function bookacti_delete_form( $form_id ) {
 
 /**
  * Insert default form fields
- * @version 1.13.0
+ * @since 1.5.0
+ * @version 1.14.0
  * @global wpdb $wpdb
  * @param int $form_id
- * @param array $to_insert Default field name to insert
  * @return int
  */
-function bookacti_insert_default_form_fields( $form_id, $to_insert = array() ) {
+function bookacti_insert_default_form_fields( $form_id ) {
 	global $wpdb;
 	
 	$default_fields = bookacti_get_default_form_fields_data();
@@ -371,40 +361,23 @@ function bookacti_insert_default_form_fields( $form_id, $to_insert = array() ) {
 	$fields_to_insert = array();
 	foreach( $default_fields as $i => $default_field ) {
 		if( empty( $default_field[ 'compulsory' ] ) && empty( $default_field[ 'default' ] ) ) { continue; }
-		if( $to_insert && ! in_array( $default_field[ 'name' ], $to_insert ) ) { continue; }
-		// Sanitize default data
-		$sanitized_data = bookacti_sanitize_form_field_data( $default_field );
-		if( ! $sanitized_data ) { continue; }
-		$fields_to_insert[] = $sanitized_data;
+		if( empty( $default_field[ 'name' ] )       || empty( $default_field[ 'type' ] ) )    { continue; }
+		$fields_to_insert[] = array( 'name' => $default_field[ 'name' ], 'type' => $default_field[ 'type' ] );
 	}
 	
 	if( ! $fields_to_insert ) { return 0; }
 	
-	$query = 'INSERT INTO ' . BOOKACTI_TABLE_FORM_FIELDS . ' ( form_id, name, type, label, options, value, placeholder, tip, required, active ) VALUES ';
+	$query = 'INSERT INTO ' . BOOKACTI_TABLE_FORM_FIELDS . ' ( form_id, name, type, active ) VALUES ';
 	
 	$variables = array();
-	
-	for( $i=0,$len=count($fields_to_insert); $i < $len; ++$i ) {
-		$query .= ' ( %d, %s, %s, %s, %s, %s, %s, %s, %d, 1 )';
-		$variables = array_merge( $variables, array( 
-			$form_id, 
-			$fields_to_insert[ $i ][ 'name' ], 
-			$fields_to_insert[ $i ][ 'type' ], 
-			$fields_to_insert[ $i ][ 'label' ], 
-			$fields_to_insert[ $i ][ 'options' ], 
-			$fields_to_insert[ $i ][ 'value' ], 
-			$fields_to_insert[ $i ][ 'placeholder' ], 
-			$fields_to_insert[ $i ][ 'tip' ],
-			$fields_to_insert[ $i ][ 'required' ] )
-		);
-		if( $i < $len-1 ) { $query .= ','; }
-		else { $query .= ';'; }
+	foreach( $fields_to_insert as $field_to_insert ) {
+		$query    .= ' ( %d, %s, %s, 1 ),';
+		$variables = array_merge( $variables, array( $form_id, $field_to_insert[ 'name' ], $field_to_insert[ 'type' ] ) );
 	}
+	$query = rtrim( $query, ',' ); // remove trailing comma
 	
 	// Safely apply variables to the query
-	if( $variables ) {
-		$query = $wpdb->prepare( $query, $variables );
-	}
+	if( $variables ) { $query = $wpdb->prepare( $query, $variables ); }
 
 	// Insert form fields
 	$inserted = $wpdb->query( $query );
@@ -414,9 +387,9 @@ function bookacti_insert_default_form_fields( $form_id, $to_insert = array() ) {
 
 
 /**
- * Insert a form field
+ * Insert a form field without any data
  * @since 1.5.0
- * @version 1.13.0
+ * @version 1.14.0
  * @global wpdb $wpdb
  * @param int $form_id
  * @param array $field_data
@@ -425,29 +398,20 @@ function bookacti_insert_default_form_fields( $form_id, $to_insert = array() ) {
 function bookacti_insert_form_field( $form_id, $field_data ) {
 	global $wpdb;
 	
-	// Insert the form field
-	$created = $wpdb->insert( 
-		BOOKACTI_TABLE_FORM_FIELDS, 
-		array( 
-			'form_id'		=> $form_id,
-			'name'			=> $field_data[ 'name' ],
-			'type'			=> $field_data[ 'type' ],
-			'label'			=> $field_data[ 'label' ],
-			'options'		=> $field_data[ 'options' ],
-			'value'			=> $field_data[ 'value' ],
-			'placeholder'	=> $field_data[ 'placeholder' ],
-			'tip'			=> $field_data[ 'tip' ],
-			'required'		=> $field_data[ 'required' ],
-			'active'		=> 1
-		),
-		array( '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%d' )
+	$query = 'INSERT INTO ' . BOOKACTI_TABLE_FORM_FIELDS 
+	       . ' ( form_id, name, type, active ) '
+	       . ' VALUES ( %d, %s, %s, 1 )';
+	
+	$variables = array(
+		$form_id,
+		$field_data[ 'name' ],
+		$field_data[ 'type' ]
 	);
 	
-	if( ! $created ) { return $created; }
+	$query = $wpdb->prepare( $query, $variables );
+	$created = $wpdb->query( $query );
 	
-	$field_id = $wpdb->insert_id;
-	
-	return $field_id;
+	return $created ? $wpdb->insert_id : $created;
 }
 
 
@@ -556,6 +520,7 @@ function bookacti_get_form_fields( $form_id, $active_only = true ) {
 /**
  * Update a form field
  * @since 1.5.0
+ * @version 1.14.0
  * @global wpdb $wpdb
  * @param array $field_data
  * @return int|false
@@ -563,29 +528,30 @@ function bookacti_get_form_fields( $form_id, $active_only = true ) {
 function bookacti_update_form_field( $field_data ) {
 	global $wpdb;
 	
-	$fields = array( 
-		'label'			=> $field_data[ 'label' ],
-		'placeholder'	=> $field_data[ 'placeholder' ],
-		'tip'			=> $field_data[ 'tip' ],
-		'options'		=> $field_data[ 'options' ],
-		'value'			=> $field_data[ 'value' ],
-		'required'		=> $field_data[ 'required' ]
-	);
-	$field_formats = array( '%s', '%s', '%s', '%s', '%s', '%d' );
+	$query = 'UPDATE ' . BOOKACTI_TABLE_FORM_FIELDS 
+	       . ' SET '
+	       . ' title = NULLIF( IFNULL( NULLIF( %s, "" ), title ), "null" ), '
+	       . ' label = NULLIF( IFNULL( NULLIF( %s, "" ), label ), "null" ), '
+	       . ' placeholder = NULLIF( IFNULL( NULLIF( %s, "" ), placeholder ), "null" ), '
+	       . ' tip = NULLIF( IFNULL( NULLIF( %s, "" ), tip ), "null" ), '
+	       . ' options = NULLIF( IFNULL( NULLIF( %s, "" ), options ), "null" ), '
+	       . ' value = NULLIF( IFNULL( NULLIF( %s, "" ), value ), "null" ), '
+	       . ' required = IFNULL( NULLIF( %d, -1 ), required ) '
+	       . ' WHERE id = %d ';
 	
-	if( isset( $field_data[ 'unique' ] ) && ! $field_data[ 'unique' ] ) {
-		$fields[ 'title' ] = $field_data[ 'title' ];
-		$field_formats[] = '%s';
-	}
-	
-	// Update common data
-	$updated = $wpdb->update( 
-		BOOKACTI_TABLE_FORM_FIELDS, 
-		$fields,
-		array( 'id' => $field_data[ 'field_id' ] ),
-		$field_formats,
-		array( '%d' )
+	$variables = array(
+		$field_data[ 'title' ],
+		$field_data[ 'label' ],
+		$field_data[ 'placeholder' ],
+		$field_data[ 'tip' ],
+		$field_data[ 'options' ],
+		$field_data[ 'value' ],
+		$field_data[ 'required' ],
+		$field_data[ 'field_id' ]
 	);
+	
+	$query = $wpdb->prepare( $query, $variables );
+	$updated = $wpdb->query( $query );
 	
 	return $updated;
 }

@@ -594,7 +594,7 @@ add_filter( 'woocommerce_email_order_items_table', 'bookacti_order_items_unset_e
 /**
  * Add WC data to the booking list
  * @since 1.6.0 (was bookacti_woocommerce_fill_booking_list_custom_columns before)
- * @version 1.12.3
+ * @version 1.14.0
  * @param array $booking_list_items
  * @param array $bookings
  * @param array $booking_groups
@@ -636,9 +636,9 @@ function bookacti_add_wc_data_to_booking_list_items( $booking_list_items, $booki
 		$user = $users[ $booking_list_item[ 'user_id' ] ];
 		if( $user ) {
 			if( $booking_list_item[ 'order_id' ] || empty( $booking_list_item[ 'customer' ] ) ) {
-				$display_name	= ! empty( $user->first_name ) && ! empty( $user->last_name ) ? $user->first_name . ' ' . $user->last_name : $user->display_name;
-				$customer_name	= ! empty( $user->billing_first_name ) && ! empty( $user->billing_last_name ) ? $user->billing_first_name . ' ' . $user->billing_last_name : $display_name;
-				$customer		= $can_edit_users ? '<a href="' . esc_url( $admin_url . 'user-edit.php?user_id=' . $booking_list_item[ 'user_id' ] ) . '">' . esc_html( $customer_name ) . '</a>' : esc_html( $customer_name );
+				$display_name  = ! empty( $user->first_name ) && ! empty( $user->last_name ) ? $user->first_name . ' ' . $user->last_name : $user->display_name;
+				$customer_name = ! empty( $user->billing_first_name ) && ! empty( $user->billing_last_name ) ? $user->billing_first_name . ' ' . $user->billing_last_name : $display_name;
+				$customer      = $can_edit_users ? '<a href="' . esc_url( $admin_url . 'user-edit.php?user_id=' . $booking_list_item[ 'user_id' ] ) . '">' . esc_html( $customer_name ) . '</a>' : esc_html( $customer_name );
 				$booking_list_items[ $booking_id ][ 'customer' ] = $customer;
 			}
 
@@ -685,7 +685,9 @@ function bookacti_add_wc_data_to_booking_list_items( $booking_list_items, $booki
 			if( ! isset( $booking_list_items[ $booking_id ] ) ) { continue; }
 			
 			// Fill product column
-			$product_title = apply_filters( 'bookacti_translate_text', $order_item->get_name() );
+			$order_id = $order_item->get_order_id();
+			$order_item_title = $order_item->get_name();
+			$product_title = $order_item_title !== '' ? apply_filters( 'bookacti_translate_text_external', $order_item_title, false, true, array( 'domain' => 'woocommerce', 'object_type' => 'order_item', 'object_id' => $order_item_id, 'field' => 'title', 'order_id' => $order_id ) ) : $order_item_title;
 			if( ! empty( $order_item[ 'product_id' ] ) && $can_edit_products ) {
 				$product_title = '<a href="' . esc_url( $admin_url . 'post.php?action=edit&post=' . $order_item[ 'product_id' ] ) . '">' . $product_title . '</a>';
 			}
@@ -725,10 +727,9 @@ function bookacti_add_wc_data_to_booking_list_items( $booking_list_items, $booki
 			}
 
 			// Filter refund actions
-			$order_id = $order_item->get_order_id();
 			if( ! empty( $booking_list_items[ $booking_id ][ 'actions' ][ 'refund' ] ) && ! empty( $orders[ $order_id ] ) ) {
-				$order		= $orders[ $order_id ];
-				$is_paid	= $order->get_date_paid( 'edit' );
+				$order   = $orders[ $order_id ];
+				$is_paid = $order->get_date_paid( 'edit' );
 				
 				if( $order->get_status() === 'pending' || ! $is_paid || $total_price <= 0 ) {
 					$booking_list_items[ $booking_id ][ 'refund_actions' ] = array_diff_key( $booking_list_items[ $booking_id ][ 'refund_actions' ], $wc_refund_actions );
@@ -745,7 +746,7 @@ add_filter( 'bookacti_booking_list_items', 'bookacti_add_wc_data_to_booking_list
 /**
  * Fill WC bookings export columns
  * @since 1.6.0
- * @version 1.13.0
+ * @version 1.14.0
  * @param array $booking_items
  * @param array $bookings
  * @param array $booking_groups
@@ -757,7 +758,8 @@ add_filter( 'bookacti_booking_list_items', 'bookacti_add_wc_data_to_booking_list
 function bookacti_fill_wc_columns_in_bookings_export( $booking_items, $bookings, $booking_groups, $displayed_groups, $users, $args ) {
 	if( ! $booking_items ) { return $booking_items; }
 
-	if( array_intersect( $args[ 'columns' ], array_keys( bookacti_wc_bookings_export_columns( array() ) ) ) ) {
+	$wc_columns = array_keys( bookacti_wc_bookings_export_columns( array() ) );
+	if( array_intersect( $args[ 'columns' ], array_merge( $wc_columns, array( 'customer_first_name', 'customer_last_name', 'customer_email', 'customer_phone' ) ) ) ) {
 		$booking_ids = array();
 		$booking_group_ids = array();
 		foreach( $booking_items as $booking_id => $booking_item ) {
@@ -770,30 +772,30 @@ function bookacti_fill_wc_columns_in_bookings_export( $booking_items, $bookings,
 			if( empty( $users[ $booking_item[ 'customer_id' ] ] ) ) { continue; }
 			$user = $users[ $booking_item[ 'customer_id' ] ];
 			if( $user ) {
-				if( ! empty( $user->billing_first_name ) && ( $booking_item[ 'order_id' ] || empty( $booking_item[ 'customer_first_name' ] ) ) ){ $booking_items[ $booking_id ][ 'customer_first_name' ] = $user->billing_first_name; }
-				if( ! empty( $user->billing_last_name ) && ( $booking_item[ 'order_id' ] || empty( $booking_item[ 'customer_last_name' ] ) ) )	{ $booking_items[ $booking_id ][ 'customer_last_name' ] = $user->billing_last_name; }
-				if( ! empty( $user->billing_email ) && ( $booking_item[ 'order_id' ] || empty( $booking_item[ 'customer_email' ] ) ) )			{ $booking_items[ $booking_id ][ 'customer_email' ] = $user->billing_email; }
-				if( ! empty( $user->billing_phone ) && ( $booking_item[ 'order_id' ] || empty( $booking_item[ 'customer_phone' ] ) ) )			{ $booking_items[ $booking_id ][ 'customer_phone' ] = $user->billing_phone; }
+				if( ! empty( $user->billing_first_name ) && ( $booking_item[ 'order_id' ] || empty( $booking_item[ 'customer_first_name' ] ) ) ) { $booking_items[ $booking_id ][ 'customer_first_name' ] = $user->billing_first_name; }
+				if( ! empty( $user->billing_last_name )  && ( $booking_item[ 'order_id' ] || empty( $booking_item[ 'customer_last_name' ] ) ) )  { $booking_items[ $booking_id ][ 'customer_last_name' ]  = $user->billing_last_name; }
+				if( ! empty( $user->billing_email )      && ( $booking_item[ 'order_id' ] || empty( $booking_item[ 'customer_email' ] ) ) )      { $booking_items[ $booking_id ][ 'customer_email' ]      = $user->billing_email; }
+				if( ! empty( $user->billing_phone )      && ( $booking_item[ 'order_id' ] || empty( $booking_item[ 'customer_phone' ] ) ) )      { $booking_items[ $booking_id ][ 'customer_phone' ]      = $user->billing_phone; }
 				
-				if( ! empty( $user->billing_company ) )		{ $booking_items[ $booking_id ][ 'customer_company' ] = $user->billing_company; }
+				if( ! empty( $user->billing_company ) )     { $booking_items[ $booking_id ][ 'customer_company' ] = $user->billing_company; }
 				if( ! isset( $booking_items[ $booking_id ][ 'customer_address' ] ) ) { $booking_items[ $booking_id ][ 'customer_address' ] = ''; }
-				if( ! empty( $user->billing_address_1 ) )	{ $booking_items[ $booking_id ][ 'customer_address' ] .= $user->billing_address_1; }
-				if( ! empty( $user->billing_address_2 ) )	{ $booking_items[ $booking_id ][ 'customer_address' ] .= ' ' . $user->billing_address_2; }
-				if( ! empty( $user->billing_city ) )		{ $booking_items[ $booking_id ][ 'customer_city' ] = $user->billing_city; }
-				if( ! empty( $user->billing_postcode ) )	{ $booking_items[ $booking_id ][ 'customer_postcode' ] = $user->billing_postcode; }
-				if( ! empty( $user->billing_country ) )		{ $booking_items[ $booking_id ][ 'customer_country' ] = $user->billing_country; }
-				if( ! empty( $user->billing_state ) )		{ $booking_items[ $booking_id ][ 'customer_state' ] = $user->billing_state; }
+				if( ! empty( $user->billing_address_1 ) )   { $booking_items[ $booking_id ][ 'customer_address' ] .= $user->billing_address_1; }
+				if( ! empty( $user->billing_address_2 ) )   { $booking_items[ $booking_id ][ 'customer_address' ] .= ' ' . $user->billing_address_2; }
+				if( ! empty( $user->billing_city ) )        { $booking_items[ $booking_id ][ 'customer_city' ] = $user->billing_city; }
+				if( ! empty( $user->billing_postcode ) )    { $booking_items[ $booking_id ][ 'customer_postcode' ] = $user->billing_postcode; }
+				if( ! empty( $user->billing_country ) )     { $booking_items[ $booking_id ][ 'customer_country' ] = $user->billing_country; }
+				if( ! empty( $user->billing_state ) )       { $booking_items[ $booking_id ][ 'customer_state' ] = $user->billing_state; }
 				
-				if( ! empty( $user->shipping_first_name ) )	{ $booking_items[ $booking_id ][ 'customer_first_name_shipping' ] = $user->shipping_first_name; }
-				if( ! empty( $user->shipping_last_name ) )	{ $booking_items[ $booking_id ][ 'customer_last_name_shipping' ] = $user->shipping_last_name; }
-				if( ! empty( $user->shipping_company ) )	{ $booking_items[ $booking_id ][ 'customer_company_shipping' ] = $user->shipping_company; }
+				if( ! empty( $user->shipping_first_name ) ) { $booking_items[ $booking_id ][ 'customer_first_name_shipping' ] = $user->shipping_first_name; }
+				if( ! empty( $user->shipping_last_name ) )  { $booking_items[ $booking_id ][ 'customer_last_name_shipping' ] = $user->shipping_last_name; }
+				if( ! empty( $user->shipping_company ) )    { $booking_items[ $booking_id ][ 'customer_company_shipping' ] = $user->shipping_company; }
 				if( ! isset( $booking_items[ $booking_id ][ 'customer_address_shipping' ] ) ) { $booking_items[ $booking_id ][ 'customer_address_shipping' ] = ''; }
-				if( ! empty( $user->shipping_address_1 ) )	{ $booking_items[ $booking_id ][ 'customer_address_shipping' ] .= $user->shipping_address_1; }
-				if( ! empty( $user->shipping_address_2 ) )	{ $booking_items[ $booking_id ][ 'customer_address_shipping' ] .= ' ' . $user->shipping_address_2; }
-				if( ! empty( $user->shipping_city ) )		{ $booking_items[ $booking_id ][ 'customer_city_shipping' ] = $user->shipping_city; }
-				if( ! empty( $user->shipping_postcode ) )	{ $booking_items[ $booking_id ][ 'customer_postcode_shipping' ] = $user->shipping_postcode; }
-				if( ! empty( $user->shipping_country ) )	{ $booking_items[ $booking_id ][ 'customer_country_shipping' ] = $user->shipping_country; }
-				if( ! empty( $user->shipping_state ) )		{ $booking_items[ $booking_id ][ 'customer_state_shipping' ] = $user->shipping_state; }
+				if( ! empty( $user->shipping_address_1 ) )  { $booking_items[ $booking_id ][ 'customer_address_shipping' ] .= $user->shipping_address_1; }
+				if( ! empty( $user->shipping_address_2 ) )  { $booking_items[ $booking_id ][ 'customer_address_shipping' ] .= ' ' . $user->shipping_address_2; }
+				if( ! empty( $user->shipping_city ) )       { $booking_items[ $booking_id ][ 'customer_city_shipping' ] = $user->shipping_city; }
+				if( ! empty( $user->shipping_postcode ) )   { $booking_items[ $booking_id ][ 'customer_postcode_shipping' ] = $user->shipping_postcode; }
+				if( ! empty( $user->shipping_country ) )    { $booking_items[ $booking_id ][ 'customer_country_shipping' ] = $user->shipping_country; }
+				if( ! empty( $user->shipping_state ) )      { $booking_items[ $booking_id ][ 'customer_state_shipping' ] = $user->shipping_state; }
 			}
 		}
 	}
@@ -804,7 +806,7 @@ function bookacti_fill_wc_columns_in_bookings_export( $booking_items, $bookings,
 		if( ! $order_items ) { return $booking_items; }
 
 		// Add order item data to the booking list
-		foreach( $order_items as $order_item ) {
+		foreach( $order_items as $order_item_id => $order_item ) {
 			$order_item_bookings_ids = bookacti_wc_format_order_item_bookings_ids( $order_item );
 			if( ! $order_item_bookings_ids ) { continue; }
 
@@ -823,12 +825,14 @@ function bookacti_fill_wc_columns_in_bookings_export( $booking_items, $bookings,
 				}
 
 				if( ! isset( $booking_items[ $booking_id ] ) ) { continue; }
-
-				$booking_items[ $booking_id ][ 'product_id' ]		= $order_item->get_product_id();
-				$booking_items[ $booking_id ][ 'variation_id' ]		= $order_item->get_variation_id();
-				$booking_items[ $booking_id ][ 'order_item_title' ]	= apply_filters( 'bookacti_translate_text', $order_item->get_name(), $args[ 'locale' ] );
-				$booking_items[ $booking_id ][ 'order_item_price' ]	= $args[ 'raw' ] ? $order_item->get_total() : html_entity_decode( wc_price( $order_item->get_total() ) );
-				$booking_items[ $booking_id ][ 'order_item_tax' ]	= $args[ 'raw' ] ? $order_item->get_total_tax() : html_entity_decode( wc_price( $order_item->get_total_tax() ) );
+				
+				$order_id = $order_item->get_order_id();
+				$order_item_title = $order_item->get_name();
+				$booking_items[ $booking_id ][ 'product_id' ]       = $order_item->get_product_id();
+				$booking_items[ $booking_id ][ 'variation_id' ]     = $order_item->get_variation_id();
+				$booking_items[ $booking_id ][ 'order_item_title' ] = $order_item_title !== '' ? apply_filters( 'bookacti_translate_text_external', $order_item_title, $args[ 'locale' ], true, array( 'domain' => 'woocommerce', 'object_type' => 'order_item', 'object_id' => $order_item_id, 'field' => 'title', 'order_id' => $order_id ) ) : $order_item_title;
+				$booking_items[ $booking_id ][ 'order_item_price' ] = $args[ 'raw' ] ? $order_item->get_total() : html_entity_decode( wc_price( $order_item->get_total() ) );
+				$booking_items[ $booking_id ][ 'order_item_tax' ]   = $args[ 'raw' ] ? $order_item->get_total_tax() : html_entity_decode( wc_price( $order_item->get_total_tax() ) );
 			}
 		}
 	}

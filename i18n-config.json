@@ -1,4 +1,4 @@
-{ "vendor": { "plugins/booking-activities": "1.12.4" },
+{ "vendor": { "plugins/booking-activities": "1.14.0" },
 	"admin-config":{
 		"bookacti_calendars":{
 			"pages":{ "admin.php":"" },
@@ -6,6 +6,7 @@
 				"bookacti-settings-lang-switcher": { "where": "first" },
 				"bookacti-notification-global-settings": { "where": "after" }, 
 				"bookacti-notification-email-settings": { "where": "after" }, 
+				"bookacti-template-dialog-lang-switcher": { "where": "first" }, 
 				"bookacti-activity-dialog-lang-switcher": { "where": "first" }, 
 				"bookacti-event-dialog-lang-switcher": { "where": "first" }, 
 				"bookacti-group-of-events-dialog-lang-switcher": { "where": "first" },
@@ -57,6 +58,11 @@
 						"bookacti_messages_settings_refund_dialog_title":{},
 						"bookacti_messages_settings_temporary_booking_success":{},
 						"bookacti_messages_settings_cart_countdown":{}
+					}
+				},
+				"bookacti-template-data-form":{
+					"fields":{
+						"bookacti-template-title":{}
 					}
 				},
 				"bookacti-activity-data-form":{

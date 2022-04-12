@@ -11,7 +11,7 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 	/**
 	 * Forms WP_List_Table
 	 * @since 1.5.0
-	 * @version 1.7.12
+	 * @version 1.14.0
 	 */
 	class Forms_List_Table extends WP_List_Table {
 		
@@ -269,68 +269,55 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 		
 		/**
 		 * Get form list items. Parameters can be passed in the URL.
-		 * @version 1.7.12
+		 * @version 1.14.0
 		 * @access public
 		 * @return array
 		 */
 		public function get_form_list_items() {
-			
-			// Request forms corresponding to filters
 			$forms = bookacti_get_forms( $this->filters );
-			
 			$can_edit_forms = current_user_can( 'bookacti_edit_forms' );
 			
-			// Build form list
+			// Form list
 			$form_list_items = array();
 			foreach( $forms as $form ) {
-				
 				// If the user is not allowed to manage this form, do not display it at all
 				if( ! bookacti_user_can_manage_form( $form->id ) ) { continue; }
 				
-				$id			= $form->id;
-				$title		= ! empty( $form->title ) ? $form->title : __( 'Untitled', 'booking-activities' );
-				$active		= $form->active ? __( 'Yes', 'booking-activities' ) : __( 'No', 'booking-activities' );
+				$id     = $form->id;
+				$active = $form->active ? __( 'Yes', 'booking-activities' ) : __( 'No', 'booking-activities' );
 				
 				// Format title column
-				$title = esc_html( apply_filters( 'bookacti_translate_text', $title ) );
+				$title = ! empty( $form->title ) ? esc_html( apply_filters( 'bookacti_translate_text', $form->title ) ) : sprintf( esc_html__( 'Form #%d', 'booking-activities' ), $id );
 				if( $can_edit_forms ) {
-					$title	= '<a href="' . esc_url( admin_url( 'admin.php?page=bookacti_forms&action=edit&form_id=' . $id ) ) . '" >'
-								. $title
-							. '</a>';
+					$title = '<a href="' . esc_url( admin_url( 'admin.php?page=bookacti_forms&action=edit&form_id=' . $id ) ) . '" >' . $title . '</a>';
 				}
 				
 				// Build shortcode
-				$shortcode = '[bookingactivities_form form="' . $id . '"]';
-				$shortcode = "<input type='text' onfocus='this.select();' readonly='readonly' value='" . $shortcode . "' class='large-text code'>";
+				$shortcode = "<input type='text' onfocus='this.select();' readonly='readonly' value='" . esc_attr( '[bookingactivities_form form="' . $id . '"]' ) . "' class='large-text code'>";
 				
 				// Author name
 				$user_object = get_user_by( 'id', $form->user_id );
 				$author = $user_object ? $user_object->display_name : $form->user_id;
 				
 				// Add info on the primary column to make them directly visible in responsive view
-				$primary_data = array( 
-					'<span class="bookacti-column-id" >(' . esc_html_x( 'id', 'An id is a unique identification number', 'booking-activities' ) . ': ' . $id . ')</span>'
-				);
-				$primary_data_html = '';
-				if( $primary_data ) {
-					$primary_data_html = '<div class="bookacti-form-primary-data-container">';
-					foreach( $primary_data as $single_primary_data ) {
-						$primary_data_html .= '<span class="bookacti-form-primary-data">' . $single_primary_data . '</span>';
-					}
-					$primary_data_html .= '</div>';
+				$primary_data = array( '<span class="bookacti-column-id" >(' . esc_html_x( 'id', 'An id is a unique identification number', 'booking-activities' ) . ': ' . $id . ')</span>' );
+				$primary_data_html = '<div class="bookacti-form-primary-data-container">';
+				foreach( $primary_data as $single_primary_data ) {
+					$primary_data_html .= '<span class="bookacti-form-primary-data">' . $single_primary_data . '</span>';
 				}
+				$primary_data_html .= '</div>';
 				
 				$form_item = apply_filters( 'bookacti_form_list_form_columns', array( 
-					'id'			=> $id,
-					'title'			=> $title,
-					'shortcode'		=> $shortcode,
-					'author'		=> $author,
-					'date'			=> bookacti_format_datetime( $form->creation_date, __( 'F d, Y', 'booking-activities' ) ),
-					'status'		=> $form->status,
-					'active'		=> $active,
-					'active_raw'	=> $form->active,
-					'primary_data'	=> $primary_data,
-					'primary_data_html'	=> $primary_data_html
+					'id'                => $id,
+					'title'             => $title,
+					'shortcode'         => $shortcode,
+					'author'            => $author,
+					'date'              => bookacti_format_datetime( $form->creation_date, __( 'F d, Y', 'booking-activities' ) ),
+					'status'            => $form->status,
+					'active'            => $active,
+					'active_raw'        => $form->active,
+					'primary_data'      => $primary_data,
+					'primary_data_html' => $primary_data_html
 				), $form );
 				
 				$form_list_items[] = $form_item;

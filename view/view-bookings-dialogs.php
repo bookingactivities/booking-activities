@@ -1,7 +1,7 @@
 <?php 
 /**
  * Frontend and Backend booking dialogs
- * @version 1.12.3
+ * @version 1.14.0
  */
 
 // Exit if accessed directly
@@ -11,7 +11,7 @@ $messages = bookacti_get_messages();
 ?>
 
 <!-- Frontend and backend - Cancel booking -->
-<div id='bookacti-cancel-booking-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' style='display:none;' title='<?php echo apply_filters( 'bookacti_translate_text', $messages[ 'cancel_dialog_title' ][ 'value' ] ); ?>' >
+<div id='bookacti-cancel-booking-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' style='display:none;' title='<?php echo $messages[ 'cancel_dialog_title' ][ 'value' ]; ?>' >
 <?php
 	wp_nonce_field( 'bookacti_cancel_booking', 'bookacti_nonce_cancel_booking', false );
 	echo wp_kses_post( wpautop( bookacti_get_message( 'cancel_dialog_content' ) ) );
@@ -22,7 +22,7 @@ $messages = bookacti_get_messages();
 <div id='bookacti-refund-booking-dialog' 
 	 class='bookacti-backend-dialog bookacti-bookings-dialog' 
 	 style='display:none;' 
-	 title='<?php echo current_user_can( 'bookacti_edit_bookings' ) ? esc_html_x( 'Refund a booking', 'Dialog title', 'booking-activities' ) : apply_filters( 'bookacti_translate_text', $messages[ 'refund_dialog_title' ][ 'value' ] ); ?>'>
+	 title='<?php echo current_user_can( 'bookacti_edit_bookings' ) ? esc_html_x( 'Refund a booking', 'Dialog title', 'booking-activities' ) : $messages[ 'refund_dialog_title' ][ 'value' ]; ?>'>
 	<form id='bookacti-refund-booking-form'>
 		<?php
 			wp_nonce_field( 'bookacti_refund_booking', 'nonce_refund_booking', false );
@@ -54,7 +54,7 @@ $messages = bookacti_get_messages();
 </div>
 
 <!-- Frontend and backend - Reschedule booking -->
-<div id='bookacti-reschedule-booking-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' title='<?php echo apply_filters( 'bookacti_translate_text', $messages[ 'reschedule_dialog_title' ][ 'value' ] ); ?>'>
+<div id='bookacti-reschedule-booking-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' title='<?php echo $messages[ 'reschedule_dialog_title' ][ 'value' ]; ?>'>
 	<form class='bookacti-booking-form bookacti-reschedule-booking-form'>
 		<?php
 			wp_nonce_field( 'bookacti_reschedule_booking', 'nonce_reschedule_booking', false );

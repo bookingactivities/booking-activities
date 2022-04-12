@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Init Booking Activities settings
- * @version 1.12.0
+ * @version 1.14.0
  */
 function bookacti_init_settings() { 
 	/* General settings Section */
@@ -21,6 +21,14 @@ function bookacti_init_settings() {
 		'bookacti_settings_field_timezone_callback', 
 		'bookacti_general_settings', 
 		'bookacti_settings_section_general' 
+	);
+	
+	add_settings_field( 
+		'calendar_localization',
+		esc_html__( 'Calendar localization', 'booking-activities' ),
+		'bookacti_settings_field_calendar_localization_callback',
+		'bookacti_general_settings',
+		'bookacti_settings_section_general'
 	);
 
 	add_settings_field(  
@@ -189,14 +197,6 @@ function bookacti_init_settings() {
 		esc_html__( 'Messages', 'booking-activities' ),
 		'bookacti_settings_section_messages_callback',
 		'bookacti_messages_settings'
-	);
-	
-	add_settings_field( 
-		'calendar_localization',
-		esc_html__( 'Calendar localization', 'booking-activities' ),
-		'bookacti_settings_field_calendar_localization_callback',
-		'bookacti_messages_settings',
-		'bookacti_settings_section_messages'
 	);
 	
 	

@@ -58,32 +58,39 @@ function bookacti_delete_settings() {
 
 /**
  * Get setting value
- * @version 1.8.0
+ * @version 1.14.0
  * @param string $setting_group
  * @param string $setting_name
  * @param boolean $raw
- * @return mixed
+ * @return mixed|null
  */
 function bookacti_get_setting_value( $setting_group, $setting_name, $raw = false ) {
-	$alloptions = wp_load_alloptions(); // get_option() calls wp_load_alloptions() itself, so there is no overhead at runtime 
-	$settings = isset( $alloptions[ $setting_group ] ) ? maybe_unserialize( $alloptions[ $setting_group ] ) : array();
+	// Get raw value from database
+	$settings = array();
+	if( $raw ) {
+		$alloptions = wp_load_alloptions(); // get_option() calls wp_load_alloptions() itself, so there is no overhead at runtime 
+		if( isset( $alloptions[ $setting_group ] ) ) {
+			$settings = maybe_unserialize( $alloptions[ $setting_group ] );
+		}
+	}
+
+	// Else, get message settings through a normal get_option
+	else {
+		$settings = get_option( $setting_group );
+	}
 	
 	if( ! is_array( $settings ) ) { $settings = array(); }
+	
+	$setting_value = isset( $settings[ $setting_name ] ) ? $settings[ $setting_name ] : null;
 	
 	if( ! isset( $settings[ $setting_name ] ) ) {
 		$default = bookacti_get_default_settings();
 		if( isset( $default[ $setting_name ] ) ) {
-			$settings[ $setting_name ] = maybe_unserialize( $default[ $setting_name ] );
-		} else {
-			$settings[ $setting_name ] = false;
+			$setting_value = maybe_unserialize( $default[ $setting_name ] );
 		}
 	}
 	
-	if( ! $raw && is_string( $settings[ $setting_name ] ) ) {
-		$settings[ $setting_name ] = apply_filters( 'bookacti_translate_text', $settings[ $setting_name ] );
-	}
-	
-	return apply_filters( 'bookacti_get_setting_value', $settings[ $setting_name ], $setting_group, $setting_name, $raw );
+	return apply_filters( 'bookacti_get_setting_value', $setting_value, $setting_group, $setting_name, $raw );
 }
 
 
@@ -214,7 +221,82 @@ function bookacti_display_forms_screen_options() {
 }
 
 
-// GENERAL SETTINGS 
+// GENERAL SETTINGS
+
+/**
+ * Display Timezone setting
+ * @since 1.1.0
+ * @version 1.4.0
+ */
+function bookacti_settings_field_timezone_callback() {
+	$regions = array(
+		'UTC'        => DateTimeZone::UTC,
+		'Africa'     => DateTimeZone::AFRICA,
+		'America'    => DateTimeZone::AMERICA,
+		'Antarctica' => DateTimeZone::ANTARCTICA,
+		'Arctic'     => DateTimeZone::ARCTIC,
+		'Asia'       => DateTimeZone::ASIA,
+		'Atlantic'   => DateTimeZone::ATLANTIC,
+		'Australia'  => DateTimeZone::AUSTRALIA,
+		'Europe'     => DateTimeZone::EUROPE,
+		'Indian'     => DateTimeZone::INDIAN,
+		'Pacific'    => DateTimeZone::PACIFIC
+	);
+
+	$timezones = array();
+
+	foreach( $regions as $name => $mask ) {
+		$zones = DateTimeZone::listIdentifiers( $mask );
+		foreach( $zones as $timezone ) {
+			$time = new DateTime( NULL, new DateTimeZone( $timezone ) );
+			$ampm = $time->format( 'H' ) > 12 ? ' (' . $time->format( 'g:i a' ) . ')' : '';
+			$label = $name === 'UTC' ? $name : substr( $timezone, strlen( $name ) + 1 );
+			$timezones[ $name ][ $timezone ] = $label . ' - ' . $time->format( 'H:i' ) . $ampm;
+		}
+	}
+
+	$selected_timezone = bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' );
+
+	// Display selectbox
+	echo '<select name="bookacti_general_settings[timezone]" class="bookacti-select2-no-ajax">';
+	foreach( $timezones as $region => $list ) {
+		echo '<optgroup label="' . $region . '" >';
+		foreach( $list as $timezone => $name ) {
+			echo '<option value="' . $timezone . '" ' . selected( $selected_timezone, $timezone ) . '>' . $name . '</option>';
+		}
+		echo '</optgroup>';
+	}
+	echo '</select>';
+
+	// Display the help tip 
+	$tip = __( 'Pick the timezone corresponding to where your business takes place.', 'booking-activities' );
+	bookacti_help_tip( $tip );
+}
+
+
+/**
+ * Display "Calendar localization" setting
+ * @since 1.7.16
+ * @version 1.14.0
+ */
+function bookacti_settings_field_calendar_localization_callback() {
+	$args = array(
+		'type'    => 'select',
+		'name'    => 'bookacti_general_settings[calendar_localization]',
+		'id'      => 'calendar_localization',
+		'options' => array( 
+						'default' => esc_html__( 'Based on the Site Language only (default)', 'booking-activities' ),
+						/* translators: %s is a comma separated list of option name */
+						'wp_settings' => sprintf( esc_html__( 'Based on more WP settings (%s)', 'booking-activities' ), implode( ', ', array( __( 'Site Language' ), __( 'Time Format' ), __( 'Week Starts On' ) ) ) )
+					),
+		'value'   => bookacti_get_setting_value( 'bookacti_general_settings', 'calendar_localization' ),
+		/* translators: %s = "Site Language (WordPress Settings > General)" with a link to WP general settings */
+		'tip'     => sprintf( esc_html__( 'Many elements of the calendar are localized according to your %s: time format (12 or 24-hour), date format, first day of the week, text in buttons, names of the days and the months, and RTL display.', 'booking-activities' ), __( 'Site Language' ) . ' (<a href="' . admin_url( 'options-general.php' ) . '">' . esc_html__( 'WordPress Settings > General', 'booking-activities' ) . '</a>)' )
+	);
+	bookacti_display_field( $args );
+}
+
+
 /**
  * Display "When to load the events?" setting
  * @since 1.1.0
@@ -348,58 +430,6 @@ function bookacti_settings_field_default_payment_status_callback() {
 		'tip'		=> esc_html__( 'Choose what payment status a booking should have when a customer complete the booking form.', 'booking-activities' )
 					. '<br/>' . esc_html__( 'This option has no effect on bookings made with WooCommerce.', 'booking-activities' )
 	));
-}
-
-
-/**
- * Display Timezone setting
- * 
- * @since 1.1.0
- * @version 1.4.0
- */
-function bookacti_settings_field_timezone_callback() {
-	$regions = array(
-		'UTC'			=> DateTimeZone::UTC,
-		'Africa'		=> DateTimeZone::AFRICA,
-		'America'		=> DateTimeZone::AMERICA,
-		'Antarctica'	=> DateTimeZone::ANTARCTICA,
-		'Arctic'		=> DateTimeZone::ARCTIC,
-		'Asia'			=> DateTimeZone::ASIA,
-		'Atlantic'		=> DateTimeZone::ATLANTIC,
-		'Australia'		=> DateTimeZone::AUSTRALIA,
-		'Europe'		=> DateTimeZone::EUROPE,
-		'Indian'		=> DateTimeZone::INDIAN,
-		'Pacific'		=> DateTimeZone::PACIFIC
-	);
-
-	$timezones = array();
-
-	foreach ( $regions as $name => $mask ) {
-		$zones = DateTimeZone::listIdentifiers( $mask );
-		foreach( $zones as $timezone ) {
-			$time = new DateTime( NULL, new DateTimeZone( $timezone ) );
-			$ampm = $time->format( 'H' ) > 12 ? ' (' . $time->format( 'g:i a' ) . ')' : '';
-			$label = $name === 'UTC' ? $name : substr( $timezone, strlen( $name ) + 1 );
-			$timezones[ $name ][ $timezone ] = $label . ' - ' . $time->format( 'H:i' ) . $ampm;
-		}
-	}
-
-	$selected_timezone = bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' );
-
-	// Display selectbox
-	echo '<select name="bookacti_general_settings[timezone]" class="bookacti-select2-no-ajax">';
-	foreach( $timezones as $region => $list ) {
-		echo '<optgroup label="' . $region . '" >';
-		foreach( $list as $timezone => $name ) {
-			echo '<option value="' . $timezone . '" ' . selected( $selected_timezone, $timezone ) . '>' . $name . '</option>';
-		}
-		echo '</optgroup>';
-	}
-	echo '</select>';
-
-	// Display the help tip 
-	$tip  = __( 'Pick the timezone corresponding to where your business takes place.', 'booking-activities' );
-	bookacti_help_tip( $tip );
 }
 
 
@@ -765,37 +795,6 @@ function bookacti_settings_section_messages_callback() {
 
 
 /**
- * Display "Calendar localization" setting
- * @since 1.7.16
- */
-function bookacti_settings_field_calendar_localization_callback() {
-?>
-	<em>
-		<?php 
-		esc_html_e( 'Calendar localization', 'booking-activities' ); 
-		echo '. ';
-		/* translators: %s is the path to WP general settings (with a link) */
-		echo sprintf( esc_html__( 'The calendar is localized according to your Site Language, you can change it in %s.', 'booking-activities' ), '<a href="' . admin_url( 'options-general.php' ) . '">' . esc_html__( 'WordPress Settings > General', 'booking-activities' ) . '</a>' );
-		?>
-	</em><br/>
-<?php
-	$args = array(
-		'type'		=> 'select',
-		'name'		=> 'bookacti_messages_settings[calendar_localization]',
-		'id'		=> 'calendar_localization',
-		'options'	=> array( 
-							'default' => esc_html__( 'Based on the Site Language only (default)', 'booking-activities' ),
-							/* translators: %s is a comma separated list of option name */
-							'wp_settings' => sprintf( esc_html__( 'Based on more WP settings (%s)', 'booking-activities' ), implode( ', ', array( __( 'Site Language' ), __( 'Time Format' ), __( 'Week Starts On' ) ) ) )
-						),
-		'value'		=> bookacti_get_setting_value( 'bookacti_messages_settings', 'calendar_localization' ),
-		'tip'		=> esc_html__( 'Many elements of the calendar are localized according to your Site Language: time format (12 or 24-hour), date format, first day of the week, text in buttons, names of the days and the months, and RTL display.', 'booking-activities' )
-	);
-	bookacti_display_field( $args );
-}
-
-
-/**
  * Get all default messages
  * @since 1.2.0
  * @version 1.12.3
@@ -936,32 +935,24 @@ function bookacti_get_default_messages() {
 /**
  * Get all custom messages
  * @since 1.2.0
- * @version 1.7.0
+ * @version 1.14.0
  * @param boolean $raw Whether to retrieve the raw value from database or the option parsed through get_option
+ * @param string $locale Get the messages in a specific locale
  * @return array
  */
-function bookacti_get_messages( $raw = false ) {
-
+function bookacti_get_messages( $raw = false, $locale = '' ) {
 	// Get raw value from database
 	$saved_messages = array();
 	if( $raw ) {
-		global $bookacti_raw_messages;
-		if( ! isset( $bookacti_raw_messages ) ) {
-			$alloptions = wp_load_alloptions(); // get_option() calls wp_load_alloptions() itself, so there is no overhead at runtime 
-			if( isset( $alloptions[ 'bookacti_messages_settings' ] ) ) {
-				$bookacti_raw_messages = maybe_unserialize( $alloptions[ 'bookacti_messages_settings' ] );
-			}
+		$alloptions = wp_load_alloptions(); // get_option() calls wp_load_alloptions() itself, so there is no overhead at runtime 
+		if( isset( $alloptions[ 'bookacti_messages_settings' ] ) ) {
+			$saved_messages = maybe_unserialize( $alloptions[ 'bookacti_messages_settings' ] );
 		}
-		$saved_messages = $bookacti_raw_messages;
-	} 
+	}
 
 	// Else, get message settings through a normal get_option
 	else {
-		global $bookacti_messages;
-		if( ! isset( $bookacti_messages ) ) {
-			$bookacti_messages = get_option( 'bookacti_messages_settings' );
-		}
-		$saved_messages = $bookacti_messages;
+		$saved_messages = get_option( 'bookacti_messages_settings' );
 	}
 
 	$default_messages = bookacti_get_default_messages();
@@ -970,7 +961,7 @@ function bookacti_get_messages( $raw = false ) {
 	if( ! empty( $saved_messages ) ) {
 		foreach( $default_messages as $message_id => $message ) {
 			if( isset( $saved_messages[ $message_id ] ) ) {
-				$messages[ $message_id ][ 'value' ] = $saved_messages[ $message_id ];
+				$messages[ $message_id ][ 'value' ] = $raw ? $saved_messages[ $message_id ] : apply_filters( 'bookacti_translate_text', $saved_messages[ $message_id ], $locale );
 			}
 		}
 	}
@@ -981,22 +972,16 @@ function bookacti_get_messages( $raw = false ) {
 
 /**
  * Get a custom message by id
- * 
  * @since 1.2.0
- * @version 1.3.0
+ * @version 1.14.0
  * @param string $message_id
  * @param boolean $raw Whether to retrieve the raw value from database or the option parsed through get_option
+ * @param string $locale Get the message in a specific locale
  * @return string
  */
-function bookacti_get_message( $message_id, $raw = false ) {
-	$messages = bookacti_get_messages( $raw );
-
-	$message = isset( $messages[ $message_id ] ) ? $messages[ $message_id ][ 'value' ] : '';
-
-	if( ! $raw ) {
-		$message = apply_filters( 'bookacti_translate_text', $message );
-	}
-
+function bookacti_get_message( $message_id, $raw = false, $locale = '' ) {
+	$messages = bookacti_get_messages( $raw, $locale );
+	$message = ! empty( $messages[ $message_id ][ 'value' ] ) ? $messages[ $message_id ][ 'value' ] : '';
 	return $message;
 }
 
@@ -1338,19 +1323,20 @@ function bookacti_privacy_exporter_user_data( $email_address, $page = 1 ) {
 /**
  * Export bookings user metadata with WP privacy export tool
  * @since 1.7.0
+ * @version 1.14.0
  * @param string $email_address
  * @param int $page
  * @return array
  */
 function bookacti_privacy_exporter_bookings_data( $email_address, $page = 1 ) {
-	$user				= get_user_by( 'email', $email_address );
-	$number				= 200; // Limit to avoid timing out
-	$page				= (int) $page;
-	$data_to_export		= array();
-	$bookings			= array(); 
-	$group_by_booking	= array();
-	$bookings_meta		= array();
-	$booking_groups_meta= array();
+	$user                = get_user_by( 'email', $email_address );
+	$number              = 200; // Limit to avoid timing out
+	$page                = (int) $page;
+	$data_to_export      = array();
+	$bookings            = array(); 
+	$group_by_booking    = array();
+	$bookings_meta       = array();
+	$booking_groups_meta = array();
 	
 	// Get bookings either by email or id if the user is registered
 	$user_ids = array( $email_address );
@@ -1360,16 +1346,16 @@ function bookacti_privacy_exporter_bookings_data( $email_address, $page = 1 ) {
 	
 	// Count the total number of bookings to know when the exporter is done
 	$filters_count = bookacti_format_booking_filters( array(
-		'in__user_id'	=> $user_ids
+		'in__user_id' => $user_ids
 	) );
 	$bookings_count = bookacti_get_number_of_booking_rows( $filters_count );
 	
 	if( $bookings_count ) {
 		// Get the bookings
 		$filters = bookacti_format_booking_filters( array(
-			'in__user_id'	=> $user_ids,
-			'offset'		=> ($page-1)*$number,
-			'per_page'		=> $number
+			'in__user_id' => $user_ids,
+			'offset'      => ($page-1)*$number,
+			'per_page'    => $number
 		) );
 		$bookings = bookacti_get_bookings( $filters );
 
@@ -1387,23 +1373,23 @@ function bookacti_privacy_exporter_bookings_data( $email_address, $page = 1 ) {
 				$bookings_ids[] = $booking->id;
 			}
 
-			$bookings_meta			= bookacti_get_metadata( 'booking', $bookings_ids );
-			$booking_groups_meta	= bookacti_get_metadata( 'booking_group', $booking_groups_ids );
+			$bookings_meta       = bookacti_get_metadata( 'booking', $bookings_ids );
+			$booking_groups_meta = bookacti_get_metadata( 'booking_group', $booking_groups_ids );
 
 			// Allow third party to change the exported data
 			$booking_meta_to_export = apply_filters( 'bookacti_privacy_export_bookings_columns', array(
-				'id'				=> esc_html__( 'ID', 'booking-activities' ),
-				'group_id'			=> esc_html__( 'Group ID', 'booking-activities' ),
-				'creation_date'		=> esc_html__( 'Date', 'booking-activities' ),
-				'event_title'		=> esc_html__( 'Title', 'booking-activities' ),
-				'event_start'		=> esc_html__( 'Start', 'booking-activities' ),
-				'event_end'			=> esc_html__( 'End', 'booking-activities' ),
-				'state'				=> esc_html__( 'Status', 'booking-activities' ),
-				'user_id'			=> esc_html__( 'User ID', 'booking-activities' ),
-				'user_email'		=> esc_html__( 'Email', 'booking-activities' ),
-				'user_first_name'	=> esc_html__( 'First name', 'booking-activities' ),
-				'user_last_name'	=> esc_html__( 'Last name', 'booking-activities' ),
-				'user_phone'		=> esc_html__( 'Phone', 'booking-activities' )
+				'id'              => esc_html__( 'ID', 'booking-activities' ),
+				'group_id'        => esc_html__( 'Group ID', 'booking-activities' ),
+				'creation_date'   => esc_html__( 'Date', 'booking-activities' ),
+				'event_title'     => esc_html__( 'Title', 'booking-activities' ),
+				'event_start'     => esc_html__( 'Start', 'booking-activities' ),
+				'event_end'       => esc_html__( 'End', 'booking-activities' ),
+				'state'           => esc_html__( 'Status', 'booking-activities' ),
+				'user_id'         => esc_html__( 'User ID', 'booking-activities' ),
+				'user_email'      => esc_html__( 'Email', 'booking-activities' ),
+				'user_first_name' => esc_html__( 'First name', 'booking-activities' ),
+				'user_last_name'  => esc_html__( 'Last name', 'booking-activities' ),
+				'user_phone'      => esc_html__( 'Phone', 'booking-activities' )
 			), $bookings, $bookings_meta, $booking_groups_meta, $email_address, $page );
 
 			// Set the name / value data to export for each booking
@@ -1422,7 +1408,7 @@ function bookacti_privacy_exporter_bookings_data( $email_address, $page = 1 ) {
 								$value = is_numeric( $booking->$key ) ? '' : $booking->$key;
 								break;
 							case 'event_title':
-								$value = apply_filters( 'bookacti_translate_text', $booking->$key );
+								$value = ! empty( $booking->$key ) ? apply_filters( 'bookacti_translate_text', $booking->$key ) : '';
 								break;
 							case 'creation_date':
 							case 'event_start':

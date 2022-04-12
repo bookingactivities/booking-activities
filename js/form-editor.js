@@ -83,6 +83,7 @@ $j( document ).ready( function() {
 	/**
 	 * Calendar field settings: Fill days off
 	 * @since 1.13.0
+	 * @version 1.14.0
 	 * @param {Event} e
 	 * @param {Int} field_id
 	 * @param {String} field_name
@@ -94,8 +95,10 @@ $j( document ).ready( function() {
 		
 		// Fill Days off option since the bookacti_fill_fields_from_array function won't do it
 		var field_data = bookacti.form_editor.fields[ field_id ];
-		if( ! $j.isEmptyObject( field_data.days_off ) ) {
-			bookacti_fill_days_off( $j( '#bookacti-form-field-dialog-calendar .bookacti-date-intervals-table-container' ), field_data.days_off );
+		if( field_data.hasOwnProperty( 'days_off' ) ) {
+			if( ! $j.isEmptyObject( field_data.days_off ) ) {
+				bookacti_fill_days_off( $j( '#bookacti-form-field-dialog-calendar .bookacti-date-intervals-table-container' ), field_data.days_off );
+			}
 		}
 	});
 	

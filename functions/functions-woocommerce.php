@@ -606,6 +606,7 @@ function bookacti_wc_get_displayed_product_price( $product, $price = '', $qty = 
 /**
  * Build a user-friendly events list based on item bookings
  * @since 1.9.0
+ * @version 1.14.0
  * @param array $item_bookings
  * @param boolean $show_quantity
  * @param string $locale Optional. Default to site locale.
@@ -617,12 +618,12 @@ function bookacti_wc_get_item_bookings_events_list_html( $item_bookings, $show_q
 	// Set default locale to site's locale
 	if( $locale === 'site' ) { $locale = bookacti_get_site_locale(); }
 	
-	$messages			= bookacti_get_messages( true );
-	$datetime_format	= isset( $messages[ 'date_format_long' ][ 'value' ] )	? apply_filters( 'bookacti_translate_text', $messages[ 'date_format_long' ][ 'value' ], $locale ) : '';
-	$time_format		= isset( $messages[ 'time_format' ][ 'value' ] )		? apply_filters( 'bookacti_translate_text', $messages[ 'time_format' ][ 'value' ], $locale ) : '';
-	$date_time_separator= isset( $messages[ 'date_time_separator' ][ 'value' ] )? apply_filters( 'bookacti_translate_text', $messages[ 'date_time_separator' ][ 'value' ], $locale ) : '';
-	$dates_separator	= isset( $messages[ 'dates_separator' ][ 'value' ] )	? apply_filters( 'bookacti_translate_text', $messages[ 'dates_separator' ][ 'value' ], $locale ) : '';
-	$quantity_separator = isset( $messages[ 'quantity_separator' ][ 'value' ] )	? apply_filters( 'bookacti_translate_text', $messages[ 'quantity_separator' ][ 'value' ], $locale ) : '';
+	$messages            = bookacti_get_messages( false, $locale );
+	$datetime_format     = isset( $messages[ 'date_format_long' ][ 'value' ] )    ? $messages[ 'date_format_long' ][ 'value' ] : '';
+	$time_format         = isset( $messages[ 'time_format' ][ 'value' ] )         ? $messages[ 'time_format' ][ 'value' ] : '';
+	$date_time_separator = isset( $messages[ 'date_time_separator' ][ 'value' ] ) ? $messages[ 'date_time_separator' ][ 'value' ] : '';
+	$dates_separator     = isset( $messages[ 'dates_separator' ][ 'value' ] )     ? $messages[ 'dates_separator' ][ 'value' ] : '';
+	$quantity_separator  = isset( $messages[ 'quantity_separator' ][ 'value' ] )  ? $messages[ 'quantity_separator' ][ 'value' ] : '';
 	
 	$list = '';
 	foreach( $item_bookings as $item_booking ) {
@@ -1511,21 +1512,21 @@ function bookacti_get_order_items_rows( $order_items = array() ) {
 /**
  * Display a products selectbox
  * @since 1.7.0
- * @version 1.8.0
+ * @version 1.14.0
  * @param array $raw_args
  * @return string
  */
 function bookacti_display_product_selectbox( $raw_args = array() ) {
 	$defaults = array(
-		'field_name'		=> 'product_id',
-		'selected'			=> '',
-		'id'				=> '',
-		'class'				=> '',
-		'allow_tags'		=> 0,
-		'allow_clear'		=> 1,
-		'ajax'				=> 1,
-		'select2'			=> 1, 
-		'echo'				=> 1
+		'field_name'  => 'product_id',
+		'selected'    => '',
+		'id'          => '',
+		'class'       => '',
+		'allow_tags'  => 0,
+		'allow_clear' => 1,
+		'ajax'        => 1,
+		'select2'     => 1, 
+		'echo'        => 1
 	);
 	$args = apply_filters( 'bookacti_product_selectbox_args', wp_parse_args( $raw_args, $defaults ), $raw_args );
 
@@ -1552,17 +1553,17 @@ function bookacti_display_product_selectbox( $raw_args = array() ) {
 				if( empty( $product[ 'variations' ] ) ) {
 					$_selected = selected( $product_id, $args[ 'selected' ] );
 					if( $_selected ) { $is_selected = true; }
-					?><option class='bookacti-wc-product-option' value='<?php echo esc_attr( $product_id ); ?>' <?php echo $_selected; ?>><?php echo esc_html( apply_filters( 'bookacti_translate_text', $product[ 'title' ] ) ); ?></option><?php
+					?><option class='bookacti-wc-product-option' value='<?php echo esc_attr( $product_id ); ?>' <?php echo $_selected; ?>><?php echo $product[ 'title' ] ? esc_html( apply_filters( 'bookacti_translate_text_external', $product[ 'title' ], false, true, array( 'domain' => 'woocommerce', 'object_type' => 'product', 'object_id' => $product_id, 'field' => 'title' ) ) ) : $product[ 'title' ]; ?></option><?php
 
 				// Display variations options
 				} else {
 				?>
-					<optgroup class='bookacti-wc-variable-product-option-group' label='<?php echo esc_attr( apply_filters( 'bookacti_translate_text', $product[ 'title' ] ) ); ?>'>
+					<optgroup class='bookacti-wc-variable-product-option-group' label='<?php echo $product[ 'title' ] ? esc_attr( apply_filters( 'bookacti_translate_text_external', $product[ 'title' ], false, true, array( 'domain' => 'woocommerce', 'object_type' => 'product', 'object_id' => $product_id, 'field' => 'title' ) ) ) : $product[ 'title' ]; ?>'>
 					<?php
 						foreach( $product[ 'variations' ] as $variation_id => $variation ) {
 							$_selected = selected( $variation_id, $args[ 'selected' ] );
 							if( $_selected ) { $is_selected = true; }
-							$variation_title = esc_html( apply_filters( 'bookacti_translate_text', $variation[ 'title' ] ) );
+							$variation_title = $variation[ 'title' ] ? esc_html( apply_filters( 'bookacti_translate_text_external', $variation[ 'title' ], false, true, array( 'domain' => 'woocommerce', 'object_type' => 'variation', 'object_id' => $variation_id, 'field' => 'title', 'product_id' => $product_id ) ) ) : $variation[ 'title' ];
 							$formatted_variation_title = trim( preg_replace( '/,[\s\S]+?:/', ',', ',' . $variation_title ), ', ' );
 							?><option class='bookacti-wc-product-variation-option' value='<?php echo esc_attr( $variation_id ); ?>' <?php echo $_selected; ?>><?php echo $formatted_variation_title; ?></option><?php
 						}
@@ -1588,45 +1589,41 @@ function bookacti_display_product_selectbox( $raw_args = array() ) {
 
 /**
  * Tell if the product is activity or has variations that are activities
- * @version 1.7.8
+ * @version 1.14.0
  * @param WC_Product|int $product
  * @return boolean
  */
 function bookacti_product_is_activity( $product ) {
 	// Get product or variation from ID
 	if( ! is_object( $product ) ) {
-		$product_id	= intval( $product );
-		$product	= wc_get_product( $product_id );
+		$product_id = intval( $product );
+		$product    = wc_get_product( $product_id );
 		if( ! $product ) { return false; }
 	}
 
 	$is_activity = false;
-
-	if( $product->is_type( 'simple' ) ) {
-		$is_activity = get_post_meta( $product->get_id(), '_bookacti_is_activity', true ) === 'yes';
-	} 
-
-	else if( $product->is_type( 'variation' ) ) {
+	
+	if( $product->is_type( 'variation' ) ) {
 		$is_activity = get_post_meta( $product->get_id(), 'bookacti_variable_is_activity', true ) === 'yes';
 	}
-
 	else if( $product->is_type( 'variable' ) ) {
 		$variations = $product->get_available_variations();
 		foreach( $variations as $variation ) {
-			if( empty( $variation[ 'bookacti_is_activity' ] ) ) { continue; }
-			$is_activity = $variation[ 'bookacti_is_activity' ];
-			break;
+			if( ! empty( $variation[ 'bookacti_is_activity' ] ) ) { $is_activity = true; break; }
 		}
 	}
+	else if( ! $product->is_type( 'grouped' ) && ! $product->is_type( 'external' ) ) {
+		$is_activity = get_post_meta( $product->get_id(), '_bookacti_is_activity', true ) === 'yes';
+	}
 
-	return apply_filters( 'bookacti_product_is_activity', $is_activity ? true : false, $product );
+	return apply_filters( 'bookacti_product_is_activity', $is_activity, $product );
 }
 
 
 /**
  * Find matching product variation
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.14.0
  * @param WC_Product $product
  * @param array $attributes
  * @return int Matching variation ID or 0.
@@ -1638,7 +1635,8 @@ function bookacti_get_product_variation_matching_attributes( $product, $attribut
 	foreach( $attributes as $key => $value ) {
 		// Take the untranslated value (in case of translated attributes)
 		foreach( $product_attributes as $product_attribute_key => $product_attribute ) {
-			if( $key !== apply_filters( 'bookacti_translate_text', $product_attribute_key ) 
+			if( $product_attribute_key === '' ) { continue; }
+			if( $key !== apply_filters( 'bookacti_translate_text_external', $product_attribute_key, false, true, array( 'domain' => 'woocommerce', 'object_type' => 'product_attribute', 'object_id' => $product_attribute_key, 'field' => 'key', 'product_id' => $product->get_id() ) ) 
 			&&  $key !== $product_attribute_key ) { continue; }
 
 			$options = $product_attribute->get_options();
@@ -1646,8 +1644,9 @@ function bookacti_get_product_variation_matching_attributes( $product, $attribut
 			if( ! $options ) { $options = wc_get_product_terms( $product->get_id(), $product_attribute_key, array( 'fields' => 'slugs' ) ); }
 
 			if( is_array( $options ) ) {
-				foreach( $options as $option_value ) {
-					if( $value !== apply_filters( 'bookacti_translate_text', $option_value ) 
+				foreach( $options as $option_key => $option_value ) {
+					if( $option_value === '' ) { continue; }
+					if( $value !== apply_filters( 'bookacti_translate_text_external', $option_value, false, true, array( 'domain' => 'woocommerce', 'object_type' => 'product_attribute_option', 'object_id' => $option_key, 'field' => 'value', 'product_id' => $product->get_id(), 'product_attribute' => $product_attribute_key ) ) 
 					&&  $value !== $option_value ) { continue; }
 					$value = $option_value;
 				}
@@ -2373,7 +2372,7 @@ function bookacti_settings_section_wc_account_callback() {}
 /**
  * Setting for: Bookings page in My Account
  * @since 1.7.16
- * @version 1.7.19
+ * @version 1.14.0
  */
 function bookacti_settings_wc_my_account_bookings_page_id_callback() {
 	$options = array(
@@ -2382,17 +2381,17 @@ function bookacti_settings_wc_my_account_bookings_page_id_callback() {
 	);
 	$pages = get_pages( array( 'sort_column' => 'menu_order', 'sort_order' => 'ASC' ) );
 	foreach( $pages as $page ) {
-		$options[ $page->ID ] = apply_filters( 'bookacti_translate_text', $page->post_title );
+		$options[ $page->ID ] = $page->post_title ? apply_filters( 'bookacti_translate_text_external', $page->post_title, false, true, array( 'domain' => 'wordpress', 'object_type' => 'page', 'object_id' => $page->ID, 'field' => 'post_title' ) ) : $page->post_title;
 	}
 
 	$args = array(
-		'type'		=> 'select',
-		'name'		=> 'bookacti_account_settings[wc_my_account_bookings_page_id]',
-		'id'		=> 'wc_my_account_bookings_page_id',
-		'class'		=> 'bookacti-select2-no-ajax',
-		'options'	=> $options,
-		'value'		=> bookacti_get_setting_value( 'bookacti_account_settings', 'wc_my_account_bookings_page_id' ),
-		'tip'		=> esc_html__( 'Select the page to display in the "Bookings" tab of the "My account" area. You can also display the default booking list, or completely disable this tab.', 'booking-activities' )
+		'type'    => 'select',
+		'name'    => 'bookacti_account_settings[wc_my_account_bookings_page_id]',
+		'id'      => 'wc_my_account_bookings_page_id',
+		'class'   => 'bookacti-select2-no-ajax',
+		'options' => $options,
+		'value'   => bookacti_get_setting_value( 'bookacti_account_settings', 'wc_my_account_bookings_page_id' ),
+		'tip'     => esc_html__( 'Select the page to display in the "Bookings" tab of the "My account" area. You can also display the default booking list, or completely disable this tab.', 'booking-activities' )
 	);
 	bookacti_display_field( $args );
 }

@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 5.9
 Requires PHP: 5.3
-Stable tag: 1.13.0
+Stable tag: 1.14.0
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -320,6 +320,14 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.14.0 =
+* Compatibility - Support for WPML
+* Tweak - Moved the Calendar localization option to the General tab in the settings
+* Tweak - Allow Booking Activities to natively work with third-party WC product types (may not work as intended though)
+* Fix - WC customer data may not be exported in bookings exports
+* Fix - Bookings were not rescheduled when a booked event was resized
+* Fix - Bookings were not cancelled when a past single booked event was cancelled
 
 = 1.13.0 - 2022/03/01 =
 * **[See the user-friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-13-days-off/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**

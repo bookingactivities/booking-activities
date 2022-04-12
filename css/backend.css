@@ -108,7 +108,6 @@ ul[id$='-select-box-results'] li[aria-disabled='true'] { display: none; }
 
 .bookacti-settings-tab-messages .form-table th			{ display: none; }
 .bookacti-settings-tab-messages .form-table td			{ padding: 0 0 20px 0; font-size: 13px; }
-.bookacti-settings-tab-messages #calendar_localization	{ margin-top: 6px; }
 
 .bookacti-message-setting		{ margin-bottom: 20px; }
 .bookacti-message-setting input	{ margin-top: 6px; }

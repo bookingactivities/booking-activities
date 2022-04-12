@@ -641,21 +641,21 @@ function bookacti_delete_activity_events_from_groups( $activity_id, $template_id
 /**
  * Update dates of an event bound to a group with a relative amount of days
  * @since 1.10.0
+ * @version 1.14.0
  * @global wpdb $wpdb
  * @param int $event_id
- * @param int $delta_seconds
- * @param string $event_start_time Set a fixed start time (H:i:s). Empty string to use the current start time.
- * @param string $event_end_time Set a fixed end time (H:i:s). Empty string to use the current end time.
+ * @param int $delta_seconds_start
+ * @param int $delta_seconds_end
  * @return int|false
  */
-function bookacti_shift_grouped_event_dates( $event_id, $delta_seconds = 0, $event_start_time = '', $event_end_time = '' ) {
+function bookacti_shift_grouped_event_dates( $event_id, $delta_seconds_start = 0, $delta_seconds_end = 0 ) {
 	global $wpdb;
 
 	$query	= 'UPDATE ' . BOOKACTI_TABLE_GROUPS_EVENTS 
-			. ' SET  event_start = IF( %s = "", DATE_ADD( event_start, INTERVAL %d SECOND ), CONCAT( DATE( DATE_ADD( event_start, INTERVAL %d SECOND ) ), " ", %s ) ), '
-				.  ' event_end = IF( %s = "", DATE_ADD( event_end, INTERVAL %d SECOND ), CONCAT( DATE( DATE_ADD( event_end, INTERVAL %d SECOND ) ), " ", %s ) ) '
+			. ' SET  event_start = DATE_ADD( event_start, INTERVAL %d SECOND ), '
+				.  ' event_end = DATE_ADD( event_end, INTERVAL %d SECOND ) '
 			. ' WHERE event_id = %d ';
-	$query	= $wpdb->prepare( $query, $event_start_time, $delta_seconds, $delta_seconds, $event_start_time, $event_end_time, $delta_seconds, $delta_seconds, $event_end_time, $event_id );
+	$query	= $wpdb->prepare( $query, $delta_seconds_start, $delta_seconds_end, $event_id );
 	$updated= $wpdb->query( $query );
 	
 	return $updated;   
@@ -807,7 +807,7 @@ function bookacti_deactivate_group_category( $category_id ) {
 /**
  * Get group category data
  * @since 1.1.0
- * @version 1.12.0
+ * @version 1.14.0
  * @global wpdb $wpdb
  * @param int $category_id
  * @return array
@@ -823,8 +823,8 @@ function bookacti_get_group_category( $category_id ) {
 	
 	// Get template settings and managers
 	$category[ 'multilingual_title' ] = $category[ 'title' ];
-	$category[ 'title' ] = apply_filters( 'bookacti_translate_text', $category[ 'title' ] );
-	$category[ 'settings' ] = bookacti_get_metadata( 'group_category', $category_id );
+	$category[ 'title' ]              = ! empty( $category[ 'title' ] ) ? apply_filters( 'bookacti_translate_text', $category[ 'title' ] ) : '';
+	$category[ 'settings' ]           = bookacti_get_metadata( 'group_category', $category_id );
 
 	return $category;
 }
@@ -853,7 +853,7 @@ function bookacti_get_group_category_template_id( $category_id ) {
 
 /**
  * Get templates
- * @version 1.12.0
+ * @version 1.14.0
  * @global wpdb $wpdb
  * @param array $template_ids
  * @param boolean $ignore_permissions
@@ -915,6 +915,9 @@ function bookacti_fetch_templates( $template_ids = array(), $ignore_permissions 
 
 	$templates_by_id = array();
 	foreach( $templates as $template ) {
+		$template[ 'multilingual_title' ] = $template[ 'title' ];
+		$template[ 'title' ]              = $template[ 'title' ] ? apply_filters( 'bookacti_translate_text', $template[ 'title' ] ) : '';
+		
 		$templates_by_id[ $template[ 'id' ] ] = $template;
 	}
 
@@ -988,39 +991,6 @@ function bookacti_update_template( $data ) {
 
 
 // ACTIVITIES
-
-/**
- * Get activity data
- * @version 1.9.2
- * @global wpdb $wpdb
- * @param int $activity_id
- * @return object
- */
-function bookacti_get_activity( $activity_id ) {
-	global $wpdb;
-
-	$query		= 'SELECT * FROM ' . BOOKACTI_TABLE_ACTIVITIES . ' WHERE id = %d';
-	$prep		= $wpdb->prepare( $query, $activity_id );
-	$activity	= $wpdb->get_row( $prep, OBJECT );
-
-	// Get activity settings and managers
-	$activity->admin	= bookacti_get_activity_managers( $activity_id );
-	$activity->settings	= bookacti_get_metadata( 'activity', $activity_id );
-
-	$activity->multilingual_title = $activity->title;
-	$activity->title	= apply_filters( 'bookacti_translate_text', $activity->title );
-
-	$unit_name_singular	= isset( $activity->settings[ 'unit_name_singular' ] )	? $activity->settings[ 'unit_name_singular' ]	: '';
-	$unit_name_plural	= isset( $activity->settings[ 'unit_name_plural' ] )	? $activity->settings[ 'unit_name_plural' ]		: '';
-	
-	$activity->settings[ 'multilingual_unit_name_singular' ] = $unit_name_singular;
-	$activity->settings[ 'multilingual_unit_name_plural' ]	= $unit_name_plural;
-	$activity->settings[ 'unit_name_singular' ] = apply_filters( 'bookacti_translate_text', $unit_name_singular );
-	$activity->settings[ 'unit_name_plural' ]	= apply_filters( 'bookacti_translate_text', $unit_name_plural );
-
-	return $activity;
-}
-
 
 /**
  * Insert an activity
@@ -1233,7 +1203,7 @@ function bookacti_delete_templates_x_activities( $template_ids, $activity_ids ) 
 
 /**
  * Get activities by template
- * @version 1.9.2
+ * @version 1.14.0
  * @global wpdb $wpdb
  * @param array $template_ids
  * @param boolean $based_on_events Whether to retrieve activities bound to templates or activities bound to events of templates
@@ -1258,11 +1228,11 @@ function bookacti_get_activities_by_template( $template_ids = array(), $based_on
 	}
 
 	if( $based_on_events ) {
-		$query	= 'SELECT DISTINCT A.* FROM ' . BOOKACTI_TABLE_EVENTS . ' as E, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A '
-				. ' WHERE A.id = E.activity_id AND E.template_id IN (';
+		$query = 'SELECT DISTINCT A.* FROM ' . BOOKACTI_TABLE_EVENTS . ' as E, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A '
+			   . ' WHERE A.id = E.activity_id AND E.template_id IN (';
 	} else {
-		$query	= 'SELECT DISTINCT A.* FROM ' . BOOKACTI_TABLE_TEMP_ACTI . ' as TA, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A '
-				. ' WHERE A.id = TA.activity_id AND TA.template_id IN (';
+		$query = 'SELECT DISTINCT A.* FROM ' . BOOKACTI_TABLE_TEMP_ACTI . ' as TA, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A '
+			   . ' WHERE A.id = TA.activity_id AND TA.template_id IN (';
 	}
 
 	$i = 1;
@@ -1295,22 +1265,22 @@ function bookacti_get_activities_by_template( $template_ids = array(), $based_on
 		$activity_ids[] = $activity[ 'id' ];
 	}
 
-	$activities_meta		= bookacti_get_metadata( 'activity', $activity_ids );
-	$activities_managers	= $retrieve_managers ? bookacti_get_managers( 'activity', $activity_ids ) : array();
+	$activities_meta     = bookacti_get_metadata( 'activity', $activity_ids );
+	$activities_managers = $retrieve_managers ? bookacti_get_managers( 'activity', $activity_ids ) : array();
 
 	$activities_array = array();
 	foreach( $activities as $activity ) {
-		$activity[ 'settings' ] = isset( $activities_meta[ $activity[ 'id' ] ] ) ? $activities_meta[ $activity[ 'id' ] ] : array();
 		$activity[ 'multilingual_title' ] = $activity[ 'title' ];
-		$activity[ 'title' ]	= apply_filters( 'bookacti_translate_text', $activity[ 'title' ] );
+		$activity[ 'title' ]              = $activity[ 'title' ] ? apply_filters( 'bookacti_translate_text', $activity[ 'title' ] ) : '';
+		
+		$unit_name_singular = ! empty( $activity[ 'settings' ][ 'unit_name_singular' ] ) ? $activity[ 'settings' ][ 'unit_name_singular' ] : '';
+		$unit_name_plural   = ! empty( $activity[ 'settings' ][ 'unit_name_plural' ] )   ? $activity[ 'settings' ][ 'unit_name_plural' ] : '';
 
-		$unit_name_singular	= isset( $activity[ 'settings' ][ 'unit_name_singular' ] )	? $activity[ 'settings' ][ 'unit_name_singular' ] : '';
-		$unit_name_plural	= isset( $activity[ 'settings' ][ 'unit_name_plural' ] )	? $activity[ 'settings' ][ 'unit_name_plural' ] : '';
-
+		$activity[ 'settings' ] = isset( $activities_meta[ $activity[ 'id' ] ] ) ? $activities_meta[ $activity[ 'id' ] ] : array();
 		$activity[ 'settings' ][ 'multilingual_unit_name_singular' ] = $unit_name_singular;
-		$activity[ 'settings' ][ 'multilingual_unit_name_plural' ]	= $unit_name_plural;
-		$activity[ 'settings' ][ 'unit_name_singular' ] = apply_filters( 'bookacti_translate_text', $unit_name_singular );
-		$activity[ 'settings' ][ 'unit_name_plural' ]	= apply_filters( 'bookacti_translate_text', $unit_name_plural );
+		$activity[ 'settings' ][ 'multilingual_unit_name_plural' ]   = $unit_name_plural;
+		$activity[ 'settings' ][ 'unit_name_singular' ] = $unit_name_singular ? apply_filters( 'bookacti_translate_text', $unit_name_singular ) : '';
+		$activity[ 'settings' ][ 'unit_name_plural' ]   = $unit_name_plural   ? apply_filters( 'bookacti_translate_text', $unit_name_plural ) : '';
 
 		if( $retrieve_managers ) { 
 			$activity[ 'admin' ] = isset( $activities_managers[ $activity[ 'id' ] ] ) ? $activities_managers[ $activity[ 'id' ] ] : array();

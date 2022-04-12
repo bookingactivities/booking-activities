@@ -2,6 +2,162 @@
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
+// TEMPLATES
+
+/**
+ * AJAX Controller - Change default template
+ * @version	1.12.0
+ */
+function bookacti_controller_switch_template() {
+	$template_id = intval( $_POST[ 'template_id' ] );
+
+	// Check nonce and capabilities
+	$is_nonce_valid = check_ajax_referer( 'bookacti_edit_template', 'nonce', false );
+	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'switch_template' ); }
+
+	$is_allowed = current_user_can( 'bookacti_edit_templates' ) && bookacti_user_can_manage_template( $template_id );
+	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'switch_template' ); }
+	
+	$atts = isset( $_POST[ 'attributes' ] ) ? ( is_array( $_POST[ 'attributes' ] ) ? $_POST[ 'attributes' ] : ( is_string( $_POST[ 'attributes' ] ) ? bookacti_maybe_decode_json( stripslashes( $_POST[ 'attributes' ] ), true ) : array() ) ) : array();
+	$booking_system_data = bookacti_get_editor_booking_system_data( $atts, $template_id );
+	
+	$groups          = array( 'data' => $booking_system_data[ 'groups_data' ], 'groups' => $booking_system_data[ 'groups_events' ] );
+	$groups_list     = bookacti_get_template_groups_of_events_list( $booking_system_data[ 'group_categories_data' ], $groups, $template_id );
+	$activities_list = bookacti_get_template_activities_list( $booking_system_data[ 'activities_data' ], $template_id );
+	
+	// Update default template
+	update_user_meta( get_current_user_id(), 'bookacti_default_template', $template_id );
+	
+	bookacti_send_json( array(
+		'status'              => 'success',
+		'activities_list'     => $activities_list, 
+		'groups_list'         => $groups_list,
+		'booking_system_data' => $booking_system_data
+	), 'switch_template' );
+}
+add_action( 'wp_ajax_bookactiSwitchTemplate', 'bookacti_controller_switch_template' );
+
+
+/**
+ * AJAX Controller - Create a new template
+ * @version	1.13.0
+ */
+function bookacti_controller_insert_template() {
+	// Check nonce
+	$is_nonce_valid	= check_ajax_referer( 'bookacti_insert_or_update_template', 'nonce_insert_or_update_template', false );
+	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'insert_template' ); }
+	
+	// Check capabilities
+	$is_allowed = current_user_can( 'bookacti_create_templates' );
+	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'insert_template' ); }
+	
+	// Sanitize template data
+	$template_data = bookacti_sanitize_template_data( $_POST );
+	
+	// Validate template data
+	$is_valid = bookacti_validate_template_data( $template_data );
+	if( $is_valid[ 'status' ] !== 'success' ) { bookacti_send_json( array( 'status' => 'failed', 'error' => $is_valid[ 'errors' ] ), 'insert_template' ); }
+	
+	// Insert template
+	$template_id = bookacti_insert_template( $template_data );
+	if( ! $template_id ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_inserted' ), 'insert_template' ); }
+	
+	// Insert template metadata
+	$meta = array_intersect_key( $template_data, bookacti_get_template_default_meta() );
+	if( $meta ) { bookacti_insert_metadata( 'template', $template_id, $meta ); }
+	
+	// Insert template managers
+	if( $template_data[ 'managers' ] ) { bookacti_insert_managers( 'template', $template_id, $template_data[ 'managers' ] ); }
+	
+	// Duplicate template events and activities
+	if( ! empty( $template_data[ 'duplicated_template_id' ] ) ) {
+		bookacti_duplicate_template_events( $template_data[ 'duplicated_template_id' ], $template_id );
+		bookacti_duplicate_template_activities( $template_data[ 'duplicated_template_id' ], $template_id );
+	}
+	
+	do_action( 'bookacti_template_inserted', $template_id, $template_data );
+
+	bookacti_send_json( array( 'status' => 'success', 'template_id' => $template_id, 'template_data' => $template_data ), 'insert_template' );
+}
+add_action( 'wp_ajax_bookactiInsertTemplate', 'bookacti_controller_insert_template' );
+
+
+/**
+ * AJAX Controller - Update template
+ * @version	1.12.3
+ */
+function bookacti_controller_update_template() {
+	// Check nonce and capabilities
+	$is_nonce_valid = check_ajax_referer( 'bookacti_insert_or_update_template', 'nonce_insert_or_update_template', false );
+	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'update_template' ); }
+
+	// Sanitize template data
+	$template_data = bookacti_sanitize_template_data( $_POST );
+	$template_id = $template_data[ 'id' ];
+	
+	// Check capabilities
+	$is_allowed = current_user_can( 'bookacti_edit_templates' ) && bookacti_user_can_manage_template( $template_id );
+	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'update_template' ); }
+
+	// Validate template data
+	$is_valid = bookacti_validate_template_data( $template_data );
+	if( $is_valid[ 'status' ] !== 'success' ) { bookacti_send_json( array( 'status' => 'failed', 'error' => $is_valid[ 'errors' ] ), 'update_template' ); }
+	
+	// Update template data
+	$updated = bookacti_update_template( $template_data );
+	
+	// Update template meta
+	$meta = array_intersect_key( $template_data, bookacti_get_template_default_meta() );
+	if( $meta ) { 
+		$updated_meta = bookacti_update_metadata( 'template', $template_id, $meta );
+		if( is_numeric( $updated ) && is_numeric( $updated_meta ) ) { $updated += $updated_meta; }
+	}
+	
+	// Update template managers
+	$updated_managers = bookacti_update_managers( 'template', $template_id, $template_data[ 'managers' ] );
+	if( is_numeric( $updated ) && is_numeric( $updated_managers ) ) { $updated += $updated_managers; }
+	
+	// Check if the data has been updated
+	if( $updated === false ) {
+		bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_updated', 'template_data' => $template_data ), 'update_template' );
+	}
+	
+	$templates_data = bookacti_get_templates_data( $template_id, true );
+
+	do_action( 'bookacti_template_updated', $template_id, $templates_data[ $template_id ] );
+
+	bookacti_send_json( array( 'status' => 'success', 'template_data' => $templates_data[ $template_id ] ), 'update_template' );
+}
+add_action( 'wp_ajax_bookactiUpdateTemplate', 'bookacti_controller_update_template' );
+
+
+/**
+ * AJAX Controller - Deactivate a template
+ * @version 1.12.0
+ */
+function bookacti_controller_deactivate_template() {
+	$template_id = intval( $_POST[ 'template_id' ] );
+
+	// Check nonce
+	$is_nonce_valid = check_ajax_referer( 'bookacti_edit_template', 'nonce', false );
+	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'deactivate_template' ); }
+	
+	// Check capabilities
+	$is_allowed = current_user_can( 'bookacti_delete_templates' ) && bookacti_user_can_manage_template( $template_id );
+	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'deactivate_template' ); }
+
+	$deactivated = bookacti_deactivate_template( $template_id );
+	if( ! $deactivated ) { bookacti_send_json( array( 'status' => 'failed' ), 'deactivate_template' ); } 
+
+	do_action( 'bookacti_template_deactivated', $template_id );
+
+	bookacti_send_json( array( 'status' => 'success' ), 'deactivate_template' );
+}
+add_action( 'wp_ajax_bookactiDeactivateTemplate', 'bookacti_controller_deactivate_template' );
+
+
+
+
 // EVENTS
 
 /**
@@ -81,7 +237,7 @@ add_action( 'wp_ajax_bookactiInsertEvent', 'bookacti_controller_insert_event' );
 /**
  * AJAX Controller - Update event dates (move or resize an event in the editor)
  * @since 1.10.0 (was bookacti_controller_move_or_resize_event)
- * @version 1.13.0
+ * @version 1.14.0
  */
 function bookacti_controller_update_event_dates() {
 	// Check nonce
@@ -106,18 +262,24 @@ function bookacti_controller_update_event_dates() {
 	$now_dt = new DateTime( 'now', new DateTimeZone( $timezone ) );
 	
 	// Sanitize new event data
-	$new_event_start	= bookacti_sanitize_datetime( $_POST[ 'event_start' ] );
-	$new_event_end		= bookacti_sanitize_datetime( $_POST[ 'event_end' ] );
+	$old_event_start = bookacti_sanitize_datetime( $_POST[ 'old_event_start' ] );
+	$old_event_end   = bookacti_sanitize_datetime( $_POST[ 'old_event_end' ] );
+	$new_event_start = bookacti_sanitize_datetime( $_POST[ 'event_start' ] );
+	$new_event_end   = bookacti_sanitize_datetime( $_POST[ 'event_end' ] );
 	
 	// Compute delta
-	$delta_days		= ! empty( $_POST[ 'delta_days' ] ) ? intval( $_POST[ 'delta_days' ] ) : 0;
-	$delta_days_di	= new DateInterval( 'P' . abs( $delta_days ). 'D' );
-	$delta_days_di->invert = $delta_days < 0 ? 1 : 0;
-	$old_event_start_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $old_event->start, new DateTimeZone( $timezone ) );
-	$new_event_start_dt = clone $old_event_start_dt;
-	$new_event_start_dt->add( $delta_days_di );
-	$new_event_start_dt->setTime( substr( $new_event_start, 11, 2 ), substr( $new_event_start, 14, 2 ), substr( $new_event_start, 17, 2 ) );
-	$delta_seconds = $new_event_start_dt->format( 'U' ) - $old_event_start_dt->format( 'U' );
+	$old_event_start_dt  = DateTime::createFromFormat( 'Y-m-d H:i:s', $old_event_start, new DateTimeZone( $timezone ) );
+	$old_event_end_dt    = DateTime::createFromFormat( 'Y-m-d H:i:s', $old_event_end, new DateTimeZone( $timezone ) );
+	$new_event_start_dt  = DateTime::createFromFormat( 'Y-m-d H:i:s', $new_event_start, new DateTimeZone( $timezone ) );
+	$new_event_end_dt    = DateTime::createFromFormat( 'Y-m-d H:i:s', $new_event_end, new DateTimeZone( $timezone ) );
+	
+	$delta_seconds_start = $new_event_start_dt->format( 'U' ) - $old_event_start_dt->format( 'U' );
+	$delta_seconds_end   = $new_event_end_dt->format( 'U' ) - $old_event_end_dt->format( 'U' );
+	
+	$delta_start_di      = date_diff( new DateTime( $old_event_end_dt->format( 'Y-m-d' ) ), new DateTime( $new_event_start_dt->format( 'Y-m-d' ) ) );
+	$delta_days_start    = intval( $delta_start_di->format( '%r%a' ) );
+	$delta_days_start_di = new DateInterval( 'P' . abs( $delta_days_start ). 'D' );
+	$delta_days_start_di->invert = $delta_days_start < 0 ? 1 : 0;
 	
 	// Get the event's occurrences
 	$occurrences = bookacti_get_occurrences_of_repeated_event( $old_event, array( 'past_events' => 1 ) );
@@ -148,12 +310,11 @@ function bookacti_controller_update_event_dates() {
 		if( $old_event->repeat_freq && $old_event->repeat_freq !== 'none' ) {
 			// Compute new booking start
 			$new_booking_start_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $old_booking->event_start, new DateTimeZone( $timezone ) );
-			$new_booking_start_dt->add( $delta_days_di );
-			$new_booking_start_dt->setTime( substr( $new_event_start, 11, 2 ), substr( $new_event_start, 14, 2 ), substr( $new_event_start, 17, 2 ) );
+			$new_booking_start_dt->add( new DateInterval( 'PT' . $delta_seconds_start . 'S' ) );
 			if( $new_booking_start_dt <= $now_dt ) { $send = false; }
 		}
 		
-		$send = apply_filters( 'bookacti_send_event_rescheduled_notification_count', $send, $old_booking, $old_event, $delta_seconds );
+		$send = apply_filters( 'bookacti_send_event_rescheduled_notification_count', $send, $old_booking, $old_event, $delta_seconds_start, $delta_seconds_end );
 		if( $send ) { ++$notifications_nb; }
 	}
 	
@@ -168,9 +329,9 @@ function bookacti_controller_update_event_dates() {
 	$repeat_from_dt	= $old_event->repeat_from && $old_event->repeat_freq && $old_event->repeat_freq !== 'none' ? DateTime::createFromFormat( 'Y-m-d', $old_event->repeat_from ) : false;
 	$repeat_to_dt	= $old_event->repeat_to && $old_event->repeat_freq && $old_event->repeat_freq !== 'none' ? DateTime::createFromFormat( 'Y-m-d', $old_event->repeat_to ) : false;
 	
-	if( $repeat_from_dt && $repeat_to_dt && $delta_days !== 0 ) { 
-		$repeat_from_dt->add( $delta_days_di ); 
-		$repeat_to_dt->add( $delta_days_di );
+	if( $repeat_from_dt && $repeat_to_dt && $delta_days_start !== 0 ) { 
+		$repeat_from_dt->add( $delta_days_start_di );
+		$repeat_to_dt->add( $delta_days_start_di );
 	}
 	
 	$new_event_repeat_from	= $repeat_from_dt ? $repeat_from_dt->format( 'Y-m-d' ) : 'null';
@@ -185,27 +346,25 @@ function bookacti_controller_update_event_dates() {
 	if( $updated === 0 )	{ bookacti_send_json( array( 'status' => 'no_changes' ), 'update_event_dates' ); }
 	
 	$new_event = (object) $event_data;
-	$new_event_start_time = substr( $new_event->start, 11, 8 );
-	$new_event_end_time	= substr( $new_event->end, 11, 8 );
 	
 	// Maybe update grouped events if the event belong to a group
-	bookacti_shift_grouped_event_dates( $event_id, $delta_seconds, $new_event_start_time, $new_event_end_time );
+	bookacti_shift_grouped_event_dates( $event_id, $delta_seconds_start, $delta_seconds_end );
 
 	// Maybe update bookings
 	if( $bookings_to_reschedule ) {
-		bookacti_shift_bookings_dates( array_keys( $bookings_to_reschedule ), $delta_seconds, $new_event_start_time, $new_event_end_time );
+		bookacti_shift_bookings_dates( array_keys( $bookings_to_reschedule ), $delta_seconds_start, $delta_seconds_end );
 	}
 	
 	// Maybe send notifications
 	if( $forced_update && $send_notifications && $bookings_to_reschedule ) {
-		bookacti_send_event_rescheduled_notifications( $old_event, $bookings_to_reschedule, $delta_seconds );
+		bookacti_send_event_rescheduled_notifications( $old_event, $bookings_to_reschedule, $delta_seconds_start, $delta_seconds_end );
 	}
 
 	// Fetch new events
 	$interval = ! empty( $_POST[ 'interval' ] ) ? bookacti_sanitize_events_interval( $_POST[ 'interval' ] ) : array();
 	$events = bookacti_fetch_events_for_calendar_editor( array( 'events' => array( $event_id ), 'interval' => $interval ) );
 	
-	do_action( 'bookacti_event_dates_updated', $old_event, $new_event, $delta_days, $events );
+	do_action( 'bookacti_event_dates_updated', $old_event, $new_event, $events );
 
 	bookacti_send_json( array( 
 		'status' => 'success', 
@@ -404,7 +563,7 @@ add_action( 'wp_ajax_bookactiBeforeDeleteEvent', 'bookacti_controller_before_del
 
 /**
  * AJAX Controller - Delete an event if it doesn't have bookings
- * @version 1.13.0
+ * @version 1.14.0
  */
 function bookacti_controller_delete_event() {
 	// Check nonce
@@ -437,12 +596,9 @@ function bookacti_controller_delete_event() {
 	if( $cancel_bookings ) {
 		$old_bookings = bookacti_get_removed_event_bookings_to_cancel( $event );
 		if( $old_bookings ) {
-			bookacti_cancel_event_bookings( $event_id, array( 'in__booking_id' => array_keys( $old_bookings ) ) );
-
+			$cancelled = bookacti_cancel_event_bookings( $event_id, array( 'in__booking_id' => array_keys( $old_bookings ), 'from' => '' ) );
 			// Maybe send notifications
-			if( $send_notifications ) {
-				bookacti_send_event_cancelled_notifications( $event, $old_bookings );
-			}
+			bookacti_maybe_send_event_cancelled_notifications( $event, $old_bookings, $send_notifications );
 		}
 	}
 	
@@ -1019,162 +1175,6 @@ function bookacti_controller_delete_group_category() {
 	bookacti_send_json( array( 'status' => 'success' ), 'delete_group_category' );
 }
 add_action( 'wp_ajax_bookactiDeleteGroupCategory', 'bookacti_controller_delete_group_category' );
-
-
-
-
-// TEMPLATES
-
-/**
- * AJAX Controller - Create a new template
- * @version	1.13.0
- */
-function bookacti_controller_insert_template() {
-	// Check nonce
-	$is_nonce_valid	= check_ajax_referer( 'bookacti_insert_or_update_template', 'nonce_insert_or_update_template', false );
-	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'insert_template' ); }
-	
-	// Check capabilities
-	$is_allowed = current_user_can( 'bookacti_create_templates' );
-	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'insert_template' ); }
-	
-	// Sanitize template data
-	$template_data = bookacti_sanitize_template_data( $_POST );
-	
-	// Validate template data
-	$is_valid = bookacti_validate_template_data( $template_data );
-	if( $is_valid[ 'status' ] !== 'success' ) { bookacti_send_json( array( 'status' => 'failed', 'error' => $is_valid[ 'errors' ] ), 'insert_template' ); }
-	
-	// Insert template
-	$template_id = bookacti_insert_template( $template_data );
-	if( ! $template_id ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_inserted' ), 'insert_template' ); }
-	
-	// Insert template metadata
-	$meta = array_intersect_key( $template_data, bookacti_get_template_default_meta() );
-	if( $meta ) { bookacti_insert_metadata( 'template', $template_id, $meta ); }
-	
-	// Insert template managers
-	if( $template_data[ 'managers' ] ) { bookacti_insert_managers( 'template', $template_id, $template_data[ 'managers' ] ); }
-	
-	// Duplicate template events and activities
-	if( ! empty( $template_data[ 'duplicated_template_id' ] ) ) {
-		bookacti_duplicate_template_events( $template_data[ 'duplicated_template_id' ], $template_id );
-		bookacti_duplicate_template_activities( $template_data[ 'duplicated_template_id' ], $template_id );
-	}
-	
-	do_action( 'bookacti_template_inserted', $template_id, $template_data );
-
-	bookacti_send_json( array( 'status' => 'success', 'template_id' => $template_id, 'template_data' => $template_data ), 'insert_template' );
-}
-add_action( 'wp_ajax_bookactiInsertTemplate', 'bookacti_controller_insert_template' );
-
-
-/**
- * AJAX Controller - Update template
- * @version	1.12.3
- */
-function bookacti_controller_update_template() {
-	// Check nonce and capabilities
-	$is_nonce_valid = check_ajax_referer( 'bookacti_insert_or_update_template', 'nonce_insert_or_update_template', false );
-	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'update_template' ); }
-
-	// Sanitize template data
-	$template_data = bookacti_sanitize_template_data( $_POST );
-	$template_id = $template_data[ 'id' ];
-	
-	// Check capabilities
-	$is_allowed = current_user_can( 'bookacti_edit_templates' ) && bookacti_user_can_manage_template( $template_id );
-	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'update_template' ); }
-
-	// Validate template data
-	$is_valid = bookacti_validate_template_data( $template_data );
-	if( $is_valid[ 'status' ] !== 'success' ) { bookacti_send_json( array( 'status' => 'failed', 'error' => $is_valid[ 'errors' ] ), 'update_template' ); }
-	
-	// Update template data
-	$updated = bookacti_update_template( $template_data );
-	
-	// Update template meta
-	$meta = array_intersect_key( $template_data, bookacti_get_template_default_meta() );
-	if( $meta ) { 
-		$updated_meta = bookacti_update_metadata( 'template', $template_id, $meta );
-		if( is_numeric( $updated ) && is_numeric( $updated_meta ) ) { $updated += $updated_meta; }
-	}
-	
-	// Update template managers
-	$updated_managers = bookacti_update_managers( 'template', $template_id, $template_data[ 'managers' ] );
-	if( is_numeric( $updated ) && is_numeric( $updated_managers ) ) { $updated += $updated_managers; }
-	
-	// Check if the data has been updated
-	if( $updated === false ) {
-		bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_updated', 'template_data' => $template_data ), 'update_template' );
-	}
-	
-	$templates_data = bookacti_get_templates_data( $template_id, true );
-
-	do_action( 'bookacti_template_updated', $template_id, $templates_data[ $template_id ] );
-
-	bookacti_send_json( array( 'status' => 'success', 'template_data' => $templates_data[ $template_id ] ), 'update_template' );
-}
-add_action( 'wp_ajax_bookactiUpdateTemplate', 'bookacti_controller_update_template' );
-
-
-/**
- * AJAX Controller - Deactivate a template
- * @version 1.12.0
- */
-function bookacti_controller_deactivate_template() {
-	$template_id = intval( $_POST[ 'template_id' ] );
-
-	// Check nonce
-	$is_nonce_valid = check_ajax_referer( 'bookacti_edit_template', 'nonce', false );
-	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'deactivate_template' ); }
-	
-	// Check capabilities
-	$is_allowed = current_user_can( 'bookacti_delete_templates' ) && bookacti_user_can_manage_template( $template_id );
-	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'deactivate_template' ); }
-
-	$deactivated = bookacti_deactivate_template( $template_id );
-	if( ! $deactivated ) { bookacti_send_json( array( 'status' => 'failed' ), 'deactivate_template' ); } 
-
-	do_action( 'bookacti_template_deactivated', $template_id );
-
-	bookacti_send_json( array( 'status' => 'success' ), 'deactivate_template' );
-}
-add_action( 'wp_ajax_bookactiDeactivateTemplate', 'bookacti_controller_deactivate_template' );
-
-
-/**
- * AJAX Controller - Change default template
- * @version	1.12.0
- */
-function bookacti_controller_switch_template() {
-	$template_id = intval( $_POST[ 'template_id' ] );
-
-	// Check nonce and capabilities
-	$is_nonce_valid = check_ajax_referer( 'bookacti_edit_template', 'nonce', false );
-	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'switch_template' ); }
-
-	$is_allowed = current_user_can( 'bookacti_edit_templates' ) && bookacti_user_can_manage_template( $template_id );
-	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'switch_template' ); }
-	
-	$atts = isset( $_POST[ 'attributes' ] ) ? ( is_array( $_POST[ 'attributes' ] ) ? $_POST[ 'attributes' ] : ( is_string( $_POST[ 'attributes' ] ) ? bookacti_maybe_decode_json( stripslashes( $_POST[ 'attributes' ] ), true ) : array() ) ) : array();
-	$booking_system_data = bookacti_get_editor_booking_system_data( $atts, $template_id );
-	
-	$groups			= array( 'data' => $booking_system_data[ 'groups_data' ], 'groups' => $booking_system_data[ 'groups_events' ] );
-	$groups_list	= bookacti_get_template_groups_of_events_list( $booking_system_data[ 'group_categories_data' ], $groups, $template_id );
-	$activities_list= bookacti_get_template_activities_list( $booking_system_data[ 'activities_data' ], $template_id );
-	
-	// Update default template
-	update_user_meta( get_current_user_id(), 'bookacti_default_template', $template_id );
-	
-	bookacti_send_json( array(
-		'status'				=> 'success',
-		'activities_list'		=> $activities_list, 
-		'groups_list'			=> $groups_list,
-		'booking_system_data'	=> $booking_system_data
-	), 'switch_template' );
-}
-add_action( 'wp_ajax_bookactiSwitchTemplate', 'bookacti_controller_switch_template' );
 
 
 

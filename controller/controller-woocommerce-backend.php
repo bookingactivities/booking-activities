@@ -261,20 +261,19 @@ add_filter( 'bookacti_bypass_form_managers_check', 'bookacti_bypass_checks_for_s
 
 /**
  * Add 'Activity' custom product type option
- * @version 1.12.0
+ * @version 1.14.0
  * @param array $options_array
  * @return array
  */
 function bookacti_add_product_type_option( $options_array ) { 
 	$options_array[ 'bookacti_is_activity' ] = array(
-			'id'            => '_bookacti_is_activity',
-			'wrapper_class' => 'show_if_simple',
-			'label'         => esc_html__( 'Activity', 'booking-activities' ),
-			/* translators: Description of the 'Activity' type of product in WooCommerce */
-			'description'   => esc_html__( 'Activities are bookable according to the defined calendar, and expire in cart.', 'booking-activities' ),
-			'default'       => 'no'
-		);
-
+		'id'            => '_bookacti_is_activity',
+		'wrapper_class' => 'hide_if_grouped hide_if_external hide_if_variable',
+		'label'         => esc_html__( 'Activity', 'booking-activities' ),
+		/* translators: Description of the 'Activity' type of product in WooCommerce */
+		'description'   => esc_html__( 'Activities are bookable according to the defined calendar, and expire in cart.', 'booking-activities' ),
+		'default'       => 'no'
+	);
 	return $options_array; 
 }
 add_filter( 'product_type_options', 'bookacti_add_product_type_option', 100, 1 ); 
@@ -301,7 +300,7 @@ add_filter( 'woocommerce_product_data_tabs', 'bookacti_create_activity_tab', 10,
 
 /**
  * Content of the activity tab
- * @version 1.12.3
+ * @version 1.14.0
  * @global int $thepostid
  */
 function bookacti_activity_tab_content() {
@@ -310,10 +309,10 @@ function bookacti_activity_tab_content() {
 	<div id='bookacti_activity_options' class='panel woocommerce_options_panel'>
 		<div class='options_group'>
 			<?php
-				$form_id		= '_bookacti_form'; 
-				$forms			= bookacti_get_forms( bookacti_format_form_filters( array( 'active' => 1 ) ) );
-				$current_form	= get_post_meta( $thepostid, $form_id, true );
-				$can_edit_forms	= current_user_can( 'bookacti_edit_forms' );
+				$form_id        = '_bookacti_form'; 
+				$forms          = bookacti_get_forms( bookacti_format_form_filters( array( 'active' => 1 ) ) );
+				$current_form   = get_post_meta( $thepostid, $form_id, true );
+				$can_edit_forms = current_user_can( 'bookacti_edit_forms' );
 			?>
 			<p class='form-field <?php echo $form_id; ?>_field' >
 				<label for='<?php echo $form_id; ?>'>
@@ -333,7 +332,7 @@ function bookacti_activity_tab_content() {
 						++$forms_nb;
 						?>
 						<option value='<?php echo esc_attr( $form->id ); ?>' <?php echo selected( $form->id, $current_form, true ); ?>>
-							<?php echo esc_html( apply_filters( 'bookacti_translate_text', $form->title ) ); ?>
+							<?php echo ! empty( $form->title ) ? esc_html( apply_filters( 'bookacti_translate_text', $form->title ) ) : ''; ?>
 						</option>
 						<?php
 					}
@@ -421,16 +420,16 @@ add_action( 'woocommerce_variation_options', 'bookacti_add_variation_option', 10
 
 /**
  * Add custom fields for activity variation product type
- * @version 1.12.3
+ * @version 1.14.0
  * @param int $loop
  * @param array $variation_data
  * @param WP_Post $variation
  */
 function bookacti_add_variation_fields( $loop, $variation_data, $variation ) { 
-	$form_id		= 'bookacti_variable_form'; 
-	$forms			= bookacti_get_forms( bookacti_format_form_filters( array( 'active' => 1 ) ) );
-	$current_form	= get_post_meta( $variation->ID, $form_id, true );
-	$can_edit_forms	= current_user_can( 'bookacti_edit_forms' );
+	$form_id        = 'bookacti_variable_form'; 
+	$forms          = bookacti_get_forms( bookacti_format_form_filters( array( 'active' => 1 ) ) );
+	$current_form   = get_post_meta( $variation->ID, $form_id, true );
+	$can_edit_forms = current_user_can( 'bookacti_edit_forms' );
 
 	// Check if variation is flagged as activity
 	$is_variation_activity = get_post_meta( $variation->ID, 'bookacti_variable_is_activity', true );
@@ -455,7 +454,7 @@ function bookacti_add_variation_fields( $loop, $variation_data, $variation ) {
 					++$forms_nb;
 					?>
 					<option value='<?php echo esc_attr( $form->id ); ?>' <?php echo selected( $form->id, $current_form, true ); ?>>
-						<?php echo esc_html( apply_filters( 'bookacti_translate_text', $form->title ) ); ?>
+						<?php echo ! empty( $form->title ) ? esc_html( apply_filters( 'bookacti_translate_text', $form->title ) ) : ''; ?>
 					</option>
 					<?php
 				}

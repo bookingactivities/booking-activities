@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking list page
- * @version 1.11.3
+ * @version 1.14.0
  */
 
 // Exit if accessed directly
@@ -105,7 +105,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						$activities = bookacti_fetch_activities_with_templates_association( $available_template_ids );
 						$activities_select_options = array();
 						foreach ( $activities as $activity_id => $activity ) {
-							$activities_select_options[ $activity_id ] = esc_html( apply_filters( 'bookacti_translate_text', $activity[ 'title' ] ) );
+							$activities_select_options[ $activity_id ] = ! empty( $activity[ 'title' ] ) ? esc_html( apply_filters( 'bookacti_translate_text', $activity[ 'title' ] ) ) : '';
 						}
 						$selected_activities = isset( $_REQUEST[ 'activities' ] ) ? $_REQUEST[ 'activities' ] : array();
 						$args = array(

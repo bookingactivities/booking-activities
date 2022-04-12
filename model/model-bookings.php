@@ -1519,7 +1519,7 @@ function bookacti_cancel_event_bookings( $event_id, $filters = array() ) {
 	
 	$query		= $wpdb->prepare( $query, $variables );
 	$cancelled	= $wpdb->query( $query );
-
+	
 	return $cancelled;
 }
 
@@ -1809,23 +1809,22 @@ function bookacti_delete_booking( $booking_id ) {
 
 /**
  * Update specific bookings dates with a relative amount of seconds
- * @version 1.10.0
+ * @version 1.14.0
  * @global wpdb $wpdb
  * @param array $booking_ids
- * @param int $delta_seconds
- * @param string $event_start_time Set a fixed start time (H:i:s). Empty string to use the current start time.
- * @param string $event_end_time Set a fixed end time (H:i:s). Empty string to use the current end time.
+ * @param int $delta_seconds_start
+ * @param int $delta_seconds_end
  * @return int|false
  */
-function bookacti_shift_bookings_dates( $booking_ids, $delta_seconds = 0, $event_start_time = '', $event_end_time = '' ) {
+function bookacti_shift_bookings_dates( $booking_ids, $delta_seconds_start = 0, $delta_seconds_end = 0 ) {
 	global $wpdb;
 
 	$query	= 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS
-			. ' SET  event_start = IF( %s = "", DATE_ADD( event_start, INTERVAL %d SECOND ), CONCAT( DATE( DATE_ADD( event_start, INTERVAL %d SECOND ) ), " ", %s ) ), '
-				.  ' event_end = IF( %s = "", DATE_ADD( event_end, INTERVAL %d SECOND ), CONCAT( DATE( DATE_ADD( event_end, INTERVAL %d SECOND ) ), " ", %s ) ) '
+			. ' SET  event_start = DATE_ADD( event_start, INTERVAL %d SECOND ), '
+				.  ' event_end = DATE_ADD( event_end, INTERVAL %d SECOND ) '
 			. ' WHERE id IN ( ';
 	
-	$variables = array( $event_start_time, $delta_seconds, $delta_seconds, $event_start_time, $event_end_time, $delta_seconds, $delta_seconds, $event_end_time );
+	$variables = array( $delta_seconds_start, $delta_seconds_end );
 	
 	if( $booking_ids ) {
 		$query .= '%d';

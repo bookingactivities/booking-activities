@@ -12,17 +12,18 @@ if( ! isset( $GLOBALS[ 'global_bookacti_wc' ] ) ) { $GLOBALS[ 'global_bookacti_w
 
 /**
  * Add woocommerce related translations
- * @version 1.12.4
+ * @version 1.14.0
  * @param array $translation_array
+ * @param array $messages
  * @return array
  */
-function bookacti_woocommerce_translation_array( $translation_array ) {
+function bookacti_woocommerce_translation_array( $translation_array, $messages ) {
 	$translation_array[ 'expired' ]							= esc_html__( 'expired', 'booking-activities' );
 	$translation_array[ 'days' ]							= esc_html__( 'days', 'booking-activities' );
 	$translation_array[ 'day' ]								= esc_html_x( 'day', 'singular of days','booking-activities' );
 	$translation_array[ 'error_cart_expired' ]				= esc_html__( 'Your cart has expired.', 'booking-activities' );
 	$translation_array[ 'add_product_to_cart_button_text' ]	= esc_html__( 'Add to cart', 'woocommerce' );
-	$translation_array[ 'add_booking_to_cart_button_text' ]	= bookacti_get_message( 'booking_form_submit_button' );
+	$translation_array[ 'add_booking_to_cart_button_text' ]	= $messages[ 'booking_form_submit_button' ][ 'value' ];
 	$translation_array[ 'price_format' ]					= str_replace( array( '%1$s', '%2$s' ), array( get_woocommerce_currency_symbol(), '{price}' ), get_woocommerce_price_format() );
 	$translation_array[ 'price_thousand_separator' ]		= wc_get_price_thousand_separator();
 	$translation_array[ 'price_decimal_separator' ]			= wc_get_price_decimal_separator();
@@ -34,7 +35,7 @@ function bookacti_woocommerce_translation_array( $translation_array ) {
 
 	return $translation_array;
 }
-add_filter( 'bookacti_translation_array', 'bookacti_woocommerce_translation_array', 10, 1 );
+add_filter( 'bookacti_translation_array', 'bookacti_woocommerce_translation_array', 10, 2 );
 
 
 /**
@@ -1659,7 +1660,7 @@ add_filter( 'bookacti_user_booking_list_default_columns', 'bookacti_reorder_wooc
 /**
  * Add WC data to the user booking list
  * @since 1.7.12 (was bookacti_fill_wc_price_column_in_booking_list)
- * @version 1.12.3
+ * @version 1.14.0
  * @param array $booking_list_items
  * @param array $bookings
  * @param array $booking_groups
@@ -1688,10 +1689,10 @@ function bookacti_add_wc_data_to_user_booking_list_items( $booking_list_items, $
 		if( empty( $users[ $booking_list_item[ 'customer_id' ] ] ) ) { continue; }
 		$user = $users[ $booking_list_item[ 'customer_id' ] ];
 		if( $user ) {
-			if( ! empty( $user->billing_first_name ) && ( $booking_list_item[ 'order_id' ] || empty( $booking_list_item[ 'customer_first_name' ] ) ) )	{ $booking_list_items[ $booking_id ][ 'customer_first_name' ] = $user->billing_first_name; }
-			if( ! empty( $user->billing_last_name ) && ( $booking_list_item[ 'order_id' ] || empty( $booking_list_item[ 'customer_last_name' ] ) ) )	{ $booking_list_items[ $booking_id ][ 'customer_last_name' ] = $user->billing_last_name; }
-			if( ! empty( $user->billing_email ) && ( $booking_list_item[ 'order_id' ] || empty( $booking_list_item[ 'customer_email' ] ) ) )			{ $booking_list_items[ $booking_id ][ 'customer_email' ] = $user->billing_email; }
-			if( ! empty( $user->billing_phone ) && ( $booking_list_item[ 'order_id' ] || empty( $booking_list_item[ 'customer_phone' ] ) ) )			{ $booking_list_items[ $booking_id ][ 'customer_phone' ] = $user->billing_phone; }
+			if( ! empty( $user->billing_first_name ) && ( $booking_list_item[ 'order_id' ] || empty( $booking_list_item[ 'customer_first_name' ] ) ) ) { $booking_list_items[ $booking_id ][ 'customer_first_name' ] = $user->billing_first_name; }
+			if( ! empty( $user->billing_last_name )  && ( $booking_list_item[ 'order_id' ] || empty( $booking_list_item[ 'customer_last_name' ] ) ) )  { $booking_list_items[ $booking_id ][ 'customer_last_name' ]  = $user->billing_last_name; }
+			if( ! empty( $user->billing_email )      && ( $booking_list_item[ 'order_id' ] || empty( $booking_list_item[ 'customer_email' ] ) ) )      { $booking_list_items[ $booking_id ][ 'customer_email' ]      = $user->billing_email; }
+			if( ! empty( $user->billing_phone )      && ( $booking_list_item[ 'order_id' ] || empty( $booking_list_item[ 'customer_phone' ] ) ) )      { $booking_list_items[ $booking_id ][ 'customer_phone' ]      = $user->billing_phone; }
 		}
 	}
 
@@ -1737,9 +1738,10 @@ function bookacti_add_wc_data_to_user_booking_list_items( $booking_list_items, $
 
 			// Fill product column
 			$product_id = intval( $order_item->get_product_id() );
-			$product_title = $order_item->get_name();
-			$booking_list_items[ $booking_id ][ 'product_id' ]		= $product_id ? $product_id : '';
-			$booking_list_items[ $booking_id ][ 'product_title' ]	= $product_title ? apply_filters( 'bookacti_translate_text', $product_title ) : '';
+			$order_id = $order_item->get_order_id();
+			$order_item_title = $order_item->get_name();
+			$booking_list_items[ $booking_id ][ 'product_id' ]    = $product_id ? $product_id : '';
+			$booking_list_items[ $booking_id ][ 'product_title' ] = $order_item_title !== '' ? apply_filters( 'bookacti_translate_text_external', $order_item_title, false, true, array( 'domain' => 'woocommerce', 'object_type' => 'order_item', 'object_id' => $order_item_id, 'field' => 'title', 'order_id' => $order_id ) ) : $order_item_title;
 
 			// Fill price column
 			$order_item_total = $order_item->get_total() + $order_item->get_total_tax();
@@ -1777,10 +1779,9 @@ function bookacti_add_wc_data_to_user_booking_list_items( $booking_list_items, $
 			}
 
 			// Filter refund actions
-			$order_id = $order_item->get_order_id();
 			if( ! empty( $booking_list_items[ $booking_id ][ 'actions' ][ 'refund' ] ) && ! empty( $orders[ $order_id ] ) ) {
-				$order		= $orders[ $order_id ];
-				$is_paid	= $order->get_date_paid( 'edit' );
+				$order   = $orders[ $order_id ];
+				$is_paid = $order->get_date_paid( 'edit' );
 
 				if( $order->get_status() === 'pending' || ! $is_paid || $order_item_total <= 0 ) {
 					$booking_list_items[ $booking_id ][ 'refund_actions' ] = array_diff_key( $booking_list_items[ $booking_id ][ 'refund_actions' ], $wc_refund_actions );
@@ -1812,7 +1813,7 @@ add_action( 'bookacti_activate', 'bookacti_add_bookings_endpoint', 10 );
 /**
  * Set the Bookings page title in WC account
  * @since 1.8.9
- * @version 1.9.0
+ * @version 1.14.0
  * @global WP_Query $wp_query
  * @param string $title
  * @param int $post_id
@@ -1823,7 +1824,6 @@ function bookacti_wc_account_bookings_page_title( $title, $post_id = null ) {
 	$is_endpoint = isset( $wp_query->query_vars[ 'bookings' ] );
 	if( $is_endpoint && ! is_admin() && is_main_query() && in_the_loop() && is_account_page() ) {
 		$title = esc_html__( 'Bookings', 'booking-activities' );
-		remove_filter( 'the_title', 'bookacti_wc_account_menu_items_page_title', 10 );
 	}
 	return $title;
 }
@@ -1871,7 +1871,7 @@ add_filter( 'woocommerce_account_menu_items', 'bookacti_add_bookings_tab_to_my_a
 /**
  * Display the content of the "Bookings" tab in My Account
  * @since 1.7.16
- * @version 1.8.0
+ * @version 1.14.0
  */
 function bookacti_display_my_account_bookings_tab_content() {
 	$page_id = intval( bookacti_get_setting_value( 'bookacti_account_settings', 'wc_my_account_bookings_page_id' ) );
@@ -1879,8 +1879,8 @@ function bookacti_display_my_account_bookings_tab_content() {
 		echo do_shortcode( '[bookingactivities_list]' );
 	} else if( $page_id > 0 ) {
 		$page = get_page( $page_id );
-		if( $page && isset( $page->post_content ) ) {
-			echo apply_filters( 'the_content', apply_filters( 'bookacti_translate_text', $page->post_content ) );
+		if( $page && ! empty( $page->post_content ) ) {
+			echo apply_filters( 'the_content', apply_filters( 'bookacti_translate_text_external', $page->post_content, false, true, array( 'domain' => 'wordpress', 'object_type' => 'page', 'object_id' => $page_id, 'field' => 'post_content' ) ) );
 		}
 	}
 }

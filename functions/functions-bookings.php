@@ -16,21 +16,21 @@ function bookacti_sanitize_booking_data( $data_raw ) {
 	$default_payment_status = bookacti_get_setting_value( 'bookacti_general_settings', 'default_payment_status' );
 	$active_status = bookacti_get_active_booking_states();
 	$default = array( 
-		'id'				=> 0,
-		'user_id'			=> 0,
-		'form_id'			=> 0,
-		'order_id'			=> 0,
-		'group_id'			=> 0,
-		'activity_id'		=> 0,
-		'event_id'			=> 0,
-		'event_start'		=> '',
-		'event_end'			=> '',
-		'quantity'			=> 0,
-		'status'			=> '', 
-		'payment_status'	=> '',
-		'expiration_date'	=> '',
-		'creation_date'		=> '',
-		'active'			=> -1
+		'id'              => 0,
+		'user_id'         => 0,
+		'form_id'         => 0,
+		'order_id'        => 0,
+		'group_id'        => 0,
+		'activity_id'     => 0,
+		'event_id'        => 0,
+		'event_start'     => '',
+		'event_end'       => '',
+		'quantity'        => 0,
+		'status'          => '', 
+		'payment_status'  => '',
+		'expiration_date' => '',
+		'creation_date'   => '',
+		'active'          => -1
 	);
 	
 	$sanitized = array();
@@ -83,20 +83,20 @@ function bookacti_sanitize_booking_group_data( $data_raw ) {
 	$default_payment_status = bookacti_get_setting_value( 'bookacti_general_settings', 'default_payment_status' );
 	$active_status = bookacti_get_active_booking_states();
 	$default = array( 
-		'id'				=> 0,
-		'group_date'		=> '',
-		'user_id'			=> 0,
-		'form_id'			=> 0,
-		'order_id'			=> 0,
-		'category_id'		=> 0,
-		'event_group_id'	=> 0,
-		'grouped_events'	=> array(),
-		'quantity'			=> 0,
-		'status'			=> '', 
-		'payment_status'	=> '',
-		'expiration_date'	=> '',
-		'creation_date'		=> '',
-		'active'			=> -1
+		'id'              => 0,
+		'group_date'      => '',
+		'user_id'         => 0,
+		'form_id'         => 0,
+		'order_id'        => 0,
+		'category_id'     => 0,
+		'event_group_id'  => 0,
+		'grouped_events'  => array(),
+		'quantity'        => 0,
+		'status'          => '', 
+		'payment_status'  => '',
+		'expiration_date' => '',
+		'creation_date'   => '',
+		'active'          => -1
 	);
 	
 	$sanitized = array();
@@ -226,7 +226,7 @@ function bookacti_is_booking_in_delay( $booking, $context = '' ) {
 
 /**
  * Return the HTML code to display activities by templates in the bookings page
- * @version 1.8.9
+ * @version 1.14.0
  * @param array $template_ids
  * @param array $activity_ids
  * @return string
@@ -239,21 +239,21 @@ function bookacti_get_activities_html_for_booking_page( $template_ids, $activity
 		if( ( empty( $activity_ids )  && $j === 0 ) || in_array( $activity[ 'id' ], $activity_ids ) ) { $selected = 'selected'; } else { $selected = ''; }
 
 		// Retrieve activity title
-		$title = apply_filters( 'bookacti_translate_text', $activity[ 'title' ] );
+		$title = ! empty( $activity[ 'title' ] ) ? apply_filters( 'bookacti_translate_text', $activity[ 'title' ] ) : '';
 
 		// Display activity
-		$html.=	"<div class='bookacti-bookings-filter-activity bookacti-bookings-filter' "
-			.		"data-activity-id='" . esc_attr( $activity[ 'id' ] ) . "' "
-			.		"style='background-color: " . esc_attr( $activity[ 'color' ] ) . "; border-color: " . esc_attr( $activity[ 'color' ] ) . "' " 
-			.		esc_attr( $selected )
-			.	" >"
-			.		"<div class='bookacti-filter-content' >"
-			.			"<div class='bookacti-bookings-filter-activity-title' >"
-			.				"<strong>" . esc_html( $title ). "</strong>"
-			.			"</div>"
-			.		"</div>"
-			.		"<div class='bookacti-bookings-filter-bg' ></div>"
-			.	"</div>";
+		$html .= "<div class='bookacti-bookings-filter-activity bookacti-bookings-filter' "
+			  .    "data-activity-id='" . esc_attr( $activity[ 'id' ] ) . "' "
+			  .    "style='background-color: " . esc_attr( $activity[ 'color' ] ) . "; border-color: " . esc_attr( $activity[ 'color' ] ) . "' " 
+			  .      esc_attr( $selected )
+			  .  ">"
+			  .    "<div class='bookacti-filter-content'>"
+			  .      "<div class='bookacti-bookings-filter-activity-title'>"
+			  .        "<strong>" . esc_html( $title ). "</strong>"
+			  .      "</div>"
+			  .    "</div>"
+			  .    "<div class='bookacti-bookings-filter-bg'></div>"
+			  .  "</div>";
 
 		$j++;
 	}
@@ -270,45 +270,45 @@ function bookacti_get_activities_html_for_booking_page( $template_ids, $activity
  */
 function bookacti_get_default_booking_filters() {
 	return apply_filters( 'bookacti_default_booking_filters', array(
-		'templates'					=> array(), 
-		'activities'				=> array(), 
-		'booking_id'				=> 0, 
-		'booking_group_id'			=> 0,
-		'booking_group_id_operator'	=> 'AND',
-		'group_category_id'			=> 0, 
-		'event_group_id'			=> 0, 
-		'event_id'					=> 0, 
-		'event_start'				=> '', 
-		'event_end'					=> '', 
-		'status'					=> array(), 
-		'payment_status'			=> array(), 
-		'user_id'					=> 0,
-		'form_id'					=> 0,
-		'from'						=> '',
-		'to'						=> '',
-		'active'					=> false,
-		'group_by'					=> '',
-		'order_by'					=> array( 'creation_date', 'id', 'event_start' ), 
-		'order'						=> 'desc',
-		'offset'					=> 0,
-		'per_page'					=> 0,
-		'in__booking_id'			=> array(),
-		'in__booking_group_id'		=> array(),
-		'in__group_category_id'		=> array(),
-		'in__event_group_id'		=> array(),
-		'in__event_id'				=> array(),
-		'in__user_id'				=> array(),
-		'in__form_id'				=> array(),
-		'in__order_id'				=> array(),
-		'not_in__booking_id'		=> array(),
-		'not_in__booking_group_id'	=> array(),
-		'not_in__group_category_id'	=> array(),
-		'not_in__event_group_id'	=> array(),
-		'not_in__event_id'			=> array(),
-		'not_in__user_id'			=> array(),
-		'not_in__form_id'			=> array(),
-		'not_in__order_id'			=> array(),
-		'fetch_meta'				=> false
+		'templates'                 => array(), 
+		'activities'                => array(), 
+		'booking_id'                => 0, 
+		'booking_group_id'          => 0,
+		'booking_group_id_operator' => 'AND',
+		'group_category_id'         => 0, 
+		'event_group_id'            => 0, 
+		'event_id'                  => 0, 
+		'event_start'               => '', 
+		'event_end'                 => '', 
+		'status'                    => array(), 
+		'payment_status'            => array(), 
+		'user_id'                   => 0,
+		'form_id'                   => 0,
+		'from'                      => '',
+		'to'                        => '',
+		'active'                    => false,
+		'group_by'                  => '',
+		'order_by'                  => array( 'creation_date', 'id', 'event_start' ), 
+		'order'                     => 'desc',
+		'offset'                    => 0,
+		'per_page'                  => 0,
+		'in__booking_id'            => array(),
+		'in__booking_group_id'      => array(),
+		'in__group_category_id'     => array(),
+		'in__event_group_id'        => array(),
+		'in__event_id'              => array(),
+		'in__user_id'               => array(),
+		'in__form_id'               => array(),
+		'in__order_id'              => array(),
+		'not_in__booking_id'        => array(),
+		'not_in__booking_group_id'  => array(),
+		'not_in__group_category_id' => array(),
+		'not_in__event_group_id'    => array(),
+		'not_in__event_id'          => array(),
+		'not_in__user_id'           => array(),
+		'not_in__form_id'           => array(),
+		'not_in__order_id'          => array(),
+		'fetch_meta'                => false
 	));
 }
 
@@ -638,11 +638,11 @@ function bookacti_booking_can_be_cancelled( $booking, $context = '', $allow_grou
 	if( ! $booking ) { $is_allowed = false; }
 	else {
 		if( ! current_user_can( 'bookacti_edit_bookings' ) || $context === 'front' ) {
-			$is_cancel_allowed	= bookacti_get_setting_value( 'bookacti_cancellation_settings', 'allow_customers_to_cancel' );
-			$is_grouped			= apply_filters( 'bookacti_allow_grouped_booking_changes', $allow_grouped_booking, $booking, 'cancel' ) ? false : ! empty( $booking->group_id );
-			$is_in_delay		= apply_filters( 'bookacti_bypass_booking_changes_deadline', false, $booking, 'cancel' ) ? true : bookacti_is_booking_in_delay( $booking, 'cancel' );
-			$user_id			= isset( $booking->user_id ) && is_numeric( $booking->user_id ) ? intval( $booking->user_id ) : 0;
-			$is_own				= apply_filters( 'bookacti_allow_others_booking_changes', $user_id && $user_id === get_current_user_id(), $booking, 'cancel' );
+			$is_cancel_allowed = bookacti_get_setting_value( 'bookacti_cancellation_settings', 'allow_customers_to_cancel' );
+			$is_grouped        = apply_filters( 'bookacti_allow_grouped_booking_changes', $allow_grouped_booking, $booking, 'cancel' ) ? false : ! empty( $booking->group_id );
+			$is_in_delay       = apply_filters( 'bookacti_bypass_booking_changes_deadline', false, $booking, 'cancel' ) ? true : bookacti_is_booking_in_delay( $booking, 'cancel' );
+			$user_id           = isset( $booking->user_id ) && is_numeric( $booking->user_id ) ? intval( $booking->user_id ) : 0;
+			$is_own            = apply_filters( 'bookacti_allow_others_booking_changes', $user_id && $user_id === get_current_user_id(), $booking, 'cancel' );
 			if( ! $is_cancel_allowed || $is_grouped || ! $is_in_delay || ! $is_own ) { $is_allowed = false; }
 		}
 		if( empty( $booking->active ) && $context !== 'admin' ) { $is_allowed = false; }
@@ -654,7 +654,7 @@ function bookacti_booking_can_be_cancelled( $booking, $context = '', $allow_grou
 
 /**
  * Check if a booking is allowed to be rescheduled
- * @version 1.12.7
+ * @version 1.14.0
  * @param object|int $booking
  * @param string $context
  * @return boolean
@@ -663,16 +663,15 @@ function bookacti_booking_can_be_rescheduled( $booking, $context = '' ) {
 	// Get booking
 	if( is_numeric( $booking ) ) { $booking = bookacti_get_booking_by_id( $booking, true ); }
 	
-	$booking = apply_filters( 'bookacti_rescheduled_booking_data', $booking, $context );
 	$is_allowed	= true;
 	if( ! $booking ) { $is_allowed = false; }
 	else {
 		if( ! current_user_can( 'bookacti_edit_bookings' ) || $context === 'front' ) {
-			$is_reschedule_allowed	= bookacti_get_setting_value( 'bookacti_cancellation_settings', 'allow_customers_to_reschedule' );
-			$is_grouped				= apply_filters( 'bookacti_allow_grouped_booking_changes', false, $booking, 'reschedule' ) ? false : ! empty( $booking->group_id );
-			$is_in_delay			= apply_filters( 'bookacti_bypass_booking_changes_deadline', false, $booking, 'reschedule' ) ? true : bookacti_is_booking_in_delay( $booking, 'reschedule' );
-			$user_id				= isset( $booking->user_id ) && is_numeric( $booking->user_id ) ? intval( $booking->user_id ) : 0;
-			$is_own					= apply_filters( 'bookacti_allow_others_booking_changes', $user_id && $user_id === get_current_user_id(), $booking, 'reschedule' );
+			$is_reschedule_allowed = bookacti_get_setting_value( 'bookacti_cancellation_settings', 'allow_customers_to_reschedule' );
+			$is_grouped            = apply_filters( 'bookacti_allow_grouped_booking_changes', false, $booking, 'reschedule' ) ? false : ! empty( $booking->group_id );
+			$is_in_delay           = apply_filters( 'bookacti_bypass_booking_changes_deadline', false, $booking, 'reschedule' ) ? true : bookacti_is_booking_in_delay( $booking, 'reschedule' );
+			$user_id               = isset( $booking->user_id ) && is_numeric( $booking->user_id ) ? intval( $booking->user_id ) : 0;
+			$is_own                = apply_filters( 'bookacti_allow_others_booking_changes', $user_id && $user_id === get_current_user_id(), $booking, 'reschedule' );
 			if( ! $is_reschedule_allowed || ! $booking->active || $is_grouped || ! $is_in_delay || ! $is_own ) { $is_allowed = false; }
 		}
 
@@ -687,7 +686,7 @@ function bookacti_booking_can_be_rescheduled( $booking, $context = '' ) {
 /**
  * Check if a booking can be rescheduled to another event
  * @since 1.1.0
- * @version 1.12.0
+ * @version 1.14.0
  * @param object|int $booking
  * @param int $event_id
  * @param string $event_start
@@ -714,7 +713,6 @@ function bookacti_booking_can_be_rescheduled_to( $booking, $event_id, $event_sta
 			$return_array[ 'message' ] = esc_html__( 'You are not allowed to reschedule this event.', 'booking-activities' );
 
 		} else {
-			$booking	= apply_filters( 'bookacti_rescheduled_booking_data', $booking, $context );
 			$from_event	= bookacti_get_event_by_id( $booking->event_id );
 			$to_event	= bookacti_get_event_by_id( $event_id );
 
@@ -801,7 +799,7 @@ function bookacti_booking_state_can_be_changed_to( $booking, $new_state, $contex
 /**
  * Check if a booking quantity can be changed
  * @since 1.9.0
- * @version 1.12.0
+ * @version 1.14.0
  * @param object $booking
  * @param int $new_quantity 
  * @return boolean
@@ -809,33 +807,33 @@ function bookacti_booking_state_can_be_changed_to( $booking, $new_state, $contex
 function bookacti_booking_quantity_can_be_changed( $booking, $new_quantity = 'current' ) {
 	if( $new_quantity === 'current' ) { $new_quantity = $booking->quantity; }
 	
-	$events			= array( array( 'group_id' => 0, 'group_date' => '', 'events' => array( array( 'group_id' => 0, 'group_date' => '', 'id' => $booking->event_id, 'start' => $booking->event_start, 'end' => $booking->event_end ) ) ) );
-	$picked_events	= bookacti_get_picked_events_availability( $events );
-	$picked_event	= $picked_events[ 0 ];
-	$activity_data	= bookacti_get_metadata( 'activity', $booking->activity_id );
+	$events        = array( array( 'group_id' => 0, 'group_date' => '', 'events' => array( array( 'group_id' => 0, 'group_date' => '', 'id' => $booking->event_id, 'start' => $booking->event_start, 'end' => $booking->event_end ) ) ) );
+	$picked_events = bookacti_get_picked_events_availability( $events );
+	$picked_event  = $picked_events[ 0 ];
+	$activity_data = bookacti_get_metadata( 'activity', $booking->activity_id );
 	
-	$is_active		= apply_filters( 'bookacti_booking_quantity_check_is_active', $booking->active, $booking, $new_quantity );
-	$min_quantity	= isset( $activity_data[ 'min_bookings_per_user' ] ) ? intval( $activity_data[ 'min_bookings_per_user' ] ) : 0;
-	$max_quantity	= isset( $activity_data[ 'max_bookings_per_user' ] ) ? intval( $activity_data[ 'max_bookings_per_user' ] ) : 0;
-	$max_users		= isset( $activity_data[ 'max_users_per_event' ] ) ? intval( $activity_data[ 'max_users_per_event' ] ) : 0;
-	$user_has_booked= ! empty( $picked_event[ 'args' ][ 'bookings_nb_per_user' ][ $booking->user_id ] );
+	$is_active       = apply_filters( 'bookacti_booking_quantity_check_is_active', $booking->active, $booking, $new_quantity );
+	$min_quantity    = isset( $activity_data[ 'min_bookings_per_user' ] ) ? intval( $activity_data[ 'min_bookings_per_user' ] ) : 0;
+	$max_quantity    = isset( $activity_data[ 'max_bookings_per_user' ] ) ? intval( $activity_data[ 'max_bookings_per_user' ] ) : 0;
+	$max_users       = isset( $activity_data[ 'max_users_per_event' ] ) ? intval( $activity_data[ 'max_users_per_event' ] ) : 0;
+	$user_has_booked = ! empty( $picked_event[ 'args' ][ 'bookings_nb_per_user' ][ $booking->user_id ] );
 	
 	$params = apply_filters( 'bookacti_booking_quantity_can_be_changed_params', array(
-		'delta_quantity' => $is_active ? $new_quantity - $booking->quantity : $new_quantity,
-		'user_has_booked' => $user_has_booked,
+		'delta_quantity'          => $is_active ? $new_quantity - $booking->quantity : $new_quantity,
+		'user_has_booked'         => $user_has_booked,
 		'quantity_already_booked' => $user_has_booked ? $picked_event[ 'args' ][ 'bookings_nb_per_user' ][ $booking->user_id ] : $booking->quantity,
-		'number_of_users' => count( $picked_event[ 'args' ][ 'bookings_nb_per_user' ] ),
-		'availability' => $picked_event[ 'args' ][ 'availability' ],
+		'number_of_users'         => count( $picked_event[ 'args' ][ 'bookings_nb_per_user' ] ),
+		'availability'            => $picked_event[ 'args' ][ 'availability' ],
 	), $booking, $new_quantity, $picked_event, $activity_data );
 	
 	// Make the tests
-	$is_qty_inf_to_avail	= $params[ 'delta_quantity' ] <= $params[ 'availability' ];
-	$is_qty_sup_to_min		= $min_quantity === 0 || ( $params[ 'quantity_already_booked' ] + $params[ 'delta_quantity' ] ) >= $min_quantity;
-	$is_qty_inf_to_max		= $max_quantity === 0 || ( $params[ 'quantity_already_booked' ] + $params[ 'delta_quantity' ] ) <= $max_quantity;
-	$is_users_inf_to_max	= $max_users === 0 || $params[ 'user_has_booked' ] || $params[ 'number_of_users' ] < $max_users;
+	$is_qty_inf_to_avail = $params[ 'delta_quantity' ] <= $params[ 'availability' ];
+	$is_qty_sup_to_min   = $min_quantity === 0 || ( $params[ 'quantity_already_booked' ] + $params[ 'delta_quantity' ] ) >= $min_quantity;
+	$is_qty_inf_to_max   = $max_quantity === 0 || ( $params[ 'quantity_already_booked' ] + $params[ 'delta_quantity' ] ) <= $max_quantity;
+	$is_users_inf_to_max = $max_users === 0 || $params[ 'user_has_booked' ] || $params[ 'number_of_users' ] < $max_users;
 	
 	// Build feedback variables
-	$title = apply_filters( 'bookacti_translate_text', $booking->event_title );
+	$title = ! empty( $booking->event_title ) ? apply_filters( 'bookacti_translate_text', $booking->event_title ) : '';
 	$dates = bookacti_get_formatted_event_dates( $booking->event_start, $booking->event_end, false );
 	$qty_already_booked_with_other_bookings = $is_active ? $params[ 'quantity_already_booked' ] - $booking->quantity : $params[ 'quantity_already_booked' ];
 	
@@ -886,7 +884,7 @@ function bookacti_booking_quantity_can_be_changed( $booking, $new_quantity = 'cu
 /**
  * Check if a booking user can be changed
  * @since 1.9.0
- * @version 1.12.0
+ * @version 1.14.0
  * @param object|int $booking
  * @param string $new_user_id Default to current user
  * @return array
@@ -924,7 +922,7 @@ function bookacti_booking_user_can_be_changed( $booking, $new_user_id = '' ) {
 	
 	// Feedback the error
 	else { 
-		$title = apply_filters( 'bookacti_translate_text', $booking->event_title );
+		$title = ! empty( $booking->event_title ) ? apply_filters( 'bookacti_translate_text', $booking->event_title ) : '';
 		if( $new_user_id == get_current_user_id() ) {
 			/* translators: %1$s is the event title. */
 			$response[ 'messages' ][] = sprintf( esc_html__( 'The event "%1$s" is not available in your user category.', 'booking-activities' ), $title );
@@ -934,7 +932,7 @@ function bookacti_booking_user_can_be_changed( $booking, $new_user_id = '' ) {
 			if( ! is_user_logged_in() ) { $message .= ' ' . esc_html__( 'Please log in.', 'booking-activities' ); }
 			$response[ 'messages' ][] = $message;
 		}
-	} 
+	}
 	
 	return apply_filters( 'bookacti_booking_user_can_be_changed', $response, $booking, $new_user_id );
 }
@@ -1118,7 +1116,7 @@ function bookacti_booking_group_state_can_be_changed_to( $bookings, $new_state, 
 /**
  * Check if a booking group quantity can be changed
  * @since 1.9.0
- * @version 1.12.0
+ * @version 1.14.0
  * @param array $bookings
  * @param int $new_quantity
  * @param string $context
@@ -1133,44 +1131,44 @@ function bookacti_booking_group_quantity_can_be_changed( $bookings, $new_quantit
 		$event_start_dt = new DateTime( $booking->event_start );
 		$event_end_dt = new DateTime( $booking->event_end );
 		$events[] = array( 'group_id' => 1, 'group_date' => '1970-02-01', 'id' => $booking->event_id, 'start' => $booking->event_start, 'end' => $booking->event_end );
-		if( ! $group_start || $event_start_dt < $group_start_dt )	{ $group_start = $booking->event_start; }
-		if( ! $group_end || $event_end_dt < $group_end_dt )			{ $group_end = $booking->event_end; }
-		if( ! $group_id && ! empty( $booking->group_id ) )			{ $group_id = $booking->group_id; }
-		if( ! $title && ! empty( $booking->group_title ) )			{ $title = apply_filters( 'bookacti_translate_text', $booking->group_title ); }
-		if( ! $category_id && ! empty( $booking->category_id ) )	{ $category_id = $booking->category_id; }
-		if( ! $user_id && ! empty( $booking->group_user_id ) )		{ $user_id = $booking->group_user_id; }
-		if( ! $quantity || $booking->quantity > $quantity )			{ $quantity = $booking->quantity; }
-		if( ! $is_active )											{ $is_active = apply_filters( 'bookacti_booking_quantity_check_is_active', $booking->active, $booking, $new_quantity ); }
+		if( ! $group_start || $event_start_dt < $group_start_dt ) { $group_start = $booking->event_start; }
+		if( ! $group_end || $event_end_dt < $group_end_dt )       { $group_end   = $booking->event_end; }
+		if( ! $group_id && ! empty( $booking->group_id ) )        { $group_id    = $booking->group_id; }
+		if( ! $title && ! empty( $booking->group_title ) )        { $title       = ! empty( $booking->group_title ) ? apply_filters( 'bookacti_translate_text', $booking->group_title ) : ''; }
+		if( ! $category_id && ! empty( $booking->category_id ) )  { $category_id = $booking->category_id; }
+		if( ! $user_id && ! empty( $booking->group_user_id ) )    { $user_id     = $booking->group_user_id; }
+		if( ! $quantity || $booking->quantity > $quantity )       { $quantity    = $booking->quantity; }
+		if( ! $is_active )                                        { $is_active   = apply_filters( 'bookacti_booking_quantity_check_is_active', $booking->active, $booking, $new_quantity ); }
 	}
 	if( $new_quantity === 'current' ) { $new_quantity = $quantity; }
 	if( ! $title ) { $title = sprintf( esc_html__( 'Booking group #%d', 'booking-activities' ), $group_id ); }
 	$dates = bookacti_get_formatted_event_dates( $group_start, $group_end, false );
 	
 	$picked_events = bookacti_get_picked_events_availability( array( array( 'group_id' => 1, 'group_date' => '1970-02-01', 'events' => $events ) ) );
-	$picked_event = $picked_events[ 0 ];
-	$category_data	= bookacti_get_metadata( 'group_category', $category_id );
+	$picked_event  = $picked_events[ 0 ];
+	$category_data = bookacti_get_metadata( 'group_category', $category_id );
 
-	$delta_quantity	= $is_active ? $new_quantity - $quantity : $new_quantity;
-	$min_quantity	= isset( $category_data[ 'min_bookings_per_user' ] ) ? intval( $category_data[ 'min_bookings_per_user' ] ) : 0;
-	$max_quantity	= isset( $category_data[ 'max_bookings_per_user' ] ) ? intval( $category_data[ 'max_bookings_per_user' ] ) : 0;
-	$max_users		= isset( $category_data[ 'max_users_per_event' ] ) ? intval( $category_data[ 'max_users_per_event' ] ) : 0;
-	$user_has_booked= ! empty( $picked_event[ 'args' ][ 'bookings_nb_per_user' ][ $user_id ] );
+	$delta_quantity  = $is_active ? $new_quantity - $quantity : $new_quantity;
+	$min_quantity    = isset( $category_data[ 'min_bookings_per_user' ] ) ? intval( $category_data[ 'min_bookings_per_user' ] ) : 0;
+	$max_quantity    = isset( $category_data[ 'max_bookings_per_user' ] ) ? intval( $category_data[ 'max_bookings_per_user' ] ) : 0;
+	$max_users       = isset( $category_data[ 'max_users_per_event' ] ) ? intval( $category_data[ 'max_users_per_event' ] ) : 0;
+	$user_has_booked = ! empty( $picked_event[ 'args' ][ 'bookings_nb_per_user' ][ $user_id ] );
 	
 	$params = apply_filters( 'bookacti_booking_group_quantity_can_be_changed_params', array(
-		'delta_quantity' => $is_active ? $new_quantity - $quantity : $new_quantity,
-		'user_has_booked' => $user_has_booked,
+		'delta_quantity'          => $is_active ? $new_quantity - $quantity : $new_quantity,
+		'user_has_booked'         => $user_has_booked,
 		'quantity_already_booked' => $user_has_booked ? $picked_event[ 'args' ][ 'bookings_nb_per_user' ][ $user_id ] : $quantity,
-		'number_of_users' => count( $picked_event[ 'args' ][ 'bookings_nb_per_user' ] ),
-		'availability' => $picked_event[ 'args' ][ 'availability' ],
+		'number_of_users'         => count( $picked_event[ 'args' ][ 'bookings_nb_per_user' ] ),
+		'availability'            => $picked_event[ 'args' ][ 'availability' ],
 	), $bookings, $new_quantity, $picked_event, $category_data );
 	
 	$qty_already_booked_with_other_bookings = $is_active ? $params[ 'quantity_already_booked' ] - $quantity : $params[ 'quantity_already_booked' ];
 	
 	// Make the tests
-	$is_qty_inf_to_avail	= $params[ 'delta_quantity' ] <= $params[ 'availability' ];
-	$is_qty_sup_to_min		= $min_quantity === 0 || ( $params[ 'quantity_already_booked' ] + $params[ 'delta_quantity' ] ) >= $min_quantity;
-	$is_qty_inf_to_max		= $max_quantity === 0 || ( $params[ 'quantity_already_booked' ] + $params[ 'delta_quantity' ] ) <= $max_quantity;
-	$is_users_inf_to_max	= $max_users === 0 || $params[ 'user_has_booked' ] || $params[ 'number_of_users' ] < $max_users;
+	$is_qty_inf_to_avail = $params[ 'delta_quantity' ] <= $params[ 'availability' ];
+	$is_qty_sup_to_min   = $min_quantity === 0 || ( $params[ 'quantity_already_booked' ] + $params[ 'delta_quantity' ] ) >= $min_quantity;
+	$is_qty_inf_to_max   = $max_quantity === 0 || ( $params[ 'quantity_already_booked' ] + $params[ 'delta_quantity' ] ) <= $max_quantity;
+	$is_users_inf_to_max = $max_users === 0 || $params[ 'user_has_booked' ] || $params[ 'number_of_users' ] < $max_users;
 	
 	// Feedback the error code and message
 	$response = array( 'status' => 'failed', 'messages' => array() );
@@ -1218,7 +1216,7 @@ function bookacti_booking_group_quantity_can_be_changed( $bookings, $new_quantit
 /**
  * Check if a booking group user can be changed
  * @since 1.9.0
- * @version 1.12.0
+ * @version 1.14.0
  * @param array|int $bookings
  * @param string $new_user_id Default to current user
  * @return array
@@ -1234,15 +1232,15 @@ function bookacti_booking_group_user_can_be_changed( $bookings, $new_user_id = '
 	$title = ''; $group_id = 0; $group_start = ''; $group_end = ''; $category_id = 0; $user_id = 0;
 	foreach( $bookings as $booking ) {
 		$group_start_dt = new DateTime( $group_start );
-		$group_end_dt = new DateTime( $group_end );
+		$group_end_dt   = new DateTime( $group_end );
 		$event_start_dt = new DateTime( $booking->event_start );
-		$event_end_dt = new DateTime( $booking->event_end );
-		if( ! $group_start || $event_start_dt < $group_start_dt )	{ $group_start = $booking->event_start; }
-		if( ! $group_end || $event_end_dt < $group_end_dt )			{ $group_end = $booking->event_end; }
-		if( ! $group_id && ! empty( $booking->group_id ) )			{ $group_id = $booking->group_id; }
-		if( ! $title && ! empty( $booking->group_title ) )			{ $title = apply_filters( 'bookacti_translate_text', $booking->group_title ); }
-		if( ! $category_id && ! empty( $booking->category_id ) )	{ $category_id = $booking->category_id; }
-		if( ! $user_id && ! empty( $booking->user_id ) )			{ $user_id = $booking->user_id; }
+		$event_end_dt   = new DateTime( $booking->event_end );
+		if( ! $group_start || $event_start_dt < $group_start_dt ) { $group_start = $booking->event_start; }
+		if( ! $group_end   || $event_end_dt < $group_end_dt )     { $group_end   = $booking->event_end; }
+		if( ! $group_id    && ! empty( $booking->group_id ) )     { $group_id    = $booking->group_id; }
+		if( ! $title       && ! empty( $booking->group_title ) )  { $title       = ! empty( $booking->group_title ) ? apply_filters( 'bookacti_translate_text', $booking->group_title ) : ''; }
+		if( ! $category_id && ! empty( $booking->category_id ) )  { $category_id = $booking->category_id; }
+		if( ! $user_id     && ! empty( $booking->user_id ) )      { $user_id     = $booking->user_id; }
 	}
 	
 	if( $new_user_id === 'current' ) { $new_user_id = $user_id; }
@@ -1304,41 +1302,41 @@ function bookacti_booking_group_user_can_be_changed( $bookings, $new_user_id = '
 function bookacti_get_booking_actions( $admin_or_front = 'both' ) {
 	$actions = apply_filters( 'bookacti_booking_actions', array(
 		'change-state' => array( 
-			'class'			=> 'bookacti-change-booking-state',
-			'label'			=> esc_html__( 'Change booking state',  'booking-activities' ),
-			'description'	=> esc_html__( 'Change the booking state to any available state.', 'booking-activities' ),
-			'link'			=> '',
-			'admin_or_front'=> 'admin' ),
+			'class'          => 'bookacti-change-booking-state',
+			'label'          => esc_html__( 'Change booking state',  'booking-activities' ),
+			'description'    => esc_html__( 'Change the booking state to any available state.', 'booking-activities' ),
+			'link'           => '',
+			'admin_or_front' => 'admin' ),
 		'change-quantity' => array( 
-			'class'			=> 'bookacti-change-booking-quantity',
-			'label'			=> esc_html__( 'Change booking quantity',  'booking-activities' ),
-			'description'	=> esc_html__( 'Change the quantity to any number.', 'booking-activities' ),
-			'link'			=> '',
-			'admin_or_front'=> 'admin' ),
+			'class'          => 'bookacti-change-booking-quantity',
+			'label'          => esc_html__( 'Change booking quantity',  'booking-activities' ),
+			'description'    => esc_html__( 'Change the quantity to any number.', 'booking-activities' ),
+			'link'           => '',
+			'admin_or_front' => 'admin' ),
 		'cancel' => array( 
-			'class'			=> 'bookacti-cancel-booking',
-			'label'			=> bookacti_get_message( 'cancel_booking_open_dialog_button' ),
-			'description'	=> esc_html__( 'Cancel the booking.', 'booking-activities' ),
-			'link'			=> '',
-			'admin_or_front'=> 'front' ),
+			'class'          => 'bookacti-cancel-booking',
+			'label'          => bookacti_get_message( 'cancel_booking_open_dialog_button' ),
+			'description'    => esc_html__( 'Cancel the booking.', 'booking-activities' ),
+			'link'           => '',
+			'admin_or_front' => 'front' ),
 		'reschedule' => array( 
-			'class'			=> 'bookacti-reschedule-booking',
-			'label'			=> bookacti_get_message( 'reschedule_dialog_button' ),
-			'description'	=> esc_html__( 'Change the booking dates to any other available time slot for this event.', 'booking-activities' ),
-			'link'			=> '',
-			'admin_or_front'=> 'both' ),
+			'class'          => 'bookacti-reschedule-booking',
+			'label'          => bookacti_get_message( 'reschedule_dialog_button' ),
+			'description'    => esc_html__( 'Change the booking dates to any other available time slot for this event.', 'booking-activities' ),
+			'link'           => '',
+			'admin_or_front' => 'both' ),
 		'refund' => array( 
-			'class'			=> 'bookacti-refund-booking',
-			'label'			=> $admin_or_front === 'both' || $admin_or_front === 'admin' ? esc_html_x( 'Refund', 'Button label to trigger the refund action', 'booking-activities' ) : bookacti_get_message( 'refund_dialog_button' ),
-			'description'	=> esc_html__( 'Refund the booking with one of the available refund method.', 'booking-activities' ),
-			'link'			=> '',
-			'admin_or_front'=> 'both' ),
+			'class'          => 'bookacti-refund-booking',
+			'label'          => $admin_or_front === 'both' || $admin_or_front === 'admin' ? esc_html_x( 'Refund', 'Button label to trigger the refund action', 'booking-activities' ) : bookacti_get_message( 'refund_dialog_button' ),
+			'description'    => esc_html__( 'Refund the booking with one of the available refund method.', 'booking-activities' ),
+			'link'           => '',
+			'admin_or_front' => 'both' ),
 		'delete' => array( 
-			'class'			=> 'bookacti-delete-booking bookacti-delete-button',
-			'label'			=> esc_html__( 'Delete', 'booking-activities' ),
-			'description'	=> esc_html__( 'Delete permanently the booking.', 'booking-activities' ),
-			'link'			=> '',
-			'admin_or_front'=> 'admin' )
+			'class'          => 'bookacti-delete-booking bookacti-delete-button',
+			'label'          => esc_html__( 'Delete', 'booking-activities' ),
+			'description'    => esc_html__( 'Delete permanently the booking.', 'booking-activities' ),
+			'link'           => '',
+			'admin_or_front' => 'admin' )
 	), $admin_or_front );
 
 	$possible_actions = array();
@@ -1406,12 +1404,12 @@ function bookacti_get_booking_actions_html( $booking, $admin_or_front = 'both', 
 	
 	$actions_html_array	= array();
 	foreach( $actions as $action_id => $action ){
-			$action_html	= '<a '
-								. 'href="' . esc_url( $action[ 'link' ] ) . '" '
-								. 'id="bookacti-booking-action-' . esc_attr( $action_id ) . '-' . esc_attr( $booking->id ) . '" '
-								. 'class="button ' . esc_attr( $action[ 'class' ] ) . ' bookacti-booking-action bookacti-tip" '
-								. 'data-tip="' . esc_attr( $action[ 'description' ] ) . '" '
-								. 'data-booking-id="' . esc_attr( $booking->id ) . '" >';
+			$action_html = '<a '
+						 . 'href="' . esc_url( $action[ 'link' ] ) . '" '
+						 . 'id="bookacti-booking-action-' . esc_attr( $action_id ) . '-' . esc_attr( $booking->id ) . '" '
+						 . 'class="button ' . esc_attr( $action[ 'class' ] ) . ' bookacti-booking-action bookacti-tip" '
+						 . 'data-tip="' . esc_attr( $action[ 'description' ] ) . '" '
+						 . 'data-booking-id="' . esc_attr( $booking->id ) . '" >';
 
 			if( $admin_or_front === 'front' || $action[ 'admin_or_front' ] === 'front' ) { 
 				$action_html .= esc_html( $action[ 'label' ] ); 
@@ -1430,9 +1428,9 @@ function bookacti_get_booking_actions_html( $booking, $admin_or_front = 'both', 
 
 	// Add a container
 	if( $with_container ) {
-		$actions_html	= '<div class="bookacti-booking-actions" data-booking-id="' . esc_attr( $booking->id ) . '" >'
-						.	$actions_html
-						. '</div>';
+		$actions_html = '<div class="bookacti-booking-actions" data-booking-id="' . esc_attr( $booking->id ) . '" >'
+					  .	$actions_html
+					  . '</div>';
 	}
 
 	return apply_filters( 'bookacti_booking_actions_html', $actions_html, $booking, $admin_or_front );
@@ -1449,8 +1447,8 @@ function bookacti_get_booking_actions_html( $booking, $admin_or_front = 'both', 
 function bookacti_get_booking_price_details_html( $prices_array, $booking ) {
 	$prices_html = '<div class="bookacti-booking-price-details" data-booking-id="' . esc_attr( $booking->id ) . '" >';
 	foreach( $prices_array as $price_id => $price ) {
-		if( ! is_array( $price ) )			{ continue; }
-		if( ! isset( $price[ 'value' ] ) )	{ continue; }
+		if( ! is_array( $price ) )         { continue; }
+		if( ! isset( $price[ 'value' ] ) ) { continue; }
 		if( ! isset( $price[ 'title' ] ) )			{ $price[ 'title' ] = $price_id; }
 		if( ! isset( $price[ 'display_value' ] ) )	{ $price[ 'display_value' ] = $price[ 'value' ]; }
 
@@ -1469,48 +1467,48 @@ function bookacti_get_booking_price_details_html( $prices_array, $booking ) {
 /**
  * Get booking group actions array
  * @since 1.6.0 (replace bookacti_get_booking_group_actions_array)
- * @version 1.8.5
+ * @version 1.14.0
  * @param string $admin_or_front Can be "both", "admin", "front. Default "both".
  * @return array
  */
 function bookacti_get_booking_group_actions( $admin_or_front = 'both' ) {
 	$actions = apply_filters( 'bookacti_booking_group_actions', array(
 		'change-state' => array( 
-			'class'			=> 'bookacti-change-booking-group-state',
-			'label'			=> esc_html__( 'Change booking state',  'booking-activities' ),
-			'description'	=> esc_html__( 'Change the booking group state to any available state.', 'booking-activities' ),
-			'link'			=> '',
-			'admin_or_front'=> 'admin' ),
+			'class'          => 'bookacti-change-booking-group-state',
+			'label'          => esc_html__( 'Change booking state',  'booking-activities' ),
+			'description'    => esc_html__( 'Change the booking group state to any available state.', 'booking-activities' ),
+			'link'           => '',
+			'admin_or_front' => 'admin' ),
 		'change-quantity' => array( 
-			'class'			=> 'bookacti-change-booking-group-quantity',
-			'label'			=> esc_html__( 'Change booking quantity',  'booking-activities' ),
-			'description'	=> esc_html__( 'Change the quantity to any number.', 'booking-activities' ),
-			'link'			=> '',
-			'admin_or_front'=> 'admin' ),
+			'class'          => 'bookacti-change-booking-group-quantity',
+			'label'          => esc_html__( 'Change booking quantity',  'booking-activities' ),
+			'description'    => esc_html__( 'Change the quantity to any number.', 'booking-activities' ),
+			'link'           => '',
+			'admin_or_front' => 'admin' ),
 		'edit-single' => array( 
-			'class'			=> 'bookacti-show-booking-group-bookings',
-			'label'			=> esc_html__( 'Edit bookings',  'booking-activities' ),
-			'description'	=> esc_html__( 'Edit each booking of the group separately.', 'booking-activities' ),
-			'link'			=> '',
-			'admin_or_front'=> 'admin' ),
+			'class'          => 'bookacti-show-booking-group-bookings',
+			'label'          => esc_html__( 'Edit bookings',  'booking-activities' ),
+			'description'    => esc_html__( 'Edit each booking of the group separately.', 'booking-activities' ),
+			'link'           => '',
+			'admin_or_front' => 'admin' ),
 		'cancel' => array( 
-			'class'			=> 'bookacti-cancel-booking-group',
-			'label'			=> bookacti_get_message( 'cancel_booking_open_dialog_button' ),
-			'description'	=> esc_html__( 'Cancel the booking group.', 'booking-activities' ),
-			'link'			=> '',
-			'admin_or_front'=> 'front' ),
+			'class'          => 'bookacti-cancel-booking-group',
+			'label'          => bookacti_get_message( 'cancel_booking_open_dialog_button' ),
+			'description'    => esc_html__( 'Cancel the booking group.', 'booking-activities' ),
+			'link'           => '',
+			'admin_or_front' => 'front' ),
 		'refund' => array( 
-			'class'			=> 'bookacti-refund-booking-group',
-			'label'			=> $admin_or_front === 'both' || $admin_or_front === 'admin' ? esc_html_x( 'Refund', 'Button label to trigger the refund action', 'booking-activities' ) : bookacti_get_message( 'refund_dialog_button' ),
-			'description'	=> esc_html__( 'Refund the booking group with one of the available refund method.', 'booking-activities' ),
-			'link'			=> '',
-			'admin_or_front'=> 'both' ),
+			'class'          => 'bookacti-refund-booking-group',
+			'label'          => $admin_or_front === 'both' || $admin_or_front === 'admin' ? esc_html_x( 'Refund', 'Button label to trigger the refund action', 'booking-activities' ) : bookacti_get_message( 'refund_dialog_button' ),
+			'description'    => esc_html__( 'Refund the booking group with one of the available refund method.', 'booking-activities' ),
+			'link'           => '',
+			'admin_or_front' => 'both' ),
 		'delete' => array( 
-			'class'			=> 'bookacti-delete-booking-group bookacti-delete-button',
-			'label'			=> esc_html__( 'Delete', 'booking-activities' ),
-			'description'	=> esc_html__( 'Delete permanently the booking group.', 'booking-activities' ),
-			'link'			=> '',
-			'admin_or_front'=> 'admin' )
+			'class'          => 'bookacti-delete-booking-group bookacti-delete-button',
+			'label'          => esc_html__( 'Delete', 'booking-activities' ),
+			'description'    => esc_html__( 'Delete permanently the booking group.', 'booking-activities' ),
+			'link'           => '',
+			'admin_or_front' => 'admin' )
 	), $admin_or_front );
 
 	$possible_actions = array();
@@ -1584,12 +1582,12 @@ function bookacti_get_booking_group_actions_html( $bookings, $admin_or_front = '
 
 	$actions_html_array	= array();
 	foreach( $actions as $action_id => $action ){
-		$action_html	= '<a '
-							. 'href="' . esc_url( $action[ 'link' ] ) . '" '
-							. 'id="bookacti-booking-group-action-' . esc_attr( $action_id ) . '-' . $booking_group_id . '" '
-							. 'class="button ' . esc_attr( $action[ 'class' ] ) . ' bookacti-booking-group-action bookacti-tip" '
-							. 'data-tip="' . esc_attr( $action[ 'description' ] ) . '" '
-							. 'data-booking-group-id="' . $booking_group_id . '" >';
+		$action_html = '<a '
+					 . 'href="' . esc_url( $action[ 'link' ] ) . '" '
+					 . 'id="bookacti-booking-group-action-' . esc_attr( $action_id ) . '-' . $booking_group_id . '" '
+					 . 'class="button ' . esc_attr( $action[ 'class' ] ) . ' bookacti-booking-group-action bookacti-tip" '
+					 . 'data-tip="' . esc_attr( $action[ 'description' ] ) . '" '
+					 . 'data-booking-group-id="' . $booking_group_id . '" >';
 
 		if( $admin_or_front === 'front' || $action[ 'admin_or_front' ] === 'front' ) { 
 			$action_html .= esc_html( $action[ 'label' ] ); 
@@ -1608,9 +1606,9 @@ function bookacti_get_booking_group_actions_html( $bookings, $admin_or_front = '
 
 	// Add a container
 	if( $with_container ) {
-		$actions_html	= '<div class="bookacti-booking-group-actions" data-booking-group-id="' . $booking_group_id . '" >' 
-						.	$actions_html
-						. '</div>';
+		$actions_html = '<div class="bookacti-booking-group-actions" data-booking-group-id="' . $booking_group_id . '" >' 
+					  .	$actions_html
+					  . '</div>';
 	}
 
 	return apply_filters( 'bookacti_booking_group_actions_html', $actions_html, $bookings, $admin_or_front, $actions, $with_container );
@@ -1625,41 +1623,42 @@ function bookacti_get_booking_group_actions_html( $bookings, $admin_or_front = '
  * Booking data that can be exported
  * @since 1.6.0
  * @version 1.8.0
+ * @param string $locale
  * @return array
  */
-function bookacti_get_bookings_export_columns() {
+function bookacti_get_bookings_export_columns( $locale = '' ) {
 	return apply_filters( 'bookacti_bookings_export_columns_labels', array(
-		'booking_id'			=> esc_html__( 'Booking ID', 'booking-activities' ),
-		'booking_type'			=> esc_html__( 'Booking type (single or group)', 'booking-activities' ),
-		'status'				=> esc_html__( 'Booking status', 'booking-activities' ),
-		'payment_status'		=> esc_html__( 'Payment status', 'booking-activities' ),
-		'quantity'				=> esc_html__( 'Quantity', 'booking-activities' ),
-		'creation_date'			=> esc_html__( 'Creation date', 'booking-activities' ),
-		'customer_id'			=> esc_html__( 'Customer ID', 'booking-activities' ),
-		'customer_display_name'	=> esc_html__( 'Customer display name', 'booking-activities' ),
-		'customer_first_name'	=> esc_html__( 'Customer first name', 'booking-activities' ),
-		'customer_last_name'	=> esc_html__( 'Customer last name', 'booking-activities' ),
-		'customer_email'		=> esc_html__( 'Customer email', 'booking-activities' ),
-		'customer_phone'		=> esc_html__( 'Customer phone', 'booking-activities' ),
-		'customer_roles'		=> esc_html__( 'Customer roles', 'booking-activities' ),
-		'event_id'				=> esc_html__( 'Event ID', 'booking-activities' ),
-		'event_title'			=> esc_html__( 'Event title', 'booking-activities' ),
-		'start_date'			=> esc_html__( 'Start date', 'booking-activities' ),
-		'end_date'				=> esc_html__( 'End date', 'booking-activities' ),
-		'template_id'			=> esc_html__( 'Calendar ID', 'booking-activities' ),
-		'template_title'		=> esc_html__( 'Calendar title', 'booking-activities' ),
-		'activity_id'			=> esc_html__( 'Activity / Category ID', 'booking-activities' ),
-		'activity_title'		=> esc_html__( 'Activity / Category title', 'booking-activities' ),
-		'form_id'				=> esc_html__( 'Form ID', 'booking-activities' ),
-		'order_id'				=> esc_html__( 'Order ID', 'booking-activities' )
-	) );
+		'booking_id'            => esc_html__( 'Booking ID', 'booking-activities' ),
+		'booking_type'          => esc_html__( 'Booking type (single or group)', 'booking-activities' ),
+		'status'                => esc_html__( 'Booking status', 'booking-activities' ),
+		'payment_status'        => esc_html__( 'Payment status', 'booking-activities' ),
+		'quantity'              => esc_html__( 'Quantity', 'booking-activities' ),
+		'creation_date'         => esc_html__( 'Creation date', 'booking-activities' ),
+		'customer_id'           => esc_html__( 'Customer ID', 'booking-activities' ),
+		'customer_display_name' => esc_html__( 'Customer display name', 'booking-activities' ),
+		'customer_first_name'   => esc_html__( 'Customer first name', 'booking-activities' ),
+		'customer_last_name'    => esc_html__( 'Customer last name', 'booking-activities' ),
+		'customer_email'        => esc_html__( 'Customer email', 'booking-activities' ),
+		'customer_phone'        => esc_html__( 'Customer phone', 'booking-activities' ),
+		'customer_roles'        => esc_html__( 'Customer roles', 'booking-activities' ),
+		'event_id'              => esc_html__( 'Event ID', 'booking-activities' ),
+		'event_title'           => esc_html__( 'Event title', 'booking-activities' ),
+		'start_date'            => esc_html__( 'Start date', 'booking-activities' ),
+		'end_date'              => esc_html__( 'End date', 'booking-activities' ),
+		'template_id'           => esc_html__( 'Calendar ID', 'booking-activities' ),
+		'template_title'        => esc_html__( 'Calendar title', 'booking-activities' ),
+		'activity_id'           => esc_html__( 'Activity / Category ID', 'booking-activities' ),
+		'activity_title'        => esc_html__( 'Activity / Category title', 'booking-activities' ),
+		'form_id'               => esc_html__( 'Form ID', 'booking-activities' ),
+		'order_id'              => esc_html__( 'Order ID', 'booking-activities' )
+	), $locale );
 }
 
 
 /**
  * Get bookings export default settings
  * @since 1.8.0
- * @version 1..0
+ * @version 1.14.0
  * @return array
  */
 function bookacti_get_bookings_export_default_settings() {
@@ -1679,7 +1678,7 @@ function bookacti_get_bookings_export_default_settings() {
 			'end_date'
 		),
 		'csv_raw' => 0,
-		'csv_export_groups'	=> 'groups',
+		'csv_export_groups' => 'groups',
 		
 		// iCal
 		'ical_columns' => array(
@@ -1688,13 +1687,13 @@ function bookacti_get_bookings_export_default_settings() {
 			'quantity',
 			'status'
 		),
-		'ical_raw' => 0,
+		'ical_raw'                 => 0,
 		'ical_booking_list_header' => 1,
-		'vevent_summary'	=> '[{event_booked_quantity}/{event_availability_total}] {event_title}',
-		'vevent_description'=> '{booking_list}',
+		'vevent_summary'           => '[{event_booked_quantity}/{event_availability_total}] {event_title}',
+		'vevent_description'       => '{booking_list}',
 		
 		// Global
-		'per_page'			=> 200
+		'per_page' => 200
 	);
 	return apply_filters( 'bookacti_bookings_export_default_settings', $defaults );
 }
@@ -1709,8 +1708,8 @@ function bookacti_get_bookings_export_default_settings() {
 function bookacti_get_bookings_export_settings( $user_id = 0 ) {
 	if( ! $user_id ) { $user_id = get_current_user_id(); }
 	
-	$default_settings	= bookacti_get_bookings_export_default_settings();
-	$user_settings		= $user_id ? get_user_meta( $user_id, 'bookacti_bookings_export_settings', true ) : array();
+	$default_settings = bookacti_get_bookings_export_default_settings();
+	$user_settings    = $user_id ? get_user_meta( $user_id, 'bookacti_bookings_export_settings', true ) : array();
 	
 	$settings = array();
 	foreach( $default_settings as $key => $default ) {
@@ -1724,6 +1723,7 @@ function bookacti_get_bookings_export_settings( $user_id = 0 ) {
 /**
  * Sanitize bookings export settings
  * @since 1.8.0
+ * @version 1.14.0
  * @param array $raw_settings
  * @return array
  */
@@ -1732,12 +1732,12 @@ function bookacti_sanitize_bookings_export_settings( $raw_settings ) {
 	
 	$columns_settings = array( 'csv_columns', 'ical_columns' );
 	$keys_by_type = array( 
-		'str'		=> array( 'vevent_summary' ),
-		'str_id'	=> array( 'csv_export_groups' ),
-		'str_html'	=> array( 'vevent_description' ),
-		'int'		=> array( 'per_page' ),
-		'bool'		=> array( 'csv_raw', 'ical_raw', 'ical_booking_list_header' ),
-		'array'		=> array( 'csv_columns', 'ical_columns' )
+		'str'      => array( 'vevent_summary' ),
+		'str_id'   => array( 'csv_export_groups' ),
+		'str_html' => array( 'vevent_description' ),
+		'int'      => array( 'per_page' ),
+		'bool'     => array( 'csv_raw', 'ical_raw', 'ical_booking_list_header' ),
+		'array'    => array( 'csv_columns', 'ical_columns' )
 	);
 	$settings = bookacti_sanitize_values( $default_settings, $raw_settings, $keys_by_type );
 	
@@ -1760,33 +1760,34 @@ function bookacti_sanitize_bookings_export_settings( $raw_settings ) {
 /**
  * Get bookings export event tags
  * @since 1.8.0
+ * @version 1.14.0
  * @return array
  */
-function bookacti_get_bookings_export_event_tags() {
+function bookacti_get_bookings_export_event_tags( $locale = '' ) {
 	return apply_filters( 'bookacti_bookings_export_event_tags', array(
-		'{event_id}'				=> esc_html__( 'Event ID', 'booking-activities' ),
-		'{event_title}'				=> esc_html__( 'The event title', 'booking-activities' ),
-		'{event_start}'				=> esc_html__( 'Event start date and time (formatted)', 'booking-activities' ),
-		'{event_end}'				=> esc_html__( 'Event end date and time (formatted)', 'booking-activities' ),
-		'{event_start_raw}'			=> esc_html__( 'Event start date and time (ISO)', 'booking-activities' ),
-		'{event_end_raw}'			=> esc_html__( 'Event end date and time (ISO)', 'booking-activities' ),
-		'{event_booked_quantity}'	=> esc_html__( 'Number of active bookings', 'booking-activities' ),
-		'{event_availability}'		=> esc_html__( 'Number of remaining places', 'booking-activities' ),
-		'{event_availability_total}'=> esc_html__( 'Total number of places', 'booking-activities' ),
-		'{activity_id}'				=> esc_html__( 'Activity ID', 'booking-activities' ),
-		'{activity_title}'			=> esc_html__( 'Activity title', 'booking-activities' ),
-		'{calendar_id}'				=> esc_html__( 'Calendar ID', 'booking-activities' ),
-		'{calendar_title}'			=> esc_html__( 'Calendar title', 'booking-activities' ),
-		'{booking_list}'			=> esc_html__( 'Event booking list (table)', 'booking-activities' ),
-		'{booking_list_raw}'		=> esc_html__( 'Event booking list (csv)', 'booking-activities' )
-	));
+		'{event_id}'                 => esc_html__( 'Event ID', 'booking-activities' ),
+		'{event_title}'              => esc_html__( 'The event title', 'booking-activities' ),
+		'{event_start}'              => esc_html__( 'Event start date and time (formatted)', 'booking-activities' ),
+		'{event_end}'                => esc_html__( 'Event end date and time (formatted)', 'booking-activities' ),
+		'{event_start_raw}'          => esc_html__( 'Event start date and time (ISO)', 'booking-activities' ),
+		'{event_end_raw}'            => esc_html__( 'Event end date and time (ISO)', 'booking-activities' ),
+		'{event_booked_quantity}'    => esc_html__( 'Number of active bookings', 'booking-activities' ),
+		'{event_availability}'       => esc_html__( 'Number of remaining places', 'booking-activities' ),
+		'{event_availability_total}' => esc_html__( 'Total number of places', 'booking-activities' ),
+		'{activity_id}'              => esc_html__( 'Activity ID', 'booking-activities' ),
+		'{activity_title}'           => esc_html__( 'Activity title', 'booking-activities' ),
+		'{calendar_id}'              => esc_html__( 'Calendar ID', 'booking-activities' ),
+		'{calendar_title}'           => esc_html__( 'Calendar title', 'booking-activities' ),
+		'{booking_list}'             => esc_html__( 'Event booking list (table)', 'booking-activities' ),
+		'{booking_list_raw}'         => esc_html__( 'Event booking list (csv)', 'booking-activities' )
+	), $locale );
 }
 
 
 /**
  * Convert a list of bookings to CSV format
  * @since 1.6.0
- * @version 1.8.0
+ * @version 1.14.0
  * @param array $filters
  * @param array $args_raw
  * @return string
@@ -1794,27 +1795,27 @@ function bookacti_get_bookings_export_event_tags() {
 function bookacti_convert_bookings_to_csv( $filters, $args_raw = array() ) {
 	$default_settings = bookacti_get_bookings_export_default_settings();
 	$args_default = array( 
-		'columns'	=> $default_settings[ 'csv_columns' ],
-		'raw'		=> $default_settings[ 'csv_raw' ],
-		'locale'	=> '',
+		'columns' => $default_settings[ 'csv_columns' ],
+		'raw'     => $default_settings[ 'csv_raw' ],
+		'locale'  => '',
 	);
 	$args = wp_parse_args( $args_raw, $args_default );
 	
 	// Remove unknown columns 
 	$headers = array();
-	$allowed_columns = bookacti_get_bookings_export_columns();
+	$allowed_columns = bookacti_get_bookings_export_columns( $args[ 'locale' ] );
 	foreach( $args[ 'columns' ] as $i => $column_name ) {
 		if( ! isset( $allowed_columns[ $column_name ] ) ) { unset( $args[ 'columns' ][ $i ] ); continue; }
-		$headers[ $column_name ] = str_replace( ',', '', strip_tags( apply_filters( 'bookacti_translate_text', $allowed_columns[ $column_name ], $args[ 'locale' ] ) ) );
+		$headers[ $column_name ] = str_replace( ',', '', strip_tags( $allowed_columns[ $column_name ] ) );
 	}
 	
 	// Get booking items
 	$export_args = array( 
 		'filters' => $filters, 
 		'columns' => $args[ 'columns' ], 
-		'raw' => $args[ 'raw' ], 
-		'type' => 'csv',
-		'locale' => $args[ 'locale' ]
+		'raw'     => $args[ 'raw' ], 
+		'type'    => 'csv',
+		'locale'  => $args[ 'locale' ]
 	);
 	$items = bookacti_get_bookings_for_export( $export_args );
 	
@@ -1834,13 +1835,13 @@ function bookacti_convert_bookings_to_ical( $filters = array(), $args_raw = arra
 	// Sanitized args
 	$default_settings = bookacti_get_bookings_export_default_settings();
 	$args_default = array( 
-		'vevent_summary'		=> $default_settings[ 'vevent_summary' ],
-		'vevent_description'	=> $default_settings[ 'vevent_description' ],
-		'tooltip_booking_list_columns'	=> $default_settings[ 'ical_columns' ],
-		'booking_list_header'	=> $default_settings[ 'ical_booking_list_header' ],
-		'raw'					=> $default_settings[ 'ical_raw' ],
-		'sequence'				=> 0,
-		'locale'				=> ''
+		'vevent_summary'               => $default_settings[ 'vevent_summary' ],
+		'vevent_description'           => $default_settings[ 'vevent_description' ],
+		'tooltip_booking_list_columns' => $default_settings[ 'ical_columns' ],
+		'booking_list_header'          => $default_settings[ 'ical_booking_list_header' ],
+		'raw'                          => $default_settings[ 'ical_raw' ],
+		'sequence'                     => 0,
+		'locale'                       => ''
 	);
 	$args = wp_parse_args( $args_raw, $args_default );
 	
@@ -1849,12 +1850,12 @@ function bookacti_convert_bookings_to_ical( $filters = array(), $args_raw = arra
 	$export_args = array( 
 		'filters' => $filters, 
 		'columns' => $args[ 'tooltip_booking_list_columns' ], 
-		'raw' => $args[ 'raw' ], 
-		'type' => 'ical',
-		'locale' => $args[ 'locale' ]
+		'raw'     => $args[ 'raw' ], 
+		'type'    => 'ical',
+		'locale'  => $args[ 'locale' ]
 	);
 	$booking_items = bookacti_get_bookings_for_export( $export_args );
-	$events_tags = bookacti_get_bookings_export_events_tags_values( $booking_items, $args );
+	$events_tags   = bookacti_get_bookings_export_events_tags_values( $booking_items, $args );
 	
 	$vcalendar = apply_filters( 'bookacti_bookings_ical_vcalendar', array(
 		'X-WR-CALNAME' => esc_html__( 'My bookings', 'booking-activities' ),
@@ -1887,12 +1888,12 @@ function bookacti_convert_bookings_to_ical( $filters = array(), $args_raw = arra
 		$description= $args[ 'vevent_description' ] ? str_replace( array_keys( $events_tags[ $index ] ), array_values( $events_tags[ $index ] ), $args[ 'vevent_description' ] ) : '';
 		
 		$vevents[ $index ] = apply_filters( 'bookacti_bookings_ical_vevent', array(
-			'UID'			=> $uid,
-			'DTSTART'		=> $event_start->format( 'Ymd\THis\Z' ),
-			'DTEND'			=> $event_end->format( 'Ymd\THis\Z' ),
-			'SUMMARY'		=> bookacti_sanitize_ical_property( $summary, 'SUMMARY' ),
-			'DESCRIPTION'	=> bookacti_sanitize_ical_property( $description, 'DESCRIPTION' ),
-			'SEQUENCE'		=> $args[ 'sequence' ]
+			'UID'         => $uid,
+			'DTSTART'     => $event_start->format( 'Ymd\THis\Z' ),
+			'DTEND'       => $event_end->format( 'Ymd\THis\Z' ),
+			'SUMMARY'     => bookacti_sanitize_ical_property( $summary, 'SUMMARY' ),
+			'DESCRIPTION' => bookacti_sanitize_ical_property( $description, 'DESCRIPTION' ),
+			'SEQUENCE'    => $args[ 'sequence' ]
 		), $item, $events_tags[ $index ], $vcalendar, $args, $filters );
 	}
 	
@@ -1905,6 +1906,7 @@ function bookacti_convert_bookings_to_ical( $filters = array(), $args_raw = arra
 /**
  * Get the events tags values
  * @since 1.8.0
+ * @version 1.14.0
  * @param array $booking_items
  * @param array $args
  * @return array
@@ -1915,15 +1917,15 @@ function bookacti_get_bookings_export_events_tags_values( $booking_items, $args 
 	// Remove unknown columns in the booking list
 	if( $has_booking_list ) {
 		$booking_list_headers = array();
-		$allowed_columns = bookacti_get_bookings_export_columns();
+		$allowed_columns = bookacti_get_bookings_export_columns( $args[ 'locale' ] );
 		foreach( $args[ 'tooltip_booking_list_columns' ] as $i => $column_name ) {
 			if( ! isset( $allowed_columns[ $column_name ] ) ) { unset( $args[ 'tooltip_booking_list_columns' ][ $i ] ); continue; }
-			$booking_list_headers[ $column_name ] = apply_filters( 'bookacti_translate_text', $allowed_columns[ $column_name ], $args[ 'locale' ] );
+			$booking_list_headers[ $column_name ] = $allowed_columns[ $column_name ];
 		}
 		if( empty( $args[ 'tooltip_booking_list_columns' ] ) ) { $has_booking_list = false; }
 	}
 	
-	$date_format = bookacti_get_message( 'date_format_long' );
+	$date_format = bookacti_get_message( 'date_format_long', false, $args[ 'locale' ] );
 	
 	// Order the items by event occurrence and merge data into an event array
 	$qty_ack = array();
@@ -1934,21 +1936,21 @@ function bookacti_get_bookings_export_events_tags_values( $booking_items, $args 
 		// Get the initial tags values
 		if( ! isset( $events_tags[ $index ] ) ) {
 			$events_tags[ $index ] = array(
-				'{event_id}'				=> $item[ 'event_id' ],
-				'{event_title}'				=> $item[ 'event_title' ],
-				'{event_start}'				=> bookacti_format_datetime( $item[ 'start_date_raw' ], $date_format ),
-				'{event_end}'				=> bookacti_format_datetime( $item[ 'end_date_raw' ], $date_format ),
-				'{event_start_raw}'			=> $item[ 'start_date_raw' ],
-				'{event_end_raw}'			=> $item[ 'end_date_raw' ],
-				'{event_booked_quantity}'	=> 0,
-				'{event_availability}'		=> intval( $item[ 'availability' ] ),
-				'{event_availability_total}'=> intval( $item[ 'availability' ] ),
-				'{activity_id}'				=> $item[ 'activity_id' ],
-				'{activity_title}'			=> $item[ 'activity_title' ],
-				'{calendar_id}'				=> $item[ 'template_id' ],
-				'{calendar_title}'			=> $item[ 'template_title' ],
-				'{booking_list}'			=> $has_booking_list && ! empty( $args[ 'booking_list_header' ] ) ? '<tr><th>' . implode( '</th><th>', $booking_list_headers ) . '</th></tr>' : '',
-				'{booking_list_raw}'		=> $has_booking_list && ! empty( $args[ 'booking_list_header' ] ) ? implode( ', ', str_replace( ',', '', array_map( 'strip_tags', $booking_list_headers ) ) ) : ''
+				'{event_id}'                 => $item[ 'event_id' ],
+				'{event_title}'              => $item[ 'event_title' ],
+				'{event_start}'              => bookacti_format_datetime( $item[ 'start_date_raw' ], $date_format ),
+				'{event_end}'                => bookacti_format_datetime( $item[ 'end_date_raw' ], $date_format ),
+				'{event_start_raw}'          => $item[ 'start_date_raw' ],
+				'{event_end_raw}'            => $item[ 'end_date_raw' ],
+				'{event_booked_quantity}'    => 0,
+				'{event_availability}'       => intval( $item[ 'availability' ] ),
+				'{event_availability_total}' => intval( $item[ 'availability' ] ),
+				'{activity_id}'              => $item[ 'activity_id' ],
+				'{activity_title}'           => $item[ 'activity_title' ],
+				'{calendar_id}'              => $item[ 'template_id' ],
+				'{calendar_title}'           => $item[ 'template_title' ],
+				'{booking_list}'             => $has_booking_list && ! empty( $args[ 'booking_list_header' ] ) ? '<tr><th>' . implode( '</th><th>', $booking_list_headers ) . '</th></tr>' : '',
+				'{booking_list_raw}'         => $has_booking_list && ! empty( $args[ 'booking_list_header' ] ) ? implode( ', ', str_replace( ',', '', array_map( 'strip_tags', $booking_list_headers ) ) ) : ''
 			);
 		}
 		
@@ -1963,7 +1965,7 @@ function bookacti_get_bookings_export_events_tags_values( $booking_items, $args 
 		if( $has_booking_list ) {
 			$booking_list_values = array_replace( $booking_list_headers, array_intersect_key( $item, $booking_list_headers ) );
 			if( $booking_list_values ) {
-				$events_tags[ $index ][ '{booking_list}' ] .= '<tr><td>' . implode( '</td><td>', $booking_list_values ) . '</td></tr>';
+				$events_tags[ $index ][ '{booking_list}' ]     .= '<tr><td>' . implode( '</td><td>', $booking_list_values ) . '</td></tr>';
 				$events_tags[ $index ][ '{booking_list_raw}' ] .= '\n' . implode( ', ', str_replace( ',', '', array_map( 'strip_tags', $booking_list_values ) ) );
 			}
 		}
@@ -1976,7 +1978,7 @@ function bookacti_get_bookings_export_events_tags_values( $booking_items, $args 
 /**
  * Get an array of bookings data formatted to be exported
  * @since 1.6.0
- * @version 1.8.0
+ * @version 1.14.0
  * @param array $args_raw
  * @return array
  */
@@ -1985,9 +1987,9 @@ function bookacti_get_bookings_for_export( $args_raw = array() ) {
 	$default_args = array(
 		'filters' => array(),
 		'columns' => array(),
-		'raw' => true,
-		'type' => 'csv',
-		'locale' => ''
+		'raw'     => true,
+		'type'    => 'csv',
+		'locale'  => ''
 	);
 	$args = wp_parse_args( $args_raw, $default_args );
 	
@@ -2016,13 +2018,13 @@ function bookacti_get_bookings_for_export( $args_raw = array() ) {
 	if( ( $may_have_groups || $single_only ) || $get_user_data ) {
 		foreach( $bookings as $booking ) {
 			if( $booking->user_id && is_numeric( $booking->user_id ) && ! in_array( $booking->user_id, $user_ids, true ) ) { $user_ids[] = $booking->user_id; }
-			if( $booking->group_id && ! in_array( $booking->group_id, $group_ids, true ) )	{ $group_ids[] = $booking->group_id; }
+			if( $booking->group_id && ! in_array( $booking->group_id, $group_ids, true ) ) { $group_ids[] = $booking->group_id; }
 		}
 	}
 
 	// Retrieve the required groups data only
-	$booking_groups		= array();
-	$displayed_groups	= array();
+	$booking_groups   = array();
+	$displayed_groups = array();
 	if( ( $may_have_groups || $single_only ) && $group_ids ) {
 		// Get only the groups that will be displayed
 		$group_filters = bookacti_format_booking_filters( array( 'in__booking_group_id' => $group_ids ) );
@@ -2043,10 +2045,10 @@ function bookacti_get_bookings_for_export( $args_raw = array() ) {
 	}
 	$unknown_user_id = esc_attr( apply_filters( 'bookacti_unknown_user_id', 'unknown_user' ) );
 	
-	$date_format		= $args[ 'raw' ] ? 'Y-m-d' : get_option( 'date_format' );
-	$datetime_format	= $args[ 'raw' ] ? 'Y-m-d H:i:s' : apply_filters( 'bookacti_translate_text', bookacti_get_message( 'date_format_long', true ), $args[ 'locale' ] );
-	$booking_status		= $args[ 'raw' ] ? array() : bookacti_get_booking_state_labels();
-	$payment_status		= $args[ 'raw' ] ? array() : bookacti_get_payment_status_labels();
+	$date_format     = $args[ 'raw' ] ? 'Y-m-d' : get_option( 'date_format' );
+	$datetime_format = $args[ 'raw' ] ? 'Y-m-d H:i:s' : bookacti_get_message( 'date_format_long', false, $args[ 'locale' ] );
+	$booking_status  = $args[ 'raw' ] ? array() : bookacti_get_booking_state_labels();
+	$payment_status  = $args[ 'raw' ] ? array() : bookacti_get_payment_status_labels();
 	
 	// Build booking list
 	$booking_items = array();
@@ -2056,79 +2058,79 @@ function bookacti_get_bookings_for_export( $args_raw = array() ) {
 		// Display one single row for a booking group, instead of each bookings of the group
 		if( $booking->group_id && $may_have_groups && ! $single_only ) {
 			// If the group row has already been displayed, or if it is not found, continue
-			if( isset( $displayed_groups[ $booking->group_id ] ) )	{ continue; }
-			if( empty( $booking_groups[ $booking->group_id ] ) )	{ continue; }
+			if( isset( $displayed_groups[ $booking->group_id ] ) ) { continue; }
+			if( empty( $booking_groups[ $booking->group_id ] ) )   { continue; }
 
-			$booking_type	= 'group';
-			$id				= $group->id;
-			$user_id		= $group->user_id;
-			$status			= $group->state;
-			$paid			= $group->payment_status;
-			$event_id		= $group->event_group_id;
-			$title			= $group->group_title;
-			$start			= $group->start;
-			$end			= $group->end;
-			$quantity		= $group->quantity;
-			$availability	= $booking->availability;
-			$form_id		= $group->form_id;
-			$order_id		= $group->order_id;
-			$activity_id	= $group->category_id;
-			$activity_title	= $group->category_title;
-			$active			= $group->active;
+			$booking_type   = 'group';
+			$id             = $group->id;
+			$user_id        = $group->user_id;
+			$status         = $group->state;
+			$paid           = $group->payment_status;
+			$event_id       = $group->event_group_id;
+			$title          = $group->group_title;
+			$start          = $group->start;
+			$end            = $group->end;
+			$quantity       = $group->quantity;
+			$availability   = $booking->availability;
+			$form_id        = $group->form_id;
+			$order_id       = $group->order_id;
+			$activity_id    = $group->category_id;
+			$activity_title = $group->category_title;
+			$active         = $group->active;
 
 			$displayed_groups[ $booking->group_id ] = $booking->id;
 
 		// Single booking
 		} else {
-			$booking_type	= 'single';
-			$id				= $booking->id;
-			$user_id		= $booking->user_id;
-			$status			= $booking->state;
-			$paid			= $booking->payment_status;
-			$title			= $booking->event_title;
-			$event_id		= $booking->event_id;
-			$start			= $booking->event_start;
-			$end			= $booking->event_end;
-			$quantity		= $booking->quantity;
-			$availability	= $booking->availability;
-			$form_id		= $booking->form_id;
-			$order_id		= $booking->order_id;
-			$activity_id	= $booking->activity_id;
-			$activity_title	= $booking->activity_title;
-			$active			= $booking->active;
+			$booking_type   = 'single';
+			$id             = $booking->id;
+			$user_id        = $booking->user_id;
+			$status         = $booking->state;
+			$paid           = $booking->payment_status;
+			$title          = $booking->event_title;
+			$event_id       = $booking->event_id;
+			$start          = $booking->event_start;
+			$end            = $booking->event_end;
+			$quantity       = $booking->quantity;
+			$availability   = $booking->availability;
+			$form_id        = $booking->form_id;
+			$order_id       = $booking->order_id;
+			$activity_id    = $booking->activity_id;
+			$activity_title = $booking->activity_title;
+			$active         = $booking->active;
 		}
 
 		$booking_data = array( 
-			'booking_id'			=> $id,
-			'booking_type'			=> $booking_type,
-			'booking_active'		=> $active,
-			'status'				=> $args[ 'raw' ] ? $status : ( ! empty( $booking_status[ $status ][ 'label' ] ) ? $booking_status[ $status ][ 'label' ] : $status ),
-			'status_raw'			=> $status,
-			'payment_status'		=> $args[ 'raw' ] ? $paid : ( ! empty( $payment_status[ $paid ][ 'label' ] ) ? $payment_status[ $paid ][ 'label' ] : $paid ),
-			'payment_status_raw'	=> $paid,
-			'quantity'				=> $quantity,
-			'availability'			=> $availability,
-			'creation_date'			=> $args[ 'raw' ] ? $booking->creation_date : bookacti_format_datetime( $booking->creation_date, $date_format ),
-			'creation_date_raw'		=> $booking->creation_date,
-			'event_id'				=> $event_id,
-			'event_title'			=> apply_filters( 'bookacti_translate_text', $title, $args[ 'locale' ] ),
-			'start_date'			=> $args[ 'raw' ] ? $start : bookacti_format_datetime( $start, $datetime_format ),
-			'end_date'				=> $args[ 'raw' ] ? $end : bookacti_format_datetime( $end, $datetime_format ),
-			'start_date_raw'		=> $start,
-			'end_date_raw'			=> $end,
-			'template_id'			=> $booking->template_id,
-			'template_title'		=> apply_filters( 'bookacti_translate_text', $booking->template_title, $args[ 'locale' ] ),
-			'activity_id'			=> $activity_id,
-			'activity_title'		=> apply_filters( 'bookacti_translate_text', $activity_title, $args[ 'locale' ] ),
-			'form_id'				=> $form_id,
-			'order_id'				=> $order_id,
-			'customer_id'			=> $user_id,
-			'customer_display_name'	=> '',
-			'customer_first_name'	=> '',
-			'customer_last_name'	=> '',
-			'customer_email'		=> '',
-			'customer_phone'		=> '',
-			'customer_roles'		=> ''
+			'booking_id'            => $id,
+			'booking_type'          => $booking_type,
+			'booking_active'        => $active,
+			'status'                => $args[ 'raw' ] ? $status : ( ! empty( $booking_status[ $status ][ 'label' ] ) ? $booking_status[ $status ][ 'label' ] : $status ),
+			'status_raw'            => $status,
+			'payment_status'        => $args[ 'raw' ] ? $paid : ( ! empty( $payment_status[ $paid ][ 'label' ] ) ? $payment_status[ $paid ][ 'label' ] : $paid ),
+			'payment_status_raw'    => $paid,
+			'quantity'              => $quantity,
+			'availability'          => $availability,
+			'creation_date'         => $args[ 'raw' ] ? $booking->creation_date : bookacti_format_datetime( $booking->creation_date, $date_format ),
+			'creation_date_raw'     => $booking->creation_date,
+			'event_id'              => $event_id,
+			'event_title'           => $title ? apply_filters( 'bookacti_translate_text', $title, $args[ 'locale' ] ) : '',
+			'start_date'            => $args[ 'raw' ] ? $start : bookacti_format_datetime( $start, $datetime_format ),
+			'end_date'              => $args[ 'raw' ] ? $end : bookacti_format_datetime( $end, $datetime_format ),
+			'start_date_raw'        => $start,
+			'end_date_raw'          => $end,
+			'template_id'           => $booking->template_id,
+			'template_title'        => ! empty( $booking->template_title ) ? apply_filters( 'bookacti_translate_text', $booking->template_title, $args[ 'locale' ] ) : '',
+			'activity_id'           => $activity_id,
+			'activity_title'        => $activity_title ? apply_filters( 'bookacti_translate_text', $activity_title, $args[ 'locale' ] ) : '',
+			'form_id'               => $form_id,
+			'order_id'              => $order_id,
+			'customer_id'           => $user_id,
+			'customer_display_name' => '',
+			'customer_first_name'   => '',
+			'customer_last_name'    => '',
+			'customer_email'        => '',
+			'customer_phone'        => '',
+			'customer_roles'        => ''
 		);
 
 		// Format customer column
@@ -2138,22 +2140,22 @@ function bookacti_get_bookings_for_export( $args_raw = array() ) {
 			if( ! empty( $users[ $user_id ] ) ) {
 				$user = $users[ $user_id ];
 				$booking_data = array_merge( $booking_data, array(
-					'customer_display_name'	=> $user->display_name,
-					'customer_first_name'	=> ! empty( $user->first_name ) ? $user->first_name : '',
-					'customer_last_name'	=> ! empty( $user->last_name ) ? $user->last_name : '',
-					'customer_email'		=> ! empty( $user->user_email ) ? $user->user_email : '',
-					'customer_phone'		=> ! empty( $user->phone ) ? $user->phone : '',
-					'customer_roles'		=> ! empty( $user->roles ) ? implode( ', ', array_replace( array_combine( $user->roles, $user->roles ), array_intersect_key( $roles_names, array_flip( $user->roles ) ) ) ) : ''
+					'customer_display_name' => $user->display_name,
+					'customer_first_name'   => ! empty( $user->first_name ) ? $user->first_name : '',
+					'customer_last_name'    => ! empty( $user->last_name ) ? $user->last_name : '',
+					'customer_email'        => ! empty( $user->user_email ) ? $user->user_email : '',
+					'customer_phone'        => ! empty( $user->phone ) ? $user->phone : '',
+					'customer_roles'        => ! empty( $user->roles ) ? implode( ', ', array_replace( array_combine( $user->roles, $user->roles ), array_intersect_key( $roles_names, array_flip( $user->roles ) ) ) ) : ''
 				));
 
 			// If the booking was made without account
 			} else if( $user_id === $unknown_user_id || is_email( $user_id ) ) {
 				$booking_meta = $group && $args[ 'filters' ][ 'group_by' ] !== 'booking_group' ? $group : $booking;
 				$booking_data = array_merge( $booking_data, array(
-					'customer_first_name'	=> ! empty( $booking_meta->user_first_name ) ? $booking_meta->user_first_name : '',
-					'customer_last_name'	=> ! empty( $booking_meta->user_last_name ) ? $booking_meta->user_last_name : '',
-					'customer_email'		=> ! empty( $booking_meta->user_email ) ? $booking_meta->user_email : '',
-					'customer_phone'		=> ! empty( $booking_meta->user_phone ) ? $booking_meta->user_phone : ''
+					'customer_first_name' => ! empty( $booking_meta->user_first_name ) ? $booking_meta->user_first_name : '',
+					'customer_last_name'  => ! empty( $booking_meta->user_last_name ) ? $booking_meta->user_last_name : '',
+					'customer_email'      => ! empty( $booking_meta->user_email ) ? $booking_meta->user_email : '',
+					'customer_phone'      => ! empty( $booking_meta->user_phone ) ? $booking_meta->user_phone : ''
 				));
 				$booking_data[ 'customer_display_name' ] .= ! empty( $booking_data[ 'customer_first_name' ] ) ? $booking_data[ 'customer_first_name' ] : '';
 				$booking_data[ 'customer_display_name' ] .= empty( $booking_data[ 'customer_first_name' ] ) && ! empty( $booking_data[ 'customer_last_name' ] ) ? ' ' : '';
@@ -2225,9 +2227,9 @@ function bookacti_is_booking_secret_key_valid( $secret_key, $booking_id, $bookin
 function bookacti_get_refund_actions() {
 	$possible_actions_array = array(
 		'email' => array( 
-			'id'			=> 'email',
-			'label'			=> esc_html__( 'Email', 'booking-activities' ),
-			'description'	=> esc_html__( 'Send a refund request by email to the administrator.', 'booking-activities' )
+			'id'          => 'email',
+			'label'       => esc_html__( 'Email', 'booking-activities' ),
+			'description' => esc_html__( 'Send a refund request by email to the administrator.', 'booking-activities' )
 		)
 	);
 	return apply_filters( 'bookacti_refund_actions', $possible_actions_array );
@@ -2422,33 +2424,35 @@ function bookacti_get_booking_refunds_html( $refunds ) {
 
 /**
  * Retrieve booking states labels and display data
- * @version 1.6.0
+ * @version 1.14.0
+ * @param string $locale
  * @return array
  */
-function bookacti_get_booking_state_labels() {
+function bookacti_get_booking_state_labels( $locale = '' ) {
 	return apply_filters( 'bookacti_booking_states_labels_array', array(
-		'delivered'			=> array( 'display_state' => 'good',	'label' => esc_html__( 'Delivered', 'booking-activities' ) ),
-		'booked'			=> array( 'display_state' => 'good',	'label' => esc_html__( 'Booked', 'booking-activities' ) ),
-		'pending'			=> array( 'display_state' => 'warning',	'label' => esc_html__( 'Pending', 'booking-activities' ) ),
-		'cancelled'			=> array( 'display_state' => 'bad',		'label' => esc_html__( 'Cancelled', 'booking-activities' ) ),
-		'refunded'			=> array( 'display_state' => 'bad',		'label' => esc_html__( 'Refunded', 'booking-activities' ) ),
-		'refund_requested'	=> array( 'display_state' => 'bad',		'label' => esc_html__( 'Refund requested', 'booking-activities' ) )
-	) );
+		'delivered'        => array( 'display_state' => 'good',    'label' => esc_html__( 'Delivered', 'booking-activities' ) ),
+		'booked'           => array( 'display_state' => 'good',    'label' => esc_html__( 'Booked', 'booking-activities' ) ),
+		'pending'          => array( 'display_state' => 'warning', 'label' => esc_html__( 'Pending', 'booking-activities' ) ),
+		'cancelled'        => array( 'display_state' => 'bad',     'label' => esc_html__( 'Cancelled', 'booking-activities' ) ),
+		'refunded'         => array( 'display_state' => 'bad',     'label' => esc_html__( 'Refunded', 'booking-activities' ) ),
+		'refund_requested' => array( 'display_state' => 'bad',     'label' => esc_html__( 'Refund requested', 'booking-activities' ) )
+	), $locale );
 }
 
 
 /**
  * Retrieve payment status labels and display data
  * @since 1.3.0
- * @version 1.6.0
+ * @version 1.14.0
+ * @param string $locale
  * @return array
  */
-function bookacti_get_payment_status_labels() {
+function bookacti_get_payment_status_labels( $locale = '' ) {
 	return apply_filters( 'bookacti_payment_status_labels_array', array(
-		'none'	=> array( 'display_state' => 'disabled','label' => esc_html__( 'No payment required', 'booking-activities' ) ),
-		'owed'	=> array( 'display_state' => 'warning',	'label' => esc_html__( 'Owed', 'booking-activities' ) ),
-		'paid'	=> array( 'display_state' => 'good',	'label' => esc_html__( 'Paid', 'booking-activities' ) )
-	) );
+		'none' => array( 'display_state' => 'disabled', 'label' => esc_html__( 'No payment required', 'booking-activities' ) ),
+		'owed' => array( 'display_state' => 'warning',  'label' => esc_html__( 'Owed', 'booking-activities' ) ),
+		'paid' => array( 'display_state' => 'good',     'label' => esc_html__( 'Paid', 'booking-activities' ) )
+	), $locale );
 }
 
 
@@ -2519,37 +2523,38 @@ function bookacti_get_active_booking_states() {
 /**
  * Booking list column labels
  * @since 1.7.4
- * @version 1.8.0
+ * @version 1.14.0
+ * @param string $locale
  * @return array
  */
-function bookacti_get_user_booking_list_columns_labels() {
+function bookacti_get_user_booking_list_columns_labels( $locale = '' ) {
 	return apply_filters( 'bookacti_user_booking_list_columns_labels', array(
-		'booking_id'			=> _x( 'id', 'An id is a unique identification number', 'booking-activities' ),
-		'booking_type'			=> esc_html_x( 'Type', 'Booking type (single or group)', 'booking-activities' ),
-		'status'				=> esc_html_x( 'Status', 'Booking status', 'booking-activities' ),
-		'payment_status'		=> esc_html_x( 'Paid', 'Payment status column name', 'booking-activities' ),
-		'quantity'				=> esc_html_x( 'Qty', 'Short for "Quantity"', 'booking-activities' ),
-		'creation_date'			=> esc_html__( 'Date', 'booking-activities' ),
-		'customer_id'			=> esc_html__( 'Customer ID', 'booking-activities' ),
-		'customer_display_name'	=> esc_html__( 'Customer', 'booking-activities' ),
-		'customer_first_name'	=> esc_html__( 'First name', 'booking-activities' ),
-		'customer_last_name'	=> esc_html__( 'Last name', 'booking-activities' ),
-		'customer_email'		=> esc_html__( 'Email', 'booking-activities' ),
-		'customer_phone'		=> esc_html__( 'Phone', 'booking-activities' ),
-		'customer_roles'		=> esc_html__( 'Roles', 'booking-activities' ),
-		'events'				=> esc_html__( 'Events', 'booking-activities' ),
-		'event_id'				=> esc_html__( 'Event ID', 'booking-activities' ),
-		'event_title'			=> esc_html__( 'Title', 'booking-activities' ),
-		'start_date'			=> esc_html__( 'Start', 'booking-activities' ),
-		'end_date'				=> esc_html__( 'End', 'booking-activities' ),
-		'template_id'			=> esc_html__( 'Calendar ID', 'booking-activities' ),
-		'template_title'		=> esc_html__( 'Calendar', 'booking-activities' ),
-		'activity_id'			=> esc_html__( 'Activity ID', 'booking-activities' ),
-		'activity_title'		=> esc_html__( 'Activity', 'booking-activities' ),
-		'form_id'				=> esc_html__( 'Form ID', 'booking-activities' ),
-		'order_id'				=> esc_html__( 'Order ID', 'booking-activities' ),
-		'actions'				=> esc_html__( 'Actions', 'booking-activities' )
-	) );
+		'booking_id'            => _x( 'id', 'An id is a unique identification number', 'booking-activities' ),
+		'booking_type'          => esc_html_x( 'Type', 'Booking type (single or group)', 'booking-activities' ),
+		'status'                => esc_html_x( 'Status', 'Booking status', 'booking-activities' ),
+		'payment_status'        => esc_html_x( 'Paid', 'Payment status column name', 'booking-activities' ),
+		'quantity'              => esc_html_x( 'Qty', 'Short for "Quantity"', 'booking-activities' ),
+		'creation_date'         => esc_html__( 'Date', 'booking-activities' ),
+		'customer_id'           => esc_html__( 'Customer ID', 'booking-activities' ),
+		'customer_display_name' => esc_html__( 'Customer', 'booking-activities' ),
+		'customer_first_name'   => esc_html__( 'First name', 'booking-activities' ),
+		'customer_last_name'    => esc_html__( 'Last name', 'booking-activities' ),
+		'customer_email'        => esc_html__( 'Email', 'booking-activities' ),
+		'customer_phone'        => esc_html__( 'Phone', 'booking-activities' ),
+		'customer_roles'        => esc_html__( 'Roles', 'booking-activities' ),
+		'events'                => esc_html__( 'Events', 'booking-activities' ),
+		'event_id'              => esc_html__( 'Event ID', 'booking-activities' ),
+		'event_title'           => esc_html__( 'Title', 'booking-activities' ),
+		'start_date'            => esc_html__( 'Start', 'booking-activities' ),
+		'end_date'              => esc_html__( 'End', 'booking-activities' ),
+		'template_id'           => esc_html__( 'Calendar ID', 'booking-activities' ),
+		'template_title'        => esc_html__( 'Calendar', 'booking-activities' ),
+		'activity_id'           => esc_html__( 'Activity ID', 'booking-activities' ),
+		'activity_title'        => esc_html__( 'Activity', 'booking-activities' ),
+		'form_id'               => esc_html__( 'Form ID', 'booking-activities' ),
+		'order_id'              => esc_html__( 'Order ID', 'booking-activities' ),
+		'actions'               => esc_html__( 'Actions', 'booking-activities' )
+	), $locale );
 }
 
 
@@ -2616,7 +2621,7 @@ function bookacti_get_user_booking_list_private_columns() {
 /**
  * Get booking list items
  * @since 1.7.4
- * @version 1.11.2
+ * @version 1.14.0
  * @param array $filters
  * @param array $columns
  * @return string
@@ -2662,18 +2667,18 @@ function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
 	$user_ids = array();
 	$group_ids = array();
 	foreach( $bookings as $booking ) {
-		if( $booking->user_id && is_numeric( $booking->user_id ) && ! in_array( $booking->user_id, $user_ids, true ) ){ $user_ids[] = $booking->user_id; }
-		if( $booking->group_id && ! in_array( $booking->group_id, $group_ids, true ) ){ $group_ids[] = $booking->group_id; }
+		if( $booking->user_id && is_numeric( $booking->user_id ) && ! in_array( $booking->user_id, $user_ids, true ) ) { $user_ids[] = $booking->user_id; }
+		if( $booking->group_id && ! in_array( $booking->group_id, $group_ids, true ) ) { $group_ids[] = $booking->group_id; }
 	}
 	
 	// Retrieve the required groups data only
-	$booking_groups		= array();
-	$displayed_groups	= array();
-	$bookings_per_group	= array();
+	$booking_groups     = array();
+	$displayed_groups   = array();
+	$bookings_per_group = array();
 	if( ( $may_have_groups || $single_only ) && $group_ids ) {
-		$group_filters		= bookacti_format_booking_filters( array( 'in__booking_group_id' => $group_ids, 'fetch_meta' => $filters[ 'fetch_meta' ] ) );
-		$booking_groups		= bookacti_get_booking_groups( $group_filters );
-		$groups_bookings	= bookacti_get_bookings( $group_filters );
+		$group_filters   = bookacti_format_booking_filters( array( 'in__booking_group_id' => $group_ids, 'fetch_meta' => $filters[ 'fetch_meta' ] ) );
+		$booking_groups  = bookacti_get_booking_groups( $group_filters );
+		$groups_bookings = bookacti_get_bookings( $group_filters );
 		foreach( $groups_bookings as $booking ) {
 			if( ! isset( $bookings_per_group[ $booking->group_id ] ) ) { $bookings_per_group[ $booking->group_id ] = array(); }
 			$bookings_per_group[ $booking->group_id ][] = $booking;
@@ -2690,14 +2695,13 @@ function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
 	$unknown_user_id = esc_attr( apply_filters( 'bookacti_unknown_user_id', 'unknown_user' ) );
 	
 	// Get datetime format
-	$datetime_format	= bookacti_get_message( 'date_format_long' );
-	$quantity_separator	= bookacti_get_message( 'quantity_separator' );
+	$datetime_format = bookacti_get_message( 'date_format_long' );
 	
 	// Build an array of bookings rows
 	$booking_list_items = array();
 	foreach( $bookings as $booking ) {
-		$group				= $booking->group_id && ! empty( $booking_groups[ $booking->group_id ] ) ? $booking_groups[ $booking->group_id ] : null;
-		$grouped_bookings	= $booking->group_id && ! empty( $bookings_per_group[ $booking->group_id ] ) && ! $single_only ? $bookings_per_group[ $booking->group_id ] : array( $booking );
+		$group            = $booking->group_id && ! empty( $booking_groups[ $booking->group_id ] ) ? $booking_groups[ $booking->group_id ] : null;
+		$grouped_bookings = $booking->group_id && ! empty( $bookings_per_group[ $booking->group_id ] ) && ! $single_only ? $bookings_per_group[ $booking->group_id ] : array( $booking );
 		
 		// Display one single row for a booking group, instead of each bookings of the group
 		if( $booking->group_id && $may_have_groups && ! $single_only ) {
@@ -2705,52 +2709,52 @@ function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
 			if( isset( $displayed_groups[ $booking->group_id ] ) 
 			||  empty( $booking_groups[ $booking->group_id ] ) ) { continue; }
 			
-			$group_id_link	= $current_user_can_manage_bookings ? '<a href="' . admin_url( 'admin.php?page=bookacti_bookings&booking_group_id=' . $group->id . '&group_by=booking_group&event_group_id=' . $group->event_group_id ) . '">' . $group->id . '</a>' : $group->id;
+			$group_id_link  = $current_user_can_manage_bookings ? '<a href="' . admin_url( 'admin.php?page=bookacti_bookings&booking_group_id=' . $group->id . '&group_by=booking_group&event_group_id=' . $group->event_group_id ) . '">' . $group->id . '</a>' : $group->id;
 			
-			$raw_id			= $group->id;
-			$tr_class		= 'bookacti-booking-group';
-			$id				= $group_id_link . '<span class="bookacti-booking-group-indicator">' . esc_html_x( 'Group', 'noun', 'booking-activities' ) . '</span>';
-			$user_id		= $group->user_id;
-			$status			= $group->state;
-			$paid			= $group->payment_status;
-			$event_id		= $group->event_group_id;
-			$title			= $group->group_title;
-			$start			= $group->start;
-			$end			= $group->end;
-			$quantity		= $group->quantity;
-			$form_id		= $group->form_id;
-			$order_id		= $group->order_id;
-			$actions		= in_array( 'actions', $columns, true ) ? bookacti_get_booking_group_actions_by_booking_group( $grouped_bookings, 'front' ) : array();
-			$refund_actions	= in_array( 'actions', $columns, true ) ? bookacti_get_booking_refund_actions( $grouped_bookings, 'group', 'front' ) : array();
-			$activity_id	= $group->category_id;
-			$activity_title	= $group->category_title;
-			$booking_type	= 'group';
+			$raw_id         = $group->id;
+			$tr_class       = 'bookacti-booking-group';
+			$id             = $group_id_link . '<span class="bookacti-booking-group-indicator">' . esc_html_x( 'Group', 'noun', 'booking-activities' ) . '</span>';
+			$user_id        = $group->user_id;
+			$status         = $group->state;
+			$paid           = $group->payment_status;
+			$event_id       = $group->event_group_id;
+			$title          = $group->group_title;
+			$start          = $group->start;
+			$end            = $group->end;
+			$quantity       = $group->quantity;
+			$form_id        = $group->form_id;
+			$order_id       = $group->order_id;
+			$actions        = in_array( 'actions', $columns, true ) ? bookacti_get_booking_group_actions_by_booking_group( $grouped_bookings, 'front' ) : array();
+			$refund_actions = in_array( 'actions', $columns, true ) ? bookacti_get_booking_refund_actions( $grouped_bookings, 'group', 'front' ) : array();
+			$activity_id    = $group->category_id;
+			$activity_title = $group->category_title;
+			$booking_type   = 'group';
 			
 			$displayed_groups[ $booking->group_id ] = $booking->id;
 
 		// Single booking
 		} else {
-			$booking_id_link= $current_user_can_manage_bookings ? '<a href="' . admin_url( 'admin.php?page=bookacti_bookings&booking_id=' . $booking->id . '&event_id=' . $booking->event_id . '&event_start=' . $booking->event_start . '&event_end=' . $booking->event_end ) . '">' . $booking->id. '</a>' : $booking->id;
-			$group_id_link	= $current_user_can_manage_bookings ? '<a href="' . admin_url( 'admin.php?page=bookacti_bookings&booking_group_id=' . $booking->group_id . '&group_by=booking_group&event_group_id=' . ( $group ? $group->event_group_id : '' ) ) . '">' . $booking->group_id . '</a>' : $booking->group_id;
+			$booking_id_link = $current_user_can_manage_bookings ? '<a href="' . admin_url( 'admin.php?page=bookacti_bookings&booking_id=' . $booking->id . '&event_id=' . $booking->event_id . '&event_start=' . $booking->event_start . '&event_end=' . $booking->event_end ) . '">' . $booking->id. '</a>' : $booking->id;
+			$group_id_link   = $current_user_can_manage_bookings ? '<a href="' . admin_url( 'admin.php?page=bookacti_bookings&booking_group_id=' . $booking->group_id . '&group_by=booking_group&event_group_id=' . ( $group ? $group->event_group_id : '' ) ) . '">' . $booking->group_id . '</a>' : $booking->group_id;
 			
-			$raw_id			= $booking->id;
-			$tr_class		= $booking->group_id ? 'bookacti-single-booking bookacti-gouped-booking bookacti-booking-group-id-' . $booking->group_id : 'bookacti-single-booking';
-			$id				= $booking->group_id ? $booking_id_link . '<span class="bookacti-booking-group-id" >' . $group_id_link . '</span>' : $booking_id_link;
-			$user_id		= $booking->user_id;
-			$status			= $booking->state;
-			$paid			= $booking->payment_status;
-			$event_id		= $booking->event_id;
-			$title			= $booking->event_title;
-			$start			= $booking->event_start;
-			$end			= $booking->event_end;
-			$quantity		= $booking->quantity;
-			$form_id		= $booking->form_id;
-			$order_id		= $booking->order_id;
-			$actions		= in_array( 'actions', $columns, true ) ? bookacti_get_booking_actions_by_booking( $booking, 'front' ) : array();
-			$refund_actions	= in_array( 'actions', $columns, true ) ? bookacti_get_booking_refund_actions( array( $booking ), 'single', 'front' ) : array();
-			$activity_id	= $booking->activity_id;
-			$activity_title	= $booking->activity_title;
-			$booking_type	= 'single';
+			$raw_id          = $booking->id;
+			$tr_class        = $booking->group_id ? 'bookacti-single-booking bookacti-gouped-booking bookacti-booking-group-id-' . $booking->group_id : 'bookacti-single-booking';
+			$id              = $booking->group_id ? $booking_id_link . '<span class="bookacti-booking-group-id" >' . $group_id_link . '</span>' : $booking_id_link;
+			$user_id         = $booking->user_id;
+			$status          = $booking->state;
+			$paid            = $booking->payment_status;
+			$event_id        = $booking->event_id;
+			$title           = $booking->event_title;
+			$start           = $booking->event_start;
+			$end             = $booking->event_end;
+			$quantity        = $booking->quantity;
+			$form_id         = $booking->form_id;
+			$order_id        = $booking->order_id;
+			$actions         = in_array( 'actions', $columns, true ) ? bookacti_get_booking_actions_by_booking( $booking, 'front' ) : array();
+			$refund_actions  = in_array( 'actions', $columns, true ) ? bookacti_get_booking_refund_actions( array( $booking ), 'single', 'front' ) : array();
+			$activity_id     = $booking->activity_id;
+			$activity_title  = $booking->activity_title;
+			$booking_type    = 'single';
 		}
 		
 		// Format creation date
@@ -2763,74 +2767,74 @@ function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
 		// If the customer has an account
 		if( ! empty( $users[ $user_id ] ) ) {
 			$user = $users[ $user_id ];
-			$customer	= ! empty( $user->first_name ) && ! empty( $user->last_name ) ? $user->first_name . ' ' . $user->last_name : $user->display_name;
-			$first_name	= ! empty( $user->first_name ) ? $user->first_name : '';
-			$last_name	= ! empty( $user->last_name ) ? $user->last_name : '';
-			$email		= ! empty( $user->user_email ) ? $user->user_email : '';
-			$phone		= ! empty( $user->phone ) ? $user->phone : '';
-			$roles		= ! empty( $user->roles ) ? implode( ', ', array_replace( array_combine( $user->roles, $user->roles ), array_intersect_key( $roles_names, array_flip( $user->roles ) ) ) ) : '';
+			$customer   = ! empty( $user->first_name ) && ! empty( $user->last_name ) ? $user->first_name . ' ' . $user->last_name : $user->display_name;
+			$first_name = ! empty( $user->first_name ) ? $user->first_name : '';
+			$last_name  = ! empty( $user->last_name ) ? $user->last_name : '';
+			$email      = ! empty( $user->user_email ) ? $user->user_email : '';
+			$phone      = ! empty( $user->phone ) ? $user->phone : '';
+			$roles      = ! empty( $user->roles ) ? implode( ', ', array_replace( array_combine( $user->roles, $user->roles ), array_intersect_key( $roles_names, array_flip( $user->roles ) ) ) ) : '';
 
 		// If the booking was made without account
 		} else if( $user_id === $unknown_user_id || is_email( $user_id ) ) {
-			$user		= null;
-			$customer	= ! empty( $user_id ) ? $user_id : '';
+			$user         = null;
+			$customer     = ! empty( $user_id ) ? $user_id : '';
 			$booking_meta = $group && $filters[ 'group_by' ] !== 'booking_group' ? $group : $booking;
 			if( ! empty( $booking_meta->user_first_name ) || ! empty( $booking_meta->user_last_name ) ) {
 				$customer = ! empty( $booking_meta->user_first_name ) ? $booking_meta->user_first_name . ' ' : '';
 				$customer .= ! empty( $booking_meta->user_last_name ) ? $booking_meta->user_last_name . ' ' : '';
 				$customer .= $user_id !== $unknown_user_id ? '<br/>(' . $user_id . ')' : '';
 			}
-			$first_name	= ! empty( $booking_meta->user_first_name ) ? $booking_meta->user_first_name : '';
-			$last_name	= ! empty( $booking_meta->user_last_name ) ? $booking_meta->user_last_name : '';
-			$email		= ! empty( $booking_meta->user_email ) ? $booking_meta->user_email : '';
-			$phone		= ! empty( $booking_meta->user_phone ) ? $booking_meta->user_phone : '';
-			$roles		= '';
+			$first_name = ! empty( $booking_meta->user_first_name ) ? $booking_meta->user_first_name : '';
+			$last_name  = ! empty( $booking_meta->user_last_name ) ? $booking_meta->user_last_name : '';
+			$email      = ! empty( $booking_meta->user_email ) ? $booking_meta->user_email : '';
+			$phone      = ! empty( $booking_meta->user_phone ) ? $booking_meta->user_phone : '';
+			$roles      = '';
 
 		// Any other cases
 		} else {
-			$user		= null;
-			$customer	= esc_html( __( 'Unknown user', 'booking-activities' ) . ' (' . $user_id . ')' );
-			$first_name	= '';
-			$last_name	= '';
-			$email		= '';
-			$phone		= '';
-			$roles		= '';
+			$user       = null;
+			$customer   = esc_html( __( 'Unknown user', 'booking-activities' ) . ' (' . $user_id . ')' );
+			$first_name = '';
+			$last_name  = '';
+			$email      = '';
+			$phone      = '';
+			$roles      = '';
 		}
 		
 		/**
 		 * Third parties can add or change columns content, do your best to optimize your process
 		 */
 		$booking_item = apply_filters( 'bookacti_user_booking_list_item', array( 
-			'tr_class'				=> $tr_class,
-			'booking_id_raw'		=> $raw_id,
-			'booking_id'			=> $id,
-			'booking_type'			=> $booking_type,
-			'status'				=> bookacti_format_booking_state( $status ),
-			'payment_status'		=> bookacti_format_payment_status( $paid ),
-			'quantity'				=> $quantity,
-			'creation_date'			=> $creation_date,
-			'customer_id'			=> $user_id,
-			'customer_display_name'	=> $customer,
-			'customer_first_name'	=> $first_name,
-			'customer_last_name'	=> $last_name,
-			'customer_email'		=> $email,
-			'customer_phone'		=> $phone,
-			'customer_roles'		=> $roles,
-			'events'				=> in_array( 'events', $columns, true ) ? bookacti_get_formatted_booking_events_list( $grouped_bookings ) : '',
-			'event_id'				=> $event_id,
-			'event_title'			=> apply_filters( 'bookacti_translate_text', $title ),
-			'start_date'			=> bookacti_format_datetime( $start, $datetime_format ),
-			'end_date'				=> bookacti_format_datetime( $end, $datetime_format ),
-			'start_date_raw'		=> $start,
-			'end_date_raw'			=> $end,
-			'template_id'			=> $booking->template_id,
-			'template_title'		=> apply_filters( 'bookacti_translate_text', $booking->template_title ),
-			'activity_id'			=> $activity_id,
-			'activity_title'		=> apply_filters( 'bookacti_translate_text', $activity_title ),
-			'form_id'				=> $form_id,
-			'order_id'				=> $order_id,
-			'actions'				=> $actions,
-			'refund_actions'		=> $refund_actions
+			'tr_class'              => $tr_class,
+			'booking_id_raw'        => $raw_id,
+			'booking_id'            => $id,
+			'booking_type'          => $booking_type,
+			'status'                => bookacti_format_booking_state( $status ),
+			'payment_status'        => bookacti_format_payment_status( $paid ),
+			'quantity'              => $quantity,
+			'creation_date'         => $creation_date,
+			'customer_id'           => $user_id,
+			'customer_display_name' => $customer,
+			'customer_first_name'   => $first_name,
+			'customer_last_name'    => $last_name,
+			'customer_email'        => $email,
+			'customer_phone'        => $phone,
+			'customer_roles'        => $roles,
+			'events'                => in_array( 'events', $columns, true ) ? bookacti_get_formatted_booking_events_list( $grouped_bookings ) : '',
+			'event_id'              => $event_id,
+			'event_title'           => $title ? apply_filters( 'bookacti_translate_text', $title ) : '',
+			'start_date'            => bookacti_format_datetime( $start, $datetime_format ),
+			'end_date'              => bookacti_format_datetime( $end, $datetime_format ),
+			'start_date_raw'        => $start,
+			'end_date_raw'          => $end,
+			'template_id'           => $booking->template_id,
+			'template_title'        => ! empty( $booking->template_title ) ? apply_filters( 'bookacti_translate_text', $booking->template_title ) : '',
+			'activity_id'           => $activity_id,
+			'activity_title'        => ! empty( $activity_title ) ? apply_filters( 'bookacti_translate_text', $activity_title ) : '',
+			'form_id'               => $form_id,
+			'order_id'              => $order_id,
+			'actions'               => $actions,
+			'refund_actions'        => $refund_actions
 		), $booking, $group, $grouped_bookings, $user, $filters, $columns );
 		
 		$booking_list_items[ $booking->id ] = $booking_item;
@@ -2908,10 +2912,10 @@ function bookacti_get_user_booking_list( $filters, $columns = array(), $per_page
 	$bookings_nb = bookacti_get_number_of_booking_rows( $filters );	
 	
 	// Pagination
-	$page_nb				= ! empty( $_GET[ 'bookacti_booking_list_paged_' . $bookacti_booking_list_count ] ) ? intval( $_GET[ 'bookacti_booking_list_paged_' . $bookacti_booking_list_count ] ) : 1;
-	$page_max				= ceil( $bookings_nb / intval( $per_page ) );
-	$filters[ 'per_page' ]	= intval( $per_page );
-	$filters[ 'offset' ]	= ( $page_nb - 1 ) * $filters[ 'per_page' ];
+	$page_nb               = ! empty( $_GET[ 'bookacti_booking_list_paged_' . $bookacti_booking_list_count ] ) ? intval( $_GET[ 'bookacti_booking_list_paged_' . $bookacti_booking_list_count ] ) : 1;
+	$page_max              = ceil( $bookings_nb / intval( $per_page ) );
+	$filters[ 'per_page' ] = intval( $per_page );
+	$filters[ 'offset' ]   = ( $page_nb - 1 ) * $filters[ 'per_page' ];
 	
 	$booking_list_items = bookacti_get_user_booking_list_items( $filters, $columns );
 	
@@ -3035,10 +3039,10 @@ function bookacti_get_user_booking_list_rows( $booking_list_items, $columns = ar
 			<tr class='<?php echo ! empty( $list_item[ 'tr_class' ] ) ? $list_item[ 'tr_class' ] : ''; ?>'>
 			<?php
 				foreach( $columns as $column_id ) {
-					$value			= isset( $list_item[ $column_id ] ) && ( is_string( $list_item[ $column_id ] ) || is_numeric( $list_item[ $column_id ] ) ) ? $list_item[ $column_id ] : '';
-					$class_empty	= empty( $value ) ? 'bookacti-empty-column' : '';
-					$class_group	= $list_item[ 'booking_type' ] === 'group' ? 'bookacti-booking-group-' . $column_id : '';
-					$column_label	= ! empty( $columns_labels[ $column_id ] ) ? $columns_labels[ $column_id ] : $column_id;
+					$value        = isset( $list_item[ $column_id ] ) && ( is_string( $list_item[ $column_id ] ) || is_numeric( $list_item[ $column_id ] ) ) ? $list_item[ $column_id ] : '';
+					$class_empty  = empty( $value ) ? 'bookacti-empty-column' : '';
+					$class_group  = $list_item[ 'booking_type' ] === 'group' ? 'bookacti-booking-group-' . $column_id : '';
+					$column_label = ! empty( $columns_labels[ $column_id ] ) ? $columns_labels[ $column_id ] : $column_id;
 				?>
 					<td data-column-id='<?php echo esc_attr( $column_id ); ?>' data-column-label='<?php echo esc_attr( $column_label ); ?>' class='bookacti-column-<?php echo $column_id . ' ' . $class_empty; ?>' >
 						<div class='bookacti-booking-<?php echo $column_id . ' ' . $class_group; ?>' >
@@ -3077,9 +3081,9 @@ function bookacti_get_booking_list_rows_according_to_context( $context = 'user_b
 		$rows = $Bookings_List_Table->get_rows_or_placeholder();
 	} else if( $context === 'user_booking_list' ) {
 		if( ! $columns ) { $columns = bookacti_get_user_booking_list_default_columns(); }
-		$filters	= bookacti_format_booking_filters( $filters );
+		$filters    = bookacti_format_booking_filters( $filters );
 		$list_items = bookacti_get_user_booking_list_items( $filters, $columns );
-		$rows		= bookacti_get_user_booking_list_rows( $list_items, $columns );
+		$rows       = bookacti_get_user_booking_list_rows( $list_items, $columns );
 	}
 	
 	$rows = apply_filters( 'booking_list_rows_according_to_context', $rows, $context, $filters, $columns );
@@ -3102,11 +3106,11 @@ function bookacti_get_booking_list_rows_according_to_context( $context = 'user_b
 function bookacti_get_events_booking_lists( $filters_raw, $columns = array(), $atts = array() ) {
 	// Sanitize bookings filters
 	$default_filters = array( 
-		'status'		=> array( 'pending', 'booked', 'delivered' ),
-		'order_by'		=> array( 'event_id', 'event_start' ), 
-		'order'			=> 'desc',
-		'group_by'		=> 'none',
-		'fetch_meta'	=> true
+		'status'     => array( 'pending', 'booked', 'delivered' ),
+		'order_by'   => array( 'event_id', 'event_start' ), 
+		'order'      => 'desc',
+		'group_by'   => 'none',
+		'fetch_meta' => true
 	);
 	$sanitized_filters = bookacti_format_booking_filters( wp_parse_args( $filters_raw, $default_filters ) );
 	if( ! empty( $filters_raw[ 'display_private_columns' ] ) ) { $sanitized_filters[ 'display_private_columns' ] = 1; }

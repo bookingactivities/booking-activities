@@ -585,19 +585,21 @@ function bookacti_load_template_calendar( calendar ) {
 		
 		/**
 		 * eventResize : When an event is resized
-		 * @version 1.10.0
+		 * @version 1.14.0
 		 * @param {object} event
 		 * @param {object} delta
 		 * @param {callable} revertFunc
 		 */
 		eventResize: function( event, delta, revertFunc ) {
-			bookacti_update_event_dates( event, delta, revertFunc );
+			var old_event = $j.extend( {}, event );
+			old_event.end = moment.utc( old_event.end ).subtract( delta );
+			bookacti_update_event_dates( event, old_event, revertFunc );
 		},
 
 		
 		/**
 		 * eventDrop : When an event is moved to an other day / hour
-		 * @version 1.12.0
+		 * @version 1.14.0
 		 * @param {object} event
 		 * @param {object} delta
 		 * @param {callable} revertFunc
@@ -615,7 +617,10 @@ function bookacti_load_template_calendar( calendar ) {
 			}
 			// The event is moved
 			else {
-				bookacti_update_event_dates( event, delta, revertFunc );
+				var old_event = $j.extend( {}, event );
+				old_event.start = moment.utc( old_event.start ).subtract( delta );
+				old_event.end = moment.utc( old_event.end ).subtract( delta );
+				bookacti_update_event_dates( event, old_event, revertFunc );
 			}
 		},
 		

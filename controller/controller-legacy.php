@@ -3,6 +3,27 @@
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
+ * Update changes to 1.14.0
+ * This function is temporary
+ * @since 1.14.0
+ * @global wpdb $wpdb
+ * @param string $old_version
+ */
+function bookacti_move_options_when_updating_to_1_14_0( $old_version ) {
+	// Do it only once, when Booking Activities is updated for the first time after 1.13.0
+	if( version_compare( $old_version, '1.14.0', '>=' ) ) { return; }
+	
+	// Move calendar_localization option from Messages tab to General tab
+	$alloptions = wp_load_alloptions();
+	if( isset( $alloptions[ 'bookacti_general_settings' ] ) && isset( $alloptions[ 'bookacti_messages_settings' ][ 'calendar_localization' ] ) ) {
+		update_option( 'bookacti_general_settings', array_merge( $alloptions[ 'bookacti_general_settings' ], array( 'calendar_localization' => $alloptions[ 'bookacti_messages_settings' ][ 'calendar_localization' ] ) ) );
+	}
+	
+}
+add_action( 'bookacti_updated', 'bookacti_move_options_when_updating_to_1_14_0', 80 );
+
+
+/**
  * Update changes to 1.13.0
  * This function is temporary
  * @since 1.13.0
