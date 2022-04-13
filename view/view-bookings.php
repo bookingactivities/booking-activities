@@ -253,7 +253,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							'id'					=> 'bookacti-booking-system-bookings-page',
 							'start'					=> ! empty( $_REQUEST[ 'from' ] ) ? bookacti_sanitize_date( $_REQUEST[ 'from' ] ) : '',
 							'end'					=> ! empty( $_REQUEST[ 'to' ] ) ? bookacti_sanitize_date( $_REQUEST[ 'to' ] ) : '',
-							'trim'					=> 1,
+							'trim'					=> 0, // Doesn't play nicely when dynamically changing bookings
 							'past_events'			=> 1,
 							'past_events_bookable'	=> 1,
 							'check_roles'			=> 0,

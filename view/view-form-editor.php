@@ -97,7 +97,6 @@ if( ! $form_edit ) { exit; }
 							
 							// Check if the user has available calendars
 							} else {
-								
 								$templates = bookacti_fetch_templates();
 								if( ! $templates ) {
 									$editor_path   = 'admin.php?page=bookacti_calendars';
@@ -118,7 +117,6 @@ if( ! $form_edit ) { exit; }
 							
 							// FORM EDITOR
 							} else {
-								
 								// Display a nonce for form field order
 								wp_nonce_field( 'bookacti_form_field_order', 'bookacti_nonce_form_field_order', false );
 								

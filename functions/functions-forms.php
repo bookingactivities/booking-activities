@@ -743,8 +743,8 @@ function bookacti_format_form_field_data( $raw_field_data, $context = 'view' ) {
 		$field_meta = bookacti_sanitize_values( $default_meta, $raw_field_data, $keys_by_type );
 		
 		// Translate texts
-		$field_meta[ 'login_button_label' ]    = ! empty( $raw_field_data[ 'login_button_label' ] ) ? apply_filters( 'bookacti_translate_text', $raw_field_data[ 'login_button_label' ] ) : $default_meta[ 'login_button_label' ];
-		$field_meta[ 'register_button_label' ] = ! empty( $raw_field_data[ 'register_button_label' ] ) ? apply_filters( 'bookacti_translate_text', $raw_field_data[ 'register_button_label' ] ) : $default_meta[ 'register_button_label' ];
+		$field_meta[ 'login_button_label' ]    = ! empty( $raw_field_data[ 'login_button_label' ] ) ? ( $context !== 'edit' ? apply_filters( 'bookacti_translate_text', $raw_field_data[ 'login_button_label' ] ) : $raw_field_data[ 'login_button_label' ] ) : $default_meta[ 'login_button_label' ];
+		$field_meta[ 'register_button_label' ] = ! empty( $raw_field_data[ 'register_button_label' ] ) ? ( $context !== 'edit' ? apply_filters( 'bookacti_translate_text', $raw_field_data[ 'register_button_label' ] ) : $raw_field_data[ 'register_button_label' ] ) : $default_meta[ 'register_button_label' ];
 		
 		// Treat 'required_fields' and 'displayed_fields' field meta as a common field data
 		$default_data[ 'displayed_fields' ] = $default_meta[ 'displayed_fields' ]; unset( $default_meta[ 'displayed_fields' ] );
@@ -815,7 +815,12 @@ function bookacti_format_form_field_data( $raw_field_data, $context = 'view' ) {
 	} else if( $raw_field_data[ 'name' ] === 'free_text' ) {
 		// Format common values (specific cases)
 		if( isset( $raw_field_data[ 'value' ] ) ) {
-			$field_data[ 'value' ] = $raw_field_data[ 'value' ] ? wpautop( apply_filters( 'bookacti_translate_text', $raw_field_data[ 'value' ] ) ) : $raw_field_data[ 'value' ];
+			// Translate texts
+			if( $context !== 'edit' ) {
+				$field_data[ 'value' ] = $raw_field_data[ 'value' ] ? wpautop( apply_filters( 'bookacti_translate_text', $raw_field_data[ 'value' ] ) ) : $raw_field_data[ 'value' ];
+			} else {
+				$field_data[ 'value' ] = $raw_field_data[ 'value' ];
+			}
 		}
 	} else if( $raw_field_data[ 'name' ] === 'total_price' ) {
 		// Format meta values
@@ -844,7 +849,7 @@ function bookacti_format_form_field_data( $raw_field_data, $context = 'view' ) {
 	// Translate texts
 	foreach( $translatable_keys as $key ) {
 		if( is_string( $formatted_field_data[ $key ] ) ) { 
-			$formatted_field_data[ $key ] = ! empty( $raw_field_data[ $key ] ) ? apply_filters( 'bookacti_translate_text', $raw_field_data[ $key ] ) : ( isset( $field_data[ $key ] ) ? $field_data[ $key ] : $default_data[ $key ] );
+			$formatted_field_data[ $key ] = ! empty( $raw_field_data[ $key ] ) ? ( $context !== 'edit' ? apply_filters( 'bookacti_translate_text', $raw_field_data[ $key ] ) : $raw_field_data[ $key ] ) : ( isset( $field_data[ $key ] ) ? $field_data[ $key ] : $default_data[ $key ] );
 		}
 	}
 	

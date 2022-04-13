@@ -78,7 +78,6 @@ function bookacti_get_setting_value( $setting_group, $setting_name, $raw = false
 	else {
 		$settings = get_option( $setting_group );
 	}
-	
 	if( ! is_array( $settings ) ) { $settings = array(); }
 	
 	$setting_value = isset( $settings[ $setting_name ] ) ? $settings[ $setting_name ] : null;
@@ -954,6 +953,7 @@ function bookacti_get_messages( $raw = false, $locale = '' ) {
 	else {
 		$saved_messages = get_option( 'bookacti_messages_settings' );
 	}
+	if( ! is_array( $saved_messages ) ) { $saved_messages = array(); }
 
 	$default_messages = bookacti_get_default_messages();
 	$messages = $default_messages;
@@ -1393,7 +1393,7 @@ function bookacti_privacy_exporter_bookings_data( $email_address, $page = 1 ) {
 			), $bookings, $bookings_meta, $booking_groups_meta, $email_address, $page );
 
 			// Set the name / value data to export for each booking
-			$format = bookacti_get_message( 'date_format_long' );
+			$date_format = bookacti_get_message( 'date_format_long' );
 			$states = bookacti_get_booking_state_labels();
 			foreach( $bookings as $booking ) {
 				$booking_personal_data = array();
@@ -1413,7 +1413,7 @@ function bookacti_privacy_exporter_bookings_data( $email_address, $page = 1 ) {
 							case 'creation_date':
 							case 'event_start':
 							case 'event_end':
-								$value = bookacti_format_datetime( $booking->$key, $format );
+								$value = bookacti_format_datetime( $booking->$key, $date_format );
 								break;
 							case 'state':
 								$value = ! empty( $states[ $booking->$key ][ 'label' ] ) ? $states[ $booking->$key ][ 'label' ] : $booking->$key;

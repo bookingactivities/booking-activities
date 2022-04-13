@@ -1879,6 +1879,7 @@ function bookacti_export_form_events_page() {
 	// Set the file name, and the calendar name and description
 	$form = bookacti_get_form( $form_id );
 	$filename = ! empty( $_REQUEST[ 'filename' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'filename' ] ) : 'booking-activities-events-form-' . $form_id;
+	/* translators: %d is the form ID */
 	$calname = ! empty( $form[ 'title' ] ) ? apply_filters( 'bookacti_translate_text', $form[ 'title' ] ) : sprintf( esc_html__( 'Form #%d', 'booking-activities' ), $form_id );
 	/* translators: %s is the form title */
 	$caldesc = ! empty( $form[ 'title' ] ) ? sprintf( esc_html__( 'Form "%s"', 'booking-activities' ), apply_filters( 'bookacti_translate_text', $form[ 'title' ] ) ) : $calname;

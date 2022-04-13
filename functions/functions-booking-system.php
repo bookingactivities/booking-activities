@@ -953,7 +953,7 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 		$category_options		= array( 'all' => esc_html__( 'All', 'booking-activities' ), 'none' => esc_html_x( 'None', 'About group category', 'booking-activities' ) );
 		$category_options_attr	= array();
 		foreach( $categories as $category ) {
-			$category_options[ $category[ 'id' ] ]      = ! empty( $category[ 'title' ] ) ? apply_filters( 'bookacti_translate_text', $category[ 'title' ] ) : '';
+			$category_options[ $category[ 'id' ] ]      = ! empty( $category[ 'title' ] ) ? $category[ 'title' ] : '';
 			$category_options_attr[ $category[ 'id' ] ] = 'data-bookacti-show-if-templates="' . esc_attr( implode( ',', (array) $category[ 'template_id' ] ) ) . '"';
 		}
 		

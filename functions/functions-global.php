@@ -839,6 +839,37 @@ function bookacti_translate_text_with_wpml( $text, $lang = false, $fallback = tr
 }
 
 
+/**
+ * Determine locale with WPML (temp fix)
+ * @since 1.14.0
+ * @param string $determined_locale
+ * @return string
+ */
+function bookacti_determine_locale_with_plugin_while_doing_ajax( $determined_locale ) {
+	if( ! defined( 'DOING_AJAX' ) ) { return $determined_locale; }
+	if( ! DOING_AJAX ) { return $determined_locale; }
+	
+	$plugin = bookacti_get_translation_plugin();
+	
+	if( $plugin === 'qtranslate' ) {
+		$lang_code = function_exists( 'qtranxf_getLanguage' ) ? qtranxf_getLanguage() : '';
+		if( $lang_code ) {
+			global $q_config;
+			if( isset( $q_config[ 'locale' ][ $lang_code ] ) ) { $determined_locale = $q_config[ 'locale' ][ $lang_code ]; }
+		}
+	} else if( $plugin === 'wpml' ) {
+		$lang_code = apply_filters( 'wpml_current_language', '' );
+		if( $lang_code ) {
+			$languages = apply_filters( 'wpml_active_languages', array() );
+			if( ! empty( $languages[ $lang_code ][ 'default_locale' ] ) ) { $determined_locale = $languages[ $lang_code ][ 'default_locale' ]; }
+		}
+	}
+	
+	return $determined_locale;
+}
+add_filter( 'determine_locale', 'bookacti_determine_locale_with_plugin_while_doing_ajax', 10, 1 );
+
+
 /* 
  * Get user locale, and default to site or current locale
  * @since 1.2.0

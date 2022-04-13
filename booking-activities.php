@@ -68,7 +68,7 @@ function bookacti_load_textdomain( $locale = '' ) {
 	// Fallback on .mo from wp-content/plugins/booking-activities/languages
 	load_plugin_textdomain( 'booking-activities', false, plugin_basename( dirname( __FILE__ ) ) . '/languages/' ); 
 }
-add_action( 'plugins_loaded', 'bookacti_load_textdomain' );
+add_action( 'init', 'bookacti_load_textdomain', 5 );
 add_action( 'bookacti_locale_switched', 'bookacti_load_textdomain' );
 
 

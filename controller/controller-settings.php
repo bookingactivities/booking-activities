@@ -280,14 +280,14 @@ add_filter( 'set-screen-option', 'bookacti_save_screen_options', 10, 3 );
 /**
  * Create a settings page for each notification
  * @since 1.2.1 (was bookacti_fill_notifications_settings_section)
- * @version 1.12.0
+ * @version 1.14.0
  * @param string $notification_id
  */
 function bookacti_fill_notification_settings_page( $notification_id ) {
 	if( ! $notification_id ) { return; }
 	$recipient = substr( $notification_id, 0, 6 ) === 'admin_' ? 'admin' : 'customer';
 	$recipient_label = $recipient === 'admin' ? esc_html__( 'Administrator', 'booking-activities' ) : esc_html__( 'Customer', 'booking-activities' );
-	$notification_settings = bookacti_get_notification_settings( $notification_id );
+	$notification_settings = bookacti_get_notification_settings( $notification_id, true );
 	?>
 		<h2>
 			<?php echo esc_html__( 'Notification', 'booking-activities' ) . ' - ' . $recipient_label . ' - ' . $notification_settings[ 'title' ]; ?>
