@@ -853,7 +853,7 @@ add_filter( 'woocommerce_cart_item_remove_link', 'bookacti_add_timeout_to_cart_i
 
 /**
  * Delete cart items if they are expired
- * @version 1.9.0
+ * @version 1.14.0
  * @global WooCommerce $woocommerce
  */
 function bookacti_remove_expired_product_from_cart() {
@@ -867,8 +867,9 @@ function bookacti_remove_expired_product_from_cart() {
 	if( empty( $woocommerce->cart ) ) { return; } // Return if cart is null
 
 	// Check if each cart item has expired, and if so, remove it
-	$nb_deleted_cart_item = 0;
+	$expired_cart_items_keys = array();
 	
+	// Remove cart item if its attached booking is expired
 	$cart_items_bookings = bookacti_wc_get_cart_items_bookings();
 	if( $cart_items_bookings ) {
 		foreach( $cart_items_bookings as $cart_item_key => $cart_item_bookings ) {
@@ -878,15 +879,44 @@ function bookacti_remove_expired_product_from_cart() {
 				$is_expired = bookacti_is_expired_booking( $cart_item_booking );
 				if( $is_expired ) { break; }
 			}
-			
-			if( $is_expired ) {
-				// Remove the cart item
-				do_action( 'bookacti_cart_item_expired', $cart_item_key );
-				$is_deleted = $woocommerce->cart->remove_cart_item( $cart_item_key );
-				if( $is_deleted ) {
-					do_action( 'bookacti_expired_cart_item_removed', $cart_item_key );
-					$nb_deleted_cart_item++;
+			if( $is_expired ) { $expired_cart_items_keys[] = $cart_item_key; }
+		}
+	}
+	
+	// Remove cart item if its attached booking has been deleted
+	$cart_items = $woocommerce->cart->get_cart();
+	if( $cart_items ) {
+		foreach( $cart_items as $cart_item_key => $cart_item ) {
+			$is_expired = false;
+			if( empty( $cart_item[ '_bookacti_options' ][ 'bookings' ] ) ) { continue; }
+			if( empty( $cart_items_bookings[ $cart_item_key ] ) ) { $is_expired = true; }
+			else {
+				$cart_item_bookings_ids = bookacti_maybe_decode_json( $cart_item[ '_bookacti_options' ][ 'bookings' ], true );
+				foreach( $cart_item_bookings_ids as $cart_item_booking_id ) {
+					$booking_not_found = true;
+					foreach( $cart_items_bookings[ $cart_item_key ] as $cart_item_booking ) {
+						if( $cart_item_booking[ 'id' ] === $cart_item_booking_id[ 'id' ] && $cart_item_booking[ 'type' ] === $cart_item_booking_id[ 'type' ] ) {
+							$booking_not_found = false;
+							break;
+						}
+					}
+					if( $booking_not_found ) { $is_expired = true; break; }
 				}
+			}
+			if( $is_expired ) { $expired_cart_items_keys[] = $cart_item_key; }
+		}
+	}
+	
+	// Remove the expired cart items
+	$nb_deleted_cart_item = 0;
+	if( $expired_cart_items_keys ) {
+		$expired_cart_items_keys = array_unique( $expired_cart_items_keys );
+		foreach( $expired_cart_items_keys as $expired_cart_item_key ) {
+			do_action( 'bookacti_cart_item_expired', $expired_cart_item_key );
+			$is_deleted = $woocommerce->cart->remove_cart_item( $expired_cart_item_key );
+			if( $is_deleted ) {
+				do_action( 'bookacti_expired_cart_item_removed', $expired_cart_item_key );
+				$nb_deleted_cart_item++;
 			}
 		}
 	}
