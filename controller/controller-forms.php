@@ -845,7 +845,7 @@ function bookacti_controller_validate_booking_form() {
 	}
 	
 	// Send the redirect URL
-	$return_array[ 'redirect_url' ] = ! empty( $form[ 'redirect_url' ] ) ? apply_filters( 'bookacti_translate_text', $form[ 'redirect_url' ] ) : '';
+	$return_array[ 'redirect_url' ] = $form[ 'redirect_url' ];
 	
 	// Retrieve form field data 
 	$form_fields_data = bookacti_get_form_fields_data( $form_id );
@@ -1877,12 +1877,12 @@ function bookacti_export_form_events_page() {
 	if( ! $calendar_field ) { esc_html_e( 'Cannot find the calendar field of the requested form.', 'booking-activities' ); exit; }
 	
 	// Set the file name, and the calendar name and description
-	$form = bookacti_get_form( $form_id );
+	$form = bookacti_get_form_data( $form_id );
 	$filename = ! empty( $_REQUEST[ 'filename' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'filename' ] ) : 'booking-activities-events-form-' . $form_id;
 	/* translators: %d is the form ID */
-	$calname = ! empty( $form[ 'title' ] ) ? apply_filters( 'bookacti_translate_text', $form[ 'title' ] ) : sprintf( esc_html__( 'Form #%d', 'booking-activities' ), $form_id );
+	$calname = ! empty( $form[ 'title' ] ) ? $form[ 'title' ] : sprintf( esc_html__( 'Form #%d', 'booking-activities' ), $form_id );
 	/* translators: %s is the form title */
-	$caldesc = ! empty( $form[ 'title' ] ) ? sprintf( esc_html__( 'Form "%s"', 'booking-activities' ), apply_filters( 'bookacti_translate_text', $form[ 'title' ] ) ) : $calname;
+	$caldesc = ! empty( $form[ 'title' ] ) ? sprintf( esc_html__( 'Form "%s"', 'booking-activities' ), $form[ 'title' ] ) : $calname;
 	
 	// Increment the sequence number each time to make sure that the events will be updated
 	$sequence = intval( bookacti_get_metadata( 'form', $form_id, 'ical_sequence', true ) ) + 1;

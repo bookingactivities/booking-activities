@@ -1,0 +1,8 @@
+<wpml-config>
+    <custom-fields>
+        <custom-field action="copy">_bookacti_is_activity</custom-field>
+        <custom-field action="copy">_bookacti_form</custom-field>
+        <custom-field action="copy">bookacti_variable_is_activity</custom-field>
+        <custom-field action="copy">bookacti_variable_form</custom-field>
+    </custom-fields>
+</wpml-config>

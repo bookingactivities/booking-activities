@@ -83,6 +83,7 @@ include_once( 'functions/functions-bookings.php' );
 include_once( 'functions/functions-forms.php' );
 include_once( 'functions/functions-settings.php' );
 include_once( 'functions/functions-notifications.php' );
+include_once( 'functions/functions-i18n.php' );
 
 include_once( 'controller/controller-templates.php' );
 include_once( 'controller/controller-booking-system.php' );
@@ -91,6 +92,7 @@ include_once( 'controller/controller-notifications.php' );
 include_once( 'controller/controller-bookings.php' );
 include_once( 'controller/controller-forms.php' );
 include_once( 'controller/controller-shortcodes.php' );
+include_once( 'controller/controller-i18n.php' );
 include_once( 'controller/controller-legacy.php' );
 
 

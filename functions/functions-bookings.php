@@ -232,14 +232,11 @@ function bookacti_is_booking_in_delay( $booking, $context = '' ) {
  * @return string
  */
 function bookacti_get_activities_html_for_booking_page( $template_ids, $activity_ids = array() ) {
-	$activities = bookacti_get_activities_by_template( $template_ids, false );
+	$activities = bookacti_get_activities_by_template( $template_ids );
 	$j = 0;
 	$html = '';
 	foreach ( $activities as $activity ) {	
 		if( ( empty( $activity_ids )  && $j === 0 ) || in_array( $activity[ 'id' ], $activity_ids ) ) { $selected = 'selected'; } else { $selected = ''; }
-
-		// Retrieve activity title
-		$title = ! empty( $activity[ 'title' ] ) ? apply_filters( 'bookacti_translate_text', $activity[ 'title' ] ) : '';
 
 		// Display activity
 		$html .= "<div class='bookacti-bookings-filter-activity bookacti-bookings-filter' "
@@ -249,7 +246,7 @@ function bookacti_get_activities_html_for_booking_page( $template_ids, $activity
 			  .  ">"
 			  .    "<div class='bookacti-filter-content'>"
 			  .      "<div class='bookacti-bookings-filter-activity-title'>"
-			  .        "<strong>" . esc_html( $title ). "</strong>"
+			  .        "<strong>" . esc_html( $activity[ 'title' ] ). "</strong>"
 			  .      "</div>"
 			  .    "</div>"
 			  .    "<div class='bookacti-bookings-filter-bg'></div>"

@@ -121,7 +121,7 @@ function bookacti_format_form_data( $raw_form_data = array(), $context = 'view' 
 	$form_meta = bookacti_sanitize_values( $default_meta, $raw_form_data, $keys_by_type );
 	
 	// Exception: Keep field_order and format it
-	if( isset( $raw_form_data[ 'field_order' ] ) ) { $form_meta[ 'field_order' ] = maybe_unserialize( $raw_form_data[ 'field_order' ] ); }
+	$form_meta[ 'field_order' ] = isset( $raw_form_data[ 'field_order' ] ) ? maybe_unserialize( $raw_form_data[ 'field_order' ] ) : array();
 	
 	// Format common values
 	$keys_by_type = array( 
@@ -135,6 +135,12 @@ function bookacti_format_form_data( $raw_form_data = array(), $context = 'view' 
 	
 	// Merge common data and metadata
 	$form_data = array_merge( $form_data, $form_meta );
+	
+	// Translate texts
+	if( $context !== 'edit' ) { 
+		if( ! empty( $form_data[ 'title' ] ) )        { $form_data[ 'title' ]        = apply_filters( 'bookacti_translate_text', $form_data[ 'title' ] ); }
+		if( ! empty( $form_data[ 'redirect_url' ] ) ) { $form_data[ 'redirect_url' ] = apply_filters( 'bookacti_translate_text', $form_data[ 'redirect_url' ] ); }
+	}
 	
 	return apply_filters( 'bookacti_formatted_form_data', $form_data, $raw_form_data, $context );
 }
@@ -232,14 +238,14 @@ function bookacti_display_form( $form_id, $instance_id = '', $context = 'display
 	}
 	
 	// Set form action
-	$form_redirect_url = ! empty( $form[ 'redirect_url' ] ) ? $form[ 'redirect_url' ] : '';
+	$form_redirect_url = $form[ 'redirect_url' ];
 	if( $context === 'login_form' ) {
 		$form_redirect_url = ! empty( $GLOBALS[ 'bookacti_login_redirect_url' ] ) ? $GLOBALS[ 'bookacti_login_redirect_url' ] : '';
 	}
 	
 	// Set form attributes
 	$form_attributes = apply_filters( 'bookacti_form_attributes', array(
-		'action'       => $form_redirect_url ? esc_url( apply_filters( 'bookacti_translate_text', $form_redirect_url ) ) : '',
+		'action'       => $form_redirect_url,
 		'id'           => empty( $form[ 'id' ] ) ? 'bookacti-' . $form_css_id : $form_css_id,
 		'class'        => 'bookacti-booking-form-' . $form_id . ' ' . $form[ 'class' ],
 		'autocomplete' => 'off'
@@ -341,7 +347,7 @@ function bookacti_get_form_fields_data( $form_id, $active_only = true, $index_by
 		// Remove inactive fields
 		if( ! $index_by_name && $active_only && empty( $fields[ $field_id ][ 'active' ] ) ) { unset( $fields_data[ $field_id ] ); continue; }
 		// Index by name
-		if( $index_by_name ) { $fields_data[ $field_data[ 'name' ] ] = $field_data; }
+		if( $index_by_name && ( ! $active_only || ( $active_only && ! empty( $fields[ $field_id ][ 'active' ] ) ) ) ) { $fields_data[ $field_data[ 'name' ] ] = $field_data; }
 	}
 	
 	return $fields_data;
@@ -817,7 +823,7 @@ function bookacti_format_form_field_data( $raw_field_data, $context = 'view' ) {
 		if( isset( $raw_field_data[ 'value' ] ) ) {
 			// Translate texts
 			if( $context !== 'edit' ) {
-				$field_data[ 'value' ] = $raw_field_data[ 'value' ] ? wpautop( apply_filters( 'bookacti_translate_text', $raw_field_data[ 'value' ] ) ) : $raw_field_data[ 'value' ];
+				$field_data[ 'value' ] = $raw_field_data[ 'value' ] ? wpautop( apply_filters( 'bookacti_translate_text', $raw_field_data[ 'value' ], '', true, array( 'string_name' => ! empty( $raw_field_data[ 'field_id' ] ) ? 'Form field #' . $raw_field_data[ 'field_id' ] . ' - value' : '' ) ) ) : $raw_field_data[ 'value' ];
 			} else {
 				$field_data[ 'value' ] = $raw_field_data[ 'value' ];
 			}
@@ -1226,7 +1232,7 @@ function bookacti_display_form_field_for_editor( $field, $echo = true ) {
 /**
  * Validate register fields
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.14.0
  * @param array $login_values
  * @param array $login_data
  * @return array
@@ -1253,7 +1259,7 @@ function bookacti_validate_registration( $login_values, $login_data ) {
 	foreach( $login_data[ 'required_fields' ] as $field_name => $is_required ) {
 		if( $is_required && empty( $login_values[ $field_name ] ) ) {
 			if( $field_name === 'password' && ! empty( $login_values[ 'login_type' ] ) && $login_values[ 'login_type' ] === 'new_account' && $login_data[ 'generate_password' ] ) { continue; }
-			$field_label = ! empty( $login_data[ 'label' ][ $field_name ] ) ? apply_filters( 'bookacti_translate_text', $login_data[ 'label' ][ $field_name ] ) : $field_name;
+			$field_label = ! empty( $login_data[ 'label' ][ $field_name ] ) ? $login_data[ 'label' ][ $field_name ] : $field_name;
 			/* translators: %s is the field name. */
 			$return_array[ 'messages' ][ 'missing_' . $field_name ] = sprintf( esc_html__( 'The field "%s" is required.', 'booking-activities' ), $field_label );
 		}

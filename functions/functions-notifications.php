@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 function bookacti_get_notifications_default_settings() {
 	$admin_email = get_bloginfo( 'admin_email' );
 	$blog_name = wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES );
-	$blog_name = $blog_name ? apply_filters( 'bookacti_translate_text_external', $blog_name, false, true, array( 'domain' => 'wordpress', 'object_type' => 'blog', 'object_id' => get_current_blog_id(), 'field' => 'name' ) ) : '';
+	$blog_name = $blog_name ? apply_filters( 'bookacti_translate_text_external', $blog_name, false, true, array( 'domain' => 'wordpress', 'field' => 'blogname' ) ) : '';
 	
 	$notifications = array( 
 		'admin_new_booking' => 
@@ -237,8 +237,8 @@ function bookacti_get_notification_settings( $notification_id, $raw = true, $loc
 	
 	// Translate email subject and message
 	if( ! $raw ) {
-		if( ! empty( $notification_settings[ 'email' ][ 'subject' ] ) ) { $notification_settings[ 'email' ][ 'subject' ] = apply_filters( 'bookacti_translate_text', $notification_settings[ 'email' ][ 'subject' ], $locale ); }
-		if( ! empty( $notification_settings[ 'email' ][ 'message' ] ) ) { $notification_settings[ 'email' ][ 'message' ] = apply_filters( 'bookacti_translate_text', $notification_settings[ 'email' ][ 'message' ], $locale ); }
+		if( ! empty( $notification_settings[ 'email' ][ 'subject' ] ) ) { $notification_settings[ 'email' ][ 'subject' ] = apply_filters( 'bookacti_translate_text', $notification_settings[ 'email' ][ 'subject' ], $locale, true, array( 'string_name' => 'Notification - ' . $notification_id . ' - email subject' ) ); }
+		if( ! empty( $notification_settings[ 'email' ][ 'message' ] ) ) { $notification_settings[ 'email' ][ 'message' ] = apply_filters( 'bookacti_translate_text', $notification_settings[ 'email' ][ 'message' ], $locale, true, array( 'string_name' => 'Notification - ' . $notification_id . ' - email message' ) ); }
 	}
 	
 	// Make sure all values are set

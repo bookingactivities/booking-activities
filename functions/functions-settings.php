@@ -961,7 +961,7 @@ function bookacti_get_messages( $raw = false, $locale = '' ) {
 	if( ! empty( $saved_messages ) ) {
 		foreach( $default_messages as $message_id => $message ) {
 			if( isset( $saved_messages[ $message_id ] ) ) {
-				$messages[ $message_id ][ 'value' ] = $raw ? $saved_messages[ $message_id ] : apply_filters( 'bookacti_translate_text', $saved_messages[ $message_id ], $locale );
+				$messages[ $message_id ][ 'value' ] = $raw ? $saved_messages[ $message_id ] : apply_filters( 'bookacti_translate_text', $saved_messages[ $message_id ], $locale, true, array( 'string_name' => 'Message - ' . $message_id ) );
 			}
 		}
 	}

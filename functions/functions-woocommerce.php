@@ -1553,17 +1553,17 @@ function bookacti_display_product_selectbox( $raw_args = array() ) {
 				if( empty( $product[ 'variations' ] ) ) {
 					$_selected = selected( $product_id, $args[ 'selected' ] );
 					if( $_selected ) { $is_selected = true; }
-					?><option class='bookacti-wc-product-option' value='<?php echo esc_attr( $product_id ); ?>' <?php echo $_selected; ?>><?php echo $product[ 'title' ] ? esc_html( apply_filters( 'bookacti_translate_text_external', $product[ 'title' ], false, true, array( 'domain' => 'woocommerce', 'object_type' => 'product', 'object_id' => $product_id, 'field' => 'title' ) ) ) : $product[ 'title' ]; ?></option><?php
+					?><option class='bookacti-wc-product-option' value='<?php echo esc_attr( $product_id ); ?>' <?php echo $_selected; ?>><?php echo $product[ 'title' ] ? esc_html( apply_filters( 'bookacti_translate_text_external', $product[ 'title' ], false, true, array( 'domain' => 'woocommerce', 'object_type' => 'product', 'object_id' => $product_id, 'field' => 'post_title' ) ) ) : $product[ 'title' ]; ?></option><?php
 
 				// Display variations options
 				} else {
 				?>
-					<optgroup class='bookacti-wc-variable-product-option-group' label='<?php echo $product[ 'title' ] ? esc_attr( apply_filters( 'bookacti_translate_text_external', $product[ 'title' ], false, true, array( 'domain' => 'woocommerce', 'object_type' => 'product', 'object_id' => $product_id, 'field' => 'title' ) ) ) : $product[ 'title' ]; ?>'>
+					<optgroup class='bookacti-wc-variable-product-option-group' label='<?php echo $product[ 'title' ] ? esc_attr( apply_filters( 'bookacti_translate_text_external', $product[ 'title' ], false, true, array( 'domain' => 'woocommerce', 'object_type' => 'product', 'object_id' => $product_id, 'field' => 'post_title' ) ) ) : $product[ 'title' ]; ?>'>
 					<?php
 						foreach( $product[ 'variations' ] as $variation_id => $variation ) {
 							$_selected = selected( $variation_id, $args[ 'selected' ] );
 							if( $_selected ) { $is_selected = true; }
-							$variation_title = $variation[ 'title' ] ? esc_html( apply_filters( 'bookacti_translate_text_external', $variation[ 'title' ], false, true, array( 'domain' => 'woocommerce', 'object_type' => 'variation', 'object_id' => $variation_id, 'field' => 'title', 'product_id' => $product_id ) ) ) : $variation[ 'title' ];
+							$variation_title = $variation[ 'title' ] ? esc_html( apply_filters( 'bookacti_translate_text_external', $variation[ 'title' ], false, true, array( 'domain' => 'woocommerce', 'object_type' => 'product_variation', 'object_id' => $variation_id, 'field' => 'post_excerpt', 'product_id' => $product_id ) ) ) : $variation[ 'title' ];
 							$formatted_variation_title = trim( preg_replace( '/,[\s\S]+?:/', ',', ',' . $variation_title ), ', ' );
 							?><option class='bookacti-wc-product-variation-option' value='<?php echo esc_attr( $variation_id ); ?>' <?php echo $_selected; ?>><?php echo $formatted_variation_title; ?></option><?php
 						}
@@ -1636,7 +1636,7 @@ function bookacti_get_product_variation_matching_attributes( $product, $attribut
 		// Take the untranslated value (in case of translated attributes)
 		foreach( $product_attributes as $product_attribute_key => $product_attribute ) {
 			if( $product_attribute_key === '' ) { continue; }
-			if( $key !== apply_filters( 'bookacti_translate_text_external', $product_attribute_key, false, true, array( 'domain' => 'woocommerce', 'object_type' => 'product_attribute', 'object_id' => $product_attribute_key, 'field' => 'key', 'product_id' => $product->get_id() ) ) 
+			if( $key !== apply_filters( 'bookacti_translate_text_external', $product_attribute_key, false, true, array( 'domain' => 'woocommerce', 'object_type' => 'product_attribute_key', 'object_id' => $product_attribute_key, 'field' => 'key', 'product_id' => $product->get_id() ) ) 
 			&&  $key !== $product_attribute_key ) { continue; }
 
 			$options = $product_attribute->get_options();
@@ -1646,7 +1646,7 @@ function bookacti_get_product_variation_matching_attributes( $product, $attribut
 			if( is_array( $options ) ) {
 				foreach( $options as $option_key => $option_value ) {
 					if( $option_value === '' ) { continue; }
-					if( $value !== apply_filters( 'bookacti_translate_text_external', $option_value, false, true, array( 'domain' => 'woocommerce', 'object_type' => 'product_attribute_option', 'object_id' => $option_key, 'field' => 'value', 'product_id' => $product->get_id(), 'product_attribute' => $product_attribute_key ) ) 
+					if( $value !== apply_filters( 'bookacti_translate_text_external', $option_value, false, true, array( 'domain' => 'woocommerce', 'object_type' => 'product_attribute_option', 'object_id' => $option_key, 'field' => 'value', 'product_id' => $product->get_id(), 'product_attribute_key' => $product_attribute_key ) ) 
 					&&  $value !== $option_value ) { continue; }
 					$value = $option_value;
 				}

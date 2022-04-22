@@ -163,6 +163,17 @@ $j( document ).ready( function() {
 			bookacti_show_hide_empty_price_notice( variation_menu_order );
 		});
 	});
+	
+	
+	/**
+	 * Lock the WPML field on translated products
+	 * @since 1.14.0
+	 */
+	$j( '#woocommerce-product-data' ).on( 'woocommerce_variations_loaded', function() {
+		if( $j( '.wcml_lock_img' ).length ) {
+			bookacti_wpml_wc_lock_product_variation_fields();
+		}
+	});
 });
 
 
@@ -250,4 +261,36 @@ function bookacti_show_hide_empty_price_notice( variation_menu_order ) {
 			$j( 'input[name="variable_regular_price[' + var_nb + ']"], #bookacti_variable_form_' + var_nb ).after( notice_div );
 		}
 	}
+}
+
+
+/**
+ * Lock Booking Activities fields in product variations translated by WPML
+ * Temp fix adapted from woocommerce-multilingual\res\js\lock_fields.js (waiting for hooks)
+ * @since 1.14.0
+ */
+function bookacti_wpml_wc_lock_product_variation_fields() {
+	var locked_fields = { 'selector': '#variable_product_options [name^="bookacti_"]:input' };
+	
+	$j( '#woocommerce-product-data' ).trigger( 'bookacti_wpml_wc_product_variation_fields_locked', [ locked_fields ] );
+	
+	$j( locked_fields.selector ).each( function() {
+		// Checkboxes and selectboxes
+		if( $j( this ).attr( 'type' ) === 'checkbox' || $j( this ).is( 'select' ) ) {
+			$j( this ).prop( 'disabled', true );
+			$j( this ).after( $j( '.wcml_lock_img' ).clone().removeClass( 'wcml_lock_img' ).show() );
+
+			// Copy the field value into an hidden input to save its value
+			if( $j( 'input[name="' + $j( this ).attr( 'name' ) + '"]' ).length ) {
+				$j( 'input[name="' + $j( this ).attr( 'name' ) + '"]' ).val( $j( this ).val() );
+			} else {
+				$j( this ).after( '<input type="hidden" name="' + $j( this ).attr( 'name' ) + '" value="' + $j( this ).val() + '" />' );
+			}
+		} 
+		// Other inputs
+		else if( $j( this ).attr( 'type' ) !== 'hidden' ) {
+			$j( this ).prop( 'readonly', true );
+			$j( this ).after( $j( '.wcml_lock_img' ).clone().removeClass( 'wcml_lock_img' ).show() );
+		}
+	});
 }

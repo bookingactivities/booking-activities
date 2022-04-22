@@ -613,18 +613,10 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
  */
 function bookacti_get_translation_plugin() {
 	$translation_plugin = wp_cache_get( 'translation_plugin', 'bookacti' );
-	
 	if( $translation_plugin === false ) {
-		$translation_plugin = '';
-		if( bookacti_is_plugin_active( 'qtranslate-x/qtranslate.php' ) || bookacti_is_plugin_active( 'qtranslate-xt/qtranslate.php' ) ) {
-			$translation_plugin = 'qtranslate';
-		} else if( bookacti_is_plugin_active( 'sitepress-multilingual-cms/sitepress.php' ) ) {
-			$translation_plugin = 'wpml';
-		}
-		$translation_plugin = apply_filters( 'bookacti_translation_plugin', $translation_plugin );
+		$translation_plugin = apply_filters( 'bookacti_translation_plugin', '' );
 		wp_cache_set( 'translation_plugin', $translation_plugin, 'bookacti' );
 	}
-	
 	return $translation_plugin;
 }
 
@@ -637,28 +629,10 @@ function bookacti_get_translation_plugin() {
  * @return array
  */
 function bookacti_get_active_locales( $with_locale = true ) {
-	$plugin  = bookacti_get_translation_plugin();
 	$locales = get_available_languages();
-
-	if( $plugin === 'qtranslate' ) {
-		$languages = function_exists( 'qtranxf_getSortedLanguages' ) ? qtranxf_getSortedLanguages() : array();
-		if( $languages && $with_locale ) {
-			global $q_config;
-			foreach( $languages as $i => $lang_code ) {
-				if( ! empty( $q_config[ 'locale' ][ $lang_code ] ) ) { $languages[ $i ] = $q_config[ 'locale' ][ $lang_code ]; }
-			}
-		}
-	
-	} else if( $plugin === 'wpml' ) {
-		$languages = apply_filters( 'wpml_active_languages', array() );
-		if( $languages ) {
-			foreach( $languages as $lang_code => $locale_data ) {
-				if( $locale_data[ 'active' ] ) { $locales[] = $with_locale ? $locale_data[ 'default_locale' ] : $lang_code; }
-			}
-		}
 	
 	// Strip country codes from default locales array
-	} else if( $locales && ! $with_locale ) {
+	if( $locales && ! $with_locale ) {
 		foreach( $locales as $i => $locale ) {
 			$locales[ $i ] = strpos( $locale, '_' ) !== false ? substr( $locale, 0, strpos( $locale, '_' ) ) : $locale;
 		}
@@ -671,32 +645,17 @@ function bookacti_get_active_locales( $with_locale = true ) {
 /**
  * Detect current language with Qtranslate-XT or WPML
  * @version 1.14.0
- * @global array $q_config
  * @param boolean $with_locale
  * @return string 
  */
 function bookacti_get_current_lang_code( $with_locale = false ) {
-	$plugin    = bookacti_get_translation_plugin();
 	$locale    = get_locale();
 	$lang_code = $with_locale ? $locale : substr( $locale, 0, strpos( $locale, '_' ) );
-
-	if( $plugin === 'qtranslate' ) {
-		$lang_code = function_exists( 'qtranxf_getLanguage' ) ? qtranxf_getLanguage() : '';
-		if( $lang_code && $with_locale ) {
-			global $q_config;
-			if( isset( $q_config[ 'locale' ][ $lang_code ] ) ) { $lang_code = $q_config[ 'locale' ][ $lang_code ]; }
-		}
-	} else if( $plugin === 'wpml' ) {
-		$lang_code = apply_filters( 'wpml_current_language', '' );
-		if( $lang_code && $with_locale ) {
-			$languages = apply_filters( 'wpml_active_languages', array() );
-			if( ! empty( $languages[ $lang_code ][ 'default_locale' ] ) ) { $lang_code = $languages[ $lang_code ][ 'default_locale' ]; }
-		}
-	}
 	
+	$lang_code = apply_filters( 'bookacti_current_lang_code', $lang_code, $with_locale );
 	if( ! $lang_code ) { $lang_code = $with_locale ? 'en_US' : 'en'; }
 	
-	return apply_filters( 'bookacti_current_lang_code', $lang_code, $with_locale );
+	return $lang_code;
 }
 
 
@@ -708,134 +667,13 @@ function bookacti_get_current_lang_code( $with_locale = false ) {
  * @return string
  */
 function bookacti_get_site_default_locale( $with_locale = true ) {
-	$plugin    = bookacti_get_translation_plugin();
-	$locale    = get_locale();
-	$lang_code = $with_locale ? $locale : substr( $locale, 0, strpos( $locale, '_' ) );
+	$locale = get_locale();
+	if( ! $with_locale ) { $locale = substr( $locale, 0, strpos( $locale, '_' ) ); }
 
-	if( $plugin === 'qtranslate' ) {
-		global $q_config;
-		if( $q_config && ! empty( $q_config[ 'default_language' ] ) ) { 
-			$lang_code = $q_config[ 'default_language' ];
-			if( $with_locale && $lang_code ) {
-				if( ! empty( $q_config[ 'locale' ][ $lang_code ] ) ) { $lang_code = $q_config[ 'locale' ][ $lang_code ]; }
-			}
-		}
-	} else if( $plugin === 'wpml' ) {
-		$lang_code = apply_filters( 'wpml_default_language', '' );
-		if( $with_locale && $lang_code ) {
-			$languages = apply_filters( 'wpml_active_languages', array() );
-			if( $languages && ! empty( $languages[ $lang_code ][ 'default_locale' ] ) ) { $lang_code = $languages[ $lang_code ][ 'default_locale' ]; }
-		}
-	}
+	$locale = apply_filters( 'bookacti_site_default_locale', $locale, $with_locale );
+	if( ! $locale ) { $locale = $with_locale ? 'en_US' : 'en'; }
 	
-	if( ! $lang_code ) { $lang_code = $with_locale ? 'en_US' : 'en'; }
-	
-	return apply_filters( 'bookacti_site_default_locale', $lang_code, $with_locale );
-}
-
-
-/**
- * Translate a string into the desired language (default to current site language) with qTranslate-XT or WPML
- * @since 1.14.0
- * @param string $text
- * @param string $lang Optional. Two letter lang id (e.g. fr or en) or locale id (e.g. fr_FR or en_US).
- * @param string $fallback Optional. False to display empty string if the text doesn't exist in the desired language. True to display the text of another existing language.
- * @return string
- */
-function bookacti_translate_text_with_plugin( $text, $lang = false, $fallback = true ) {
-	$plugin = bookacti_get_translation_plugin();
-	
-	if( $plugin ) {
-		// Keep only the lang code, not country indicator
-		$lang_code = $lang && is_string( $lang ) && strpos( $lang, '_' ) !== false ? substr( $lang, 0, strpos( $lang, '_' ) ) : $lang;
-		
-		if( $plugin === 'qtranslate' ) {
-			$text = bookacti_translate_text_with_qtranslate( $text, $lang_code, $fallback );
-		} else if( $plugin === 'wpml' ) {
-			$text = bookacti_translate_text_with_wpml( $text, $lang_code, $fallback );
-		}
-	}
-	
-	return apply_filters( 'bookacti_translate_text_with_plugin', $text, $lang, $fallback );
-}
-add_filter( 'bookacti_translate_text', 'bookacti_translate_text_with_plugin', 10, 3 );
-
-
-/**
- * Translate a string external to Booking Activities into the desired language (default to current site language) with qTranslate-XT or WPML
- * @since 1.14.0
- * @param string $text
- * @param string $lang Optional. Two letter lang id (e.g. fr or en) or locale id (e.g. fr_FR or en_US).
- * @param string $fallback Optional. False to display empty string if the text doesn't exist in the desired language. True to display the text of another existing language.
- * @param array $args Optional. Data about the string to translate.
- * @return string
- */
-function bookacti_translate_external_text_with_plugin( $text, $lang = false, $fallback = true, $args = array() ) {
-	$plugin = bookacti_get_translation_plugin();
-	
-	if( $plugin ) {
-		// Keep only the lang code, not country indicator
-		$lang_code = $lang && is_string( $lang ) && strpos( $lang, '_' ) !== false ? substr( $lang, 0, strpos( $lang, '_' ) ) : $lang;
-		
-		if( $plugin === 'qtranslate' ) {
-			$text = bookacti_translate_text_with_qtranslate( $text, $lang_code, $fallback );
-		} else if( $plugin === 'wpml' ) {
-			// TO DO
-		}
-	}
-	
-	return apply_filters( 'bookacti_translate_text_with_plugin', $text, $lang, $fallback );
-}
-add_filter( 'bookacti_translate_text_external', 'bookacti_translate_external_text_with_plugin', 10, 4 );
-
-
-/**
- * Translate a string into the desired language (default to current site language) with qTranslate-XT
- * @version 1.14.0
- * @param string $text
- * @param string $lang Optional. Two letter lang id (e.g. fr or en) or locale id (e.g. fr_FR or en_US).
- * @param string $fallback Optional. False to display empty string if the text doesn't exist in the desired language. True to display the text of another existing language.
- * @return string
- */
-function bookacti_translate_text_with_qtranslate( $text, $lang = false, $fallback = true ) {
-	if( ! $text ) { return $text; }
-	$qtranslate_show_empty = defined( 'TRANSLATE_SHOW_EMPTY' ) ? TRANSLATE_SHOW_EMPTY : 4;
-	$flags = $fallback ? 0 : $qtranslate_show_empty;
-	return apply_filters( 'translate_text', $text, $lang, $flags );
-}
-
-
-/**
- * Translate a string into the desired language (default to current site language) with WPML
- * @since 1.14.0
- * @param string $text
- * @param string $lang Optional. Two letter lang id (e.g. fr or en) or locale id (e.g. fr_FR or en_US).
- * @param string $fallback Optional. False to display empty string if the text doesn't exist in the desired language. True to display the text of another existing language.
- * @return string
- */
-function bookacti_translate_text_with_wpml( $text, $lang = false, $fallback = true ) {
-//	if( ! $text ) { return $text; }
-	
-	// Get lang
-	if( ! $lang ) { $lang = bookacti_get_current_lang_code(); }
-	
-	// Translate
-	$translated_text = apply_filters( 'wpml_translate_single_string', $text, 'Booking Activities', $text, $lang );
-	
-//	bookacti_log( '------------------------------' );
-//	bookacti_log( '$text' );
-//	bookacti_log( $text );
-//	bookacti_log( '$translated_text' );
-//	bookacti_log( $translated_text );
-//	bookacti_log( 'debug_backtrace' );
-//	bookacti_log( debug_backtrace( 2 ) );
-	
-	// Register
-	if( $text === $translated_text ) {
-		do_action( 'wpml_register_single_string', 'Booking Activities', $text, $text, ! $fallback );
-	}
-	
-	return $translated_text;
+	return $locale;
 }
 
 

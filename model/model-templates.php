@@ -1460,7 +1460,7 @@ function bookacti_get_templates_by_activity( $activity_ids, $id_only = true ) {
 
 /**
  * Fetch activities with the list of associated templated
- * @version 1.7.0
+ * @version 1.14.0
  * @global wpdb $wpdb
  * @param array $template_ids
  * @return array [ activity_id ][id, title, color, duration, availability, active, template_ids] where template_ids = [id, id, id, ...]
@@ -1478,7 +1478,7 @@ function bookacti_fetch_activities_with_templates_association( $template_ids = a
 	}
 
 	$query  = 'SELECT A.*, TA.template_id FROM ' . BOOKACTI_TABLE_ACTIVITIES . ' as A, ' . BOOKACTI_TABLE_TEMP_ACTI . ' as TA ' 
-			. ' WHERE active=1 '
+			. ' WHERE A.active = 1 '
 			. ' AND A.id = TA.activity_id';
 
 	// Filter by template

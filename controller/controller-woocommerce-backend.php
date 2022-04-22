@@ -359,6 +359,7 @@ function bookacti_activity_tab_content() {
 				</span>
 			</p>
 		</div>
+		<?php do_action( 'bookacti_activity_tab_content_after' ); ?>
 	</div>
 <?php
 }
@@ -390,14 +391,17 @@ add_action( 'woocommerce_process_product_meta', 'bookacti_save_custom_product_ty
 
 /**
  * Add custom variation product type option
- * @version 1.7.14
+ * @version 1.14.0
  * @param int $loop
  * @param array $variation_data
  * @param WP_Post $variation
  */
-function bookacti_add_variation_option( $loop, $variation_data, $variation ) { 
+function bookacti_add_variation_option( $loop, $variation_data, $variation ) {
+	/* translators: Help tip to explain why and when you should check the 'Activity' type of product in WooCommerce */
+	$tip = esc_html__( 'Enable this option if the product is a bookable activity', 'booking-activities' );
 ?>
-	<label>
+	<label class='tips' data-tip='<?php echo $tip; ?>'>
+		<?php esc_html_e( 'Activity', 'booking-activities' ); ?> 
 		<input type='hidden' name='bookacti_variable_is_activity[<?php echo $loop; ?>]' value='no' />
 		<input 
 			type='checkbox' 
@@ -406,12 +410,7 @@ function bookacti_add_variation_option( $loop, $variation_data, $variation ) {
 			name='bookacti_variable_is_activity[<?php echo esc_attr( $loop ); ?>]' 
 			value='yes'
 			<?php checked( 'yes', esc_attr( get_post_meta( $variation->ID, 'bookacti_variable_is_activity', true ) ), true ); ?> 
-		/> 
-		<?php esc_html_e( 'Activity', 'booking-activities' ); ?> 
-		<?php 
-			/* translators: Help tip to explain why and when you should check the 'Activity' type of product in WooCommerce */
-			echo wc_help_tip( esc_html__( 'Enable this option if the product is a bookable activity', 'booking-activities' ) ); 
-		?>
+		/>
 	</label>
 <?php
 }

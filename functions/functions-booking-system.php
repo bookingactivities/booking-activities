@@ -3449,7 +3449,9 @@ function bookacti_get_groups_of_events_array_from_db_groups_of_events( $groups, 
 		$groups_array[ 'data' ][ $group_id ][ 'settings' ][ 'started_groups_bookable' ] = ! empty( $group->started_groups_bookable ) ? 1 : 0;
 	}
 	
-	$groups_array[ 'groups' ] = ! $args[ 'data_only' ] ? bookacti_get_occurrences_of_repeated_groups_of_events( $groups_array[ 'data' ], $args ) : array();
+	if( ! $args[ 'data_only' ] ) { 
+		$groups_array[ 'groups' ] = bookacti_get_occurrences_of_repeated_groups_of_events( $groups_array[ 'data' ], $args );
+	}
 	
 	return $groups_array;
 }

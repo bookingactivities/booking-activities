@@ -1,7 +1,7 @@
 <?php
 /**
  * Calendar editor page
- * @version 1.12.3
+ * @version 1.14.0
  */
 
 // Exit if accessed directly
@@ -134,7 +134,7 @@ $default_template = false;
 				</li>
 				<li>
 					<strong><?php esc_html_e( 'Group events:', 'booking-activities' ); ?></strong>
-					<em><?php esc_html_e( 'CRTL + G', 'CTRL key', 'booking-activities' ); ?></em>
+					<em><?php esc_html_e( 'CRTL + G', 'booking-activities' ); ?></em>
 				</li>
 			</ul>
 		</div>
