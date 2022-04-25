@@ -189,6 +189,7 @@
 .bookacti-availability-container .bookacti-total-availability		{ padding: 1px 1px 1px 0; }
 .bookacti-availability-container .bookacti-active-bookings-number,
 .bookacti-availability-container .bookacti-available-places-number	{ font-weight: bold; font-size: larger; }
+.bookacti-availability-container.bookacti-hide-availability			{ display: none; }
 
 .bookacti-available-places.bookacti-booked, 
 .bookacti-available-places.bookacti-not-booked		{ background-color: rgba(0, 0, 0, 0.4); }
