@@ -271,7 +271,6 @@ function bookacti_display_form( $form_id, $instance_id = '', $context = 'display
 	<?php } ?>
 			<input type='hidden' name='form_id' value='<?php echo $form_id; ?>'/>
 			<input type='hidden' name='action' value='<?php echo apply_filters( 'bookacti_form_action_field_value', $form_action, $form, $instance_id, $context, $displayed_form_fields ); ?>'/>
-			<input type='hidden' name='nonce_booking_form' value='<?php echo wp_create_nonce( 'bookacti_booking_form' ); ?>'/>
 		<?php
 			do_action( 'bookacti_form_before', $form, $instance_id, $context, $displayed_form_fields );
 

@@ -455,11 +455,6 @@ add_action( 'wp_ajax_bookactiSelect2Query_products', 'bookacti_controller_search
  * @version 1.14.0
  */
 function bookacti_controller_add_bound_product_to_cart() {
-	// Check nonce
-	if( ! check_ajax_referer( 'bookacti_booking_form', 'nonce_booking_form', false ) ) {
-		bookacti_send_json_invalid_nonce( 'add_bound_product_to_cart' );
-	}
-	
 	$form_id       = intval( $_POST[ 'form_id' ] );
 	$quantity      = empty( $_REQUEST[ 'quantity' ] ) ? 1 : wc_stock_amount( wp_unslash( $_REQUEST[ 'quantity' ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	$picked_events = ! empty( $_POST[ 'selected_events' ] ) ? bookacti_format_picked_events( $_POST[ 'selected_events' ] ) : array();

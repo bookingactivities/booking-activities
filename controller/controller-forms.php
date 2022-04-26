@@ -187,7 +187,6 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 									</p>
 								</div>
 								<div class='bookacti-forgotten-password-dialog-fields' >
-									<input type='hidden' class='bookacti-nonce-forgotten-password' name='nonce_forgotten_password' value='<?php echo wp_create_nonce( 'bookacti_forgotten_password' ); ?>' />
 									<?php
 										$forgotten_pw_fields = apply_filters( 'bookacti_forgotten_password_fields', array(
 											'forgotten_password_email' => array(
@@ -641,14 +640,10 @@ add_action( 'wp_ajax_nopriv_bookactiGetForm', 'bookacti_controller_get_form' );
 /**
  * AJAX Controller - Send the forgotten password email
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.14.0
  */
 function bookacti_controller_forgotten_password() {
-	// Check nonce
-	$is_nonce_valid	= check_ajax_referer( 'bookacti_forgotten_password', 'nonce', false );
-	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'forgotten_password' ); }
-	
-	$email = sanitize_email( $_POST[ 'email' ] );
+	$email = isset( $_POST[ 'email' ] ) ? sanitize_email( $_POST[ 'email' ] ) : '';
 	if( ! is_email( $email ) ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'invalid_email', 'message' => esc_html__( 'Invalid email address.', 'booking-activities' ) ), 'forgotten_password' ); }
 	
 	$user = get_user_by( 'email', $email );
@@ -673,14 +668,9 @@ add_action( 'wp_ajax_nopriv_bookactiForgottenPassword', 'bookacti_controller_for
 /**
  * Check if login form is correct and then register / log the user in
  * @since 1.8.0
- * @version 1.12.4
+ * @version 1.14.0
  */
 function bookacti_controller_validate_login_form() {
-	// Check nonce
-	if( ! check_ajax_referer( 'bookacti_booking_form', 'nonce_booking_form', false ) ) {
-		bookacti_send_json_invalid_nonce( 'submit_login_form' );
-	}
-	
 	$return_array = array(
 		'status'			=> '',
 		'error'				=> '',
@@ -816,11 +806,6 @@ add_action( 'wp_ajax_nopriv_bookactiSubmitLoginForm', 'bookacti_controller_valid
  * @version 1.14.0
  */
 function bookacti_controller_validate_booking_form() {
-	// Check nonce
-	if( ! check_ajax_referer( 'bookacti_booking_form', 'nonce_booking_form', false ) ) {
-		bookacti_send_json_invalid_nonce( 'submit_booking_form' );
-	}
-	
 	$return_array = array(
 		'has_logged_in'     => false,
 		'has_registered'    => false,

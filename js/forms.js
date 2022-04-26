@@ -495,7 +495,7 @@ function bookacti_submit_login_form( submit_button ) {
 /**
  * Submit booking form
  * @since 1.7.6 (was bookacti_sumbit_booking_form)
- * @version 1.12.5
+ * @version 1.14.0
  * @param {HTMLElement} form
  */
 function bookacti_submit_booking_form( form ) {
@@ -614,11 +614,6 @@ function bookacti_submit_booking_form( form ) {
 					bookacti_refresh_booking_numbers( booking_system );
 				}
 			}
-			
-			// Update nonce
-			if( typeof response.nonce !== 'undefined' ) {
-				if( response.nonce ) { form.find( 'input[name="nonce_booking_form"]' ).val( response.nonce ); }
-			}
 		
 			// Display feedback message
 			if( message ) {
@@ -723,7 +718,7 @@ function bookacti_perform_form_action( booking_system ) {
 /**
  * Forgotten password dialog
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.14.0
  * @param {string} field_id
  */
 function bookacti_dialog_forgotten_password( field_id ) {
@@ -744,9 +739,8 @@ function bookacti_dialog_forgotten_password( field_id ) {
 				dialog.find( '.bookacti-loading-alt, .bookacti-notices' ).remove();
 				
 				var email = dialog.find( '.bookacti-forgotten-password-email' ).val();
-				var nonce = dialog.find( '.bookacti-nonce-forgotten-password' ).val();
 				
-				if( ! email || ! nonce ) { return; }
+				if( ! email ) { return; }
 				
 				// Display a loader
 				var loading_div = '<div class="bookacti-loading-alt">' 
@@ -760,8 +754,7 @@ function bookacti_dialog_forgotten_password( field_id ) {
 					type: 'POST',
 					data: { 
 						'action': 'bookactiForgottenPassword',
-						'email': email,
-						'nonce': nonce
+						'email': email
 					},
 					dataType: 'json',
 					success: function( response ) {
