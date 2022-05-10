@@ -176,9 +176,7 @@ fieldset legend .bookacti-show-hide-advanced-options{ cursor: pointer; color: #0
 .bookacti-backend-dialog div > input:not([type="hidden"]) + label:not(.bookacti-onoffswitch-label):not(.bookacti-refund-option-label):not(.bookacti-duration-field-label)	{ display: inline; width: auto; font-weight: normal; }
 
 /* Tabs */
-.bookacti-tabs .bookacti-tab-content { max-height: 400px; overflow-y: auto; }
 .bookacti-tabs .bookacti-tab-content .bookacti-display-inline-block { display: inline-block; }
-
 
 /* Specific fields */
 .bookacti-duration-field-container	{ display: inline-block; vertical-align: middle; margin-right: 4px; }
@@ -187,9 +185,9 @@ fieldset legend .bookacti-show-hide-advanced-options{ cursor: pointer; color: #0
 .bookacti-duration-hint				{ font-size: smaller; font-style: italic; }
 .bookacti-field-container .bookacti-duration-hint { text-align: right; }
 
-.bookacti-delete-date-interval							{ cursor: pointer; color: #565d61; }
-.bookacti-add-date-interval								{ cursor: pointer; color: #418fb6; }
-.bookacti-date-intervals-table-container					{ max-height: 130px; overflow-y: auto; }
+.bookacti-delete-date-interval           { cursor: pointer; color: #565d61; }
+.bookacti-add-date-interval              { cursor: pointer; color: #418fb6; }
+.bookacti-date-intervals-table-container { max-height: 130px; overflow-y: auto; }
 
 
 /* ON / OFF Switch */

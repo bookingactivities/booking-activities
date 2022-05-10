@@ -1623,7 +1623,7 @@ function bookacti_get_booking_group_actions_html( $bookings, $admin_or_front = '
  * @param string $locale
  * @return array
  */
-function bookacti_get_bookings_export_columns( $locale = '' ) {
+function bookacti_get_bookings_export_columns() {
 	return apply_filters( 'bookacti_bookings_export_columns_labels', array(
 		'booking_id'            => esc_html__( 'Booking ID', 'booking-activities' ),
 		'booking_type'          => esc_html__( 'Booking type (single or group)', 'booking-activities' ),
@@ -1648,7 +1648,7 @@ function bookacti_get_bookings_export_columns( $locale = '' ) {
 		'activity_title'        => esc_html__( 'Activity / Category title', 'booking-activities' ),
 		'form_id'               => esc_html__( 'Form ID', 'booking-activities' ),
 		'order_id'              => esc_html__( 'Order ID', 'booking-activities' )
-	), $locale );
+	) );
 }
 
 
@@ -1800,7 +1800,7 @@ function bookacti_convert_bookings_to_csv( $filters, $args_raw = array() ) {
 	
 	// Remove unknown columns 
 	$headers = array();
-	$allowed_columns = bookacti_get_bookings_export_columns( $args[ 'locale' ] );
+	$allowed_columns = bookacti_get_bookings_export_columns();
 	foreach( $args[ 'columns' ] as $i => $column_name ) {
 		if( ! isset( $allowed_columns[ $column_name ] ) ) { unset( $args[ 'columns' ][ $i ] ); continue; }
 		$headers[ $column_name ] = str_replace( ',', '', strip_tags( $allowed_columns[ $column_name ] ) );
@@ -1914,7 +1914,7 @@ function bookacti_get_bookings_export_events_tags_values( $booking_items, $args 
 	// Remove unknown columns in the booking list
 	if( $has_booking_list ) {
 		$booking_list_headers = array();
-		$allowed_columns = bookacti_get_bookings_export_columns( $args[ 'locale' ] );
+		$allowed_columns = bookacti_get_bookings_export_columns();
 		foreach( $args[ 'tooltip_booking_list_columns' ] as $i => $column_name ) {
 			if( ! isset( $allowed_columns[ $column_name ] ) ) { unset( $args[ 'tooltip_booking_list_columns' ][ $i ] ); continue; }
 			$booking_list_headers[ $column_name ] = $allowed_columns[ $column_name ];

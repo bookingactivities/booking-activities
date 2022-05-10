@@ -25,7 +25,7 @@ function bookacti_get_translatable_texts() {
 		if( ! empty( $notification_raw[ 'email' ][ 'subject' ] ) ) { $texts[] = array( 'value' => $notification_raw[ 'email' ][ 'subject' ], 'string_name' => 'Notification - ' . $notification_id . ' - email subject' ); }
 		if( ! empty( $notification_raw[ 'email' ][ 'message' ] ) ) { $texts[] = array( 'value' => $notification_raw[ 'email' ][ 'message' ], 'string_name' => 'Notification - ' . $notification_id . ' - email message' ); }
 		
-		$notification_texts = apply_filters( 'bookacti_translatable_texts_notification', $notification_texts, $notification_id, $notification_raw );
+		$notification_texts = apply_filters( 'bookacti_translatable_texts_notification', $notification_texts, $notification_raw, $notification_id );
 		if( $notification_texts ) { $texts = array_merge( $texts, $notification_texts ); }
 	}
 	
@@ -43,10 +43,10 @@ function bookacti_get_translatable_texts() {
 	// Get forms and form fields strings
 	$forms_raw = bookacti_get_forms( bookacti_format_form_filters( array( 'active' => 1 ) ) );
 	if( $forms_raw ) {
-		$register_defaults   = bookacti_get_register_fields_default_data();
-		$login_defaults      = bookacti_get_login_fields_default_data();
-		$login_type_defaults = bookacti_get_login_type_field_default_options();
-		$login_subfields     = array_merge( $register_defaults, $login_defaults, $login_type_defaults );
+		$register_defaults   = bookacti_get_register_fields_default_data( 'edit' );
+		$log_in_defaults     = bookacti_get_log_in_fields_default_data( 'edit' );
+		$login_type_defaults = bookacti_get_login_type_field_default_options( array(), 'edit' );
+		$login_subfields     = array_merge( $register_defaults, $log_in_defaults, $login_type_defaults );
 		
 		foreach( $forms_raw as $i => $form_raw ) {
 			// Get forms strings
@@ -74,21 +74,21 @@ function bookacti_get_translatable_texts() {
 				if( ! empty( $field_raw[ 'tip' ] )         && is_string( $field_raw[ 'tip' ] ) )         { $field_texts[] = array( 'value' => $field_raw[ 'tip' ] ); }
 				
 				if( $field_raw[ 'type' ] === 'login' ) {
-					if( ! empty( $field_raw[ 'login_button_label' ] ) )    { $field_texts[] = array( 'value' => $field_raw[ 'login_button_label' ] ); }
-					if( ! empty( $field_raw[ 'register_button_label' ] ) ) { $field_texts[] = array( 'value' => $field_raw[ 'register_button_label' ] ); }
+					if( ! empty( $field_raw[ 'login_button_label' ] )    && is_string( $field_raw[ 'login_button_label' ] ) )    { $field_texts[] = array( 'value' => $field_raw[ 'login_button_label' ] ); }
+					if( ! empty( $field_raw[ 'register_button_label' ] ) && is_string( $field_raw[ 'register_button_label' ] ) ) { $field_texts[] = array( 'value' => $field_raw[ 'register_button_label' ] ); }
 					
 					foreach( $login_subfields as $subfield_name => $subfield_default ) {
-						if( ! empty( $field_raw[ 'label' ][ $subfield_name ] ) )       { $field_texts[] = array( 'value' => $field_raw[ 'label' ][ $subfield_name ] ); }
-						if( ! empty( $field_raw[ 'placeholder' ][ $subfield_name ] ) ) { $field_texts[] = array( 'value' => $field_raw[ 'placeholder' ][ $subfield_name ] ); }
-						if( ! empty( $field_raw[ 'tip' ][ $subfield_name ] ) )         { $field_texts[] = array( 'value' => $field_raw[ 'tip' ][ $subfield_name ] ); }
+						if( ! empty( $field_raw[ 'label' ][ $subfield_name ] )       && is_string( $field_raw[ 'label' ][ $subfield_name ] ) )       { $field_texts[] = array( 'value' => $field_raw[ 'label' ][ $subfield_name ] ); }
+						if( ! empty( $field_raw[ 'placeholder' ][ $subfield_name ] ) && is_string( $field_raw[ 'placeholder' ][ $subfield_name ] ) ) { $field_texts[] = array( 'value' => $field_raw[ 'placeholder' ][ $subfield_name ] ); }
+						if( ! empty( $field_raw[ 'tip' ][ $subfield_name ] )         && is_string( $field_raw[ 'tip' ][ $subfield_name ] ) )         { $field_texts[] = array( 'value' => $field_raw[ 'tip' ][ $subfield_name ] ); }
 					
 					}
 				}
 				if( $field_raw[ 'type' ] === 'submit' ) {
-					if( ! empty( $field_raw[ 'value' ] ) ) { $field_texts[] = array( 'value' => $field_raw[ 'value' ] ); }
+					if( ! empty( $field_raw[ 'value' ] ) && is_string( $field_raw[ 'value' ] ) ) { $field_texts[] = array( 'value' => $field_raw[ 'value' ] ); }
 				}
 				if( $field_raw[ 'type' ] === 'free_text' ) {
-					if( ! empty( $field_raw[ 'value' ] ) ) { $field_texts[] = array( 'value' => $field_raw[ 'value' ], 'string_name' => 'Form field #' . $field_raw[ 'field_id' ] . ' - value' ); }
+					if( ! empty( $field_raw[ 'value' ] ) && is_string( $field_raw[ 'value' ] ) ) { $field_texts[] = array( 'value' => $field_raw[ 'value' ], 'string_name' => 'Form field #' . $field_raw[ 'field_id' ] . ' - value' ); }
 				}
 				
 				$field_texts = apply_filters( 'bookacti_translatable_texts_form_field', $field_texts, $field_raw, $form_raw );
@@ -109,14 +109,27 @@ function bookacti_get_translatable_texts() {
 	}
 	
 	// Get activities strings
-	$activities = $templates ? bookacti_fetch_activities_with_templates_association( array_keys( $templates ) ) : array();
+	$activities = $templates ? bookacti_get_activities_by_template( array_keys( $templates ) ) : array();
 	foreach( $activities as $activity_id => $activity ) {
 		$activity_texts = array();
 		
-		if( ! empty( $activity[ 'title' ] ) ) { $activity_texts[] = array( 'value' => $activity[ 'title' ] ); }
+		if( ! empty( $activity[ 'multilingual_title' ] ) ) { $activity_texts[] = array( 'value' => $activity[ 'multilingual_title' ] ); }
 		
 		$activity_texts = apply_filters( 'bookacti_translatable_texts_activity', $activity_texts, $activity );
 		if( $activity_texts ) { $texts = array_merge( $texts, $activity_texts ); }
+	}
+	
+	// Get events strings
+	$events = bookacti_fetch_events( array( 'data_only' => 1, 'past_events' => 0 ) );
+	if( ! empty( $events[ 'data' ] ) ) {
+		foreach( $events[ 'data' ] as $event_id => $event ) {
+			$event_texts = array();
+
+			if( ! empty( $event[ 'multilingual_title' ] ) ) { $event_texts[] = array( 'value' => $event[ 'multilingual_title' ] ); }
+
+			$event_texts = apply_filters( 'bookacti_translatable_texts_event', $event_texts, $event );
+			if( $event_texts ) { $texts = array_merge( $texts, $event_texts ); }
+		}
 	}
 	
 	// Get groups categories strings
@@ -143,20 +156,8 @@ function bookacti_get_translatable_texts() {
 		}
 	}
 	
-	// Get events strings
-	$events = bookacti_fetch_events( array( 'data_only' => 1, 'past_events' => 0 ) );
-	if( ! empty( $events[ 'data' ] ) ) {
-		foreach( $events[ 'data' ] as $event_id => $event ) {
-			$event_texts = array();
-
-			if( ! empty( $event[ 'multilingual_title' ] ) ) { $event_texts[] = array( 'value' => $event[ 'multilingual_title' ] ); }
-
-			$event_texts = apply_filters( 'bookacti_translatable_texts_event', $event_texts, $event );
-			if( $event_texts ) { $texts = array_merge( $texts, $event_texts ); }
-		}
-	}
-	
 	$data = array(
+		'alloptions'       => $alloptions,
 		'notifications'    => $notifications_raw,
 		'messages'         => $messages,
 		'forms'            => $forms_raw,
@@ -193,7 +194,7 @@ function bookacti_translate_text_with_wpml( $text, $lang = '', $fallback = true,
 	// Translate
 	$string_name     = ! empty( $args[ 'string_name' ] ) ? $args[ 'string_name' ] : $text;
 	$translated_text = apply_filters( 'wpml_translate_single_string', $text, 'Booking Activities', $string_name, $lang );
-
+	
 //	bookacti_log( '------------------------------' );
 //	bookacti_log( '$text' );
 //	bookacti_log( $text );
@@ -203,9 +204,9 @@ function bookacti_translate_text_with_wpml( $text, $lang = '', $fallback = true,
 //	bookacti_log( debug_backtrace( 2 ) );
 
 	// Register
-//	if( $text === $translated_text ) {
-//		do_action( 'wpml_register_single_string', 'Booking Activities', $string_name, $text, ! $fallback );
-//	}
+	if( $text === $translated_text ) {
+		do_action( 'wpml_register_single_string', 'Booking Activities', $string_name, $text, ! $fallback );
+	}
 
 	return $translated_text;
 }

@@ -9,7 +9,7 @@
  * Text Domain: booking-activities
  * Domain Path: /languages/
  * WC requires at least: 3.0
- * WC tested up to: 6.3
+ * WC tested up to: 6.5
  * License: GPL3
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  * 
@@ -69,7 +69,7 @@ function bookacti_load_textdomain( $locale = '' ) {
 	load_plugin_textdomain( 'booking-activities', false, plugin_basename( dirname( __FILE__ ) ) . '/languages/' ); 
 }
 add_action( 'init', 'bookacti_load_textdomain', 5 );
-add_action( 'bookacti_locale_switched', 'bookacti_load_textdomain' );
+add_action( 'bookacti_locale_switched', 'bookacti_load_textdomain', 10, 1 );
 
 
 

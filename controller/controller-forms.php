@@ -922,8 +922,9 @@ function bookacti_controller_validate_booking_form() {
 				if( is_a( $user, 'WP_User' ) ) {
 					$return_array[ 'error' ] = 'user_already_exists';
 					$return_array[ 'messages' ][ 'user_already_exists' ] = sprintf(
-						__( '<strong>Error:</strong> This email address is already registered. <a href="%s">Log in</a> with this address or choose another one.' ),
-						wp_login_url()
+						/* translators: %s = "Log in" link. */
+						esc_html__( 'This email address is associated with an account (%s). In order to make a booking without account, you need to choose an email address that is not associated with any account.' ),
+						'<a href="' . wp_login_url( home_url( $_SERVER[ 'REQUEST_URI' ] ) ) . '">' . esc_html__( 'Log in', 'booking-activities' ) . '</a>'
 					);
 					$return_array[ 'message' ] = implode( '</li><li>', $return_array[ 'messages' ] );
 					bookacti_send_json( $return_array, 'submit_booking_form' );
@@ -1201,8 +1202,19 @@ function bookacti_controller_create_form() {
 		}
 		$raw_calendar_meta = array_merge( $default_calendar_meta, $_REQUEST[ 'calendar_field' ] );
 		if( $raw_calendar_meta ) {
-			// $raw_calendar_meta will be sanitized in bookacti_update_form_field_meta
-			bookacti_update_form_field_meta( $raw_calendar_meta, 'calendar', $form_id );
+			$field = bookacti_get_form_field_by_name( $form_id, 'calendar' );
+			if( $field ) {
+				// Sanitize calendar data
+				$field_required_data  = array( 'type' => $field[ 'type' ], 'name' => $field[ 'name' ] );
+				$field_raw_data       = array_merge( $field_required_data, $raw_calendar_meta );
+				$field_sanitized_data = bookacti_sanitize_form_field_data( $field_raw_data );
+				$field_sanitized_meta = array_intersect_key( $field_sanitized_data, bookacti_get_default_form_fields_meta( $field[ 'name' ], 'edit' ) );
+
+				// Update calendar metadata
+				if( $field_sanitized_meta ) {
+					bookacti_update_metadata( 'form_field', $field[ 'field_id' ], $field_sanitized_meta );
+				}
+			}
 		}
 	}
 	
@@ -1307,12 +1319,12 @@ function bookacti_controller_duplicate_form() {
 	// Duplicate the fields
 	$field_order = array();
 	$original_fields_raw = bookacti_get_form_fields_data( $original_form_id, true, false, true );
-	$default_form_fields_meta = bookacti_get_default_form_fields_meta();
+	$default_form_fields_meta = bookacti_get_default_form_fields_meta( '', 'edit' );
 	if( $original_fields_raw ) {
 		$original_fields_ordered = bookacti_sort_form_fields_array( $original_form_id, $original_fields_raw );
 		foreach( $original_fields_ordered as $original_field ) {
 			// Duplicate field
-			$sanitized_data	= bookacti_sanitize_form_field_data( $original_field );
+			$sanitized_data = bookacti_sanitize_form_field_data( $original_field );
 			$field_id = $sanitized_data ? bookacti_insert_form_field( $form_id, $sanitized_data ) : 0;
 			if( ! $field_id ) { continue; }
 			bookacti_update_form_field( array_merge( $sanitized_data, array( 'field_id' => $field_id ) ) );
@@ -1490,7 +1502,7 @@ function bookacti_controller_insert_form_field() {
 	$field_name = sanitize_title_with_dashes( $_POST[ 'field_name' ] );
 	
 	// Check if the field is known
-	$default_field_data = bookacti_get_default_form_fields_data( $field_name );
+	$default_field_data = bookacti_get_default_form_fields_data( $field_name, 'edit' );
 	if( ! $default_field_data ) {
 		bookacti_send_json( array( 'status' => 'failed', 'error' => 'unknown_field_name', 'message' => esc_html__( 'Unknown field', 'booking-activities' ) ), 'insert_form_field' );
 	}
@@ -1504,8 +1516,8 @@ function bookacti_controller_insert_form_field() {
 	}
 
 	// Insert form field
-	$field_default_data_sanitized = bookacti_sanitize_form_field_data( array( 'name' => $default_field_data[ 'name' ], 'type' => $default_field_data[ 'type' ] ) );
-	$field_id = $field_default_data_sanitized ? bookacti_insert_form_field( $form_id, $field_default_data_sanitized ) : 0;
+	$sanitized_data = bookacti_sanitize_form_field_data( array( 'name' => $default_field_data[ 'name' ], 'type' => $default_field_data[ 'type' ] ) );
+	$field_id = $sanitized_data ? bookacti_insert_form_field( $form_id, $sanitized_data ) : 0;
 
 	if( ! $field_id ) {
 		bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_inserted', 'message' => esc_html__( 'An error occurred while trying to insert the form field.', 'booking-activities' ) ), 'insert_form_field' );
@@ -1515,13 +1527,18 @@ function bookacti_controller_insert_form_field() {
 	$field_order   = bookacti_get_form_fields_order( $form_id );
 	$field_order[] = $field_id;
 	bookacti_update_metadata( 'form', $form_id, array( 'field_order' => $field_order ) );
+	
+	wp_cache_delete( 'form_fields_' . $form_id, 'bookacti' );
+	wp_cache_delete( 'form_fields_data_' . $form_id, 'bookacti' );
 	wp_cache_delete( 'form_fields_order_' . $form_id, 'bookacti' );
+	wp_cache_delete( 'form_field_data_' . $field_id, 'bookacti' );
+	wp_cache_delete( 'form_field_data_' . $default_field_data[ 'name' ] . '_' . $form_id, 'bookacti' );
 	
 	do_action( 'bookacti_form_field_inserted', $field_id );
 
 	// Get field data and HTML for editor
-	$field_data_edit = bookacti_format_form_field_data( array( 'field_id' => $field_id, 'name' => $default_field_data[ 'name' ], 'type' => $default_field_data[ 'type' ] ), 'edit' );
-	$field_data      = bookacti_format_form_field_data( array( 'field_id' => $field_id, 'name' => $default_field_data[ 'name' ], 'type' => $default_field_data[ 'type' ] ) );
+	$field_data      = bookacti_format_form_field_data( array( 'field_id' => $field_id, 'form_id' => $form_id, 'name' => $default_field_data[ 'name' ], 'type' => $default_field_data[ 'type' ] ) );
+	$field_data_edit = bookacti_format_form_field_data( array( 'field_id' => $field_id, 'form_id' => $form_id, 'name' => $default_field_data[ 'name' ], 'type' => $default_field_data[ 'type' ] ), 'edit' );
 	$field_html      = bookacti_display_form_field_for_editor( $field_data, false );
 	
 	bookacti_send_json( array( 'status' => 'success', 'field_id' => $field_id, 'field_data'  => $field_data_edit, 'field_html' => $field_html, 'field_order' => $field_order ), 'insert_form_field' );
@@ -1553,7 +1570,10 @@ function bookacti_controller_remove_form_field() {
 	if( $removed === false ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_updated' ), 'remove_form_field' ); }
 
 	// Remove cache
+	wp_cache_delete( 'form_fields_' . $field[ 'form_id' ], 'bookacti' );
+	wp_cache_delete( 'form_fields_data_' . $field[ 'form_id' ], 'bookacti' );
 	wp_cache_delete( 'form_field_data_' . $field_id, 'bookacti' );
+	wp_cache_delete( 'form_field_data_' . $field[ 'name' ] . '_' . $field[ 'form_id' ], 'bookacti' );
 	
 	do_action( 'bookacti_form_field_removed', $field );
 
@@ -1623,38 +1643,40 @@ function bookacti_controller_update_form_field() {
 	if( ! current_user_can( 'bookacti_edit_forms' ) || ! bookacti_user_can_manage_form( $field[ 'form_id' ] ) ) { bookacti_send_json_not_allowed( 'update_form_field' ); }
 	
 	// Sanitize data
-	$sanitized_data = bookacti_sanitize_form_field_data( array_merge( $_POST, array( 'name' => $field[ 'name' ], 'type' => $field[ 'type' ] ) ) );
+	$sanitized_data = bookacti_sanitize_form_field_data( array_merge( $_POST, array( 'name' => $field[ 'name' ], 'type' => $field[ 'type' ], 'form_id' => $field[ 'form_id' ] ) ) );
 	
 	// Do not save default data
-	$default_data = bookacti_get_default_form_fields_data( $field[ 'name' ] );
+	$default_data = bookacti_get_default_form_fields_data( $field[ 'name' ], 'edit' );
 	$null_data = array();
-	$null_keys = array( 'title', 'label', 'placeholder', 'tip', 'value' );
+	$null_keys = array( 'title', 'label', 'options', 'value', 'placeholder', 'tip' );
 	foreach( $null_keys as $key ) { 
 		if( $sanitized_data[ $key ] === '' 
-		||  $sanitized_data[ $key ] === $default_data[ $key ] ) { $null_data[ $key ] = 'null'; }
+		||  maybe_unserialize( $sanitized_data[ $key ] ) === $default_data[ $key ] ) { $null_data[ $key ] = 'null'; }
 	}
-	if( ! empty( $field[ 'unique' ] ) ) { $null_data[ 'title' ] = 'null'; }
 	
 	// Update form field
 	$updated = $sanitized_data ? bookacti_update_form_field( array_merge( $sanitized_data, $null_data ) ) : false;
-
+	
 	if( $updated === false ) {
 		bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_updated', 'message' => esc_html__( 'An error occurs while trying to update the field.', 'booking-activities' ) ), 'update_form_field' );
 	}
 	
 	// Remove cache
+	wp_cache_delete( 'form_fields_' . $field[ 'form_id' ], 'bookacti' );
+	wp_cache_delete( 'form_fields_data_' . $field[ 'form_id' ], 'bookacti' );
 	wp_cache_delete( 'form_field_data_' . $field_id, 'bookacti' );
+	wp_cache_delete( 'form_field_data_' . $field[ 'name' ] . '_' . $field[ 'form_id' ], 'bookacti' );
 	
 	// Extract metadata only
 	$sanitized_data = array_map( 'maybe_unserialize', $sanitized_data );
-	$default_meta   = bookacti_get_default_form_fields_meta( $field[ 'name' ] );
+	$default_meta   = bookacti_get_default_form_fields_meta( $field[ 'name' ], 'edit' );
 	$field_meta     = array_intersect_key( $sanitized_data, $default_meta );
 	
-	// Do not save default data
+	// Do not save default meta
+	$null_meta_keys = array();
 	foreach( $field_meta as $meta_key => $meta_value ) {
 		$default_value = isset( $default_meta[ $meta_key ] ) ? $default_meta[ $meta_key ] : '';
-		$default_value = is_array( $default_value ) || is_object( $default_value ) ? maybe_serialize( $default_value ) : $default_value;
-		if( $default_value === '' || $default_value === $meta_value ) { unset( $field_meta[ $meta_key ] ); }
+		if( $default_value === '' || $default_value === $meta_value ) { $null_meta_keys[] = $meta_key; unset( $field_meta[ $meta_key ] ); }
 	}
 	
 	// Update field metadata
@@ -1664,8 +1686,8 @@ function bookacti_controller_update_form_field() {
 	do_action( 'bookacti_form_field_updated', $field, $sanitized_data );
 
 	// Get field data and HTML for editor
-	$field_data_edit = bookacti_format_form_field_data( array_diff_key( $sanitized_data, $null_data ), 'edit' );
-	$field_data      = bookacti_format_form_field_data( array_diff_key( $sanitized_data, $null_data ) );
+	$field_data      = bookacti_format_form_field_data( array_diff_key( $sanitized_data, $null_data, array_flip( $null_meta_keys ) ) );
+	$field_data_edit = bookacti_format_form_field_data( array_diff_key( $sanitized_data, $null_data, array_flip( $null_meta_keys ) ), 'edit' );
 	$field_html      = bookacti_display_form_field_for_editor( $field_data, false );
 	
 	bookacti_send_json( array( 'status' => 'success', 'field_data' => $field_data_edit, 'field_html' => $field_html ), 'update_form_field' );
@@ -1692,33 +1714,33 @@ function bookacti_controller_reset_form_field() {
 	if( ! $is_allowed || ! $field[ 'form_id' ] ) { bookacti_send_json_not_allowed( 'reset_form_field' ); }
 
 	// Update form field with default values
-	$default_data = bookacti_get_default_form_fields_data( $field[ 'name' ] );
-	if( $default_data ) { $default_data[ 'field_id' ] = $field_id; }
-	$sanitized_data = $default_data ? bookacti_sanitize_form_field_data( $default_data ) : array();
+	$sanitized_data = bookacti_sanitize_form_field_data( array( 'field_id' => $field_id, 'type' => $field[ 'type' ], 'name' => $field[ 'name' ], 'form_id' => $field[ 'form_id' ] ) );
 	
-	$null_keys = array( 'title', 'label', 'placeholder', 'tip', 'value' );
-	foreach( $null_keys as $key ) { $sanitized_data[ $key ] = 'null'; }
-	
-	$updated = $sanitized_data ? bookacti_update_form_field( $sanitized_data ) : false;
+	$null_data  = array( 'title' => 'null', 'label' => 'null', 'options' => 'null', 'value' => 'null', 'placeholder' => 'null', 'tip' => 'null' );
+	$saved_data = array_merge( $sanitized_data, $null_data );
+	$updated    = $sanitized_data ? bookacti_update_form_field( $saved_data ) : false;
 	
 	if( $updated === false ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_updated' ), 'reset_form_field' ); }
 	
 	// Remove cache
+	wp_cache_delete( 'form_fields_' . $field[ 'form_id' ], 'bookacti' );
+	wp_cache_delete( 'form_fields_data_' . $field[ 'form_id' ], 'bookacti' );
 	wp_cache_delete( 'form_field_data_' . $field_id, 'bookacti' );
+	wp_cache_delete( 'form_field_data_' . $field[ 'name' ] . '_' . $field[ 'form_id' ], 'bookacti' );
 	
 	// Delete all metadata to apply default
-	$default_meta = bookacti_get_default_form_fields_meta( $field[ 'name' ] );
+	$default_meta = bookacti_get_default_form_fields_meta( $field[ 'name' ], 'edit' );
 	if( $default_meta ) { bookacti_delete_metadata( 'form_field', $field_id, array_keys( $default_meta ) ); }
 	
 	// Get reset field data
-	$sanitized_data = array_map( 'maybe_unserialize', $sanitized_data );
-	$reset_field_data = apply_filters( 'bookacti_form_field_reset_data', array( 'field_id' => $sanitized_data[ 'field_id' ], 'form_id' => $sanitized_data[ 'form_id' ], 'name' => $sanitized_data[ 'name' ], 'type' => $sanitized_data[ 'type' ] ), $field );
+	$sanitized_data   = array_map( 'maybe_unserialize', $sanitized_data );
+	$reset_field_data = apply_filters( 'bookacti_form_field_reset_data', array_diff_key( $sanitized_data, $null_data, $default_meta ), $field );
 	
 	do_action( 'bookacti_form_field_reset', $field, $sanitized_data );
 	
 	// Get field data and HTML for editor
-	$field_data_edit = bookacti_format_form_field_data( $reset_field_data, 'edit' );
 	$field_data      = bookacti_format_form_field_data( $reset_field_data );
+	$field_data_edit = bookacti_format_form_field_data( $reset_field_data, 'edit' );
 	$field_html      = bookacti_display_form_field_for_editor( $field_data, false );
 	
 	bookacti_send_json( array( 'status' => 'success', 'field_data' => $field_data_edit, 'field_html' => $field_html ), 'reset_form_field' );

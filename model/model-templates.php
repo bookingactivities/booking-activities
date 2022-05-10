@@ -1214,18 +1214,10 @@ function bookacti_get_activities_by_template( $template_ids = array(), $based_on
 	global $wpdb;
 
 	// If empty, take them all
-	if( ! $template_ids ) {
-		$template_ids = array_keys( bookacti_fetch_templates( array(), true ) );
-	}
+	if( ! $template_ids ) { $template_ids = array_keys( bookacti_fetch_templates( array(), true ) ); }
 
 	// Convert numeric to array
-	if( ! is_array( $template_ids ) ){
-		$template_id = intval( $template_ids );
-		$template_ids = array();
-		if( $template_id ) {
-			$template_ids[] = $template_id;
-		}
-	}
+	if( ! is_array( $template_ids ) ) { $template_ids = bookacti_ids_to_array( $template_ids ); }
 
 	if( $based_on_events ) {
 		$query = 'SELECT DISTINCT A.* FROM ' . BOOKACTI_TABLE_EVENTS . ' as E, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A '
@@ -1261,9 +1253,7 @@ function bookacti_get_activities_by_template( $template_ids = array(), $based_on
 	$activities = $wpdb->get_results( $query, ARRAY_A );
 
 	$activity_ids = array();
-	foreach( $activities as $activity ) {
-		$activity_ids[] = $activity[ 'id' ];
-	}
+	foreach( $activities as $activity ) { $activity_ids[] = $activity[ 'id' ]; }
 
 	$activities_meta     = bookacti_get_metadata( 'activity', $activity_ids );
 	$activities_managers = $retrieve_managers ? bookacti_get_managers( 'activity', $activity_ids ) : array();
@@ -1296,7 +1286,7 @@ function bookacti_get_activities_by_template( $template_ids = array(), $based_on
 /**
  * Get an array of all activity ids bound to designated templates
  * @since 1.1.0
- * @version 1.7.16
+ * @version 1.14.0
  * @global wpdb $wpdb
  * @param array $template_ids
  * @param boolean $based_on_events Whether to retrieve activity ids bound to templates or activity ids bound to events of templates
@@ -1307,13 +1297,7 @@ function bookacti_get_activity_ids_by_template( $template_ids = array(), $based_
 	global $wpdb;
 
 	// Convert numeric to array
-	if( ! is_array( $template_ids ) ){
-		$template_id = intval( $template_ids );
-		$template_ids = array();
-		if( $template_id ) {
-			$template_ids[] = $template_id;
-		}
-	}
+	if( ! is_array( $template_ids ) ) { $template_ids = bookacti_ids_to_array( $template_ids ); }
 
 	$variables = array();
 
@@ -1406,7 +1390,7 @@ function bookacti_get_activity_ids_by_template( $template_ids = array(), $based_
 
 /**
  * Get templates by activity
- * @version 1.7.0
+ * @version 1.14.0
  * @global wpdb $wpdb
  * @param array $activity_ids
  * @param boolean $id_only
@@ -1415,9 +1399,7 @@ function bookacti_get_activity_ids_by_template( $template_ids = array(), $based_
 function bookacti_get_templates_by_activity( $activity_ids, $id_only = true ) {
 	global $wpdb;
 
-	if( ! is_array( $activity_ids ) ){
-		$activity_ids = array( $activity_ids );
-	}
+	if( ! is_array( $activity_ids ) ) { $activity_ids = bookacti_ids_to_array( $activity_ids ); }
 
 	$query	= 'SELECT DISTINCT T.* FROM ' . BOOKACTI_TABLE_TEMP_ACTI . ' as TA, ' . BOOKACTI_TABLE_TEMPLATES . ' as T '
 			. ' WHERE T.id = TA.template_id '
@@ -1469,13 +1451,7 @@ function bookacti_fetch_activities_with_templates_association( $template_ids = a
 	global $wpdb;
 
 	// Convert numeric to array
-	if( ! is_array( $template_ids ) ){
-		$template_id = intval( $template_ids );
-		$template_ids = array();
-		if( $template_id ) {
-			$template_ids[] = $template_id;
-		}
-	}
+	if( ! is_array( $template_ids ) ) { $template_ids = bookacti_ids_to_array( $template_ids ); }
 
 	$query  = 'SELECT A.*, TA.template_id FROM ' . BOOKACTI_TABLE_ACTIVITIES . ' as A, ' . BOOKACTI_TABLE_TEMP_ACTI . ' as TA ' 
 			. ' WHERE A.active = 1 '

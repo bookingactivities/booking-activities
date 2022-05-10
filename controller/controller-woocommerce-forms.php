@@ -166,17 +166,19 @@ add_filter( 'bookacti_is_total_price_field_used', '__return_true' );
 /**
  * Add an icon before WC unsupported form field in form editor
  * @since 1.5.0
+ * @version 1.14.0
  * @param array $field_data
  * @param array $raw_field_data
+ * @param string $context
  * @return array
  */
-function bookacti_form_editor_wc_field_title( $field_data, $raw_field_data ) {
-	if( in_array( $field_data[ 'name' ], bookacti_get_wc_unsupported_form_fields(), true ) ) {
+function bookacti_form_editor_wc_field_title( $field_data, $raw_field_data, $context ) {
+	if( $context === 'edit' && in_array( $field_data[ 'name' ], bookacti_get_wc_unsupported_form_fields(), true ) ) {
 		$field_data[ 'title' ] = '<span class="bookacti-wc-icon-not-supported"></span>' . $field_data[ 'title' ];
 	}
 	return $field_data;
 }
-add_filter( 'bookacti_formatted_field_data', 'bookacti_form_editor_wc_field_title', 10, 2 );
+add_filter( 'bookacti_formatted_field_data', 'bookacti_form_editor_wc_field_title', 10, 3 );
 
 
 /**
@@ -227,12 +229,13 @@ add_filter( 'bookacti_formatted_booking_system_attributes', 'bookacti_format_wc_
 /**
  * Sanitize WC booking system attributes 
  * @since 1.7.17
- * @version 1.8.0
+ * @version 1.14.0
  * @param array $field_data
  * @param array $raw_field_data
+ * @param string $context
  * @return array
  */
-function bookacti_format_wc_field_data( $field_data, $raw_field_data ) {
+function bookacti_format_wc_field_data( $field_data, $raw_field_data, $context ) {
 	if( $raw_field_data[ 'name' ] === 'calendar' ) {
 		$default_meta = bookacti_default_wc_calendar_form_field_meta( array() );
 		$field_data[ 'product_by_activity' ]		= isset( $raw_field_data[ 'product_by_activity' ] ) && is_array( $raw_field_data[ 'product_by_activity' ] ) ? array_filter( array_map( 'intval', $raw_field_data[ 'product_by_activity' ] ) ) : $default_meta[ 'calendar' ][ 'product_by_activity' ];
@@ -240,7 +243,7 @@ function bookacti_format_wc_field_data( $field_data, $raw_field_data ) {
 	}
 	return $field_data;
 }
-add_filter( 'bookacti_formatted_field_data', 'bookacti_format_wc_field_data', 10, 2 );
+add_filter( 'bookacti_formatted_field_data', 'bookacti_format_wc_field_data', 10, 3 );
 
 
 /**

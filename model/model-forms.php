@@ -356,7 +356,7 @@ function bookacti_delete_form( $form_id ) {
 function bookacti_insert_default_form_fields( $form_id ) {
 	global $wpdb;
 	
-	$default_fields = bookacti_get_default_form_fields_data();
+	$default_fields = bookacti_get_default_form_fields_data( '', 'edit' );
 
 	$fields_to_insert = array();
 	foreach( $default_fields as $i => $default_field ) {
@@ -420,7 +420,7 @@ function bookacti_insert_form_field( $form_id, $field_data ) {
  * @since 1.5.0
  * @global wpdb $wpdb
  * @param int $form_id
- * @return array|false
+ * @return array
  */
 function bookacti_get_form_field( $field_id ) {
 	global $wpdb;
@@ -452,7 +452,7 @@ function bookacti_get_form_field( $field_id ) {
  * @global wpdb $wpdb
  * @param int $form_id
  * @param string $field_name
- * @return array|false
+ * @return array
  */
 function bookacti_get_form_field_by_name( $form_id, $field_name ) {
 	global $wpdb;
@@ -483,7 +483,7 @@ function bookacti_get_form_field_by_name( $form_id, $field_name ) {
 /**
  * Get the fields of the desired form
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.14.0
  * @global wpdb $wpdb
  * @param int $form_id
  * @param boolean $active_only Whether to fetch only active fields. Default "true".
@@ -491,25 +491,26 @@ function bookacti_get_form_field_by_name( $form_id, $field_name ) {
  */
 function bookacti_get_form_fields( $form_id, $active_only = true ) {
 	$fields = wp_cache_get( 'form_fields_' . $form_id, 'bookacti' );	
-
-	if( ! $fields ) { 
+	if( $fields === false ) { 
 		global $wpdb;
 
-		$query	= 'SELECT id as field_id, form_id, name, type, title, label, options, value, placeholder, tip, required, active '
-				. ' FROM ' . BOOKACTI_TABLE_FORM_FIELDS . ' as FF '
-				. ' WHERE FF.form_id = %d '
-				. ' ORDER BY id ASC ';
-		$query = $wpdb->prepare( $query, $form_id );
+		$query = 'SELECT id as field_id, form_id, name, type, title, label, options, value, placeholder, tip, required, active '
+			   . ' FROM ' . BOOKACTI_TABLE_FORM_FIELDS . ' as FF '
+			   . ' WHERE FF.form_id = %d '
+			   . ' ORDER BY id ASC ';
+		$query  = $wpdb->prepare( $query, $form_id );
 		$fields = $wpdb->get_results( $query, ARRAY_A );
 		
 		wp_cache_set( 'form_fields_' . $form_id, $fields, 'bookacti' );
 	}
 	
 	$fields_by_id = array();
-	foreach( $fields as $i => $field ) {
-		if( $active_only && ! $field[ 'active' ] ) { continue; }
-		foreach( $field as $field_key => $field_value ) {
-			$fields_by_id[ $field[ 'field_id' ] ][ $field_key ] = maybe_unserialize( $field_value );
+	if( $fields ) {
+		foreach( $fields as $i => $field ) {
+			if( $active_only && ! $field[ 'active' ] ) { continue; }
+			foreach( $field as $field_key => $field_value ) {
+				$fields_by_id[ $field[ 'field_id' ] ][ $field_key ] = maybe_unserialize( $field_value );
+			}
 		}
 	}
 	
@@ -591,6 +592,7 @@ function bookacti_delete_form_field( $field_id ) {
 /**
  * Delete all form fields
  * @since 1.5.0
+ * @version 1.14.0
  * @global wpdb $wpdb
  * @param int $form_id
  * @return int|false
@@ -601,7 +603,8 @@ function bookacti_delete_form_fields( $form_id ) {
 	// Remove form fields metadata
 	$query	= 'DELETE M.* '
 			. ' FROM ' . BOOKACTI_TABLE_META . ' as M, ' . BOOKACTI_TABLE_FORM_FIELDS . ' as FF '
-			. ' WHERE M.object_id = FF.id '
+			. ' WHERE M.object_type = "form_field" '
+			. ' AND M.object_id = FF.id '
 			. ' AND FF.form_id = %d ';
 	
 	$query = $wpdb->prepare( $query, $form_id );

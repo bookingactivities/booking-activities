@@ -830,7 +830,7 @@ function bookacti_fill_wc_columns_in_bookings_export( $booking_items, $bookings,
 				$order_item_title = $order_item->get_name();
 				$booking_items[ $booking_id ][ 'product_id' ]       = $order_item->get_product_id();
 				$booking_items[ $booking_id ][ 'variation_id' ]     = $order_item->get_variation_id();
-				$booking_items[ $booking_id ][ 'order_item_title' ] = $order_item_title !== '' ? apply_filters( 'bookacti_translate_text_external', $order_item_title, $args[ 'locale' ], true, array( 'domain' => 'woocommerce', 'object_type' => 'order_item', 'object_id' => $order_item_id, 'field' => 'title', 'order_id' => $order_id ) ) : $order_item_title;
+				$booking_items[ $booking_id ][ 'order_item_title' ] = $order_item_title !== '' ? apply_filters( 'bookacti_translate_text_external', $order_item_title, '', true, array( 'domain' => 'woocommerce', 'object_type' => 'order_item', 'object_id' => $order_item_id, 'field' => 'title', 'order_id' => $order_id ) ) : $order_item_title;
 				$booking_items[ $booking_id ][ 'order_item_price' ] = $args[ 'raw' ] ? $order_item->get_total() : html_entity_decode( wc_price( $order_item->get_total() ) );
 				$booking_items[ $booking_id ][ 'order_item_tax' ]   = $args[ 'raw' ] ? $order_item->get_total_tax() : html_entity_decode( wc_price( $order_item->get_total_tax() ) );
 			}

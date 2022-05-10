@@ -745,18 +745,38 @@ function bookacti_settings_field_notifications_from_name_callback() {
 
 /**
  * Notification from email setting field
- * 
- * @version 1.2.0
+ * @version 1.14.0
+ * @global PHPMailer\PHPMailer\PHPMailer $phpmailer
  */
 function bookacti_settings_field_notifications_from_email_callback() {
+	// Display a message: The email address must be known by the SMTP server used
+	global $phpmailer;
+	$smtp_host = 'localhost';
+	if( $phpmailer ) { 
+		do_action_ref_array( 'phpmailer_init', array( &$phpmailer ) );
+		if( ! empty( $phpmailer->Host ) ) { $smtp_host = $phpmailer->Host; }
+	}
+	
+	$message = esc_html__( 'You must create an email address at your webhost and use it here.', 'booking-activities' );
+	if( $smtp_host !== 'localhost' ) {
+		$message = esc_html__( 'You must use your SMTP server\'s email address.', 'booking-activities' ) . ' (' . $smtp_host . ')';
+	}
+	
 	$args = array(
 		'type'	=> 'text',
 		'name'	=> 'bookacti_notifications_settings[notifications_from_email]',
 		'id'	=> 'notifications_from_email',
 		'value'	=> bookacti_get_setting_value( 'bookacti_notifications_settings', 'notifications_from_email' ),
-		'tip'	=> __( 'How the sender email address appears in outgoing emails.', 'booking-activities' )
+		'tip'	=> esc_html__( 'The sender email address.', 'booking-activities' ) . ' ' . $message
 	);
 	bookacti_display_field( $args );
+?>
+	<br/>
+	<span class='bookacti-warning bookacti-from-email-warning'>
+		<span class='dashicons dashicons-warning'></span>
+		<span><em><?php echo $message ?></em></span>
+	</span>
+<?php
 }
 
 

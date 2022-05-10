@@ -83,16 +83,12 @@ add_action( 'bookacti_wc_order_item_booking_updated', 'bookacti_wc_send_notifica
 /**
  * Add a mention to notifications
  * @since 1.8.6 (was bookacti_add_admin_refunded_booking_notification before)
+ * @version 1.14.0
  * @param array $notifications
  * @return array
  */
 function bookacti_add_price_info_to_admin_refund_notifications( $notifications ) {
-	$refund_message = preg_replace( '/\t+/', '', 
-			PHP_EOL
-		.	__( '<h4>Refund</h4>
-			Price: {price}
-			Coupon: {refund_coupon_code}
-			', 'booking-activities' ) );
+	$refund_message = __( '<h4>Refund</h4>Price: {price}<br/>Coupon: {refund_coupon_code}', 'booking-activities' );
 	if( isset( $notifications[ 'admin_refund_requested_booking' ] ) ) { 
 		$notifications[ 'admin_refund_requested_booking' ][ 'email' ][ 'message' ] .= $refund_message;
 	}

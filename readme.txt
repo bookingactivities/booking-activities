@@ -3,7 +3,7 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
-Tested up to: 5.9
+Tested up to: 6.0
 Requires PHP: 5.3
 Stable tag: 1.14.0
 License: GPLv3 or later
@@ -332,6 +332,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Bookings calendar Day end option value was not properly displayed if overnight
 * Fix - Events disapearing on backend bookings calendar after rescheduling a booking
 * Fix - WC cart items were not removed if their attached booking was deleted
+* Dev - Refactor booking form CRUD
 
 = 1.13.0 - 2022/03/01 =
 * **[See the user-friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-13-days-off/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**

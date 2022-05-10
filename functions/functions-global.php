@@ -749,7 +749,8 @@ function bookacti_get_site_locale( $country_code = true ) {
 /**
  * Switch Booking Activities locale
  * @since 1.2.0
- * @version 1.8.0
+ * @version 1.14.0
+ * @global string $bookacti_locale
  * @param string $locale
  * @return boolean
  */
@@ -768,10 +769,13 @@ function bookacti_switch_locale( $locale ) {
 	}
 
 	$switched = switch_to_locale( $locale );
-
+	
 	if( $switched ) {
+		// Set $bookacti_locale global affects 'plugin_locale' hook
 		// Filter on plugin_locale so load_plugin_textdomain loads the correct locale.
-		add_filter( 'plugin_locale', function() use ( &$locale ) { return $locale; } );
+		global $bookacti_locale;
+		$bookacti_locale = $locale;
+		
 		// Load textdomain on bookacti_locale_switched
 		do_action( 'bookacti_locale_switched', $locale );
 	}
@@ -783,17 +787,37 @@ function bookacti_switch_locale( $locale ) {
 /**
  * Switch Booking Activities locale back to the original
  * @since 1.2.0
+ * @version 1.14.0
+ * @global string $bookacti_locale
  */
 function bookacti_restore_locale() {
 	if( function_exists( 'restore_previous_locale' ) ) {
-		restore_previous_locale();
-
-		// Filter on plugin_locale so load_plugin_textdomain loads the correct locale.
-		add_filter( 'plugin_locale', 'get_locale' );
-
-		bookacti_load_textdomain();
+		$locale = restore_previous_locale();
+		if( $locale ) {
+			// Set $bookacti_locale global affects 'plugin_locale' hook
+			// Filter on plugin_locale so load_plugin_textdomain loads the correct locale.
+			global $bookacti_locale;
+			$bookacti_locale = $locale;
+			
+			// Load textdomain on bookacti_locale_switched
+			do_action( 'bookacti_locale_switched', $locale );
+		}
 	}
 }
+
+
+/**
+ * Set plugin_locale to $bookacti_locale if defined
+ * @since 1.14.0
+ * @global string $bookacti_locale
+ * @param string $locale
+ * @return string
+ */
+function bookacti_set_plugin_locale( $locale ) {
+	global $bookacti_locale;
+	return ! empty( $bookacti_locale ) ? $bookacti_locale : $locale;
+}
+add_filter( 'plugin_locale', 'bookacti_set_plugin_locale', 100, 1 );
 
 
 /**

@@ -117,7 +117,7 @@ add_filter( 'bookacti_active_locales', 'bookacti_active_locales_with_plugin', 10
  * @param boolean $with_locale
  * @return string
  */
-function bookacti_wpml_current_lang_code( $lang_code, $with_locale ) {
+function bookacti_current_lang_code_with_plugin( $lang_code, $with_locale ) {
 	$plugin = bookacti_get_translation_plugin();
 	
 	if( $plugin === 'wpml' ) {
@@ -137,7 +137,7 @@ function bookacti_wpml_current_lang_code( $lang_code, $with_locale ) {
 	
 	return $lang_code;
 }
-add_filter( 'bookacti_current_lang_code', 'bookacti_wpml_current_lang_code', 10, 2 );
+add_filter( 'bookacti_current_lang_code', 'bookacti_current_lang_code_with_plugin', 10, 2 );
 
 
 /**
@@ -148,7 +148,7 @@ add_filter( 'bookacti_current_lang_code', 'bookacti_wpml_current_lang_code', 10,
  * @param boolean $with_locale
  * @return string
  */
-function bookacti_wpml_site_default_locale( $locale, $with_locale ) {
+function bookacti_site_default_locale_with_plugin( $locale, $with_locale ) {
 	$plugin = bookacti_get_translation_plugin();
 	
 	if( $plugin === 'wpml' ) {
@@ -170,7 +170,7 @@ function bookacti_wpml_site_default_locale( $locale, $with_locale ) {
 	
 	return $locale;
 }
-add_filter( 'bookacti_site_default_locale', 'bookacti_wpml_site_default_locale', 10, 2 );
+add_filter( 'bookacti_site_default_locale', 'bookacti_site_default_locale_with_plugin', 10, 2 );
 
 
 
