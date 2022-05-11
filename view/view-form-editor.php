@@ -21,10 +21,27 @@ $can_manage_form = bookacti_user_can_manage_form( $form_id );
 $can_edit_form   = current_user_can( 'bookacti_edit_forms' );
 if ( ! $can_edit_form || ! $can_manage_form ) { echo __( 'You are not allowed to do that.', 'booking-activities' ); exit; }
 
+// Get form data
+$form_raw = bookacti_get_form_data( $form_id, true );
+if( ! $form_raw ) { exit; }
 
-// Get form data by id
-$form_raw  = bookacti_get_form_data( $form_id, true );
+// Get form fields data
+$form_fields      = array();
+$form_fields_edit = array();
+$form_fields_raw  = bookacti_get_form_fields_data( $form_id, true, false, true );
+foreach( $form_fields_raw as $field_id => $field_raw ) {
+	$form_fields[ $field_id ] = bookacti_format_form_field_data( $field_raw );
+}
+
+// Get edit data in the default language
+$lang_switched = bookacti_switch_locale( bookacti_get_site_default_locale() );
+
 $form_edit = bookacti_format_form_data( $form_raw, 'edit' );
+foreach( $form_fields_raw as $field_id => $field_raw ) {
+	$form_fields_edit[ $field_id ] = bookacti_format_form_field_data( $field_raw, 'edit' );
+}
+
+if( $lang_switched ) { bookacti_restore_locale(); }
 
 if( ! $form_edit ) { exit; }
 ?>
@@ -119,15 +136,6 @@ if( ! $form_edit ) { exit; }
 							} else {
 								// Display a nonce for form field order
 								wp_nonce_field( 'bookacti_form_field_order', 'bookacti_nonce_form_field_order', false );
-								
-								// Get form fields in the custom order
-								$form_fields      = array();
-								$form_fields_edit = array();
-								$form_fields_raw  = bookacti_get_form_fields_data( $form_id, true, false, true );
-								foreach( $form_fields_raw as $field_id => $field_raw ) {
-									$form_fields[ $field_id ]      = bookacti_format_form_field_data( $field_raw );
-									$form_fields_edit[ $field_id ] = bookacti_format_form_field_data( $field_raw, 'edit' );
-								}
 								?>
 								
 								<script>
@@ -175,7 +183,7 @@ if( ! $form_edit ) { exit; }
 										<?php
 										do_action( 'bookacti_form_editor_before', $form_edit );
 										
-										// Display form fields 
+										// Display form fields in the custom order
 										$ordered_form_fields = bookacti_sort_form_fields_array( $form_id, $form_fields );
 										foreach( $ordered_form_fields as $field ) {
 											if( ! $field ) { continue; }

@@ -10,6 +10,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  * @return array
  */
 function bookacti_get_translatable_texts() {
+	// Get data to translate in the default language
+	$lang_switched = bookacti_switch_locale( bookacti_get_site_default_locale() );
+	
 	$texts      = array();
 	$alloptions = wp_load_alloptions();
 	
@@ -168,7 +171,11 @@ function bookacti_get_translatable_texts() {
 		'events'           => $events
 	);
 	
-	return apply_filters( 'bookacti_translatable_texts', $texts, $data );
+	$texts = apply_filters( 'bookacti_translatable_texts', $texts, $data );
+	
+	if( $lang_switched ) { bookacti_restore_locale(); }
+	
+	return $texts;
 }
 
 

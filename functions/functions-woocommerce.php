@@ -285,14 +285,15 @@ function bookacti_wc_validate_cart_item_bookings_new_user( $cart_item_bookings, 
 /**
  * Update the bookings bound to a cart item
  * @since 1.9.0
+ * @ersion 1.14.0
  * @global woocommerce $woocommerce
- * @param string|array $cart_item_key Cart item key or Cart item itself
+ * @param string $cart_item_key Cart item key or Cart item itself
  * @param array $new_data
  * @return int
  */
 function bookacti_wc_update_cart_item_bookings( $cart_item_key, $new_data ) {
 	global $woocommerce;
-	$item = is_string( $cart_item_key ) ? $woocommerce->cart->get_cart_item( $cart_item_key ) : ( is_array( $cart_item_key ) ? $cart_item_key : array() );
+	$item = $woocommerce->cart->get_cart_item( $cart_item_key );
 	if( ! $item ) { return 0; }
 	
 	// Get expiration data
@@ -342,7 +343,7 @@ function bookacti_wc_update_cart_item_bookings( $cart_item_key, $new_data ) {
  * Update the bookings quantity bound to a cart item
  * @since 1.9.0
  * @global woocommerce $woocommerce
- * @param string|array $cart_item_key Cart item key or Cart item itself
+ * @param string $cart_item_key Cart item key or Cart item itself
  * @param int $new_quantity
  * @return int
  */
@@ -357,7 +358,7 @@ function bookacti_wc_update_cart_item_bookings_quantity( $cart_item_key, $new_qu
  * Update the bookings quantity bound to a cart item
  * @since 1.9.0
  * @global woocommerce $woocommerce
- * @param string|array $cart_item_key Cart item key or Cart item itself
+ * @param string $cart_item_key Cart item key or Cart item itself
  * @param string $new_status
  * @param string $new_expiration_date
  * @return int

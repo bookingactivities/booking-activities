@@ -606,7 +606,7 @@ add_filter( 'woocommerce_get_cart_item_from_session', 'bookacti_get_cart_items_f
  * If an activity is added to cart with the same booking data (same product, same variation, same booking) as an existing cart item
  * Merge the old cart items to the new one
  * @since 1.5.4
- * @version 1.9.0
+ * @version 1.14.0
  * @global WooCommerce $woocommerce
  * @param array $cart_item_data
  * @param string $cart_item_key
@@ -619,20 +619,18 @@ function bookacti_merge_cart_items_with_same_booking_data( $cart_item_data, $car
 	global $woocommerce;
 	
 	$old_cart_item_key = $cart_item_data[ '_bookacti_options' ][ 'merged_cart_item_key' ];
-	$old_cart_item = $woocommerce->cart->get_cart_item( $old_cart_item_key );
-
-	$product_id		= $cart_item_data[ 'product_id' ];
-	$variation_id	= $cart_item_data[ 'variation_id' ];
-	$quantity		= $cart_item_data[ 'quantity' ];
-	$new_quantity	= $quantity;
+	$old_cart_item     = $woocommerce->cart->get_cart_item( $old_cart_item_key );
+	
+	$product_id   = $cart_item_data[ 'product_id' ];
+	$variation_id = $cart_item_data[ 'variation_id' ];
+	$quantity     = $cart_item_data[ 'quantity' ];
+	$new_quantity = $quantity;
 
 	// Add the quantity of the old cart item to the new one
 	$new_quantity += $old_cart_item[ 'quantity' ];
-
-	// Set the new cart item quantity if it has merged with other cart items
 	if( $new_quantity === $quantity ) { return $cart_item_data; }
 
-	$merge = apply_filters( 'bookacti_merge_cart_items', true, $cart_item_data, $old_cart_item );
+	$merge = apply_filters( 'bookacti_merge_cart_items', true, $cart_item_data, $old_cart_item, $cart_item_key, $old_cart_item_key );
 	if( ! $merge ) { return $cart_item_data; }
 
 	// Remove the old cart item
@@ -641,14 +639,17 @@ function bookacti_merge_cart_items_with_same_booking_data( $cart_item_data, $car
 	// Restore the bookings 
 	// they has been removed while removing the duplicated cart item with $woocommerce->cart->remove_cart_item( $old_cart_item_key );
 	$cart_item_expiration_date = bookacti_wc_get_new_cart_item_expiration_date();
-	bookacti_wc_update_cart_item_bookings_status( $cart_item_data, 'in_cart', $cart_item_expiration_date );
+	bookacti_wc_update_cart_item_bookings_status( $cart_item_key, 'in_cart', $cart_item_expiration_date );
 	
 	// Remove the merged key
 	unset( $cart_item_data[ '_bookacti_options' ][ 'merged_cart_item_key' ] );
+
+	// Set the new cart item quantity if it has merged with other cart items
 	$cart_item_data[ 'quantity' ] = $new_quantity;
-	$cart_item_data = apply_filters( 'bookacti_merged_cart_item_data', $cart_item_data, $old_cart_item );
 	
-	do_action( 'bookacti_cart_item_merged', $cart_item_data, $old_cart_item );
+	$cart_item_data = apply_filters( 'bookacti_merged_cart_item_data', $cart_item_data, $old_cart_item, $cart_item_key, $old_cart_item_key );
+	
+	do_action( 'bookacti_cart_item_merged', $cart_item_data, $old_cart_item, $cart_item_key, $old_cart_item_key );
 	
 	return $cart_item_data;
 }
@@ -1081,7 +1082,7 @@ function bookacti_remove_cart_item_bookings( $cart_item_key ) {
 
 /**
  * Restore the booking if user change his mind after deleting one
- * @version 1.12.0
+ * @version 1.14.0
  * @global WooCommerce $woocommerce
  * @param string $cart_item_key
  */
@@ -1152,15 +1153,14 @@ function bookacti_restore_bookings_of_removed_cart_item( $cart_item_key ) {
 	$restore_bookings = apply_filters( 'bookacti_restore_bookings_of_restored_cart_item', $restore_bookings, $cart_item_key, $quantity );
 	
 	if( ! $restore_bookings ) {
-		do_action( 'bookacti_cart_item_not_restored', $item, $quantity );
+		do_action( 'bookacti_cart_item_not_restored', $cart_item_key, $quantity );
 		$removed = $woocommerce->cart->remove_cart_item( $cart_item_key );
 		if( $removed ) {
-			do_action( 'bookacti_cart_item_not_restored_removed', $item, $quantity );
+			do_action( 'bookacti_cart_item_not_restored_removed', $cart_item_key, $quantity, $item );
 		}
 	} else {
 		if( $quantity !== $init_quantity ) { $woocommerce->cart->set_quantity( $cart_item_key, $quantity, true ); }
-		$item[ 'quantity' ] = $quantity;
-		do_action( 'bookacti_cart_item_restored', $item, $quantity );
+		do_action( 'bookacti_cart_item_restored', $cart_item_key, $quantity );
 	}
 }
 add_action( 'woocommerce_cart_item_restored', 'bookacti_restore_bookings_of_removed_cart_item', 10, 1 );
@@ -1169,6 +1169,7 @@ add_action( 'woocommerce_cart_item_restored', 'bookacti_restore_bookings_of_remo
 /**
  * Display the custom metadata in cart and checkout
  * @since 1.9.0 (was bookacti_get_item_data)
+ * @version 1.14.0
  * @param array $item_data
  * @param array $cart_item
  * @return array
@@ -1176,8 +1177,9 @@ add_action( 'woocommerce_cart_item_restored', 'bookacti_restore_bookings_of_remo
 function bookacti_wc_cart_item_meta_formatted( $item_data, $cart_item ) {
 	if( empty( $cart_item[ '_bookacti_options' ][ 'bookings' ] ) ) { return $item_data; }
 
-	$cart_item_bookings = bookacti_wc_get_cart_item_bookings( $cart_item[ 'key' ], array( 'fetch_meta' => true ) );
-	if( ! $cart_item_bookings ) { return $item_data; }
+	$cart_items_bookings = bookacti_wc_get_cart_item_bookings( array( 'temp_key' => $cart_item ), array( 'fetch_meta' => true ) );
+	if( empty( $cart_items_bookings[ 'temp_key' ] ) ) { return $item_data; }
+	$cart_item_bookings = $cart_items_bookings[ 'temp_key' ];
 	
 	$cart_item_bookings_attributes = bookacti_wc_get_item_bookings_attributes( $cart_item_bookings );
 	if( ! $cart_item_bookings_attributes ) { return $item_data; }

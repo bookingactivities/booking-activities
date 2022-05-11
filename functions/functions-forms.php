@@ -104,9 +104,6 @@ function bookacti_get_default_form_meta() {
 function bookacti_format_form_data( $raw_form_data = array(), $context = 'view' ) {
 	if( ! is_array( $raw_form_data ) ) { return array(); }
 	
-	// Switch language in edit mode
-	if( $context === 'edit' ) { bookacti_switch_locale( bookacti_get_site_default_locale() ); }
-	
 	$default_data = bookacti_get_default_form_data();
 	$default_meta = bookacti_get_default_form_meta();
 	if( ! $default_data ) { return array(); }
@@ -147,9 +144,6 @@ function bookacti_format_form_data( $raw_form_data = array(), $context = 'view' 
 	
 	$form_data = apply_filters( 'bookacti_formatted_form_data', $form_data, $raw_form_data, $context );
 	
-	// Restore language in edit mode
-	if( $context === 'edit' ) { bookacti_restore_locale(); }
-	
 	return $form_data;
 }
 
@@ -167,6 +161,10 @@ function bookacti_sanitize_form_data( $raw_form_data ) {
 	$default_data = bookacti_get_default_form_data();
 	$default_meta = bookacti_get_default_form_meta();
 	if( ! $default_data ) { return array(); }
+	
+	// Empty default translatable strings
+	if( ! empty( $default_data[ 'title' ] ) )        { $default_data[ 'title' ] = ''; }
+	if( ! empty( $default_meta[ 'redirect_url' ] ) ) { $default_meta[ 'redirect_url' ] = ''; }
 	
 	// Sanitize meta values
 	$keys_by_type = array( 
@@ -318,11 +316,10 @@ function bookacti_display_form( $form_id, $instance_id = '', $context = 'display
  * @return array
  */
 function bookacti_get_form_fields_data( $form_id, $active_only = true, $index_by_name = false, $raw = false ) {
-	$fields_data_by_id = ! $raw ? wp_cache_get( 'form_fields_data_' . $form_id, 'bookacti' ) : false;
+	$fields_data_by_id = wp_cache_get( 'form_fields_data_' . $form_id, 'bookacti' );
 	
 	if( $fields_data_by_id === false ) {
 		// Retrieve inactive fields too, for a better cache efficiency
-		if( $raw ) { wp_cache_delete( 'form_fields_' . $form_id, 'bookacti' ); }
 		$fields = bookacti_get_form_fields( $form_id, $raw ? $active_only : false );
 		if( $fields ) {
 			// Get fields meta
@@ -342,12 +339,10 @@ function bookacti_get_form_fields_data( $form_id, $active_only = true, $index_by
 			}
 		}
 		
-		$fields_data_by_id = apply_filters( 'bookacti_form_fields_data', $fields_data_by_id ? $fields_data_by_id : array(), $form_id, $active_only, $index_by_name, $raw );
+		$fields_data_by_id = apply_filters( 'bookacti_form_fields_data_raw', $fields_data_by_id ? $fields_data_by_id : array(), $form_id, $active_only );
 		
-		if( ! $raw ) {
-			// Cache data
-			wp_cache_set( 'form_fields_data_' . $form_id, $fields_data_by_id, 'bookacti' );
-		}
+		// Cache data
+		wp_cache_set( 'form_fields_data_' . $form_id, $fields_data_by_id, 'bookacti' );
 	}
 	
 	// Format data
@@ -376,7 +371,7 @@ function bookacti_get_form_fields_data( $form_id, $active_only = true, $index_by
  * @return array
  */
 function bookacti_get_form_field_data( $field_id, $raw = false ) {
-	$field_data = ! $raw ? wp_cache_get( 'form_field_data_' . $field_id, 'bookacti' ) : false;
+	$field_data = wp_cache_get( 'form_field_data_' . $field_id, 'bookacti' );
 	
 	if( $field_data === false ) {
 		$field = bookacti_get_form_field( $field_id );
@@ -388,12 +383,10 @@ function bookacti_get_form_field_data( $field_id, $raw = false ) {
 		
 		$field_data = apply_filters( 'bookacti_form_field', $field );
 		
-		if( ! $raw ) {
-			// Cache data
-			wp_cache_set( 'form_field_data_' . $field_id, $field_data, 'bookacti' );
-			if( isset( $field[ 'name' ] ) && isset( $field[ 'form_id' ] ) ) {
-				wp_cache_set( 'form_field_data_' . $field[ 'name' ] . '_' . $field[ 'form_id' ], $field_data, 'bookacti' );
-			}
+		// Cache data
+		wp_cache_set( 'form_field_data_' . $field_id, $field_data, 'bookacti' );
+		if( isset( $field[ 'name' ] ) && isset( $field[ 'form_id' ] ) ) {
+			wp_cache_set( 'form_field_data_' . $field[ 'name' ] . '_' . $field[ 'form_id' ], $field_data, 'bookacti' );
 		}
 	}
 	
@@ -426,12 +419,10 @@ function bookacti_get_form_field_data_by_name( $form_id, $field_name, $raw = fal
 
 		$field_data = apply_filters( 'bookacti_form_field', $field );
 
-		if( ! $raw ) {
-			// Cache data
-			wp_cache_set( 'form_field_data_' . $field_name . '_' . $form_id, $field_data, 'bookacti' );
-			if( ! empty( $field[ 'field_id' ] ) ) {
-				wp_cache_set( 'form_field_data_' . $field[ 'field_id' ], $field_data, 'bookacti' );
-			}
+		// Cache data
+		wp_cache_set( 'form_field_data_' . $field_name . '_' . $form_id, $field_data, 'bookacti' );
+		if( ! empty( $field[ 'field_id' ] ) ) {
+			wp_cache_set( 'form_field_data_' . $field[ 'field_id' ], $field_data, 'bookacti' );
 		}
 	}
 	
@@ -714,9 +705,6 @@ function bookacti_format_form_field_data( $raw_field_data, $context = 'view' ) {
 	// Check if name and type are set
 	if( ! is_array( $raw_field_data ) || empty( $raw_field_data[ 'name' ] ) || empty( $raw_field_data[ 'type' ] ) ) { return array(); }
 	
-	// Switch language in edit mode
-	if( $context === 'edit' ) { bookacti_switch_locale( bookacti_get_site_default_locale() ); }
-	
 	$default_data = bookacti_get_default_form_fields_data( $raw_field_data[ 'name' ], $context );
 	$default_meta = bookacti_get_default_form_fields_meta( $raw_field_data[ 'name' ], $context );
 	if( ! $default_data ) { return array(); }
@@ -905,11 +893,7 @@ function bookacti_format_form_field_data( $raw_field_data, $context = 'view' ) {
 	}
 	$formatted_field_meta = array_intersect_key( $field_meta, $default_meta );
 	
-	
 	$formatted_field_data = apply_filters( 'bookacti_formatted_field_data', array_merge( $formatted_field_data, $formatted_field_meta ), $raw_field_data, $context );
-	
-	// Restore language
-	if( $context === 'edit' ) { bookacti_restore_locale(); }
 	
 	return $formatted_field_data;
 }
@@ -1077,12 +1061,6 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 		// Sanitize meta values
 		$keys_by_type = array( 'bool' => array( 'price_breakdown' ) );
 		$field_meta = bookacti_sanitize_values( $default_meta, $raw_field_data, $keys_by_type );
-	}
-	
-	// Empty default translatable strings
-	$translatable_keys = array( 'title', 'label', 'placeholder', 'tip' );
-	foreach( $translatable_keys as $key ) {
-		if( ! empty( $default_data[ $key ] ) ) { $default_data[ $key ] = is_array( $default_data[ $key ] ) ? array() : ''; }
 	}
 	
 	// Sanitize common values

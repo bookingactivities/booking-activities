@@ -1189,7 +1189,13 @@ function bookacti_controller_create_form() {
 	
 	$title = ! empty( $_REQUEST[ 'title' ] ) ? sanitize_text_field( stripslashes( $_REQUEST[ 'title' ] ) ) : '';
 	
+	// Switch to default language
+	$lang_switched = bookacti_switch_locale( bookacti_get_site_default_locale() );
+
 	$form_id = bookacti_create_form( $title, true );
+	
+	if( $lang_switched ) { bookacti_restore_locale(); }
+	
 	if( ! $form_id ) { esc_html_e( 'Error occurs when trying to create the form.', 'booking-activities' ); exit; }
 	
 	// Insert calendar data (if any)
@@ -1449,9 +1455,9 @@ function bookacti_controller_update_form_meta() {
 	
 	$is_allowed = current_user_can( 'bookacti_edit_forms' ) && bookacti_user_can_manage_form( $form_id );
 	if( ! $is_allowed || ! $form_id ) { bookacti_send_json_not_allowed( 'update_form_meta' ); }
-		
+	
 	// Sanitize data
-	$sanitized_data	= bookacti_sanitize_form_data( $_POST );
+	$sanitized_data = bookacti_sanitize_form_data( $_POST );
 
 	// Extract metadata only
 	$form_meta = array_intersect_key( $sanitized_data, bookacti_get_default_form_meta() );
@@ -1462,11 +1468,15 @@ function bookacti_controller_update_form_meta() {
 	if( $updated === false ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_updated' ), 'update_form_meta' ); }
 
 	do_action( 'bookacti_form_meta_updated', $form_id );
-
+	
 	// Get form data
 	$form_data_raw = bookacti_get_form_data( $form_id, true );
-	$form_data     = bookacti_format_form_data( $form_data_raw, 'edit' );
-
+	
+	// Get edit data in the default language
+	$lang_switched = bookacti_switch_locale( bookacti_get_site_default_locale() );
+	$form_data = bookacti_format_form_data( $form_data_raw, 'edit' );
+	if( $lang_switched ) { bookacti_restore_locale(); }
+	
 	bookacti_send_json( array( 'status' => 'success', 'form_data' => $form_data ), 'update_form_meta' );
 }
 add_action( 'wp_ajax_bookactiUpdateFormMeta', 'bookacti_controller_update_form_meta', 10 );
@@ -1532,14 +1542,18 @@ function bookacti_controller_insert_form_field() {
 	wp_cache_delete( 'form_fields_data_' . $form_id, 'bookacti' );
 	wp_cache_delete( 'form_fields_order_' . $form_id, 'bookacti' );
 	wp_cache_delete( 'form_field_data_' . $field_id, 'bookacti' );
-	wp_cache_delete( 'form_field_data_' . $default_field_data[ 'name' ] . '_' . $form_id, 'bookacti' );
+	wp_cache_delete( 'form_field_data_' . $sanitized_data[ 'name' ] . '_' . $form_id, 'bookacti' );
 	
 	do_action( 'bookacti_form_field_inserted', $field_id );
 
 	// Get field data and HTML for editor
-	$field_data      = bookacti_format_form_field_data( array( 'field_id' => $field_id, 'form_id' => $form_id, 'name' => $default_field_data[ 'name' ], 'type' => $default_field_data[ 'type' ] ) );
-	$field_data_edit = bookacti_format_form_field_data( array( 'field_id' => $field_id, 'form_id' => $form_id, 'name' => $default_field_data[ 'name' ], 'type' => $default_field_data[ 'type' ] ), 'edit' );
-	$field_html      = bookacti_display_form_field_for_editor( $field_data, false );
+	$field_data = bookacti_format_form_field_data( array( 'field_id' => $field_id, 'form_id' => $form_id, 'name' => $sanitized_data[ 'name' ], 'type' => $sanitized_data[ 'type' ] ) );
+	$field_html = bookacti_display_form_field_for_editor( $field_data, false );
+	
+	// Get edit data in the default language
+	$lang_switched   = bookacti_switch_locale( bookacti_get_site_default_locale() );
+	$field_data_edit = bookacti_format_form_field_data( array( 'field_id' => $field_id, 'form_id' => $form_id, 'name' => $sanitized_data[ 'name' ], 'type' => $sanitized_data[ 'type' ] ), 'edit' );
+	if( $lang_switched ) { bookacti_restore_locale(); }
 	
 	bookacti_send_json( array( 'status' => 'success', 'field_id' => $field_id, 'field_data'  => $field_data_edit, 'field_html' => $field_html, 'field_order' => $field_order ), 'insert_form_field' );
 }
@@ -1642,11 +1656,17 @@ function bookacti_controller_update_form_field() {
 	// Check capabilities
 	if( ! current_user_can( 'bookacti_edit_forms' ) || ! bookacti_user_can_manage_form( $field[ 'form_id' ] ) ) { bookacti_send_json_not_allowed( 'update_form_field' ); }
 	
+	// Get edit data in the default language
+	$lang_switched = bookacti_switch_locale( bookacti_get_site_default_locale() );
+	$default_data  = bookacti_get_default_form_fields_data( $field[ 'name' ], 'edit' );
+	$default_meta  = bookacti_get_default_form_fields_meta( $field[ 'name' ], 'edit' );
+	
 	// Sanitize data
 	$sanitized_data = bookacti_sanitize_form_field_data( array_merge( $_POST, array( 'name' => $field[ 'name' ], 'type' => $field[ 'type' ], 'form_id' => $field[ 'form_id' ] ) ) );
 	
+	if( $lang_switched ) { bookacti_restore_locale(); }
+	
 	// Do not save default data
-	$default_data = bookacti_get_default_form_fields_data( $field[ 'name' ], 'edit' );
 	$null_data = array();
 	$null_keys = array( 'title', 'label', 'options', 'value', 'placeholder', 'tip' );
 	foreach( $null_keys as $key ) { 
@@ -1669,14 +1689,13 @@ function bookacti_controller_update_form_field() {
 	
 	// Extract metadata only
 	$sanitized_data = array_map( 'maybe_unserialize', $sanitized_data );
-	$default_meta   = bookacti_get_default_form_fields_meta( $field[ 'name' ], 'edit' );
 	$field_meta     = array_intersect_key( $sanitized_data, $default_meta );
 	
 	// Do not save default meta
 	$null_meta_keys = array();
 	foreach( $field_meta as $meta_key => $meta_value ) {
 		$default_value = isset( $default_meta[ $meta_key ] ) ? $default_meta[ $meta_key ] : '';
-		if( $default_value === '' || $default_value === $meta_value ) { $null_meta_keys[] = $meta_key; unset( $field_meta[ $meta_key ] ); }
+		if( $meta_value === '' || maybe_unserialize( $meta_value ) === $default_value ) { $null_meta_keys[] = $meta_key; unset( $field_meta[ $meta_key ] ); }
 	}
 	
 	// Update field metadata
@@ -1686,9 +1705,13 @@ function bookacti_controller_update_form_field() {
 	do_action( 'bookacti_form_field_updated', $field, $sanitized_data );
 
 	// Get field data and HTML for editor
-	$field_data      = bookacti_format_form_field_data( array_diff_key( $sanitized_data, $null_data, array_flip( $null_meta_keys ) ) );
+	$field_data = bookacti_format_form_field_data( array_diff_key( $sanitized_data, $null_data, array_flip( $null_meta_keys ) ) );
+	$field_html = bookacti_display_form_field_for_editor( $field_data, false );
+	
+	// Get edit data in the default language
+	$lang_switched   = bookacti_switch_locale( bookacti_get_site_default_locale() );
 	$field_data_edit = bookacti_format_form_field_data( array_diff_key( $sanitized_data, $null_data, array_flip( $null_meta_keys ) ), 'edit' );
-	$field_html      = bookacti_display_form_field_for_editor( $field_data, false );
+	if( $lang_switched ) { bookacti_restore_locale(); }
 	
 	bookacti_send_json( array( 'status' => 'success', 'field_data' => $field_data_edit, 'field_html' => $field_html ), 'update_form_field' );
 }
@@ -1739,9 +1762,13 @@ function bookacti_controller_reset_form_field() {
 	do_action( 'bookacti_form_field_reset', $field, $sanitized_data );
 	
 	// Get field data and HTML for editor
-	$field_data      = bookacti_format_form_field_data( $reset_field_data );
+	$field_data = bookacti_format_form_field_data( $reset_field_data );
+	$field_html = bookacti_display_form_field_for_editor( $field_data, false );
+	
+	// Get edit data in the default language
+	$lang_switched   = bookacti_switch_locale( bookacti_get_site_default_locale() );
 	$field_data_edit = bookacti_format_form_field_data( $reset_field_data, 'edit' );
-	$field_html      = bookacti_display_form_field_for_editor( $field_data, false );
+	if( $lang_switched ) { bookacti_restore_locale(); }
 	
 	bookacti_send_json( array( 'status' => 'success', 'field_data' => $field_data_edit, 'field_html' => $field_html ), 'reset_form_field' );
 }

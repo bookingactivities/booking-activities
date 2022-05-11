@@ -332,6 +332,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Bookings calendar Day end option value was not properly displayed if overnight
 * Fix - Events disapearing on backend bookings calendar after rescheduling a booking
 * Fix - WC cart items were not removed if their attached booking was deleted
+* Dev - Do not rely on the key parameter of cart item arrays as it can be changed regardless of the real cart item key
 * Dev - Refactor booking form CRUD
 
 = 1.13.0 - 2022/03/01 =

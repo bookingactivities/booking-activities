@@ -557,7 +557,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name'	=> 'ba-prices-and-credits', 
 			'end_of_life'	=> '', 
 			'download_id'	=> 438,
-			'min_version'	=> '1.7.5'
+			'min_version'	=> '1.7.6'
 		),
 		'baaf' => array( 
 			'title'			=> 'Advanced Forms', 
@@ -565,7 +565,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name'	=> 'ba-advanced-forms', 
 			'end_of_life'	=> '', 
 			'download_id'	=> 2705,
-			'min_version'	=> '1.2.16'
+			'min_version'	=> '1.2.23'
 		),
 		'baofc'	=> array( 
 			'title'			=> 'Order for Customers', 
