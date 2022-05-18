@@ -357,6 +357,7 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 							'type'	=> 'text',
 							'name'	=> 'bookacti_notification[email][subject]',
 							'id'	=> 'bookacti_notification_email_subject' . ( $recipient === 'admin' ? '_admin' : '' ),
+							'class'	=> 'bookacti-translatable',
 							'value'	=> $notification_settings[ 'email' ][ 'subject' ] ? $notification_settings[ 'email' ][ 'subject' ] : '',
 							'tip'	=> esc_html__( 'The email subject.', 'booking-activities' )
 						);
@@ -408,6 +409,7 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 							'type'	=> 'editor',
 							'name'	=> 'bookacti_notification[email][message]',
 							'id'	=> 'bookacti_notification_email_message' . ( $recipient === 'admin' ? '_admin' : '' ),
+							'class'	=> 'bookacti-translatable',
 							'height'=> 470,
 							'options'=> array( 'default_editor' => wp_default_editor() ),
 							'value'	=> $notification_settings[ 'email' ][ 'message' ] ? $notification_settings[ 'email' ][ 'message' ] : ''
@@ -465,7 +467,7 @@ add_action( 'wp_ajax_bookactiUpdateNotification', 'bookacti_controller_update_no
 /**
  * Display messages fields
  * @since 1.2.0
- * @version 1.5.7
+ * @version 1.14.0
  */
 function bookacti_display_messages_fields() {
 	$messages = bookacti_get_messages( true );
@@ -474,9 +476,9 @@ function bookacti_display_messages_fields() {
 		<div class='bookacti-message-setting' >
 			<em><?php echo $message[ 'description' ] ?></em><br/>
 			<?php if( isset( $message[ 'input_type' ] ) && $message[ 'input_type' ] === 'textarea' ) { ?>
-				<textarea id='bookacti_messages_settings_<?php echo $message_id; ?>' name='bookacti_messages_settings[<?php echo $message_id; ?>]' ><?php echo esc_textarea( $message[ 'value' ] ); ?></textarea>
+				<textarea id='bookacti_messages_settings_<?php echo $message_id; ?>' class='bookacti-translatable' name='bookacti_messages_settings[<?php echo $message_id; ?>]' ><?php echo esc_textarea( $message[ 'value' ] ); ?></textarea>
 			<?php } else { ?>
-				<input type='text' id='bookacti_messages_settings_<?php echo $message_id; ?>' name='bookacti_messages_settings[<?php echo $message_id; ?>]' value='<?php esc_attr_e( $message[ 'value' ] ); ?>' />
+				<input type='text' id='bookacti_messages_settings_<?php echo $message_id; ?>' class='bookacti-translatable' name='bookacti_messages_settings[<?php echo $message_id; ?>]' value='<?php esc_attr_e( $message[ 'value' ] ); ?>' />
 			<?php } ?>
 		</div>
 <?php

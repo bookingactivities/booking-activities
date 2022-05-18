@@ -100,7 +100,7 @@ if( ! $form_edit ) { exit; }
 							<div id='titlewrap'>
 								<?php $title_placeholder = esc_html__( 'Enter form title here', 'booking-activities' ); ?>
 								<label class='screen-reader-text' id='title-prompt-text' for='title'><?php echo $title_placeholder; ?></label>
-								<input type='text' name='form_title' size='30' value='<?php echo esc_attr( $form_edit[ 'title' ] ); ?>' id='title' spellcheck='true' autocomplete='off' placeholder='<?php echo $title_placeholder; ?>' required/>
+								<input type='text' name='form_title' size='30' value='<?php echo esc_attr( $form_edit[ 'title' ] ); ?>' id='title' class='bookacti-translatable' spellcheck='true' autocomplete='off' placeholder='<?php echo $title_placeholder; ?>' required/>
 							</div>
 						</div>
 						

@@ -70,6 +70,7 @@ function bookacti_load_textdomain( $locale = '' ) {
 }
 add_action( 'init', 'bookacti_load_textdomain', 5 );
 add_action( 'bookacti_locale_switched', 'bookacti_load_textdomain', 10, 1 );
+add_action( 'bookacti_locale_restored', 'bookacti_load_textdomain', 10, 1 );
 
 
 

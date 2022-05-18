@@ -798,7 +798,7 @@ function bookacti_format_form_field_data( $raw_field_data, $context = 'view' ) {
 					$register_fields[ $register_field_name ] = $default_data[ $key ][ $register_field_name ];
 					if( isset( $raw_login_field_data[ $register_field_name ] ) ) {
 						if( $is_translatable ) {
-							if( $context !== 'edit' && $raw_login_field_data[ $register_field_name ] ) { $register_fields[ $register_field_name ] = apply_filters( 'bookacti_translate_text', $raw_login_field_data[ $register_field_name ] ); }
+							if( $raw_login_field_data[ $register_field_name ] ) { $register_fields[ $register_field_name ] = $context !== 'edit' ? apply_filters( 'bookacti_translate_text', $raw_login_field_data[ $register_field_name ] ) : $raw_login_field_data[ $register_field_name ]; }
 						} else {
 							$register_fields[ $register_field_name ] = $raw_login_field_data[ $register_field_name ];
 						}
@@ -811,7 +811,7 @@ function bookacti_format_form_field_data( $raw_field_data, $context = 'view' ) {
 					$log_in_fields[ $log_in_field_name ] = $default_data[ $key ][ $log_in_field_name ];
 					if( isset( $raw_login_field_data[ $log_in_field_name ] ) ) {
 						if( $is_translatable ) {
-							if( $context !== 'edit' && $raw_login_field_data[ $log_in_field_name ] ) { $log_in_fields[ $log_in_field_name ] = apply_filters( 'bookacti_translate_text', $raw_login_field_data[ $log_in_field_name ] ); }
+							if( $raw_login_field_data[ $log_in_field_name ] ) { $log_in_fields[ $log_in_field_name ] = $context !== 'edit' ? apply_filters( 'bookacti_translate_text', $raw_login_field_data[ $log_in_field_name ] ) : $raw_login_field_data[ $log_in_field_name ]; }
 						} else {
 							$log_in_fields[ $log_in_field_name ] = $raw_login_field_data[ $log_in_field_name ];
 						}
@@ -824,7 +824,7 @@ function bookacti_format_form_field_data( $raw_field_data, $context = 'view' ) {
 					$login_types[ $login_type_name ] = $default_data[ $key ][ $login_type_name ];
 					if( isset( $raw_login_field_data[ $login_type_name ] ) ) {
 						if( $is_translatable ) {
-							if( $context !== 'edit' && $raw_login_field_data[ $login_type_name ] ) { $login_types[ $login_type_name ] = apply_filters( 'bookacti_translate_text', $raw_login_field_data[ $login_type_name ] ); }
+							if( $raw_login_field_data[ $login_type_name ] ) { $login_types[ $login_type_name ] = $context !== 'edit' ? apply_filters( 'bookacti_translate_text', $raw_login_field_data[ $login_type_name ] ) : $raw_login_field_data[ $login_type_name ]; }
 						} else {
 							$login_types[ $login_type_name ] = $raw_login_field_data[ $login_type_name ];
 						}
@@ -1603,7 +1603,7 @@ function bookacti_get_login_type_field_default_options( $keys = array(), $contex
 	), $keys, $context );
 	
 	// Filter by tab
-	if( $keys || ! is_array( $keys ) ) {
+	if( $keys ) {
 		foreach( $login_types as $login_type_name => $login_type ) {
 			if( ! in_array( $login_type_name, $keys, true ) ) {
 				unset( $login_types[ $login_type_name ] );

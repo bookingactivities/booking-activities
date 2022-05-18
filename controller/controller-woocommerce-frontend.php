@@ -1177,7 +1177,7 @@ add_action( 'woocommerce_cart_item_restored', 'bookacti_restore_bookings_of_remo
 function bookacti_wc_cart_item_meta_formatted( $item_data, $cart_item ) {
 	if( empty( $cart_item[ '_bookacti_options' ][ 'bookings' ] ) ) { return $item_data; }
 
-	$cart_items_bookings = bookacti_wc_get_cart_item_bookings( array( 'temp_key' => $cart_item ), array( 'fetch_meta' => true ) );
+	$cart_items_bookings = bookacti_wc_get_cart_items_bookings( array( 'temp_key' => $cart_item ), array( 'fetch_meta' => true ) );
 	if( empty( $cart_items_bookings[ 'temp_key' ] ) ) { return $item_data; }
 	$cart_item_bookings = $cart_items_bookings[ 'temp_key' ];
 	
@@ -1662,14 +1662,14 @@ add_filter( 'woocommerce_order_item_class', 'bookacti_add_class_to_activity_orde
 /**
  * Add a column called 'Price' to user booking list
  * @since 1.7.4 (was bookacti_add_woocommerce_price_column_to_bookings_list)
- * @version 1.7.10
+ * @version 1.14.0
  * @param array $columns
  * @return array
  */
 function bookacti_add_woocommerce_price_column_to_user_booking_list( $columns ) {
-	if( ! isset( $columns[ 'price' ] ) ) { 
-		$columns[ 'price' ] = esc_html__( 'Price', 'booking-activities' );
-	}
+	$columns[ 'product_id' ]    = esc_html__( 'Product ID', 'booking-activities' );
+	$columns[ 'product_title' ] = esc_html__( 'Product title', 'booking-activities' );
+	if( ! isset( $columns[ 'price' ] ) ) { $columns[ 'price' ] = esc_html__( 'Price', 'booking-activities' ); }
 	return $columns;
 }
 add_filter( 'bookacti_user_booking_list_columns_labels', 'bookacti_add_woocommerce_price_column_to_user_booking_list', 10, 1 );

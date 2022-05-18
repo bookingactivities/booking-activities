@@ -23,9 +23,6 @@
 			"forms":{
 				"bookacti-settings":{
 					"fields":{
-						"bookacti-settings-date-format-short":{},
-						"bookacti-settings-date-format-long":{},
-						"bookacti-settings-time-format":{},
 						"bookacti_notification_email_subject":{},
 						"bookacti_notification_email_message":{},
 						"bookacti_messages_settings_date_format_short":{},

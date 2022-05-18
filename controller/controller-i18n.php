@@ -10,9 +10,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  */
 function bookacti_define_translation_plugin( $translation_plugin = '' ) {
 	if( ! $translation_plugin ) {
-			if( bookacti_is_plugin_active( 'sitepress-multilingual-cms/sitepress.php' ) ) { $translation_plugin = 'wpml'; }
-	   else if( bookacti_is_plugin_active( 'qtranslate-x/qtranslate.php' ) 
-	         || bookacti_is_plugin_active( 'qtranslate-xt/qtranslate.php' ) )             { $translation_plugin = 'qtranslate'; }
+			if( class_exists( 'SitePress' ) )      { $translation_plugin = 'wpml'; }
+	   else if( class_exists( 'QTX_Translator' ) ) { $translation_plugin = 'qtranslate'; }
 	}
 	return $translation_plugin;
 }
@@ -219,14 +218,52 @@ function bookacti_wpml_controller_register_all_translatable_texts() {
 			$string_value  = ! empty( $text[ 'value' ] ) ? $text[ 'value' ] : '';
 			$string_domain = ! empty( $text[ 'domain' ] ) ? $text[ 'domain' ] : 'Booking Activities';
 			$string_name   = ! empty( $text[ 'string_name' ] ) ? $text[ 'string_name' ] : $string_value;
-			$fallback      = isset( $text[ 'fallback' ] ) ? boolval( $text[ 'fallback' ] ) : 1;
 			if( $string_value && is_string( $string_value ) ) {
-				do_action( 'wpml_register_single_string', $string_domain, $string_name, $string_value, ! $fallback );
+				do_action( 'wpml_register_single_string', $string_domain, $string_name, $string_value );
 			}
 		}
 	}
 }
 add_action( 'admin_init', 'bookacti_wpml_controller_register_all_translatable_texts' );
+
+
+/**
+ * Print admin CSS for inputs translatable with WPML
+ * @since 1.14.0
+ * @global SitePress $sitepress
+ */
+function bookacti_wpml_print_admin_css() {
+	if( bookacti_get_translation_plugin() !== 'wpml' ) { return; }
+	global $sitepress;
+	if( empty( $sitepress ) || ! defined( 'ICL_PLUGIN_URL' ) || ! defined( 'WPML_PLUGIN_PATH' ) ) { return; }
+	
+	// Get default site language flag
+	$lang_code = bookacti_get_site_default_locale( false );
+	$flag      = $sitepress->get_flag( $lang_code );
+	$flag_url  = '';
+	if( $flag ) {
+		if ( $flag->from_template ) {
+			$wp_upload_dir = wp_upload_dir();
+			$flag_url      = file_exists( $wp_upload_dir[ 'basedir' ] . '/flags/' . $flag->flag ) ? $wp_upload_dir[ 'baseurl' ] . '/flags/' . $flag->flag : '';
+		} else {
+			$flag_url = file_exists( WPML_PLUGIN_PATH . '/res/flags/' . $flag->flag ) ? ICL_PLUGIN_URL . '/res/flags/' . $flag->flag : '';
+		}
+	}
+	if( ! $flag_url && file_exists( WPML_PLUGIN_PATH . '/res/flags/en.png' ) ) { $flag_url = ICL_PLUGIN_URL . '/res/flags/en.png'; }
+	
+	// Support RTL
+	$left  = is_rtl() ? 'right' : 'left';
+	$right = is_rtl() ? 'left' : 'right';
+?>
+	<style>
+		.bookacti-translatable {
+			<?php if( $flag_url ) { ?> background: url("<?php echo $flag_url; ?>") no-repeat top <?php echo $right; ?>, white; <?php } ?>
+			border-<?php echo $left; ?>: 3px solid #418fb6 !important;
+		}
+	</style>
+<?php
+}
+add_action( 'admin_print_styles', 'bookacti_wpml_print_admin_css' );
 
 
 /**
@@ -251,3 +288,27 @@ function bookacti_wpml_select2_remove_translated_products( $options, $args ) {
 	return array_values( $options );
 }
 add_filter( 'bookacti_ajax_select2_products_options', 'bookacti_wpml_select2_remove_translated_products', 100, 2 );
+
+
+/**
+ * WPML's function for switch_to_locale (temp fix due to a WPML bug)
+ * @since 1.14.0
+ * @param string $locale
+ */
+function bookacti_wpml_switch_locale( $locale ) {
+	$lang_code = strpos( $locale, '_' ) !== false ? substr( $locale, 0, strpos( $locale, '_' ) ) : $locale;
+	do_action( 'wpml_switch_language', $lang_code );
+	return bookacti_get_current_lang_code( true );
+}
+add_filter( 'bookacti_switch_locale_callback', function( $callback ) { return bookacti_get_translation_plugin() === 'wpml' ? 'bookacti_wpml_switch_locale' : $callback; } );
+
+
+/**
+ * WPML's function for restore_previous_locale (temp fix due to a WPML bug)
+ * @since 1.14.0
+ */
+function bookacti_wpml_restore_locale() {
+	do_action( 'wpml_switch_language', null );
+	return bookacti_get_current_lang_code( true );
+}
+add_filter( 'bookacti_restore_locale_callback', function( $callback ) { return bookacti_get_translation_plugin() === 'wpml' ? 'bookacti_wpml_restore_locale' : $callback; } );

@@ -612,12 +612,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
  * @return string
  */
 function bookacti_get_translation_plugin() {
-	$translation_plugin = wp_cache_get( 'translation_plugin', 'bookacti' );
-	if( $translation_plugin === false ) {
-		$translation_plugin = apply_filters( 'bookacti_translation_plugin', '' );
-		wp_cache_set( 'translation_plugin', $translation_plugin, 'bookacti' );
-	}
-	return $translation_plugin;
+	return apply_filters( 'bookacti_translation_plugin', '' );
 }
 
 
@@ -755,10 +750,11 @@ function bookacti_get_site_locale( $country_code = true ) {
  * @return boolean
  */
 function bookacti_switch_locale( $locale ) {
-	if( ! function_exists( 'switch_to_locale' ) ) { return false; }
+	$callback = apply_filters( 'bookacti_switch_locale_callback', 'switch_to_locale', $locale );
+	if( ! function_exists( $callback ) ) { return false; }
 	
 	// Convert lang code to locale
-	if( strpos( $locale, '_' ) === false ) {
+	if( $callback === 'switch_to_locale' && strpos( $locale, '_' ) === false ) {
 		$len = strlen( $locale );
 		$has_locale = false;
 		$available_locales = get_available_languages();
@@ -767,20 +763,22 @@ function bookacti_switch_locale( $locale ) {
 		}
 		if( ! $has_locale ) { return false; }
 	}
-
-	$switched = switch_to_locale( $locale );
 	
-	if( $switched ) {
+	$switched_locale = call_user_func( $callback, $locale );
+	
+	if( $switched_locale ) {
+		if( ! is_string( $switched_locale ) ) { $switched_locale = $locale; }
+		
 		// Set $bookacti_locale global affects 'plugin_locale' hook
 		// Filter on plugin_locale so load_plugin_textdomain loads the correct locale.
 		global $bookacti_locale;
-		$bookacti_locale = $locale;
+		$bookacti_locale = $switched_locale;
 		
 		// Load textdomain on bookacti_locale_switched
-		do_action( 'bookacti_locale_switched', $locale );
+		do_action( 'bookacti_locale_switched', $switched_locale );
 	}
 	
-	return $switched;
+	return $switched_locale;
 }
 
 
@@ -791,16 +789,19 @@ function bookacti_switch_locale( $locale ) {
  * @global string $bookacti_locale
  */
 function bookacti_restore_locale() {
-	if( function_exists( 'restore_previous_locale' ) ) {
-		$locale = restore_previous_locale();
-		if( $locale ) {
+	$callback = apply_filters( 'bookacti_restore_locale_callback', 'restore_previous_locale' );
+	if( function_exists( $callback ) ) {
+		$restored_locale = call_user_func( $callback );
+		if( $restored_locale ) {
+			if( ! is_string( $restored_locale ) ) { $restored_locale = function_exists( 'determine_locale' ) ? determine_locale() : get_locale(); }
+			
 			// Set $bookacti_locale global affects 'plugin_locale' hook
 			// Filter on plugin_locale so load_plugin_textdomain loads the correct locale.
 			global $bookacti_locale;
-			$bookacti_locale = $locale;
+			$bookacti_locale = $restored_locale;
 			
 			// Load textdomain on bookacti_locale_switched
-			do_action( 'bookacti_locale_switched', $locale );
+			do_action( 'bookacti_locale_restored', $restored_locale );
 		}
 	}
 }

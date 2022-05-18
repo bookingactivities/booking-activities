@@ -86,7 +86,7 @@ Try this reservation tool live on the [demo website](https://demo.booking-activi
 
 **Translation ready**
 
-* **Multilingual support** with ★ [qTranslate-XT](https://github.com/qtranslate/qtranslate-xt) (free plugin)
+* **Multilingual support** with WPML and ★ [qTranslate-XT](https://github.com/qtranslate/qtranslate-xt) (free plugin)
 * ★ Auto-detect and switch languages, date/time format, first day of the week...
 * Customize most frontend messages directly in the settings
 * Fully translated in English and French. You can also help us [translating Booking Activities](https://translate.wordpress.org/projects/wp-plugins/booking-activities) in your language.

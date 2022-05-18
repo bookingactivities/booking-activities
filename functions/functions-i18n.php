@@ -188,12 +188,12 @@ function bookacti_get_translatable_texts() {
  * @since 1.14.0
  * @param string $text
  * @param string $lang Optional. Two letter lang id (e.g. fr or en) or locale id (e.g. fr_FR or en_US).
- * @param boolean $fallback Optional. False to display empty string if the text doesn't exist in the desired language. True to display the text of another existing language.
+ * @param boolean $fallback Optional. Not implemented (see bookacti_wpml_fallback_text filter). False to display empty string if the text doesn't exist in the desired language. True to display the text of another existing language.
  * @param array $args Optional. Data about the string to translate.
  * @return string
  */
 function bookacti_translate_text_with_wpml( $text, $lang = '', $fallback = true, $args = array() ) {
-//	if( ! $text ) { return $text; }
+	if( ! $text ) { return $text; }
 	
 	// Get current language
 	if( ! $lang ) { $lang = bookacti_get_current_lang_code(); }
@@ -202,17 +202,17 @@ function bookacti_translate_text_with_wpml( $text, $lang = '', $fallback = true,
 	$string_name     = ! empty( $args[ 'string_name' ] ) ? $args[ 'string_name' ] : $text;
 	$translated_text = apply_filters( 'wpml_translate_single_string', $text, 'Booking Activities', $string_name, $lang );
 	
-//	bookacti_log( '------------------------------' );
-//	bookacti_log( '$text' );
-//	bookacti_log( $text );
-//	bookacti_log( '$translated_text' );
-//	bookacti_log( $translated_text );
-//	bookacti_log( 'debug_backtrace' );
-//	bookacti_log( debug_backtrace( 2 ) );
-
-	// Register
+	// WPML returns the original text if the translation is not found, 
+	// but we don't know if that string is actually not registered, or if the translation is actually the same as the original
 	if( $text === $translated_text ) {
-		do_action( 'wpml_register_single_string', 'Booking Activities', $string_name, $text, ! $fallback );
+		// Register the string (it's ok if it's already registered)
+		do_action( 'wpml_register_single_string', 'Booking Activities', $string_name, $text );
+		
+		$default_lang_code = bookacti_get_site_default_locale( false );
+		if( $lang !== $default_lang_code && ! $fallback ) {
+			// You may want to return an empty string here instead of the original text
+			$translated_text = apply_filters( 'bookacti_wpml_fallback_text', $translated_text, $lang, $args );
+		}
 	}
 
 	return $translated_text;
