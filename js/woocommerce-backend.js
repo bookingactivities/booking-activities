@@ -166,13 +166,19 @@ $j( document ).ready( function() {
 	
 	
 	/**
-	 * Lock the WPML field on translated products
+	 * Lock the WPML fields in translated product data
+	 * @since 1.14.0
+	 */
+	if( $j( '#woocommerce-product-data' ).length ) {
+		bookacti_wpml_wc_lock_product_fields( '#woocommerce-product-data [name^="_bookacti"]:input' );
+	}
+	
+	/**
+	 * Lock the WPML fields in translated product data - variations tab
 	 * @since 1.14.0
 	 */
 	$j( '#woocommerce-product-data' ).on( 'woocommerce_variations_loaded', function() {
-		if( $j( '.wcml_lock_img' ).length ) {
-			bookacti_wpml_wc_lock_product_variation_fields();
-		}
+		bookacti_wpml_wc_lock_product_fields( '#variable_product_options [name^="bookacti_"]:input' );
 	});
 });
 
@@ -265,16 +271,14 @@ function bookacti_show_hide_empty_price_notice( variation_menu_order ) {
 
 
 /**
- * Lock Booking Activities fields in product variations translated by WPML
+ * Lock Booking Activities fields in product translated by WPML
  * Temp fix adapted from woocommerce-multilingual\res\js\lock_fields.js (waiting for hooks)
  * @since 1.14.0
+ * @param {String} selector
  */
-function bookacti_wpml_wc_lock_product_variation_fields() {
-	var locked_fields = { 'selector': '#variable_product_options [name^="bookacti_"]:input' };
-	
-	$j( '#woocommerce-product-data' ).trigger( 'bookacti_wpml_wc_product_variation_fields_locked', [ locked_fields ] );
-	
-	$j( locked_fields.selector ).each( function() {
+function bookacti_wpml_wc_lock_product_fields( selector ) {
+	if( ! $j( '.wcml_lock_img' ).length || ! $j( selector ).length ) { return; }
+	$j( selector ).each( function() {
 		// Checkboxes and selectboxes
 		if( $j( this ).attr( 'type' ) === 'checkbox' || $j( this ).is( 'select' ) ) {
 			$j( this ).prop( 'disabled', true );
