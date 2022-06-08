@@ -956,10 +956,9 @@ function bookacti_get_default_messages() {
  * @since 1.2.0
  * @version 1.14.0
  * @param boolean $raw Whether to retrieve the raw value from database or the option parsed through get_option
- * @param string $locale Get the messages in a specific locale
  * @return array
  */
-function bookacti_get_messages( $raw = false, $locale = '' ) {
+function bookacti_get_messages( $raw = false ) {
 	// Get raw value from database
 	$saved_messages = array();
 	if( $raw ) {
@@ -981,7 +980,7 @@ function bookacti_get_messages( $raw = false, $locale = '' ) {
 	if( ! empty( $saved_messages ) ) {
 		foreach( $default_messages as $message_id => $message ) {
 			if( isset( $saved_messages[ $message_id ] ) ) {
-				$messages[ $message_id ][ 'value' ] = $raw ? $saved_messages[ $message_id ] : apply_filters( 'bookacti_translate_text', $saved_messages[ $message_id ], $locale, true, array( 'string_name' => 'Message - ' . $message_id ) );
+				$messages[ $message_id ][ 'value' ] = $raw ? $saved_messages[ $message_id ] : apply_filters( 'bookacti_translate_text', $saved_messages[ $message_id ], '', true, array( 'string_name' => 'Message - ' . $message_id ) );
 			}
 		}
 	}
@@ -996,11 +995,10 @@ function bookacti_get_messages( $raw = false, $locale = '' ) {
  * @version 1.14.0
  * @param string $message_id
  * @param boolean $raw Whether to retrieve the raw value from database or the option parsed through get_option
- * @param string $locale Get the message in a specific locale
  * @return string
  */
-function bookacti_get_message( $message_id, $raw = false, $locale = '' ) {
-	$messages = bookacti_get_messages( $raw, $locale );
+function bookacti_get_message( $message_id, $raw = false ) {
+	$messages = bookacti_get_messages( $raw );
 	$message = ! empty( $messages[ $message_id ][ 'value' ] ) ? $messages[ $message_id ][ 'value' ] : '';
 	return $message;
 }

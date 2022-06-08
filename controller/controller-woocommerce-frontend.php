@@ -469,15 +469,15 @@ function bookacti_validate_add_to_cart_and_book_temporarily( $true, $product_id,
 		
 	// Gether the product booking form variables
 	$product_bookings_data = apply_filters( 'bookacti_wc_product_booking_form_values', array(
-		'product_id'		=> $product_id,
-		'variation_id'		=> $variation_id,
-		'user_id'			=> $user_id,
-		'picked_events'		=> $picked_events,
-		'quantity'			=> $quantity,
-		'form_id'			=> $form_id,
-		'status'			=> 'in_cart',
-		'payment_status'	=> 'owed',
-		'expiration_date'	=> bookacti_wc_get_new_cart_item_expiration_date()
+		'product_id'      => $product_id,
+		'variation_id'    => $variation_id,
+		'user_id'         => $user_id,
+		'picked_events'   => $picked_events,
+		'quantity'        => $quantity,
+		'form_id'         => $form_id,
+		'status'          => 'in_cart',
+		'payment_status'  => 'owed',
+		'expiration_date' => bookacti_wc_get_new_cart_item_expiration_date()
 	), $product_id, $variation_id, $form_id );
 	
 	// Check if data are correct before booking
@@ -633,13 +633,8 @@ function bookacti_merge_cart_items_with_same_booking_data( $cart_item_data, $car
 	$merge = apply_filters( 'bookacti_merge_cart_items', true, $cart_item_data, $old_cart_item, $cart_item_key, $old_cart_item_key );
 	if( ! $merge ) { return $cart_item_data; }
 
-	// Remove the old cart item
+	// Remove the old cart item (the booking won't be removed as long as it as the merged_cart_item_key parameter)
 	$woocommerce->cart->remove_cart_item( $old_cart_item_key );
-
-	// Restore the bookings 
-	// they has been removed while removing the duplicated cart item with $woocommerce->cart->remove_cart_item( $old_cart_item_key );
-	$cart_item_expiration_date = bookacti_wc_get_new_cart_item_expiration_date();
-	bookacti_wc_update_cart_item_bookings_status( $cart_item_key, 'in_cart', $cart_item_expiration_date );
 	
 	// Remove the merged key
 	unset( $cart_item_data[ '_bookacti_options' ][ 'merged_cart_item_key' ] );
@@ -1026,12 +1021,16 @@ add_filter( 'woocommerce_stock_amount_cart_item', 'bookacti_update_quantity_in_c
 
 /**
  * Remove in_cart bookings when cart items are removed from cart
- * @version 1.9.0
- * @global WooCommerce $woocommerce
+ * @version 1.14.0
+ * @global array $global_bookacti_wc
  * @param string $cart_item_key
  * @param WC_Cart $cart
  */
 function bookacti_remove_bookings_of_removed_cart_item( $cart_item_key, $cart ) { 
+	// Do not remove cart item bookings if the cart item is being merged
+	global $global_bookacti_wc;
+	if( ! empty( $global_bookacti_wc[ 'merged_cart_item_key' ] ) && $global_bookacti_wc[ 'merged_cart_item_key' ] === $cart_item_key ) { return; }
+	
 	bookacti_remove_cart_item_bookings( $cart_item_key );
 }
 add_action( 'woocommerce_remove_cart_item', 'bookacti_remove_bookings_of_removed_cart_item', 10, 2 ); 
@@ -1398,11 +1397,11 @@ function bookacti_wc_checkout_create_one_order_item_per_booking( $order, $data )
 		if( $nb_bookings === 1 ) { continue; }
 		
 		// Get the default prices
-		$default_subtotal		= round( $item->get_subtotal() / $nb_bookings, $price_decimals );
-		$default_total			= round( $item->get_total() / $nb_bookings, $price_decimals );
-		$default_subtotal_tax	= wc_round_tax_total( $item->get_subtotal_tax() / $nb_bookings, $price_decimals );
-		$default_total_tax		= wc_round_tax_total( $item->get_total_tax() / $nb_bookings, $price_decimals );
-		$item_taxes				= maybe_unserialize( $item->get_taxes() );
+		$default_subtotal     = round( $item->get_subtotal() / $nb_bookings, $price_decimals );
+		$default_total        = round( $item->get_total() / $nb_bookings, $price_decimals );
+		$default_subtotal_tax = wc_round_tax_total( $item->get_subtotal_tax() / $nb_bookings, $price_decimals );
+		$default_total_tax    = wc_round_tax_total( $item->get_total_tax() / $nb_bookings, $price_decimals );
+		$item_taxes           = maybe_unserialize( $item->get_taxes() );
 		
 		$default_taxes = array();
 		foreach( $item_taxes as $i => $taxes ) {
@@ -1423,10 +1422,10 @@ function bookacti_wc_checkout_create_one_order_item_per_booking( $order, $data )
 			}
 		}
 		
-		$default_subtotal_rest		= $item->get_subtotal() - ( $default_subtotal * $nb_bookings );
-		$default_total_rest			= $item->get_total() - ( $default_total * $nb_bookings );
-		$default_subtotal_tax_rest	= $item->get_subtotal_tax() - ( $default_subtotal_tax * $nb_bookings );
-		$default_total_tax_rest		= $item->get_total_tax() - ( $default_total_tax * $nb_bookings );
+		$default_subtotal_rest     = $item->get_subtotal() - ( $default_subtotal * $nb_bookings );
+		$default_total_rest        = $item->get_total() - ( $default_total * $nb_bookings );
+		$default_subtotal_tax_rest = $item->get_subtotal_tax() - ( $default_subtotal_tax * $nb_bookings );
+		$default_total_tax_rest    = $item->get_total_tax() - ( $default_total_tax * $nb_bookings );
 		
 		$item_clone = clone $item;
 		$i=0;

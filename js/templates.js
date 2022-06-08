@@ -111,7 +111,7 @@ $j( document ).ready( function() {
 
 /**
  * Initialize and display the template calendar
- * @version 1.12.0
+ * @version 1.14.0
  * @param {HTMLElement} calendar
  */
 function bookacti_load_template_calendar( calendar ) {
@@ -171,7 +171,7 @@ function bookacti_load_template_calendar( calendar ) {
 				text: bookacti_localized.go_to_button,
 				click: function() {
 					if( ! $j( '.bookacti-go-to-datepicker' ).length ) {
-						$j( '.fc-goTo-button' ).after( '<input type="date" class="bookacti-go-to-datepicker"/>' );
+						$j( '.fc-goTo-button' ).after( '<input type="date" class="bookacti-go-to-datepicker" min="1970-01-01"/>' );
 						$j( '.bookacti-go-to-datepicker' ).hide();
 					}
 					$j( '.bookacti-go-to-datepicker' ).toggle( 200 );

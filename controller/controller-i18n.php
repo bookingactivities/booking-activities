@@ -312,3 +312,23 @@ function bookacti_wpml_restore_locale() {
 	return bookacti_get_current_lang_code( true );
 }
 add_filter( 'bookacti_restore_locale_callback', function( $callback ) { return bookacti_get_translation_plugin() === 'wpml' ? 'bookacti_wpml_restore_locale' : $callback; } );
+
+
+
+
+// QTRANSLATE-XT
+
+/**
+ * Set qTranslate-XT language after switching locale
+ * @since 1.14.0
+ * @global array $q_config
+ * @param string $locale
+ */
+function bookacti_qtranxf_switch_locale( $locale ) {
+	if( ! $locale ) { return; }
+	global $q_config;
+	$lang_code = substr( $locale, 0, strpos( $locale, '_' ) );
+	$q_config[ 'language' ] = $lang_code;
+}
+add_action( 'bookacti_locale_switched', 'bookacti_qtranxf_switch_locale', 5, 1 );
+add_action( 'bookacti_locale_restored', 'bookacti_qtranxf_switch_locale', 5, 1 );

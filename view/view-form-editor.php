@@ -30,7 +30,8 @@ $form_fields      = array();
 $form_fields_edit = array();
 $form_fields_raw  = bookacti_get_form_fields_data( $form_id, true, false, true );
 foreach( $form_fields_raw as $field_id => $field_raw ) {
-	$form_fields[ $field_id ] = bookacti_format_form_field_data( $field_raw );
+	$field_data = bookacti_format_form_field_data( $field_raw );
+	if( $field_data ) { $form_fields[ $field_id ] = $field_data; }
 }
 
 // Get edit data in the default language
@@ -38,7 +39,8 @@ $lang_switched = bookacti_switch_locale( bookacti_get_site_default_locale() );
 
 $form_edit = bookacti_format_form_data( $form_raw, 'edit' );
 foreach( $form_fields_raw as $field_id => $field_raw ) {
-	$form_fields_edit[ $field_id ] = bookacti_format_form_field_data( $field_raw, 'edit' );
+	$field_data_edit = bookacti_format_form_field_data( $field_raw, 'edit' );
+	if( $field_data_edit ) { $form_fields_edit[ $field_id ] = $field_data_edit; }
 }
 
 if( $lang_switched ) { bookacti_restore_locale(); }

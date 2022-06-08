@@ -333,7 +333,9 @@ function bookacti_settings_wpml_register_translatable_texts_callback() {
  */
 function bookacti_translate_text_with_qtranslate( $text, $lang = '', $fallback = true ) {
 	if( ! $text ) { return $text; }
+	
 	$qtranslate_show_empty = defined( 'TRANSLATE_SHOW_EMPTY' ) ? TRANSLATE_SHOW_EMPTY : 4;
 	$flags = $fallback ? 0 : $qtranslate_show_empty;
+	
 	return apply_filters( 'translate_text', $text, $lang, $flags );
 }

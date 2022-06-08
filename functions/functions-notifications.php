@@ -212,10 +212,9 @@ function bookacti_get_notification_default_settings( $notification_id ) {
  * @version 1.14.0
  * @param string $notification_id
  * @param boolean $raw
- * @param string $locale
  * @return array
  */
-function bookacti_get_notification_settings( $notification_id, $raw = true, $locale = '' ) {
+function bookacti_get_notification_settings( $notification_id, $raw = true ) {
 	if( ! $notification_id ) { return array(); }
 	
 	$notification_settings = array();
@@ -237,8 +236,8 @@ function bookacti_get_notification_settings( $notification_id, $raw = true, $loc
 	
 	// Translate email subject and message
 	if( ! $raw ) {
-		if( ! empty( $notification_settings[ 'email' ][ 'subject' ] ) ) { $notification_settings[ 'email' ][ 'subject' ] = apply_filters( 'bookacti_translate_text', $notification_settings[ 'email' ][ 'subject' ], $locale, true, array( 'string_name' => 'Notification - ' . $notification_id . ' - email subject' ) ); }
-		if( ! empty( $notification_settings[ 'email' ][ 'message' ] ) ) { $notification_settings[ 'email' ][ 'message' ] = apply_filters( 'bookacti_translate_text', $notification_settings[ 'email' ][ 'message' ], $locale, true, array( 'string_name' => 'Notification - ' . $notification_id . ' - email message' ) ); }
+		if( ! empty( $notification_settings[ 'email' ][ 'subject' ] ) ) { $notification_settings[ 'email' ][ 'subject' ] = apply_filters( 'bookacti_translate_text', $notification_settings[ 'email' ][ 'subject' ], '', true, array( 'string_name' => 'Notification - ' . $notification_id . ' - email subject' ) ); }
+		if( ! empty( $notification_settings[ 'email' ][ 'message' ] ) ) { $notification_settings[ 'email' ][ 'message' ] = apply_filters( 'bookacti_translate_text', $notification_settings[ 'email' ][ 'message' ], '', true, array( 'string_name' => 'Notification - ' . $notification_id . ' - email message' ) ); }
 	}
 	
 	// Make sure all values are set
@@ -259,7 +258,7 @@ function bookacti_get_notification_settings( $notification_id, $raw = true, $loc
 		}
 	}
 	
-	return apply_filters( 'bookacti_notification_settings', $notification_settings, $notification_id, $raw, $locale );
+	return apply_filters( 'bookacti_notification_settings', $notification_settings, $notification_id, $raw );
 }
 
 
@@ -401,13 +400,9 @@ function bookacti_get_notifications_tags( $notification_id = '' ) {
  * @param object $booking
  * @param string $booking_type 'group' or 'single'
  * @param array $notification
- * @param string $locale Optional
  * @return array
  */
-function bookacti_get_notifications_tags_values( $booking, $booking_type, $notification, $locale = 'site' ) {
-	// Set default locale to site's locale
-	if( $locale === 'site' ) { $locale = bookacti_get_site_locale(); }
-	
+function bookacti_get_notifications_tags_values( $booking, $booking_type, $notification ) {
 	// Event booking list default attributes
 	$event_booking_list_atts = array(
 		'user_id'  => 'all',
@@ -420,14 +415,15 @@ function bookacti_get_notifications_tags_values( $booking, $booking_type, $notif
 	$booking_data = array();
 	
 	if( $booking ) {
-		$datetime_format = bookacti_get_message( 'date_format_long', false, $locale );
+		$locale = bookacti_get_site_locale();
+		$datetime_format = bookacti_get_message( 'date_format_long' );
 		
 		if( $booking_type === 'group' ) {
 			$bookings = bookacti_get_booking_group_bookings_by_id( $booking->id );
 			
 			$booking_data[ '{booking_total_qty}' ] = 0;
 			foreach( $bookings as $grouped_booking ) { $booking_data[ '{booking_total_qty}' ] += intval( $grouped_booking->quantity ); }
-			$booking_data[ '{booking_title}' ]     = ! empty( $booking->group_title ) ? apply_filters( 'bookacti_translate_text', $booking->group_title, $locale ) : '';
+			$booking_data[ '{booking_title}' ]     = ! empty( $booking->group_title ) ? apply_filters( 'bookacti_translate_text', $booking->group_title ) : '';
 			$booking_data[ '{booking_event_id}' ]  = $booking->event_group_id;
 			$booking_data[ '{booking_start}' ]     = bookacti_format_datetime( $booking->start, $datetime_format );
 			$booking_data[ '{booking_start_raw}' ] = $booking->start;
@@ -436,7 +432,7 @@ function bookacti_get_notifications_tags_values( $booking, $booking_type, $notif
 			$booking_data[ '{booking_admin_url}' ] = esc_url( admin_url( 'admin.php?page=bookacti_bookings' ) . '&booking_group_id=' . $booking->id . '&group_by=booking_group' );
 			$booking_data[ '{event_admin_url}' ]   = esc_url( admin_url( 'admin.php?page=bookacti_bookings' ) . '&event_group_id=' . $booking->event_group_id . '&group_by=booking_group' );
 			$booking_data[ '{activity_id}' ]       = $booking->category_id;
-			$booking_data[ '{activity_title}' ]    = ! empty( $booking->category_title ) ? apply_filters( 'bookacti_translate_text', $booking->category_title, $locale ) : '';
+			$booking_data[ '{activity_title}' ]    = ! empty( $booking->category_title ) ? apply_filters( 'bookacti_translate_text', $booking->category_title ) : '';
 			
 			$event_booking_list_atts[ 'event_group_id' ] = $booking->event_group_id;
 			
@@ -444,7 +440,7 @@ function bookacti_get_notifications_tags_values( $booking, $booking_type, $notif
 			$bookings = array( $booking );
 			
 			$booking_data[ '{booking_total_qty}' ] = $booking->quantity;
-			$booking_data[ '{booking_title}' ]     = ! empty( $booking->event_title ) ? apply_filters( 'bookacti_translate_text', $booking->event_title, $locale ) : '';
+			$booking_data[ '{booking_title}' ]     = ! empty( $booking->event_title ) ? apply_filters( 'bookacti_translate_text', $booking->event_title ) : '';
 			$booking_data[ '{booking_event_id}' ]  = $booking->event_id;
 			$booking_data[ '{booking_start}' ]     = bookacti_format_datetime( $booking->event_start, $datetime_format );
 			$booking_data[ '{booking_start_raw}' ] = $booking->event_start;
@@ -453,7 +449,7 @@ function bookacti_get_notifications_tags_values( $booking, $booking_type, $notif
 			$booking_data[ '{booking_admin_url}' ] = esc_url( admin_url( 'admin.php?page=bookacti_bookings' ) . '&booking_id=' . $booking->id );
 			$booking_data[ '{event_admin_url}' ]   = esc_url( admin_url( 'admin.php?page=bookacti_bookings' ) . '&event_id=' . $booking->event_id . '&event_start=' . $booking->event_start . '&event_end=' . $booking->event_end );
 			$booking_data[ '{activity_id}' ]       = $booking->activity_id;
-			$booking_data[ '{activity_title}' ]    = ! empty( $booking->activity_title ) ? apply_filters( 'bookacti_translate_text', $booking->activity_title, $locale ) : '';
+			$booking_data[ '{activity_title}' ]    = ! empty( $booking->activity_title ) ? apply_filters( 'bookacti_translate_text', $booking->activity_title ) : '';
 		
 			$event_booking_list_atts[ 'event_id' ]    = $booking->event_id;
 			$event_booking_list_atts[ 'event_start' ] = $booking->event_start;
@@ -463,8 +459,8 @@ function bookacti_get_notifications_tags_values( $booking, $booking_type, $notif
 		$booking_data[ '{booking_id}' ]       = $booking->id;
 		$booking_data[ '{booking_status}' ]   = bookacti_format_booking_state( $booking->state );
 		$booking_data[ '{booking_quantity}' ] = $booking->quantity;
-		$booking_data[ '{booking_list}' ]     = bookacti_get_formatted_booking_events_list( $bookings, 'show', $locale );
-		$booking_data[ '{booking_list_raw}' ] = bookacti_get_formatted_booking_events_list_raw( $bookings, 'show', $locale );
+		$booking_data[ '{booking_list}' ]     = bookacti_get_formatted_booking_events_list( $bookings );
+		$booking_data[ '{booking_list_raw}' ] = bookacti_get_formatted_booking_events_list_raw( $bookings );
 		$booking_data[ '{calendar_id}' ]      = $booking->template_id;
 		$booking_data[ '{refund_message}' ]   = ! empty( $booking->refund_message ) ? $booking->refund_message : '';
 		
@@ -521,7 +517,7 @@ function bookacti_get_notifications_tags_values( $booking, $booking_type, $notif
 		$tags[ $default_tag ] = isset( $booking_data[ $default_tag ] ) ? $booking_data[ $default_tag ] : '';
 	}
 	
-	return apply_filters( 'bookacti_notifications_tags_values', $tags, $booking, $booking_type, $notification, $locale );
+	return apply_filters( 'bookacti_notifications_tags_values', $tags, $booking, $booking_type, $notification );
 }
 
 
@@ -586,10 +582,10 @@ function bookacti_send_notification( $notification_id, $booking_id, $booking_typ
 	$locale = apply_filters( 'bookacti_notification_locale', $locale, $notification_id, $booking, $booking_type, $args );
 	
 	// Temporarily switch locale to site or user default's
-	bookacti_switch_locale( $locale );
+	$lang_switched = bookacti_switch_locale( $locale );
 	
 	// Get notification settings
-	$notification = bookacti_get_notification_settings( $notification_id, false, $locale );
+	$notification = bookacti_get_notification_settings( $notification_id, false );
 	
 	// Replace or add notification settings
 	if( ! empty( $args[ 'notification' ] ) ) {
@@ -602,7 +598,7 @@ function bookacti_send_notification( $notification_id, $booking_id, $booking_typ
 	if( $user_email ) { $notification[ 'email' ][ 'to' ] = array( $user_email ); }
 	
 	// Replace tags in message and replace linebreaks with html tags
-	$tags = bookacti_get_notifications_tags_values( $booking, $booking_type, $notification, $locale );
+	$tags = bookacti_get_notifications_tags_values( $booking, $booking_type, $notification );
 	
 	// Replace or add tags values
 	if( ! empty( $args ) && ! empty( $args[ 'tags' ] ) ) {
@@ -613,11 +609,11 @@ function bookacti_send_notification( $notification_id, $booking_id, $booking_typ
 	$tags			= apply_filters( 'bookacti_notification_tags', $tags, $notification, $locale, $booking, $booking_type, $args );
 	$allow_sending	= apply_filters( 'bookacti_notification_sending_allowed', true, $notification, $tags, $locale, $booking, $booking_type, $args );
 	
-	if( ! $allow_sending ) { bookacti_restore_locale(); return array(); } 
+	if( ! $allow_sending ) { if( $lang_switched ) { bookacti_restore_locale(); } return array(); } 
 	
 	// Send email notification
 	$sent = array( 'email' => 0 );
-	$sent_email = bookacti_send_email_notification( $notification, $tags, $locale );
+	$sent_email = bookacti_send_email_notification( $notification, $tags );
 	
 	if( $sent_email ) {
 		$sent[ 'email' ] = count( $notification[ 'email' ][ 'to' ] );
@@ -626,7 +622,7 @@ function bookacti_send_notification( $notification_id, $booking_id, $booking_typ
 	$sent = apply_filters( 'bookacti_send_notifications', $sent, $notification_id, $notification, $tags, $booking, $booking_type, $args, $locale );
 	
 	// Switch locale back to normal
-	bookacti_restore_locale();
+	if( $lang_switched ) { bookacti_restore_locale(); }
 	
 	return $sent;
 }
@@ -641,15 +637,11 @@ add_action( 'bookacti_send_async_notification', 'bookacti_send_notification', 10
  * @version 1.14.0
  * @param array $notification
  * @param array $tags
- * @param string $locale
  * @return boolean
  */
-function bookacti_send_email_notification( $notification, $tags = array(), $locale = 'site' ) {
+function bookacti_send_email_notification( $notification, $tags = array() ) {
 	// Do not send email notification if it is deactivated
 	if( empty( $notification[ 'active' ] ) || empty( $notification[ 'email' ][ 'active' ] ) ) { return false; }
-	
-	// Set default locale to site's locale
-	if( $locale === 'site' ) { $locale = bookacti_get_site_locale(); }
 	
 	$to      = ! empty( $notification[ 'email' ][ 'to' ] ) ? $notification[ 'email' ][ 'to' ] : array();
 	$subject = ! empty( $notification[ 'email' ][ 'subject' ] ) ? str_replace( array_keys( $tags ), array_values( $tags ), $notification[ 'email' ][ 'subject' ] ) : '';
@@ -672,13 +664,13 @@ function bookacti_send_email_notification( $notification, $tags = array(), $loca
 		'message'     => $message,
 		'headers'     => $headers,
 		'attachments' => array()
-	), $notification, $tags, $locale );
+	), $notification, $tags );
 	
 	if( empty( $email_data[ 'to' ] ) ) { return false; }
 	
 	$sent = bookacti_send_email( $email_data[ 'to' ], $email_data[ 'subject' ], $email_data[ 'message' ], $email_data[ 'headers' ], $email_data[ 'attachments' ] );
 	
-	do_action( 'bookacti_email_notification_sent', $sent, $email_data, $notification, $tags, $locale );
+	do_action( 'bookacti_email_notification_sent', $sent, $email_data, $notification, $tags );
 	
 	return $sent;
 }

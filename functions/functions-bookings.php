@@ -1620,7 +1620,6 @@ function bookacti_get_booking_group_actions_html( $bookings, $admin_or_front = '
  * Booking data that can be exported
  * @since 1.6.0
  * @version 1.8.0
- * @param string $locale
  * @return array
  */
 function bookacti_get_bookings_export_columns() {
@@ -1760,7 +1759,7 @@ function bookacti_sanitize_bookings_export_settings( $raw_settings ) {
  * @version 1.14.0
  * @return array
  */
-function bookacti_get_bookings_export_event_tags( $locale = '' ) {
+function bookacti_get_bookings_export_event_tags() {
 	return apply_filters( 'bookacti_bookings_export_event_tags', array(
 		'{event_id}'                 => esc_html__( 'Event ID', 'booking-activities' ),
 		'{event_title}'              => esc_html__( 'The event title', 'booking-activities' ),
@@ -1777,7 +1776,7 @@ function bookacti_get_bookings_export_event_tags( $locale = '' ) {
 		'{calendar_title}'           => esc_html__( 'Calendar title', 'booking-activities' ),
 		'{booking_list}'             => esc_html__( 'Event booking list (table)', 'booking-activities' ),
 		'{booking_list_raw}'         => esc_html__( 'Event booking list (csv)', 'booking-activities' )
-	), $locale );
+	) );
 }
 
 
@@ -1803,7 +1802,7 @@ function bookacti_convert_bookings_to_csv( $filters, $args_raw = array() ) {
 	$allowed_columns = bookacti_get_bookings_export_columns();
 	foreach( $args[ 'columns' ] as $i => $column_name ) {
 		if( ! isset( $allowed_columns[ $column_name ] ) ) { unset( $args[ 'columns' ][ $i ] ); continue; }
-		$headers[ $column_name ] = str_replace( ',', '', strip_tags( $allowed_columns[ $column_name ] ) );
+		$headers[ $column_name ] = $allowed_columns[ $column_name ];
 	}
 	
 	// Get booking items
@@ -1922,7 +1921,7 @@ function bookacti_get_bookings_export_events_tags_values( $booking_items, $args 
 		if( empty( $args[ 'tooltip_booking_list_columns' ] ) ) { $has_booking_list = false; }
 	}
 	
-	$date_format = bookacti_get_message( 'date_format_long', false, $args[ 'locale' ] );
+	$date_format = bookacti_get_message( 'date_format_long' );
 	
 	// Order the items by event occurrence and merge data into an event array
 	$qty_ack = array();
@@ -2043,7 +2042,7 @@ function bookacti_get_bookings_for_export( $args_raw = array() ) {
 	$unknown_user_id = esc_attr( apply_filters( 'bookacti_unknown_user_id', 'unknown_user' ) );
 	
 	$date_format     = $args[ 'raw' ] ? 'Y-m-d' : get_option( 'date_format' );
-	$datetime_format = $args[ 'raw' ] ? 'Y-m-d H:i:s' : bookacti_get_message( 'date_format_long', false, $args[ 'locale' ] );
+	$datetime_format = $args[ 'raw' ] ? 'Y-m-d H:i:s' : bookacti_get_message( 'date_format_long' );
 	$booking_status  = $args[ 'raw' ] ? array() : bookacti_get_booking_state_labels();
 	$payment_status  = $args[ 'raw' ] ? array() : bookacti_get_payment_status_labels();
 	
@@ -2110,15 +2109,15 @@ function bookacti_get_bookings_for_export( $args_raw = array() ) {
 			'creation_date'         => $args[ 'raw' ] ? $booking->creation_date : bookacti_format_datetime( $booking->creation_date, $date_format ),
 			'creation_date_raw'     => $booking->creation_date,
 			'event_id'              => $event_id,
-			'event_title'           => $title ? apply_filters( 'bookacti_translate_text', $title, $args[ 'locale' ] ) : '',
+			'event_title'           => $title ? apply_filters( 'bookacti_translate_text', $title ) : '',
 			'start_date'            => $args[ 'raw' ] ? $start : bookacti_format_datetime( $start, $datetime_format ),
 			'end_date'              => $args[ 'raw' ] ? $end : bookacti_format_datetime( $end, $datetime_format ),
 			'start_date_raw'        => $start,
 			'end_date_raw'          => $end,
 			'template_id'           => $booking->template_id,
-			'template_title'        => ! empty( $booking->template_title ) ? apply_filters( 'bookacti_translate_text', $booking->template_title, $args[ 'locale' ] ) : '',
+			'template_title'        => ! empty( $booking->template_title ) ? apply_filters( 'bookacti_translate_text', $booking->template_title ) : '',
 			'activity_id'           => $activity_id,
-			'activity_title'        => $activity_title ? apply_filters( 'bookacti_translate_text', $activity_title, $args[ 'locale' ] ) : '',
+			'activity_title'        => $activity_title ? apply_filters( 'bookacti_translate_text', $activity_title ) : '',
 			'form_id'               => $form_id,
 			'order_id'              => $order_id,
 			'customer_id'           => $user_id,
@@ -2422,10 +2421,9 @@ function bookacti_get_booking_refunds_html( $refunds ) {
 /**
  * Retrieve booking states labels and display data
  * @version 1.14.0
- * @param string $locale
  * @return array
  */
-function bookacti_get_booking_state_labels( $locale = '' ) {
+function bookacti_get_booking_state_labels() {
 	return apply_filters( 'bookacti_booking_states_labels_array', array(
 		'delivered'        => array( 'display_state' => 'good',    'label' => esc_html__( 'Delivered', 'booking-activities' ) ),
 		'booked'           => array( 'display_state' => 'good',    'label' => esc_html__( 'Booked', 'booking-activities' ) ),
@@ -2433,7 +2431,7 @@ function bookacti_get_booking_state_labels( $locale = '' ) {
 		'cancelled'        => array( 'display_state' => 'bad',     'label' => esc_html__( 'Cancelled', 'booking-activities' ) ),
 		'refunded'         => array( 'display_state' => 'bad',     'label' => esc_html__( 'Refunded', 'booking-activities' ) ),
 		'refund_requested' => array( 'display_state' => 'bad',     'label' => esc_html__( 'Refund requested', 'booking-activities' ) )
-	), $locale );
+	) );
 }
 
 
@@ -2441,15 +2439,14 @@ function bookacti_get_booking_state_labels( $locale = '' ) {
  * Retrieve payment status labels and display data
  * @since 1.3.0
  * @version 1.14.0
- * @param string $locale
  * @return array
  */
-function bookacti_get_payment_status_labels( $locale = '' ) {
+function bookacti_get_payment_status_labels() {
 	return apply_filters( 'bookacti_payment_status_labels_array', array(
 		'none' => array( 'display_state' => 'disabled', 'label' => esc_html__( 'No payment required', 'booking-activities' ) ),
 		'owed' => array( 'display_state' => 'warning',  'label' => esc_html__( 'Owed', 'booking-activities' ) ),
 		'paid' => array( 'display_state' => 'good',     'label' => esc_html__( 'Paid', 'booking-activities' ) )
-	), $locale );
+	) );
 }
 
 
@@ -2521,10 +2518,9 @@ function bookacti_get_active_booking_states() {
  * Booking list column labels
  * @since 1.7.4
  * @version 1.14.0
- * @param string $locale
  * @return array
  */
-function bookacti_get_user_booking_list_columns_labels( $locale = '' ) {
+function bookacti_get_user_booking_list_columns_labels() {
 	return apply_filters( 'bookacti_user_booking_list_columns_labels', array(
 		'booking_id'            => _x( 'id', 'An id is a unique identification number', 'booking-activities' ),
 		'booking_type'          => esc_html_x( 'Type', 'Booking type (single or group)', 'booking-activities' ),
@@ -2551,7 +2547,7 @@ function bookacti_get_user_booking_list_columns_labels( $locale = '' ) {
 		'form_id'               => esc_html__( 'Form ID', 'booking-activities' ),
 		'order_id'              => esc_html__( 'Order ID', 'booking-activities' ),
 		'actions'               => esc_html__( 'Actions', 'booking-activities' )
-	), $locale );
+	) );
 }
 
 
@@ -2817,7 +2813,7 @@ function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
 			'customer_email'        => $email,
 			'customer_phone'        => $phone,
 			'customer_roles'        => $roles,
-			'events'                => in_array( 'events', $columns, true ) ? bookacti_get_formatted_booking_events_list( $grouped_bookings ) : '',
+			'events'                => in_array( 'events', $columns, true ) ? bookacti_get_formatted_booking_events_list( $grouped_bookings, false ) : '',
 			'event_id'              => $event_id,
 			'event_title'           => $title ? apply_filters( 'bookacti_translate_text', $title ) : '',
 			'start_date'            => bookacti_format_datetime( $start, $datetime_format ),
@@ -3061,7 +3057,7 @@ function bookacti_get_user_booking_list_rows( $booking_list_items, $columns = ar
 /**
  * Get some booking list rows according to filters
  * @since 1.7.4
- * @version 1.7.6
+ * @version 1.14.0
  * @param string $context
  * @param array $filters
  * @param array $columns
@@ -3069,7 +3065,7 @@ function bookacti_get_user_booking_list_rows( $booking_list_items, $columns = ar
  */
 function bookacti_get_booking_list_rows_according_to_context( $context = 'user_booking_list', $filters = array(), $columns = array() ) {
 	// Switch language
-	if( ! empty( $_REQUEST[ 'locale' ] ) ) { bookacti_switch_locale( $_REQUEST[ 'locale' ] ); }
+	$lang_switched = ! empty( $_REQUEST[ 'locale' ] ) ? bookacti_switch_locale( $_REQUEST[ 'locale' ] ) : false;
 	
 	$rows = '';
 	if( $context === 'admin_booking_list' ) {
@@ -3086,7 +3082,7 @@ function bookacti_get_booking_list_rows_according_to_context( $context = 'user_b
 	$rows = apply_filters( 'booking_list_rows_according_to_context', $rows, $context, $filters, $columns );
 	
 	// Restore language
-	if( ! empty( $_REQUEST[ 'locale' ] ) ) { bookacti_restore_locale();	}
+	if( $lang_switched ) { bookacti_restore_locale(); }
 	
 	return $rows;
 }

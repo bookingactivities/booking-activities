@@ -207,7 +207,7 @@ function bookacti_decrypt( $string ) {
 /**
  * Generate CSV file
  * @since 1.8.0
- * @version 1.13.0
+ * @version 1.14.0
  * @param array $items
  * @param array $headers
  * @return string
@@ -226,7 +226,9 @@ function bookacti_generate_csv( $items, $headers = array() ) {
 	foreach( $headers as $title ) {
 		if( $count ) { echo ','; }
 		++$count;
-		echo str_replace( ',', '', html_entity_decode( strip_tags( $title ) ) );
+		$title = html_entity_decode( strip_tags( $title ) );
+		if( strpos( $title, ',' ) !== false ) { $title = '"' . str_replace( '"', '""', $title ) . '"'; }
+		echo $title;
 	}
 
 	// Display rows
@@ -237,7 +239,9 @@ function bookacti_generate_csv( $items, $headers = array() ) {
 			if( $count ) { echo ','; }
 			++$count;
 			if( ! isset( $item[ $column_name ] ) ) { continue; }
-			echo str_replace( ',', '', html_entity_decode( strip_tags( $item[ $column_name ] ) ) );
+			$content = html_entity_decode( strip_tags( $item[ $column_name ] ) );
+			if( strpos( $content, ',' ) !== false ) { $content = '"' . str_replace( '"', '""', $content ) . '"'; }
+			echo $content;
 		}
 	}
 
@@ -549,7 +553,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name'	=> 'ba-notification-pack', 
 			'end_of_life'	=> '', 
 			'download_id'	=> 1393,
-			'min_version'	=> '1.2.12-beta1'
+			'min_version'	=> '1.2.12'
 		),
 		'bapap' => array( 
 			'title'			=> 'Prices and Credits', 
@@ -557,7 +561,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name'	=> 'ba-prices-and-credits', 
 			'end_of_life'	=> '', 
 			'download_id'	=> 438,
-			'min_version'	=> '1.7.6-beta1'
+			'min_version'	=> '1.7.6'
 		),
 		'baaf' => array( 
 			'title'			=> 'Advanced Forms', 
@@ -565,7 +569,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name'	=> 'ba-advanced-forms', 
 			'end_of_life'	=> '', 
 			'download_id'	=> 2705,
-			'min_version'	=> '1.2.23-beta1'
+			'min_version'	=> '1.2.23'
 		),
 		'baofc'	=> array( 
 			'title'			=> 'Order for Customers', 

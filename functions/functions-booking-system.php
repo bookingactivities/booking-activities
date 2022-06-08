@@ -3059,36 +3059,27 @@ function bookacti_is_date_in_days_off( $date, $days_off ) {
  * @since 1.1.0
  * @version 1.14.0
  * @param array $booking_events
- * @param int|string $quantity
- * @param string $locale Optional. Default to site locale.
+ * @param boolean $show_quantity
  * @return string
  */
-function bookacti_get_formatted_booking_events_list( $booking_events, $quantity = 'hide', $locale = 'site' ) {
-	if( ! $booking_events ) { return false; }
-	
-	// Set default locale to site's locale
-	if( $locale === 'site' ) { $locale = bookacti_get_site_locale(); }
+function bookacti_get_formatted_booking_events_list( $booking_events, $show_quantity = true, $wrap = true ) {
+	if( ! $booking_events ) { return ''; }
 	
 	// Format $events
 	$formatted_events = array();
 	foreach( $booking_events as $booking_event ) {
-		$booking_quantity = '';
-		if( isset( $booking_event->quantity ) ) {
-			$booking_quantity = $booking_event->quantity;
-		} else if( $quantity && is_numeric( $quantity ) ) {
-			$booking_quantity = intval( $quantity );
-		}
-		
 		$formatted_events[] = array( 
-			'raw_event' => $booking_event,
-			'title'     => isset( $booking_event->title ) ? $booking_event->title : ( isset( $booking_event->event_title ) ? $booking_event->event_title : '' ),
-			'start'     => isset( $booking_event->start ) ? bookacti_sanitize_datetime( $booking_event->start ) : ( isset( $booking_event->event_start ) ? bookacti_sanitize_datetime( $booking_event->event_start ) : '' ),
-			'end'       => isset( $booking_event->end )   ? bookacti_sanitize_datetime( $booking_event->end )   : ( isset( $booking_event->event_end ) ? bookacti_sanitize_datetime( $booking_event->event_end ) : '' ),
-			'quantity'  => $booking_quantity
+			/* translators: %d = the booking group ID */
+			'group_title' => ! empty( $booking_event->group_title ) ? apply_filters( 'bookacti_translate_text', $booking_event->group_title ) : ( isset( $booking_event->group_id ) ? sprintf( esc_html__( 'Booking group #%d', 'booking-activities' ), $booking_event->group_id ) : '' ),
+			'title'       => isset( $booking_event->title ) ? $booking_event->title : ( isset( $booking_event->event_title ) ? $booking_event->event_title : '' ),
+			'start'       => isset( $booking_event->start ) ? bookacti_sanitize_datetime( $booking_event->start ) : ( isset( $booking_event->event_start ) ? bookacti_sanitize_datetime( $booking_event->event_start ) : '' ),
+			'end'         => isset( $booking_event->end ) ? bookacti_sanitize_datetime( $booking_event->end ) : ( isset( $booking_event->event_end ) ? bookacti_sanitize_datetime( $booking_event->event_end ) : '' ),
+			'quantity'    => isset( $booking_event->quantity ) ? $booking_event->quantity : '',
+			'raw_event'   => $booking_event
 		);
 	}
 	
-	$messages            = bookacti_get_messages( false, $locale );
+	$messages            = bookacti_get_messages();
 	$datetime_format     = isset( $messages[ 'date_format_long' ][ 'value' ] )    ? $messages[ 'date_format_long' ][ 'value' ] : '';
 	$time_format         = isset( $messages[ 'time_format' ][ 'value' ] )         ? $messages[ 'time_format' ][ 'value' ] : '';
 	$date_time_separator = isset( $messages[ 'date_time_separator' ][ 'value' ] ) ? $messages[ 'date_time_separator' ][ 'value' ] : '';
@@ -3096,21 +3087,26 @@ function bookacti_get_formatted_booking_events_list( $booking_events, $quantity 
 	$quantity_separator  = isset( $messages[ 'quantity_separator' ][ 'value' ] )  ? $messages[ 'quantity_separator' ][ 'value' ] : '';
 	
 	$events_list = '';
+	
+	if( ! empty( $formatted_events[ 0 ][ 'group_title' ] ) ) {
+		$events_list .= '<li><span class="bookacti-booking-group-of-events-title">' . $formatted_events[ 0 ][ 'group_title' ] . '</span><ul class="bookacti-booking-grouped-events-list">';
+	}
+	
 	foreach( $formatted_events as $event ) {
 		// Format the event duration
 		$event[ 'duration' ] = '';
 		if( $event[ 'start' ] && $event[ 'end' ] ) {
-			$event[ 'duration' ] = bookacti_get_formatted_event_dates( $event[ 'start' ], $event[ 'end' ], true, $locale );
+			$event[ 'duration' ] = bookacti_get_formatted_event_dates( $event[ 'start' ], $event[ 'end' ], true );
 		}
 		
-		$event = apply_filters( 'bookacti_formatted_booking_events_list_event_data', $event, $locale );
+		$event = apply_filters( 'bookacti_formatted_booking_events_list_event_data', $event );
 		
 		// Add an element to event list if there is at least a title or a duration
 		if( $event[ 'title' ] || $event[ 'duration' ] ) {
 			$list_element = '<li>';
 			
 			if( $event[ 'title' ] ) {
-				$event_title = ! empty( $event[ 'title' ] ) ? apply_filters( 'bookacti_translate_text', $event[ 'title' ], $locale ) : '';
+				$event_title = ! empty( $event[ 'title' ] ) ? apply_filters( 'bookacti_translate_text', $event[ 'title' ] ) : '';
 				$list_element .= '<span class="bookacti-booking-event-title" >' . $event_title . '</span>';
 				if( $event[ 'duration' ] ) {
 					$list_element .= '<span class="bookacti-booking-event-title-separator" >' . ' - ' . '</span>';
@@ -3120,22 +3116,26 @@ function bookacti_get_formatted_booking_events_list( $booking_events, $quantity 
 				$list_element .= $event[ 'duration' ];
 			}
 			
-			if( $event[ 'quantity' ] && $quantity !== 'hide' ) {
+			if( $event[ 'quantity' ] && $show_quantity ) {
 				$list_element .= '<span class="bookacti-booking-event-quantity-separator" >' . $quantity_separator . '</span>';
 				$list_element .= '<span class="bookacti-booking-event-quantity" >' . $event[ 'quantity' ] . '</span>';
 			}
 			
 			$list_element .= '</li>';
-			$events_list  .= apply_filters( 'bookacti_formatted_booking_events_list_element', $list_element, $event, $locale );
+			$events_list  .= apply_filters( 'bookacti_formatted_booking_events_list_element', $list_element, $event );
 		}
 	}
 	
+	if( ! empty( $formatted_events[ 0 ][ 'group_title' ] ) ) {
+		$events_list .= '</ul></li>';
+	}
+	
 	// Wrap the list only if it is not empty
-	if( ! empty( $events_list ) ) {
+	if( $wrap && ! empty( $events_list ) ) {
 		$events_list = '<ul class="bookacti-booking-events-list bookacti-custom-scrollbar" style="clear:both;" >' . $events_list . '</ul>';
 	}
 	
-	return apply_filters( 'bookacti_formatted_booking_events_list', $events_list, $booking_events, $quantity, $locale );
+	return apply_filters( 'bookacti_formatted_booking_events_list', $events_list, $booking_events, $show_quantity );
 }
 
 
@@ -3146,14 +3146,10 @@ function bookacti_get_formatted_booking_events_list( $booking_events, $quantity 
  * @param string $start Format: Y-m-d H:i:s
  * @param string $end Format: Y-m-d H:i:s
  * @param boolean $html
- * @param string $locale
  * @return string
  */
-function bookacti_get_formatted_event_dates( $start, $end, $html = true, $locale = 'site' ) {
-	// Set default locale to site's locale
-	if( $locale === 'site' ) { $locale = bookacti_get_site_locale(); }
-	
-	$messages = bookacti_get_messages( false, $locale );
+function bookacti_get_formatted_event_dates( $start, $end, $html = true ) {
+	$messages = bookacti_get_messages();
 	$datetime_format = isset( $messages[ 'date_format_long' ][ 'value' ] ) ? $messages[ 'date_format_long' ][ 'value' ] : '';
 	$event_start = bookacti_format_datetime( $start, $datetime_format );
 	
@@ -3188,36 +3184,26 @@ function bookacti_get_formatted_event_dates( $start, $end, $html = true, $locale
  * @since 1.7.0
  * @version 1.14.0
  * @param array $booking_events
- * @param int|string $quantity
- * @param string $locale Optional. Default to site locale.
+ * @param boolean $show_quantity
  * @return string
  */
-function bookacti_get_formatted_booking_events_list_raw( $booking_events, $quantity = 'hide', $locale = 'site' ) {
-	if( ! $booking_events ) { return false; }
-	
-	// Set default locale to site's locale
-	if( $locale === 'site' ) { $locale = bookacti_get_site_locale(); }
+function bookacti_get_formatted_booking_events_list_raw( $booking_events, $show_quantity = true ) {
+	if( ! $booking_events ) { return ''; }
 	
 	// Format $events
 	$formatted_events = array();
 	foreach( $booking_events as $booking_event ) {
-		$booking_quantity = '';
-		if( isset( $booking_event->quantity ) ) {
-			$booking_quantity = $booking_event->quantity;
-		} else if( $quantity && is_numeric( $quantity ) ) {
-			$booking_quantity = intval( $quantity );
-		}
-		
 		$formatted_events[] = array( 
-			'raw_event' => $booking_event,
-			'title'     => isset( $booking_event->title ) ? $booking_event->title : ( isset( $booking_event->event_title ) ? $booking_event->event_title : '' ),
-			'start'     => isset( $booking_event->start ) ? bookacti_sanitize_datetime( $booking_event->start ) : ( isset( $booking_event->event_start ) ? bookacti_sanitize_datetime( $booking_event->event_start ) : '' ),
-			'end'       => isset( $booking_event->end )   ? bookacti_sanitize_datetime( $booking_event->end )   : ( isset( $booking_event->event_end ) ? bookacti_sanitize_datetime( $booking_event->event_end ) : '' ),
-			'quantity'  => $booking_quantity
+			'group_title' => ! empty( $booking_event->group_title ) ? apply_filters( 'bookacti_translate_text', $booking_event->group_title ) : ( isset( $booking_event->group_id ) ? sprintf( esc_html__( 'Booking group #%d', 'booking-activities' ), $booking_event->group_id ) : '' ),
+			'title'       => isset( $booking_event->title )    ? $booking_event->title : ( isset( $booking_event->event_title ) ? $booking_event->event_title : '' ),
+			'start'       => isset( $booking_event->start )    ? bookacti_sanitize_datetime( $booking_event->start ) : ( isset( $booking_event->event_start ) ? bookacti_sanitize_datetime( $booking_event->event_start ) : '' ),
+			'end'         => isset( $booking_event->end )      ? bookacti_sanitize_datetime( $booking_event->end )   : ( isset( $booking_event->event_end ) ? bookacti_sanitize_datetime( $booking_event->event_end ) : '' ),
+			'quantity'    => isset( $booking_event->quantity ) ? $booking_event->quantity : '',
+			'raw_event'   => $booking_event
 		);
 	}
 	
-	$messages            = bookacti_get_messages( false, $locale );
+	$messages            = bookacti_get_messages();
 	$datetime_format     = isset( $messages[ 'date_format_short' ][ 'value' ] )   ? $messages[ 'date_format_short' ][ 'value' ] : '';
 	$time_format         = isset( $messages[ 'time_format' ][ 'value' ] )         ? $messages[ 'time_format' ][ 'value' ] : '';
 	$date_time_separator = isset( $messages[ 'date_time_separator' ][ 'value' ] ) ? $messages[ 'date_time_separator' ][ 'value' ] : '';
@@ -3225,6 +3211,11 @@ function bookacti_get_formatted_booking_events_list_raw( $booking_events, $quant
 	$quantity_separator  = isset( $messages[ 'quantity_separator' ][ 'value' ] )  ? $messages[ 'quantity_separator' ][ 'value' ] : '';
 	
 	$events_list = '';
+	
+	if( ! empty( $formatted_events[ 0 ][ 'group_title' ] ) ) {
+		$events_list .= $formatted_events[ 0 ][ 'group_title' ] . ': ';
+	}
+	
 	$i = 0;
 	foreach( $formatted_events as $event ) {
 		// Format the event duration
@@ -3247,14 +3238,14 @@ function bookacti_get_formatted_booking_events_list_raw( $booking_events, $quant
 			$event[ 'duration' ] = $event_start . $separator . $event_end;
 		}
 		
-		$event = apply_filters( 'bookacti_formatted_booking_events_list_raw_event_data', $event, $locale );
+		$event = apply_filters( 'bookacti_formatted_booking_events_list_raw_event_data', $event );
 		
 		// Add an element to event list if there is at least a title or a duration
 		if( $event[ 'title' ] || $event[ 'duration' ] ) {
 			$list_element = '';
 			if( $i !== 0 ) { $list_element .= ', '; }
 			if( $event[ 'title' ] ) {
-				$list_element .= ! empty( $event[ 'title' ] ) ? apply_filters( 'bookacti_translate_text', $event[ 'title' ], $locale ) : '';
+				$list_element .= ! empty( $event[ 'title' ] ) ? apply_filters( 'bookacti_translate_text', $event[ 'title' ] ) : '';
 				if( $event[ 'duration' ] ) {
 					$list_element .= ' ';
 				}
@@ -3263,16 +3254,16 @@ function bookacti_get_formatted_booking_events_list_raw( $booking_events, $quant
 				$list_element .= $event[ 'duration' ];
 			}
 			
-			if( $event[ 'quantity' ] && $quantity !== 'hide' ) {
+			if( $event[ 'quantity' ] && $show_quantity ) {
 				$list_element .= $quantity_separator . $event[ 'quantity' ];
 			}
 			
-			$events_list .= apply_filters( 'bookacti_formatted_booking_events_list_raw_element', $list_element, $event, $locale );
+			$events_list .= apply_filters( 'bookacti_formatted_booking_events_list_raw_element', $list_element, $event );
 		}
 		++$i;
 	}
 	
-	return apply_filters( 'bookacti_formatted_booking_events_list_raw', $events_list, $booking_events, $quantity, $locale );
+	return apply_filters( 'bookacti_formatted_booking_events_list_raw', $events_list, $booking_events, $show_quantity );
 }
 
 

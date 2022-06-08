@@ -346,7 +346,7 @@ function bookacti_get_form_fields_data( $form_id, $active_only = true, $index_by
 	}
 	
 	// Format data
-	if( ! $raw && $fields_data_by_id ) { $fields_data_by_id = array_map( 'bookacti_format_form_field_data', $fields_data_by_id ); }
+	if( ! $raw && $fields_data_by_id ) { $fields_data_by_id = array_filter( array_map( 'bookacti_format_form_field_data', $fields_data_by_id ) ); }
 	
 	$fields_data = ! $index_by_name && $fields_data_by_id ? $fields_data_by_id : array();
 	if( $fields_data_by_id ) {
@@ -1470,7 +1470,7 @@ function bookacti_get_form_fields_order( $form_id ) {
 /**
  * Sort fields array by field order
  * @since 1.5.0
- * @version 1.12.0
+ * @version 1.14.0
  * @param int $form_id
  * @param array $fields
  * @param boolean $remove_unordered_fields Whether to remove the fields that are not in the field order array 
@@ -1486,6 +1486,7 @@ function bookacti_sort_form_fields_array( $form_id, $fields, $remove_unordered_f
 		$remaining_fields = $fields;
 		foreach( $field_order as $field_id ) {
 			foreach( $fields as $i => $field ) {
+				if( empty( $field[ 'field_id' ] ) ) { continue; }
 				if( $field[ 'field_id' ] !== $field_id ) { continue; }
 				if( $keep_keys ) { $ordered_fields[ $i ] = $fields[ $i ]; }
 				else { $ordered_fields[] = $fields[ $i ]; }

@@ -136,9 +136,13 @@ function bookacti_dialog_update_form_meta() {
 /**
  * Insert form field
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.14.0
  */
 function bookacti_dialog_insert_form_field() {
+	// Select the first available field
+	$j( '#bookacti-field-to-insert option:not(:disabled):first' ).prop( 'selected', true );
+	$j( '#bookacti-field-to-insert' ).trigger( 'change' );
+	
 	// Add the buttons
     $j( '#bookacti-insert-form-field-dialog' ).dialog( 'option', 'buttons',
 		// OK button

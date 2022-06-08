@@ -183,20 +183,19 @@ add_action( 'bookacti_booking_rescheduled', 'bookacti_send_notification_when_boo
  * @version 1.14.0
  * @param array $tags
  * @param array $notification
- * @param string $locale
  * @return array
  */
-function bookacti_format_reschedule_notifications_tags_values( $tags, $notification, $locale ) {
+function bookacti_format_reschedule_notifications_tags_values( $tags, $notification ) {
 	if( strpos( $notification[ 'id' ], '_rescheduled' ) === false ) { return $tags; }
 	
 	// Set the {booking_old_start} and {booking_old_end} from their unformatted counterpart
-	$datetime_format = bookacti_get_message( 'date_format_long', false, $locale );
+	$datetime_format = bookacti_get_message( 'date_format_long' );
 	if( isset( $tags[ '{booking_old_start_raw}' ] ) ) { $tags[ '{booking_old_start}' ] = bookacti_format_datetime( $tags[ '{booking_old_start_raw}' ], $datetime_format ); }
 	if( isset( $tags[ '{booking_old_end_raw}' ] ) )   { $tags[ '{booking_old_end}' ]   = bookacti_format_datetime( $tags[ '{booking_old_end_raw}' ], $datetime_format ); }
 	
 	return $tags;
 }
-add_filter( 'bookacti_notification_tags', 'bookacti_format_reschedule_notifications_tags_values', 10, 3 );
+add_filter( 'bookacti_notification_tags', 'bookacti_format_reschedule_notifications_tags_values', 10, 2 );
 
 
 /**

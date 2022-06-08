@@ -217,10 +217,9 @@ add_filter( 'bookacti_notifications_tags', 'bookacti_wc_notifications_tags', 15,
  * @param object $booking
  * @param string $booking_type
  * @param array $notification
- * @param string $locale
  * @return array
  */
-function bookacti_wc_notifications_tags_values( $tags, $booking, $booking_type, $notification, $locale ) {
+function bookacti_wc_notifications_tags_values( $tags, $booking, $booking_type, $notification ) {
 	if( ! $booking ) { return $tags; }
 	
 	$item = $booking_type === 'group' ? bookacti_get_order_item_by_booking_group_id( $booking ) : bookacti_get_order_item_by_booking_id( $booking );
@@ -241,7 +240,7 @@ function bookacti_wc_notifications_tags_values( $tags, $booking, $booking_type, 
 	$order_id        = $item->get_order_id();
 	$order_item_name = $item->get_name();
 	$tags[ '{product_id}' ]    = $product_id ? $product_id : '';
-	$tags[ '{product_title}' ] = $order_item_name !== '' ? apply_filters( 'bookacti_translate_text_external', $order_item_name, $locale, true, array( 'domain' => 'woocommerce', 'object_type' => 'order_item', 'object_id' => $item_id, 'field' => 'title', 'order_id' => $order_id ) ) : $order_item_name;
+	$tags[ '{product_title}' ] = $order_item_name !== '' ? apply_filters( 'bookacti_translate_text_external', $order_item_name, '', true, array( 'domain' => 'woocommerce', 'object_type' => 'order_item', 'object_id' => $item_id, 'field' => 'title', 'order_id' => $order_id ) ) : $order_item_name;
 	
 	$item_price = (float) $item->get_total() + (float) $item->get_total_tax();
 	$currency = get_post_meta( $booking->order_id, '_order_currency', true );
@@ -265,7 +264,7 @@ function bookacti_wc_notifications_tags_values( $tags, $booking, $booking_type, 
 	
 	return $tags;
 }
-add_filter( 'bookacti_notifications_tags_values', 'bookacti_wc_notifications_tags_values', 15, 5 );
+add_filter( 'bookacti_notifications_tags_values', 'bookacti_wc_notifications_tags_values', 15, 4 );
 
 
 /**

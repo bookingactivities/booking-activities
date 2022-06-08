@@ -26,55 +26,57 @@ $j( document ).ready( function() {
 
 	// SINGLE PRODUCT
 	
-	// Handle variations
-	if( $j( '.woocommerce form.cart.variations_form' ).length ) { 
-		/**
-		 * Do not init booking system automatically if is supposed to be loaded while switching WC variations
-		 * @since 1.7.0
-		 * @version 1.7.4
-		 * @param {Event} e
-		 * @param {Object} load
-		 * @param {Object} attributes
-		 */
-		$j( '.woocommerce' ).on( 'bookacti_init_booking_sytem', 'form.cart.variations_form .bookacti-booking-system', function( e, load, attributes ) {
-			if( load.load === false ) { return; }
-			if( typeof $j( this ).closest( '.bookacti-wc-form-fields' ) !== 'undefined' ) { 
-				if( $j( this ).closest( '.bookacti-wc-form-fields' ).data( 'default-variation-id' ) ) { load.load = false; }
-			}
-		});
+	// Init variables
+	if( typeof bookacti.form_fields === 'undefined' ) { bookacti.form_fields = []; }
+	
+	
+	/**
+	 * Do not init booking system automatically if is supposed to be loaded while switching WC variations
+	 * @since 1.7.0
+	 * @version 1.7.4
+	 * @param {Event} e
+	 * @param {Object} load
+	 * @param {Object} attributes
+	 */
+	$j( '.woocommerce' ).on( 'bookacti_init_booking_sytem', 'form.cart.variations_form .bookacti-booking-system', function( e, load, attributes ) {
+		if( load.load === false ) { return; }
+		if( typeof $j( this ).closest( '.bookacti-wc-form-fields' ) !== 'undefined' ) { 
+			if( $j( this ).closest( '.bookacti-wc-form-fields' ).data( 'default-variation-id' ) ) { load.load = false; }
+		}
+	});
 
-		/**
-		 * Switch the booking form according to the selected product variation
-		 * @version 1.8.0
-		 */
-		$j( '.woocommerce form.cart.variations_form' ).each( function() {
-			var wc_form = $j( this );
 
-			if( wc_form.find( '.bookacti-booking-system' ).length && ! wc_form.find( '.bookacti-wc-form-fields' ).length ) { return true; }
+	/**
+	 * Empty the booking form - on reset variation
+	 * @version 1.14.0
+	 */
+	$j( '.woocommerce form.cart.variations_form' ).on( 'reset_data', function() { 
+		if( ! $j( this ).find( '.bookacti-wc-form-fields' ).length ) { return; }
+		var form_container = $j( this ).find( '.bookacti-wc-form-fields' );
+		form_container.data( 'form-id', '' );
+		form_container.attr( 'data-form-id', '' );
+		form_container.data( 'variation-id', '' );
+		form_container.attr( 'data-variation-id', '' );
+		form_container.empty();
+	});
 
-			if( typeof bookacti.form_fields === 'undefined' ) { bookacti.form_fields = []; }
 
-			// Empty the form
-			wc_form.on( 'reset_data', function( e ) { 
-				var form_container = wc_form.find( '.bookacti-wc-form-fields' );
-				form_container.data( 'form-id', '' );
-				form_container.attr( 'data-form-id', '' );
-				form_container.data( 'variation-id', '' );
-				form_container.attr( 'data-variation-id', '' );
-				form_container.empty();
-			});
+	/**
+	 * Switch the booking form according to the selected product variation - on switch variation
+	 * @version 1.14.0
+	 * @param {Event} e
+	 * @param {Object} variation
+	 */
+	$j( '.woocommerce form.cart.variations_form' ).on( 'show_variation', function( e, variation ) { 
+		if( ! $j( this ).find( '.bookacti-wc-form-fields' ).length ) { return; }
 
-			// Switch form
-			wc_form.find( '.single_variation_wrap' ).on( 'show_variation', function( e, variation ) { 
-				var form_container = wc_form.find( '.bookacti-wc-form-fields' );
-				bookacti_switch_product_variation_form( form_container, variation );
+		var form_container = $j( this ).find( '.bookacti-wc-form-fields' );
+		bookacti_switch_product_variation_form( form_container, variation );
 
-				// Change Add to cart button label
-				var new_button_text = variation[ 'bookacti_is_activity' ] ? bookacti_localized.add_booking_to_cart_button_text : bookacti_localized.add_product_to_cart_button_text;
-				wc_form.find( '.single_add_to_cart_button' ).text( new_button_text );
-			});
-		});
-	}
+		// Change Add to cart button label
+		var new_button_text = variation[ 'bookacti_is_activity' ] ? bookacti_localized.add_booking_to_cart_button_text : bookacti_localized.add_product_to_cart_button_text;
+		$j( this ).find( '.single_add_to_cart_button' ).text( new_button_text );
+	});
 
 
 	/**
