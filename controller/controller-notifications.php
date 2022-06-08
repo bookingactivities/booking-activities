@@ -80,7 +80,7 @@ add_action( 'bookacti_booking_form_validated', 'bookacti_send_notification_when_
 /**
  * Send a notification to admin and customer when a single booking status changes
  * @since 1.2.1 (was bookacti_send_email_when_booking_state_changes in 1.2.0)
- * @version 1.11.5
+ * @version 1.14.0
  * @param object $booking
  * @param string $status
  * @param array $args
@@ -96,7 +96,7 @@ function bookacti_send_notification_when_booking_state_changes( $booking, $statu
 	if( isset( $args[ 'booking_group_state_changed' ] ) && $args[ 'booking_group_state_changed' ] ) { return; }
 	
 	// If we cannot know if the action was made by customer or admin, send to both
-	$send_to = apply_filters( 'bookacti_booking_state_change_notification_recipient', 'both', $booking, $status, $args );
+	$send_to = apply_filters( 'bookacti_booking_state_change_notification_recipient', ! empty( $args[ 'send_to' ] ) && in_array( $args[ 'send_to' ], array( 'both', 'customer', 'admin' ), true ) ? $args[ 'send_to' ] : 'both', $booking, $status, $args );
 	
 	// If $args[ 'is_admin' ] is true, the customer need to be notified
 	if( $send_to === 'customer' || $send_to === 'both' ) {
@@ -114,7 +114,7 @@ add_action( 'bookacti_booking_state_changed', 'bookacti_send_notification_when_b
 /**
  * Send a notification to admin and customer when a booking group status changes
  * @since 1.2.1 (was bookacti_send_email_when_booking_group_state_changes in 1.2.0)
- * @version 1.11.5
+ * @version 1.14.0
  * @param int $booking_group_id
  * @param array $bookings
  * @param string $status
@@ -128,7 +128,7 @@ function bookacti_send_notification_when_booking_group_state_changes( $booking_g
 	if( isset( $args[ 'send_notifications' ] ) && ! $args[ 'send_notifications' ] ) { return; }
 	
 	// If we cannot know if the action was made by customer or admin, send to both
-	$send_to = apply_filters( 'bookacti_booking_group_state_change_notification_recipient', 'both', $booking_group_id, $status, $args );
+	$send_to = apply_filters( 'bookacti_booking_group_state_change_notification_recipient', ! empty( $args[ 'send_to' ] ) && in_array( $args[ 'send_to' ], array( 'both', 'customer', 'admin' ), true ) ? $args[ 'send_to' ] : 'both', $booking_group_id, $status, $args );
 	
 	// If $args[ 'is_admin' ] is true, the customer need to be notified
 	if( $send_to === 'customer' || $send_to === 'both' ) {
@@ -147,7 +147,7 @@ add_action( 'bookacti_booking_group_state_changed', 'bookacti_send_notification_
  * Send a notification to admin and customer when a booking is rescheduled
  * 
  * @since 1.2.1 (was bookacti_send_email_when_booking_is_rescheduled in 1.2.0)
- * @version 1.10.0
+ * @version 1.14.0
  * @param object $booking
  * @param object $old_booking
  * @param array $args
@@ -163,8 +163,6 @@ function bookacti_send_notification_when_booking_is_rescheduled( $booking, $old_
 		'{booking_old_start_raw}' => $old_booking->event_start,
 		'{booking_old_end_raw}' => $old_booking->event_end
 	));
-	
-	$datetime_format = bookacti_get_message( 'date_format_long' );
 	
 	// If $args[ 'is_admin' ] is true, the customer need to be notified
 	if( $send_to === 'both' || $send_to === 'customer' ) {
@@ -182,22 +180,22 @@ add_action( 'bookacti_booking_rescheduled', 'bookacti_send_notification_when_boo
 /**
  * Format some rescheduled notifications tags
  * @since 1.10.0
+ * @version 1.14.0
  * @param array $tags
  * @param array $notification
- * @param string $locale
  * @return array
  */
-function bookacti_format_reschedule_notifications_tags_values( $tags, $notification, $locale ) {
+function bookacti_format_reschedule_notifications_tags_values( $tags, $notification ) {
 	if( strpos( $notification[ 'id' ], '_rescheduled' ) === false ) { return $tags; }
 	
 	// Set the {booking_old_start} and {booking_old_end} from their unformatted counterpart
-	$datetime_format = apply_filters( 'bookacti_translate_text', bookacti_get_message( 'date_format_long', true ), $locale );
-	if( isset( $tags[ '{booking_old_start_raw}' ] ) )	{ $tags[ '{booking_old_start}' ]= bookacti_format_datetime( $tags[ '{booking_old_start_raw}' ], $datetime_format ); }
-	if( isset( $tags[ '{booking_old_end_raw}' ] ) )		{ $tags[ '{booking_old_end}' ]	= bookacti_format_datetime( $tags[ '{booking_old_end_raw}' ], $datetime_format ); }
+	$datetime_format = bookacti_get_message( 'date_format_long' );
+	if( isset( $tags[ '{booking_old_start_raw}' ] ) ) { $tags[ '{booking_old_start}' ] = bookacti_format_datetime( $tags[ '{booking_old_start_raw}' ], $datetime_format ); }
+	if( isset( $tags[ '{booking_old_end_raw}' ] ) )   { $tags[ '{booking_old_end}' ]   = bookacti_format_datetime( $tags[ '{booking_old_end_raw}' ], $datetime_format ); }
 	
 	return $tags;
 }
-add_filter( 'bookacti_notification_tags', 'bookacti_format_reschedule_notifications_tags_values', 10, 3 );
+add_filter( 'bookacti_notification_tags', 'bookacti_format_reschedule_notifications_tags_values', 10, 2 );
 
 
 /**

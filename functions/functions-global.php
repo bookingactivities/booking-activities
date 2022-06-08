@@ -207,7 +207,7 @@ function bookacti_decrypt( $string ) {
 /**
  * Generate CSV file
  * @since 1.8.0
- * @version 1.13.0
+ * @version 1.14.0
  * @param array $items
  * @param array $headers
  * @return string
@@ -226,7 +226,9 @@ function bookacti_generate_csv( $items, $headers = array() ) {
 	foreach( $headers as $title ) {
 		if( $count ) { echo ','; }
 		++$count;
-		echo str_replace( ',', '', html_entity_decode( strip_tags( $title ) ) );
+		$title = html_entity_decode( strip_tags( $title ) );
+		if( strpos( $title, ',' ) !== false ) { $title = '"' . str_replace( '"', '""', $title ) . '"'; }
+		echo $title;
 	}
 
 	// Display rows
@@ -237,7 +239,9 @@ function bookacti_generate_csv( $items, $headers = array() ) {
 			if( $count ) { echo ','; }
 			++$count;
 			if( ! isset( $item[ $column_name ] ) ) { continue; }
-			echo str_replace( ',', '', html_entity_decode( strip_tags( $item[ $column_name ] ) ) );
+			$content = html_entity_decode( strip_tags( $item[ $column_name ] ) );
+			if( strpos( $content, ',' ) !== false ) { $content = '"' . str_replace( '"', '""', $content ) . '"'; }
+			echo $content;
 		}
 	}
 
@@ -339,7 +343,7 @@ function bookacti_generate_ical( $vevents, $vcalendar = array() ) {
 /**
  * Get the variables used with javascript
  * @since 1.8.0
- * @version 1.13.0
+ * @version 1.14.0
  * @return array
  */
 function bookacti_get_js_variables() {
@@ -401,31 +405,32 @@ function bookacti_get_js_variables() {
 		'default_view_threshold'			=> bookacti_get_setting_value( 'bookacti_general_settings', 'default_calendar_view_threshold' ),
 		'bookings_tooltip_mouseover_timeout'=> 250,
 
-		'date_format'						=> apply_filters( 'bookacti_translate_text', $messages[ 'date_format_short' ][ 'value' ] ),
-		'date_format_long'					=> apply_filters( 'bookacti_translate_text', $messages[ 'date_format_long' ][ 'value' ] ),
-		'time_format'						=> apply_filters( 'bookacti_translate_text', $messages[ 'time_format' ][ 'value' ] ),
-		'dates_separator'					=> apply_filters( 'bookacti_translate_text', $messages[ 'dates_separator' ][ 'value' ] ),
-		'date_time_separator'				=> apply_filters( 'bookacti_translate_text', $messages[ 'date_time_separator' ][ 'value' ] ),
+		'date_format'						=> $messages[ 'date_format_short' ][ 'value' ],
+		'date_format_long'					=> $messages[ 'date_format_long' ][ 'value' ],
+		'time_format'						=> $messages[ 'time_format' ][ 'value' ],
+		'dates_separator'					=> $messages[ 'dates_separator' ][ 'value' ],
+		'date_time_separator'				=> $messages[ 'date_time_separator' ][ 'value' ],
 
-		'single_event'						=> apply_filters( 'bookacti_translate_text', $messages[ 'choose_group_dialog_single_event' ][ 'value' ] ),
-		'selected_event'					=> apply_filters( 'bookacti_translate_text', $messages[ 'selected_event' ][ 'value' ] ),
-		'selected_events'					=> apply_filters( 'bookacti_translate_text', $messages[ 'selected_events' ][ 'value' ] ),
-		'avail'								=> apply_filters( 'bookacti_translate_text', $messages[ 'avail' ][ 'value' ] ),
-		'avails'							=> apply_filters( 'bookacti_translate_text', $messages[ 'avails' ][ 'value' ] ),
+		'single_event'						=> $messages[ 'choose_group_dialog_single_event' ][ 'value' ],
+		'selected_event'					=> $messages[ 'selected_event' ][ 'value' ],
+		'selected_events'					=> $messages[ 'selected_events' ][ 'value' ],
+		'avail'								=> $messages[ 'avail' ][ 'value' ],
+		'avails'							=> $messages[ 'avails' ][ 'value' ],
 		'hide_availability_fixed'			=> apply_filters( 'bookacti_hide_availability_fixed', 0 ), // Threshold above which availability is masked. 0 to always show availability.
 
 		'dialog_button_ok'					=> esc_html__( 'OK', 'booking-activities' ),
-		'dialog_button_cancel'				=> apply_filters( 'bookacti_translate_text', $messages[ 'cancel_dialog_button' ][ 'value' ] ),
-		'dialog_button_cancel_booking'		=> apply_filters( 'bookacti_translate_text', $messages[ 'cancel_booking_dialog_button' ][ 'value' ] ),
-		'dialog_button_reschedule'			=> apply_filters( 'bookacti_translate_text', $messages[ 'reschedule_dialog_button' ][ 'value' ] ),
-		'dialog_button_refund'				=> $can_edit_bookings ? esc_html_x( 'Refund', 'Button label to trigger the refund action', 'booking-activities' ) : apply_filters( 'bookacti_translate_text', $messages[ 'refund_dialog_button' ][ 'value' ] ),
+		'dialog_button_cancel'				=> $messages[ 'cancel_dialog_button' ][ 'value' ],
+		'dialog_button_cancel_booking'		=> $messages[ 'cancel_booking_dialog_button' ][ 'value' ],
+		'dialog_button_reschedule'			=> $messages[ 'reschedule_dialog_button' ][ 'value' ],
+		'dialog_button_refund'				=> $can_edit_bookings ? esc_html_x( 'Refund', 'Button label to trigger the refund action', 'booking-activities' ) : $messages[ 'refund_dialog_button' ][ 'value' ],
 
 		'plugin_path'						=> plugins_url() . '/' . BOOKACTI_PLUGIN_NAME,
 		'is_admin'							=> is_admin() ? 1 : 0,
 		'current_user_id'					=> get_current_user_id(),
 		'current_time'						=> $current_datetime->format( 'Y-m-d H:i:s' ),
 
-		'calendar_localization'				=> bookacti_get_setting_value( 'bookacti_messages_settings', 'calendar_localization' ),
+		'calendar_localization'				=> bookacti_get_setting_value( 'bookacti_general_settings', 'calendar_localization' ),
+		'wp_date_format'					=> get_option( 'date_format' ),
 		'wp_time_format'					=> get_option( 'time_format' ),
 		'wp_start_of_week'					=> get_option( 'start_of_week' ),
 		
@@ -527,7 +532,7 @@ function bookacti_get_active_add_ons( $prefix = '', $exclude = array( 'balau' ) 
 /**
  * Get add-on data by prefix
  * @since 1.7.14
- * @version 1.13.0
+ * @version 1.14.0
  * @param string $prefix
  * @param array $exclude
  * @return array
@@ -548,7 +553,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name'	=> 'ba-notification-pack', 
 			'end_of_life'	=> '', 
 			'download_id'	=> 1393,
-			'min_version'	=> '1.2.7'
+			'min_version'	=> '1.2.12'
 		),
 		'bapap' => array( 
 			'title'			=> 'Prices and Credits', 
@@ -556,7 +561,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name'	=> 'ba-prices-and-credits', 
 			'end_of_life'	=> '', 
 			'download_id'	=> 438,
-			'min_version'	=> '1.7.5'
+			'min_version'	=> '1.7.6'
 		),
 		'baaf' => array( 
 			'title'			=> 'Advanced Forms', 
@@ -564,7 +569,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name'	=> 'ba-advanced-forms', 
 			'end_of_life'	=> '', 
 			'download_id'	=> 2705,
-			'min_version'	=> '1.2.16'
+			'min_version'	=> '1.2.23'
 		),
 		'baofc'	=> array( 
 			'title'			=> 'Order for Customers', 
@@ -606,93 +611,68 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 // LOCALE
 
 /**
- * Detect current language with Qtranslate-XT or WPML
- * @version 1.8.5
+ * Get current translation plugin identifier
+ * @version 1.14.0
+ * @return string
+ */
+function bookacti_get_translation_plugin() {
+	return apply_filters( 'bookacti_translation_plugin', '' );
+}
+
+
+/**
+ * Get array of active languages
+ * @since 1.14.0
  * @global array $q_config
+ * @param boolean $with_locale
+ * @return array
+ */
+function bookacti_get_active_locales( $with_locale = true ) {
+	$locales = get_available_languages();
+	
+	// Strip country codes from default locales array
+	if( $locales && ! $with_locale ) {
+		foreach( $locales as $i => $locale ) {
+			$locales[ $i ] = strpos( $locale, '_' ) !== false ? substr( $locale, 0, strpos( $locale, '_' ) ) : $locale;
+		}
+	}
+	
+	return apply_filters( 'bookacti_active_locales', $locales, $with_locale );
+}
+
+
+/**
+ * Detect current language with Qtranslate-XT or WPML
+ * @version 1.14.0
  * @param boolean $with_locale
  * @return string 
  */
 function bookacti_get_current_lang_code( $with_locale = false ) {
-	$locale		= get_locale();
-	$lang_code	= $with_locale ? $locale : substr( $locale, 0, strpos( $locale, '_' ) );
-
-	if( bookacti_is_plugin_active( 'qtranslate-x/qtranslate.php' ) || bookacti_is_plugin_active( 'qtranslate-xt/qtranslate.php' ) ) {
-		if( function_exists( 'qtranxf_getLanguage' ) ) {
-			$lang_code = qtranxf_getLanguage();
-			if( $with_locale ) {
-				global $q_config;
-				foreach( $q_config[ 'locale' ] as $code => $locale ) {
-					if( $code === $lang_code ) { $lang_code = $locale; break; }
-				}
-			}
-		}
-	} else if ( bookacti_is_plugin_active( 'wpml/wpml.php' ) ) {
-		$lang_code = apply_filters( 'wpml_current_language', NULL );
-		if( $with_locale ) {
-			$languages = apply_filters( 'wpml_active_languages', NULL );
-			foreach( $languages as $l ) {
-				if( $l[ 'active' ] ) { $lang_code = $l[ 'default_locale' ]; break; }
-			}
-		}
-	}
+	$locale    = get_locale();
+	$lang_code = $with_locale ? $locale : substr( $locale, 0, strpos( $locale, '_' ) );
 	
-	if( ! $lang_code ) {
-		$lang_code = $with_locale ? 'en_US' : 'en';
-	}
+	$lang_code = apply_filters( 'bookacti_current_lang_code', $lang_code, $with_locale );
+	if( ! $lang_code ) { $lang_code = $with_locale ? 'en_US' : 'en'; }
 	
-	return apply_filters( 'bookacti_current_lang_code', $lang_code, $with_locale );
+	return $lang_code;
 }
 
 
 /**
- * Get current translation plugin identifier
- * @version 1.8.5
+ * Get site default locale
+ * @since 1.12.2
+ * @version 1.14.0
+ * @param boolean $with_locale Whether to return also country code
  * @return string
  */
-function bookacti_get_translation_plugin() {
-	$translation_plugin = '';
+function bookacti_get_site_default_locale( $with_locale = true ) {
+	$locale = get_locale();
+	if( ! $with_locale ) { $locale = substr( $locale, 0, strpos( $locale, '_' ) ); }
+
+	$locale = apply_filters( 'bookacti_site_default_locale', $locale, $with_locale );
+	if( ! $locale ) { $locale = $with_locale ? 'en_US' : 'en'; }
 	
-	if( bookacti_is_plugin_active( 'qtranslate-x/qtranslate.php' ) || bookacti_is_plugin_active( 'qtranslate-xt/qtranslate.php' ) ) {
-		$translation_plugin = 'qtranslate';
-	} else if ( bookacti_is_plugin_active( 'wpml/wpml.php' ) ) {
-		$translation_plugin = 'wpml';
-	}
-	
-	return apply_filters( 'bookacti_translation_plugin', $translation_plugin );
-}
-
-
-/**
- * Apply bookacti_translate_text filters to a text
- * @since 1.7.0
- * @param string $text
- * @param string $lang
- * @return string
- */
-function bookacti_translate_text( $text, $lang = '' ) {
-	return apply_filters( 'bookacti_translate_text', $text, $lang );
-}
-
-
-// Translate text with qTranslate-XT
-if( bookacti_is_plugin_active( 'qtranslate-x/qtranslate.php' ) || bookacti_is_plugin_active( 'qtranslate-xt/qtranslate.php' ) ) {
-	/**
-	 * Translate a string into the desired language (default to current site language)
-	 * @version 1.12.6
-	 * @param string $text
-	 * @param string $lang Optional. Two letter lang id (e.g. fr or en) or locale id (e.g. fr_FR or en_US).
-	 * @param string $fallback Optional. False to display empty string if the text doesn't exist in the desired language. True to display the text of another existing language.
-	 * @return string
-	 */
-	function bookacti_translate_text_with_qtranslate( $text, $lang = false, $fallback = true ) {
-		if( $lang && is_string( $lang ) && strpos( $lang, '_' ) !== false ) { 
-			$lang = substr( $lang, 0, strpos( $lang, '_' ) );
-		}
-		$qtranslate_show_empty = defined( 'TRANSLATE_SHOW_EMPTY' ) ? TRANSLATE_SHOW_EMPTY : 4;
-		$flags = $fallback ? 0 : $qtranslate_show_empty;
-		return apply_filters( 'translate_text', $text, $lang, $flags );
-	}
-	add_filter( 'bookacti_translate_text', 'bookacti_translate_text_with_qtranslate', 10, 3 );
+	return $locale;
 }
 
 
@@ -765,50 +745,20 @@ function bookacti_get_site_locale( $country_code = true ) {
 }
 
 
-/* 
- * Get site default locale
- * @since 1.12.2
- * @param boolean $country_code Whether to return also country code
- * @return string
- */
-function bookacti_get_site_default_locale( $with_locale = true ) {
-	$locale		= get_locale();
-	$lang_code	= $with_locale ? $locale : substr( $locale, 0, strpos( $locale, '_' ) );
-
-	if( bookacti_is_plugin_active( 'qtranslate-x/qtranslate.php' ) || bookacti_is_plugin_active( 'qtranslate-xt/qtranslate.php' ) ) {
-		global $q_config;
-		if( $q_config && ! empty( $q_config[ 'default_language' ] ) ) { 
-			$lang_code = $q_config[ 'default_language' ];
-			if( $with_locale && $lang_code ) {
-				if( ! empty( $q_config[ 'locale' ][ $lang_code ] ) ) { $lang_code = $q_config[ 'locale' ][ $lang_code ]; }
-			}
-		}
-	} else if ( bookacti_is_plugin_active( 'wpml/wpml.php' ) ) {
-		$lang_code = apply_filters( 'wpml_default_language', NULL );
-		if( $with_locale && $lang_code ) {
-			$languages = apply_filters( 'wpml_active_languages', NULL );
-			if( $languages && ! empty( $languages[ $lang_code ][ 'default_locale' ] ) ) { $lang_code = $languages[ $lang_code ][ 'default_locale' ]; }
-		}
-	}
-	
-	if( ! $lang_code ) { $lang_code = $with_locale ? 'en_US' : 'en'; }
-	
-	return apply_filters( 'bookacti_site_default_locale', $lang_code, $with_locale );
-}
-
-
 /**
  * Switch Booking Activities locale
  * @since 1.2.0
- * @version 1.8.0
+ * @version 1.14.0
+ * @global string $bookacti_locale
  * @param string $locale
  * @return boolean
  */
 function bookacti_switch_locale( $locale ) {
-	if( ! function_exists( 'switch_to_locale' ) ) { return false; }
+	$callback = apply_filters( 'bookacti_switch_locale_callback', 'switch_to_locale', $locale );
+	if( ! function_exists( $callback ) ) { return false; }
 	
 	// Convert lang code to locale
-	if( strpos( $locale, '_' ) === false ) {
+	if( $callback === 'switch_to_locale' && strpos( $locale, '_' ) === false ) {
 		$len = strlen( $locale );
 		$has_locale = false;
 		$available_locales = get_available_languages();
@@ -817,34 +767,62 @@ function bookacti_switch_locale( $locale ) {
 		}
 		if( ! $has_locale ) { return false; }
 	}
-
-	$switched = switch_to_locale( $locale );
-
-	if( $switched ) {
+	
+	$switched_locale = call_user_func( $callback, $locale );
+	
+	if( $switched_locale ) {
+		if( ! is_string( $switched_locale ) ) { $switched_locale = $locale; }
+		
+		// Set $bookacti_locale global affects 'plugin_locale' hook
 		// Filter on plugin_locale so load_plugin_textdomain loads the correct locale.
-		add_filter( 'plugin_locale', function() use ( &$locale ) { return $locale; } );
+		global $bookacti_locale;
+		$bookacti_locale = $switched_locale;
+		
 		// Load textdomain on bookacti_locale_switched
-		do_action( 'bookacti_locale_switched', $locale );
+		do_action( 'bookacti_locale_switched', $switched_locale );
 	}
 	
-	return $switched;
+	return $switched_locale;
 }
 
 
 /**
  * Switch Booking Activities locale back to the original
  * @since 1.2.0
+ * @version 1.14.0
+ * @global string $bookacti_locale
  */
 function bookacti_restore_locale() {
-	if( function_exists( 'restore_previous_locale' ) ) {
-		restore_previous_locale();
-
-		// Filter on plugin_locale so load_plugin_textdomain loads the correct locale.
-		add_filter( 'plugin_locale', 'get_locale' );
-
-		bookacti_load_textdomain();
+	$callback = apply_filters( 'bookacti_restore_locale_callback', 'restore_previous_locale' );
+	if( function_exists( $callback ) ) {
+		$restored_locale = call_user_func( $callback );
+		if( $restored_locale ) {
+			if( ! is_string( $restored_locale ) ) { $restored_locale = function_exists( 'determine_locale' ) ? determine_locale() : get_locale(); }
+			
+			// Set $bookacti_locale global affects 'plugin_locale' hook
+			// Filter on plugin_locale so load_plugin_textdomain loads the correct locale.
+			global $bookacti_locale;
+			$bookacti_locale = $restored_locale;
+			
+			// Load textdomain on bookacti_locale_switched
+			do_action( 'bookacti_locale_restored', $restored_locale );
+		}
 	}
 }
+
+
+/**
+ * Set plugin_locale to $bookacti_locale if defined
+ * @since 1.14.0
+ * @global string $bookacti_locale
+ * @param string $locale
+ * @return string
+ */
+function bookacti_set_plugin_locale( $locale ) {
+	global $bookacti_locale;
+	return ! empty( $bookacti_locale ) ? $bookacti_locale : $locale;
+}
+add_filter( 'plugin_locale', 'bookacti_set_plugin_locale', 100, 1 );
 
 
 /**
@@ -1094,13 +1072,13 @@ function bookacti_display_field( $args ) {
 				/>
 			<?php if( ! empty( $option[ 'label' ] ) ) { ?>
 				<label for='<?php echo esc_attr( $args[ 'id' ] ) . '_' . esc_attr( $option[ 'id' ] ); ?>' >
-					<?php echo apply_filters( 'bookacti_translate_text', $option[ 'label' ] ); ?>
+					<?php echo $option[ 'label' ]; ?>
 				</label>
 			<?php
 				}
 				// Display the tip
 				if( ! empty( $option[ 'description' ] ) ) {
-					$tip = apply_filters( 'bookacti_translate_text', $option[ 'description' ] );
+					$tip = $option[ 'description' ];
 					bookacti_help_tip( $tip );
 				}
 			?>
@@ -1128,13 +1106,13 @@ function bookacti_display_field( $args ) {
 				/>
 			<?php if( $option[ 'label' ] ) { ?>
 				<label for='<?php echo esc_attr( $args[ 'id' ] ) . '_' . esc_attr( $option[ 'id' ] ); ?>' >
-					<?php echo apply_filters( 'bookacti_translate_text', $option[ 'label' ] ); ?>
+					<?php echo $option[ 'label' ]; ?>
 				</label>
 			<?php
 				}
 				// Display the tip
 				if( !empty( $option[ 'description' ] ) ) {
-					$tip = apply_filters( 'bookacti_translate_text', $option[ 'description' ] );
+					$tip = $option[ 'description' ];
 					bookacti_help_tip( $tip );
 				}
 			?>
@@ -1190,7 +1168,7 @@ function bookacti_display_field( $args ) {
 		} 
 		if( $args[ 'label' ] ) { ?>
 		<label for='<?php echo esc_attr( $args[ 'id' ] ); ?>' >
-			<?php echo apply_filters( 'bookacti_translate_text', $args[ 'label' ] ); ?>
+			<?php echo $args[ 'label' ]; ?>
 		</label>
 	<?php
 		}

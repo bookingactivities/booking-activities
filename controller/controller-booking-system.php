@@ -5,12 +5,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * AJAX Controller - Get booking system data by interval (events, groups, and bookings) 
  * @since 1.12.0 (was bookacti_controller_fetch_events)
- * @version 1.12.2
+ * @version 1.14.0
  */
 function bookacti_controller_get_booking_system_data_by_interval() {
 	$atts = isset( $_POST[ 'attributes' ] ) ? ( is_array( $_POST[ 'attributes' ] ) ? $_POST[ 'attributes' ] : ( is_string( $_POST[ 'attributes' ] ) ? bookacti_maybe_decode_json( stripslashes( $_POST[ 'attributes' ] ), true ) : array() ) ) : array();
 	$atts = bookacti_format_booking_system_attributes( $atts );
-	$interval = ! empty( $_POST[ 'interval' ] ) ? bookacti_sanitize_events_interval( $_POST[ 'interval' ] ) : array();
+	$interval = isset( $_POST[ 'interval' ] ) ? ( is_array( $_POST[ 'interval' ] ) ? $_POST[ 'interval' ] : ( is_string( $_POST[ 'interval' ] ) ? bookacti_maybe_decode_json( stripslashes( $_POST[ 'interval' ] ), true ) : array() ) ) : array();
+	$interval = $interval ? bookacti_sanitize_events_interval( $interval ) : array();
 	
 	$atts[ 'start' ] = ! empty( $interval[ 'start' ] ) ? $interval[ 'start' ] : '';
 	$atts[ 'end' ] = ! empty( $interval[ 'end' ] ) ? $interval[ 'end' ] : '';
@@ -38,7 +39,7 @@ add_action( 'wp_ajax_nopriv_bookactiGetBookingSystemDataByInterval', 'bookacti_c
 /**
  * Reload booking system with new attributes via AJAX
  * @since 1.1.0
- * @version 1.12.0
+ * @version 1.14.0
  */
 function bookacti_controller_reload_booking_system() {
 	$atts = isset( $_POST[ 'attributes' ] ) ? ( is_array( $_POST[ 'attributes' ] ) ? $_POST[ 'attributes' ] : ( is_string( $_POST[ 'attributes' ] ) ? bookacti_maybe_decode_json( stripslashes( $_POST[ 'attributes' ] ), true ) : array() ) ) : array();
@@ -57,16 +58,10 @@ function bookacti_controller_reload_booking_system() {
 	// Let plugins define what data should be passed to JS
 	$public_booking_system_data = apply_filters( 'bookacti_public_booking_system_data', array_merge( $booking_system_data, array( 'user_id' => $public_user_id ) ), $atts );
 	
-	$nonces = apply_filters( 'bookacti_booking_system_nonces', array(
-		'nonce_booking_form'		=> wp_create_nonce( 'bookacti_booking_form' ),
-		'nonce_forgotten_password'	=> wp_create_nonce( 'bookacti_forgotten_password' ),
-	), $public_booking_system_data, $atts );
-	
 	bookacti_send_json( array( 
 		'status'				=> 'success', 
 		'html_elements'			=> $html_elements, 
-		'booking_system_data'	=> $public_booking_system_data,
-		'nonces'				=> $nonces
+		'booking_system_data'	=> $public_booking_system_data
 	), 'reload_booking_system' );
 }
 add_action( 'wp_ajax_bookactiReloadBookingSystem', 'bookacti_controller_reload_booking_system' );

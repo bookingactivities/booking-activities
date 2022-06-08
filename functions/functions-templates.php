@@ -128,7 +128,7 @@ function bookacti_get_activity_managers( $activity_ids ) {
 
 /**
  * Retrieve template activities list
- * @version 1.12.0
+ * @version 1.14.0
  * @param array $activities see bookacti_get_activities_by_template
  * @param int $template_id
  * @return string 
@@ -149,7 +149,7 @@ function bookacti_get_template_activities_list( $activities, $template_id = 0 ) 
 	
 	ob_start();
 	foreach( $ordered_activities as $activity ) {
-		$title = apply_filters( 'bookacti_translate_text', $activity[ 'title' ] );
+		$title = $activity[ 'title' ];
 		?>
 		<div class='bookacti-activity' data-activity-id='<?php echo esc_attr( $activity[ 'id' ] ); ?>'>
 			<div class='bookacti-activity-visibility dashicons dashicons-visibility' data-activity-visible='1'></div>

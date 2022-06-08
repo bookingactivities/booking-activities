@@ -3,13 +3,13 @@
  * Plugin Name: Booking Activities
  * Plugin URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Description: Booking system specialized in activities (sports, cultural, leisure, events...). Works great with WooCommerce.
- * Version: 1.13.0
+ * Version: 1.14.0
  * Author: Booking Activities Team
  * Author URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Text Domain: booking-activities
  * Domain Path: /languages/
  * WC requires at least: 3.0
- * WC tested up to: 6.3
+ * WC tested up to: 6.6
  * License: GPL3
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  * 
@@ -40,7 +40,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 // GLOBALS AND CONSTANTS
-if( ! defined( 'BOOKACTI_VERSION' ) )		{ define( 'BOOKACTI_VERSION', '1.13.0' ); }
+if( ! defined( 'BOOKACTI_VERSION' ) )		{ define( 'BOOKACTI_VERSION', '1.14.0' ); }
 if( ! defined( 'BOOKACTI_PLUGIN_NAME' ) )	{ define( 'BOOKACTI_PLUGIN_NAME', 'booking-activities' ); }
 
 
@@ -68,8 +68,9 @@ function bookacti_load_textdomain( $locale = '' ) {
 	// Fallback on .mo from wp-content/plugins/booking-activities/languages
 	load_plugin_textdomain( 'booking-activities', false, plugin_basename( dirname( __FILE__ ) ) . '/languages/' ); 
 }
-add_action( 'plugins_loaded', 'bookacti_load_textdomain' );
-add_action( 'bookacti_locale_switched', 'bookacti_load_textdomain' );
+add_action( 'init', 'bookacti_load_textdomain', 5 );
+add_action( 'bookacti_locale_switched', 'bookacti_load_textdomain', 10, 1 );
+add_action( 'bookacti_locale_restored', 'bookacti_load_textdomain', 10, 1 );
 
 
 
@@ -83,6 +84,7 @@ include_once( 'functions/functions-bookings.php' );
 include_once( 'functions/functions-forms.php' );
 include_once( 'functions/functions-settings.php' );
 include_once( 'functions/functions-notifications.php' );
+include_once( 'functions/functions-i18n.php' );
 
 include_once( 'controller/controller-templates.php' );
 include_once( 'controller/controller-booking-system.php' );
@@ -91,6 +93,7 @@ include_once( 'controller/controller-notifications.php' );
 include_once( 'controller/controller-bookings.php' );
 include_once( 'controller/controller-forms.php' );
 include_once( 'controller/controller-shortcodes.php' );
+include_once( 'controller/controller-i18n.php' );
 include_once( 'controller/controller-legacy.php' );
 
 

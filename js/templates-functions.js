@@ -884,15 +884,14 @@ function bookacti_clear_events_on_calendar_editor() {
 /**
  * Update event dates (move or resize an event)
  * @since 1.10.0
- * @version 1.12.0
+ * @version 1.14.0
  * @param {object} event
- * @param {object} delta
+ * @param {object} old_event
  * @param {callable} revertFunc
  * @param {string} is_dialog 'normal' or 'booked'
  */
-function bookacti_update_event_dates( event, delta, revertFunc, is_dialog ) {
+function bookacti_update_event_dates( event, old_event, revertFunc, is_dialog ) {
 	// Sanitize params
-	delta = typeof delta !== 'undefined' ? delta : { '_days': 0 };
 	revertFunc = typeof revertFunc !== 'undefined' && revertFunc !== false ? revertFunc : false;
 	is_dialog = typeof is_dialog !== 'undefined' ? is_dialog : '';
 	
@@ -921,22 +920,24 @@ function bookacti_update_event_dates( event, delta, revertFunc, is_dialog ) {
 	}
 	
 	// Update the event changes in database
-	var event_id	= event.id;
-	var start		= moment.utc( event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
-	var end			= ! event.end ? start : moment.utc( event.end ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
-	var delta_days	= delta._days;
-	var interval	= bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_interval' ];
-	var data		= $j.extend( { 
+	var event_id  = event.id;
+	var start     = moment.utc( event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
+	var end       = ! event.end ? start : moment.utc( event.end ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
+	var old_start = moment.utc( old_event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
+	var old_end   = ! old_event.end ? old_start : moment.utc( old_event.end ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
+	var interval  = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_interval' ];
+	var data      = $j.extend( { 
 		'action': 'bookactiUpdateEventDates',
 		'event_id': event_id, 
 		'event_start': start, 
 		'event_end': end,
-		'delta_days': delta_days, 
+		'old_event_start': old_start, 
+		'old_event_end': old_end,
 		'interval': interval,
 		'nonce': $j( '#nonce_edit_template' ).val()
 	}, form_data );
 	
-	$j( '#bookacti-template-calendar' ).trigger( 'bookacti_update_event_dates_before', [ event, data, delta, revertFunc ] );
+	$j( '#bookacti-template-calendar' ).trigger( 'bookacti_update_event_dates_before', [ event, data, old_event, revertFunc ] );
 
 	bookacti_start_template_loading();
 
@@ -947,8 +948,8 @@ function bookacti_update_event_dates( event, delta, revertFunc, is_dialog ) {
 		dataType: 'json',
 		success: function( response ) {
 			if( response.status === 'success' ) { 
-				var start_time	= moment.utc( event.start ).clone().locale( 'en' ).format( 'HH:mm:ss' );
-				var end_time	= moment.utc( event.end ).clone().locale( 'en' ).format( 'HH:mm:ss' );
+				var delta_start = moment.duration( moment.utc( start ).diff( moment.utc( old_start ) ) );
+				var delta_end   = moment.duration( moment.utc( end ).diff( moment.utc( old_end ) ) );
 
 				// Update event data
 				if( ! $j.isEmptyObject( response.event_data ) ) {
@@ -958,8 +959,8 @@ function bookacti_update_event_dates( event, delta, revertFunc, is_dialog ) {
 				// Update selected events
 				$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ], function( i, selected_event ) {
 					if( selected_event.id == event.id ) {
-						var event_start	= moment.utc( selected_event.start ).clone().locale( 'en' ).add( delta_days, 'days' ).format( 'YYYY-MM-DD' ) + ' ' + start_time;
-						var event_end	= moment.utc( selected_event.end ).clone().locale( 'en' ).add( delta_days, 'days' ).format( 'YYYY-MM-DD' ) + ' ' + end_time;
+						var event_start	= moment.utc( selected_event.start ).clone().locale( 'en' ).add( delta_start ).format( 'YYYY-MM-DD HH:mm:ss' );
+						var event_end	= moment.utc( selected_event.end ).clone().locale( 'en' ).add( delta_end ).format( 'YYYY-MM-DD HH:mm:ss' );
 						selected_event.start = event_start;
 						selected_event.end = event_end;
 					}
@@ -970,8 +971,8 @@ function bookacti_update_event_dates( event, delta, revertFunc, is_dialog ) {
 					$j.each( group_occurrences, function( group_date, group_events ) {
 						$j.each( group_events, function( i, group_event ) {
 							if( group_event.id == event.id ) {
-								group_event.start	= moment.utc( group_event.start ).clone().locale( 'en' ).add( delta_days, 'days' ).format( 'YYYY-MM-DD' ) + ' ' + start_time;
-								group_event.end		= moment.utc( group_event.end ).clone().locale( 'en' ).add( delta_days, 'days' ).format( 'YYYY-MM-DD' ) + ' ' + end_time;
+								group_event.start	= moment.utc( group_event.start ).clone().locale( 'en' ).add( delta_start ).format( 'YYYY-MM-DD HH:mm:ss' );
+								group_event.end		= moment.utc( group_event.end ).clone().locale( 'en' ).add( delta_end ).format( 'YYYY-MM-DD HH:mm:ss' );
 							}
 						});
 					});
@@ -979,8 +980,8 @@ function bookacti_update_event_dates( event, delta, revertFunc, is_dialog ) {
 				$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_data' ], function( group_id, group_data ) {
 					$j.each( group_data[ 'events' ], function( i, group_event ) {
 						if( group_event.id == event.id ) {
-							group_event.start	= moment.utc( group_event.start ).clone().locale( 'en' ).add( delta_days, 'days' ).format( 'YYYY-MM-DD' ) + ' ' + start_time;
-							group_event.end		= moment.utc( group_event.end ).clone().locale( 'en' ).add( delta_days, 'days' ).format( 'YYYY-MM-DD' ) + ' ' + end_time;
+							group_event.start	= moment.utc( group_event.start ).clone().locale( 'en' ).add( delta_start ).format( 'YYYY-MM-DD HH:mm:ss' );
+							group_event.end		= moment.utc( group_event.end ).clone().locale( 'en' ).add( delta_end ).format( 'YYYY-MM-DD HH:mm:ss' );
 						}
 					});
 				});
@@ -989,7 +990,7 @@ function bookacti_update_event_dates( event, delta, revertFunc, is_dialog ) {
 				var event_bookings = {};
 				if( typeof bookacti.booking_system[ 'bookacti-template-calendar' ][ 'bookings' ][ event_id ] !== 'undefined' ) {
 					$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'bookings' ][ event_id ], function( old_event_start, bookings_nb_data ) {
-						var new_event_start = moment.utc( old_event_start ).clone().locale( 'en' ).add( delta_days, 'days' ).format( 'YYYY-MM-DD' ) + ' ' + start_time;
+						var new_event_start = moment.utc( old_event_start ).clone().locale( 'en' ).add( delta_start ).format( 'YYYY-MM-DD HH:mm:ss' );
 						event_bookings[ new_event_start ] = $j.extend( {}, bookings_nb_data );
 					});
 					if( $j.isEmptyObject( event_bookings ) ) { delete bookacti.booking_system[ 'bookacti-template-calendar' ][ 'bookings' ][ event_id ]; }
@@ -1018,7 +1019,7 @@ function bookacti_update_event_dates( event, delta, revertFunc, is_dialog ) {
 					if( dialog_id ) { $j( '#' + dialog_id ).dialog( 'close' ); }
 					
 					// Open the booked event dialog
-					bookacti_dialog_update_booked_event_dates( event, delta, revertFunc );
+					bookacti_dialog_update_booked_event_dates( event, old_event, revertFunc );
 					
 					// Display the number of bookings to be rescheduled and the number of users to be notified
 					$j( '#bookacti-update-booked-event-dates-intro' ).append( '<span class="bookacti-bookings-nb">' + response.bookings_nb + '</span>' );

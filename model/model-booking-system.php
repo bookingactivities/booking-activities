@@ -603,28 +603,28 @@ function bookacti_get_groups_of_events( $raw_args = array() ) {
 /**
  * Get the grouped events per group
  * @since 1.1.0
- * @version 1.12.0
+ * @version 1.14.0
  * @global wpdb $wpdb
  * @param array $raw_args
  * @return array
  */
 function bookacti_get_groups_events( $raw_args = array() ) {
 	$default_args = array(
-		'templates' => array(),
+		'templates'        => array(),
 		'group_categories' => array(),
-		'event_groups' => array()
+		'event_groups'     => array()
 	);
 	$args = wp_parse_args( $raw_args, $default_args );
 	
 	global $wpdb;
 
-	$query  = 'SELECT GE.group_id, GE.event_id as id, GE.event_start as start, GE.event_end as end, E.title, E.template_id, A.color, IFNULL( NULLIF( GE.activity_id, 0 ), E.activity_id ) as activity_id '
-			. ' FROM ' . BOOKACTI_TABLE_GROUPS_EVENTS . ' as GE ' 
-			. ' LEFT JOIN ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as G ON GE.group_id = G.id ' 
-			. ' LEFT JOIN ' . BOOKACTI_TABLE_EVENTS . ' as E ON GE.event_id = E.id ' 
-			. ' LEFT JOIN ' . BOOKACTI_TABLE_ACTIVITIES . ' as A ON IFNULL( NULLIF( GE.activity_id, 0 ), E.activity_id ) = A.id ' 
-			. ' WHERE NULLIF( GE.group_id, 0 ) IS NOT NULL '
-			. ' AND E.active = 1 ';
+	$query = 'SELECT GE.group_id, GE.event_id as id, GE.event_start as start, GE.event_end as end, E.title, E.template_id, A.color, IFNULL( NULLIF( GE.activity_id, 0 ), E.activity_id ) as activity_id '
+	       . ' FROM ' . BOOKACTI_TABLE_GROUPS_EVENTS . ' as GE ' 
+	       . ' LEFT JOIN ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as G ON GE.group_id = G.id ' 
+	       . ' LEFT JOIN ' . BOOKACTI_TABLE_EVENTS . ' as E ON GE.event_id = E.id ' 
+	       . ' LEFT JOIN ' . BOOKACTI_TABLE_ACTIVITIES . ' as A ON IFNULL( NULLIF( GE.activity_id, 0 ), E.activity_id ) = A.id ' 
+	       . ' WHERE NULLIF( GE.group_id, 0 ) IS NOT NULL '
+	       . ' AND E.active = 1 ';
 
 	$variables = array();
 
@@ -675,7 +675,7 @@ function bookacti_get_groups_events( $raw_args = array() ) {
 	// Order by groups
 	$groups_events = array();
 	foreach( $events as $event ) {
-		$event[ 'title' ] = apply_filters( 'bookacti_translate_text', $event[ 'title' ] );
+		$event[ 'title' ] = ! empty( $event[ 'title' ] ) ? apply_filters( 'bookacti_translate_text', $event[ 'title' ] ) : '';
 		$group_id = intval( $event[ 'group_id' ] );
 		if( ! isset( $groups_events[ $group_id ] ) ) { $groups_events[ $group_id ] = array(); }
 		$groups_events[ $group_id ][] = $event;
@@ -692,7 +692,7 @@ function bookacti_get_groups_events( $raw_args = array() ) {
 /**
  * Retrieve group categories data by id
  * @since 1.1.0
- * @version 1.12.0
+ * @version 1.14.0
  * @global wpdb $wpdb
  * @param array $raw_args {
  *  @type array $templates
@@ -709,9 +709,9 @@ function bookacti_get_group_categories( $raw_args = array() ) {
 	
 	global $wpdb;
 
-	$query	= ' SELECT C.id, C.template_id, C.title, C.active '
-			. ' FROM ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' as C '
-			. ' WHERE C.active = 1 ';
+	$query = ' SELECT C.id, C.template_id, C.title, C.active '
+	       . ' FROM ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' as C '
+	       . ' WHERE C.active = 1 ';
 
 	$variables = array();
 
@@ -758,9 +758,9 @@ function bookacti_get_group_categories( $raw_args = array() ) {
 	
 	$categories_data = array();
 	foreach( $categories as $category ) {
-		$category[ 'multilingual_title' ]	= $category[ 'title' ];
-		$category[ 'title' ]				= apply_filters( 'bookacti_translate_text', $category[ 'title' ] );
-		$category[ 'settings' ]				= ! empty( $categories_meta[ $category[ 'id' ] ] ) ? $categories_meta[ $category[ 'id' ] ] : array();
+		$category[ 'multilingual_title' ]     = $category[ 'title' ];
+		$category[ 'title' ]                  = ! empty( $category[ 'title' ] ) ? apply_filters( 'bookacti_translate_text', $category[ 'title' ] ) : '';
+		$category[ 'settings' ]               = ! empty( $categories_meta[ $category[ 'id' ] ] ) ? $categories_meta[ $category[ 'id' ] ] : array();
 		$categories_data[ $category[ 'id' ] ] = $category;
 	}
 

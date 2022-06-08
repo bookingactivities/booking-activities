@@ -135,20 +135,20 @@ function bookacti_get_bookings( $filters ) {
 	global $wpdb;
 	
 	// Set current datetime
-	$timezone					= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
-	$current_datetime_object	= new DateTime( 'now', $timezone );
-	$user_timestamp_offset		= $current_datetime_object->format( 'P' );
+	$timezone                = new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
+	$current_datetime_object = new DateTime( 'now', $timezone );
+	$user_timestamp_offset   = $current_datetime_object->format( 'P' );
 	
 	// Merge single id to multiple ids array
-	if( is_numeric( $filters[ 'booking_id' ] ) && $filters[ 'booking_id' ] )				{ $filters[ 'in__booking_id' ][] = $filters[ 'booking_id' ]; }
-	if( is_numeric( $filters[ 'booking_group_id' ] ) && $filters[ 'booking_group_id' ] )	{ $filters[ 'in__booking_group_id' ][] = $filters[ 'booking_group_id' ]; }
-	if( is_numeric( $filters[ 'event_group_id' ] ) && $filters[ 'event_group_id' ] )		{ $filters[ 'in__event_group_id' ][] = $filters[ 'event_group_id' ]; }
-	if( is_numeric( $filters[ 'group_category_id' ] ) && $filters[ 'group_category_id' ] )	{ $filters[ 'in__group_category_id' ][] = $filters[ 'group_category_id' ]; }
-	if( is_numeric( $filters[ 'event_id' ] ) && $filters[ 'event_id' ] )					{ $filters[ 'in__event_id' ][] = $filters[ 'event_id' ]; }
-	if( is_numeric( $filters[ 'form_id' ] ) && $filters[ 'form_id' ] )						{ $filters[ 'in__form_id' ][] = $filters[ 'form_id' ]; }
-	if( $filters[ 'user_id' ] )																{ $filters[ 'in__user_id' ][] = $filters[ 'user_id' ]; }
+	if( is_numeric( $filters[ 'booking_id' ] ) && $filters[ 'booking_id' ] )               { $filters[ 'in__booking_id' ][] = $filters[ 'booking_id' ]; }
+	if( is_numeric( $filters[ 'booking_group_id' ] ) && $filters[ 'booking_group_id' ] )   { $filters[ 'in__booking_group_id' ][] = $filters[ 'booking_group_id' ]; }
+	if( is_numeric( $filters[ 'event_group_id' ] ) && $filters[ 'event_group_id' ] )       { $filters[ 'in__event_group_id' ][] = $filters[ 'event_group_id' ]; }
+	if( is_numeric( $filters[ 'group_category_id' ] ) && $filters[ 'group_category_id' ] ) { $filters[ 'in__group_category_id' ][] = $filters[ 'group_category_id' ]; }
+	if( is_numeric( $filters[ 'event_id' ] ) && $filters[ 'event_id' ] )                   { $filters[ 'in__event_id' ][] = $filters[ 'event_id' ]; }
+	if( is_numeric( $filters[ 'form_id' ] ) && $filters[ 'form_id' ] )                     { $filters[ 'in__form_id' ][] = $filters[ 'form_id' ]; }
+	if( $filters[ 'user_id' ] )                                                            { $filters[ 'in__user_id' ][] = $filters[ 'user_id' ]; }
 	
-	$query_select	= ' SELECT DISTINCT B.id, B.user_id, B.order_id, B.form_id, B.group_id, B.event_id, B.event_start, B.event_end, B.state, B.payment_status, B.creation_date, B.expiration_date, B.quantity, B.active, IF( B.group_id IS NULL, B.id, CONCAT( "G", B.group_id ) ) as unique_group_id,'
+	$query_select = ' SELECT DISTINCT B.id, B.user_id, B.order_id, B.form_id, B.group_id, B.event_id, B.event_start, B.event_end, B.state, B.payment_status, B.creation_date, B.expiration_date, B.quantity, B.active, IF( B.group_id IS NULL, B.id, CONCAT( "G", B.group_id ) ) as unique_group_id,'
 					. ' E.title as event_title, E.active as event_active,'
 					. ' A.id as activity_id, A.title as activity_title, A.active as activity_active,'
 					. ' T.id as template_id, T.title as template_title, T.active as template_active,'
@@ -490,9 +490,9 @@ function bookacti_get_bookings( $filters ) {
 	
 	$bookings = $wpdb->get_results( $query, OBJECT );
 	
-	$bookings_array		= array();
-	$booking_ids		= array();
-	$booking_group_ids	= array();
+	$bookings_array    = array();
+	$booking_ids       = array();
+	$booking_group_ids = array();
 	foreach( $bookings as $booking ) {
 		$bookings_array[ $booking->id ] = $booking;
 		$booking_ids[] = $booking->id;
@@ -503,8 +503,8 @@ function bookacti_get_bookings( $filters ) {
 	
 	if( $filters[ 'fetch_meta' ] ) {
 		// Get the bookings meta and the booking groups meta
-		$bookings_meta			= $booking_ids ? bookacti_get_metadata( 'booking', $booking_ids ) : array();
-		$booking_groups_meta	= $booking_group_ids ? bookacti_get_metadata( 'booking_group', $booking_group_ids ) : array();
+		$bookings_meta       = $booking_ids ? bookacti_get_metadata( 'booking', $booking_ids ) : array();
+		$booking_groups_meta = $booking_group_ids ? bookacti_get_metadata( 'booking_group', $booking_group_ids ) : array();
 		foreach( $bookings_array as $booking_id => $booking ) {
 			// Merge the booking group meta with the booking meta
 			$booking_meta = array();
@@ -1519,7 +1519,7 @@ function bookacti_cancel_event_bookings( $event_id, $filters = array() ) {
 	
 	$query		= $wpdb->prepare( $query, $variables );
 	$cancelled	= $wpdb->query( $query );
-
+	
 	return $cancelled;
 }
 
@@ -1809,23 +1809,22 @@ function bookacti_delete_booking( $booking_id ) {
 
 /**
  * Update specific bookings dates with a relative amount of seconds
- * @version 1.10.0
+ * @version 1.14.0
  * @global wpdb $wpdb
  * @param array $booking_ids
- * @param int $delta_seconds
- * @param string $event_start_time Set a fixed start time (H:i:s). Empty string to use the current start time.
- * @param string $event_end_time Set a fixed end time (H:i:s). Empty string to use the current end time.
+ * @param int $delta_seconds_start
+ * @param int $delta_seconds_end
  * @return int|false
  */
-function bookacti_shift_bookings_dates( $booking_ids, $delta_seconds = 0, $event_start_time = '', $event_end_time = '' ) {
+function bookacti_shift_bookings_dates( $booking_ids, $delta_seconds_start = 0, $delta_seconds_end = 0 ) {
 	global $wpdb;
 
 	$query	= 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS
-			. ' SET  event_start = IF( %s = "", DATE_ADD( event_start, INTERVAL %d SECOND ), CONCAT( DATE( DATE_ADD( event_start, INTERVAL %d SECOND ) ), " ", %s ) ), '
-				.  ' event_end = IF( %s = "", DATE_ADD( event_end, INTERVAL %d SECOND ), CONCAT( DATE( DATE_ADD( event_end, INTERVAL %d SECOND ) ), " ", %s ) ) '
+			. ' SET  event_start = DATE_ADD( event_start, INTERVAL %d SECOND ), '
+				.  ' event_end = DATE_ADD( event_end, INTERVAL %d SECOND ) '
 			. ' WHERE id IN ( ';
 	
-	$variables = array( $event_start_time, $delta_seconds, $delta_seconds, $event_start_time, $event_end_time, $delta_seconds, $delta_seconds, $event_end_time );
+	$variables = array( $delta_seconds_start, $delta_seconds_end );
 	
 	if( $booking_ids ) {
 		$query .= '%d';

@@ -129,12 +129,14 @@ $j( document ).ready( function() {
 	/**
 	 * Go to a specific date in calendar
 	 * @since 1.12.0
+	 * @version 1.14.0
 	 */
 	$j( 'body' ).on( 'change', '.bookacti-go-to-datepicker', function() {
 		var date = $j( this ).val();
 		var calendar = $j( this ).closest( '.bookacti-calendar' );
 		if( ! date || ! calendar ) { return; }
 		if( ! calendar.hasClass( 'fc' ) ) { return; }
+		if( parseInt( date.substr( 0, 4 ) ) < 1970 ) { return; }
 		calendar.fullCalendar( 'gotoDate', date );
 	});
 	

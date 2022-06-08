@@ -1,6 +1,7 @@
 /**
  * Get booking system data by interval (events, groups, and bookings) 
  * @since 1.12.0 (was bookacti_fetch_events)
+ * @version 1.14.0
  * @param {HTMLElement} booking_system
  * @param {object} interval
  */
@@ -9,7 +10,7 @@ function bookacti_get_booking_system_data_by_interval( booking_system, interval 
 	var original_attributes	= $j.extend( true, {}, bookacti.booking_system[ booking_system_id ] );
 	var attributes			= bookacti_get_booking_system_attributes_without_data( booking_system );
 	
-	interval = interval ? interval : attributes[ 'events_interval' ];
+	interval = interval ? interval : $j.extend( true, {}, original_attributes[ 'events_interval' ] );
 	
 	// Update events interval before success to prevent to fetch the same interval twice
 	bookacti.booking_system[ booking_system_id ][ 'events_interval' ] = bookacti_get_extended_events_interval( booking_system, interval );
@@ -22,7 +23,7 @@ function bookacti_get_booking_system_data_by_interval( booking_system, interval 
         data: { 
 			'action': 'bookactiGetBookingSystemDataByInterval', 
 			'attributes': JSON.stringify( attributes ),
-			'interval': interval
+			'interval': JSON.stringify( interval )
 		},
         dataType: 'json',
         success: function( response ) {
@@ -102,7 +103,7 @@ function bookacti_get_booking_system_data_by_interval( booking_system, interval 
 
 /**
  * Reload a booking system
- * @version 1.12.0
+ * @version 1.14.0
  * @param {HTMLElement} booking_system
  * @param {boolean} keep_picked_events
  */
@@ -140,15 +141,6 @@ function bookacti_reload_booking_system( booking_system, keep_picked_events ) {
 				
 				// Fill the booking method elements
 				booking_system.append( response.html_elements );
-				
-				// Update nonce
-				if( response.nonces ) {
-					$j.each( response.nonces, function( input_name, input_value ) {
-						if( $j( 'input[type="hidden"][name="' + input_name + '"]' ).length ) {
-							$j( 'input[type="hidden"][name="' + input_name + '"]' ).val( input_value );
-						}
-					});
-				}
 				
 				// Load the booking method
 				bookacti_booking_method_set_up( booking_system );

@@ -237,7 +237,7 @@ add_action( 'wp_ajax_nopriv_bookactiRefundBooking', 'bookacti_controller_refund_
 
 /**
  * AJAX Controller - Change booking state
- * @version 1.12.3
+ * @version 1.14.0
  */
 function bookacti_controller_change_booking_state() {
 	$booking_id = intval( $_POST[ 'booking_id' ] );
@@ -280,7 +280,7 @@ function bookacti_controller_change_booking_state() {
 			bookacti_send_json( array( 'status' => 'failed', 'error' => 'error_update_booking_status', 'message' => esc_html__( 'An error occurred while trying to change the booking status.', 'booking-activities' ) ), 'change_booking_status' );
 		}
 
-		do_action( 'bookacti_booking_state_changed', $booking, $new_booking_state, array( 'is_admin' => $is_admin, 'active' => $active, 'send_notifications' => $send_notifications ) );
+		do_action( 'bookacti_booking_state_changed', $booking, $new_booking_state, array( 'is_admin' => $is_admin, 'send_notifications' => $send_notifications ) );
 	}
 
 	// Change payment status
@@ -354,7 +354,7 @@ add_action( 'wp_ajax_bookactiChangeBookingQuantity', 'bookacti_controller_change
 /**
  * AJAX Controller - Get reschedule booking system data by booking ID
  * @since 1.8.0 (was bookacti_controller_get_booking_data)
- * @version 1.12.0
+ * @version 1.14.0
  */
 function bookacti_controller_get_reschedule_booking_system_data() {
 	$booking_id	= intval( $_POST[ 'booking_id' ] );
@@ -406,7 +406,7 @@ function bookacti_controller_get_reschedule_booking_system_data() {
 	}
 
 	// Add the rescheduled booking data to the booking system data
-	$atts[ 'rescheduled_booking_data' ] = (array) apply_filters( 'bookacti_rescheduled_booking_data', $booking, $is_admin ? 'admin' : 'front' );
+	$atts[ 'rescheduled_booking_data' ] = (array) apply_filters( 'bookacti_rescheduled_booking_data', $booking );
 
 	$atts = apply_filters( 'bookacti_reschedule_booking_system_attributes', $atts, $booking, $init_atts, $mixed_data );
 
@@ -742,7 +742,7 @@ add_action( 'wp_ajax_nopriv_bookactiRefundBookingGroup', 'bookacti_controller_re
 /**
  * AJAX Controller - Change booking group state
  * @since 1.1.0
- * @version 1.12.3
+ * @version 1.14.0
  */
 function bookacti_controller_change_booking_group_state() {
 	$booking_group_id = intval( $_POST[ 'booking_id' ] );
@@ -787,7 +787,7 @@ function bookacti_controller_change_booking_group_state() {
 			bookacti_send_json( array( 'status' => 'failed', 'error' => 'error_update_booking_group_status', 'message' => esc_html__( 'An error occurred while trying to change the booking group status.', 'booking-activities' ) ), 'change_booking_group_status' );
 		}
 
-		do_action( 'bookacti_booking_group_state_changed', $booking_group_id, $bookings, $new_booking_state, array( 'is_admin' => $is_admin, 'active' => $active, 'send_notifications' => $send_notifications ) );
+		do_action( 'bookacti_booking_group_state_changed', $booking_group_id, $bookings, $new_booking_state, array( 'is_admin' => $is_admin, 'send_notifications' => $send_notifications ) );
 	}
 
 	// Change payment status
@@ -1093,7 +1093,7 @@ add_action( 'wp_ajax_bookactiExportBookingsUrl', 'bookacti_controller_generate_e
 /**
  * Export bookings according to filters
  * @since 1.6.0
- * @version 1.12.0
+ * @version 1.14.0
  */
 function bookacti_export_bookings_page() {
 	if( empty( $_REQUEST[ 'action' ] ) ) { return; }
@@ -1173,32 +1173,32 @@ function bookacti_export_bookings_page() {
 	
 	// Temporarily switch locale to the desired one or user default's
 	$locale = ! empty( $args[ 'lang' ] ) ? $args[ 'lang' ] : bookacti_get_user_locale( $user_id, 'site' );
-	bookacti_switch_locale( $locale );
+	$lang_switched = bookacti_switch_locale( $locale );
 	
 	// Generate export according to type
 	if( $export_type === 'csv' ) { 
 		$csv_args = apply_filters( 'bookacti_export_bookings_csv_args', array(
-			'columns'	=> $columns,
-			'raw'		=> ! empty( $args[ 'raw' ] ) ? 1 : 0,
-			'locale'	=> $locale
+			'columns' => $columns,
+			'raw'     => ! empty( $args[ 'raw' ] ) ? 1 : 0,
+			'locale'  => $locale
 		) );
 		echo bookacti_convert_bookings_to_csv( $filters, $csv_args );
 	
 	} else if( $export_type === 'ical' ) { 
 		$ical_args = apply_filters( 'bookacti_export_bookings_ical_args', array( 
-			'vevent_summary'		=> isset( $args[ 'vevent_summary' ] ) ? utf8_decode( urldecode( trim( $args[ 'vevent_summary' ] ) ) ) : $user_settings[ 'vevent_summary' ],
-			'vevent_description'	=> isset( $args[ 'vevent_description' ] ) ? utf8_decode( urldecode( str_replace( array( '%0A', '%250A' ), '\n', trim( $args[ 'vevent_description' ] ) ) ) ) : $user_settings[ 'vevent_description' ],
-			'tooltip_booking_list_columns'	=> $columns,
-			'booking_list_header'	=> ! empty( $args[ 'booking_list_header' ] ) ? 1 : 0,
-			'raw'					=> ! empty( $args[ 'raw' ] ) ? 1 : 0,
-			'sequence'				=> ! empty( $args[ 'sequence' ] ) ? intval( $args[ 'sequence' ] ) : 0,
-			'locale'				=> $locale
+			'vevent_summary'               => isset( $args[ 'vevent_summary' ] ) ? utf8_decode( urldecode( trim( $args[ 'vevent_summary' ] ) ) ) : $user_settings[ 'vevent_summary' ],
+			'vevent_description'           => isset( $args[ 'vevent_description' ] ) ? utf8_decode( urldecode( str_replace( array( '%0A', '%250A' ), '\n', trim( $args[ 'vevent_description' ] ) ) ) ) : $user_settings[ 'vevent_description' ],
+			'tooltip_booking_list_columns' => $columns,
+			'booking_list_header'          => ! empty( $args[ 'booking_list_header' ] ) ? 1 : 0,
+			'raw'                          => ! empty( $args[ 'raw' ] ) ? 1 : 0,
+			'sequence'                     => ! empty( $args[ 'sequence' ] ) ? intval( $args[ 'sequence' ] ) : 0,
+			'locale'                       => $locale
 		) );
 		echo bookacti_convert_bookings_to_ical( $filters, $ical_args );
 	}
 	
 	// Switch locale back to normal
-	bookacti_restore_locale();
+	if( $lang_switched ) { bookacti_restore_locale(); }
 	
 	// Increment the expiry date and sequence
 	if( $export_id ) { bookacti_update_export( $export_id ); }
@@ -1211,6 +1211,7 @@ add_action( 'init', 'bookacti_export_bookings_page', 10 );
 /**
  * Export a user's bookings events as iCal
  * @since 1.12.0 (was bookacti_export_user_booked_events_page)
+ * @version 1.14.0
  */
 function bookacti_export_user_bookings_events_page() {
 	if( empty( $_REQUEST[ 'action' ] ) ) { return; }
@@ -1244,22 +1245,22 @@ function bookacti_export_user_bookings_events_page() {
 	
 	// Temporarily switch locale to the desired one or user default's
 	$locale = ! empty( $_REQUEST[ 'lang' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'lang' ] ) : bookacti_get_user_locale( $user_id, 'site' );
-	bookacti_switch_locale( $locale );
+	$lang_switched = bookacti_switch_locale( $locale );
 	
 	$ical_args = apply_filters( 'bookacti_export_user_bookings_events_ical_args', array( 
-		'vevent_summary'		=> '{event_title}',
-		'vevent_description'	=> '',
-		'tooltip_booking_list_columns'	=> array(),
-		'booking_list_header'	=> 0,
-		'raw'					=> 0,
-		'sequence'				=> $sequence,
-		'locale'				=> $locale
+		'vevent_summary'               => '{event_title}',
+		'vevent_description'           => '',
+		'tooltip_booking_list_columns' => array(),
+		'booking_list_header'          => 0,
+		'raw'                          => 0,
+		'sequence'                     => $sequence,
+		'locale'                       => $locale
 	) );
 	
 	echo bookacti_convert_bookings_to_ical( $filters, $ical_args );
 
 	// Switch locale back to normal
-	bookacti_restore_locale();
+	if( $lang_switched ) { bookacti_restore_locale(); }
 	
 	exit;
 }
@@ -1269,14 +1270,15 @@ add_action( 'init', 'bookacti_export_user_bookings_events_page', 10 );
 /**
  * Export a booking (group) event(s) as iCal
  * @since 1.12.0 (was bookacti_export_booked_events_page)
+ * @version 1.14.0
  */
 function bookacti_export_booking_events_page() {
 	if( empty( $_REQUEST[ 'action' ] ) ) { return; }
 	if( $_REQUEST[ 'action' ] !== 'bookacti_export_booked_events' ) { return; }
 
 	// Sanitize the booking ID
-	$booking_type	= ! empty( $_REQUEST[ 'booking_group_id' ] ) ? 'group' : 'single';
-	$booking_id		= $booking_type === 'group' ? intval( $_REQUEST[ 'booking_group_id' ] ) : ( ! empty( $_REQUEST[ 'booking_id' ] ) ? intval( $_REQUEST[ 'booking_id' ] ) : 0 );
+	$booking_type = ! empty( $_REQUEST[ 'booking_group_id' ] ) ? 'group' : 'single';
+	$booking_id   = $booking_type === 'group' ? intval( $_REQUEST[ 'booking_group_id' ] ) : ( ! empty( $_REQUEST[ 'booking_id' ] ) ? intval( $_REQUEST[ 'booking_id' ] ) : 0 );
 	if( ! $booking_id ) { esc_html_e( 'Invalid booking ID.', 'booking-activities' ); exit; }
 	
 	// Check if the secret key exists
@@ -1302,22 +1304,22 @@ function bookacti_export_booking_events_page() {
 	
 	// Temporarily switch locale to the desired one or site default's
 	$locale = ! empty( $_REQUEST[ 'lang' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'lang' ] ) : bookacti_get_site_locale();
-	bookacti_switch_locale( $locale );
+	$lang_switched = bookacti_switch_locale( $locale );
 	
 	$ical_args = apply_filters( 'bookacti_export_booking_events_ical_args', array( 
-		'vevent_summary'		=> '{event_title}',
-		'vevent_description'	=> '',
-		'tooltip_booking_list_columns'	=> array(),
-		'booking_list_header'	=> 0,
-		'raw'					=> 0,
-		'sequence'				=> ! empty( $_REQUEST[ 'sequence' ] ) ? intval( $_REQUEST[ 'sequence' ] ) : 0,
-		'locale'				=> $locale
+		'vevent_summary'               => '{event_title}',
+		'vevent_description'           => '',
+		'tooltip_booking_list_columns' => array(),
+		'booking_list_header'          => 0,
+		'raw'                          => 0,
+		'sequence'                     => ! empty( $_REQUEST[ 'sequence' ] ) ? intval( $_REQUEST[ 'sequence' ] ) : 0,
+		'locale'                       => $locale
 	) );
 	
 	echo bookacti_convert_bookings_to_ical( $filters, $ical_args );
 	
 	// Switch locale back to normal
-	bookacti_restore_locale();
+	if( $lang_switched ) { bookacti_restore_locale(); }
 	
 	exit;
 }

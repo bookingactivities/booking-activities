@@ -297,7 +297,7 @@ function bookacti_duplicate_metadata( $object_type, $source_id, $recipient_id ) 
 
 /**
  * Delete metadata
- * @version 1.7.4
+ * @version 1.14.0
  * @global wpdb $wpdb
  * @param string $object_type
  * @param int|array $object_id
@@ -313,6 +313,7 @@ function bookacti_delete_metadata( $object_type, $object_id, $metadata_key_array
 		$object_id = absint( $object_id );
 	} else if( is_array( $object_id ) ) {
 		$object_id = array_filter( array_map( 'absint', array_unique( $object_id ) ) );
+		if( ! $object_id ) { return false; }
 	}
 	
 	$query = 'DELETE FROM ' . BOOKACTI_TABLE_META . ' WHERE object_type = %s ';

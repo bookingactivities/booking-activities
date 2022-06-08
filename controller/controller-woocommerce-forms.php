@@ -23,9 +23,10 @@ add_filter( 'bookacti_calendar_integration_tuto', 'bookacti_display_wc_calendar_
 /**
  * Add a description how to embbed forms to woocommerce products
  * @since 1.5.0
- * @param array $form
+ * @version 1.14.0
+ * @param array $form_raw
  */
-function bookacti_display_wc_form_integration_description( $form ) {
+function bookacti_display_wc_form_integration_description( $form_raw ) {
 	$img_link = esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/wc-integration.png' );
 ?>
 	<h4><?php _e( 'Integrate with a WooCommerce product', 'booking-activities' ) ?></h4>
@@ -165,18 +166,19 @@ add_filter( 'bookacti_is_total_price_field_used', '__return_true' );
 /**
  * Add an icon before WC unsupported form field in form editor
  * @since 1.5.0
+ * @version 1.14.0
  * @param array $field_data
  * @param array $raw_field_data
+ * @param string $context
  * @return array
  */
-function bookacti_form_editor_wc_field_title( $field_data, $raw_field_data ) {
-	if( in_array( $field_data[ 'name' ], bookacti_get_wc_unsupported_form_fields(), true ) ) {
+function bookacti_form_editor_wc_field_title( $field_data, $raw_field_data, $context ) {
+	if( $context === 'edit' && in_array( $field_data[ 'name' ], bookacti_get_wc_unsupported_form_fields(), true ) ) {
 		$field_data[ 'title' ] = '<span class="bookacti-wc-icon-not-supported"></span>' . $field_data[ 'title' ];
 	}
 	return $field_data;
 }
-add_filter( 'bookacti_formatted_field_data', 'bookacti_form_editor_wc_field_title', 10, 2 );
-add_filter( 'bookacti_sanitized_field_data', 'bookacti_form_editor_wc_field_title', 10, 2 );
+add_filter( 'bookacti_formatted_field_data', 'bookacti_form_editor_wc_field_title', 10, 3 );
 
 
 /**
@@ -227,12 +229,13 @@ add_filter( 'bookacti_formatted_booking_system_attributes', 'bookacti_format_wc_
 /**
  * Sanitize WC booking system attributes 
  * @since 1.7.17
- * @version 1.8.0
+ * @version 1.14.0
  * @param array $field_data
  * @param array $raw_field_data
+ * @param string $context
  * @return array
  */
-function bookacti_format_wc_field_data( $field_data, $raw_field_data ) {
+function bookacti_format_wc_field_data( $field_data, $raw_field_data, $context ) {
 	if( $raw_field_data[ 'name' ] === 'calendar' ) {
 		$default_meta = bookacti_default_wc_calendar_form_field_meta( array() );
 		$field_data[ 'product_by_activity' ]		= isset( $raw_field_data[ 'product_by_activity' ] ) && is_array( $raw_field_data[ 'product_by_activity' ] ) ? array_filter( array_map( 'intval', $raw_field_data[ 'product_by_activity' ] ) ) : $default_meta[ 'calendar' ][ 'product_by_activity' ];
@@ -240,7 +243,7 @@ function bookacti_format_wc_field_data( $field_data, $raw_field_data ) {
 	}
 	return $field_data;
 }
-add_filter( 'bookacti_formatted_field_data', 'bookacti_format_wc_field_data', 10, 2 );
+add_filter( 'bookacti_formatted_field_data', 'bookacti_format_wc_field_data', 10, 3 );
 
 
 /**
@@ -401,7 +404,7 @@ add_filter( 'bookacti_group_category_redirect_url_table', 'bookacti_add_wc_colum
 /**
  * Search products for AJAX selectbox
  * @since 1.7.19
- * @version 1.8.0
+ * @version 1.14.0
  */
 function bookacti_controller_search_select2_products() {
 	// Check nonce
@@ -414,7 +417,7 @@ function bookacti_controller_search_select2_products() {
 	
 	$defaults = array(
 		'name' => isset( $_REQUEST[ 'name' ] ) ? sanitize_title_with_dashes( stripslashes( $_REQUEST[ 'name' ] ) ) : '',
-		'id' => isset( $_REQUEST[ 'id' ] ) ? sanitize_title_with_dashes( stripslashes( $_REQUEST[ 'id' ] ) ) : ''
+		'id'   => isset( $_REQUEST[ 'id' ] ) ? sanitize_title_with_dashes( stripslashes( $_REQUEST[ 'id' ] ) ) : ''
 	);
 	$args = apply_filters( 'bookacti_ajax_select2_products_args', $defaults );
 	
@@ -423,11 +426,11 @@ function bookacti_controller_search_select2_products() {
 	
 	// Add products options
 	foreach( $products_titles as $product_id => $product ) {
-		$product_title = esc_html( apply_filters( 'bookacti_translate_text', $product[ 'title' ] ) );
+		$product_title = $product[ 'title' ] !== '' ? esc_html( apply_filters( 'bookacti_translate_text_external', $product[ 'title' ], false, true, array( 'domain' => 'woocommerce', 'object_type' => 'product', 'object_id' => $product_id, 'field' => 'post_title' ) ) ) : $product[ 'title' ];
 		if( $product[ 'type' ] === 'variable' && ! empty( $product[ 'variations' ] ) ) {
 			$children_options = array();
 			foreach( $product[ 'variations' ] as $variation_id => $variation ) {
-				$variation_title = esc_html( apply_filters( 'bookacti_translate_text', $variation[ 'title' ] ) );
+				$variation_title = $variation[ 'title' ] !== '' ? esc_html( apply_filters( 'bookacti_translate_text_external', $variation[ 'title' ], false, true, array( 'domain' => 'woocommerce', 'object_type' => 'product_variation', 'object_id' => $variation_id, 'field' => 'post_excerpt', 'product_id' => $product_id ) ) ) : $variation[ 'title' ];
 				$formatted_variation_title = trim( preg_replace( '/,[\s\S]+?:/', ',', ',' . $variation_title ), ', ' );
 				$children_options[] = array( 'id' => $variation_id, 'text' => $formatted_variation_title );
 			}
@@ -452,18 +455,13 @@ add_action( 'wp_ajax_bookactiSelect2Query_products', 'bookacti_controller_search
 /**
  * Add products bound to the selected events to cart
  * @since 1.7.0
- * @version 1.12.0
+ * @version 1.14.0
  */
 function bookacti_controller_add_bound_product_to_cart() {
-	// Check nonce
-	if( ! check_ajax_referer( 'bookacti_booking_form', 'nonce_booking_form', false ) ) {
-		bookacti_send_json_invalid_nonce( 'add_bound_product_to_cart' );
-	}
-	
-	$form_id		= intval( $_POST[ 'form_id' ] );
-	$quantity		= empty( $_REQUEST[ 'quantity' ] ) ? 1 : wc_stock_amount( wp_unslash( $_REQUEST[ 'quantity' ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-	$picked_events	= ! empty( $_POST[ 'selected_events' ] ) ? bookacti_format_picked_events( $_POST[ 'selected_events' ] ) : array();
-	$return_array	= array( 'status' => 'failed', 'error' => '', 'messages' => array(), 'products' => array() );
+	$form_id       = intval( $_POST[ 'form_id' ] );
+	$quantity      = empty( $_REQUEST[ 'quantity' ] ) ? 1 : wc_stock_amount( wp_unslash( $_REQUEST[ 'quantity' ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	$picked_events = ! empty( $_POST[ 'selected_events' ] ) ? bookacti_format_picked_events( $_POST[ 'selected_events' ] ) : array();
+	$return_array  = array( 'status' => 'failed', 'error' => '', 'messages' => array(), 'products' => array() );
 	
 	// Get the form; field data
 	$field = bookacti_get_form_field_data_by_name( $form_id, 'calendar' );
@@ -509,7 +507,7 @@ function bookacti_controller_add_bound_product_to_cart() {
 		$group_id = $picked_event[ 'group_id' ];
 		$event_id = isset( $first_picked_event[ 'id' ] ) ? $first_picked_event[ 'id' ] : 0;
 		$event_start = isset( $first_picked_event[ 'start' ] ) ? $first_picked_event[ 'start' ] : '';
-		$event_end = isset( $last_picked_event[ 'end' ] ) ? $last_picked_event[ 'end' ] : '';
+		$event_end   = isset( $last_picked_event[ 'end' ] ) ? $last_picked_event[ 'end' ] : '';
 
 		$group = $group_id && ! empty( $picked_event[ 'args' ][ 'event' ] ) ? $picked_event[ 'args' ][ 'event' ] : array();
 		$event = ! $group_id && ! empty( $picked_event[ 'args' ][ 'event' ] ) ? $picked_event[ 'args' ][ 'event' ] : array();
@@ -545,15 +543,15 @@ function bookacti_controller_add_bound_product_to_cart() {
 		// Reset posted data
 		$_POST = $init_post;
 		$_REQUEST = $init_request;
-		$_POST[ 'selected_events' ]		= $picked_event[ 'events' ];
-		$_REQUEST[ 'selected_events' ]	= $picked_event[ 'events' ];
+		$_POST[ 'selected_events' ]    = $picked_event[ 'events' ];
+		$_REQUEST[ 'selected_events' ] = $picked_event[ 'events' ];
 		
 		// If the product is a variation, add the corresponding attributes to $_REQUEST
 		if( $product->get_type() === 'variation' ) {
 			$variation_data = wc_get_product_variation_attributes( $product_id );
-			$_POST		= array_merge( $_POST, $variation_data );
-			$_REQUEST	= array_merge( $_REQUEST, $variation_data );
-			$_POST[ 'variation_id' ]	= $product_id;
+			$_POST    = array_merge( $_POST, $variation_data );
+			$_REQUEST = array_merge( $_REQUEST, $variation_data );
+			$_POST[ 'variation_id' ]    = $product_id;
 			$_REQUEST[ 'variation_id' ] = $product_id;
 		}
 

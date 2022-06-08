@@ -7,26 +7,24 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Create a new form
  * @since 1.5.0
- * @version 1.5.2
+ * @version 1.14.0
  * @param string $title
- * @param string $status
- * @param int active
- * @param array $to_insert Default field name to insert
+ * @param boolean $insert_default_fields
  * @return int|false
  */
-function bookacti_create_form( $title = '', $status = 'auto-draft', $active = 0, $to_insert = array() ) {
+function bookacti_create_form( $title = '', $insert_default_fields = false ) {
 	// Insert form
-	$form_id = bookacti_insert_form( $title, $status, $active );
-	
-	if( $form_id === false ) { return $form_id; }
+	$form_id = bookacti_insert_form( $title );
+	if( $form_id === false ) { return false; }
 	
 	// Insert default form fields
-	$inserted = bookacti_insert_default_form_fields( $form_id, $to_insert );
-	
-	if( $inserted ) {
-		// Save initial field order
-		$field_order = bookacti_sanitize_form_field_order( $form_id, array() );
-		bookacti_update_metadata( 'form', $form_id, array( 'field_order' => $field_order ) );
+	if( $insert_default_fields ) {
+		$inserted = bookacti_insert_default_form_fields( $form_id );
+		if( $inserted ) {
+			// Save initial field order
+			$field_order = bookacti_sanitize_form_field_order( $form_id, array() );
+			if( $field_order ) { bookacti_update_metadata( 'form', $form_id, array( 'field_order' => $field_order ) ); }
+		}
 	}
 	
 	// Insert default form managers
@@ -42,13 +40,13 @@ function bookacti_create_form( $title = '', $status = 'auto-draft', $active = 0,
 /**
  * Get form data and metadata
  * @since 1.5.0
+ * @version 1.14.0
  * @param int $form_id
+ * @param boolean $raw
  * @return array
  */
-function bookacti_get_form_data( $form_id ) {
-	
+function bookacti_get_form_data( $form_id, $raw = false ) {
 	$form = bookacti_get_form( $form_id );
-	
 	if( ! $form ) { return array(); }
 	
 	// Add form metadata
@@ -58,9 +56,9 @@ function bookacti_get_form_data( $form_id ) {
 	}
 
 	// Format data
-	$form = bookacti_format_form_data( $form );
+	if( ! $raw ) { $form = bookacti_format_form_data( $form ); }
 	
-	return apply_filters( 'bookacti_form_data', $form, $form_id );
+	return apply_filters( 'bookacti_form_data', $form, $form_id, $raw );
 }
 
 
@@ -71,12 +69,12 @@ function bookacti_get_form_data( $form_id ) {
  */
 function bookacti_get_default_form_data() {
 	return apply_filters( 'bookacti_default_form_data', array( 
-		'form_id' => 0,			// Form ID
-		'title' => '',			// Form title displayed in form list and form editor
-		'user_id' => -1,		// Author user ID
-		'creation_date' => '',	// Datetime when the form was created
-		'status' => '',			// Form status
-		'active' => -1			// If the form is active
+		'form_id'       => 0,  // Form ID
+		'title'         => '', // Form title displayed in form list and form editor
+		'user_id'       => -1, // Author user ID
+		'creation_date' => '', // Datetime when the form was created
+		'status'        => '', // Form status
+		'active'        => -1  // If the form is active
 	));
 }
 
@@ -88,9 +86,9 @@ function bookacti_get_default_form_data() {
  */
 function bookacti_get_default_form_meta() {
 	return apply_filters( 'bookacti_default_form_meta', array(
-		'id' => '',				// Form's id
-		'class' => '',			// Form's classes
-		'redirect_url' => '',	// URL to redirect to when the form is submitted
+		'id' => '',           // Form's id
+		'class' => '',        // Form's classes
+		'redirect_url' => '', // URL to redirect to when the form is submitted
 	));
 }
 
@@ -98,84 +96,92 @@ function bookacti_get_default_form_meta() {
 /**
  * Format form data
  * @since 1.5.0
+ * @version 1.14.0
  * @param array|string $raw_form_data
- * @return array|false
+ * @param string $context "view" or "edit"
+ * @return array
  */
-function bookacti_format_form_data( $raw_form_data = array() ) {
+function bookacti_format_form_data( $raw_form_data = array(), $context = 'view' ) {
+	if( ! is_array( $raw_form_data ) ) { return array(); }
 	
-	// Check if name and type are set
-	if( ! is_array( $raw_form_data ) ) { return false; }
+	$default_data = bookacti_get_default_form_data();
+	$default_meta = bookacti_get_default_form_meta();
+	if( ! $default_data ) { return array(); }
 	
-	$default_data	= bookacti_get_default_form_data();
-	$default_meta	= bookacti_get_default_form_meta();
-	
-	if( ! $default_data ) { return false; }
-	
-	$form_data	= array();
-	$form_meta	= array();
+	// Empty default strings in edit mode
+	if( $context === 'edit' ) {
+		$default_data[ 'title' ] = $default_meta[ 'redirect_url' ] = '';
+	}
 	
 	// Format meta values
 	$keys_by_type = array( 
-		'str_id'	=> array( 'id' ),
-		'str'		=> array( 'class', 'redirect_url' )
+		'str_id' => array( 'id' ),
+		'str'    => array( 'class', 'redirect_url' )
 	);
-	$form_meta = bookacti_sanitize_values( $default_meta, $raw_form_data, $keys_by_type, $form_meta );
+	$form_meta = bookacti_sanitize_values( $default_meta, $raw_form_data, $keys_by_type );
 	
 	// Exception: Keep field_order and format it
-	if( isset( $raw_form_data[ 'field_order' ] ) ) { $form_meta[ 'field_order' ] = maybe_unserialize( $raw_form_data[ 'field_order' ] ); }
+	$form_meta[ 'field_order' ] = isset( $raw_form_data[ 'field_order' ] ) ? maybe_unserialize( $raw_form_data[ 'field_order' ] ) : array();
 	
 	// Format common values
 	$keys_by_type = array( 
-		'int'		=> array( 'form_id', 'user_id' ),
-		'str_id'	=> array( 'status' ),
-		'str'		=> array( 'title' ),
-		'datetime'	=> array( 'creation_date' ),
-		'bool'		=> array( 'active' )
+		'int'      => array( 'form_id', 'user_id' ),
+		'str_id'   => array( 'status' ),
+		'str'      => array( 'title' ),
+		'datetime' => array( 'creation_date' ),
+		'bool'     => array( 'active' )
 	);
-	$form_data = bookacti_sanitize_values( $default_data, $raw_form_data, $keys_by_type, $form_data );
+	$form_data = bookacti_sanitize_values( $default_data, $raw_form_data, $keys_by_type );
 	
 	// Merge common data and metadata
 	$form_data = array_merge( $form_data, $form_meta );
 	
-	return apply_filters( 'bookacti_formatted_form_data', $form_data, $raw_form_data );
+	// Translate texts
+	if( $context !== 'edit' ) { 
+		if( ! empty( $form_data[ 'title' ] ) )        { $form_data[ 'title' ]        = apply_filters( 'bookacti_translate_text', $form_data[ 'title' ] ); }
+		if( ! empty( $form_data[ 'redirect_url' ] ) ) { $form_data[ 'redirect_url' ] = apply_filters( 'bookacti_translate_text', $form_data[ 'redirect_url' ] ); }
+	}
+	
+	$form_data = apply_filters( 'bookacti_formatted_form_data', $form_data, $raw_form_data, $context );
+	
+	return $form_data;
 }
 
 
 /**
  * Sanitize form data
  * @since 1.5.0
- * @version 1.13.0
+ * @version 1.14.0
  * @param array|string $raw_form_data
  * @return array|false
  */
 function bookacti_sanitize_form_data( $raw_form_data ) {
-	// Check if name and type are set
 	if( ! is_array( $raw_form_data ) ) { return array(); }
 	
-	$default_data	= bookacti_get_default_form_data();
-	$default_meta	= bookacti_get_default_form_meta();
-	
+	$default_data = bookacti_get_default_form_data();
+	$default_meta = bookacti_get_default_form_meta();
 	if( ! $default_data ) { return array(); }
 	
-	$form_data	= array();
-	$form_meta	= array();
+	// Empty default translatable strings
+	if( ! empty( $default_data[ 'title' ] ) )        { $default_data[ 'title' ] = ''; }
+	if( ! empty( $default_meta[ 'redirect_url' ] ) ) { $default_meta[ 'redirect_url' ] = ''; }
 	
 	// Sanitize meta values
 	$keys_by_type = array( 
-		'str_id'	=> array( 'id' ),
-		'str'		=> array( 'class', 'redirect_url' )
+		'str_id' => array( 'id' ),
+		'str'    => array( 'class', 'redirect_url' )
 	);
-	$form_meta = bookacti_sanitize_values( $default_meta, $raw_form_data, $keys_by_type, $form_meta );
+	$form_meta = bookacti_sanitize_values( $default_meta, $raw_form_data, $keys_by_type );
 	
 	// Sanitize common values
 	$keys_by_type = array( 
-		'int'		=> array( 'form_id', 'user_id' ),
-		'str_id'	=> array( 'status' ),
-		'str'		=> array( 'title' ),
-		'datetime'	=> array( 'creation_date' ),
-		'bool'		=> array( 'active' )
+		'int'      => array( 'form_id', 'user_id' ),
+		'str_id'   => array( 'status' ),
+		'str'      => array( 'title' ),
+		'datetime' => array( 'creation_date' ),
+		'bool'     => array( 'active' )
 	);
-	$form_data = bookacti_sanitize_values( $default_data, $raw_form_data, $keys_by_type, $form_data );
+	$form_data = bookacti_sanitize_values( $default_data, $raw_form_data, $keys_by_type );
 	
 	// Merge common data and metadata
 	$form_data = array_merge( $form_data, $form_meta );
@@ -186,7 +192,7 @@ function bookacti_sanitize_form_data( $raw_form_data ) {
 
 /**
  * Display a booking form
- * @version 1.8.3
+ * @version 1.14.0
  * @param int $form_id
  * @param string $instance_id
  * @param string $context
@@ -216,9 +222,9 @@ function bookacti_display_form( $form_id, $instance_id = '', $context = 'display
 	$calendar_field = array();
 	foreach( $displayed_form_fields as $field ) { 
 		if( empty( $field[ 'type' ] ) ) { continue; }
-			 if( $field[ 'type' ] === 'calendar' )	{ $calendar_field = $field; }
-		else if( $field[ 'type' ] === 'login' )		{ $login_field = $field; }
-		else if( $field[ 'type' ] === 'submit' )	{ $is_form = 1; }
+			 if( $field[ 'type' ] === 'calendar' ) { $calendar_field = $field; }
+		else if( $field[ 'type' ] === 'login' )    { $login_field = $field; }
+		else if( $field[ 'type' ] === 'submit' )   { $is_form = 1; }
 	}
 	
 	// Show only the login field if the user is not logged in
@@ -238,17 +244,17 @@ function bookacti_display_form( $form_id, $instance_id = '', $context = 'display
 	}
 	
 	// Set form action
-	$form_redirect_url = ! empty( $form[ 'redirect_url' ] ) ? $form[ 'redirect_url' ] : '';
+	$form_redirect_url = $form[ 'redirect_url' ];
 	if( $context === 'login_form' ) {
 		$form_redirect_url = ! empty( $GLOBALS[ 'bookacti_login_redirect_url' ] ) ? $GLOBALS[ 'bookacti_login_redirect_url' ] : '';
 	}
 	
 	// Set form attributes
 	$form_attributes = apply_filters( 'bookacti_form_attributes', array(
-		'action'		=> $form_redirect_url ? esc_url( apply_filters( 'bookacti_translate_text', $form_redirect_url ) ) : '',
-		'id'			=> empty( $form[ 'id' ] ) ? 'bookacti-' . $form_css_id : $form_css_id,
-		'class'			=> 'bookacti-booking-form-' . $form_id . ' ' . $form[ 'class' ],
-		'autocomplete'	=> 'off'
+		'action'       => $form_redirect_url,
+		'id'           => empty( $form[ 'id' ] ) ? 'bookacti-' . $form_css_id : $form_css_id,
+		'class'        => 'bookacti-booking-form-' . $form_id . ' ' . $form[ 'class' ],
+		'autocomplete' => 'off'
 	), $form, $instance_id, $context, $displayed_form_fields );
 	
 	// Add compulsory class
@@ -271,7 +277,6 @@ function bookacti_display_form( $form_id, $instance_id = '', $context = 'display
 	<?php } ?>
 			<input type='hidden' name='form_id' value='<?php echo $form_id; ?>'/>
 			<input type='hidden' name='action' value='<?php echo apply_filters( 'bookacti_form_action_field_value', $form_action, $form, $instance_id, $context, $displayed_form_fields ); ?>'/>
-			<input type='hidden' name='nonce_booking_form' value='<?php echo wp_create_nonce( 'bookacti_booking_form' ); ?>'/>
 		<?php
 			do_action( 'bookacti_form_before', $form, $instance_id, $context, $displayed_form_fields );
 
@@ -303,51 +308,54 @@ function bookacti_display_form( $form_id, $instance_id = '', $context = 'display
 /**
  * Get form fields array
  * @since 1.5.4
- * @version 1.8.0
+ * @version 1.14.0
  * @param int $form_id
- * @param boolean $active_only Whether to fetch only active fields. Default "true".
- * @param boolean Whether to index by name. Else, indexed by field id.
+ * @param boolean $active_only   Whether to fetch only active fields. Default "true".
+ * @param boolean $index_by_name Whether to index by name. Else, indexed by field id.
+ * @param boolean $raw           Whether to format the data.
  * @return array
  */
-function bookacti_get_form_fields_data( $form_id, $active_only = true, $index_by_name = false ) {
-	// Retrieve inactive fields too, for a better cache efficiency
-	$fields = bookacti_get_form_fields( $form_id, false );
-	if( ! $fields ) { return array(); }
-	
+function bookacti_get_form_fields_data( $form_id, $active_only = true, $index_by_name = false, $raw = false ) {
 	$fields_data_by_id = wp_cache_get( 'form_fields_data_' . $form_id, 'bookacti' );
 	
-	if( ! $fields_data_by_id ) {
-		// Get fields meta
-		$fields_meta = bookacti_get_metadata( 'form_field', array_keys( $fields ) );
+	if( $fields_data_by_id === false ) {
+		// Retrieve inactive fields too, for a better cache efficiency
+		$fields = bookacti_get_form_fields( $form_id, $raw ? $active_only : false );
+		if( $fields ) {
+			// Get fields meta
+			$fields_meta = bookacti_get_metadata( 'form_field', array_keys( $fields ) );
 
-		// Add form field metadata and 
-		// Format form fields
-		$fields_data_by_id = array();
-		foreach( $fields as $field_id => $field ) {
-			// Add field-specific data
-			$field_metadata = isset( $fields_meta[ $field_id ] ) ? $fields_meta[ $field_id ] : array();
-			if( is_array( $field_metadata ) ) { 
-				$field = array_merge( $field, $field_metadata );
-			}
-
-			// Format data
-			$formatted_data = bookacti_format_form_field_data( $field );
-			if( $formatted_data ) {
-				$fields_data_by_id[ $field_id ] = $formatted_data;
+			// Add form field metadata and 
+			// Format form fields
+			$fields_data_by_id = array();
+			foreach( $fields as $field_id => $field ) {
+				// Add field-specific data
+				$field_metadata = isset( $fields_meta[ $field_id ] ) ? $fields_meta[ $field_id ] : array();
+				if( is_array( $field_metadata ) ) { 
+					$field = array_merge( $field, $field_metadata );
+				}
+				
+				$fields_data_by_id[ $field_id ] = $field;
 			}
 		}
 		
-		$fields_data_by_id = apply_filters( 'bookacti_form_fields_data', $fields_data_by_id, $form_id, false, false ); // last two arguments Deprecated. Used for legacy.
+		$fields_data_by_id = apply_filters( 'bookacti_form_fields_data_raw', $fields_data_by_id ? $fields_data_by_id : array(), $form_id, $active_only );
 		
+		// Cache data
 		wp_cache_set( 'form_fields_data_' . $form_id, $fields_data_by_id, 'bookacti' );
 	}
 	
-	$fields_data = $index_by_name ? array() : $fields_data_by_id;
-	foreach( $fields_data_by_id as $field_id => $field_data ) {
-		// Remove inactive fields
-		if( ! $index_by_name && $active_only && empty( $fields[ $field_id ][ 'active' ] ) ) { unset( $fields_data[ $field_id ] ); continue; }
-		// Index by name
-		if( $index_by_name ) { $fields_data[ $field_data[ 'name' ] ] = $field_data; }
+	// Format data
+	if( ! $raw && $fields_data_by_id ) { $fields_data_by_id = array_filter( array_map( 'bookacti_format_form_field_data', $fields_data_by_id ) ); }
+	
+	$fields_data = ! $index_by_name && $fields_data_by_id ? $fields_data_by_id : array();
+	if( $fields_data_by_id ) {
+		foreach( $fields_data_by_id as $field_id => $field_data ) {
+			// Remove inactive fields
+			if( ! $index_by_name && $active_only && empty( $field_data[ 'active' ] ) ) { unset( $fields_data[ $field_id ] ); continue; }
+			// Index by name
+			if( $index_by_name && ( ! $active_only || ( $active_only && ! empty( $field_data[ 'active' ] ) ) ) ) { $fields_data[ $field_data[ 'name' ] ] = $field_data; }
+		}
 	}
 	
 	return $fields_data;
@@ -357,27 +365,33 @@ function bookacti_get_form_fields_data( $form_id, $active_only = true, $index_by
 /**
  * Get the desired field data as an array
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.14.0
  * @param int $field_id
+ * @param boolean $raw
  * @return array
  */
-function bookacti_get_form_field_data( $field_id ) {
-	$cache = wp_cache_get( 'form_field_data_' . $field_id, 'bookacti' );
-	if( $cache ) { return $cache; }
+function bookacti_get_form_field_data( $field_id, $raw = false ) {
+	$field_data = wp_cache_get( 'form_field_data_' . $field_id, 'bookacti' );
 	
-	$field = bookacti_get_form_field( $field_id );
-	if( ! $field ) { return array(); }
-	
-	// Add form field metadata
-	$field_metadata = bookacti_get_metadata( 'form_field', $field[ 'field_id' ] );
-	if( is_array( $field_metadata ) ) { 
-		$field = array_merge( $field, $field_metadata );
+	if( $field_data === false ) {
+		$field = bookacti_get_form_field( $field_id );
+		if( $field ) {
+			// Add form field metadata
+			$field_metadata = bookacti_get_metadata( 'form_field', $field[ 'field_id' ] );
+			if( is_array( $field_metadata ) ) { $field = array_merge( $field, $field_metadata ); }
+		}
+		
+		$field_data = apply_filters( 'bookacti_form_field', $field );
+		
+		// Cache data
+		wp_cache_set( 'form_field_data_' . $field_id, $field_data, 'bookacti' );
+		if( isset( $field[ 'name' ] ) && isset( $field[ 'form_id' ] ) ) {
+			wp_cache_set( 'form_field_data_' . $field[ 'name' ] . '_' . $field[ 'form_id' ], $field_data, 'bookacti' );
+		}
 	}
 	
 	// Format data
-	$field_data = apply_filters( 'bookacti_form_field', bookacti_format_form_field_data( $field ) );
-	
-	wp_cache_set( 'form_field_data_' . $field_id, $field_data, 'bookacti' );
+	if( ! $raw && $field_data ) { $field_data = bookacti_format_form_field_data( $field_data ); }
 	
 	return $field_data;
 }
@@ -386,28 +400,34 @@ function bookacti_get_form_field_data( $field_id ) {
 /**
  * Get the desired field data as an array. The field name must be unique, only the first will be retrieved.
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.14.0
  * @param int $form_id
  * @param string $field_name
+ * @param boolean $raw
  * @return array
  */
-function bookacti_get_form_field_data_by_name( $form_id, $field_name ) {
-	$cache = wp_cache_get( 'form_field_data_' . $field_name . '_' . $form_id, 'bookacti' );
-	if( $cache ) { return $cache; }
+function bookacti_get_form_field_data_by_name( $form_id, $field_name, $raw = false ) {
+	$field_data = wp_cache_get( 'form_field_data_' . $field_name . '_' . $form_id, 'bookacti' );
 	
-	$field = bookacti_get_form_field_by_name( $form_id, $field_name );
-	if( ! $field ) { return array(); }
-	
-	// Add form field metadata 
-	$field_metadata = bookacti_get_metadata( 'form_field', $field[ 'field_id' ] );
-	if( is_array( $field_metadata ) ) { 
-		$field = array_merge( $field, $field_metadata );
+	if( $field_data === false ) {
+		$field = bookacti_get_form_field_by_name( $form_id, $field_name );
+		if( $field ) {
+			// Add form field metadata 
+			$field_metadata = bookacti_get_metadata( 'form_field', $field[ 'field_id' ] );
+			if( is_array( $field_metadata ) ) { $field = array_merge( $field, $field_metadata ); }
+		}
+
+		$field_data = apply_filters( 'bookacti_form_field', $field );
+
+		// Cache data
+		wp_cache_set( 'form_field_data_' . $field_name . '_' . $form_id, $field_data, 'bookacti' );
+		if( ! empty( $field[ 'field_id' ] ) ) {
+			wp_cache_set( 'form_field_data_' . $field[ 'field_id' ], $field_data, 'bookacti' );
+		}
 	}
 	
 	// Format data
-	$field_data = apply_filters( 'bookacti_form_field', bookacti_format_form_field_data( $field ) );
-	
-	wp_cache_set( 'form_field_data_' . $field_name . '_' . $form_id, $field_data, 'bookacti' );
+	if( ! $raw && $field_data ) { $field_data = bookacti_format_form_field_data( $field_data ); }
 	
 	return $field_data;
 }
@@ -416,27 +436,30 @@ function bookacti_get_form_field_data_by_name( $form_id, $field_name ) {
 /**
  * Get the default common for field data
  * @since 1.5.3
+ * @version 1.14.0
+ * @param string $context 'view' or 'edit'
  * @return array
  */
-function bookacti_get_default_form_field_common_data() {
+function bookacti_get_default_form_field_common_data( $context = 'view' ) {
 	return apply_filters( 'bookacti_default_common_form_field_data', array( 
-		'field_id' => 0,		// Field ID
-		'form_id' => 0,			// Form ID
-		'name' => '',			// Text identifier of the field
-		'type' => '',			// Field type [calendar, quantity, submit, login, free_text, or your custom types]
-		'title' => '',			// Field title displayed in form editor
-		'label' => '',			// Text displayed for the field on the frontend
-		'id' => '',				// Field CSS id
-		'class' => '',			// Field CSS classes
-		'options' => array(),	// Array of allowed values
-		'value' => '',			// Default value among the allowed values
-		'placeholder' => '',	// Text displayed in transparency when the field is empty
-		'tip' => '',			// Help text displayed in a tooltip next to the field
-		'required' => 0,		// Whether the customer is forced to fill this field when it is displayed
-		'compulsory' => 0,		// Whether the field can be deleted
-		'default' => 0,			// Whether the field is part of the form by default (if compulsory, it is by default too)
-		'unique' => 1			// Whether the user can add multiple occurrence of this field in the form
-	));
+		'field_id'    => 0,       // Field ID
+		'form_id'     => 0,       // Form ID
+		'name'        => '',      // Text identifier of the field
+		'type'        => '',      // Field type [calendar, quantity, submit, login, free_text, or your custom types]
+		'title'       => '',      // Field title displayed in form editor
+		'label'       => '',      // Text displayed for the field on the frontend
+		'id'          => '',      // Field CSS id
+		'class'       => '',      // Field CSS classes
+		'options'     => array(), // Array of allowed values
+		'value'       => '',      // Default value among the allowed values
+		'placeholder' => '',      // Text displayed in transparency when the field is empty
+		'tip'         => '',      // Help text displayed in a tooltip next to the field
+		'required'    => 0,       // Whether the customer is forced to fill this field when it is displayed
+		'compulsory'  => 0,       // Whether the field can be deleted
+		'default'     => 0,       // Whether the field is part of the form by default (if compulsory, it is by default too)
+		'unique'      => 1,       // Whether the user can add multiple occurrence of this field in the form
+		'active'      => 1        // Set to 0 if the field has been removed
+	), $context );
 }
 
 
@@ -444,96 +467,97 @@ function bookacti_get_default_form_field_common_data() {
  * Get fields data
  * @see bookacti_format_form_field_data to properly format your array
  * @since 1.5.0
- * @version 1.12.4
+ * @version 1.14.0
  * @param string $field_name
+ * @param string $context 'edit' or 'view'
  * @return array
  */
-function bookacti_get_default_form_fields_data( $field_name = '' ) {
+function bookacti_get_default_form_fields_data( $field_name = '', $context = 'view' ) {
 	// Set the common default data
-	$default_data = bookacti_get_default_form_field_common_data();
+	$default_data = bookacti_get_default_form_field_common_data( $context );
 	
 	// Add register fields default
-	$register_fields	= bookacti_get_register_fields_default_data();
-	$register_defaults	= array( 'label' => array(), 'placeholder' => array(), 'tip' => array() );
+	$register_fields   = bookacti_get_register_fields_default_data( $context );
+	$register_defaults = array( 'label' => array(), 'placeholder' => array(), 'tip' => array() );
 	foreach( $register_fields as $register_field_name => $register_field ) {
-		$register_defaults[ 'label' ][ $register_field_name ]		= ! empty( $register_field[ 'label' ] )			? $register_field[ 'label' ] : '';
-		$register_defaults[ 'placeholder' ][ $register_field_name ]	= ! empty( $register_field[ 'placeholder' ] )	? $register_field[ 'placeholder' ] : '';
-		$register_defaults[ 'tip' ][ $register_field_name ]			= ! empty( $register_field[ 'tip' ] )			? $register_field[ 'tip' ] : '';
+		$register_defaults[ 'label' ][ $register_field_name ]       = isset( $register_field[ 'label' ] )       ? $register_field[ 'label' ] : '';
+		$register_defaults[ 'placeholder' ][ $register_field_name ] = isset( $register_field[ 'placeholder' ] ) ? $register_field[ 'placeholder' ] : '';
+		$register_defaults[ 'tip' ][ $register_field_name ]         = isset( $register_field[ 'tip' ] )         ? $register_field[ 'tip' ] : '';
 	}
 	
-	// Add login fields default
-	$login_fields = bookacti_get_login_fields_default_data();
-	$login_defaults	= array( 'label' => array(), 'placeholder' => array(), 'tip' => array() );
-	foreach( $login_fields as $login_field_name => $login_field ) {
-		$login_defaults[ 'label' ][ $login_field_name ]			= ! empty( $login_field[ 'label' ] )		? $login_field[ 'label' ] : '';
-		$login_defaults[ 'placeholder' ][ $login_field_name ]	= ! empty( $login_field[ 'placeholder' ] )	? $login_field[ 'placeholder' ] : '';
-		$login_defaults[ 'tip' ][ $login_field_name ]			= ! empty( $login_field[ 'tip' ] )			? $login_field[ 'tip' ] : '';
+	// Add log in fields default
+	$log_in_fields   = bookacti_get_log_in_fields_default_data( $context );
+	$log_in_defaults = array( 'label' => array(), 'placeholder' => array(), 'tip' => array() );
+	foreach( $log_in_fields as $log_in_field_name => $log_in_field ) {
+		$log_in_defaults[ 'label' ][ $log_in_field_name ]       = isset( $log_in_field[ 'label' ] )       ? $log_in_field[ 'label' ] : '';
+		$log_in_defaults[ 'placeholder' ][ $log_in_field_name ] = isset( $log_in_field[ 'placeholder' ] ) ? $log_in_field[ 'placeholder' ] : '';
+		$log_in_defaults[ 'tip' ][ $log_in_field_name ]         = isset( $log_in_field[ 'tip' ] )         ? $log_in_field[ 'tip' ] : '';
 	}
 	
 	// Add login type fields default
-	$login_types			= bookacti_get_login_type_field_default_options();
-	$login_type_defaults	= array( 'label' => array(), 'placeholder' => array(), 'tip' => array() );
+	$login_types         = bookacti_get_login_type_field_default_options( array(), $context );
+	$login_type_defaults = array( 'label' => array(), 'placeholder' => array(), 'tip' => array() );
 	foreach( $login_types as $login_type_name => $login_type ) {
-		$login_type_defaults[ 'label' ][ $login_type_name ]			= ! empty( $login_type[ 'label' ] )			? $login_type[ 'label' ] : '';
-		$login_type_defaults[ 'placeholder' ][ $login_type_name ]	= ! empty( $login_type[ 'placeholder' ] )	? $login_type[ 'placeholder' ] : '';
-		$login_type_defaults[ 'tip' ][ $login_type_name ]			= ! empty( $login_type[ 'tip' ] )			? $login_type[ 'tip' ] : '';
+		$login_type_defaults[ 'label' ][ $login_type_name ]       = isset( $login_type[ 'label' ] )       ? $login_type[ 'label' ] : '';
+		$login_type_defaults[ 'placeholder' ][ $login_type_name ] = isset( $login_type[ 'placeholder' ] ) ? $login_type[ 'placeholder' ] : '';
+		$login_type_defaults[ 'tip' ][ $login_type_name ]         = isset( $login_type[ 'tip' ] )         ? $login_type[ 'tip' ] : '';
 	}
 	
 	// Set field-speicific default data
 	$fields_data = array(
 		'calendar' => array( 
-			'name'			=> 'calendar',
-			'type'			=> 'calendar',
-			'title'			=> esc_html__( 'Calendar', 'booking-activities' ),
-			'compulsory'	=> 1,
-			'default'		=> 1
+			'name'       => 'calendar',
+			'type'       => 'calendar',
+			'title'      => esc_html__( 'Calendar', 'booking-activities' ),
+			'compulsory' => 1,
+			'default'    => 1
 		),
 		'login' => array( 
-			'name'			=> 'login',
-			'type'			=> 'login',
-			'title'			=> esc_html__( 'User Data (Login / Registration)', 'booking-activities' ),
-			'default'		=> 1,
-			'label'			=> array_merge( $login_defaults[ 'label' ], $login_type_defaults[ 'label' ], $register_defaults[ 'label' ] ),
-			'placeholder'	=> array_merge( $login_defaults[ 'placeholder' ], $login_type_defaults[ 'placeholder' ], $register_defaults[ 'placeholder' ] ),
-			'tip'			=> array_merge( $login_defaults[ 'tip' ], $login_type_defaults[ 'tip' ], $register_defaults[ 'tip' ] )
+			'name'        => 'login',
+			'type'        => 'login',
+			'title'       => esc_html__( 'User Data (Login / Registration)', 'booking-activities' ),
+			'default'     => 1,
+			'label'       => array_merge( $log_in_defaults[ 'label' ], $login_type_defaults[ 'label' ], $register_defaults[ 'label' ] ),
+			'placeholder' => array_merge( $log_in_defaults[ 'placeholder' ], $login_type_defaults[ 'placeholder' ], $register_defaults[ 'placeholder' ] ),
+			'tip'         => array_merge( $log_in_defaults[ 'tip' ], $login_type_defaults[ 'tip' ], $register_defaults[ 'tip' ] )
 		),
 		'free_text' => array( 
-			'name'		=> 'free_text',
-			'type'		=> 'free_text',
-			'title'		=> esc_html__( 'Free text', 'booking-activities' ),
-			'unique' 	=> 0
+			'name'   => 'free_text',
+			'type'   => 'free_text',
+			'title'  => esc_html__( 'Free text', 'booking-activities' ),
+			'unique' => 0
 		),
 		'quantity' => array( 
-			'name'		=> 'quantity',
-			'type'		=> 'quantity',
-			'title'		=> esc_html__( 'Quantity', 'booking-activities' ),
-			'label'		=> esc_html__( 'Quantity', 'booking-activities' ),
-			'required'	=> 1,
-			'default'	=> 1
+			'name'     => 'quantity',
+			'type'     => 'quantity',
+			'title'    => esc_html__( 'Quantity', 'booking-activities' ),
+			'label'    => esc_html__( 'Quantity', 'booking-activities' ),
+			'required' => 1,
+			'default'  => 1
 		),
 		'terms' => array( 
-			'name'		=> 'terms',
-			'type'		=> 'checkbox',
-			'title'		=> esc_html__( 'Terms', 'booking-activities' ),
-			'label'		=> esc_html__( 'I have read and agree to the terms and conditions', 'booking-activities' ),
-			'required'	=> 1
+			'name'     => 'terms',
+			'type'     => 'checkbox',
+			'title'    => esc_html__( 'Terms', 'booking-activities' ),
+			'label'    => esc_html__( 'I have read and agree to the terms and conditions', 'booking-activities' ),
+			'required' => 1
 		),
 		'total_price' => array( 
-			'name'		=> 'total_price',
-			'type'		=> 'total_price',
-			'title'		=> esc_html__( 'Total price', 'booking-activities' ),
-			'label'		=> esc_html__( 'Total price', 'booking-activities' )
+			'name'  => 'total_price',
+			'type'  => 'total_price',
+			'title' => esc_html__( 'Total price', 'booking-activities' ),
+			'label' => esc_html__( 'Total price', 'booking-activities' )
 		),
 		'submit' => array( 
-			'name'		=> 'submit',
-			'type'		=> 'submit',
-			'title'		=> esc_html__( 'Submit button', 'booking-activities' ),
-			'value'		=> esc_html__( 'Book', 'booking-activities' ),
-			'default'	=> 1
+			'name'    => 'submit',
+			'type'    => 'submit',
+			'title'   => esc_html__( 'Submit button', 'booking-activities' ),
+			'value'   => esc_html__( 'Book', 'booking-activities' ),
+			'default' => 1
 		)
 	);
 	
-	$fields_data = apply_filters( 'bookacti_default_form_fields_data', $fields_data, $field_name );
+	$fields_data = apply_filters( 'bookacti_default_form_fields_data', $fields_data, $field_name, $context );
 	
 	// Merge field-specific data to common data
 	foreach( $fields_data as $i => $field_data ) {
@@ -552,36 +576,37 @@ function bookacti_get_default_form_fields_data( $field_name = '' ) {
  * Get fields metadata
  * @see bookacti_format_form_field_data to properly format your array
  * @since 1.5.0
- * @version 1.13.0
+ * @version 1.14.0
  * @param string $field_name
+ * @param string $context 'view' or 'edit'
  * @return array
  */
-function bookacti_get_default_form_fields_meta( $field_name = '' ) {
+function bookacti_get_default_form_fields_meta( $field_name = '', $context = 'view' ) {
 	// Add register fields default meta to login field meta
-	$register_fields	= bookacti_get_register_fields_default_data();
-	$register_defaults	= array( 'displayed' => array(), 'required' => array() );
+	$register_fields   = bookacti_get_register_fields_default_data( $context );
+	$register_defaults = array( 'displayed' => array(), 'required' => array() );
 	foreach( $register_fields as $register_field_name => $register_field ) {
-		$register_defaults[ 'displayed' ][ $register_field_name ]	= ! empty( $register_field[ 'displayed' ] )	? $register_field[ 'displayed' ] : 0;
-		$register_defaults[ 'required' ][ $register_field_name ]	= ! empty( $register_field[ 'required' ] )	? $register_field[ 'required' ] : 0;
+		$register_defaults[ 'displayed' ][ $register_field_name ] = isset( $register_field[ 'displayed' ] ) ? $register_field[ 'displayed' ] : 0;
+		$register_defaults[ 'required' ][ $register_field_name ]  = isset( $register_field[ 'required' ] )  ? $register_field[ 'required' ] : 0;
 	}
 	
-	// Add login fields default
-	$login_fields = bookacti_get_login_fields_default_data();
-	$login_defaults	= array( 'label' => array(), 'placeholder' => array(), 'tip' => array() );
-	foreach( $login_fields as $login_field_name => $login_field ) {
-		$login_defaults[ 'displayed' ][ $login_field_name ]	= ! empty( $login_field[ 'displayed' ] )? $login_field[ 'displayed' ] : 0;
-		$login_defaults[ 'required' ][ $login_field_name ]	= ! empty( $login_field[ 'required' ] )	? $login_field[ 'required' ] : 0;
+	// Add log in fields default
+	$log_in_fields   = bookacti_get_log_in_fields_default_data( $context );
+	$log_in_defaults = array( 'label' => array(), 'placeholder' => array(), 'tip' => array() );
+	foreach( $log_in_fields as $log_in_field_name => $log_in_field ) {
+		$log_in_defaults[ 'displayed' ][ $log_in_field_name ] = isset( $log_in_field[ 'displayed' ] ) ? $log_in_field[ 'displayed' ] : 0;
+		$log_in_defaults[ 'required' ][ $log_in_field_name ]  = isset( $log_in_field[ 'required' ] )  ? $log_in_field[ 'required' ] : 0;
 	}
 	
 	// Add login type fields default
-	$login_types			= bookacti_get_login_type_field_default_options();
-	$login_type_defaults	= array( 'displayed' => array(), 'required' => array() );
+	$login_types         = bookacti_get_login_type_field_default_options( array(), $context );
+	$login_type_defaults = array( 'displayed' => array(), 'required' => array() );
 	foreach( $login_types as $login_type_name => $login_type ) {
-		$login_type_defaults[ 'displayed' ][ $login_type_name ]	= ! empty( $login_type[ 'displayed' ] )	? $login_type[ 'displayed' ] : 0;
-		$login_type_defaults[ 'required' ][ $login_type_name ]	= ! empty( $login_type[ 'required' ] )	? $login_type[ 'required' ] : 0;
+		$login_type_defaults[ 'displayed' ][ $login_type_name ] = isset( $login_type[ 'displayed' ] ) ? $login_type[ 'displayed' ] : 0;
+		$login_type_defaults[ 'required' ][ $login_type_name ]  = isset( $login_type[ 'required' ] )  ? $login_type[ 'required' ] : 0;
 	}
 	
-	$fields_meta = apply_filters( 'bookacti_default_form_fields_meta', array(
+	$fields_meta = array(
 		'calendar' => array(
 			'id'                             => '',
 			'class'                          => '',
@@ -622,15 +647,17 @@ function bookacti_get_default_form_fields_meta( $field_name = '' ) {
 			'remember'               => 0,
 			'send_new_account_email' => 1,
 			'new_user_role'          => 'default',
-			'displayed_fields'       => array_merge( $login_defaults[ 'displayed' ], $login_type_defaults[ 'displayed' ], $register_defaults[ 'displayed' ] ),
-			'required_fields'        => array_merge( $login_defaults[ 'required' ], $login_type_defaults[ 'required' ], $register_defaults[ 'required' ] )
+			'displayed_fields'       => array_merge( $log_in_defaults[ 'displayed' ], $login_type_defaults[ 'displayed' ], $register_defaults[ 'displayed' ] ),
+			'required_fields'        => array_merge( $log_in_defaults[ 'required' ], $login_type_defaults[ 'required' ], $register_defaults[ 'required' ] )
 		),
 		'free_text'   => array(),
 		'quantity'    => array(),
 		'terms'       => array(),
 		'total_price' => array( 'price_breakdown' => 1 ),
 		'submit'      => array()
-	), $field_name );
+	);
+	
+	$fields_meta = apply_filters( 'bookacti_default_form_fields_meta', $fields_meta, $field_name, $context );
 	
 	if( $field_name ) {
 		return isset( $fields_meta[ $field_name ] ) ? $fields_meta[ $field_name ] : array();
@@ -669,17 +696,17 @@ function bookacti_get_available_form_action_triggers() {
 /**
  * Format field data according to its type
  * @since 1.5.0
- * @version 1.13.0
+ * @version 1.14.0
  * @param array|string $raw_field_data
+ * @param $context "view" or "edit"
  * @return array
  */
-function bookacti_format_form_field_data( $raw_field_data ) {
+function bookacti_format_form_field_data( $raw_field_data, $context = 'view' ) {
 	// Check if name and type are set
 	if( ! is_array( $raw_field_data ) || empty( $raw_field_data[ 'name' ] ) || empty( $raw_field_data[ 'type' ] ) ) { return array(); }
 	
-	$default_data = bookacti_get_default_form_fields_data( $raw_field_data[ 'name' ] );
-	$default_meta = bookacti_get_default_form_fields_meta( $raw_field_data[ 'name' ] );
-
+	$default_data = bookacti_get_default_form_fields_data( $raw_field_data[ 'name' ], $context );
+	$default_meta = bookacti_get_default_form_fields_meta( $raw_field_data[ 'name' ], $context );
 	if( ! $default_data ) { return array(); }
 	
 	$field_data	= array();
@@ -740,7 +767,11 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 			'str_id' => array( 'new_user_role' ),
 			'str'    => array( 'login_button_label', 'register_button_label' )
 		);
-		$field_meta = bookacti_sanitize_values( $default_meta, $raw_field_data, $keys_by_type, $field_meta );
+		$field_meta = bookacti_sanitize_values( $default_meta, $raw_field_data, $keys_by_type );
+		
+		// Translate texts
+		$field_meta[ 'login_button_label' ]    = ! empty( $raw_field_data[ 'login_button_label' ] ) ? ( $context !== 'edit' ? apply_filters( 'bookacti_translate_text', $raw_field_data[ 'login_button_label' ] ) : $raw_field_data[ 'login_button_label' ] ) : $default_meta[ 'login_button_label' ];
+		$field_meta[ 'register_button_label' ] = ! empty( $raw_field_data[ 'register_button_label' ] ) ? ( $context !== 'edit' ? apply_filters( 'bookacti_translate_text', $raw_field_data[ 'register_button_label' ] ) : $raw_field_data[ 'register_button_label' ] ) : $default_meta[ 'register_button_label' ];
 		
 		// Treat 'required_fields' and 'displayed_fields' field meta as a common field data
 		$default_data[ 'displayed_fields' ] = $default_meta[ 'displayed_fields' ]; unset( $default_meta[ 'displayed_fields' ] );
@@ -748,36 +779,63 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 		
 		// Format common values (specific cases)
 		// Format label, placeholder and tip
-		$register_defaults   = bookacti_get_register_fields_default_data();
-		$login_defaults      = bookacti_get_login_fields_default_data();
-		$login_type_defaults = bookacti_get_login_type_field_default_options();
-		$fields = array( 'label', 'placeholder', 'tip', 'displayed_fields', 'required_fields' );
-		foreach( $fields as $field ) {
-			$raw_field_data[ $field ] = isset( $raw_field_data[ $field ] ) ? maybe_unserialize( $raw_field_data[ $field ] ) : false;
-			if( is_array( $raw_field_data[ $field ] ) ) {
+		$register_defaults   = bookacti_get_register_fields_default_data( $context );
+		$log_in_defaults     = bookacti_get_log_in_fields_default_data( $context );
+		$login_type_defaults = bookacti_get_login_type_field_default_options( array(), $context );
+		
+		$keys = array( 'label', 'placeholder', 'tip', 'displayed_fields', 'required_fields' );
+		foreach( $keys as $key ) {
+			$raw_login_field_data = isset( $raw_field_data[ $key ] ) ? maybe_unserialize( $raw_field_data[ $key ] ) : array();
+			$is_translatable = in_array( $key, array( 'label', 'placeholder', 'tip' ), true );
+			
+			if( is_array( $raw_login_field_data ) && $raw_login_field_data ) {
+				// Format booleans
+				if( in_array( $key, array( 'displayed_fields', 'required_fields' ), true ) ) { $raw_login_field_data = array_map( 'intval', $raw_login_field_data ); }
+				
 				// Format register
 				$register_fields = array();
 				foreach( $register_defaults as $register_field_name => $register_default ) {
-					$register_fields[ $register_field_name ] = isset( $raw_field_data[ $field ][ $register_field_name ] ) ? $raw_field_data[ $field ][ $register_field_name ] : ( isset( $register_default[ $field ] ) ? $register_default[ $field ] : $default_data[ $field ][ $register_field_name ] );
+					$register_fields[ $register_field_name ] = $default_data[ $key ][ $register_field_name ];
+					if( isset( $raw_login_field_data[ $register_field_name ] ) ) {
+						if( $is_translatable ) {
+							if( $raw_login_field_data[ $register_field_name ] ) { $register_fields[ $register_field_name ] = $context !== 'edit' ? apply_filters( 'bookacti_translate_text', $raw_login_field_data[ $register_field_name ] ) : $raw_login_field_data[ $register_field_name ]; }
+						} else {
+							$register_fields[ $register_field_name ] = $raw_login_field_data[ $register_field_name ];
+						}
+					}
 				}
 				
-				// Format login fields
-				$login_fields = array();
-				foreach( $login_defaults as $login_field_name => $login_field_default ) {
-					$login_fields[ $login_field_name ] = isset( $raw_field_data[ $field ][ $login_field_name ] ) ? $raw_field_data[ $field ][ $login_field_name ] : ( isset( $login_field_default[ $field ] ) ? $login_field_default[ $field ] : $default_data[ $field ][ $login_field_name ] );
+				// Format log in fields
+				$log_in_fields = array();
+				foreach( $log_in_defaults as $log_in_field_name => $log_in_field_default ) {
+					$log_in_fields[ $log_in_field_name ] = $default_data[ $key ][ $log_in_field_name ];
+					if( isset( $raw_login_field_data[ $log_in_field_name ] ) ) {
+						if( $is_translatable ) {
+							if( $raw_login_field_data[ $log_in_field_name ] ) { $log_in_fields[ $log_in_field_name ] = $context !== 'edit' ? apply_filters( 'bookacti_translate_text', $raw_login_field_data[ $log_in_field_name ] ) : $raw_login_field_data[ $log_in_field_name ]; }
+						} else {
+							$log_in_fields[ $log_in_field_name ] = $raw_login_field_data[ $log_in_field_name ];
+						}
+					}
 				}
 				
 				// Format login type
 				$login_types = array();
 				foreach( $login_type_defaults as $login_type_name => $login_type_default ) {
-					$login_types[ $login_type_name ] = isset( $raw_field_data[ $field ][ $login_type_name ] ) ? $raw_field_data[ $field ][ $login_type_name ] : ( isset( $login_type_default[ $field ] ) ? $login_type_default[ $field ] : $default_data[ $field ][ $login_type_name ] );
+					$login_types[ $login_type_name ] = $default_data[ $key ][ $login_type_name ];
+					if( isset( $raw_login_field_data[ $login_type_name ] ) ) {
+						if( $is_translatable ) {
+							if( $raw_login_field_data[ $login_type_name ] ) { $login_types[ $login_type_name ] = $context !== 'edit' ? apply_filters( 'bookacti_translate_text', $raw_login_field_data[ $login_type_name ] ) : $raw_login_field_data[ $login_type_name ]; }
+						} else {
+							$login_types[ $login_type_name ] = $raw_login_field_data[ $login_type_name ];
+						}
+					}
 				}
 				
 				// Merge register fields
-				$field_data[ $field ] = array_merge( $login_fields, $login_types, $register_fields );
+				$field_data[ $key ] = array_merge( $log_in_fields, $login_types, $register_fields );
 
 			} else {
-				$field_data[ $field ] = $default_data[ $field ];
+				$field_data[ $key ] = $default_data[ $key ];
 			}
 		}
 		
@@ -787,15 +845,28 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 		$field_data[ 'label' ] = $raw_field_data[ 'label' ];
 		
 	} else if( $raw_field_data[ 'name' ] === 'submit' ) {
+		// Format Submit button label
+		$keys_by_type = array( 'str' => array( 'value' ) );
+		$field_data = bookacti_sanitize_values( $default_data, $raw_field_data, $keys_by_type );
+		// Translate texts
+		if( $context !== 'edit' ) {
+			if( ! empty( $raw_field_data[ 'value' ] ) ) { $field_data[ 'value' ] = apply_filters( 'bookacti_translate_text', $raw_field_data[ 'value' ] ); }
+		}
+		
 	} else if( $raw_field_data[ 'name' ] === 'free_text' ) {
 		// Format common values (specific cases)
 		if( isset( $raw_field_data[ 'value' ] ) ) {
-			$field_data[ 'value' ] = wpautop( $raw_field_data[ 'value' ] );
+			// Translate texts
+			if( $context !== 'edit' ) {
+				$field_data[ 'value' ] = $raw_field_data[ 'value' ] ? wpautop( apply_filters( 'bookacti_translate_text', $raw_field_data[ 'value' ], '', true, array( 'string_name' => ! empty( $raw_field_data[ 'field_id' ] ) ? 'Form field #' . $raw_field_data[ 'field_id' ] . ' - value' : '' ) ) ) : $raw_field_data[ 'value' ];
+			} else {
+				$field_data[ 'value' ] = $raw_field_data[ 'value' ];
+			}
 		}
 	} else if( $raw_field_data[ 'name' ] === 'total_price' ) {
 		// Format meta values
 		$keys_by_type = array( 'bool' => array( 'price_breakdown' ) );
-		$field_meta = bookacti_sanitize_values( $default_meta, $raw_field_data, $keys_by_type, $field_meta );
+		$field_meta = bookacti_sanitize_values( $default_meta, $raw_field_data, $keys_by_type );
 	}
 	
 	// Format common values
@@ -804,26 +875,34 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 		'str_id' => array( 'name', 'type', 'id' ),
 		'str'    => array( 'title', 'label', 'class', 'value', 'placeholder', 'tip' ),
 		'array'  => array( 'options' ),
-		'bool'   => array( 'compulsory', 'default', 'unique', 'required' )
+		'bool'   => array( 'compulsory', 'default', 'unique', 'required', 'active' )
 	);
 	$formatted_field_data = bookacti_sanitize_values( $default_data, $raw_field_data, $keys_by_type, $field_data );
 	
-	if( ! $formatted_field_data[ 'title' ] ) { $formatted_field_data[ 'title' ] = $default_data[ 'title' ]; }
+	// Translate texts
+	$translatable_keys = array( 'title', 'label', 'placeholder', 'tip' );
+	foreach( $translatable_keys as $key ) {
+		if( is_string( $formatted_field_data[ $key ] ) ) { 
+			$formatted_field_data[ $key ] = ! empty( $raw_field_data[ $key ] ) ? ( $context !== 'edit' ? apply_filters( 'bookacti_translate_text', $raw_field_data[ $key ] ) : $raw_field_data[ $key ] ) : ( isset( $field_data[ $key ] ) ? $field_data[ $key ] : $default_data[ $key ] );
+		}
+	}
 	
 	// Keep only meta declared in default meta
 	foreach( $default_meta as $name => $default ) {
 		if( ! isset( $field_meta[ $name ] ) ) { $field_meta[ $name ] = $default; }
 	}
 	$formatted_field_meta = array_intersect_key( $field_meta, $default_meta );
-		
-	return apply_filters( 'bookacti_formatted_field_data', array_merge( $formatted_field_data, $formatted_field_meta ), $raw_field_data );
+	
+	$formatted_field_data = apply_filters( 'bookacti_formatted_field_data', array_merge( $formatted_field_data, $formatted_field_meta ), $raw_field_data, $context );
+	
+	return $formatted_field_data;
 }
 
 
 /**
  * Sanitize field data according to its type
  * @since 1.5.0
- * @version 1.13.0
+ * @version 1.14.0
  * @param array|string $raw_field_data
  * @return array
  */
@@ -831,8 +910,8 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 	// Check if name and type are set
 	if( ! is_array( $raw_field_data ) || empty( $raw_field_data[ 'name' ] ) || empty( $raw_field_data[ 'type' ] ) ) { return array(); }
 	
-	$default_data = bookacti_get_default_form_fields_data( $raw_field_data[ 'name' ] );
-	$default_meta = bookacti_get_default_form_fields_meta( $raw_field_data[ 'name' ] );
+	$default_data = bookacti_get_default_form_fields_data( $raw_field_data[ 'name' ], 'edit' );
+	$default_meta = bookacti_get_default_form_fields_meta( $raw_field_data[ 'name' ], 'edit' );
 	
 	if( ! $default_data ) { return array(); }
 	
@@ -882,7 +961,7 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 			if( $start_dt > $end_dt ) {
 				$start = $field_meta[ 'start' ];
 				$field_meta[ 'start' ] = $field_meta[ 'end' ];
-				$field_meta[ 'end' ] = $start;
+				$field_meta[ 'end' ]   = $start;
 			}
 		}
 		
@@ -891,7 +970,7 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 		&&  $field_meta[ 'availability_period_start' ] > $field_meta[ 'availability_period_end' ] ) {
 			$availability_period_start = $field_meta[ 'availability_period_start' ];
 			$field_meta[ 'availability_period_start' ] = $field_meta[ 'availability_period_end' ];
-			$field_meta[ 'availability_period_end' ] = $availability_period_start;
+			$field_meta[ 'availability_period_end' ]   = $availability_period_start;
 		}
 		
 		$field_meta[ 'form_action' ]                    = isset( $raw_field_data[ 'form_action' ] ) && in_array( $raw_field_data[ 'form_action' ], array_keys( bookacti_get_available_form_actions() ), true ) ? $raw_field_data[ 'form_action' ] : $default_meta[ 'form_action' ];
@@ -915,65 +994,73 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 			'str_id' => array( 'new_user_role' ),
 			'str'    => array( 'login_button_label', 'register_button_label' )
 		);
-		$field_meta = bookacti_sanitize_values( $default_meta, $raw_field_data, $keys_by_type, $field_meta );
+		$field_meta = bookacti_sanitize_values( $default_meta, $raw_field_data, $keys_by_type );
 		
 		// Treat 'required_fields' and 'displayed_fields' field meta as a common field data
 		$default_data[ 'displayed_fields' ] = $default_meta[ 'displayed_fields' ]; unset( $default_meta[ 'displayed_fields' ] );
-		$default_data[ 'required_fields' ] = $default_meta[ 'required_fields' ]; unset( $default_meta[ 'required_fields' ] );
+		$default_data[ 'required_fields' ]  = $default_meta[ 'required_fields' ]; unset( $default_meta[ 'required_fields' ] );
 
 		// Sanitize common values (specific cases)
 		// Sanitize label, placeholder and tip
-		$register_defaults		= bookacti_get_register_fields_default_data();
-		$login_defaults			= bookacti_get_login_fields_default_data();
-		$login_type_defaults	= bookacti_get_login_type_field_default_options();
-		$fields = array( 'label', 'placeholder', 'tip', 'displayed_fields', 'required_fields' );
-		foreach( $fields as $field ) {
-			if( ! isset( $raw_field_data[ $field ] ) ) { continue; }
-			$raw_field_data[ $field ] = maybe_unserialize( $raw_field_data[ $field ] );
-			if( is_array( $raw_field_data[ $field ] ) ) {
+		$register_defaults   = bookacti_get_register_fields_default_data( 'edit' );
+		$log_in_defaults     = bookacti_get_log_in_fields_default_data( 'edit' );
+		$login_type_defaults = bookacti_get_login_type_field_default_options( array(), 'edit' );
+		
+		$keys = array( 'label', 'placeholder', 'tip', 'displayed_fields', 'required_fields' );
+		foreach( $keys as $key ) {
+			$raw_login_field_data = isset( $raw_field_data[ $key ] ) ? maybe_unserialize( $raw_field_data[ $key ] ) : array();
+			$is_translatable = in_array( $key, array( 'label', 'placeholder', 'tip' ), true );
+			
+			if( is_array( $raw_login_field_data ) && $raw_login_field_data ) {
+				// Sanitize booleans
+				if( in_array( $key, array( 'displayed_fields', 'required_fields' ), true ) ) { $raw_login_field_data = array_map( 'intval', $raw_login_field_data ); }
+				
+				// Sanitize strings
+				else { $raw_login_field_data = array_map( 'stripslashes', $raw_login_field_data ); }
+				
 				// Sanitize register fields
 				$register_fields = array();
 				foreach( $register_defaults as $register_field_name => $register_default ) {
-					$register_fields[ $register_field_name ] = isset( $raw_field_data[ $field ][ $register_field_name ] ) ? stripslashes( $raw_field_data[ $field ][ $register_field_name ] ) : ( isset( $register_default[ $field ] ) ? $register_default[ $field ] : $default_data[ $field ][ $register_field_name ] );
+					$register_fields[ $register_field_name ] = isset( $raw_login_field_data[ $register_field_name ] ) ? $raw_login_field_data[ $register_field_name ] : ( $is_translatable ? '' : $default_data[ $key ][ $register_field_name ] );
 				}
 				
 				// Sanitize login fields
-				$login_fields = array();
-				foreach( $login_defaults as $login_field_name => $login_field_default ) {
-					$login_fields[ $login_field_name ] = isset( $raw_field_data[ $field ][ $login_field_name ] ) ? stripslashes( $raw_field_data[ $field ][ $login_field_name ] ) : ( isset( $login_field_default[ $field ] ) ? $login_field_default[ $field ] : $default_data[ $field ][ $login_field_name ] );
+				$log_in_fields = array();
+				foreach( $log_in_defaults as $log_in_field_name => $log_in_field_default ) {
+					$log_in_fields[ $log_in_field_name ] = isset( $raw_login_field_data[ $log_in_field_name ] ) ? $raw_login_field_data[ $log_in_field_name ] : ( $is_translatable ? '' : $default_data[ $key ][ $log_in_field_name ] );
 				}
 				
 				// Sanitize login type
 				$login_types = array();
 				foreach( $login_type_defaults as $login_type_name => $login_type_default ) {
-					$login_types[ $login_type_name ] = isset( $raw_field_data[ $field ][ $login_type_name ] ) ? stripslashes( $raw_field_data[ $field ][ $login_type_name ] ) : ( isset( $login_type_default[ $field ] ) ? $login_type_default[ $field ] : $default_data[ $field ][ $login_type_name ] );
+					$login_types[ $login_type_name ] = isset( $raw_login_field_data[ $login_type_name ] ) ? $raw_login_field_data[ $login_type_name ] : ( $is_translatable ? '' : $default_data[ $key ][ $login_type_name ] );
 				}
 				
 				// Merge register fields
-				$field_data[ $field ] = array_merge( $login_fields, $login_types, $register_fields );
+				$field_data[ $key ] = array_merge( $log_in_fields, $login_types, $register_fields );
 			} else {
-				$field_data[ $field ] = $default_data[ $field ];
+				$field_data[ $key ] = array();
 			}
 		}
 		
+		// Exception: $field_data[ 'placeholder' ][ 'remember' ] must be a integer
+		if(     isset( $field_data[ 'placeholder' ][ 'remember' ] ) 
+		&& is_numeric( $field_data[ 'placeholder' ][ 'remember' ] ) ) { $field_data[ 'placeholder' ][ 'remember' ] = intval( $field_data[ 'placeholder' ][ 'remember' ] ); }
+		
 	} else if( $raw_field_data[ 'name' ] === 'quantity' ) {
 	} else if( $raw_field_data[ 'name' ] === 'terms' ) {
-		// Sanitize common values (specific cases)
-		if( isset( $raw_field_data[ 'label' ] ) ) {
-			$field_data[ 'label' ] = bookacti_sanitize_form_field_free_text( $raw_field_data[ 'label' ] );
-		}
+		if( isset( $raw_field_data[ 'label' ] ) ) { $field_data[ 'label' ] = bookacti_sanitize_form_field_free_text( $raw_field_data[ 'label' ] ); }
 		
 	} else if( $raw_field_data[ 'name' ] === 'submit' ) {
-		
+		$field_data[ 'value' ] = isset( $raw_field_data[ 'value' ] ) ? sanitize_text_field( $raw_field_data[ 'value' ] ) : '';
+	
 	} else if( $raw_field_data[ 'name' ] === 'free_text' ) {
-		// Sanitize common values (specific cases)
-		if( isset( $raw_field_data[ 'value' ] ) ) {
-			$field_data[ 'value' ] = bookacti_sanitize_form_field_free_text( $raw_field_data[ 'value' ] );
-		}
+		$field_data[ 'value' ] = isset( $raw_field_data[ 'value' ] ) ? bookacti_sanitize_form_field_free_text( $raw_field_data[ 'value' ] ) : '';
+		
 	} else if( $raw_field_data[ 'name' ] === 'total_price' ) {
 		// Sanitize meta values
 		$keys_by_type = array( 'bool' => array( 'price_breakdown' ) );
-		$field_meta = bookacti_sanitize_values( $default_meta, $raw_field_data, $keys_by_type, $field_meta );
+		$field_meta = bookacti_sanitize_values( $default_meta, $raw_field_data, $keys_by_type );
 	}
 	
 	// Sanitize common values
@@ -982,7 +1069,7 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 		'str_id' => array( 'name', 'type', 'id' ),
 		'str'    => array( 'title', 'label', 'class', 'value', 'placeholder', 'tip' ),
 		'array'  => array( 'options' ),
-		'bool'   => array( 'compulsory', 'default', 'unique', 'required' )
+		'bool'   => array( 'compulsory', 'default', 'unique', 'required', 'active' )
 	);
 	$sanitized_raw_field_data = bookacti_sanitize_values( $default_data, $raw_field_data, $keys_by_type, $field_data );
 	
@@ -1002,47 +1089,9 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 
 
 /**
- * Update the metadata of a specific field
- * @since 1.5.0
- * @param array $meta
- * @param int|string $field_id_or_name If you give the field name, it must be a unique field and you must give the form id
- * @param int $form_id Required only if you give the field name instead of the field id
- * @return int|false
- */
-function bookacti_update_form_field_meta( $meta, $field_id_or_name, $form_id = 0 ) {
-	// If we haven't the form ID nor the field ID
-	if( ! is_numeric( $field_id_or_name ) && ! $form_id ) { return false; }
-	// If we have the form id but not the unique field name
-	if( $form_id && ! $field_id_or_name ) { return false; }
-	
-	// Get field
-	if( is_numeric( $field_id_or_name ) ) {
-		$field	= bookacti_get_form_field( $field_id_or_name );
-	} else {
-		$field	= bookacti_get_form_field_by_name( $form_id, $field_id_or_name );
-	}
-	
-	if( ! $field ) { return false; }
-	
-	// Sanitize calendar data
-	$field_required_data	= array( 'type' => $field[ 'type' ], 'name' => $field[ 'name' ] );
-	$field_raw_data			= array_merge( $field_required_data, $meta );
-	$field_sanitized_data	= bookacti_sanitize_form_field_data( $field_raw_data );
-	$field_sanitized_meta	= array_intersect_key( $field_sanitized_data, bookacti_get_default_form_fields_meta( $field[ 'name' ] ) );
-	
-	// Update calendar metadata
-	if( ! $field_sanitized_meta ) { return false; }
-	
-	$updated = bookacti_update_metadata( 'form_field', $field[ 'field_id' ], $field_sanitized_meta );
-	
-	return $updated;
-}
-
-
-/**
  * Sanitize the values entered by the user in the form fields
  * @since 1.5.0
- * @version 1.12.4
+ * @version 1.14.0
  * @param array $values
  * @param string $field_type
  * @return array
@@ -1060,10 +1109,10 @@ function bookacti_sanitize_form_field_values( $values, $field_type = '' ) {
 		$sanitized_values[ 'password_strength' ] = ! empty( $values[ 'password_strength' ] ) ? intval( $values[ 'password_strength' ] ) : 1;
 		$sanitized_values[ 'remember' ] = ! empty( $values[ 'remember' ] ) ? 1 : 0;
 		
-		$login_types = bookacti_get_login_type_field_default_options();
+		$login_types = bookacti_get_login_type_field_default_options( array(), 'edit' );
 		$sanitized_values[ 'login_type' ] = ! empty( $values[ 'login_type' ] ) && in_array( $values[ 'login_type' ], array_keys( $login_types ), true ) ? $values[ 'login_type' ] : '';
 		
-		$default_register_data = bookacti_get_register_fields_default_data();
+		$default_register_data = bookacti_get_register_fields_default_data( 'edit' );
 		$default_register_values = array();
 		foreach( $default_register_data as $field_name => $register_field ) {
 			$default_register_values[ $field_name ] = $register_field[ 'value' ];
@@ -1081,7 +1130,7 @@ function bookacti_sanitize_form_field_values( $values, $field_type = '' ) {
 /**
  * Display a form field
  * @since 1.5.0
- * @version 1.12.0
+ * @version 1.14.0
  * @param array $field
  * @param string $instance_id
  * @param string $context
@@ -1105,14 +1154,14 @@ function bookacti_display_form_field( $field, $instance_id = '', $context = 'dis
 	<?php if( ! empty( $field[ 'label' ] ) && is_string( $field[ 'label' ] ) ) { ?>
 		<div class='bookacti-form-field-label' >
 			<label>
-			<?php 
-				echo apply_filters( 'bookacti_translate_text', $field[ 'label' ] ); 
+			<?php
+				echo $field[ 'label' ];
 				if( $field[ 'required' ] ) {
 					echo '<span class="bookacti-required-field-indicator" title="' . esc_attr__( 'Required field', 'booking-activities' ) . '"></span>';
 				}
 			?>
 			</label>
-		<?php if( ! empty( $field[ 'tip' ] ) && is_string( $field[ 'tip' ] )) { bookacti_help_tip( apply_filters( 'bookacti_translate_text', esc_html( $field[ 'tip' ] ) ) ); } ?>
+		<?php if( ! empty( $field[ 'tip' ] ) && is_string( $field[ 'tip' ] )) { bookacti_help_tip( esc_html( $field[ 'tip' ] ) ); } ?>
 		</div>
 	<?php } ?>
 		<div class='bookacti-form-field-content' >
@@ -1131,7 +1180,7 @@ function bookacti_display_form_field( $field, $instance_id = '', $context = 'dis
 /**
  * Display a form field for the form editor
  * @since 1.5.0
- * @version 1.7.18
+ * @version 1.14.0
  * @param array $field
  * @param boolean $echo
  * @return string|void
@@ -1139,10 +1188,10 @@ function bookacti_display_form_field( $field, $instance_id = '', $context = 'dis
 function bookacti_display_form_field_for_editor( $field, $echo = true ) {
 	$field_name = esc_attr( $field[ 'name' ] );
 	$field_class= 'bookacti-form-editor-field';
-	if( ! empty( $field[ 'name' ] ) )		{ $field_class .= ' bookacti-form-field-name-' . sanitize_title_with_dashes( esc_attr( $field[ 'name' ] ) ); } 
-	if( ! empty( $field[ 'type' ] ) )		{ $field_class .= ' bookacti-form-field-type-' . sanitize_title_with_dashes( esc_attr( $field[ 'type' ] ) ); } 
-	if( ! empty( $field[ 'field_id' ] ) )	{ $field_class .= ' bookacti-form-field-id-' . esc_attr( $field[ 'field_id' ] ); }
-	if( ! empty( $field[ 'class' ] ) )		{ $field_class .= ' ' . esc_attr( $field[ 'class' ] ); }
+	if( ! empty( $field[ 'name' ] ) )     { $field_class .= ' bookacti-form-field-name-' . sanitize_title_with_dashes( esc_attr( $field[ 'name' ] ) ); } 
+	if( ! empty( $field[ 'type' ] ) )     { $field_class .= ' bookacti-form-field-type-' . sanitize_title_with_dashes( esc_attr( $field[ 'type' ] ) ); } 
+	if( ! empty( $field[ 'field_id' ] ) ) { $field_class .= ' bookacti-form-field-id-' . esc_attr( $field[ 'field_id' ] ); }
+	if( ! empty( $field[ 'class' ] ) )    { $field_class .= ' ' . esc_attr( $field[ 'class' ] ); }
 	$field[ 'id' ] = esc_attr( 'bookacti-form-editor-' . $field_name );
 	if( ! $field[ 'unique' ] ) { $field[ 'id' ] .= '-' . esc_attr( $field[ 'field_id' ] ); }
 	if( ! $echo ) { ob_start(); }
@@ -1150,10 +1199,10 @@ function bookacti_display_form_field_for_editor( $field, $echo = true ) {
 	<div id='bookacti-form-editor-field-<?php echo esc_attr( $field[ 'field_id' ] ); ?>' class='<?php echo $field_class; ?>' data-field-id='<?php echo esc_attr( $field[ 'field_id' ] ); ?>' data-field-name='<?php echo esc_attr( $field[ 'name' ] ); ?>' >
 		<div class='bookacti-form-editor-field-header' >
 			<div class='bookacti-form-editor-field-title' >
-				<h3><?php echo wp_kses_post( apply_filters( 'bookacti_translate_text', $field[ 'title' ] ) ); ?></h3>
+				<h3><?php echo wp_kses_post( $field[ 'title' ] ); ?></h3>
 			</div>
 			<div class='bookacti-form-editor-field-actions' >
-			<?php 
+			<?php
 				do_action( 'bookacti_form_editor_field_actions_before', $field );
 			?>
 				<div id='bookacti-edit-form-field-<?php echo esc_attr( $field[ 'field_id' ] ); ?>' class='bookacti-form-editor-field-action bookacti-edit-form-field <?php echo $field_name === 'calendar' ? 'button button-secondary' : 'dashicons dashicons-admin-generic'; ?>' title='<?php esc_attr_e( 'Change field settings', 'booking-activities' ); ?>'><?php if( $field_name === 'calendar' ) { esc_attr_e( 'Calendar settings', 'booking-activities' ); } ?></div>
@@ -1179,7 +1228,7 @@ function bookacti_display_form_field_for_editor( $field, $echo = true ) {
 /**
  * Validate register fields
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.14.0
  * @param array $login_values
  * @param array $login_data
  * @return array
@@ -1206,7 +1255,7 @@ function bookacti_validate_registration( $login_values, $login_data ) {
 	foreach( $login_data[ 'required_fields' ] as $field_name => $is_required ) {
 		if( $is_required && empty( $login_values[ $field_name ] ) ) {
 			if( $field_name === 'password' && ! empty( $login_values[ 'login_type' ] ) && $login_values[ 'login_type' ] === 'new_account' && $login_data[ 'generate_password' ] ) { continue; }
-			$field_label = ! empty( $login_data[ 'label' ][ $field_name ] ) ? apply_filters( 'bookacti_translate_text', $login_data[ 'label' ][ $field_name ] ) : $field_name;
+			$field_label = ! empty( $login_data[ 'label' ][ $field_name ] ) ? $login_data[ 'label' ][ $field_name ] : $field_name;
 			/* translators: %s is the field name. */
 			$return_array[ 'messages' ][ 'missing_' . $field_name ] = sprintf( esc_html__( 'The field "%s" is required.', 'booking-activities' ), $field_label );
 		}
@@ -1403,15 +1452,15 @@ function bookacti_sanitize_form_field_order( $form_id, $field_order ) {
 /**
  * Get form fields order
  * @since 1.12.0
- * @version 1.12.3
+ * @version 1.14.0
  * @param int $form_id
  * @return array
  */
 function bookacti_get_form_fields_order( $form_id ) {
-	$form_id = intval( $form_id );
 	$fields_order = wp_cache_get( 'form_fields_order_' . $form_id, 'bookacti' );
-	if( $form_id && ! $fields_order ) {
-		$fields_order = bookacti_ids_to_array( bookacti_get_metadata( 'form', $form_id, 'field_order', true ) );
+	if( $form_id && $fields_order === false ) {
+		$fields_order_raw = bookacti_get_metadata( 'form', $form_id, 'field_order', true );
+		$fields_order     = $fields_order_raw ? bookacti_ids_to_array( $fields_order_raw ) : array();
 		wp_cache_set( 'form_fields_order_' . $form_id, $fields_order, 'bookacti' );
 	}
 	return $fields_order ? $fields_order : array();
@@ -1421,7 +1470,7 @@ function bookacti_get_form_fields_order( $form_id ) {
 /**
  * Sort fields array by field order
  * @since 1.5.0
- * @version 1.12.0
+ * @version 1.14.0
  * @param int $form_id
  * @param array $fields
  * @param boolean $remove_unordered_fields Whether to remove the fields that are not in the field order array 
@@ -1437,6 +1486,7 @@ function bookacti_sort_form_fields_array( $form_id, $fields, $remove_unordered_f
 		$remaining_fields = $fields;
 		foreach( $field_order as $field_id ) {
 			foreach( $fields as $i => $field ) {
+				if( empty( $field[ 'field_id' ] ) ) { continue; }
 				if( $field[ 'field_id' ] !== $field_id ) { continue; }
 				if( $keep_keys ) { $ordered_fields[ $i ] = $fields[ $i ]; }
 				else { $ordered_fields[] = $fields[ $i ]; }
@@ -1465,12 +1515,12 @@ function bookacti_sort_form_fields_array( $form_id, $fields, $remove_unordered_f
 // LOGIN / REGISTRATION
 
 /**
- * Get login fields default data
- * @since 1.6.0
- * @version 1.12.4
+ * Get log in fields default data
+ * @since 1.14.0 (was bookacti_get_login_fields_default_data)
+ * @param string $context
  * @return array
  */
-function bookacti_get_login_fields_default_data() {
+function bookacti_get_log_in_fields_default_data( $context = 'view' ) {
 	$defaults = array(
 		'email' => array( 
 			'name'			=> 'email', 
@@ -1513,18 +1563,19 @@ function bookacti_get_login_fields_default_data() {
 		)
 	);
 	
-	return apply_filters( 'bookacti_login_fields_default_data', $defaults );
+	return apply_filters( 'bookacti_log_in_fields_default_data', $defaults, $context );
 }
 
 
 /**
  * Get user meta fields default data
  * @since 1.6.0
- * @version 1.8.0
+ * @version 1.14.0
  * @param array $keys
+ * @param string $context
  * @return array
  */
-function bookacti_get_login_type_field_default_options( $keys = array() ) {
+function bookacti_get_login_type_field_default_options( $keys = array(), $context = 'view' ) {
 	$login_types = apply_filters( 'bookacti_login_type_field_default_options', array(
 		'my_account' => array( 
 			'value'			=> 'my_account', 
@@ -1550,10 +1601,10 @@ function bookacti_get_login_type_field_default_options( $keys = array() ) {
 			'tip'			=> '',  
 			'displayed'		=> 1
 		)
-	), $keys );
+	), $keys, $context );
 	
 	// Filter by tab
-	if( $keys || ! is_array( $keys ) ) {
+	if( $keys ) {
 		foreach( $login_types as $login_type_name => $login_type ) {
 			if( ! in_array( $login_type_name, $keys, true ) ) {
 				unset( $login_types[ $login_type_name ] );
@@ -1568,9 +1619,11 @@ function bookacti_get_login_type_field_default_options( $keys = array() ) {
 /**
  * Get user meta fields default data
  * @since 1.5.0
+ * @version 1.14.0
+ * @param string $context 'view' or 'edit'
  * @return array
  */
-function bookacti_get_register_fields_default_data() {
+function bookacti_get_register_fields_default_data( $context = 'view' ) {
 	$defaults = array(
 		'first_name' => array( 
 			'name'			=> 'first_name', 
@@ -1594,7 +1647,7 @@ function bookacti_get_register_fields_default_data() {
 		),
 		'phone' => array( 
 			'name'			=> 'phone', 
-			'type'			=> 'text', 
+			'type'			=> 'tel', 
 			'label'			=> esc_html__( 'Phone number', 'booking-activities' ), 
 			'placeholder'	=> '', 
 			'tip'			=> '', 
@@ -1604,7 +1657,7 @@ function bookacti_get_register_fields_default_data() {
 		)
 	);
 	
-	return apply_filters( 'bookacti_register_fields_default_data', $defaults );
+	return apply_filters( 'bookacti_register_fields_default_data', $defaults, $context );
 }
 
 
@@ -1695,12 +1748,13 @@ function bookacti_format_form_filters( $filters = array() ) {
 /**
  * Display 'managers' metabox content for forms
  * @since 1.5.0
- * @version 1.12.0
+ * @version 1.14.0
+ * @param array $form_raw
  */
-function bookacti_display_form_managers_meta_box( $form ) {
+function bookacti_display_form_managers_meta_box( $form_raw ) {
 	// Get current form managers option list
 	$managers_already_added = array();
-	$manager_ids = bookacti_get_form_managers( $form[ 'form_id' ] );
+	$manager_ids = bookacti_get_form_managers( $form_raw[ 'form_id' ] );
 	
 	// Get available form managers option list
 	$form_managers_cap = array( 'bookacti_edit_forms' );
@@ -1752,22 +1806,22 @@ function bookacti_display_form_managers_meta_box( $form ) {
 /**
  * Display 'publish' metabox content for forms
  * @since 1.5.0
- * @version 1.7.12
- * @param array $form
+ * @version 1.14.0
+ * @param array $form_raw
  */
-function bookacti_display_form_publish_meta_box( $form ) {
+function bookacti_display_form_publish_meta_box( $form_raw ) {
 ?>
 	<div class='submitbox' id='submitpost'>
-		<div id='major-publishing-actions' data-popup='<?php echo ! $form[ 'active' ] && $form[ 'status' ] !== 'trash' ? 1 : 0; ?>' >
+		<div id='major-publishing-actions' data-popup='<?php echo ! $form_raw[ 'active' ] && $form_raw[ 'status' ] !== 'trash' ? 1 : 0; ?>' >
 			<div id='delete-action'>
 			<?php
 				if ( current_user_can( 'bookacti_delete_forms' ) ) {
-					if( ! $form[ 'active' ] ) {
-						echo '<a href="' . esc_url( wp_nonce_url( admin_url( 'admin.php?page=bookacti_forms&action=delete&form_id=' . $form[ 'form_id' ] ), 'delete-form_' . $form[ 'form_id' ] ) ) . '" class="submitdelete deletion" >'
+					if( ! $form_raw[ 'active' ] ) {
+						echo '<a href="' . esc_url( wp_nonce_url( admin_url( 'admin.php?page=bookacti_forms&action=delete&form_id=' . $form_raw[ 'form_id' ] ), 'delete-form_' . $form_raw[ 'form_id' ] ) ) . '" class="submitdelete deletion" >'
 								. esc_html_x( 'Delete Permanently', 'forms', 'booking-activities' )
 							. '</a>';
 					} else {
-						echo '<a href="' . esc_url( wp_nonce_url( admin_url( 'admin.php?page=bookacti_forms&status=trash&action=trash&form_id=' . $form[ 'form_id' ] ), 'trash-form_' . $form[ 'form_id' ] ) ) . '" class="submitdelete deletion" >'
+						echo '<a href="' . esc_url( wp_nonce_url( admin_url( 'admin.php?page=bookacti_forms&status=trash&action=trash&form_id=' . $form_raw[ 'form_id' ] ), 'trash-form_' . $form_raw[ 'form_id' ] ) ) . '" class="submitdelete deletion" >'
 								. esc_html_x( 'Move to trash', 'forms', 'booking-activities' )
 							. '</a>';
 					}
@@ -1782,7 +1836,7 @@ function bookacti_display_form_publish_meta_box( $form ) {
 					   type='submit' 
 					   class='button button-primary button-large' 
 					   id='publish' 
-					   value='<?php echo $form[ 'active' ] ? esc_attr_x( 'Update', 'forms', 'booking-activities' ) : ( $form[ 'status' ] === 'auto-draft' ? esc_attr_x( 'Publish', 'forms', 'booking-activities' ) : esc_attr_x( 'Restore', 'forms', 'booking-activities' ) ); ?>' 
+					   value='<?php echo $form_raw[ 'active' ] ? esc_attr_x( 'Update', 'forms', 'booking-activities' ) : ( $form_raw[ 'status' ] === 'auto-draft' ? esc_attr_x( 'Publish', 'forms', 'booking-activities' ) : esc_attr_x( 'Restore', 'forms', 'booking-activities' ) ); ?>' 
 				/>
 			</div>
 			<div class='clear'></div>
@@ -1795,10 +1849,11 @@ function bookacti_display_form_publish_meta_box( $form ) {
 /**
  * Display 'integration tuto' metabox content for forms
  * @since 1.5.0
- * @param array $form
+ * @version 1.14.0
+ * @param array $form_raw
  */
-function bookacti_display_form_integration_tuto_meta_box( $form ) {
-	$shortcode = '[bookingactivities_form form="' . $form[ 'form_id' ] . '"]';
+function bookacti_display_form_integration_tuto_meta_box( $form_raw ) {
+	$shortcode = '[bookingactivities_form form="' . $form_raw[ 'form_id' ] . '"]';
 ?>
 	<h4><?php _e( 'Integrate in a post, page, or text widget', 'booking-activities' ) ?></h4>
 	<div>
@@ -1808,7 +1863,7 @@ function bookacti_display_form_integration_tuto_meta_box( $form ) {
 		</p>
 	</div>
 <?php
-	do_action( 'bookacti_after_form_integration_tuto', $form );
+	do_action( 'bookacti_after_form_integration_tuto', $form_raw );
 }
 
 

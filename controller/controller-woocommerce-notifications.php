@@ -83,16 +83,12 @@ add_action( 'bookacti_wc_order_item_booking_updated', 'bookacti_wc_send_notifica
 /**
  * Add a mention to notifications
  * @since 1.8.6 (was bookacti_add_admin_refunded_booking_notification before)
+ * @version 1.14.0
  * @param array $notifications
  * @return array
  */
 function bookacti_add_price_info_to_admin_refund_notifications( $notifications ) {
-	$refund_message = preg_replace( '/\t+/', '', 
-			PHP_EOL
-		.	__( '<h4>Refund</h4>
-			Price: {price}
-			Coupon: {refund_coupon_code}
-			', 'booking-activities' ) );
+	$refund_message = __( '<h4>Refund</h4>Price: {price}<br/>Coupon: {refund_coupon_code}', 'booking-activities' );
 	if( isset( $notifications[ 'admin_refund_requested_booking' ] ) ) { 
 		$notifications[ 'admin_refund_requested_booking' ][ 'email' ][ 'message' ] .= $refund_message;
 	}
@@ -216,15 +212,14 @@ add_filter( 'bookacti_notifications_tags', 'bookacti_wc_notifications_tags', 15,
 /**
  * Set WC notifications tags values
  * @since 1.6.0
- * @version 1.12.7
+ * @version 1.14.0
  * @param array $tags
  * @param object $booking
  * @param string $booking_type
  * @param array $notification
- * @param string $locale
  * @return array
  */
-function bookacti_wc_notifications_tags_values( $tags, $booking, $booking_type, $notification, $locale ) {
+function bookacti_wc_notifications_tags_values( $tags, $booking, $booking_type, $notification ) {
 	if( ! $booking ) { return $tags; }
 	
 	$item = $booking_type === 'group' ? bookacti_get_order_item_by_booking_group_id( $booking ) : bookacti_get_order_item_by_booking_id( $booking );
@@ -232,20 +227,21 @@ function bookacti_wc_notifications_tags_values( $tags, $booking, $booking_type, 
 	// Use WC user data if the booking was made with WC, or if we only have these data
 	$user = is_numeric( $booking->user_id ) ? get_user_by( 'id', $booking->user_id ) : null;
 	if( $user ) {
-		if( ! empty( $user->billing_first_name ) && ( $item || empty( $tags[ '{user_firstname}' ] ) ) )	{ $tags[ '{user_firstname}' ]	= $user->billing_first_name; }
-		if( ! empty( $user->billing_last_name ) && ( $item || empty( $tags[ '{user_lastname}' ] ) ) )	{ $tags[ '{user_lastname}' ]	= $user->billing_last_name; }
-		if( ! empty( $user->billing_email ) && ( $item || empty( $tags[ '{user_email}' ] ) ) )			{ $tags[ '{user_email}' ]		= $user->billing_email; }
-		if( ! empty( $user->billing_phone ) && ( $item || empty( $tags[ '{user_phone}' ] ) ) )			{ $tags[ '{user_phone}' ]		= $user->billing_phone; }
+		if( ! empty( $user->billing_first_name ) && ( $item || empty( $tags[ '{user_firstname}' ] ) ) ) { $tags[ '{user_firstname}' ] = $user->billing_first_name; }
+		if( ! empty( $user->billing_last_name )  && ( $item || empty( $tags[ '{user_lastname}' ] ) ) )  { $tags[ '{user_lastname}' ]  = $user->billing_last_name; }
+		if( ! empty( $user->billing_email )      && ( $item || empty( $tags[ '{user_email}' ] ) ) )     { $tags[ '{user_email}' ]     = $user->billing_email; }
+		if( ! empty( $user->billing_phone )      && ( $item || empty( $tags[ '{user_phone}' ] ) ) )     { $tags[ '{user_phone}' ]     = $user->billing_phone; }
 	}
 	
 	if( ! $item ) { return $tags; }
 	
-	$product_id = $item->get_variation_id() ? $item->get_variation_id() : $item->get_product_id();
+	$item_id         = $item->get_id();
+	$product_id      = $item->get_variation_id() ? $item->get_variation_id() : $item->get_product_id();
+	$order_id        = $item->get_order_id();
 	$order_item_name = $item->get_name();
-	$tags[ '{product_id}' ]		= $product_id ? $product_id : '';
-	$tags[ '{product_title}' ]	= $order_item_name ? apply_filters( 'bookacti_translate_text', $order_item_name, $locale ) : '';
+	$tags[ '{product_id}' ]    = $product_id ? $product_id : '';
+	$tags[ '{product_title}' ] = $order_item_name !== '' ? apply_filters( 'bookacti_translate_text_external', $order_item_name, '', true, array( 'domain' => 'woocommerce', 'object_type' => 'order_item', 'object_id' => $item_id, 'field' => 'title', 'order_id' => $order_id ) ) : $order_item_name;
 	
-	$item_id = $item->get_id();
 	$item_price = (float) $item->get_total() + (float) $item->get_total_tax();
 	$currency = get_post_meta( $booking->order_id, '_order_currency', true );
 	$tags[ '{price}' ]	= $currency ? wc_price( $item_price, array( 'currency' => $currency ) ) : $item_price;
@@ -268,7 +264,7 @@ function bookacti_wc_notifications_tags_values( $tags, $booking, $booking_type, 
 	
 	return $tags;
 }
-add_filter( 'bookacti_notifications_tags_values', 'bookacti_wc_notifications_tags_values', 15, 5 );
+add_filter( 'bookacti_notifications_tags_values', 'bookacti_wc_notifications_tags_values', 15, 4 );
 
 
 /**

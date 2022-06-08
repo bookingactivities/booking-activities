@@ -168,7 +168,7 @@ function bookacti_get_activity_default_meta() {
 /**
  * Sanitize activity data
  * @since 1.12.0 (was bookacti_format_activity_settings)
- * @version 1.13.0
+ * @version 1.14.0
  * @param array $raw_data
  * @return array
  */
@@ -197,7 +197,7 @@ function bookacti_sanitize_activity_data( $raw_data ) {
 	||  ( is_numeric( $raw_data[ 'booking_changes_deadline' ] ) && intval( $raw_data[ 'booking_changes_deadline' ] ) < 0 ) ) { $data[ 'booking_changes_deadline' ] = ''; }
 	
 	// Sanitize managers
-	$data[ 'managers' ] = bookacti_sanitize_template_managers( $data[ 'managers' ] );
+	$data[ 'managers' ] = bookacti_sanitize_activity_managers( $data[ 'managers' ] );
 	
 	return apply_filters( 'bookacti_sanitized_activity_data', $data, $raw_data );
 }
