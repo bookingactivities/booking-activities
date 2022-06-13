@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Send a new status notification for a booking attached to an order item
  * @since 1.9.0
- * @version 1.11.5
+ * @version 1.14.1
  * @param array $order_item_booking
  * @param string $new_status
  * @param WC_Order $order
@@ -19,13 +19,13 @@ function bookacti_wc_send_order_item_booking_status_notification( $order_item_bo
 	$notify_admin = 0;
 	if(	 in_array( $new_status, array( 'booked', 'pending' ) )
 	&& ! in_array( $action, array( 'woocommerce_mark_order_status', 'editpost' ) ) ) {
-		$admin_notification	= bookacti_get_notification_settings( 'admin_new_booking' );
-		$notify_admin		= ! empty( $admin_notification[ 'active_with_wc' ] ) ? 1 : 0;
+		$admin_notification = bookacti_get_notification_settings( 'admin_new_booking' );
+		$notify_admin = ! empty( $admin_notification[ 'active_with_wc' ] ) ? 1 : 0;
 	}
 	
 	// Check if the customer must be notified
-	$customer_notification	= bookacti_get_notification_settings( 'customer_' . $new_status . '_booking' );
-	$notify_customer		= ! empty( $customer_notification[ 'active_with_wc' ] ) ? 1 : 0;
+	$customer_notification = bookacti_get_notification_settings( 'customer_' . $new_status . '_booking' );
+	$notify_customer = ! empty( $customer_notification[ 'active_with_wc' ] ) ? 1 : 0;
 	
 	// If nobody needs to be notified, do nothing
 	if( ! $notify_admin && ! $notify_customer ) { return; }
@@ -49,14 +49,16 @@ function bookacti_wc_send_order_item_booking_status_notification( $order_item_bo
 	$old_status = $order_item_booking[ 'type' ] === 'group' ? $order_item_booking[ 'bookings' ][ 0 ]->group_state : $order_item_booking[ 'bookings' ][ 0 ]->state;
 	if( $old_status === $new_status && ! $forced ) { return; }
 	
+	$notification_args = apply_filters( 'bookacti_wc_order_item_booking_status_notification_args', array(), $order_item_booking, $new_status, $order, $forced );
+	
 	// Send a booking confirmation to the customer
 	if( $notify_customer && $new_status ) {
-		bookacti_send_notification( 'customer_' . $new_status . '_booking', $order_item_booking[ 'id' ], $order_item_booking[ 'type' ] );
+		bookacti_send_notification( 'customer_' . $new_status . '_booking', $order_item_booking[ 'id' ], $order_item_booking[ 'type' ], $notification_args );
 	}
 
 	// Notify administrators that a new booking has been made
 	if( $notify_admin ) {
-		bookacti_send_notification( 'admin_new_booking', $order_item_booking[ 'id' ], $order_item_booking[ 'type' ] );
+		bookacti_send_notification( 'admin_new_booking', $order_item_booking[ 'id' ], $order_item_booking[ 'type' ], $notification_args );
 	}
 	
 	do_action( 'bookacti_wc_send_order_item_booking_status_notification', $order_item_booking, $new_status, $order, $forced );

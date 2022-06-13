@@ -270,16 +270,16 @@ add_action( 'admin_print_styles', 'bookacti_wpml_print_admin_css' );
  * Remove translated products from select2 product selectbox
  * @since 1.14.0
  * @global woocommerce_wpml $woocommerce_wpml
- * @param type $options
- * @param type $args
- * @return type
+ * @param array $options
+ * @param array $args
+ * @return array
  */
 function bookacti_wpml_select2_remove_translated_products( $options, $args ) {
 	global $woocommerce_wpml;
 	if( ! $woocommerce_wpml ) { return $options; }
 	
 	foreach( $options as $i => $option ) {
-		$product_id = isset( $option[ 'children' ][ 0 ][ 'id' ] ) ? intval($option[ 'children' ][ 0 ][ 'id' ] ) : ( isset( $option[ 'id' ] ) ? intval( $option[ 'id' ] ) : 0 );
+		$product_id = isset( $option[ 'children' ][ 0 ][ 'id' ] ) ? intval( $option[ 'children' ][ 0 ][ 'id' ] ) : ( isset( $option[ 'id' ] ) ? intval( $option[ 'id' ] ) : 0 );
 		if( ! $product_id || ( $product_id && ! $woocommerce_wpml->products->is_original_product( $product_id ) ) ) {
 			unset( $options[ $i ] );
 		}
@@ -291,9 +291,10 @@ add_filter( 'bookacti_ajax_select2_products_options', 'bookacti_wpml_select2_rem
 
 
 /**
- * WPML's function for switch_to_locale (temp fix due to a WPML bug)
+ * WPML's function for switch_to_locale
  * @since 1.14.0
  * @param string $locale
+ * @return string
  */
 function bookacti_wpml_switch_locale( $locale ) {
 	$lang_code = strpos( $locale, '_' ) !== false ? substr( $locale, 0, strpos( $locale, '_' ) ) : $locale;
@@ -304,8 +305,9 @@ add_filter( 'bookacti_switch_locale_callback', function( $callback ) { return bo
 
 
 /**
- * WPML's function for restore_previous_locale (temp fix due to a WPML bug)
+ * WPML's function for restore_previous_locale
  * @since 1.14.0
+ * @return string
  */
 function bookacti_wpml_restore_locale() {
 	do_action( 'wpml_switch_language', null );
@@ -319,16 +321,45 @@ add_filter( 'bookacti_restore_locale_callback', function( $callback ) { return b
 // QTRANSLATE-XT
 
 /**
- * Set qTranslate-XT language after switching locale
+ * qTranslate-XT's function for switch_to_locale
  * @since 1.14.0
+ * @version 1.14.1
  * @global array $q_config
  * @param string $locale
+ * @return string
  */
 function bookacti_qtranxf_switch_locale( $locale ) {
-	if( ! $locale ) { return; }
 	global $q_config;
+	switch_to_locale( $locale );
 	$lang_code = substr( $locale, 0, strpos( $locale, '_' ) );
 	$q_config[ 'language' ] = $lang_code;
+	return $locale;
 }
-add_action( 'bookacti_locale_switched', 'bookacti_qtranxf_switch_locale', 5, 1 );
-add_action( 'bookacti_locale_restored', 'bookacti_qtranxf_switch_locale', 5, 1 );
+add_filter( 'bookacti_switch_locale_callback', function( $callback ) { return bookacti_get_translation_plugin() === 'qtranslate' ? 'bookacti_qtranxf_switch_locale' : $callback; } );
+
+
+/**
+ * qTranslate-XT's function for restore_previous_locale
+ * @since 1.14.1
+ * @global array $q_config
+ * @return string
+ */
+function bookacti_qtranxf_restore_locale() {
+	global $q_config;
+	$locale = restore_previous_locale();
+	if( ! $locale ) { $locale = get_locale(); }
+	$lang_code = substr( $locale, 0, strpos( $locale, '_' ) );
+	$q_config[ 'language' ] = $lang_code;
+	return $locale;
+}
+add_filter( 'bookacti_restore_locale_callback', function( $callback ) { return bookacti_get_translation_plugin() === 'qtranslate' ? 'bookacti_qtranxf_restore_locale' : $callback; } );
+
+
+/**
+ * TEMP FIX - Do not translate cron option, as it may prevent cron jobs from being deleted
+ * @since 1.14.1
+ */
+function bookacti_qtranxf_do_not_translate_options() {
+	remove_filter( 'option_cron', 'qtranxf_translate_option', 5 );
+}
+add_action( 'plugins_loaded', 'bookacti_qtranxf_do_not_translate_options', 10 );
