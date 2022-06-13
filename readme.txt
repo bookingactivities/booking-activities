@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 6.0
 Requires PHP: 5.3
-Stable tag: 1.14.0
+Stable tag: 1.14.1
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -321,8 +321,12 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.14.1 - 2022/06/13 =
+* Fix - Notifications may not be translated according to recipient language with qTranslate-XT
+* Dev - Add hooks to change notifications args before they are sent
+
 = 1.14.0 - 2022/06/08 =
-* **[See the user-friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-14-wpml-comaptibility-multilingual-sites/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
+* **[See the user-friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-14-wpml-compatibility-multilingual-sites/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
 * Compatibility - Support for WPML
 * Tweak - Moved the Calendar localization option to the General tab in the settings
 * Tweak - Allow Booking Activities to natively work with third-party WC product types (may not work as intended though)

@@ -237,7 +237,7 @@ add_action( 'wp_ajax_bookactiInsertEvent', 'bookacti_controller_insert_event' );
 /**
  * AJAX Controller - Update event dates (move or resize an event in the editor)
  * @since 1.10.0 (was bookacti_controller_move_or_resize_event)
- * @version 1.14.0
+ * @version 1.14.1
  */
 function bookacti_controller_update_event_dates() {
 	// Check nonce
@@ -356,8 +356,8 @@ function bookacti_controller_update_event_dates() {
 	}
 	
 	// Maybe send notifications
-	if( $forced_update && $send_notifications && $bookings_to_reschedule ) {
-		bookacti_send_event_rescheduled_notifications( $old_event, $bookings_to_reschedule, $delta_seconds_start, $delta_seconds_end );
+	if( $forced_update && $bookings_to_reschedule ) {
+		bookacti_maybe_send_event_rescheduled_notifications( $old_event, $bookings_to_reschedule, $delta_seconds_start, $delta_seconds_end, $send_notifications );
 	}
 
 	// Fetch new events
@@ -944,7 +944,7 @@ add_action( 'wp_ajax_bookactiBeforeDeleteGroupOfEvents', 'bookacti_controller_be
 /**
  * Delete a group of events with AJAX
  * @since 1.1.0
- * @version 1.13.0
+ * @version 1.14.1
  */
 function bookacti_controller_delete_group_of_events() {
 	// Check nonce
@@ -986,8 +986,8 @@ function bookacti_controller_delete_group_of_events() {
 		bookacti_cancel_group_of_events_bookings( $group_id );
 		
 		// Maybe send notifications
-		if( $send_notifications && $old_booking_groups ) {
-			bookacti_send_group_of_events_cancelled_notifications( $group, $old_booking_groups );
+		if( $old_booking_groups ) {
+			bookacti_maybe_send_group_of_events_cancelled_notifications( $group, $old_booking_groups, $send_notifications );
 		}
 		
 		$bookings_nb_per_event = bookacti_get_number_of_bookings_per_event( array( 'templates' => array( $group[ 'template_id' ] ) ) );

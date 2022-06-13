@@ -58,19 +58,21 @@ add_action( 'bookacti_clean_latest_notifications', 'bookacti_clean_latest_emails
 /**
  * Send a notification to admin and customer when a new booking is made
  * @since 1.2.2 (was bookacti_send_notification_admin_new_booking in 1.2.1)
- * @version 1.11.5
+ * @version 1.14.1
  * @param array $return_array
  * @param array $booking_form_values
  * @param int $form_id
  */
 function bookacti_send_notification_when_booking_is_made( $return_array, $booking_form_values, $form_id ) {
+	$booking_status = ! empty( $booking_form_values[ 'status' ] ) ? $booking_form_values[ 'status' ] : 'booked';
 	foreach( $return_array[ 'bookings' ] as $booking ) {
+		$notification_args = apply_filters( 'bookacti_new_booking_notification_args', array(), $booking, $booking_form_values );
+		
 		// Send a booking confirmation to the customer
-		if( ! empty( $booking_form_values[ 'status' ] ) ) { 
-			bookacti_send_notification( 'customer_' . $booking_form_values[ 'status' ] . '_booking', $booking[ 'id' ], $booking[ 'type' ] );
-		}
+		bookacti_send_notification( 'customer_' . $booking_status . '_booking', $booking[ 'id' ], $booking[ 'type' ], $notification_args );
+		
 		// Alert administrators that a new booking has been made
-		bookacti_send_notification( 'admin_new_booking', $booking[ 'id' ], $booking[ 'type' ] );
+		bookacti_send_notification( 'admin_new_booking', $booking[ 'id' ], $booking[ 'type' ], $notification_args );
 	}
 }
 add_action( 'bookacti_booking_form_validated', 'bookacti_send_notification_when_booking_is_made', 100, 3 );
@@ -80,7 +82,7 @@ add_action( 'bookacti_booking_form_validated', 'bookacti_send_notification_when_
 /**
  * Send a notification to admin and customer when a single booking status changes
  * @since 1.2.1 (was bookacti_send_email_when_booking_state_changes in 1.2.0)
- * @version 1.14.0
+ * @version 1.14.1
  * @param object $booking
  * @param string $status
  * @param array $args
@@ -98,14 +100,16 @@ function bookacti_send_notification_when_booking_state_changes( $booking, $statu
 	// If we cannot know if the action was made by customer or admin, send to both
 	$send_to = apply_filters( 'bookacti_booking_state_change_notification_recipient', ! empty( $args[ 'send_to' ] ) && in_array( $args[ 'send_to' ], array( 'both', 'customer', 'admin' ), true ) ? $args[ 'send_to' ] : 'both', $booking, $status, $args );
 	
+	$notification_args = apply_filters( 'bookacti_booking_state_change_notification_args', array(), $booking, $status, $args );
+		
 	// If $args[ 'is_admin' ] is true, the customer need to be notified
 	if( $send_to === 'customer' || $send_to === 'both' ) {
-		bookacti_send_notification( 'customer_' . $status . '_booking', $booking->id, 'single' );
+		bookacti_send_notification( 'customer_' . $status . '_booking', $booking->id, 'single', $notification_args );
 	}
 	
 	// If $args[ 'is_admin' ] is false, the administrator need to be notified
 	if( $send_to === 'admin' || $send_to === 'both' ) {
-		bookacti_send_notification( 'admin_' . $status . '_booking', $booking->id, 'single' );
+		bookacti_send_notification( 'admin_' . $status . '_booking', $booking->id, 'single', $notification_args );
 	}
 }
 add_action( 'bookacti_booking_state_changed', 'bookacti_send_notification_when_booking_state_changes', 10, 3 );
@@ -114,7 +118,7 @@ add_action( 'bookacti_booking_state_changed', 'bookacti_send_notification_when_b
 /**
  * Send a notification to admin and customer when a booking group status changes
  * @since 1.2.1 (was bookacti_send_email_when_booking_group_state_changes in 1.2.0)
- * @version 1.14.0
+ * @version 1.14.1
  * @param int $booking_group_id
  * @param array $bookings
  * @param string $status
@@ -130,14 +134,16 @@ function bookacti_send_notification_when_booking_group_state_changes( $booking_g
 	// If we cannot know if the action was made by customer or admin, send to both
 	$send_to = apply_filters( 'bookacti_booking_group_state_change_notification_recipient', ! empty( $args[ 'send_to' ] ) && in_array( $args[ 'send_to' ], array( 'both', 'customer', 'admin' ), true ) ? $args[ 'send_to' ] : 'both', $booking_group_id, $status, $args );
 	
+	$notification_args = apply_filters( 'bookacti_booking_group_state_change_notification_args', array(), $booking_group_id, $bookings, $status, $args );
+	
 	// If $args[ 'is_admin' ] is true, the customer need to be notified
 	if( $send_to === 'customer' || $send_to === 'both' ) {
-		bookacti_send_notification( 'customer_' . $status . '_booking', $booking_group_id, 'group' );
+		bookacti_send_notification( 'customer_' . $status . '_booking', $booking_group_id, 'group', $notification_args );
 	}
 	
 	// If $args[ 'is_admin' ] is false, the administrator need to be notified
 	if( $send_to === 'admin' || $send_to === 'both' ) {
-		bookacti_send_notification( 'admin_' . $status . '_booking', $booking_group_id, 'group' );
+		bookacti_send_notification( 'admin_' . $status . '_booking', $booking_group_id, 'group', $notification_args );
 	}
 }
 add_action( 'bookacti_booking_group_state_changed', 'bookacti_send_notification_when_booking_group_state_changes', 10, 4 );
@@ -145,9 +151,8 @@ add_action( 'bookacti_booking_group_state_changed', 'bookacti_send_notification_
 
 /**
  * Send a notification to admin and customer when a booking is rescheduled
- * 
  * @since 1.2.1 (was bookacti_send_email_when_booking_is_rescheduled in 1.2.0)
- * @version 1.14.0
+ * @version 1.14.1
  * @param object $booking
  * @param object $old_booking
  * @param array $args
@@ -157,12 +162,14 @@ function bookacti_send_notification_when_booking_is_rescheduled( $booking, $old_
 	if( isset( $args[ 'send_notifications' ] ) && ! $args[ 'send_notifications' ] ) { return; }
 	
 	// If we cannot know if the action was made by customer or admin, send to both
-	$send_to = apply_filters( 'bookacti_reschedule_notification_recipient', 'both', $booking, $old_booking, $args );
+	$send_to = apply_filters( 'bookacti_reschedule_notification_recipient', ! empty( $args[ 'send_to' ] ) && in_array( $args[ 'send_to' ], array( 'both', 'customer', 'admin' ), true ) ? $args[ 'send_to' ] : 'both', $booking, $old_booking, $args );
 	
-	$notification_args = array( 'tags' => array(
-		'{booking_old_start_raw}' => $old_booking->event_start,
-		'{booking_old_end_raw}' => $old_booking->event_end
-	));
+	$notification_args = apply_filters( 'bookacti_booking_rescheduled_notification_args', array( 
+		'tags' => array(
+			'{booking_old_start_raw}' => $old_booking->event_start,
+			'{booking_old_end_raw}' => $old_booking->event_end
+		)
+	), $booking, $old_booking, $args );
 	
 	// If $args[ 'is_admin' ] is true, the customer need to be notified
 	if( $send_to === 'both' || $send_to === 'customer' ) {
