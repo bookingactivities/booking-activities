@@ -321,6 +321,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.14.2 =
+* Tweak - Send email notifications to WC order billing email address instead of user account email address
+
 = 1.14.1 - 2022/06/13 =
 * Fix - Notifications may not be translated according to recipient language with qTranslate-XT
 * Dev - Add hooks to change notifications args before they are sent
