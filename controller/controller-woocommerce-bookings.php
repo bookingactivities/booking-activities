@@ -533,6 +533,24 @@ function bookacti_wc_update_booking_order_status_according_to_its_bookings( $boo
 add_action( 'bookacti_booking_state_changed', 'bookacti_wc_update_booking_order_status_according_to_its_bookings', 10, 1 );
 
 
+/**
+ * Update order bookings user_id when the order customer_id changes
+ * @since 1.14.2
+ * @param WC_Order $order
+ * @param array $updated_props
+ */
+function bookacti_wc_update_customer_id_order_bookings( $order, $updated_props = array() ) {
+	$user_id = $order->get_customer_id();
+	if( in_array( 'customer_id', $updated_props, true ) || ( ! $user_id && in_array( 'billing_email', $updated_props, true ) ) ) {
+		if( ! $user_id ) { $user_id = $order->get_billing_email( 'edit' ); }
+		if( $user_id && ( is_numeric( $user_id ) || is_email( $user_id ) ) ) { 
+			bookacti_wc_update_order_items_bookings( $order, array( 'user_id' => $user_id ) );
+		}
+	}
+}
+add_action( 'woocommerce_order_object_updated_props', 'bookacti_wc_update_customer_id_order_bookings', 10, 2 );
+
+
 
 
 // MY ACCOUNT
