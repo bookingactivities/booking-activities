@@ -343,7 +343,7 @@ function bookacti_generate_ical( $vevents, $vcalendar = array() ) {
 /**
  * Get the variables used with javascript
  * @since 1.8.0
- * @version 1.14.0
+ * @version 1.14.2
  * @return array
  */
 function bookacti_get_js_variables() {
@@ -386,6 +386,9 @@ function bookacti_get_js_variables() {
 		// VARIABLES
 		'ajaxurl'							=> admin_url( 'admin-ajax.php' ),
 		'nonce_query_select2_options'		=> wp_create_nonce( 'bookacti_query_select2_options' ),
+		'nonce_cancel_booking'				=> wp_create_nonce( 'bookacti_cancel_booking' ),
+		'nonce_refund_booking'				=> wp_create_nonce( 'bookacti_refund_booking' ),
+		'nonce_reschedule_booking'			=> wp_create_nonce( 'bookacti_reschedule_booking' ),
 
 		'fullcalendar_locale'				=> bookacti_convert_wp_locale_to_fc_locale( bookacti_get_current_lang_code( true ) ),
 		'current_lang_code'					=> bookacti_get_current_lang_code(),
@@ -532,7 +535,7 @@ function bookacti_get_active_add_ons( $prefix = '', $exclude = array( 'balau' ) 
 /**
  * Get add-on data by prefix
  * @since 1.7.14
- * @version 1.14.1
+ * @version 1.14.2
  * @param string $prefix
  * @param array $exclude
  * @return array
@@ -569,7 +572,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name'	=> 'ba-advanced-forms', 
 			'end_of_life'	=> '', 
 			'download_id'	=> 2705,
-			'min_version'	=> '1.2.23'
+			'min_version'	=> '1.2.24'
 		),
 		'baofc'	=> array( 
 			'title'			=> 'Order for Customers', 
