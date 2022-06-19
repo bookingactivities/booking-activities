@@ -321,7 +321,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.14.2 =
+= 1.14.2 - 2022/06/19 =
 * Tweak - Send email notifications to WC order billing email address instead of user account email address
 * Tweak - Change the bookings owner too when updating the WC order owner
 * Fix - AJAX error when trying to move a booked event to an earlier date in calendar editor
