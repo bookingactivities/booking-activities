@@ -3,7 +3,7 @@
  * Plugin Name: Booking Activities
  * Plugin URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Description: Booking system specialized in activities (sports, cultural, leisure, events...). Works great with WooCommerce.
- * Version: 1.14.1
+ * Version: 1.14.2
  * Author: Booking Activities Team
  * Author URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Text Domain: booking-activities
@@ -40,7 +40,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 // GLOBALS AND CONSTANTS
-if( ! defined( 'BOOKACTI_VERSION' ) )		{ define( 'BOOKACTI_VERSION', '1.14.1' ); }
+if( ! defined( 'BOOKACTI_VERSION' ) )		{ define( 'BOOKACTI_VERSION', '1.14.2' ); }
 if( ! defined( 'BOOKACTI_PLUGIN_NAME' ) )	{ define( 'BOOKACTI_PLUGIN_NAME', 'booking-activities' ); }
 
 
@@ -155,6 +155,7 @@ add_action( 'wp_enqueue_scripts',	'bookacti_enqueue_js_variables', 5 );
 /**
  * Enqueue librairies (as high priority scripts)
  * @since 1.11.3 (was part of bookacti_enqueue_high_priority_global_scripts)
+ * @version 1.14.2
  */
 function bookacti_enqueue_libraries_scripts() {
 	// On backend, only include these scripts on Booking Activities pages
@@ -165,16 +166,30 @@ function bookacti_enqueue_libraries_scripts() {
 	if( ! wp_script_is( 'moment', 'enqueued' ) )	{ wp_enqueue_script( 'moment' ); }
 	
 	// Fullcalendar: The max suported version is 3.10.2
-	$fullcalendar_version	= '3.10.2';
-	$registered_fc			= wp_scripts()->query( 'fullcalendar', 'registered' );
-	$registered_fc_version	= $registered_fc && ! empty( $registered_fc->ver ) ? $registered_fc->ver : '';
-	if( ! $registered_fc || ( $registered_fc_version && version_compare( $registered_fc_version, $fullcalendar_version, '>' ) ) ) { wp_register_script( 'fullcalendar', plugins_url( 'lib/fullcalendar/fullcalendar.min.js', __FILE__ ), array( 'jquery', 'moment' ), $fullcalendar_version, true ); }
+	$fullcalendar_version  = '3.10.2';
+	$registered_fc         = wp_scripts()->query( 'fullcalendar', 'registered' );
+	$registered_fc_version = $registered_fc && ! empty( $registered_fc->ver ) ? $registered_fc->ver : '';
+	if( ! $registered_fc || ( $registered_fc_version && version_compare( $registered_fc_version, $fullcalendar_version, '>' ) ) ) { 
+		wp_register_script( 'fullcalendar', plugins_url( 'lib/fullcalendar/fullcalendar.min.js', __FILE__ ), array( 'jquery', 'moment' ), $fullcalendar_version, true );
+	}
 	if( ! wp_script_is( 'fullcalendar', 'enqueued' ) ) { wp_enqueue_script( 'fullcalendar' ); }
 	wp_enqueue_script( 'bookacti-js-fullcalendar-locale-all', plugins_url( 'lib/fullcalendar/locale-all.js', __FILE__ ), array( 'jquery', 'fullcalendar' ), $fullcalendar_version, true );
 	
+	// Tiptip (alternative to jquery-ui-tooltip to avoid conflict with bootstrap tooltip)
+	$tiptip_version            = '1.3';
+	$registered_tiptip         = wp_scripts()->query( 'jquery-tiptip', 'registered' );
+	$registered_tiptip_version = $registered_tiptip && ! empty( $registered_tiptip->ver ) ? $registered_tiptip->ver : '';
+	if( ! $registered_tiptip || ( $registered_tiptip_version && version_compare( $registered_tiptip_version, $tiptip_version, '>' ) ) ) { 
+		wp_register_script( 'jquery-tiptip', plugins_url( 'lib/jquery-tiptip/jquery.tipTip.min.js', __FILE__ ), array( 'jquery' ), $tiptip_version, true );
+	}
+	if( ! wp_script_is( 'jquery-tiptip', 'enqueued' ) ) { wp_enqueue_script( 'jquery-tiptip' ); }
+	
 	// Include stylesheets
-	wp_enqueue_style ( 'bookacti-css-fullcalendar', plugins_url( 'lib/fullcalendar/fullcalendar.min.css', __FILE__ ), array(), BOOKACTI_VERSION );
-	wp_enqueue_style ( 'bookacti-css-fullcalendar-print', plugins_url( 'lib/fullcalendar/fullcalendar.print.min.css', __FILE__ ), array( 'bookacti-css-fullcalendar' ), BOOKACTI_VERSION, 'print' );
+	wp_enqueue_style( 'bookacti-css-fullcalendar', plugins_url( 'lib/fullcalendar/fullcalendar.min.css', __FILE__ ), array(), BOOKACTI_VERSION );
+	wp_enqueue_style( 'bookacti-css-fullcalendar-print', plugins_url( 'lib/fullcalendar/fullcalendar.print.min.css', __FILE__ ), array( 'bookacti-css-fullcalendar' ), BOOKACTI_VERSION, 'print' );
+	wp_enqueue_style( 'jquery-tiptip', plugins_url( 'lib/jquery-tiptip/tipTip.min.css', __FILE__ ), array(), $tiptip_version );
+	wp_style_add_data( 'jquery-tiptip', 'rtl', 'replace' );
+	wp_style_add_data( 'jquery-tiptip', 'suffix', '.min' );
 }
 add_action( 'admin_enqueue_scripts','bookacti_enqueue_libraries_scripts', 9 );
 add_action( 'wp_enqueue_scripts',	'bookacti_enqueue_libraries_scripts', 9 );
@@ -182,7 +197,7 @@ add_action( 'wp_enqueue_scripts',	'bookacti_enqueue_libraries_scripts', 9 );
 
 /**
  * Enqueue high priority scripts
- * @version 1.11.3
+ * @version 1.14.2
  */
 function bookacti_enqueue_high_priority_global_scripts() {
 	// Chck if we are on a WC page that needs Booking Activities scripts
@@ -195,9 +210,9 @@ function bookacti_enqueue_high_priority_global_scripts() {
 	if( is_admin() && ! bookacti_is_booking_activities_screen() && ! $is_wc_screen ) { return; }
 	
 	// Include javascript files
-	wp_enqueue_script( 'bookacti-js-global-var',				plugins_url( 'js/global-var.min.js', __FILE__ ),				array( 'jquery' ), BOOKACTI_VERSION, false ); // Load in header
-	wp_enqueue_script( 'bookacti-js-global-functions',			plugins_url( 'js/global-functions.min.js', __FILE__ ),			array( 'jquery', 'jquery-ui-tooltip', 'bookacti-js-global-var' ), BOOKACTI_VERSION, true );
-	wp_enqueue_script( 'bookacti-js-booking-system-functions',	plugins_url( 'js/booking-system-functions.min.js', __FILE__ ),	array( 'jquery', 'jquery-effects-highlight', 'bookacti-js-global-var' ), BOOKACTI_VERSION, true );
+	wp_enqueue_script( 'bookacti-js-global-var',				plugins_url( 'js/global-var.min.js', __FILE__ ), array( 'jquery' ), BOOKACTI_VERSION, false ); // Load in header
+	wp_enqueue_script( 'bookacti-js-global-functions',			plugins_url( 'js/global-functions.min.js', __FILE__ ), array( 'jquery', 'jquery-tiptip', 'bookacti-js-global-var' ), BOOKACTI_VERSION, true );
+	wp_enqueue_script( 'bookacti-js-booking-system-functions',	plugins_url( 'js/booking-system-functions.min.js', __FILE__ ), array( 'jquery', 'jquery-effects-highlight', 'bookacti-js-global-var' ), BOOKACTI_VERSION, true );
 }
 add_action( 'admin_enqueue_scripts','bookacti_enqueue_high_priority_global_scripts', 10 );
 add_action( 'wp_enqueue_scripts',	'bookacti_enqueue_high_priority_global_scripts', 10 );
@@ -248,7 +263,7 @@ add_action( 'wp_enqueue_scripts',	'bookacti_enqueue_global_scripts', 20 );
 
 /**
  * Enqueue high priority scripts in backend only
- * @version 1.12.6
+ * @version 1.14.2
  */
 function bookacti_enqueue_high_priority_backend_scripts() {
 	// On backend, only include these scripts on Booking Activities pages
@@ -262,8 +277,8 @@ function bookacti_enqueue_high_priority_backend_scripts() {
 	if( ! wp_style_is( 'select2', 'enqueued' ) )	{ wp_enqueue_style( 'select2' ); }
 	
 	// INCLUDE JAVASCRIPT FILES
-	wp_enqueue_script( 'bookacti-js-backend-functions',	plugins_url( 'js/backend-functions.min.js', __FILE__ ),	array( 'jquery', 'jquery-ui-dialog', 'jquery-ui-tabs', 'jquery-ui-tooltip', 'bookacti-js-global-var', 'bookacti-js-global-functions' ), BOOKACTI_VERSION, true );
-	wp_enqueue_script( 'bookacti-js-bookings',			plugins_url( 'js/bookings.min.js', __FILE__ ),			array( 'jquery', 'fullcalendar', 'bookacti-js-global-var', 'bookacti-js-global-functions', 'bookacti-js-backend-functions' ), BOOKACTI_VERSION, true );
+	wp_enqueue_script( 'bookacti-js-backend-functions',	plugins_url( 'js/backend-functions.min.js', __FILE__ ), array( 'jquery', 'jquery-ui-dialog', 'jquery-ui-tabs', 'bookacti-js-global-var', 'bookacti-js-global-functions' ), BOOKACTI_VERSION, true );
+	wp_enqueue_script( 'bookacti-js-bookings',			plugins_url( 'js/bookings.min.js', __FILE__ ), array( 'jquery', 'fullcalendar', 'bookacti-js-global-var', 'bookacti-js-global-functions', 'bookacti-js-backend-functions' ), BOOKACTI_VERSION, true );
 }
 add_action( 'admin_enqueue_scripts','bookacti_enqueue_high_priority_backend_scripts', 15 );
 

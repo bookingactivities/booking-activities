@@ -318,15 +318,12 @@ function bookacti_get_calendar_html( $booking_system_data = array() ) {
 /**
  * Get default booking system attributes
  * @since 1.5.0
- * @version 1.13.0
+ * @version 1.14.2
  * @return array
  */
 function bookacti_get_booking_system_default_attributes() {
-	$timezone			= bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' );
-	$current_datetime	= new DateTime( 'now', new DateTimeZone( $timezone ) );
-	
-	$cached_atts = wp_cache_get( 'booking_system_default_attributes', 'bookacti' );
-	if( $cached_atts ) { return $cached_atts; }
+	$timezone = bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' );
+	$current_datetime = new DateTime( 'now', new DateTimeZone( $timezone ) );
 	
 	$default_atts = apply_filters( 'bookacti_booking_system_default_attributes', array(
 		'id'                             => '',
@@ -360,8 +357,6 @@ function bookacti_get_booking_system_default_attributes() {
 		'redirect_url_by_group_category' => array(),
 		'display_data'                   => bookacti_get_booking_system_default_display_data()
 	));
-	
-	wp_cache_set( 'booking_system_default_attributes', $default_atts, 'bookacti' );
 	
 	return $default_atts;
 }
@@ -3671,7 +3666,7 @@ function bookacti_get_bounding_events_from_groups_of_events_heuristic( $groups, 
 /**
  * Get occurrences of repeated events
  * @since 1.12.0
- * @version 1.13.0
+ * @version 1.14.2
  * @param object $groups Groups data 
  * @param array $raw_args {
  *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
@@ -3851,6 +3846,10 @@ function bookacti_get_occurrences_of_repeated_groups_of_events( $groups, $raw_ar
 	
 	// Set cache
 	wp_cache_set( 'groups_occurrences_' . $args_hash, $group_occurrences, 'bookacti' );
+	$hashes = wp_cache_get( 'groups_occurrences_hashes', 'bookacti' );
+	if( ! $hashes ) { $hashes = array(); }
+	$hashes[] = $args_hash;
+	wp_cache_set( 'groups_occurrences_hashes', $hashes, 'bookacti' );
 	
 	return $group_occurrences;
 }

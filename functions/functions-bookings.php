@@ -1032,7 +1032,7 @@ function bookacti_booking_group_can_be_cancelled( $bookings, $context = '' ) {
 /**
  * Check if a booking group can be refunded
  * @since 1.1.0
- * @version 1.12.7
+ * @version 1.14.2
  * @param array|int $bookings
  * @param string $refund_action
  * @param string $context
@@ -1061,12 +1061,12 @@ function bookacti_booking_group_can_be_refunded( $bookings, $refund_action = '',
 		// -> If the refund action is set but doesn't exist in available refund actions list
 		|| ( $refund_action && ! array_key_exists( $refund_action, $refund_actions ) ) 
 		// -> If the user is not an admin, the booking group state has to be 'cancelled' in the first place
-		|| ( ! current_user_can( 'bookacti_edit_bookings' ) && ! ( $is_own && $bookings[ $first_key ]->group_state === 'cancelled' ) ) ) { 
+		|| ( ( ! current_user_can( 'bookacti_edit_bookings' ) || $context === 'front' ) && ! ( $is_own && $bookings[ $first_key ]->group_state === 'cancelled' ) ) ) { 
 
 			$true = false;
 		}
 	}
-
+	
 	return apply_filters( 'bookacti_booking_group_can_be_refunded', $true, $bookings, $refund_action, $context );
 }
 

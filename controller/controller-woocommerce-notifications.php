@@ -354,3 +354,28 @@ function bookacti_woocommerce_add_refund_request_email_message( $notification, $
 	return $notification;
 }
 add_filter( 'bookacti_notification_data', 'bookacti_woocommerce_add_refund_request_email_message', 10, 6 );
+
+
+/**
+ * Replace recipient email with order email if the booking is bound to an order
+ * @since 1.14.2
+ * @param array $notification
+ * @param array $tags
+ * @param string $locale
+ * @param object $booking
+ * @param string $booking_type
+ * @param array $args
+ * @return array
+ */
+function bookacti_wc_replace_notification_recipient_user_email_with_order_email( $notification, $tags, $locale, $booking, $booking_type, $args ) {
+	if( substr( $notification[ 'id' ], 0, 6 ) === 'admin_' || empty( $booking->order_id ) ) { return $notification; }
+	
+	$order = wc_get_order( $booking->order_id );
+	if( ! $order ) { return $notification; }
+	
+	$billing_email = $order->get_billing_email( 'edit' );
+	if( $billing_email && is_email( $billing_email ) ) { $notification[ 'email' ][ 'to' ] = array( $billing_email ); }
+	
+	return $notification;
+}
+add_filter( 'bookacti_notification_data', 'bookacti_wc_replace_notification_recipient_user_email_with_order_email', 5, 6 );

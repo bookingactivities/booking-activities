@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 6.0
 Requires PHP: 5.3
-Stable tag: 1.14.1
+Stable tag: 1.14.2
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -320,6 +320,15 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.14.2 - 2022/06/19 =
+* Tweak - Send email notifications to WC order billing email address instead of user account email address
+* Tweak - Change the bookings owner too when updating the WC order owner
+* Fix - AJAX error when trying to move a booked event to an earlier date in calendar editor
+* Fix - Update the nonces of the frontend booking dialogs via javascript to avoid invalid nonce cache issue
+* Fix - Request a refund button appeared in frontend booking lists to administrator for booking groups that were not cancelled
+* Dev - Use TipTip library instead of jQuery-UI Tooltip to avoid conflicts with Bootstrap tooltip
+* Dev - (Beta) Compatibility with Persistent Object Cache (Memcached, Redis...)
 
 = 1.14.1 - 2022/06/13 =
 * Fix - Notifications may not be translated according to recipient language with qTranslate-XT

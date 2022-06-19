@@ -673,3 +673,14 @@ function bookacti_display_wc_user_meta_in_user_selectbox( $args, $raw_args = arr
 }
 add_filter( 'bookacti_user_selectbox_args', 'bookacti_display_wc_user_meta_in_user_selectbox', 10, 2 );
 add_filter( 'bookacti_ajax_select2_users_args', 'bookacti_display_wc_user_meta_in_user_selectbox', 10, 1 );
+
+
+/**
+ * Delete products_titles cache if a product or a variation is added / updated / removed
+ * @since 1.14.2
+ * @param int $product_id
+ */
+function bookacti_clear_products_titles_cache( $product_id ) {
+	wp_cache_delete( 'products_titles', 'bookacti_wc' );
+}
+add_action( 'woocommerce_delete_product_transients', 'bookacti_clear_products_titles_cache', 10, 1 );

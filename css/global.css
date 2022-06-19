@@ -46,13 +46,9 @@
 .bookacti-custom-radio-button:first-child::before	{ content: none; }
 
 /* Tooltip */
-.bookacti-form-field-label label,
-.bookacti-tip-icon			{ margin: 0; }
-.bookacti-tip-icon			{ padding-left: 5px; }
-.bookacti-tip-icon:before	{ content:'\0043'; font-family: 'booking_activities_icons'; color: #565d61; font-weight: normal; font-size: 14px; cursor: help; vertical-align: middle; }
-.bookacti-tip-container ul  { list-style-type: disc; padding-inline-start: 20px; }
-.bookacti-tip-container:not(.bookacti-bs-tooltip)	{ max-height: 300px; overflow-y: auto; }
-.bookacti-bs-tooltip .tooltip-inner					{ max-height: 300px; overflow-y: auto; }
+.bookacti-tip-icon        { margin: 0; }
+.bookacti-tip-icon        { padding-left: 5px; }
+.bookacti-tip-icon:before { content:'\0043'; font-family: 'booking_activities_icons'; color: #565d61; font-weight: normal; font-size: 14px; cursor: help; vertical-align: middle; }
 
 /* Custom Scrollbar */
 .bookacti-custom-scrollbar::-webkit-scrollbar				{ width: 4px; height: 4px; }

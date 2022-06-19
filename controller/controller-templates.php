@@ -237,7 +237,7 @@ add_action( 'wp_ajax_bookactiInsertEvent', 'bookacti_controller_insert_event' );
 /**
  * AJAX Controller - Update event dates (move or resize an event in the editor)
  * @since 1.10.0 (was bookacti_controller_move_or_resize_event)
- * @version 1.14.1
+ * @version 1.14.2
  */
 function bookacti_controller_update_event_dates() {
 	// Check nonce
@@ -310,7 +310,9 @@ function bookacti_controller_update_event_dates() {
 		if( $old_event->repeat_freq && $old_event->repeat_freq !== 'none' ) {
 			// Compute new booking start
 			$new_booking_start_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $old_booking->event_start, new DateTimeZone( $timezone ) );
-			$new_booking_start_dt->add( new DateInterval( 'PT' . $delta_seconds_start . 'S' ) );
+			$delta_seconds_start_di = new DateInterval( 'PT' . abs( $delta_seconds_start ). 'S' );
+			$delta_seconds_start_di->invert = $delta_seconds_start < 0 ? 1 : 0;
+			$new_booking_start_dt->add( $delta_seconds_start_di );
 			if( $new_booking_start_dt <= $now_dt ) { $send = false; }
 		}
 		
@@ -551,10 +553,10 @@ function bookacti_controller_before_delete_event() {
 		if( $send ) { ++$notifications_nb; }
 	}
 	
-	$bookings_nb		= count( $bookings_to_cancel ) . ' ' . esc_html( _n( 'booking', 'bookings', count( $bookings_to_cancel ), 'booking-activities' ) );
-	$notifications_nb	= $notifications_nb . ' ' . esc_html( _n( 'notification', 'notifications', $notifications_nb, 'booking-activities' ) );
-	$has_bookings		= count( $bookings_to_cancel );
-	$is_repeated		= $event->repeat_freq && $event->repeat_freq !== 'none' ? 1 : 0;
+	$bookings_nb      = count( $bookings_to_cancel ) . ' ' . esc_html( _n( 'booking', 'bookings', count( $bookings_to_cancel ), 'booking-activities' ) );
+	$notifications_nb = $notifications_nb . ' ' . esc_html( _n( 'notification', 'notifications', $notifications_nb, 'booking-activities' ) );
+	$has_bookings     = count( $bookings_to_cancel );
+	$is_repeated      = $event->repeat_freq && $event->repeat_freq !== 'none' ? 1 : 0;
 	
 	bookacti_send_json( array( 'status' => 'success', 'bookings_nb' => $bookings_nb, 'notifications_nb' => $notifications_nb, 'has_bookings' => $has_bookings, 'is_repeated' => $is_repeated ), 'before_deactivate_event' );
 }
@@ -613,7 +615,7 @@ add_action( 'wp_ajax_bookactiDeleteEvent', 'bookacti_controller_delete_event' );
 
 /**
  * AJAX Controller - Unbind occurrences of an event
- * @version 1.13.0
+ * @version 1.14.2
  */
 function bookacti_controller_unbind_event_occurrences() {
 	// Check nonce
@@ -635,7 +637,7 @@ function bookacti_controller_unbind_event_occurrences() {
 	$interval		= ! empty( $_POST[ 'interval' ] ) ? bookacti_sanitize_events_interval( $_POST[ 'interval' ] ) : array();
 	$unbind_action	= isset( $_POST[ 'unbind_action' ] ) ? sanitize_title_with_dashes( $_POST[ 'unbind_action' ] ) : '';
 	
-	do_action( 'bookacti_unbind_event_occurrences_before', $event, $unbind_action, $interval );
+	do_action( 'bookacti_unbind_event_occurrences_before', $event, $event_start, $event_end, $unbind_action, $interval );
 
 	if( $unbind_action === 'selected' ) {
 		$new_event_id = bookacti_unbind_selected_event_occurrence( $event, $event_start, $event_end );
@@ -660,18 +662,20 @@ function bookacti_controller_unbind_event_occurrences() {
 	}
 
 	// Retrieve affected data
-	$events					= bookacti_fetch_events_for_calendar_editor( array( 'events' => $new_events_ids, 'interval' => $interval ) );
-	$groups					= bookacti_get_groups_of_events( array( 'templates' => array( $event->template_id ), 'nb_events' => array(), 'past_events' => 1, 'data_only' => 1 ) );
-	$bookings_nb_per_event	= bookacti_get_number_of_bookings_per_event( array( 'templates' => array( $event->template_id ) ) );
+	$events = bookacti_fetch_events_for_calendar_editor( array( 'events' => $new_events_ids, 'interval' => $interval ) );
+	$groups = bookacti_get_groups_of_events( array( 'templates' => array( $event->template_id ), 'nb_events' => array(), 'past_events' => 1, 'data_only' => 1 ) );
+	$bookings_nb_per_event = bookacti_get_number_of_bookings_per_event( array( 'templates' => array( $event->template_id ) ) );
 	
-	$return_data = apply_filters( 'bookacti_event_occurrences_unbound', array( 
-		'status'		=> 'success', 
-		'new_events_ids'=> $new_events_ids,
-		'events'		=> $events[ 'events' ] ? $events[ 'events' ] : array(),
-		'events_data'	=> $events[ 'data' ] ? $events[ 'data' ] : array(),
-		'bookings'		=> $bookings_nb_per_event,
-		'groups_data'	=> $groups[ 'data' ]
+	$return_data = apply_filters( 'bookacti_event_occurrences_unbound_data', array( 
+		'status'         => 'success', 
+		'new_events_ids' => $new_events_ids,
+		'events'         => $events[ 'events' ] ? $events[ 'events' ] : array(),
+		'events_data'    => $events[ 'data' ] ? $events[ 'data' ] : array(),
+		'bookings'       => $bookings_nb_per_event,
+		'groups_data'    => $groups[ 'data' ]
 	), $event, $event_start, $event_end, $unbind_action, $interval );
+	
+	do_action( 'bookacti_event_occurrences_unbound', $return_data, $event, $event_start, $event_end, $unbind_action, $interval );
 	
 	bookacti_send_json( $return_data, 'unbind_event_occurrences' );
 }
@@ -1003,7 +1007,7 @@ add_action( 'wp_ajax_bookactiDeleteGroupOfEvents', 'bookacti_controller_delete_g
 /**
  * AJAX Controller - Unbind occurrences of a group of events
  * @since 1.12.0
- * @version 1.13.0
+ * @version 1.14.2
  */
 function bookacti_controller_unbind_group_of_events_occurrences() {
 	// Check nonce
@@ -1058,13 +1062,15 @@ function bookacti_controller_unbind_group_of_events_occurrences() {
 	$bookings_nb_per_event	= bookacti_get_number_of_bookings_per_event( array( 'templates' => array( $template_id ) ) );
 	$groups_list			= bookacti_get_template_groups_of_events_list( $group_categories, $groups, $template_id );
 	
-	$return_data = apply_filters( 'bookacti_group_of_events_occurrences_unbound', array( 
+	$return_data = apply_filters( 'bookacti_group_of_events_occurrences_unbound_data', array( 
 		'status'		=> 'success', 
 		'new_groups_ids'=> $new_groups_ids,
 		'groups_data'	=> $groups[ 'data' ],
 		'bookings'		=> $bookings_nb_per_event,
 		'groups_list'	=> $groups_list
 	), $group, $group_date, $unbind_action );
+	
+	do_action( 'bookacti_group_of_events_occurrences_unbound', $return_data, $group, $group_date, $unbind_action );
 	
 	bookacti_send_json( $return_data, 'unbind_group_of_events_occurrences' );
 }
@@ -1467,3 +1473,33 @@ function bookacti_controller_save_template_items_order() {
 	bookacti_send_json( array( 'status' => 'success' ), 'save_template_items_order' );
 }
 add_action( 'wp_ajax_bookactiSaveTemplateItemsOrder', 'bookacti_controller_save_template_items_order' );
+
+
+/**
+ * Remove groups occurrences cache
+ * @since 1.14.2
+ */
+function bookacti_flush_groups_occurrences_cache() {
+	$hashes = wp_cache_get( 'groups_occurrences_hashes', 'bookacti' );
+	if( ! $hashes ) { return; }
+	foreach( $hashes as $hash ) {
+		wp_cache_delete( 'groups_occurrences_' . $hash, 'bookacti' );
+	}
+	wp_cache_delete( 'groups_occurrences_hashes', 'bookacti' );
+}
+add_action( 'bookacti_group_of_events_updated', 'bookacti_flush_groups_occurrences_cache' );
+add_action( 'bookacti_group_of_events_deactivated', 'bookacti_flush_groups_occurrences_cache' );
+add_action( 'bookacti_group_of_events_occurrences_unbound', 'bookacti_flush_groups_occurrences_cache' );
+add_action( 'bookacti_group_category_updated', 'bookacti_flush_groups_occurrences_cache' );
+add_action( 'bookacti_group_category_deactivated', 'bookacti_flush_groups_occurrences_cache' );
+add_action( 'bookacti_template_updated', 'bookacti_flush_groups_occurrences_cache' );
+add_action( 'bookacti_template_deactivated', 'bookacti_flush_groups_occurrences_cache' );
+add_action( 'bookacti_event_inserted', 'bookacti_flush_groups_occurrences_cache' );
+add_action( 'bookacti_event_dates_updated', 'bookacti_flush_groups_occurrences_cache' );
+add_action( 'bookacti_event_duplicated', 'bookacti_flush_groups_occurrences_cache' );
+add_action( 'bookacti_event_updated', 'bookacti_flush_groups_occurrences_cache' );
+add_action( 'bookacti_event_deactivated', 'bookacti_flush_groups_occurrences_cache' );
+add_action( 'bookacti_event_occurrences_unbound', 'bookacti_flush_groups_occurrences_cache' );
+add_action( 'bookacti_activity_updated', 'bookacti_flush_groups_occurrences_cache' );
+add_action( 'bookacti_activity_deactivated', 'bookacti_flush_groups_occurrences_cache' );
+add_action( 'bookacti_activity_events_deactivated', 'bookacti_flush_groups_occurrences_cache' );

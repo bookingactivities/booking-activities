@@ -1,7 +1,7 @@
 <?php 
 /**
  * Frontend and Backend booking dialogs
- * @version 1.14.0
+ * @version 1.14.2
  */
 
 // Exit if accessed directly
@@ -25,7 +25,7 @@ $messages = bookacti_get_messages();
 	 title='<?php echo current_user_can( 'bookacti_edit_bookings' ) ? esc_html_x( 'Refund a booking', 'Dialog title', 'booking-activities' ) : $messages[ 'refund_dialog_title' ][ 'value' ]; ?>'>
 	<form id='bookacti-refund-booking-form'>
 		<?php
-			wp_nonce_field( 'bookacti_refund_booking', 'nonce_refund_booking', false );
+			wp_nonce_field( 'bookacti_refund_booking', 'bookacti_nonce_refund_booking', false );
 		?>
 		<div id='bookacti-no-refund-option' style='display:none;'>
 			<?php esc_html_e( 'Sorry, no available refund option were found. Please contact the administrator.', 'booking-activities' ); ?>
@@ -57,7 +57,7 @@ $messages = bookacti_get_messages();
 <div id='bookacti-reschedule-booking-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' title='<?php echo $messages[ 'reschedule_dialog_title' ][ 'value' ]; ?>'>
 	<form class='bookacti-booking-form bookacti-reschedule-booking-form'>
 		<?php
-			wp_nonce_field( 'bookacti_reschedule_booking', 'nonce_reschedule_booking', false );
+			wp_nonce_field( 'bookacti_reschedule_booking', 'bookacti_nonce_reschedule_booking', false );
 		?>
 		<div>
 			<?php
