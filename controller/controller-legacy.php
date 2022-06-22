@@ -3,6 +3,32 @@
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
+ * Update changes to 1.14.3
+ * This function is temporary
+ * @since 1.14.3
+ * @global wpdb $wpdb
+ * @param string $old_version
+ */
+function bookacti_update_db_to_1_14_3( $old_version ) {
+	// Do it only once, when Booking Activities is updated for the first time to 1.14.3
+	if( version_compare( $old_version, '1.14.3', '>=' ) ) { return; }
+	
+	// Rename the "lang" parameter in bookings exports to "locale"
+	$exports = bookacti_get_exports();
+	if( $exports ) {
+		$default_args = array( 'expiration_date' => false, 'sequence_inc' => false );
+		foreach( $exports as $export_id => $export ) {
+			if( empty( $export[ 'args' ][ 'lang' ] ) ) { continue; }
+			$export[ 'args' ][ 'locale' ] = $export[ 'args' ][ 'lang' ];
+			unset( $export[ 'args' ][ 'lang' ] );
+			bookacti_update_export( $export_id, array_merge( $default_args, array( 'args' => $export[ 'args' ] ) ) );
+		}
+	}
+}
+add_action( 'bookacti_updated', 'bookacti_update_db_to_1_14_3', 90 );
+
+
+/**
  * Update changes to 1.14.0
  * This function is temporary
  * @since 1.14.0
