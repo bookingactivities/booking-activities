@@ -636,7 +636,7 @@ add_action( 'bookacti_send_async_notification', 'bookacti_send_notification', 10
 /**
  * Send an email notification
  * @since 1.2.0
- * @version 1.14.0
+ * @version 1.14.3
  * @param array $notification
  * @param array $tags
  * @return boolean
@@ -658,7 +658,8 @@ function bookacti_send_email_notification( $notification, $tags = array() ) {
 	
 	$from_name  = bookacti_get_setting_value( 'bookacti_notifications_settings', 'notifications_from_name' );
 	$from_email = bookacti_get_setting_value( 'bookacti_notifications_settings', 'notifications_from_email' );
-	$headers    = array( 'Content-Type: text/html; charset=UTF-8;', 'From:' . $from_name . ' <' . $from_email . '>' );
+	$headers    = array( 'Content-Type: text/html; charset=UTF-8;' );
+	if( $from_email ) { $headers[] = 'From:' . $from_name . ' <' . $from_email . '>'; }
 	
 	$email_data = apply_filters( 'bookacti_email_notification_data', array(
 		'to'          => $to,

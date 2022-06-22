@@ -207,7 +207,7 @@ function bookacti_decrypt( $string ) {
 /**
  * Generate CSV file
  * @since 1.8.0
- * @version 1.14.0
+ * @version 1.14.3
  * @param array $items
  * @param array $headers
  * @return string
@@ -227,7 +227,7 @@ function bookacti_generate_csv( $items, $headers = array() ) {
 		if( $count ) { echo ','; }
 		++$count;
 		$title = html_entity_decode( strip_tags( $title ) );
-		if( strpos( $title, ',' ) !== false ) { $title = '"' . str_replace( '"', '""', $title ) . '"'; }
+		if( strpos( $title, ',' ) !== false || strpos( $title, PHP_EOL ) !== false ) { $title = '"' . str_replace( '"', '""', $title ) . '"'; }
 		echo $title;
 	}
 
@@ -240,7 +240,7 @@ function bookacti_generate_csv( $items, $headers = array() ) {
 			++$count;
 			if( ! isset( $item[ $column_name ] ) ) { continue; }
 			$content = html_entity_decode( strip_tags( $item[ $column_name ] ) );
-			if( strpos( $content, ',' ) !== false ) { $content = '"' . str_replace( '"', '""', $content ) . '"'; }
+			if( strpos( $content, ',' ) !== false || strpos( $content, PHP_EOL ) !== false ) { $content = '"' . str_replace( '"', '""', $content ) . '"'; }
 			echo $content;
 		}
 	}
@@ -1765,7 +1765,7 @@ function bookacti_str_ids_to_array( $ids ) {
 /**
  * Convert an array to string recursively
  * @since 1.6.0
- * @version 1.8.0
+ * @version 1.14.3
  * @param array $array
  * @param int|boolean $display_keys If int, keys will be displayed if >= $level
  * @param int $type "csv" or "ical"
@@ -1777,29 +1777,24 @@ function bookacti_format_array_for_export( $array, $display_keys = false, $type 
 	if( empty( $array ) ) { return ''; }
 	
 	$this_display_keys = $display_keys === true || ( is_numeric( $display_keys ) && $display_keys >= $level );
-	$strip = $type === 'csv' ? array( ',', ';', '"' ) : array( ',' );
 	
 	$i = 0;
 	$string = '';
 	foreach( $array as $key => $value ) {
 		$value = bookacti_maybe_decode_json( maybe_unserialize( $value ) );
 		
-		if( $this_display_keys || is_array( $value ) ) {								// If keys are not displayed, display values on the same line
-			if( $i>0 || $level>1 )	{ $string .= $type === 'csv' ? PHP_EOL : '\n'; }	// Else, one line per value
-			if( $level > 1 )		{ $string .= str_repeat( '    ', ($level-1) ); }	// And indent it according to its level in the array (for multidimentional array)
+		if( $this_display_keys || is_array( $value ) ) {                             // If keys are not displayed, display values on the same line
+			if( $i>0 || $level>1 ) { $string .= $type === 'csv' ? PHP_EOL : '\n'; }  // Else, one line per value
+			if( $level > 1 )       { $string .= str_repeat( '    ', ($level-1) ); }  // And indent it according to its level in the array (for multidimentional array)
 		} else {
-			if( $i > 0 )			{ $string .= $type === 'csv' ? '; ' : ', '; }		// Separate each value with the appropriate delimiter
+			if( $i > 0 )           { $string .= ', '; }                              // Separate each value with a comma
 		}
-		if( $this_display_keys )	{ $string .= $key . ': '; }							// Display key before value
+		if( $this_display_keys )   { $string .= $key . ': '; }                       // Display key before value
 		
-		if( is_array( $value ) )	{ $string .= bookacti_format_array_for_export( $value, $display_keys, $type, $level+1 ); } // Repeat. (for multidimentional array)
-		else						{ $string .= str_replace( $strip, '', $value ); }	// Remove forbidden characters
+		if( is_array( $value ) )   { $string .= bookacti_format_array_for_export( $value, $display_keys, $type, $level+1 ); } // Repeat. (for multidimentional array)
 		
 		++$i;
 	}
-	
-	// Add double quotes for CSV multiline values
-	if( $level === 1 && $type === 'csv' && strpos( $string, PHP_EOL ) !== false ) { $string = '"' . $string . '"'; }
 	
 	return apply_filters( 'bookacti_format_array_for_export', $string, $array, $display_keys, $type, $level );
 }
@@ -2157,7 +2152,7 @@ function bookacti_sanitize_ical_property( $value, $property_name = '' ) {
 
 /**
  * Get users metadata
- * @version 1.8.0
+ * @version 1.14.3
  * @param array $args
  * @return array
  */
@@ -2194,10 +2189,12 @@ function bookacti_get_users_data( $args = array() ) {
 		foreach( $sorted_users as $user_id => $user ) {
 			$meta = array();
 			$meta_raw = wp_cache_get( $user_id, 'user_meta' );
-			foreach( $meta_raw as $key => $values ) {
-				$meta[ $key ] = $args[ 'meta_single' ] ? maybe_unserialize( $values[ 0 ] ) : array_map( 'maybe_unserialize', $values );
+			if( $meta_raw && is_array( $meta_raw ) ) {
+				foreach( $meta_raw as $key => $values ) {
+					$meta[ $key ] = $args[ 'meta_single' ] ? maybe_unserialize( $values[ 0 ] ) : array_map( 'maybe_unserialize', $values );
+				}
+				$sorted_users[ $user_id ]->meta = $meta; 
 			}
-			$sorted_users[ $user_id ]->meta = $meta; 
 		}
 	}
 		

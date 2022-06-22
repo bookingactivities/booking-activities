@@ -965,7 +965,7 @@ add_action( 'bookacti_clean_expired_exports', 'bookacti_clean_expired_exports' )
 /**
  * Generate the export bookings URL according to current filters and export settings
  * @since 1.6.0
- * @version 1.12.7
+ * @version 1.14.3
  */
 function bookacti_controller_generate_export_bookings_url() {
 	// Check nonce
@@ -1028,30 +1028,30 @@ function bookacti_controller_generate_export_bookings_url() {
 	
 	// Additional URL attributes
 	$add_url_atts = array(
-		'action'		=> 'bookacti_export_bookings',
-		'export_type'	=> $export_type,
-		'filename'		=> '',
-		'key'			=> $secret_key ? $secret_key : '',
-		'lang'			=> bookacti_get_current_lang_code( true ),
-		'per_page'		=> $export_settings[ 'per_page' ],
-		'short_url'		=> 1
+		'action'      => 'bookacti_export_bookings',
+		'export_type' => $export_type,
+		'filename'    => '',
+		'key'         => $secret_key ? $secret_key : '',
+		'locale'      => bookacti_get_current_lang_code( true ),
+		'per_page'    => $export_settings[ 'per_page' ],
+		'short_url'   => 1
 	);
 	
 	// Add CSV specific args
 	if( $export_type === 'csv' ) {
-		$booking_filters[ 'group_by' ]	= $export_settings[ 'csv_export_groups' ] === 'groups' ? 'booking_group' : 'none';
-		$booking_filters[ 'raw' ]		= $export_settings[ 'csv_raw' ];
+		$booking_filters[ 'group_by' ] = $export_settings[ 'csv_export_groups' ] === 'groups' ? 'booking_group' : 'none';
+		$booking_filters[ 'raw' ]      = $export_settings[ 'csv_raw' ];
 		if( array_diff_assoc( array_values( $default_settings[ 'csv_columns' ] ), $export_settings[ 'csv_columns' ] ) ) {
 			$add_url_atts[ 'columns' ] = $export_settings[ 'csv_columns' ];
 		}
 	}
 	
 	// Add iCal specific args
-	if( $export_type === 'ical' ) {
-		$add_url_atts[ 'vevent_summary' ]		= urlencode( utf8_encode( trim( $export_settings[ 'vevent_summary' ] ) ) );
-		$add_url_atts[ 'vevent_description' ]	= urlencode( utf8_encode( str_replace( array( PHP_EOL, '\n' ), '%0A', trim( $export_settings[ 'vevent_description' ] ) ) ) );
-		$add_url_atts[ 'booking_list_header' ]	= $export_settings[ 'ical_booking_list_header' ];
-		$booking_filters[ 'raw' ]				= $export_settings[ 'ical_raw' ];
+	else if( $export_type === 'ical' ) {
+		$add_url_atts[ 'vevent_summary' ]      = urlencode( utf8_encode( trim( $export_settings[ 'vevent_summary' ] ) ) );
+		$add_url_atts[ 'vevent_description' ]  = urlencode( utf8_encode( str_replace( array( PHP_EOL, '\n' ), '%0A', trim( $export_settings[ 'vevent_description' ] ) ) ) );
+		$add_url_atts[ 'booking_list_header' ] = $export_settings[ 'ical_booking_list_header' ];
+		$booking_filters[ 'raw' ]              = $export_settings[ 'ical_raw' ];
 		if( array_diff_assoc( array_values( $default_settings[ 'ical_columns' ] ), $export_settings[ 'ical_columns' ] ) ) {
 			$add_url_atts[ 'columns' ] = $export_settings[ 'ical_columns' ];
 		}
@@ -1069,8 +1069,8 @@ function bookacti_controller_generate_export_bookings_url() {
 		if( ! empty( $url_atts[ 'short_url' ] ) ) {
 			$export_id = bookacti_insert_export( array( 'type' => 'booking_' . $export_type, 'user_id' => $current_user_id, 'args' => $url_atts ) );
 			$short_url_atts = array(
-				'action' => $url_atts[ 'action' ],
-				'key' => $url_atts[ 'key' ],
+				'action'    => $url_atts[ 'action' ],
+				'key'       => $url_atts[ 'key' ],
 				'export_id' => $export_id
 			);
 			$export_url = add_query_arg( $short_url_atts, $home_url );
@@ -1093,7 +1093,7 @@ add_action( 'wp_ajax_bookactiExportBookingsUrl', 'bookacti_controller_generate_e
 /**
  * Export bookings according to filters
  * @since 1.6.0
- * @version 1.14.0
+ * @version 1.14.3
  */
 function bookacti_export_bookings_page() {
 	if( empty( $_REQUEST[ 'action' ] ) ) { return; }
@@ -1172,7 +1172,7 @@ function bookacti_export_bookings_page() {
 	$columns = ! empty( $args[ 'columns' ] ) && is_array( $args[ 'columns' ] ) ? $args[ 'columns' ] : ( ! empty( $user_settings[ $export_type . '_columns' ] ) ? $user_settings[ $export_type . '_columns' ] : array() );
 	
 	// Temporarily switch locale to the desired one or user default's
-	$locale = ! empty( $args[ 'lang' ] ) ? $args[ 'lang' ] : bookacti_get_user_locale( $user_id, 'site' );
+	$locale = ! empty( $args[ 'locale' ] ) ? sanitize_text_field( $args[ 'locale' ] ) : bookacti_get_user_locale( $user_id, 'site' );
 	$lang_switched = bookacti_switch_locale( $locale );
 	
 	// Generate export according to type
@@ -1211,7 +1211,7 @@ add_action( 'init', 'bookacti_export_bookings_page', 10 );
 /**
  * Export a user's bookings events as iCal
  * @since 1.12.0 (was bookacti_export_user_booked_events_page)
- * @version 1.14.0
+ * @version 1.14.3
  */
 function bookacti_export_user_bookings_events_page() {
 	if( empty( $_REQUEST[ 'action' ] ) ) { return; }
@@ -1244,7 +1244,7 @@ function bookacti_export_user_bookings_events_page() {
 	$filters = apply_filters( 'bookacti_export_user_bookings_events_filters', bookacti_format_booking_filters( $filters ), $user_id );
 	
 	// Temporarily switch locale to the desired one or user default's
-	$locale = ! empty( $_REQUEST[ 'lang' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'lang' ] ) : bookacti_get_user_locale( $user_id, 'site' );
+	$locale = ! empty( $_REQUEST[ 'locale' ] ) ? sanitize_text_field( $_REQUEST[ 'locale' ] ) : bookacti_get_user_locale( $user_id, 'site' );
 	$lang_switched = bookacti_switch_locale( $locale );
 	
 	$ical_args = apply_filters( 'bookacti_export_user_bookings_events_ical_args', array( 
@@ -1270,7 +1270,7 @@ add_action( 'init', 'bookacti_export_user_bookings_events_page', 10 );
 /**
  * Export a booking (group) event(s) as iCal
  * @since 1.12.0 (was bookacti_export_booked_events_page)
- * @version 1.14.0
+ * @version 1.14.3
  */
 function bookacti_export_booking_events_page() {
 	if( empty( $_REQUEST[ 'action' ] ) ) { return; }
@@ -1303,7 +1303,7 @@ function bookacti_export_booking_events_page() {
 	$filters = apply_filters( 'bookacti_export_booking_events_filters', bookacti_format_booking_filters( $filters ), $booking_id, $booking_type );
 	
 	// Temporarily switch locale to the desired one or site default's
-	$locale = ! empty( $_REQUEST[ 'lang' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'lang' ] ) : bookacti_get_site_locale();
+	$locale = ! empty( $_REQUEST[ 'locale' ] ) ? sanitize_text_field( $_REQUEST[ 'locale' ] ) : bookacti_get_site_locale();
 	$lang_switched = bookacti_switch_locale( $locale );
 	
 	$ical_args = apply_filters( 'bookacti_export_booking_events_ical_args', array( 

@@ -536,10 +536,12 @@ add_action( 'bookacti_booking_state_changed', 'bookacti_wc_update_booking_order_
 /**
  * Update order bookings user_id when the order customer_id changes
  * @since 1.14.2
+ * @version 1.14.3
  * @param WC_Order $order
  * @param array $updated_props
  */
 function bookacti_wc_update_customer_id_order_bookings( $order, $updated_props = array() ) {
+	if( ! is_a( $order, 'WC_Order' ) ) { return; }
 	$user_id = $order->get_customer_id();
 	if( in_array( 'customer_id', $updated_props, true ) || ( ! $user_id && in_array( 'billing_email', $updated_props, true ) ) ) {
 		if( ! $user_id ) { $user_id = $order->get_billing_email( 'edit' ); }
