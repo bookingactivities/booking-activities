@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 6.0
 Requires PHP: 5.3
-Stable tag: 1.14.2
+Stable tag: 1.14.3
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -320,6 +320,13 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.14.3 - 2022/06/22 =
+* Tweak - Use the default WP From email if the option is empty
+* Tweak - Rename the "lang" parameter in bookings export to "locale"
+* Fix - Allow commas when formatting arrays for csv and ical exports 
+* Fix - PHP warning when trying to display user selectbox in bookings page if users were deleted
+* Fix - PHP error when refunding a booking
 
 = 1.14.2 - 2022/06/19 =
 * Tweak - Send email notifications to WC order billing email address instead of user account email address

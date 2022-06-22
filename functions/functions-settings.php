@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Get default settings values
  * @since 1.3.0 (was bookacti_define_default_settings_constants)
- * @version 1.12.4
+ * @version 1.14.3
  */
 function bookacti_get_default_settings() {
 	$date = new DateTime(); 
@@ -27,7 +27,7 @@ function bookacti_get_default_settings() {
 		'booking_changes_deadline'				=> 604800, // 7 days
 		'refund_actions_after_cancellation'		=> array(),
 		'notifications_from_name'				=> wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ),
-		'notifications_from_email'				=> get_bloginfo( 'admin_email' ),
+		'notifications_from_email'				=> '', // Use the default sender email address (wordpress@...)
 		'notifications_async'					=> true,
 		'calendar_localization'					=> 'default'
 	);
@@ -745,7 +745,7 @@ function bookacti_settings_field_notifications_from_name_callback() {
 
 /**
  * Notification from email setting field
- * @version 1.14.0
+ * @version 1.14.3
  * @global PHPMailer\PHPMailer\PHPMailer $phpmailer
  */
 function bookacti_settings_field_notifications_from_email_callback() {
@@ -757,17 +757,27 @@ function bookacti_settings_field_notifications_from_email_callback() {
 		if( ! empty( $phpmailer->Host ) ) { $smtp_host = $phpmailer->Host; }
 	}
 	
+	// Get the default from email
+	$sitename = wp_parse_url( network_home_url(), PHP_URL_HOST );
+	$default_from_email = 'wordpress@';
+	if( null !== $sitename ) {
+		if( 'www.' === substr( $sitename, 0, 4 ) ) { $sitename = substr( $sitename, 4 ); }
+		$default_from_email .= $sitename;
+	}
+	$from_email = apply_filters( 'wp_mail_from', $default_from_email );
+	
 	$message = esc_html__( 'You must create an email address at your webhost and use it here.', 'booking-activities' );
-	if( $smtp_host !== 'localhost' ) {
+	if( $smtp_host !== 'localhost' || $from_email !== $default_from_email ) {
 		$message = esc_html__( 'You must use your SMTP server\'s email address.', 'booking-activities' ) . ' (' . $smtp_host . ')';
 	}
 	
 	$args = array(
-		'type'	=> 'text',
-		'name'	=> 'bookacti_notifications_settings[notifications_from_email]',
-		'id'	=> 'notifications_from_email',
-		'value'	=> bookacti_get_setting_value( 'bookacti_notifications_settings', 'notifications_from_email' ),
-		'tip'	=> esc_html__( 'The sender email address.', 'booking-activities' ) . ' ' . $message
+		'type'        => 'text',
+		'name'        => 'bookacti_notifications_settings[notifications_from_email]',
+		'id'          => 'notifications_from_email',
+		'value'       => bookacti_get_setting_value( 'bookacti_notifications_settings', 'notifications_from_email' ),
+		'placeholder' => $from_email,
+		'tip'         => esc_html__( 'The sender email address.', 'booking-activities' ) . ' ' . $message
 	);
 	bookacti_display_field( $args );
 ?>
