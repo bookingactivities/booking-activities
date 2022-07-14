@@ -5,7 +5,7 @@
 
 #bookacti-template-container  { display: table; margin: 20px auto; }
 #bookacti-template-container::after { clear: both; }
-#bookacti-template-container .fc-unthemed .fc-content, 
+#bookacti-template-container .fc-unthemed .fc-event-main,
 #bookacti-template-container .fc-unthemed .fc-divider,
 #bookacti-template-container .fc-unthemed .fc-popover,
 #bookacti-template-container .fc-unthemed .fc-row,
@@ -19,32 +19,39 @@
 
 
 /***** Events *****/
-#bookacti-template-container .fc-event.fc-draggable,
+#bookacti-template-container .bookacti-total-availability::before { content: '/'; }
+
 #bookacti-template-container .fc-helper								{ cursor: move; }
 #bookacti-template-container .fc-event.bookacti-duplicate-event,
 #bookacti-template-container .fc-helper.bookacti-duplicate-event	{ cursor: copy; }
 #bookacti-template-container .fc-event.bookacti-event-dragged.bookacti-duplicate-event { visibility: visible !important; }
 
-.bookacti-event-over .fc-bg::after { content: ' '; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 3; background: -moz-linear-gradient(top, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 75%); background: -webkit-linear-gradient(top, rgba(0,0,0,0.5) 0%,rgba(0,0,0,0) 75%); background: linear-gradient(to bottom, rgba(0,0,0,0.5) 0%,rgba(0,0,0,0) 75%); filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#000000', endColorstr='#00000000',GradientType=0 ); }
+#bookacti-template-calendar .fc-event:hover .fc-event-main { background: linear-gradient( to bottom, rgba( 44,62,80,0.15 ) 0%, rgba( 0,0,0,0 ) 100% ); }
 
-#bookacti-template-calendar .bookacti-picked-event						{ border-width: 1px; }
-#bookacti-template-calendar .bookacti-picked-event .fc-bg				{ opacity: 0.25; }
-#bookacti-template-calendar .bookacti-picked-event .fc-content::before	{ content: '\f344'; font-family: 'dashicons'; float: left; margin: 0 5px 0 2px; }
+#bookacti-template-calendar .fc-timegrid-event .fc-event-resizer             { color: #fff; text-align: center; font-family: monospace; }
+#bookacti-template-calendar .fc-timegrid-event:hover .fc-event-resizer:after { content: "="; display: inline-block; vertical-align: top; line-height: 0px; }
 
 /* Event actions */
-.bookacti-event-actions							{ display: none; position: absolute; right: 3px; top: 2px; z-index: 5; transition: all 0.2s; }
-.bookacti-event-action							{ display: inline-block; min-width: 16px; max-width: 16px; text-align: center; vertical-align: middle; margin-left: 8px; }
-.bookacti-event-action:first-child				{ margin-left: 0; }
-.bookacti-event-over .bookacti-event-actions	{ display: block; }
+.bookacti-event-actions { position: absolute; right: 0; top: -24px; transition: top 1s; height: 24px; padding: 2px 3px; border-radius: 0 3px; z-index: 5; background: rgba( 0, 0, 0, 0.4 ); transition: all 0.2s; }
+.bookacti-event-action  { display: inline-block; min-width: 16px; max-width: 16px; text-align: center; vertical-align: middle; margin-right: 8px; }
+.bookacti-event-action:last-child { margin-right: 0; }
 
-.bookacti-event-action-select-checkbox								{ margin-right: 0 !important; border-radius: 50%; min-width: 16px !important; min-height: 16px !important; max-width: 16px !important; max-height: 16px !important; width: 16px !important; height: 16px !important; }
+#bookacti-template-calendar .bookacti-selected-event .bookacti-event-actions       { top: 0; }
+#bookacti-template-calendar .bookacti-selected-event .bookacti-event-action        { display: none; }
+#bookacti-template-calendar .bookacti-selected-event .bookacti-event-action-select { display: inline-block; }
+
+#bookacti-template-calendar .fc-event:hover .bookacti-event-actions { top: 0; }
+#bookacti-template-calendar .fc-event:hover .bookacti-event-action  { display: inline-block; }
+
+.bookacti-event-action-select                                       { width: 20px; height: 20px; padding-top: 2px; }
+.bookacti-event-action-select-checkbox								{ margin: 0; border-radius: 50%; min-width: 16px !important; min-height: 16px !important; max-width: 16px !important; max-height: 16px !important; width: 16px !important; height: 16px !important; }
 .bookacti-event-action-select-checkbox:not(:checked):hover::before	{ content: "\f147"; margin: -3px 0 0 -4px; color: #aaa; float: left; display: inline-block; vertical-align: middle; width: 16px !important; font: 400 21px/1 dashicons; speak: none; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 .bookacti-event-action-select-checkbox:checked::before				{ margin: -3px 0 0 -4px !important; font: 400 21px/1 dashicons !important; }
-#bookacti-template-calendar .bookacti-selected-event														{ border-width: 2px; }
-#bookacti-template-calendar .bookacti-selected-event .fc-bg													{ opacity: 0.5; transition: opacity 0.2s; }
-#bookacti-template-calendar .bookacti-selected-event:not(.bookacti-picked-event) .bookacti-event-actions	{ right: 1px; top: 0; }
+#bookacti-template-calendar .fc-timegrid-event-harness-inset .fc-timegrid-event.bookacti-selected-event,
+#bookacti-template-calendar .bookacti-selected-event				{ box-shadow: inset 0 0 1px #000, 0 0 0 1px #fff; }
+#bookacti-template-calendar .bookacti-selected-event .fc-event-main { background: linear-gradient( to bottom, rgba( 255,255,255,0.15 ) 0%, rgba( 255,255,255,0 ) 75% ); transition: background 0.2s; }
 
-.bookacti-event-action-edit-button			{ font-size: 16px; transition: color 0.2s;  }
+.bookacti-event-action-edit-button			{ font-size: 16px; transition: color 0.2s; padding-top: 1px; }
 .bookacti-event-action-edit-button:hover	{ color: #aaa; cursor: pointer; }
 
 
@@ -71,7 +78,7 @@
 .bookacti-activity-container	{ display: table-cell; width: 100%; max-width: 120px; vertical-align: middle; overflow: hidden; }
 .bookacti-activity-visibility	{ display: table-cell; vertical-align: middle; padding-right: 10px; cursor: pointer; }
 .bookacti-activity-settings		{ display: table-cell; vertical-align: middle; padding-left: 10px; cursor: pointer; }
-#bookacti-template-activities-container .fc-event { cursor: move; max-height: 16px; padding: 0 5px; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bookacti-activity-draggable    { cursor: move; height: 18px; max-height: 18px; padding: 0 5px; width: 100%; border-radius: 3px; color: #fff; font-size: .85em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 #bookacti-template-activities-container,
 #bookacti-template-groups-of-events-container	{ padding-right: 6px; }

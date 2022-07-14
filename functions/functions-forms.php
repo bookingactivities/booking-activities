@@ -576,7 +576,7 @@ function bookacti_get_default_form_fields_data( $field_name = '', $context = 'vi
  * Get fields metadata
  * @see bookacti_format_form_field_data to properly format your array
  * @since 1.5.0
- * @version 1.14.0
+ * @version 1.15.0
  * @param string $field_name
  * @param string $context 'view' or 'edit'
  * @return array
@@ -633,8 +633,8 @@ function bookacti_get_default_form_fields_meta( $field_name = '', $context = 'vi
 			'when_perform_form_action'       => 'on_submit',
 			'redirect_url_by_activity'       => array(),
 			'redirect_url_by_group_category' => array(),
-			'minTime'                        => '00:00',
-			'maxTime'                        => '00:00'
+			'slotMinTime'                    => '00:00',
+			'slotMaxTime'                    => '00:00'
 		),
 		'login' => array(
 			'automatic_login'        => 1,

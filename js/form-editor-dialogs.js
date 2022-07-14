@@ -52,7 +52,7 @@ function bookacti_init_form_editor_actions() {
 /**
  * Update Form Meta
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.15.0
  */
 function bookacti_dialog_update_form_meta() {
 	var form_id	= $j( '#bookacti-form-id' ).val();
@@ -60,7 +60,7 @@ function bookacti_dialog_update_form_meta() {
 	// Set the dialog title
 	var dialog_title_raw = $j.trim( $j( '#bookacti-form-meta-dialog' ).dialog( 'option', 'title' ).replace( /\(.*?\)/, '' ) );
 	$j( '#bookacti-form-meta-dialog' ).dialog({ 
-		title: dialog_title_raw + ' (' + bookacti_localized.edit_id + ': ' + form_id + ')'
+		"title": dialog_title_raw + ' (' + bookacti_localized.edit_id + ': ' + form_id + ')'
 	});
 	
 	// Fill field id
@@ -136,7 +136,7 @@ function bookacti_dialog_update_form_meta() {
 /**
  * Insert form field
  * @since 1.5.0
- * @version 1.14.0
+ * @version 1.15.0
  */
 function bookacti_dialog_insert_form_field() {
 	// Select the first available field
@@ -149,21 +149,17 @@ function bookacti_dialog_insert_form_field() {
 		[{
 			text: bookacti_localized.dialog_button_ok,			
 			click: function() { 
-				var form_id		= $j( '#bookacti-form-id' ).val();
-				var field_name	= $j( '#bookacti-field-to-insert' ).val();
-				var nonce		= $j( '#nonce_insert_form_field' ).val();
+				var form_id    = $j( '#bookacti-form-id' ).val();
+				var field_name = $j( '#bookacti-field-to-insert' ).val();
+				var nonce      = $j( '#nonce_insert_form_field' ).val();
 				if( ! field_name || ! form_id || ! nonce ) { return; }
 				
 				// Clear errors
-				$j( '#bookacti-insert-form-field-dialog' ).find( '.bookacti-loading-alt,.bookacti-notices' ).remove();
+				$j( '#bookacti-insert-form-field-dialog' ).find( '.bookacti-notices' ).remove();
 				
 				// Display a loader
 				bookacti_form_editor_enter_loading_state();
-				var loading_div = '<div class="bookacti-loading-alt">' 
-									+ '<img class="bookacti-loader" src="' + bookacti_localized.plugin_path + '/img/ajax-loader.gif" title="' + bookacti_localized.loading + '" />'
-									+ '<span class="bookacti-loading-alt-text" >' + bookacti_localized.loading + '</span>'
-								+ '</div>';
-				$j( '#bookacti-insert-form-field-dialog' ).append( loading_div );
+				bookacti_add_loading_html( $j( '#bookacti-insert-form-field-dialog' ) );
 				
 				$j.ajax({
 					url: ajaxurl,
@@ -211,7 +207,7 @@ function bookacti_dialog_insert_form_field() {
 					},
 					complete: function() {
 						$j( '#bookacti-insert-form-field-dialog .bookacti-notices' ).show();
-						$j( '#bookacti-insert-form-field-dialog .bookacti-loading-alt' ).remove();
+						bookacti_remove_loading_html( $j( '#bookacti-insert-form-field-dialog' ) );
 						bookacti_form_editor_exit_loading_state();
 					}
 				});
@@ -227,7 +223,7 @@ function bookacti_dialog_insert_form_field() {
 /**
  * Remove form field
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.15.0
  * @param {int} field_id
  * @param {string} field_name
  */
@@ -235,7 +231,7 @@ function bookacti_dialog_remove_form_field( field_id, field_name ) {
 	// Set the dialog title
 	var dialog_title_raw = $j.trim( $j( '#bookacti-remove-form-field-dialog' ).dialog( 'option', 'title' ).replace( /\(.*?\)/, '' ) );
 	$j( '#bookacti-remove-form-field-dialog' ).dialog({ 
-		title: dialog_title_raw + ' (' + bookacti_localized.edit_id + ': ' + field_id + ')'
+		"title": dialog_title_raw + ' (' + bookacti_localized.edit_id + ': ' + field_id + ')'
 	});
 	
 	// Add the buttons
@@ -303,7 +299,7 @@ function bookacti_dialog_remove_form_field( field_id, field_name ) {
 /**
  * Update Form Field
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.15.0
  * @param {int} field_id
  * @param {string} field_name
  */
@@ -314,7 +310,7 @@ function bookacti_dialog_update_form_field( field_id, field_name ) {
 		var dialog_title_raw = $j.type( dialog_title_current ) === 'string' ? $j.trim( dialog_title_current.replace( /\(.*?\)/, '' ) ) : '';
 		if( dialog_title_raw ) {
 			$j( '#bookacti-form-field-dialog-' + field_name ).dialog({ 
-				title: dialog_title_raw + ' (' + bookacti_localized.edit_id + ': ' + field_id + ')'
+				"title": dialog_title_raw + ' (' + bookacti_localized.edit_id + ': ' + field_id + ')'
 			});
 		}
 	}
@@ -342,7 +338,7 @@ function bookacti_dialog_update_form_field( field_id, field_name ) {
 			text: bookacti_localized.dialog_button_ok,			
 			click: function() { 
 				// Clear errors
-				$j( '#bookacti-form-field-dialog-' + field_name ).find( '.bookacti-loading-alt,.bookacti-notices' ).remove();
+				$j( '#bookacti-form-field-dialog-' + field_name ).find( '.bookacti-notices' ).remove();
 				
 				// Save tineMCE editors content 
 				if( typeof tinyMCE !== 'undefined' ) { 
@@ -357,11 +353,7 @@ function bookacti_dialog_update_form_field( field_id, field_name ) {
 				
 				// Display a loader
 				bookacti_form_editor_enter_loading_state();
-				var loading_div = '<div class="bookacti-loading-alt">' 
-									+ '<img class="bookacti-loader" src="' + bookacti_localized.plugin_path + '/img/ajax-loader.gif" title="' + bookacti_localized.loading + '" />'
-									+ '<span class="bookacti-loading-alt-text" >' + bookacti_localized.loading + '</span>'
-								+ '</div>';
-				$j( '#bookacti-form-field-dialog-' + field_name ).append( loading_div );
+				bookacti_add_loading_html( $j( '#bookacti-form-field-dialog-' + field_name ) );
 				
 				$j.ajax({
 					url: ajaxurl,
@@ -404,7 +396,7 @@ function bookacti_dialog_update_form_field( field_id, field_name ) {
 					},
 					complete: function() {
 						$j( '#bookacti-form-field-dialog-' + field_name + ' .bookacti-notices' ).show();
-						$j( '#bookacti-form-field-dialog-' + field_name + ' .bookacti-loading-alt' ).remove();
+						bookacti_remove_loading_html( $j( '#bookacti-form-field-dialog-' + field_name ) );
 						bookacti_form_editor_exit_loading_state();
 					}
 				});

@@ -2,10 +2,11 @@ $j=jQuery.noConflict();
 
 if( typeof bookacti === 'undefined' ) {
 	var bookacti = {
-		'booking_system': [],
-		'is_touch_device': false,
-		'total_price_fields_data': [],
-		'is_variation_activity': [] // Woocommerce
+		"fc_calendar": [],
+		"booking_system": [],
+		"is_touch_device": false,
+		"total_price_fields_data": [],
+		"is_variation_activity": [] // Woocommerce
 	};
 
 // Compatibility with Optimization plugins

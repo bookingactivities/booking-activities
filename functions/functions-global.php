@@ -343,11 +343,12 @@ function bookacti_generate_ical( $vevents, $vcalendar = array() ) {
 /**
  * Get the variables used with javascript
  * @since 1.8.0
- * @version 1.14.2
+ * @version 1.15.0
  * @return array
  */
 function bookacti_get_js_variables() {
-	$timezone = new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
+	$timezone_name = bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' );
+	$timezone = new DateTimeZone( $timezone_name );
 	$current_datetime = new DateTime( 'now', $timezone );
 	$current_datetime_utc = new DateTime( 'now', new DateTimeZone( 'UTC' ) );
 	$can_edit_bookings = current_user_can( 'bookacti_edit_bookings' );
@@ -390,6 +391,7 @@ function bookacti_get_js_variables() {
 		'nonce_refund_booking'				=> wp_create_nonce( 'bookacti_refund_booking' ),
 		'nonce_reschedule_booking'			=> wp_create_nonce( 'bookacti_reschedule_booking' ),
 
+		'fullcalendar_timezone'             => 'UTC',
 		'fullcalendar_locale'				=> bookacti_convert_wp_locale_to_fc_locale( bookacti_get_current_lang_code( true ) ),
 		'current_lang_code'					=> bookacti_get_current_lang_code(),
 		'current_locale'					=> bookacti_get_current_lang_code( true ),
@@ -535,7 +537,7 @@ function bookacti_get_active_add_ons( $prefix = '', $exclude = array( 'balau' ) 
 /**
  * Get add-on data by prefix
  * @since 1.7.14
- * @version 1.14.2
+ * @version 1.15.0
  * @param string $prefix
  * @param array $exclude
  * @return array
@@ -548,7 +550,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name'	=> 'ba-display-pack', 
 			'end_of_life'	=> '', 
 			'download_id'	=> 482,
-			'min_version'	=> '1.4.23'
+			'min_version'	=> '1.4.25'
 		),
 		'banp'	=> array( 
 			'title'			=> 'Notification Pack', 
@@ -556,7 +558,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name'	=> 'ba-notification-pack', 
 			'end_of_life'	=> '', 
 			'download_id'	=> 1393,
-			'min_version'	=> '1.2.13'
+			'min_version'	=> '1.2.15'
 		),
 		'bapap' => array( 
 			'title'			=> 'Prices and Credits', 
@@ -564,7 +566,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name'	=> 'ba-prices-and-credits', 
 			'end_of_life'	=> '', 
 			'download_id'	=> 438,
-			'min_version'	=> '1.7.6'
+			'min_version'	=> '1.7.8'
 		),
 		'baaf' => array( 
 			'title'			=> 'Advanced Forms', 
@@ -572,7 +574,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name'	=> 'ba-advanced-forms', 
 			'end_of_life'	=> '', 
 			'download_id'	=> 2705,
-			'min_version'	=> '1.2.24'
+			'min_version'	=> '1.2.25'
 		),
 		'baofc'	=> array( 
 			'title'			=> 'Order for Customers', 
@@ -580,7 +582,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name'	=> 'ba-order-for-customers', 
 			'end_of_life'	=> '', 
 			'download_id'	=> 436,
-			'min_version'	=> '1.2.14'
+			'min_version'	=> '1.2.25'
 		),
 		'balau' => array( 
 			'title'			=> 'Licenses & Updates', 
@@ -1662,6 +1664,14 @@ function bookacti_display_date_intervals_field( $field, $field_name ) {
 add_action( 'bookacti_display_custom_field', 'bookacti_display_date_intervals_field', 10, 2 );
 
 
+/**
+ * Get loading HTML
+ * @since 1.15.0
+ * @return string
+ */
+function bookacti_get_loading_html() {
+	return '<div class="bookacti-loading-container"><div class="bookacti-loading-image"><div class="bookacti-spinner"></div></div><div class="bookacti-loading-text">' . esc_html__( 'Loading', 'booking-activities' ) . '</div></div>';
+}
 
 
 // FORMATING AND SANITIZING

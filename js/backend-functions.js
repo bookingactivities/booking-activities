@@ -51,10 +51,11 @@ $j( document ).ready( function() {
 	/**
 	 * Allow select2 to work in a jquery-ui dialog
 	 * @since 1.7.19
+	 * @version 1.15.0
 	 */
 	$j( '.bookacti-backend-dialog' ).dialog({
-		autoOpen: false,
-		open: function() {
+		"autoOpen": false,
+		"open": function() {
 			if( $j.ui && $j.ui.dialog && ! $j.ui.dialog.prototype._allowInteractionRemapped && $j( this ).closest( '.ui-dialog' ).length ) {
 				if( $j.ui.dialog.prototype._allowInteraction ) {
 					$j.ui.dialog.prototype._allowInteraction = function( e ) {
@@ -68,8 +69,8 @@ $j( document ).ready( function() {
 				}
 			}
 		},
-		_allowInteraction: function( event ) {
-			return ! ( ( ! $j( event.target ).is( '.select2-input' ) ) || this._super( event ) );
+		"_allowInteraction": function( e ) {
+			return ! ( ( ! $j( e.target ).is( '.select2-input' ) ) || this._super( e ) );
 		}
 	});
 	

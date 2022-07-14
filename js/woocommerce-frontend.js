@@ -81,9 +81,9 @@ $j( document ).ready( function() {
 
 	/**
 	 * Enable add-to-cart button
-	 * @version 1.9.0
+	 * @version 1.15.0
 	 */
-	$j( '.woocommerce form.cart' ).on( 'bookacti_view_refreshed bookacti_displayed_info_cleared', '.bookacti-booking-system', function() {
+	$j( '.woocommerce form.cart' ).on( 'bookacti_displayed_info_cleared', '.bookacti-booking-system', function() {
 		$j( this ).closest( 'form' ).find( 'input[name="quantity"]' ).attr( 'disabled', false );
 		$j( this ).closest( 'form' ).find( 'button[type="submit"]' ).attr( 'disabled', false );
 	});
@@ -216,7 +216,7 @@ $j( document ).ready( function() {
 
 /**
  * Switch form according to variation
- * @version 1.9.0
+ * @version 1.15.0
  * @param {HTMLElement} form_container
  * @param {object} variation
  */
@@ -242,11 +242,7 @@ function bookacti_switch_product_variation_form( form_container, variation ) {
 	}
 	
 	// Display a loading feedback
-	var loading_div = '<div class="bookacti-loading-alt">' 
-					+	'<img class="bookacti-loader" src="' + bookacti_localized.plugin_path + '/img/ajax-loader.gif" title="' + bookacti_localized.loading + '" />'
-					+	'<span class="bookacti-loading-alt-text" >' + bookacti_localized.loading + '</span>'
-					+ '</div>';
-	form_container.append( loading_div );
+	bookacti_add_loading_html( form_container );
 	
 	var data = {	
 		'action': 'bookactiGetForm', 
@@ -292,13 +288,16 @@ function bookacti_switch_product_variation_form( form_container, variation ) {
             console.log( 'AJAX ' + bookacti_localized.error );
             console.log( e );
         },
-        complete: function() { form_container.find( '.bookacti-loading-alt' ).remove(); }
+        complete: function() { 
+			bookacti_remove_loading_html( form_container );
+		}
     });	
 }
 
 
 /**
  * Replace a old variation form with a new one
+ * @version 1.15.0
  * @param {HTMLElement} form_container
  * @param {object} variation
  * @param {HTMLElement} form_html
@@ -327,7 +326,7 @@ function bookacti_fill_product_variation_form( form_container, variation, form_h
 	bookacti_init_tooltip();
 	
 	// Remove initial loading feedback
-	booking_system.find( '.bookacti-loading-alt' ).remove();
+	bookacti_remove_loading_html( booking_system );
 
 	form_container.trigger( 'bookacti_product_variation_form_switched', [ variation ] );
 }

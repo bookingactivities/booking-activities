@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 6.0
 Requires PHP: 5.3
-Stable tag: 1.14.3
+Stable tag: 1.15.0
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -320,6 +320,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.15.0 =
+* Lib - Update FullCalendar to 5.11.0 (major changes!)
+* Lib - Update Moment JS to 2.29.3
+* Tweak - Replace the GIF spinner with a CSS3 spinner
 
 = 1.14.3 =
 * Tweak - Use the default WP From email if the option is empty
@@ -1346,6 +1351,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Upgrade Notice ==
+
+= 1.15.0 =
+Major changes in code:
+* If you have custom code, especially javascript and CSS affecting the calendars, you will probably need to adapt it. No support can be provided for your custom code.
 
 = 1.12.0 =
 Major changes in code:

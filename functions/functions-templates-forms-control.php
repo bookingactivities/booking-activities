@@ -20,12 +20,12 @@ function bookacti_get_template_default_data() {
 /**
  * Get template default meta
  * @since 1.12.0
- * @version 1.13.0
+ * @version 1.15.0
  */
 function bookacti_get_template_default_meta() {
 	return apply_filters( 'bookacti_template_default_meta', array(
-		'minTime'      => '00:00',
-		'maxTime'      => '00:00',
+		'slotMinTime'  => '00:00',
+		'slotMaxTime'  => '00:00',
 		'snapDuration' => '00:05',
 		'days_off'     => array()
 	));
@@ -35,6 +35,7 @@ function bookacti_get_template_default_meta() {
 /**
  * Sanitize template data
  * @since 1.12.0 (was bookacti_sanitize_template_settings)
+ * @version 1.15.0
  * @param array $raw_data
  * @return array
  */
@@ -45,7 +46,7 @@ function bookacti_sanitize_template_data( $raw_data ) {
 	// Sanitize common values
 	$keys_by_type = array( 
 		'absint' => array( 'id', 'duplicated_template_id' ),
-		'str'    => array( 'title', 'minTime', 'maxTime', 'snapDuration' ),
+		'str'    => array( 'title', 'slotMinTime', 'slotMaxTime', 'snapDuration' ),
 		'array'  => array( 'managers', 'days_off' ),
 		'bool'   => array( 'active' )
 	);
@@ -57,14 +58,14 @@ function bookacti_sanitize_template_data( $raw_data ) {
 	// Sanitize managers
 	$data[ 'managers' ] = bookacti_sanitize_template_managers( $data[ 'managers' ] );
 	
-	// Format 24-h times: minTime, maxTime, snapDuration
-	if( ! preg_match( '/^([0-1][0-9]|2[0-3]):([0-5][0-9])$/', $data[ 'minTime' ] ) )		{ $data[ 'minTime' ] = $default_meta[ 'minTime' ]; }
-	if( ! preg_match( '/^([0-1][0-9]|2[0-3]):([0-5][0-9])$/', $data[ 'maxTime' ] ) )		{ $data[ 'maxTime' ] = $default_meta[ 'maxTime' ]; }
-	if( ! preg_match( '/^([0-1][0-9]|2[0-3]):([0-5][0-9])$/', $data[ 'snapDuration' ] ) )	{ $data[ 'snapDuration' ] = $default_meta[ 'snapDuration' ]; }
+	// Format 24-h times: slotMinTime, slotMaxTime, snapDuration
+	if( ! preg_match( '/^([0-1][0-9]|2[0-3]):([0-5][0-9])$/', $data[ 'slotMinTime' ] ) )  { $data[ 'slotMinTime' ] = $default_meta[ 'slotMinTime' ]; }
+	if( ! preg_match( '/^([0-1][0-9]|2[0-3]):([0-5][0-9])$/', $data[ 'slotMaxTime' ] ) )  { $data[ 'slotMaxTime' ] = $default_meta[ 'slotMaxTime' ]; }
+	if( ! preg_match( '/^([0-1][0-9]|2[0-3]):([0-5][0-9])$/', $data[ 'snapDuration' ] ) ) { $data[ 'snapDuration' ] = $default_meta[ 'snapDuration' ]; }
 	
-	// If minTime >= maxTime, add one day to maxTime
-	if( intval( str_replace( ':', '', $data[ 'minTime' ] ) ) >= intval( str_replace( ':', '', $data[ 'maxTime' ] ) ) ) { 
-		$data[ 'maxTime' ] = str_pad( 24 + ( intval( substr( $data[ 'maxTime' ], 0, 2 ) ) % 24 ), 2, '0', STR_PAD_LEFT ) . substr( $data[ 'maxTime' ], 2 );
+	// If slotMinTime >= slotMaxTime, add one day to slotMaxTime
+	if( intval( str_replace( ':', '', $data[ 'slotMinTime' ] ) ) >= intval( str_replace( ':', '', $data[ 'slotMaxTime' ] ) ) ) { 
+		$data[ 'slotMaxTime' ] = str_pad( 24 + ( intval( substr( $data[ 'slotMaxTime' ], 0, 2 ) ) % 24 ), 2, '0', STR_PAD_LEFT ) . substr( $data[ 'slotMaxTime' ], 2 );
 	}
 	
 	// Make sure snapDuration is not null

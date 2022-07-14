@@ -1,7 +1,7 @@
 <?php 
 /**
  * Calendar editor dialogs
- * @version 1.13.0
+ * @version 1.15.0
  */
 
 // Exit if accessed directly
@@ -283,7 +283,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			/**
 			 * Fill the "Editor" tab in calendar settings
 			 * @since 1.7.18 (was bookacti_fill_template_tab_agenda)
-			 * @version 1.13.0
+			 * @version 1.15.0
 			 * @param array $params
 			 */
 			function bookacti_fill_template_tab_editor( $params = array() ) {
@@ -303,7 +303,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 				<fieldset>
 					<legend><?php esc_html_e( 'Agenda views', 'booking-activities' ); ?></legend>
 					<?php
-						$agenda_fields = array( 'minTime', 'maxTime', 'snapDuration' );
+						$agenda_fields = array( 'slotMinTime', 'slotMaxTime', 'snapDuration' );
 						$fields = apply_filters( 'bookacti_template_tab_editor_agenda_fields', bookacti_get_fullcalendar_fields_default_data( $agenda_fields ) );
 						bookacti_display_fields( $fields );
 					?>

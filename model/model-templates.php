@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Fetch events to display on calendar editor
  * @since 1.1.0 (replace bookacti_fetch_events)
- * @version 1.13.0
+ * @version 1.15.0
  * @global wpdb $wpdb
  * @param array $raw_args {
  *  @type array $templates Array of template IDs
@@ -25,7 +25,8 @@ function bookacti_fetch_events_for_calendar_editor( $raw_args = array() ) {
 		'templates' => array(),
 		'events' => array(),
 		'interval' => array(),
-		'skip_exceptions' => 0,
+		'skip_exceptions' => 1,
+		'skip_days_off' => 1,
 		'past_events' => 1,
 		'bounding_only' => 0,
 		'data_only' => 0
@@ -35,9 +36,9 @@ function bookacti_fetch_events_for_calendar_editor( $raw_args = array() ) {
 	global $wpdb;
 
 	// Set current datetime
-	$timezone					= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
-	$current_datetime_object	= new DateTime( 'now', $timezone );
-	$user_timestamp_offset		= $current_datetime_object->format( 'P' );
+	$timezone                = new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
+	$current_datetime_object = new DateTime( 'now', $timezone );
+	$user_timestamp_offset   = $current_datetime_object->format( 'P' );
 
 	// Select events
 	$query  = 'SELECT E.id as event_id, E.template_id, E.activity_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_step, E.repeat_on, E.repeat_from, E.repeat_to, E.repeat_exceptions, E.availability, A.color ' 
@@ -127,7 +128,41 @@ function bookacti_fetch_events_for_calendar_editor( $raw_args = array() ) {
 
 	// Transform raw events from database to array of individual events
 	$events_array = bookacti_get_events_array_from_db_events( $events, $args );
+	
+	// Remove events on days off
+	if( $args[ 'skip_days_off' ] && ! empty( $events_array[ 'data' ] ) && ! empty( $events_array[ 'events' ] ) ) {
+		$events_from_dt = ! empty( $args[ 'interval' ][ 'start' ] ) ? new DateTime( $args[ 'interval' ][ 'start' ] ) : new DateTime( '1970-02-01' );
+		$events_to_dt   = ! empty( $args[ 'interval' ][ 'end' ] ) ? new DateTime( $args[ 'interval' ][ 'end' ] ) : new DateTime( '2038-01-01' );
+		
+		$first_event_data = reset( $events_array[ 'data' ] );
+		$template_ids     = $args[ 'templates' ] ? $args[ 'templates' ] : array( $first_event_data[ 'template_id' ] );
+		$template_data    = bookacti_get_mixed_template_data( $template_ids );
+		
+		$events_removed       = false;
+		$remaining_events_ids = array();
+		
+		if( ! empty( $template_data[ 'settings' ][ 'days_off' ] ) ) {
+			foreach( $template_data[ 'settings' ][ 'days_off' ] as $off_period ) {
+				$off_from_dt = new DateTime( $off_period[ 'from' ] . ' 00:00:00' );
+				$off_to_dt   = new DateTime( $off_period[ 'to' ] . ' 23:59:59' );
+				if( $off_from_dt > $events_to_dt || $off_to_dt < $events_from_dt ) { continue; }
 
+				foreach( $events_array[ 'events' ] as $i => $event ) {
+					$event_start_dt = new DateTime( $event[ 'start' ] );
+					if( $event_start_dt >= $off_from_dt && $event_start_dt <= $off_to_dt ) {
+						unset( $events_array[ 'events' ][ $i ] );
+						$events_removed = true;
+					} else { $remaining_events_ids[] = $event[ 'id' ]; }
+				}
+			}
+		}
+		
+		if( $events_removed ) {
+			$events_array[ 'data' ]   = array_intersect_key( $events_array[ 'data' ], array_flip( $remaining_events_ids ) );
+			$events_array[ 'events' ] = array_values( $events_array[ 'events' ] );
+		}
+	}
+	
 	return apply_filters( 'bookacti_get_events_for_editor', $events_array, $query, $args ) ;
 }
 

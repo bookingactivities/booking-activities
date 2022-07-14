@@ -1,7 +1,7 @@
 <?php
 /**
  * Calendar editor page
- * @version 1.14.0
+ * @version 1.15.0
  */
 
 // Exit if accessed directly
@@ -142,7 +142,9 @@ $default_template = false;
 	
 	<div id='bookacti-template-content'>
 		<?php if( $templates ) { ?>
-		<div id='bookacti-template-calendar' class='bookacti-calendar'></div>
+		<div class='bookacti-booking-system-editor' id='bookacti-template-calendar'>
+			<div class='bookacti-calendar'></div>
+		</div>
 		<?php } ?>
 		<div id='bookacti-first-template-container' <?php if( $templates ) { echo 'style="display:none;"'; } ?>>
 			<h2>
