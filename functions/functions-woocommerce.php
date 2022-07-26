@@ -113,7 +113,7 @@ function bookacti_wc_add_bookings_to_cart( $product_bookings_data ) {
 /**
  * Get in cart bookings per cart item
  * @since 1.9.0
- * @version 1.12.0
+ * @version 1.15.0
  * @global woocommerce $woocommerce
  * @param array $cart_items
  * @param array $filters
@@ -121,7 +121,7 @@ function bookacti_wc_add_bookings_to_cart( $product_bookings_data ) {
  */
 function bookacti_wc_get_cart_items_bookings( $cart_items = array(), $filters = array() ) {
 	global $woocommerce;
-	if( ! $cart_items ) { $cart_items = $woocommerce->cart->get_cart(); }
+	if( ! $cart_items && ! empty( $woocommerce->cart ) ) { $cart_items = $woocommerce->cart->get_cart(); }
 	$in__cart_item_key = ! empty( $filters[ 'in__cart_item_key' ] ) ? $filters[ 'in__cart_item_key' ] : array();
 	$cart_item_keys_by_booking_id = array();
 	$cart_item_keys_by_booking_group_id = array();

@@ -212,7 +212,7 @@ add_action( 'woocommerce_before_single_product_summary', 'bookacti_move_add_to_c
 
 /**
  * Add booking forms to single product page (front-end)
- * @version 1.8.0
+ * @version 1.15.0
  * @global WC_Product $product
  */
 function bookacti_add_booking_system_in_single_product_page() {
@@ -234,9 +234,9 @@ function bookacti_add_booking_system_in_single_product_page() {
 	}
 	if( ! $form_id ) { return; }
 
-	$form_instance_id		= '';
-	$variation_id			= 0;
-	$default_variation_id	= 0;
+	$form_instance_id     = '';
+	$variation_id         = 0;
+	$default_variation_id = 0;
 
 	// Show form on single product page or on variable product with a default value
 	if( $product->is_type( 'simple' ) ) {
@@ -274,6 +274,7 @@ function bookacti_add_booking_system_in_single_product_page() {
 
 	// Add compulsory class
 	$form_atts[ 'class' ] .= ' bookacti-wc-form-fields';
+	if( ! empty( $_REQUEST[ 'add-to-cart' ] ) ) { $form_atts[ 'class' ] .= ' bookacti-wc-form-fields-reset'; }
 
 	// Convert $form_atts array to inline attributes
 	$form_attributes_str = '';
@@ -284,7 +285,7 @@ function bookacti_add_booking_system_in_single_product_page() {
 	// If no default variation are selected, or if it's not an activity, or if doesn't have a form bound
 	// display an empty form fields container
 	if( ! $form_atts[ 'id' ] ) { 
-		?><div class='bookacti-wc-form-fields'></div><?php
+		?><div class='<?php echo esc_attr( $form_atts[ 'class' ] ); ?>'></div><?php
 		return;
 	}
 

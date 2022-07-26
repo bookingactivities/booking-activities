@@ -7,6 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Get all translatable texts
  * @since 1.14.0
+ * @version 1.15.0
  * @return array
  */
 function bookacti_get_translatable_texts() {
@@ -101,7 +102,7 @@ function bookacti_get_translatable_texts() {
 	}
 	
 	// Get templates strings
-	$templates = bookacti_get_templates_data( array(), true );
+	$templates = bookacti_get_templates_data( array(), false );
 	foreach( $templates as $template_id => $template ) {
 		$template_texts = array();
 		
@@ -410,8 +411,8 @@ function bookacti_wp_moment_updateLocale_temp_fix() {
 /**
  * Convert a PHP datetime format to moment JS format
  * @since 1.15.0
- * @param {string} php_format
- * @returns {string}
+ * @param string php_format
+ * @return string
  */
 function bookacti_convert_php_datetime_format_to_moment_js( $php_format ) {
 	$format_map = array(
@@ -450,7 +451,7 @@ function bookacti_convert_php_datetime_format_to_moment_js( $php_format ) {
 	$has_backslash = false;
 	$moment_js_format = '';
 	foreach( str_split( $php_format ) as $char ) {
-		if( $char === '\\' ) { $has_backslash = true; continue; }
+		if( $char === '\\' && ! $has_backslash ) { $has_backslash = true; continue; }
 		$moment_js_format .= $has_backslash || ! isset( $format_map[ $char ] ) ? '[' . $char . ']' : $format_map[ $char ];
 		$has_backslash = false;
 	}

@@ -121,10 +121,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				<fieldset>
 					<legend><?php esc_html_e( 'Working time', 'booking-activities' ); ?></legend>
 					<?php 
-						$agenda_fields = bookacti_get_fullcalendar_fields_default_data( array( 'slotMinTime', 'slotMaxTime' ) );
-						$agenda_fields[ 'slotMinTime' ][ 'value' ] = str_pad( intval( substr( $params[ 'calendar_data' ][ 'slotMinTime' ], 0, 2 ) ) % 24, 2, '0', STR_PAD_LEFT ) . substr( $params[ 'calendar_data' ][ 'slotMinTime' ], 2 );
-						$agenda_fields[ 'slotMaxTime' ][ 'value' ] = str_pad( intval( substr( $params[ 'calendar_data' ][ 'slotMaxTime' ], 0, 2 ) ) % 24, 2, '0', STR_PAD_LEFT ) . substr( $params[ 'calendar_data' ][ 'slotMaxTime' ], 2 );
-						bookacti_display_fields( $agenda_fields );
+						$timeGrid_fields = bookacti_get_fullcalendar_fields_default_data( array( 'slotMinTime', 'slotMaxTime' ) );
+						$timeGrid_fields[ 'slotMinTime' ][ 'value' ] = str_pad( intval( substr( $params[ 'calendar_data' ][ 'slotMinTime' ], 0, 2 ) ) % 24, 2, '0', STR_PAD_LEFT ) . substr( $params[ 'calendar_data' ][ 'slotMinTime' ], 2 );
+						$timeGrid_fields[ 'slotMaxTime' ][ 'value' ] = str_pad( intval( substr( $params[ 'calendar_data' ][ 'slotMaxTime' ], 0, 2 ) ) % 24, 2, '0', STR_PAD_LEFT ) . substr( $params[ 'calendar_data' ][ 'slotMaxTime' ], 2 );
+						bookacti_display_fields( $timeGrid_fields );
 					?>
 				</fieldset>
 			<?php

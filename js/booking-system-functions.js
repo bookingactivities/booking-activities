@@ -1583,7 +1583,7 @@ function bookacti_get_event_availability_div( booking_system, event ) {
 	}
 	
 	var avail_div     = $j( '<div></div>',   { 'class': 'bookacti-availability-container ' + hide_availability_class } );
-	var places_span   = $j( '<span></span>', { 'class': 'bookacti-available-places ' + availability_classes } );
+	var places_span   = $j( '<div></div>',   { 'class': 'bookacti-available-places ' + availability_classes } );
 	var nb_span       = $j( '<span></span>', { 'class': 'bookacti-available-places-number', 'html': available_places } );
 	var unit_span     = $j( '<span></span>', { 'class': 'bookacti-available-places-unit-name', 'html': unit_name } );
 	var particle_span = $j( '<span></span>', { 'class': 'bookacti-available-places-avail-particle', 'html': avail } );
@@ -1621,8 +1621,8 @@ function bookacti_get_event_number_of_bookings_div( booking_system, event ) {
 	availability_classes += bookings_number > 0 ? ' bookacti-booked' : ' bookacti-not-booked';
 	availability_classes += available_places <= 0 ? ' bookacti-full' : '';
 	
-	var avail_div   = $j( '<div></div>', { 'class': 'bookacti-availability-container' } );
-	var places_span = $j( '<span></span>', { 'class': 'bookacti-available-places ' + availability_classes } );
+	var avail_div   = $j( '<div></div>',   { 'class': 'bookacti-availability-container' } );
+	var places_span = $j( '<div></div>',   { 'class': 'bookacti-available-places ' + availability_classes } );
 	var booked_span = $j( '<span></span>', { 'class': 'bookacti-active-bookings-number', 'html': bookings_number } );
 
 	places_span.append( booked_span );

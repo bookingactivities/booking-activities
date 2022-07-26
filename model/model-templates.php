@@ -122,7 +122,7 @@ function bookacti_fetch_events_for_calendar_editor( $raw_args = array() ) {
 	}
 
 	// Allow plugins to change the query
-	$query = apply_filters( 'bookacti_get_events_for_editor_query', $query, $args );
+	$query = apply_filters( 'bookacti_calendar_editor_events_query', $query, $args );
 
 	$events = $wpdb->get_results( $query, OBJECT );
 
@@ -163,7 +163,7 @@ function bookacti_fetch_events_for_calendar_editor( $raw_args = array() ) {
 		}
 	}
 	
-	return apply_filters( 'bookacti_get_events_for_editor', $events_array, $query, $args ) ;
+	return apply_filters( 'bookacti_calendar_editor_events', $events_array, $query, $args ) ;
 }
 
 
@@ -888,19 +888,19 @@ function bookacti_get_group_category_template_id( $category_id ) {
 
 /**
  * Get templates
- * @version 1.14.0
+ * @version 1.15.0
  * @global wpdb $wpdb
  * @param array $template_ids
- * @param boolean $ignore_permissions
- * @param int $user_id
+ * @param int $user_id User ID to check the permissions for. -1 for current user (default). 0 to ignore permission. 
  * @return array
  */
-function bookacti_fetch_templates( $template_ids = array(), $ignore_permissions = false, $user_id = 0 ) {
+function bookacti_fetch_templates( $template_ids = array(), $user_id = -1 ) {
 	if( is_numeric( $template_ids ) ) { $template_ids = array( $template_ids ); }
 
 	// Check if we need to check permissions
-	if( ! $user_id ) { $user_id = get_current_user_id(); }
-	if( ! $ignore_permissions ) {
+	$ignore_permissions = $user_id === 0;
+	if( $user_id < -1 ) { $user_id = get_current_user_id(); }
+	if( $user_id ) {
 		$bypass_template_managers_check = apply_filters( 'bookacti_bypass_template_managers_check', false );
 		if( $bypass_template_managers_check || is_super_admin( $user_id ) ) {
 			$ignore_permissions = true;
@@ -942,19 +942,12 @@ function bookacti_fetch_templates( $template_ids = array(), $ignore_permissions 
 		}
 	}
 
-	if( $variables ) {
-		$query = $wpdb->prepare( $query, $variables );
-	}
+	if( $variables ) { $query = $wpdb->prepare( $query, $variables ); }
 
 	$templates = $wpdb->get_results( $query, ARRAY_A );
 
 	$templates_by_id = array();
-	foreach( $templates as $template ) {
-		$template[ 'multilingual_title' ] = $template[ 'title' ];
-		$template[ 'title' ]              = $template[ 'title' ] ? apply_filters( 'bookacti_translate_text', $template[ 'title' ] ) : '';
-		
-		$templates_by_id[ $template[ 'id' ] ] = $template;
-	}
+	foreach( $templates as $template ) { $templates_by_id[ $template[ 'id' ] ] = $template; }
 
 	return $templates_by_id;
 }
@@ -1238,7 +1231,7 @@ function bookacti_delete_templates_x_activities( $template_ids, $activity_ids ) 
 
 /**
  * Get activities by template
- * @version 1.14.0
+ * @version 1.15.0
  * @global wpdb $wpdb
  * @param array $template_ids
  * @param boolean $based_on_events Whether to retrieve activities bound to templates or activities bound to events of templates
@@ -1249,7 +1242,7 @@ function bookacti_get_activities_by_template( $template_ids = array(), $based_on
 	global $wpdb;
 
 	// If empty, take them all
-	if( ! $template_ids ) { $template_ids = array_keys( bookacti_fetch_templates( array(), true ) ); }
+	if( ! $template_ids ) { $template_ids = array_keys( bookacti_fetch_templates( array(), 0 ) ); }
 
 	// Convert numeric to array
 	if( ! is_array( $template_ids ) ) { $template_ids = bookacti_ids_to_array( $template_ids ); }

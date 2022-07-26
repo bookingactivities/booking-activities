@@ -162,7 +162,7 @@ $j( document ).ready( function() {
 	 * @version 1.15.0
 	 * @param {Event} e
 	 */
-	$j( 'body' ).on( 'touchstart', '.bookacti-booking-system .bookacti-calendar .fc-event, .bookacti-booking-system .bookacti-calendar .fc-list-item', function( e ){
+	$j( 'body' ).on( 'touchstart', '.bookacti-booking-system .bookacti-calendar .fc-event, .bookacti-booking-system .bookacti-calendar .fc-list-event', function( e ){
 		var booking_system = $j( this ).closest( '.bookacti-booking-system' );
 		var element = $j( this );
 		var event = {
@@ -180,7 +180,7 @@ $j( document ).ready( function() {
 	 * @version 1.15.0
 	 * @param {Event} e
 	 */
-	$j( 'body' ).on( 'touchend', '.bookacti-booking-system .bookacti-calendar .fc-event, .bookacti-booking-system .bookacti-calendar .fc-list-item', function( e ){
+	$j( 'body' ).on( 'touchend', '.bookacti-booking-system .bookacti-calendar .fc-event, .bookacti-booking-system .bookacti-calendar .fc-list-event', function( e ){
 		var booking_system = $j( this ).closest( '.bookacti-booking-system' );
 		var element = $j( this );
 		var event = {
@@ -195,12 +195,13 @@ $j( document ).ready( function() {
 	/**
 	 * Refresh the picked events on the calendar - on bookacti_pick_event
 	 * @since 1.12.0
+	 * @version 1.15.0
 	 * @param {Event} e
 	 * @param {Object} picked_event
 	 * @param {Int} group_id
 	 * @param {String} group_date
 	 */
-	$j( 'body' ).on( 'bookacti_pick_event', '.bookacti-booking-system', function( e, picked_event, group_id, group_date ){
+	$j( 'body' ).on( 'bookacti_pick_event', '.bookacti-booking-system, #bookacti-template-calendar', function( e, picked_event, group_id, group_date ){
 		if( ! $j( this ).find( '.bookacti-calendar' ).length ) { return; }
 		bookacti_refresh_picked_events_on_calendar( $j( this ) );
 	});
@@ -231,7 +232,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 	// Get calendar display_data
 	var availability_period = bookacti_get_availability_period( booking_system );
 	var display_data        = typeof bookacti.booking_system[ booking_system_id ][ 'display_data' ] !== 'undefined' ? bookacti.booking_system[ booking_system_id ][ 'display_data' ] : {};
-	var event_min_height    = typeof bookacti_localized.event_tiny_height !== 'undefined' ? parseInt( bookacti_localized.event_tiny_height ) : 30;
+	var event_min_height    = typeof bookacti_localized.event_tiny_height !== 'undefined' ? parseInt( bookacti_localized.event_tiny_height ) : 32;
 	var slot_min_time       = typeof display_data.slotMinTime !== 'undefined' ? display_data.slotMinTime : '00:00';
 	var slot_max_time       = typeof display_data.slotMaxTime !== 'undefined' ? display_data.slotMaxTime : '24:00';
 	
@@ -255,7 +256,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		dragRevertDuration:    0,
 		eventShortHeight:      0,
 		slotDuration:          '00:30',
-		slotEventOverlap:       true,
+		slotEventOverlap:       false,
 		eventMinHeight:         event_min_height,
 		slotMinTime:            slot_min_time,
 		slotMaxTime:            slot_max_time,
@@ -296,12 +297,6 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		 */
 		viewClassNames: function( info ) {
 			var return_object = { 'class_names': [] };
-			
-			// Add a class if the events are overlapping
-			if( info.view.type.indexOf( 'timeGrid' ) > -1 ){
-				var event_overlap = bookacti.fc_calendar[ booking_system_id ].getOption( 'slotEventOverlap' );
-				if( event_overlap ) { return_object.class_names.push( 'bookacti-events-overlap' ); }
-			}
 			
 			booking_system.trigger( 'bookacti_calendar_view_class_names', [ return_object, info ] );
 			
@@ -446,7 +441,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 				$j( info.el ).data( 'activity-id', event_data.activity_id );
 				$j( info.el ).attr( 'data-activity-id', event_data.activity_id );
 			}
-
+			
 			booking_system.trigger( 'bookacti_calendar_event_did_mount', [ info ] );
 		},
 		
@@ -539,7 +534,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 			// Display start and end time in spans
 			var time_format	= 'LT';
 			if( info.view.type.indexOf( 'timeGrid' ) > -1 ) {
-				// Remove trailing AM/PM in agenda views
+				// Remove trailing AM/PM in Time Grid views
 				var lt_format = moment.localeData().longDateFormat( 'LT' );
 				time_format = lt_format.replace( /[aA]/g, '' );
 			}
@@ -645,8 +640,8 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 	// Make sure the event interval fit the view
 	var is_view_larger_than_interval = false;
 	if( typeof bookacti.booking_system[ booking_system_id ][ 'events_interval' ] !== 'undefined' ) {
-		var event_interval_start= moment.utc( bookacti.booking_system[ booking_system_id ][ 'events_interval' ][ 'start' ] );
-		var event_interval_end	= moment.utc( bookacti.booking_system[ booking_system_id ][ 'events_interval' ][ 'end' ] );
+		var event_interval_start = moment.utc( bookacti.booking_system[ booking_system_id ][ 'events_interval' ][ 'start' ] );
+		var event_interval_end   = moment.utc( bookacti.booking_system[ booking_system_id ][ 'events_interval' ][ 'end' ] );
 		if( event_interval_start.isAfter( interval.start ) || event_interval_end.isBefore( interval.end ) ) {
 			is_view_larger_than_interval = true;
 		}
@@ -698,7 +693,7 @@ function bookacti_fc_get_events_by_groupId( booking_system, groupId ) {
  */
 function bookacti_fc_add_events( booking_system, events ) {
 	if( ! events.length ) { return; }
-
+	
 	// Convert events for FullCalendar
 	$j.each( events, function( i, event ) {
 		event.groupId = parseInt( event.id );
@@ -706,7 +701,10 @@ function bookacti_fc_add_events( booking_system, events ) {
 	});
 	
 	var booking_system_id = booking_system.attr( 'id' );
-	bookacti.fc_calendar[ booking_system_id ].addEventSource( events );
+	var source = { 'events': events, 'editable': booking_system_id === 'bookacti-template-calendar' };
+	booking_system.trigger( 'bookacti_fc_events', [ source ] );
+	
+	bookacti.fc_calendar[ booking_system_id ].addEventSource( source );
 }
 
 
@@ -743,10 +741,12 @@ function bookacti_refresh_picked_events_on_calendar( booking_system ) {
 
 /**
  * Remove CSS class from all picked events on calendar
+ * @version 1.15.0
  * @param {HTMLElement} booking_system
  */
 function bookacti_unpick_all_events_on_calendar( booking_system ) {
 	booking_system.find( '.bookacti-picked-event' ).removeClass( 'bookacti-picked-event' );
+	booking_system.trigger( 'bookacti_unpick_all_events_on_calendar' );
 }
 
 
@@ -762,7 +762,7 @@ function bookacti_fc_get_event_size_classes( booking_system, fc_event, view ) {
 	if( view.type.indexOf( 'timeGrid' ) < 0 && view.type.indexOf( 'dayGrid' ) < 0 ) { return classes; }
 	
 	var custom_size = {
-		'tiny_height':  typeof bookacti_localized.event_tiny_height !== 'undefined' ? parseInt( bookacti_localized.event_tiny_height ) : 30,
+		'tiny_height':  typeof bookacti_localized.event_tiny_height !== 'undefined' ? parseInt( bookacti_localized.event_tiny_height ) : 32,
 		'small_height': typeof bookacti_localized.event_small_height !== 'undefined' ? parseInt( bookacti_localized.event_small_height ) : 75,
 		'narrow_width': typeof bookacti_localized.event_narrow_width !== 'undefined' ? parseInt( bookacti_localized.event_narrow_width ) : 70,
 		'wide_width':   typeof bookacti_localized.event_wide_width !== 'undefined' ? parseInt( bookacti_localized.event_wide_width ) : 250
@@ -776,9 +776,22 @@ function bookacti_fc_get_event_size_classes( booking_system, fc_event, view ) {
 		if( typeof event_min_height === 'undefined' ) { event_min_height = 0; }
 		if( typeof slot_duration === 'undefined' )    { slot_duration = '00:30'; }
 		
-		var slot_minutes    = ( parseInt( slot_duration.substr( 0, 2 ) ) * 60 ) + parseInt( slot_duration.substr( -2 ) );
-		var event_minutes   = parseInt( moment.duration( moment.utc( fc_event.end ).diff( moment.utc( fc_event.start ) ) ).asMinutes() );
-		var slot_height     = booking_system.find( '.fc-timegrid-slot' ).outerHeight();
+		var slot_minutes  = ( parseInt( slot_duration.substr( 0, 2 ) ) * 60 ) + parseInt( slot_duration.substr( -2 ) );
+		var event_minutes = parseInt( moment.duration( moment.utc( fc_event.end ).diff( moment.utc( fc_event.start ) ) ).asMinutes() );
+		var slot_height   = booking_system.find( '.fc-timegrid-slot' ).length ? booking_system.find( '.fc-timegrid-slot' ).outerHeight() : 0;
+		
+		// If the slot is not rendered, compute its expected height from the line-height
+		if( ! slot_height ) {
+			var line_height = booking_system.css( 'line-height' ).replace( 'px', '' );
+			line_height     = $j.isNumeric( line_height ) ? parseFloat( line_height ) : 0;
+			if( ! line_height ) {
+				var font_size = booking_system.css( 'font-size' ).replace( 'px', '' );
+				line_height   = $j.isNumeric( font_size ) ? parseFloat( font_size ) * 1.5 : 0; // Usually, line-height = font-size * 1.5
+			}
+			if( line_height ) { slot_height = line_height; }
+			else { slot_height = 20; } // Use 20px by default
+		}
+		
 		var expected_height = Math.max( parseInt( event_min_height ), ( slot_height / slot_minutes ) * event_minutes );
 		
 		     if( expected_height <= custom_size.tiny_height )  { classes.push( 'bookacti-tiny-event' ); }

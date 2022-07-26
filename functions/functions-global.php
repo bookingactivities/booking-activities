@@ -399,7 +399,7 @@ function bookacti_get_js_variables() {
 		'available_booking_methods'			=> array_keys( bookacti_get_available_booking_methods() ),
 		'booking_system_attributes_keys'	=> array_keys( bookacti_get_booking_system_default_attributes() ),
 
-		'event_tiny_height'					=> apply_filters( 'bookacti_event_tiny_height', 30 ),
+		'event_tiny_height'					=> apply_filters( 'bookacti_event_tiny_height', 32 ),
 		'event_small_height'				=> apply_filters( 'bookacti_event_small_height', 75 ),
 		'event_narrow_width'				=> apply_filters( 'bookacti_event_narrow_width', 70 ),
 		'event_wide_width'					=> apply_filters( 'bookacti_event_wide_width', 250 ),
@@ -2162,7 +2162,7 @@ function bookacti_sanitize_ical_property( $value, $property_name = '' ) {
 
 /**
  * Get users metadata
- * @version 1.14.3
+ * @version 1.15.0
  * @param array $args
  * @return array
  */
@@ -2191,7 +2191,7 @@ function bookacti_get_users_data( $args = array() ) {
 	}
 	
 	// Add user meta
-	if( $args[ 'meta' ] ) {
+	if( $args[ 'meta' ] && $sorted_users ) {
 		// Make sure that all the desired users meta are in cache with a single db query
 		update_meta_cache( 'user', array_keys( $sorted_users ) );
 		

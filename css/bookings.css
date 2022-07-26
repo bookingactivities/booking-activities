@@ -52,7 +52,7 @@ label[for="bookacti-booking-filter-dates-to"] + input#bookacti-booking-filter-da
 /** BOOKINGS TOOLTIP **/
 .bookacti-tooltips-container { margin-top: 20px; }
 .bookacti-tooltip-mouseover { 
-	z-index: 20; 
+	z-index: 10000; 
 	min-width: 320px;
 	max-width: 480px;
 	max-height: 480px;

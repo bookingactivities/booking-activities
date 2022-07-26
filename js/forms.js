@@ -111,7 +111,7 @@ $j( document ).ready( function() {
 		}
 		
 		var form = $j( this ).closest( 'form' );
-		var booking_system	= form.find( '.bookacti-booking-system' );
+		var booking_system = form.find( '.bookacti-booking-system' );
 		
 		// Clear booking system displayed info
 		bookacti_clear_booking_system_displayed_info( booking_system );

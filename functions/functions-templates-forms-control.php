@@ -79,6 +79,56 @@ function bookacti_sanitize_template_data( $raw_data ) {
 
 
 /**
+ * Format template data
+ * @since 1.15.0
+ * @param array $raw_data
+ * @return array
+ */
+function bookacti_format_template_data( $raw_data ) {
+	$default_data = bookacti_get_template_default_data();
+	$default_meta = bookacti_get_template_default_meta();
+	
+	// Sanitize common values
+	$keys_by_type = array( 
+		'absint' => array( 'id' ),
+		'str'    => array( 'title', 'slotMinTime', 'slotMaxTime', 'snapDuration' ),
+		'array'  => array( 'days_off' ),
+		'bool'   => array( 'active' )
+	);
+	$data = array_merge( $default_data, $default_meta, bookacti_sanitize_values( array_merge( $default_data, $default_meta ), $raw_data, $keys_by_type ) );
+	
+	// Format 24-h times: slotMinTime, slotMaxTime, snapDuration
+	if( ! preg_match( '/^([0-1][0-9]|2[0-3]):([0-5][0-9])$/', $data[ 'slotMinTime' ] ) )  { $data[ 'slotMinTime' ] = $default_meta[ 'slotMinTime' ]; }
+	if( ! preg_match( '/^([0-1][0-9]|2[0-3]):([0-5][0-9])$/', $data[ 'slotMaxTime' ] ) )  { $data[ 'slotMaxTime' ] = $default_meta[ 'slotMaxTime' ]; }
+	if( ! preg_match( '/^([0-1][0-9]|2[0-3]):([0-5][0-9])$/', $data[ 'snapDuration' ] ) ) { $data[ 'snapDuration' ] = $default_meta[ 'snapDuration' ]; }
+	
+	// If slotMinTime >= slotMaxTime, add one day to slotMaxTime
+	if( intval( str_replace( ':', '', $data[ 'slotMinTime' ] ) ) >= intval( str_replace( ':', '', $data[ 'slotMaxTime' ] ) ) ) { 
+		$data[ 'slotMaxTime' ] = str_pad( 24 + ( intval( substr( $data[ 'slotMaxTime' ], 0, 2 ) ) % 24 ), 2, '0', STR_PAD_LEFT ) . substr( $data[ 'slotMaxTime' ], 2 );
+	}
+	
+	// Make sure snapDuration is not null
+	if( $data[ 'snapDuration' ] === '00:00' ) { $data[ 'snapDuration' ] = '00:01'; }
+	
+	// Sanitize Days off
+	$data[ 'days_off' ] = bookacti_sanitize_days_off( $data[ 'days_off' ] );
+	
+	$data = apply_filters( 'bookacti_formatted_template_data', $data, $raw_data );
+	
+	// Move the metadata and administrators
+	$meta  = array_intersect_key( $data, $default_meta );
+	$data  = array_intersect_key( $data, $default_data );
+	$data[ 'settings' ] = $meta;
+	
+	// Translate title and keep an untranslated entry
+	$data[ 'multilingual_title' ] = $data[ 'title' ];
+	if( $data[ 'title' ] ) { $data[ 'title' ] = apply_filters( 'bookacti_translate_text', $data[ 'title' ] ); }
+	
+	return $data;
+}
+
+
+/**
  * Validate template data
  * @since 1.0.6
  * @version 1.12.0

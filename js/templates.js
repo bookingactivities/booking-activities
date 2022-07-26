@@ -122,7 +122,7 @@ function bookacti_load_template_calendar() {
 	// Get calendar settings
 	var availability_period = bookacti_get_availability_period( booking_system );
 	var display_data        = typeof bookacti.booking_system[ 'bookacti-template-calendar' ][ 'display_data' ] !== 'undefined' ? bookacti.booking_system[ 'bookacti-template-calendar' ][ 'display_data' ] : {};
-	var event_min_height    = typeof bookacti_localized.event_tiny_height !== 'undefined' ? parseInt( bookacti_localized.event_tiny_height ) : 30;
+	var event_min_height    = typeof bookacti_localized.event_tiny_height !== 'undefined' ? parseInt( bookacti_localized.event_tiny_height ) : 32;
 	var slot_min_time       = typeof display_data.slotMinTime !== 'undefined' ? display_data.slotMinTime : '00:00';
 	var slot_max_time       = typeof display_data.slotMaxTime !== 'undefined' ? display_data.slotMaxTime : '24:00';
 	var snap_duration       = typeof display_data.snapDuration !== 'undefined' ? display_data.snapDuration : '00:05';
@@ -209,12 +209,6 @@ function bookacti_load_template_calendar() {
 		 */
 		viewClassNames: function( info ) {
 			var return_object = { 'class_names': [] };
-			
-			// Add a class if the events are overlapping
-			if( info.view.type.indexOf( 'timeGrid' ) > -1 ) {
-				var event_overlap = bookacti.fc_calendar[ 'bookacti-template-calendar' ].getOption( 'slotEventOverlap' );
-				if( event_overlap ) { return_object.class_names.push( 'bookacti-events-overlap' ); }
-			}
 			
 			booking_system.trigger( 'bookacti_calendar_editor_view_class_names', [ return_object, info ] );
 			
@@ -471,7 +465,7 @@ function bookacti_load_template_calendar() {
 			// Display start and end time in spans
 			var time_format	= 'LT';
 			if( info.view.type.indexOf( 'timeGrid' ) > -1 ) {
-				// Remove trailing AM/PM in agenda views
+				// Remove trailing AM/PM in Time Grid views
 				var lt_format = moment.localeData().longDateFormat( 'LT' );
 				time_format = lt_format.replace( /[aA]/g, '' );
 			}
@@ -506,7 +500,7 @@ function bookacti_load_template_calendar() {
 				}
 
 				var avail_div   = $j( '<div></div>', { 'class': 'bookacti-availability-container' } );
-				var places_span = $j( '<span></span>', { 'class': 'bookacti-available-places ' + availability_classes } );
+				var places_span = $j( '<div></div>', { 'class': 'bookacti-available-places ' + availability_classes } );
 				var booked_span = $j( '<span></span>', { 'class': 'bookacti-bookings', 'html': event_bookings } );
 				var total_span  = $j( '<span></span>', { 'class': 'bookacti-total-availability', 'html': availability } );
 				
@@ -634,7 +628,7 @@ function bookacti_load_template_calendar() {
 			// If the activity was not found, return false
 			if( ! activity_data ) { info.revert(); return; }
 			
-			// If the event is dropped on a non-agenda view, make it begins at the slotMinTime
+			// If the event is dropped on a non-timeGrid view, make it begins at the slotMinTime
 			var new_event_start = moment.utc( info.event.start );
 			if( info.view.type.substr( 0, 8 ) !== 'timeGrid' ) {
 				var slot_min_time = bookacti.fc_calendar[ 'bookacti-template-calendar' ].getOption( 'slotMinTime' );
@@ -833,18 +827,11 @@ function bookacti_load_template_calendar() {
 		 * }
 		 */
 		eventClick: function( info ) {
-			var event_start_formatted = moment.utc( info.event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
-			
-			// Because of popover and long events (spreading on multiple days), 
-			// the same event can appears twice, so we need to apply changes on each
-			var elements = $j( '.fc-event[data-event-id="' + info.event.groupId + '"][data-event-start="' + event_start_formatted + '"]' );
-			
-			// Format the picked events
+			// Unpick all the other events
 			bookacti.booking_system[ 'bookacti-template-calendar' ][ 'picked_events' ] = [];
-			$j( '.fc-event' ).removeClass( 'bookacti-picked-event' );
-			elements.addClass( 'bookacti-picked-event' );
-
-			// Keep picked events in memory 
+			bookacti_unpick_all_events_on_calendar( booking_system );
+			
+			// Pick this event
 			bookacti_pick_event( booking_system, info.event );
 			
 			// If the user click on an event action, execute it

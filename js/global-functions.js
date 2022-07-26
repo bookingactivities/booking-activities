@@ -447,7 +447,7 @@ function bookacti_convert_php_datetime_format_to_moment_js( php_format ) {
 
 
 /**
- * Convert a PHP datetime format to FullCalendar Date-Formatting Object (https://fullcalendar.io/docs/date-formatting)
+ * Convert a PHP datetime format to FullCalendar Date-Formatting Object, see https://fullcalendar.io/docs/date-formatting/
  * @since 1.15.0
  * @param {string} php_format
  * @returns {string}

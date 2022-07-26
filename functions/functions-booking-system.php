@@ -129,7 +129,7 @@ function bookacti_get_booking_system_data( $atts ) {
 	$start_dt = new DateTime( $booking_system_data[ 'start' ] );
 	$end_dt   = new DateTime( $booking_system_data[ 'end' ] );
 	if( $start_dt >= $end_dt ) { 
-		$booking_system_data[ 'no_events' ] = 1; 
+		$booking_system_data[ 'no_events' ] = 1;
 		$booking_system_data[ 'start' ] = $booking_system_data[ 'end' ] = $now;
 	}
 	
@@ -358,7 +358,7 @@ function bookacti_get_booking_system_default_attributes() {
 
 /**
  * Check booking system attributes and format them to be correct
- * @version 1.13.0
+ * @version 1.15.0
  * @param array $raw_atts 
  * @return array
  */
@@ -427,7 +427,7 @@ function bookacti_format_booking_system_attributes( $raw_atts = array() ) {
 	$activities	= is_array( $activities ) ? array_values( array_unique( $activities ) ) : $defaults[ 'activities' ];
 	
 	// Check if the desired templates are active and allowed
-	$available_template_ids = array_keys( bookacti_fetch_templates( array(), true ) );
+	$available_template_ids = array_keys( bookacti_fetch_templates( array(), 0 ) );
 	// Remove unauthorized templates
 	$had_templates = ! empty( $calendars );
 	$bypass_template_managers_check = apply_filters( 'bookacti_bypass_template_managers_check', false );
@@ -885,7 +885,7 @@ function bookacti_format_booking_system_url_attributes( $atts = array() ) {
 /**
  * Get booking system fields default data
  * @since 1.5.0
- * @version 1.14.0
+ * @version 1.15.0
  * @param array $fields
  * @return array
  */
@@ -896,7 +896,7 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 	// Calendars
 	if( ! $fields || in_array( 'calendars', $fields, true ) ) {
 		// Format template options array
-		$templates = bookacti_fetch_templates();
+		$templates = bookacti_get_templates_data();
 		$templates_options = array();
 		foreach( $templates as $template ) {
 			$templates_options[ $template[ 'id' ] ] = $template[ 'title' ];
@@ -1209,9 +1209,9 @@ function bookacti_get_fullcalendar_fields_default_data( $fields = array() ) {
 			'class'       => 'bookacti-time-field',
 			'placeholder' => '23:59',
 			'value'       => '00:05',
-			/* translators: Refers to the time interval at which a dragged event will snap to the agenda view time grid. E.g.: 00:20', you will be able to drop an event every 20 minutes (at 6:00am, 6:20am, 6:40am...). More information: http://fullcalendar.io/docs/agenda/snapDuration/ */
+			/* translators: Refers to the time interval at which a dragged event will snap to the time grid. E.g.: 00:20', you will be able to drop an event every 20 minutes (at 6:00am, 6:20am, 6:40am...). More information: http://fullcalendar.io/docs/snapDuration/ */
 			'title'       => esc_html__( 'Snap frequency', 'booking-activities' ),
-			'tip'         => esc_html__( 'The time interval at which a dragged event will snap to the agenda view time grid. E.g.: "00:20", you will be able to drop an event every 20 minutes (at 6:00am, 6:20am, 6:40am...).', 'booking-activities' )
+			'tip'         => esc_html__( 'The time interval at which a dragged event will snap to the time grid. E.g.: "00:20", you will be able to drop an event every 20 minutes (at 6:00am, 6:20am, 6:40am...).', 'booking-activities' )
 		);
 	}
 
@@ -2843,7 +2843,7 @@ function bookacti_get_availability_period( $absolute_period = array(), $relative
 /**
  * Get booking system trimmed availability period
  * @since 1.13.0
- * @version 1.14.0
+ * @version 1.15.0
  * @param array $booking_system_data
  * @return array
  */
@@ -2853,6 +2853,7 @@ function bookacti_get_booking_system_availability_period( $booking_system_data )
 		'end'      => $booking_system_data[ 'end' ],
 		'end_last' => $booking_system_data[ 'end' ]
 	);
+	$bounding_events = array();
 	
 	// Check if the availability period starts before it ends
 	$start_dt = new DateTime( $availability_period[ 'start' ] );
@@ -2862,7 +2863,6 @@ function bookacti_get_booking_system_availability_period( $booking_system_data )
 	// Trim the availability period
 	else if( $booking_system_data[ 'trim' ] ) {
 		// Get bounding events
-		$bounding_events = array();
 		if( $booking_system_data[ 'groups_only' ] ) {
 			$bounding_groups = ! in_array( 'none', $booking_system_data[ 'group_categories' ], true ) ? bookacti_get_groups_of_events( array( 'templates' => $booking_system_data[ 'calendars' ], 'group_categories' => $booking_system_data[ 'group_categories' ], 'interval' => $availability_period, 'interval_started' => 1, 'past_events' => $booking_system_data[ 'past_events' ], 'data_only' => 1 ) ) : array();
 			$bounding_events = bookacti_get_bounding_events_from_groups_of_events_heuristic( $bounding_groups, array( 'past_events' => $booking_system_data[ 'past_events' ], 'interval' => $availability_period ) );
@@ -2925,7 +2925,7 @@ function bookacti_get_booking_system_availability_period( $booking_system_data )
 		} else { $availability_period[ 'start' ] = $availability_period[ 'end_last' ] = $availability_period[ 'end' ]; }
 	}
 	
-	return apply_filters( 'bookacti_booking_system_availability_period', $availability_period, $booking_system_data );
+	return apply_filters( 'bookacti_booking_system_availability_period', $availability_period, $booking_system_data, $bounding_events );
 }
 
 

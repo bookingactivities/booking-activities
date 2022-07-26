@@ -199,6 +199,23 @@ $j( document ).ready( function() {
 		
 		if( list_item_data.price > 0 && ! list_item_data.price_to_display ) { list_item_data.price_to_display = bookacti_format_price( list_item_data.price ); }
 	});
+	
+	
+	/**
+	 * Empty the form fields after adding a booking to cart - on page load
+	 * @since 1.15.0
+	 */
+	$j( '.bookacti-wc-form-fields-reset' ).each( function() {
+		var booking_system = $j( this ).find( '.bookacti-booking-system' );
+		if( ! booking_system.length ) { return; }
+		
+		// Clear booking system displayed info
+		bookacti_clear_booking_system_displayed_info( booking_system );
+		
+		// Clear form feedback messages
+		var error_div = $j( this ).find( '> .bookacti-notices' ).length ? $j( this ).find( '> .bookacti-notices' ) : booking_system.siblings( '.bookacti-notices' );
+		error_div.empty();
+	});
 
 
 
@@ -324,6 +341,16 @@ function bookacti_fill_product_variation_form( form_container, variation, form_h
 	
 	// Initialize tooltip
 	bookacti_init_tooltip();
+	
+	// Empty the form fields after adding a booking to cart
+	if( form_container.hasClass( 'bookacti-wc-form-fields-reset' ) ) {
+		// Clear booking system displayed info
+		bookacti_clear_booking_system_displayed_info( booking_system );
+		
+		// Clear form feedback messages
+		var error_div = form_container.find( '> .bookacti-notices' ).length ? form_container.find( '> .bookacti-notices' ) : booking_system.siblings( '.bookacti-notices' );
+		error_div.empty();
+	}
 	
 	// Remove initial loading feedback
 	bookacti_remove_loading_html( booking_system );

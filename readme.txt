@@ -168,7 +168,7 @@ Or read the full [features description](https://booking-activities.fr/en/documen
 1. Go to Booking Activities / Calendar Editor page
 2. Click on the big '+' button
 3. Set a title, an opening date and a closing date
-4. In the "Agenda" tab, you can also set your working hours
+4. In the "Editor" tab, you can also set your working hours
 5. Click on the dialog OK button, the calendar is loading!
 
 **Create your first activity**
@@ -325,6 +325,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Lib - Update FullCalendar to 5.11.0 (major changes!)
 * Lib - Update Moment JS to 2.29.3
 * Tweak - Replace the GIF spinner with a CSS3 spinner
+* Tweak - Empty the form fields after adding a booking to cart with WooCommerce
+* Tweak - Improve CSS for RTL languages
+* Tweak - Events no longer visually overlap on calendar by default, to make events overlap see Display Pack add-on
+* Dev - Refactor functions to get and format templates data
 
 = 1.14.3 =
 * Tweak - Use the default WP From email if the option is empty

@@ -1146,7 +1146,7 @@ function bookacti_export_bookings_page() {
 	if( $filters[ 'event_id' ] && ! $filters[ 'booking_group_id' ] ) { $filters[ 'booking_group_id' ] = 'none'; }
 	
 	// Restrict to allowed templates
-	$allowed_templates = array_keys( bookacti_fetch_templates( array(), false, $user_id ) );
+	$allowed_templates = array_keys( bookacti_fetch_templates( array(), $user_id ) );
 	$filters[ 'templates' ] = empty( $args[ 'templates' ] ) ? $allowed_templates : array_intersect( $allowed_templates, $args[ 'templates' ] );
 	
 	// Let third party plugins change the booking filters and the file headers

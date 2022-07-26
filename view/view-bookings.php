@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking list page
- * @version 1.14.0
+ * @version 1.15.0
  */
 
 // Exit if accessed directly
@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	<hr class='wp-header-end'>
 
 	<?php
-	$templates = bookacti_fetch_templates();
+	$templates = bookacti_get_templates_data();
 	if( ! $templates ) {
 		$editor_path = 'admin.php?page=bookacti_calendars';
 		$editor_url = admin_url( $editor_path );

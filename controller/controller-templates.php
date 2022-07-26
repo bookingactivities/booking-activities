@@ -84,7 +84,7 @@ add_action( 'wp_ajax_bookactiInsertTemplate', 'bookacti_controller_insert_templa
 
 /**
  * AJAX Controller - Update template
- * @version	1.12.3
+ * @version	1.15.0
  */
 function bookacti_controller_update_template() {
 	// Check nonce and capabilities
@@ -122,11 +122,11 @@ function bookacti_controller_update_template() {
 		bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_updated', 'template_data' => $template_data ), 'update_template' );
 	}
 	
-	$templates_data = bookacti_get_templates_data( $template_id, true );
+	$template_data = bookacti_get_template_data( $template_id );
+	
+	do_action( 'bookacti_template_updated', $template_id, $template_data );
 
-	do_action( 'bookacti_template_updated', $template_id, $templates_data[ $template_id ] );
-
-	bookacti_send_json( array( 'status' => 'success', 'template_data' => $templates_data[ $template_id ] ), 'update_template' );
+	bookacti_send_json( array( 'status' => 'success', 'template_data' => $template_data ), 'update_template' );
 }
 add_action( 'wp_ajax_bookactiUpdateTemplate', 'bookacti_controller_update_template' );
 

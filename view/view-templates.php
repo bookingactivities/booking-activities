@@ -33,7 +33,7 @@ $default_template = false;
 
 <div id='bookacti-template-container'>
 <?php 
-	$templates = bookacti_fetch_templates();
+	$templates = bookacti_get_templates_data();
 	wp_nonce_field( 'bookacti_get_calendar_editor_data', 'nonce_get_calendar_editor_data', false );
 	wp_nonce_field( 'bookacti_edit_template', 'nonce_edit_template', false );
 ?>

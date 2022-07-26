@@ -123,7 +123,7 @@ $j( document ).ready( function() {
 	 */
 	$j( '#bookacti-booking-filter-activities' ).on( 'change', function() {
 		bookacti_unpick_all_events_filter();
-		bookacti.fc_calendar[ 'bookacti-booking-system-bookings-page' ].render();
+		bookacti_booking_method_rerender_events( $j( '#bookacti-booking-system-bookings-page' ) );
 		if( $j( '#bookacti-submit-filter-button' ).data( 'ajax' ) ) { bookacti_filter_booking_list(); }
 	});
 	
@@ -198,13 +198,21 @@ $j( document ).ready( function() {
 	 * }
 	 */
 	booking_system.on( 'bookacti_calendar_event_content', function( e, return_object, info ) { 
-		// Add the total availability
-		var event_id     = typeof info.event.groupId !== 'undefined' ? parseInt( info.event.groupId ) : parseInt( info.event.id );
-		var availability = parseInt( bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event_id ][ 'availability' ] );
+		// Find the availability div
+		var avail_div_i = -1;
+		for( var i = 0; i < return_object.domNodes.length; i++ ) {
+			if( return_object.domNodes[ i ].classList.contains( 'bookacti-availability-container' ) ) {
+				avail_div_i = i;
+				break;
+			}
+		}
+		if( avail_div_i < 0 ) { return; }
 		
-		var avail_div = $j( return_object.domNodes[ 3 ] ).find( '.bookacti-availability-container .bookacti-available-places' ).append( ' / <span class="bookacti-total-places-number">' + availability + '</span>' );
-		console.log( avail_div[0] );
-//		return_object.domNodes[ 3 ] = avail_div[ 0 ];
+		var availability  = parseInt( bookacti.booking_system[ booking_system_id ][ 'events_data' ][ info.event.groupId ][ 'availability' ] );
+		var new_avail_div = $j( return_object.domNodes[ avail_div_i ] );
+		new_avail_div.find( '.bookacti-available-places' ).append( ' / <span class="bookacti-total-places-number">' + availability + '</span>' );
+		
+		return_object.domNodes[ avail_div_i ] = new_avail_div[ 0 ];
 	});
 
 	

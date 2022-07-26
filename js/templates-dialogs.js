@@ -383,8 +383,7 @@ function bookacti_dialog_update_template( template_id ) {
 	$j( '#bookacti-template-duplicated-template-id' ).attr( 'disabled', true );
 
 	var template_data = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ];
-	var events = bookacti.fc_calendar[ 'bookacti-template-calendar' ].getEvents();
-
+	
 	// General tab
 	$j( '#bookacti-template-title' ).val( template_data.multilingual_title );
 
@@ -449,17 +448,16 @@ function bookacti_dialog_update_template( template_id ) {
 							// Change template metas in the select box
 							$j( '#bookacti-template-picker option[value=' + template_id + ']' ).html( response.template_data.title );
 
-							// Dynamically update template settings
+							// Update template settings
 							bookacti_load_template_calendar();
-							bookacti_start_template_loading();
-							bookacti_fc_add_events( $j( '#bookacti-template-calendar' ), events );
+							
+							// Add events
+							bookacti_get_calendar_editor_data_by_interval();
 
 							$j( '#bookacti-template-data-dialog' ).trigger( 'bookacti_template_updated', [ response, data, template_id ] );
 							
 							// Close the modal dialog
 							$j( '#bookacti-template-data-dialog' ).dialog( 'close' );
-							
-							bookacti_stop_template_loading();
 							
 						} else {
 							var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
