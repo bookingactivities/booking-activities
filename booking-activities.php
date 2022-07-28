@@ -241,12 +241,13 @@ function bookacti_enqueue_global_scripts() {
 	global $wp_version;
 	$jquery_ui_css_filename = version_compare( $wp_version, '5.6', '<' ) ? 'jquery-ui-1.11.4.min.css' : 'jquery-ui.min.css';
 	wp_register_style( 'bookacti-css-jquery-ui', plugins_url( 'lib/jquery-ui/themes/booking-activities/' . $jquery_ui_css_filename, __FILE__ ), array(), BOOKACTI_VERSION );
+	wp_register_style( 'bookacti-css-global',   plugins_url( 'css/global.min.css', __FILE__ ), array(), BOOKACTI_VERSION );
 	
 	// On backend, only include these scripts on Booking Activities pages
 	if( is_admin() && ! bookacti_is_booking_activities_screen() ) { return; }
 	
 	// INCLUDE STYLESHEETS
-	wp_enqueue_style( 'bookacti-css-global',   plugins_url( 'css/global.min.css', __FILE__ ), array(), BOOKACTI_VERSION );
+	wp_enqueue_style( 'bookacti-css-global' );
 	wp_enqueue_style( 'bookacti-css-fonts',    plugins_url( 'css/fonts.min.css', __FILE__ ), array(), BOOKACTI_VERSION );
 	wp_enqueue_style( 'bookacti-css-bookings', plugins_url( 'css/bookings.min.css', __FILE__ ), array(), BOOKACTI_VERSION );
 	wp_enqueue_style( 'bookacti-css-forms',    plugins_url( 'css/forms.min.css', __FILE__ ), array(), BOOKACTI_VERSION );

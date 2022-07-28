@@ -240,7 +240,7 @@ function bookacti_add_booking_system_in_single_product_page() {
 
 	// Show form on single product page or on variable product with a default value
 	if( $product->is_type( 'simple' ) ) {
-		$form_instance_id = 'product-' . $product->get_id();
+		$form_instance_id = 'bookacti-wc-form-fields-product-' . $product->get_id();
 	}
 	else if( $product->is_type( 'variable' ) ) {
 		$default_attributes = bookacti_get_product_default_attributes( $product );
@@ -250,7 +250,7 @@ function bookacti_add_booking_system_in_single_product_page() {
 			if( $default_variation_id ) { 
 				$form_id = get_post_meta( $default_variation_id, 'bookacti_variable_form', true );
 				if( $form_id ) { 
-					$form_instance_id = 'product-variation-' . $default_variation_id;
+					$form_instance_id = 'bookacti-wc-form-fields-product-variation-' . $default_variation_id;
 				}	
 			}
 		}
@@ -259,7 +259,7 @@ function bookacti_add_booking_system_in_single_product_page() {
 		$variation_id = $product->get_id();
 		$form_id = get_post_meta( $variation_id, 'bookacti_variable_form', true );
 		if( $form_id ) { 
-			$form_instance_id = 'product-variation-' . $variation_id;
+			$form_instance_id = 'bookacti-wc-form-fields-product-variation-' . $variation_id;
 		}
 	}
 

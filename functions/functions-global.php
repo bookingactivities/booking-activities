@@ -407,7 +407,7 @@ function bookacti_get_js_variables() {
 		'started_events_bookable'			=> bookacti_get_setting_value( 'bookacti_general_settings',	'started_events_bookable' ) ? 1 : 0,
 		'started_groups_bookable'			=> bookacti_get_setting_value( 'bookacti_general_settings',	'started_groups_bookable' ) ? 1 : 0,
 		'event_load_interval'				=> bookacti_get_setting_value( 'bookacti_general_settings', 'event_load_interval' ),
-		'default_view_threshold'			=> bookacti_get_setting_value( 'bookacti_general_settings', 'default_calendar_view_threshold' ),
+		'initial_view_threshold'			=> bookacti_get_setting_value( 'bookacti_general_settings', 'default_calendar_view_threshold' ),
 		'bookings_tooltip_mouseover_timeout'=> 250,
 
 		'date_format'						=> $messages[ 'date_format_short' ][ 'value' ],

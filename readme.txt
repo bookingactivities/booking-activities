@@ -322,7 +322,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 == Changelog ==
 
 = 1.15.0 =
-* Lib - Update FullCalendar to 5.11.0 (major changes!)
+* Lib - Update FullCalendar to 5.11.2 (major changes!)
 * Lib - Update Moment JS to 2.29.3
 * Tweak - Replace the GIF spinner with a CSS3 spinner
 * Tweak - Empty the form fields after adding a booking to cart with WooCommerce

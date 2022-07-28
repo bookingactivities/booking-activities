@@ -118,7 +118,6 @@
 
 /** CALENDAR **/
 .bookacti-calendar { width: 100%; }
-.bookacti-calendar .fc-unthemed td.fc-today	{ background: rgba( 220, 193, 6, 0.1 ); }
 .bookacti-calendar table, 
 .bookacti-calendar tr, 
 .bookacti-calendar .fc-view.fc-timegrid th, .bookacti-calendar .fc-view.fc-daygrid th, 

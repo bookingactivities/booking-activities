@@ -240,7 +240,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 	var init_data = {
 		locale:                bookacti_localized.fullcalendar_locale,
 		timeZone:              bookacti_localized.fullcalendar_timezone,
-		initialView:           booking_system.find( '.bookacti-calendar:first' ).width() < bookacti_localized.default_view_threshold ? 'timeGridDay' : 'timeGridWeek',
+		initialView:           booking_system.find( '.bookacti-calendar:first' ).width() < bookacti_localized.initial_view_threshold ? 'timeGridDay' : 'timeGridWeek',
 		allDaySlot:            false,
 		defaultAllDay:         false,
 		fixedWeekCount:        false,

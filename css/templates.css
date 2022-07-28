@@ -5,15 +5,6 @@
 
 #bookacti-template-container  { display: table; margin: 20px auto; }
 #bookacti-template-container::after { clear: both; }
-#bookacti-template-container .fc-unthemed .fc-event-main,
-#bookacti-template-container .fc-unthemed .fc-divider,
-#bookacti-template-container .fc-unthemed .fc-popover,
-#bookacti-template-container .fc-unthemed .fc-row,
-#bookacti-template-container .fc-unthemed tbody,
-#bookacti-template-container .fc-unthemed td,
-#bookacti-template-container .fc-unthemed th,
-#bookacti-template-container .fc-unthemed thead { border-color: #bbb; }
-
 #bookacti-template-container + hr { margin: 30px auto; }
 
 
