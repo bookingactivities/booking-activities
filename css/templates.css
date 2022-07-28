@@ -58,13 +58,12 @@
 #bookacti-template-sidebar .dashicons:before		{ color: #565d61; }
 #bookacti-template-sidebar .dashicons:hover:before	{ color: #418FB6; }
 
-.bookacti-templates-box			{ -webkit-border-radius: 6px; border-radius: 6px; padding: 10px; margin-bottom: 12px; border: 1px solid #bbb; }
+.bookacti-templates-box			{ padding: 10px; margin-bottom: 12px; border-bottom: 1px solid #bbb; }
 .bookacti-template-box-title	{ width: 100%; font-size: 1.2em; margin-bottom: 10px; font-weight: bold; }
 
 .bookacti-template-box-title h4	{ display: table-cell; width: 100%; vertical-align: middle; }
 .bookacti-insert-button			{ display: table-cell; padding-left: 4px; vertical-align: middle; cursor: pointer; }
-#bookacti-template-sidebar .dashicons.bookacti-insert-button:before			{ color: #418FB6; transition: all 0.2s; }
-#bookacti-template-sidebar .dashicons.bookacti-insert-button:hover:before	{ font-size: 32px; margin-right: -6px; transition: all 0.2s; }
+#bookacti-template-sidebar .dashicons.bookacti-insert-button:before { color: #418FB6; }
 
 #bookacti-template-picker-container { display: table-cell; width: 100%; vertical-align: middle; }
 #bookacti-template-picker           { width: 100%; }

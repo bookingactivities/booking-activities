@@ -238,8 +238,11 @@ function bookacti_enqueue_global_scripts() {
 	}
 	
 	// Register Booking Activities' jquery-ui theme, so it is ready to be enqueued / dequeued if needed
-	global $wp_version;
-	$jquery_ui_css_filename = version_compare( $wp_version, '5.6', '<' ) ? 'jquery-ui-1.11.4.min.css' : 'jquery-ui.min.css';
+	global $wp_scripts;
+	$jquery_ui_version = isset( $wp_scripts->registered[ 'jquery-ui-core' ]->ver ) ? $wp_scripts->registered[ 'jquery-ui-core' ]->ver : '1.13.2';
+	$jquery_ui_css_filename = 'jquery-ui.min.css';
+	     if( version_compare( $jquery_ui_version, '1.12.0', '<' ) ) { $jquery_ui_css_filename = 'jquery-ui-1.11.4.min.css'; }
+	else if( version_compare( $jquery_ui_version, '1.13.0', '<' ) ) { $jquery_ui_css_filename = 'jquery-ui-1.12.1.min.css'; }
 	wp_register_style( 'bookacti-css-jquery-ui', plugins_url( 'lib/jquery-ui/themes/booking-activities/' . $jquery_ui_css_filename, __FILE__ ), array(), BOOKACTI_VERSION );
 	wp_register_style( 'bookacti-css-global',   plugins_url( 'css/global.min.css', __FILE__ ), array(), BOOKACTI_VERSION );
 	

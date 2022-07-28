@@ -328,6 +328,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Tweak - Empty the form fields after adding a booking to cart with WooCommerce
 * Tweak - Improve CSS for RTL languages
 * Tweak - Events no longer visually overlap on calendar by default, to make events overlap see Display Pack add-on
+* Tweak - Few changes to jQuery UI CSS
 * Dev - Refactor functions to get and format templates data
 
 = 1.14.3 =
