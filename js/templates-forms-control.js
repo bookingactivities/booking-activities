@@ -14,9 +14,9 @@ $j( document ).ready( function() {
 	/**
 	 * Validate the repetition fields
 	 * @since 1.8.0 (was in bookacti_validate_event_repetition_data)
-	 * @version 1.12.0
+	 * @version 1.15.0
 	 */
-	$j( 'select[name="repeat_freq"], input[name="repeat_from"], input[name="repeat_to"]' ).on( 'keyup mouseup change', function() { 
+	$j( '#bookacti-event-data-dialog, #bookacti-group-of-events-dialog' ).on( 'keyup mouseup change', 'select[name="repeat_freq"], input[name="repeat_from"], input[name="repeat_to"]', function() { 
 		var object_type = $j( this ).closest( '#bookacti-group-of-events-dialog' ).length ? 'group' : 'event';
 		bookacti_validate_event_repetition_data( object_type );
 	});

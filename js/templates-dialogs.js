@@ -1459,8 +1459,8 @@ function bookacti_dialog_import_activity() {
 								$j( 'select#bookacti-activities-to-import option[value="' + activity_id + '"]' ).remove();
 							});
 
-							// Reinitialize the activities to apply changes
-							bookacti_init_activities();
+							// Refresh activity list
+							bookacti_refresh_activity_list();
 
 							$j( '#bookacti-activity-import-dialog' ).trigger( 'bookacti_activities_imported', [ response, data ] );
 
@@ -1561,8 +1561,8 @@ function bookacti_dialog_create_activity() {
 								$j( '#bookacti-template-activity-list' ).empty().append( response.activity_list );
 							}
 
-							// Reinitialize the activities to apply changes
-							bookacti_init_activities();
+							// Refresh activity list
+							bookacti_refresh_activity_list();
 
 							$j( '#bookacti-activity-data-dialog' ).trigger( 'bookacti_activity_inserted', [ response, data ] );
 							
@@ -1692,8 +1692,8 @@ function bookacti_dialog_update_activity( activity_id ) {
 								$j( '#bookacti-template-activity-list' ).empty().append( response.activity_list );
 							}
 
-							// Reinitialize the activities to apply changes
-							bookacti_init_activities();
+							// Refresh activity list
+							bookacti_refresh_activity_list();
 
 							// Clear the calendar and refetch events
 							bookacti_refetch_events_on_calendar_editor();

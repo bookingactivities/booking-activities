@@ -389,7 +389,7 @@ function bookacti_insert_default_form_fields( $form_id ) {
 /**
  * Insert a form field without any data
  * @since 1.5.0
- * @version 1.14.0
+ * @version 1.15.0
  * @global wpdb $wpdb
  * @param int $form_id
  * @param array $field_data
@@ -399,13 +399,14 @@ function bookacti_insert_form_field( $form_id, $field_data ) {
 	global $wpdb;
 	
 	$query = 'INSERT INTO ' . BOOKACTI_TABLE_FORM_FIELDS 
-	       . ' ( form_id, name, type, active ) '
-	       . ' VALUES ( %d, %s, %s, 1 )';
+	       . ' ( form_id, name, type, required, active ) '
+	       . ' VALUES ( %d, %s, %s, %d, 1 )';
 	
 	$variables = array(
 		$form_id,
 		$field_data[ 'name' ],
-		$field_data[ 'type' ]
+		$field_data[ 'type' ],
+		! empty( $field_data[ 'required' ] ) ? 1 : 0
 	);
 	
 	$query = $wpdb->prepare( $query, $variables );

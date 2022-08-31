@@ -21,7 +21,7 @@ function bookacti_update_db_to_1_15_0( $old_version ) {
 	$query = 'UPDATE ' . BOOKACTI_TABLE_META . ' SET meta_key = "slotMaxTime" WHERE meta_key = "maxTime"';
 	$wpdb->query( $query );
 }
-add_action( 'bookacti_updated', 'bookacti_update_db_to_1_15_0', 100 );
+add_action( 'bookacti_db_updated', 'bookacti_update_db_to_1_15_0', 100 );
 
 
 /**

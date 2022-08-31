@@ -28,7 +28,11 @@ $j( document ).ready( function() {
 	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'method' ]                = 'calendar';
 	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'past_events' ]           = true;
 	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'past_events_bookable' ]  = true;
-
+	
+	// Make activities draggable and sortable (needs to be done only once, even if activities are added afterwards to the DOM)
+	bookacti_make_activities_draggable();
+	bookacti_make_activities_sortable();
+	
 	// Initialize groups
 	bookacti_init_groups_of_events();
 
@@ -345,22 +349,17 @@ function bookacti_load_template_calendar() {
 			if( info.isMirror ) { return; }
 			
 			// Add data to the event element
-			var event_data  = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ info.event.groupId ];
-			var activity_id = typeof event_data !== 'undefined' ? parseInt( event_data.activity_id ) : 0;
+			var event_id    = info.event.groupId;
+			var event_data  = event_id ? bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event_id ] : [];
+			var activity_id = typeof event_data.activity_id !== 'undefined' ? parseInt( event_data.activity_id ) : ( typeof info.event.extendedProps.activity_id !== 'undefined' ? parseInt( info.event.extendedProps.activity_id ) : 0 );
 			var event_start_formatted = moment.utc( info.event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
 			var event_end_formatted   = moment.utc( info.event.end ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
 			
-			// Add some info to the event
-			$j( info.el ).data( 'event-id',         info.event.groupId );
-			$j( info.el ).attr( 'data-event-id',    info.event.groupId );
-			$j( info.el ).data( 'event-start',      event_start_formatted );
-			$j( info.el ).attr( 'data-event-start', event_start_formatted );
-			$j( info.el ).data( 'event-end',        event_end_formatted );
-			$j( info.el ).attr( 'data-event-end',   event_end_formatted );			
-			if( activity_id ) {
-				$j( info.el ).data( 'activity-id', activity_id );
-				$j( info.el ).attr( 'data-activity-id', activity_id );
-			}
+			// Add data to the event element
+			$j( info.el ).data( 'event-id', event_id ? event_id : '' ).attr( 'data-event-id', event_id ? event_id : '' );
+			$j( info.el ).data( 'event-start', event_start_formatted ).attr( 'data-event-start', event_start_formatted );
+			$j( info.el ).data( 'event-end', event_end_formatted ).attr( 'data-event-end', event_end_formatted );			
+			$j( info.el ).data( 'activity-id', activity_id ? activity_id : '' ).attr( 'data-activity-id', activity_id ? activity_id : '' );
 
 			booking_system.trigger( 'bookacti_calendar_editor_event_did_mount', [ info ] );
 		},
@@ -660,7 +659,7 @@ function bookacti_load_template_calendar() {
 			booking_system.trigger( 'bookacti_calendar_editor_event_before_insert', [ info, data ] );
 			
 			bookacti_start_template_loading();
-
+			
 			$j.ajax({
 				url: ajaxurl,
 				data: data, 
@@ -670,6 +669,7 @@ function bookacti_load_template_calendar() {
 					if( response.status === 'success' ) {
 						// Set the generated ID to the event
 						info.event.setProp( 'groupId', response.event_id );
+						$j( '.fc-event[data-event-id=""][data-activity-id="' + activity_id + '"][data-event-start="' + event_start_formatted + '"]' ).data( 'event-id', response.event_id ).attr( 'data-event-id', response.event_id );
 						
 						bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ response.event_id ] = response.event_data;
 						

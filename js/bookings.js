@@ -12,6 +12,18 @@ $j( document ).ready( function() {
 	
 	
 	/**
+	 * Do not init bookings booking system automatically if it is hidden
+	 * @since 1.15.0
+	 * @param {Event} e
+	 * @param {Object} load
+	 * @param {Object} attributes
+	 */
+	$j( 'body' ).on( 'bookacti_init_booking_sytem', '.bookacti-booking-system#bookacti-booking-system-bookings-page', function( e, load, attributes ) {
+		if( ! $j( '#bookacti-booking-system-filter-container' ).is( ':visible' ) ) { load.load = false; }
+	});
+	
+	
+	/**
 	 * Display or hide activities filter according to selected templates - on change
 	 * @version 1.8.0
 	 */

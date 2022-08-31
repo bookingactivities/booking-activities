@@ -225,7 +225,7 @@ function bookacti_add_product_to_cart_via_booking_system( booking_system ) {
         },
         complete: function() {
 			if( submit_button.length ) { 
-				bookacti_remove_loading_html( submit_button.closest() );
+				bookacti_remove_loading_html( submit_button.parent() );
 				submit_button.prop( 'disabled', false );
 			}
 			bookacti_stop_loading_booking_system( booking_system );

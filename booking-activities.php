@@ -9,7 +9,7 @@
  * Text Domain: booking-activities
  * Domain Path: /languages/
  * WC requires at least: 3.0
- * WC tested up to: 6.8
+ * WC tested up to: 6.9
  * License: GPL3
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  * 
@@ -416,7 +416,7 @@ register_uninstall_hook( __FILE__, 'bookacti_uninstall' );
 
 /**
  * Update Booking Activities
- * @version 1.11.2
+ * @version 1.15.0
  */
 function bookacti_check_version() {
 	if( defined( 'IFRAME_REQUEST' ) ) { return; }
@@ -424,13 +424,14 @@ function bookacti_check_version() {
 	if( $old_version !== BOOKACTI_VERSION ) {
 		bookacti_activate();
 		do_action( 'bookacti_updated', $old_version );
-		
-		// Update database version
-		$db_version = get_option( 'bookacti_db_version', $old_version );
-		if( version_compare( $db_version, BOOKACTI_VERSION, '<' ) ) {
-			delete_option( 'bookacti_db_version' );
-			add_option( 'bookacti_db_version', BOOKACTI_VERSION );
-		}
+	}
+	
+	// Update database version
+	$db_version = get_option( 'bookacti_db_version', $old_version );
+	if( version_compare( $db_version, BOOKACTI_VERSION, '<' ) ) {
+		delete_option( 'bookacti_db_version' );
+		add_option( 'bookacti_db_version', BOOKACTI_VERSION );
+		do_action( 'bookacti_db_updated', $db_version );
 	}
 }
 add_action( 'init', 'bookacti_check_version', 5 );

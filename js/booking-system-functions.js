@@ -593,14 +593,13 @@ function bookacti_fill_booking_system_fields( booking_system ) {
  * @returns {Int}
  */
 function bookacti_pick_events( booking_system, event, group_id, group_date ) {
-	if( $j.isNumeric( event ) ) { event = { 'id': parseInt( event ) }; };
+	if( $j.isNumeric( event ) ) { event = { 'id': parseInt( event ), 'start': '', 'end': '' }; }
 	group_id = $j.isNumeric( group_id ) ? parseInt( group_id ) : 0;
 	group_date = group_date ? group_date : '';
+	var event_id = typeof event.groupId !== 'undefined' ? parseInt( event.groupId ) : ( typeof event.id !== 'undefined' ? parseInt( event.id ) : 0 );
 	
 	var picked_nb = 0;
-	if( typeof event.id === 'undefined' )    { event.id = 0; }
-	if( typeof event.start === 'undefined' ) { event.start = ''; }
-	if( ! group_id && ! event.id ) { return picked_nb; }
+	if( ! group_id && ! event_id ) { return picked_nb; }
 	
 	// Pick a single event or the whole group
 	if( ! group_id ) {
@@ -666,22 +665,19 @@ function bookacti_is_event_picked( booking_system, event ) {
  * @returns {Int}
  */
 function bookacti_pick_event( booking_system, event, group_id, group_date ) {
-	if( $j.isNumeric( event ) ) { event = { 'id': parseInt( event ) }; };
+	if( $j.isNumeric( event ) ) { event = { 'id': parseInt( event ), 'start': '', 'end': '' }; };
 	group_id = $j.isNumeric( group_id ) ? parseInt( group_id ) : 0;
 	group_date = group_date ? group_date : '';
+	var event_id = typeof event.groupId !== 'undefined' ? parseInt( event.groupId ) : ( typeof event.id !== 'undefined' ? parseInt( event.id ) : 0 );
 	
 	var picked_nb = 0;
-	if( typeof event.id === 'undefined' )    { event.id = 0; }
-	if( typeof event.start === 'undefined' ) { event.start = ''; }
-	if( typeof event.end === 'undefined' )   { event.end = ''; }
-	if( ! group_id && ! event.id ) { return picked_nb; }
+	if( ! group_id && ! event_id ) { return picked_nb; }
 	
 	var booking_system_id = booking_system.attr( 'id' );
 	
 	// Find activity ID
 	var title       = typeof event.title !== 'undefined' ? event.title : '';
 	var activity_id = typeof event.activity_id !== 'undefined' ? parseInt( event.activity_id ) : 0;
-	var event_id    = typeof event.groupId !== 'undefined' ? parseInt( event.groupId ) : parseInt( event.id );
 	if( ! activity_id ) {
 		if( typeof bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event_id ] !== 'undefined' ) {
 			title = bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event_id ][ 'title' ];
@@ -690,12 +686,14 @@ function bookacti_pick_event( booking_system, event, group_id, group_date ) {
 	}
 	
 	// Format event object
+	var event_start  = typeof event.start !== 'undefined' ? event.start : '';
+	var event_end    = typeof event.end !== 'undefined' ? event.end : '';
 	var picked_event = {
 		'group_id':    group_id,
 		'group_date':  group_date ? moment.utc( group_date ).clone().locale( 'en' ).format( 'YYYY-MM-DD' ) : '',
 		'id':          event_id,
-		'start':       event.start ? moment.utc( event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' ) : '',
-		'end':         event.end ? moment.utc( event.end ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' ) : '',
+		'start':       event_start ? moment.utc( event_start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' ) : '',
+		'end':         event_end ? moment.utc( event_end ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' ) : '',
 		'title':       title,
 		'activity_id': parseInt( activity_id )
 	};
@@ -727,22 +725,21 @@ function bookacti_pick_event( booking_system, event, group_id, group_date ) {
  * @returns {Int}
  */
 function bookacti_unpick_events( booking_system, event, group_id, group_date ) {
-	if( $j.isNumeric( event ) ) { event = { 'id': parseInt( event ) }; };
+	if( $j.isNumeric( event ) ) { event = { 'id': parseInt( event ), 'start': '', 'end': '' }; };
 	group_id = $j.isNumeric( group_id ) ? parseInt( group_id ) : 0;
 	group_date = group_date ? group_date : '';
+	var event_id = typeof event.groupId !== 'undefined' ? parseInt( event.groupId ) : ( typeof event.id !== 'undefined' ? parseInt( event.id ) : 0 );
 	
 	var unpicked_nb = 0;
-	if( typeof event.id === 'undefined' )    { event.id = 0; }
-	if( typeof event.start === 'undefined' ) { event.start = ''; }
-	if( ! group_id && ! event.id ) { return unpicked_nb; }
+	if( ! group_id && ! event_id ) { return unpicked_nb; }
 	
 	var booking_system_id = booking_system.attr( 'id' );
-	var event_id = typeof event.groupId !== 'undefined' ? parseInt( event.groupId ) : parseInt( event.id );
 	
 	// Format event object
+	var event_start = typeof event.start !== 'undefined' ? event.start : '';
 	var event_to_unpick = {
 		'id': event_id,
-		'start': event.start ? moment.utc( event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' ) : '',
+		'start': event_start ? moment.utc( event_start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' ) : '',
 		'group_id': group_id,
 		'group_date': group_date ? moment.utc( group_date ).clone().locale( 'en' ).format( 'YYYY-MM-DD' ) : ''
 	};

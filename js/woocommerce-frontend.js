@@ -102,11 +102,11 @@ $j( document ).ready( function() {
 	if( $j( '.woocommerce form.cart .single_add_to_cart_button' ).length ) {
 		/**
 		 * Add to cart dynamic check
-		 * @version 1.12.0
+		 * @version 1.15.0
 		 */
 		$j( '.woocommerce form.cart' ).on( 'submit', function() { 
 			var form = $j( this );
-
+			
 			var proceed_to_validation = false;
 
 			if( form.hasClass( 'variations_form' ) ) {
@@ -119,6 +119,12 @@ $j( document ).ready( function() {
 			}
 
 			if( proceed_to_validation ) {
+				// Submit Add to cart form only once at a time
+				if( form.hasClass( 'bookacti-adding-to-cart' ) ) { 
+					form.find( 'button[type="submit"]' ).attr( 'disabled', true ); 
+					return false;
+				}
+				
 				if( form.find( '.bookacti-booking-system' ).length ) {
 					// Submit form if all is OK
 					var is_valid = bookacti_validate_picked_events( form.find( '.bookacti-booking-system' ), form.find( 'input.qty' ).val() );
@@ -130,6 +136,7 @@ $j( document ).ready( function() {
 						
 						if( ! ( data.form_data instanceof FormData ) ) { return false; }
 						
+						form.addClass( 'bookacti-adding-to-cart' );
 						return true;
 					} else {
 						// Scroll to error message

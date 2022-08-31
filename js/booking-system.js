@@ -4,7 +4,7 @@ $j( document ).ready( function() {
 	 * @since 1.7.19
 	 * @version 1.12.0
 	 * @param {Event} e
-	 * @param {Object} picked_event
+	 * @param {(FullCalendar.EventApi|Object)} picked_event
 	 * @param {Int} group_id
 	 * @param {String} group_date
 	 */
@@ -19,7 +19,7 @@ $j( document ).ready( function() {
 	 * Init actions to perfoms when the user picks an event
 	 * @version 1.12.0
 	 * @param {Event} e
-	 * @param {Object} picked_event
+	 * @param {(FullCalendar.EventApi|Object)} picked_event
 	 * @param {Int} group_id
 	 * @param {String} group_date
 	 */

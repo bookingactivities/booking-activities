@@ -2260,13 +2260,16 @@ function bookacti_wc_get_item_remaining_refund_amount( $item, $return_array = fa
 
 
 // FORMS
+
 /**
- * Get WC unsupported form fields names
- * @since 1.5.0
- * @return array
+ * Check if the form field is supported by WC
+ * @since 1.15.0
+ * @param array $field_data
+ * @return boolean
  */
-function bookacti_get_wc_unsupported_form_fields() {
-	return apply_filters( 'bookacti_wc_unsupported_form_fields', array( 'login', 'quantity', 'submit' ) );
+function bookacti_wc_is_form_field_supported( $field_data ) {
+	$true = ! in_array( $field_data[ 'name' ], array( 'login', 'quantity', 'submit' ), true );
+	return apply_filters( 'bookacti_wc_is_form_field_supported', $true, $field_data );
 }
 
 

@@ -771,8 +771,10 @@ function bookacti_settings_field_notifications_from_email_callback() {
 	
 	$message = esc_html__( 'You must create an email address at your webhost and use it here.', 'booking-activities' );
 	if( $smtp_host !== 'localhost' ) {
+		/* translators: %s is the SMTP server name ($phpmailer->Host). */
 		$message = sprintf( esc_html__( 'You have configured your site to use a specific SMTP server (%s). You must use an email address corresponding to that SMTP server.', 'booking-activities' ), $smtp_host );
 	} else if( $from_email !== $default_from_email ) {
+		/* translators: %s is an email address. */
 		$message = sprintf( esc_html__( 'A third party plugin is overriding the default sender to %s. It is recommended to use the same (leave the field empty).', 'booking-activities' ), '<strong>' . $from_email . '</strong>' );
 	}
 	

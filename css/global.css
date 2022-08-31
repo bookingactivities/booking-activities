@@ -139,7 +139,7 @@
 .bookacti-calendar .fc-event-title-container { line-height: 1.3em; }
 .bookacti-calendar .bookacti-event-unavailable { opacity: 0.5; }
 .bookacti-calendar .fc-event.bookacti-picked-event { border-width: 2px; transition: border 0.2s; }
-.bookacti-calendar .fc-event.bookacti-picked-event .fc-event-main { background: rgba( 255, 255, 255, 0.3 ); }
+.bookacti-calendar .fc-event.bookacti-picked-event .fc-event-main { background: rgba( 255, 255, 255, 0.5 ); }
 .bookacti-calendar .fc-timegrid-event.bookacti-event-hidden { display: none; }
 .bookacti-calendar .fc-daygrid-event.bookacti-event-hidden { visibility: hidden; }
 
@@ -165,7 +165,7 @@
 	
 /* Availability */
 .bookacti-availability-container                                   { white-space: nowrap; display: block; position: absolute; bottom: 0; right: 0; z-index: 5; overflow: hidden; }
-.bookacti-availability-container .bookacti-available-places        { height: 100%; padding: 2px 3px; line-height: 1.2em; background-color: #000; color: #fff; text-align: right; font-size: 0.85em; border-radius: 3px 0; }
+.bookacti-availability-container .bookacti-available-places        { height: 100%; padding: 2px 3px; line-height: 1.2em; background-color: #000; color: #fff; text-align: right; font-size: 0.85em; border-radius: 3px 0 0 0; }
 .bookacti-availability-container .bookacti-bookings                { padding: 1px 0 1px 1px; }
 .bookacti-availability-container .bookacti-total-availability      { padding: 1px 1px 1px 0; }
 .bookacti-availability-container .bookacti-active-bookings-number,
@@ -179,7 +179,7 @@
 .bookacti-available-places.bookacti-no-availability { background-color: rgba( 255, 0, 0, 0.4 ); }
 
 .rtl .bookacti-availability-container { right: auto; left: 0; }
-.rtl .bookacti-availability-container .bookacti-available-places { border-radius: 0 3px; }
+.rtl .bookacti-availability-container .bookacti-available-places { border-radius: 0 3px 0 0; }
 
 /* Loading */
 .bookacti-loading-container   { display: inline-block; box-sizing: border-box; width: 100%; padding: 10px 20px; white-space: nowrap; text-align: center; }

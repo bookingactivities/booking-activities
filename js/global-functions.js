@@ -124,8 +124,7 @@ function bookacti_add_loading_html( element, where ) {
  * @since 1.15.0
  * @param {HTMLElement} element
  */
-function bookacti_remove_loading_html( element, where ) {
-	where = where ? where : 'find';
+function bookacti_remove_loading_html( element ) {
 	element.find( '.bookacti-loading-container' ).addBack( '.bookacti-loading-container' ).remove();
 }
 

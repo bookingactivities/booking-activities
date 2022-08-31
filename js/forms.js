@@ -479,7 +479,7 @@ function bookacti_submit_login_form( submit_button ) {
 			console.log( e );
 		},
 		complete: function() {
-			bookacti_remove_loading_html( submit_button.closest() );
+			bookacti_remove_loading_html( submit_button.parent() );
 			submit_button.prop( 'disabled', false );
 		}
 	});
@@ -638,7 +638,7 @@ function bookacti_submit_booking_form( form ) {
 		},
 		complete: function() { 
 			if( submit_button.length ) { 
-				bookacti_remove_loading_html( submit_button.closest() );
+				bookacti_remove_loading_html( submit_button.parent() );
 				submit_button.prop( 'disabled', false );
 			}
 			bookacti_stop_loading_booking_system( booking_system );

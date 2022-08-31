@@ -833,20 +833,22 @@ add_filter( 'plugin_locale', 'bookacti_set_plugin_locale', 100, 1 );
 /**
  * Get FullCalendar supported locale
  * @since 1.5.2
- * @version 1.8.5
+ * @version 1.15.0
  * @return array
  */
 function bookacti_get_fullcalendar_supported_locales() {
 	return apply_filters( 'bookacti_fullcalendar_locales', array( 
-		'af', 'ar-dz', 'ar-kw', 'ar-ly', 'ar-ma', 'ar-sa', 'ar-tn', 'ar', 'be', 'bg', 'bs', 'ca', 'cs', 
-		'da', 'de-at', 'de-ch', 'de', 'el', 'en-au', 'en-ca', 'en-gb', 'en-ie', 'en-nz', 'es-do', 'es-us', 'es', 'et', 'eu', 'fa', 'fi', 'fr-ca', 'fr-ch', 'fr', 
-		'gl', 'he', 'hi', 'hr', 'hu', 'id', 'is', 'it', 
-		'ja', 'ka', 'kk', 'ko', 'lb', 'lt', 'lv', 
-		'mk', 'ms-my', 'ms', 'nb', 'nl-be', 'nl', 'nn', 
+		'af', 'ar-dz', 'ar-kw', 'ar-ly', 'ar-ma', 'ar-sa', 'ar-tn', 'ar', 'az', 
+		'bg', 'bn', 'bs', 'ca', 'cs', 'cy', 'da', 'de-at', 'de', 
+		'el', 'en-au', 'en-gb', 'en-nz', 'eo', 'es-us', 'es', 'et', 'eu', 
+		'fa', 'fi', 'fr-ca', 'fr-ch', 'fr', 
+		'gl', 'he', 'hi', 'hr', 'hu', 'hy-am', 'id', 'is', 'it', 
+		'ja', 'ka', 'kk', 'km', 'ko', 'ku', 'lb', 'lt', 'lv', 
+		'mk', 'ms', 'nb', 'ne', 'nl', 'nn', 
 		'pl', 'pt-br', 'pt', 'ro', 'ru', 
-		'sk', 'sl', 'sq', 'sr-cyrl', 'sr', 'sv', 'th', 'tr', 'uk', 
-		'vi', 
-		'zh-cn', 'zh-hk', 'zh-tw' 
+		'si-lk', 'sk', 'sl', 'sm', 'sq', 'sr-cyrl', 'sr', 'sv', 
+		'ta-in', 'th', 'tr', 'ug', 'uk', 'uz', 'vi', 
+		'zh-cn', 'zh-tw' 
 	));
 }
 
@@ -1775,11 +1777,11 @@ function bookacti_str_ids_to_array( $ids ) {
 /**
  * Convert an array to string recursively
  * @since 1.6.0
- * @version 1.14.3
+ * @version 1.15.0
  * @param array $array
  * @param int|boolean $display_keys If int, keys will be displayed if >= $level
  * @param int $type "csv" or "ical"
- * @param int $level Used for recursivity for multidimensional arrays. "1" is the first level.
+ * @param int $level Used for recursion for multidimensional arrays. "1" is the first level.
  * @return string
  */
 function bookacti_format_array_for_export( $array, $display_keys = false, $type = 'csv', $level = 1 ) {
@@ -1802,6 +1804,7 @@ function bookacti_format_array_for_export( $array, $display_keys = false, $type 
 		if( $this_display_keys )   { $string .= $key . ': '; }                       // Display key before value
 		
 		if( is_array( $value ) )   { $string .= bookacti_format_array_for_export( $value, $display_keys, $type, $level+1 ); } // Repeat. (for multidimentional array)
+		else                       { $string .= $value; }
 		
 		++$i;
 	}

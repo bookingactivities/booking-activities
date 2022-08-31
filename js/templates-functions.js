@@ -80,15 +80,12 @@ function bookacti_switch_template( selected_template_id ) {
 				// TEMPLATE SETTINGS
 					// Update calendar settings
 					bookacti_load_template_calendar();
-					bookacti_start_template_loading();
 
 				// ACTIVITIES
 					// Replace current activities with activities bound to the selected template
 					$j( '#bookacti-template-activity-list .bookacti-activity' ).remove();
 					$j( '#bookacti-template-activity-list' ).append( response.activities_list );
-
-					bookacti_init_activities();
-
+					bookacti_refresh_activity_list();
 
 				// GROUPS
 					// Replace current groups with groups bound to the selected template
@@ -117,12 +114,14 @@ function bookacti_switch_template( selected_template_id ) {
 					// Allow to sort group categories and group of events
 					bookacti_make_group_categories_sortable();
 					bookacti_make_groups_of_events_sortable();
-
+					
 
 				// SHORTCODE GENERATOR
 					// Update create form link template id
 					bookacti_update_create_form_link_template_id( bookacti.selected_template );
-
+				
+				
+				bookacti_start_template_loading();
 
 				// VIEW
 					// Go to today's date
@@ -172,36 +171,18 @@ function bookacti_switch_template( selected_template_id ) {
 // ACTIVITIES
 
 /**
- * Initialize draggable activities
- * @version 1.15.0
+ * Refresh activity list
+ * @since 1.15.0
  */
-function bookacti_init_activities() {
-	// Make the event draggable using FullCalendar's Draggable
-	new FullCalendar.Draggable( 
-		document.getElementById( 'bookacti-template-activity-list' ),
-		{ "itemSelector": '.bookacti-activity-draggable' }
-	);
-	
-	if( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'loading_number' ] > 0 ) {
-		$j( '#bookacti-template-activities-container .dashicons' ).addClass( 'bookacti-disabled' );
-		$j( '#bookacti-template-activities-container .bookacti-activity-draggable' ).addClass( 'bookacti-event-unavailable' );
-	}
-	
-	// Set a max height
-	if( $j( '#bookacti-template-activity-list' ).outerHeight() > 200 ) {
-		$j( '#bookacti-template-activity-list' ).css( 'height', 200 );
-	} else {
-		$j( '#bookacti-template-activity-list' ).css( 'height', 'auto' );
-	}
+function bookacti_refresh_activity_list() {
+	// Hide the srollbar if the activity list is small enough
+	$j( '#bookacti-template-activity-list' ).css( 'height', $j( '#bookacti-template-activity-list' ).outerHeight() > 200 ? 200 : 'auto' );
 	
 	// Display tuto if there is no more activities available
 	bookacti_display_activity_tuto_if_no_activity_available();
 	
 	// Update the show / hide icons
 	bookacti_refresh_show_hide_activities_icons();
-	
-	// Allow to sort activities
-	bookacti_make_activities_sortable();
 }
 
 
@@ -263,7 +244,19 @@ function bookacti_refresh_show_hide_activities_icons() {
 
 
 /**
- * Sort activities in editor by drag n' drop
+ * Make activities draggable
+ * @since 1.15.0
+ */
+function bookacti_make_activities_draggable() {
+	new FullCalendar.Draggable( 
+		document.getElementById( 'bookacti-template-activity-list' ),
+		{ "itemSelector": '.bookacti-activity-draggable:not(.bookacti-activity-disabled)' }
+	);
+}
+
+
+/**
+ * Make activities sortable in editor by drag n' drop
  * @since 1.11.0
  */
 function bookacti_make_activities_sortable() {
@@ -620,7 +613,7 @@ function bookacti_select_event( raw_event ) {
 /**
  * Unselect an event
  * @version 1.15.0
- * @param {object} event
+ * @param {object} raw_event
  * @param {boolean} all false to unselect only the desired occurrence. true to unselected all occurrences.
  * @returns {boolean}
  */
@@ -1131,12 +1124,10 @@ function bookacti_bind_template_dialogs() {
  * @version 1.15.0
  */
 function bookacti_start_template_loading() {
-	if( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'loading_number' ] === 0 ) {
-		$j( '#bookacti-template-sidebar .dashicons' ).addClass( 'bookacti-disabled' );
-		$j( '#bookacti-template-activities-container .bookacti-activity-draggable' ).addClass( 'bookacti-event-unavailable' );
-		$j( '.bookacti-template-dialog' ).find( 'input, select, button' ).attr( 'disabled', true );
-		$j( '#bookacti-template-picker' ).attr( 'disabled', true );
-	}
+	$j( '#bookacti-template-sidebar .dashicons' ).addClass( 'bookacti-disabled' );
+	$j( '#bookacti-template-activities-container .bookacti-activity-draggable' ).addClass( 'bookacti-activity-disabled' );
+	$j( '.bookacti-template-dialog' ).find( 'input, select, button' ).attr( 'disabled', true );
+	$j( '#bookacti-template-picker' ).attr( 'disabled', true );
 	bookacti_start_loading_booking_system( $j( '#bookacti-template-calendar' ) );
 }
 
@@ -1151,7 +1142,7 @@ function bookacti_stop_template_loading( force_exit ) {
 	bookacti_stop_loading_booking_system( $j( '#bookacti-template-calendar' ), force_exit );
 	if( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'loading_number' ] === 0 ) {
 		$j( '#bookacti-template-sidebar .dashicons' ).removeClass( 'bookacti-disabled' );
-		$j( '#bookacti-template-activities-container .bookacti-activity-draggable' ).removeClass( 'bookacti-event-unavailable' );
+		$j( '#bookacti-template-activities-container .bookacti-activity-draggable' ).removeClass( 'bookacti-activity-disabled' );
 		$j( '.bookacti-template-dialog' ).find( 'input, select, button' ).attr( 'disabled', false );
 		$j( '#bookacti-template-picker' ).attr( 'disabled', false );
 	}
