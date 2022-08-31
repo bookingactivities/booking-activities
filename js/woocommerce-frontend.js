@@ -81,9 +81,9 @@ $j( document ).ready( function() {
 
 	/**
 	 * Enable add-to-cart button
-	 * @version 1.9.0
+	 * @version 1.15.0
 	 */
-	$j( '.woocommerce form.cart' ).on( 'bookacti_view_refreshed bookacti_displayed_info_cleared', '.bookacti-booking-system', function() {
+	$j( '.woocommerce form.cart' ).on( 'bookacti_displayed_info_cleared', '.bookacti-booking-system', function() {
 		$j( this ).closest( 'form' ).find( 'input[name="quantity"]' ).attr( 'disabled', false );
 		$j( this ).closest( 'form' ).find( 'button[type="submit"]' ).attr( 'disabled', false );
 	});
@@ -102,11 +102,11 @@ $j( document ).ready( function() {
 	if( $j( '.woocommerce form.cart .single_add_to_cart_button' ).length ) {
 		/**
 		 * Add to cart dynamic check
-		 * @version 1.12.0
+		 * @version 1.15.0
 		 */
 		$j( '.woocommerce form.cart' ).on( 'submit', function() { 
 			var form = $j( this );
-
+			
 			var proceed_to_validation = false;
 
 			if( form.hasClass( 'variations_form' ) ) {
@@ -119,6 +119,12 @@ $j( document ).ready( function() {
 			}
 
 			if( proceed_to_validation ) {
+				// Submit Add to cart form only once at a time
+				if( form.hasClass( 'bookacti-adding-to-cart' ) ) { 
+					form.find( 'button[type="submit"]' ).attr( 'disabled', true ); 
+					return false;
+				}
+				
 				if( form.find( '.bookacti-booking-system' ).length ) {
 					// Submit form if all is OK
 					var is_valid = bookacti_validate_picked_events( form.find( '.bookacti-booking-system' ), form.find( 'input.qty' ).val() );
@@ -130,6 +136,7 @@ $j( document ).ready( function() {
 						
 						if( ! ( data.form_data instanceof FormData ) ) { return false; }
 						
+						form.addClass( 'bookacti-adding-to-cart' );
 						return true;
 					} else {
 						// Scroll to error message
@@ -199,6 +206,23 @@ $j( document ).ready( function() {
 		
 		if( list_item_data.price > 0 && ! list_item_data.price_to_display ) { list_item_data.price_to_display = bookacti_format_price( list_item_data.price ); }
 	});
+	
+	
+	/**
+	 * Empty the form fields after adding a booking to cart - on page load
+	 * @since 1.15.0
+	 */
+	$j( '.bookacti-wc-form-fields-reset' ).each( function() {
+		var booking_system = $j( this ).find( '.bookacti-booking-system' );
+		if( ! booking_system.length ) { return; }
+		
+		// Clear booking system displayed info
+		bookacti_clear_booking_system_displayed_info( booking_system );
+		
+		// Clear form feedback messages
+		var error_div = $j( this ).find( '> .bookacti-notices' ).length ? $j( this ).find( '> .bookacti-notices' ) : booking_system.siblings( '.bookacti-notices' );
+		error_div.empty();
+	});
 
 
 
@@ -216,7 +240,7 @@ $j( document ).ready( function() {
 
 /**
  * Switch form according to variation
- * @version 1.9.0
+ * @version 1.15.0
  * @param {HTMLElement} form_container
  * @param {object} variation
  */
@@ -242,11 +266,7 @@ function bookacti_switch_product_variation_form( form_container, variation ) {
 	}
 	
 	// Display a loading feedback
-	var loading_div = '<div class="bookacti-loading-alt">' 
-					+	'<img class="bookacti-loader" src="' + bookacti_localized.plugin_path + '/img/ajax-loader.gif" title="' + bookacti_localized.loading + '" />'
-					+	'<span class="bookacti-loading-alt-text" >' + bookacti_localized.loading + '</span>'
-					+ '</div>';
-	form_container.append( loading_div );
+	bookacti_add_loading_html( form_container );
 	
 	var data = {	
 		'action': 'bookactiGetForm', 
@@ -292,13 +312,16 @@ function bookacti_switch_product_variation_form( form_container, variation ) {
             console.log( 'AJAX ' + bookacti_localized.error );
             console.log( e );
         },
-        complete: function() { form_container.find( '.bookacti-loading-alt' ).remove(); }
+        complete: function() { 
+			bookacti_remove_loading_html( form_container );
+		}
     });	
 }
 
 
 /**
  * Replace a old variation form with a new one
+ * @version 1.15.0
  * @param {HTMLElement} form_container
  * @param {object} variation
  * @param {HTMLElement} form_html
@@ -326,8 +349,18 @@ function bookacti_fill_product_variation_form( form_container, variation, form_h
 	// Initialize tooltip
 	bookacti_init_tooltip();
 	
+	// Empty the form fields after adding a booking to cart
+	if( form_container.hasClass( 'bookacti-wc-form-fields-reset' ) ) {
+		// Clear booking system displayed info
+		bookacti_clear_booking_system_displayed_info( booking_system );
+		
+		// Clear form feedback messages
+		var error_div = form_container.find( '> .bookacti-notices' ).length ? form_container.find( '> .bookacti-notices' ) : booking_system.siblings( '.bookacti-notices' );
+		error_div.empty();
+	}
+	
 	// Remove initial loading feedback
-	booking_system.find( '.bookacti-loading-alt' ).remove();
+	bookacti_remove_loading_html( booking_system );
 
 	form_container.trigger( 'bookacti_product_variation_form_switched', [ variation ] );
 }

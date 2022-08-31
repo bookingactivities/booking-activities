@@ -1,7 +1,7 @@
 <?php 
 /**
  * Backend booking dialogs
- * @version 1.14.0
+ * @version 1.15.0
  */
 
 // Exit if accessed directly
@@ -112,7 +112,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			/**
 			 * Display the content of the "Calendar" tab of the "Bookings Calendar" dialog
 			 * @since 1.8.0
-			 * @version 1.14.0
+			 * @version 1.15.0
 			 * @param array $params
 			 */
 			function bookacti_fill_bookings_calendar_dialog_calendar_tab( $params ) {
@@ -121,10 +121,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				<fieldset>
 					<legend><?php esc_html_e( 'Working time', 'booking-activities' ); ?></legend>
 					<?php 
-						$agenda_fields = bookacti_get_fullcalendar_fields_default_data( array( 'minTime', 'maxTime' ) );
-						$agenda_fields[ 'minTime' ][ 'value' ] = str_pad( intval( substr( $params[ 'calendar_data' ][ 'minTime' ], 0, 2 ) ) % 24, 2, '0', STR_PAD_LEFT ) . substr( $params[ 'calendar_data' ][ 'minTime' ], 2 );
-						$agenda_fields[ 'maxTime' ][ 'value' ] = str_pad( intval( substr( $params[ 'calendar_data' ][ 'maxTime' ], 0, 2 ) ) % 24, 2, '0', STR_PAD_LEFT ) . substr( $params[ 'calendar_data' ][ 'maxTime' ], 2 );
-						bookacti_display_fields( $agenda_fields );
+						$timeGrid_fields = bookacti_get_fullcalendar_fields_default_data( array( 'slotMinTime', 'slotMaxTime' ) );
+						$timeGrid_fields[ 'slotMinTime' ][ 'value' ] = str_pad( intval( substr( $params[ 'calendar_data' ][ 'slotMinTime' ], 0, 2 ) ) % 24, 2, '0', STR_PAD_LEFT ) . substr( $params[ 'calendar_data' ][ 'slotMinTime' ], 2 );
+						$timeGrid_fields[ 'slotMaxTime' ][ 'value' ] = str_pad( intval( substr( $params[ 'calendar_data' ][ 'slotMaxTime' ], 0, 2 ) ) % 24, 2, '0', STR_PAD_LEFT ) . substr( $params[ 'calendar_data' ][ 'slotMaxTime' ], 2 );
+						bookacti_display_fields( $timeGrid_fields );
 					?>
 				</fieldset>
 			<?php

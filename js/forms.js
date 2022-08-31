@@ -111,7 +111,7 @@ $j( document ).ready( function() {
 		}
 		
 		var form = $j( this ).closest( 'form' );
-		var booking_system	= form.find( '.bookacti-booking-system' );
+		var booking_system = form.find( '.bookacti-booking-system' );
 		
 		// Clear booking system displayed info
 		bookacti_clear_booking_system_displayed_info( booking_system );
@@ -130,9 +130,9 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Enable submit booking button
-	 * @version 1.12.4
+	 * @version 1.15.0
 	 */
-	$j( 'body' ).on( 'bookacti_view_refreshed bookacti_displayed_info_cleared', '.bookacti-booking-form .bookacti-booking-system, .bookacti-form-fields .bookacti-booking-system', function() {
+	$j( 'body' ).on( 'bookacti_displayed_info_cleared', '.bookacti-booking-form .bookacti-booking-system, .bookacti-form-fields .bookacti-booking-system', function() {
 		var form = $j( this ).closest( 'form' ).length ? $j( this ).closest( 'form' ) : $j( this ).closest( '.bookacti-form-fields' );
 		form.find( 'input[name="quantity"]' ).attr( 'disabled', false );
 		form.find( 'button[type="submit"]' ).attr( 'disabled', false );
@@ -224,16 +224,16 @@ $j( document ).ready( function() {
 function bookacti_init_form_dialogs() {
 	//Common param
 	$j( '.bookacti-form-dialog' ).dialog({ 
-		"modal":		true,
-		"autoOpen":		false,
-		"minHeight":	300,
-		"minWidth":		460,
-		"resize":		'auto',
-		"show":			true,
-		"hide":			true,
-		"dialogClass":	'bookacti-dialog',
-		"closeText":	'&#10006;',
-		"beforeClose":	function() { 
+		"modal":       true,
+		"autoOpen":    false,
+		"minHeight":   300,
+		"minWidth":    460,
+		"resize":      'auto',
+		"show":        true,
+		"hide":        true,
+		"dialogClass": 'bookacti-dialog',
+		"closeText":   '&#10006;',
+		"beforeClose": function() { 
 			if( ! bookacti_localized.is_admin ) { return; }
 			var scope = '.bookacti-form-dialog';
 			var dialog_id = $j( this ).attr( 'id' );
@@ -370,7 +370,7 @@ function bookacti_check_password_strength( password_field, password_confirm_fiel
 /**
  * Submit login form
  * @since 1.8.0
- * @version 1.12.2
+ * @version 1.15.0
  * @param {HTMLElement} submit_button
  */
 function bookacti_submit_login_form( submit_button ) {
@@ -432,12 +432,8 @@ function bookacti_submit_login_form( submit_button ) {
 		return false;
 	}
 	
-	// Display a loader after the submit button too
-	var loading_div = '<div class="bookacti-loading-alt">' 
-					+ '<img class="bookacti-loader" src="' + bookacti_localized.plugin_path + '/img/ajax-loader.gif" title="' + bookacti_localized.loading + '" />'
-					+ '<span class="bookacti-loading-alt-text" >' + bookacti_localized.loading + '</span>'
-				+ '</div>';
-	submit_button.after( loading_div );
+	// Display a loader after the submit button
+	bookacti_add_loading_html( submit_button, 'after' );
 	
 	$j.ajax({
 		url: bookacti_localized.ajaxurl,
@@ -483,10 +479,8 @@ function bookacti_submit_login_form( submit_button ) {
 			console.log( e );
 		},
 		complete: function() {
-			// Re-enable the submit button
+			bookacti_remove_loading_html( submit_button.parent() );
 			submit_button.prop( 'disabled', false );
-			// Stop loading
-			submit_button.next( '.bookacti-loading-alt' ).remove();
 		}
 	});
 }
@@ -495,7 +489,7 @@ function bookacti_submit_login_form( submit_button ) {
 /**
  * Submit booking form
  * @since 1.7.6 (was bookacti_sumbit_booking_form)
- * @version 1.14.0
+ * @version 1.15.0
  * @param {HTMLElement} form
  */
 function bookacti_submit_booking_form( form ) {
@@ -572,17 +566,11 @@ function bookacti_submit_booking_form( form ) {
 		return false;
 	}
 	
-	// Display a loader after the submit button too
-	if( submit_button.length ) { 
-		var loading_div = '<div class="bookacti-loading-alt">' 
-						+ '<img class="bookacti-loader" src="' + bookacti_localized.plugin_path + '/img/ajax-loader.gif" title="' + bookacti_localized.loading + '" />'
-						+ '<span class="bookacti-loading-alt-text" >' + bookacti_localized.loading + '</span>'
-					+ '</div>';
-		submit_button.after( loading_div );
-	}
-	
 	bookacti_start_loading_booking_system( booking_system );
 
+	// Display a loader after the submit button too
+	if( submit_button.length ) { bookacti_add_loading_html( submit_button, 'after' ); }
+	
 	$j.ajax({
 		url: bookacti_localized.ajaxurl,
 		type: 'POST',
@@ -650,8 +638,7 @@ function bookacti_submit_booking_form( form ) {
 		},
 		complete: function() { 
 			if( submit_button.length ) { 
-				submit_button.next( '.bookacti-loading-alt' ).remove();
-				// Re-enable the submit button
+				bookacti_remove_loading_html( submit_button.parent() );
 				submit_button.prop( 'disabled', false );
 			}
 			bookacti_stop_loading_booking_system( booking_system );
@@ -663,7 +650,7 @@ function bookacti_submit_booking_form( form ) {
 /**
  * Perform form action
  * @since 1.9.0
- * @version 1.10.1
+ * @version 1.15.0
  * @param {HTMLElement} booking_system
  */
 function bookacti_perform_form_action( booking_system ) {
@@ -702,12 +689,12 @@ function bookacti_perform_form_action( booking_system ) {
 		}
 		
 		var group_id = parseInt( attributes[ 'picked_events' ][ 0 ][ 'group_id' ] );
-		var event = attributes[ 'picked_events' ][ 0 ];
+		var picked_event = attributes[ 'picked_events' ][ 0 ];
 
 		if( group_id > 0 ) {
 			bookacti_redirect_to_group_category_url( booking_system, group_id );
 		} else {
-			bookacti_redirect_to_activity_url( booking_system, event );
+			bookacti_redirect_to_activity_url( booking_system, picked_event );
 		}
 	}
 	
@@ -718,7 +705,7 @@ function bookacti_perform_form_action( booking_system ) {
 /**
  * Forgotten password dialog
  * @since 1.5.0
- * @version 1.14.0
+ * @version 1.15.0
  * @param {string} field_id
  */
 function bookacti_dialog_forgotten_password( field_id ) {
@@ -734,20 +721,14 @@ function bookacti_dialog_forgotten_password( field_id ) {
 		[{
 			text: bookacti_localized.dialog_button_ok,			
 			click: function() { 
-				
 				// Clear feedbacks
-				dialog.find( '.bookacti-loading-alt, .bookacti-notices' ).remove();
+				dialog.find( '.bookacti-notices' ).remove();
 				
 				var email = dialog.find( '.bookacti-forgotten-password-email' ).val();
-				
 				if( ! email ) { return; }
 				
 				// Display a loader
-				var loading_div = '<div class="bookacti-loading-alt">' 
-									+ '<img class="bookacti-loader" src="' + bookacti_localized.plugin_path + '/img/ajax-loader.gif" title="' + bookacti_localized.loading + '" />'
-									+ '<span class="bookacti-loading-alt-text" >' + bookacti_localized.loading + '</span>'
-								+ '</div>';
-				dialog.append( loading_div );
+				bookacti_add_loading_html( dialog );
 				
 				$j.ajax({
 					url: bookacti_localized.ajaxurl,
@@ -778,7 +759,7 @@ function bookacti_dialog_forgotten_password( field_id ) {
 					},
 					complete: function() {
 						dialog.find( '.bookacti-notices' ).show();
-						dialog.find( '.bookacti-loading-alt' ).remove();
+						bookacti_remove_loading_html( dialog );
 					}
 				});
 			}

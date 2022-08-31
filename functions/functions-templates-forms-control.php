@@ -20,12 +20,12 @@ function bookacti_get_template_default_data() {
 /**
  * Get template default meta
  * @since 1.12.0
- * @version 1.13.0
+ * @version 1.15.0
  */
 function bookacti_get_template_default_meta() {
 	return apply_filters( 'bookacti_template_default_meta', array(
-		'minTime'      => '00:00',
-		'maxTime'      => '00:00',
+		'slotMinTime'  => '00:00',
+		'slotMaxTime'  => '00:00',
 		'snapDuration' => '00:05',
 		'days_off'     => array()
 	));
@@ -35,6 +35,7 @@ function bookacti_get_template_default_meta() {
 /**
  * Sanitize template data
  * @since 1.12.0 (was bookacti_sanitize_template_settings)
+ * @version 1.15.0
  * @param array $raw_data
  * @return array
  */
@@ -45,7 +46,7 @@ function bookacti_sanitize_template_data( $raw_data ) {
 	// Sanitize common values
 	$keys_by_type = array( 
 		'absint' => array( 'id', 'duplicated_template_id' ),
-		'str'    => array( 'title', 'minTime', 'maxTime', 'snapDuration' ),
+		'str'    => array( 'title', 'slotMinTime', 'slotMaxTime', 'snapDuration' ),
 		'array'  => array( 'managers', 'days_off' ),
 		'bool'   => array( 'active' )
 	);
@@ -57,14 +58,14 @@ function bookacti_sanitize_template_data( $raw_data ) {
 	// Sanitize managers
 	$data[ 'managers' ] = bookacti_sanitize_template_managers( $data[ 'managers' ] );
 	
-	// Format 24-h times: minTime, maxTime, snapDuration
-	if( ! preg_match( '/^([0-1][0-9]|2[0-3]):([0-5][0-9])$/', $data[ 'minTime' ] ) )		{ $data[ 'minTime' ] = $default_meta[ 'minTime' ]; }
-	if( ! preg_match( '/^([0-1][0-9]|2[0-3]):([0-5][0-9])$/', $data[ 'maxTime' ] ) )		{ $data[ 'maxTime' ] = $default_meta[ 'maxTime' ]; }
-	if( ! preg_match( '/^([0-1][0-9]|2[0-3]):([0-5][0-9])$/', $data[ 'snapDuration' ] ) )	{ $data[ 'snapDuration' ] = $default_meta[ 'snapDuration' ]; }
+	// Format 24-h times: slotMinTime, slotMaxTime, snapDuration
+	if( ! preg_match( '/^([0-1][0-9]|2[0-3]):([0-5][0-9])$/', $data[ 'slotMinTime' ] ) )  { $data[ 'slotMinTime' ] = $default_meta[ 'slotMinTime' ]; }
+	if( ! preg_match( '/^([0-1][0-9]|2[0-3]):([0-5][0-9])$/', $data[ 'slotMaxTime' ] ) )  { $data[ 'slotMaxTime' ] = $default_meta[ 'slotMaxTime' ]; }
+	if( ! preg_match( '/^([0-1][0-9]|2[0-3]):([0-5][0-9])$/', $data[ 'snapDuration' ] ) ) { $data[ 'snapDuration' ] = $default_meta[ 'snapDuration' ]; }
 	
-	// If minTime >= maxTime, add one day to maxTime
-	if( intval( str_replace( ':', '', $data[ 'minTime' ] ) ) >= intval( str_replace( ':', '', $data[ 'maxTime' ] ) ) ) { 
-		$data[ 'maxTime' ] = str_pad( 24 + ( intval( substr( $data[ 'maxTime' ], 0, 2 ) ) % 24 ), 2, '0', STR_PAD_LEFT ) . substr( $data[ 'maxTime' ], 2 );
+	// If slotMinTime >= slotMaxTime, add one day to slotMaxTime
+	if( intval( str_replace( ':', '', $data[ 'slotMinTime' ] ) ) >= intval( str_replace( ':', '', $data[ 'slotMaxTime' ] ) ) ) { 
+		$data[ 'slotMaxTime' ] = str_pad( 24 + ( intval( substr( $data[ 'slotMaxTime' ], 0, 2 ) ) % 24 ), 2, '0', STR_PAD_LEFT ) . substr( $data[ 'slotMaxTime' ], 2 );
 	}
 	
 	// Make sure snapDuration is not null
@@ -74,6 +75,56 @@ function bookacti_sanitize_template_data( $raw_data ) {
 	$data[ 'days_off' ] = bookacti_sanitize_days_off( $data[ 'days_off' ] );
 	
 	return apply_filters( 'bookacti_sanitized_template_data', $data, $raw_data );
+}
+
+
+/**
+ * Format template data
+ * @since 1.15.0
+ * @param array $raw_data
+ * @return array
+ */
+function bookacti_format_template_data( $raw_data ) {
+	$default_data = bookacti_get_template_default_data();
+	$default_meta = bookacti_get_template_default_meta();
+	
+	// Sanitize common values
+	$keys_by_type = array( 
+		'absint' => array( 'id' ),
+		'str'    => array( 'title', 'slotMinTime', 'slotMaxTime', 'snapDuration' ),
+		'array'  => array( 'days_off' ),
+		'bool'   => array( 'active' )
+	);
+	$data = array_merge( $default_data, $default_meta, bookacti_sanitize_values( array_merge( $default_data, $default_meta ), $raw_data, $keys_by_type ) );
+	
+	// Format 24-h times: slotMinTime, slotMaxTime, snapDuration
+	if( ! preg_match( '/^([0-1][0-9]|2[0-3]):([0-5][0-9])$/', $data[ 'slotMinTime' ] ) )  { $data[ 'slotMinTime' ] = $default_meta[ 'slotMinTime' ]; }
+	if( ! preg_match( '/^([0-1][0-9]|2[0-3]):([0-5][0-9])$/', $data[ 'slotMaxTime' ] ) )  { $data[ 'slotMaxTime' ] = $default_meta[ 'slotMaxTime' ]; }
+	if( ! preg_match( '/^([0-1][0-9]|2[0-3]):([0-5][0-9])$/', $data[ 'snapDuration' ] ) ) { $data[ 'snapDuration' ] = $default_meta[ 'snapDuration' ]; }
+	
+	// If slotMinTime >= slotMaxTime, add one day to slotMaxTime
+	if( intval( str_replace( ':', '', $data[ 'slotMinTime' ] ) ) >= intval( str_replace( ':', '', $data[ 'slotMaxTime' ] ) ) ) { 
+		$data[ 'slotMaxTime' ] = str_pad( 24 + ( intval( substr( $data[ 'slotMaxTime' ], 0, 2 ) ) % 24 ), 2, '0', STR_PAD_LEFT ) . substr( $data[ 'slotMaxTime' ], 2 );
+	}
+	
+	// Make sure snapDuration is not null
+	if( $data[ 'snapDuration' ] === '00:00' ) { $data[ 'snapDuration' ] = '00:01'; }
+	
+	// Sanitize Days off
+	$data[ 'days_off' ] = bookacti_sanitize_days_off( $data[ 'days_off' ] );
+	
+	$data = apply_filters( 'bookacti_formatted_template_data', $data, $raw_data );
+	
+	// Move the metadata and administrators
+	$meta  = array_intersect_key( $data, $default_meta );
+	$data  = array_intersect_key( $data, $default_data );
+	$data[ 'settings' ] = $meta;
+	
+	// Translate title and keep an untranslated entry
+	$data[ 'multilingual_title' ] = $data[ 'title' ];
+	if( $data[ 'title' ] ) { $data[ 'title' ] = apply_filters( 'bookacti_translate_text', $data[ 'title' ] ); }
+	
+	return $data;
 }
 
 

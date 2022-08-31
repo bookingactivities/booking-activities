@@ -7,6 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Get all translatable texts
  * @since 1.14.0
+ * @version 1.15.0
  * @return array
  */
 function bookacti_get_translatable_texts() {
@@ -101,7 +102,7 @@ function bookacti_get_translatable_texts() {
 	}
 	
 	// Get templates strings
-	$templates = bookacti_get_templates_data( array(), true );
+	$templates = bookacti_get_templates_data( array(), false );
 	foreach( $templates as $template_id => $template ) {
 		$template_texts = array();
 		
@@ -338,4 +339,122 @@ function bookacti_translate_text_with_qtranslate( $text, $lang = '', $fallback =
 	$flags = $fallback ? 0 : $qtranslate_show_empty;
 	
 	return apply_filters( 'translate_text', $text, $lang, $flags );
+}
+
+
+
+
+// Moment JS
+
+/**
+ * TEMP BUG FIX #52695 https://core.trac.wordpress.org/ticket/52695
+ * @since 1.15.0
+ * @global WP_Locale $wp_locale
+ */
+function bookacti_wp_moment_updateLocale_temp_fix() {
+	global $wp_locale;
+	wp_add_inline_script(
+		'moment',
+		sprintf(
+			"( function( settings ) {
+				moment.defineLocale( settings.locale, {
+					parentLocale: 'en',
+					months: settings.months,
+					monthsShort: settings.monthsShort,
+					weekdays: settings.weekdays,
+					weekdaysShort: settings.weekdaysShort,
+					week: {
+						dow: settings.dow,
+						doy: 7 + settings.dow - 1,
+					},
+					meridiem: function( hour, minute, isLowercase ) {
+						if ( hour < 12 ) {
+							return isLowercase ? settings.meridiem.am : settings.meridiem.AM;
+						}
+						return isLowercase ? settings.meridiem.pm : settings.meridiem.PM;
+					},
+					longDateFormat: {
+						LT: settings.longDateFormat.LT,
+						LTS: moment.localeData( 'en' ).longDateFormat( 'LTS' ),
+						L: moment.localeData( 'en' ).longDateFormat( 'L' ),
+						LL: settings.longDateFormat.LL,
+						LLL: settings.longDateFormat.LLL,
+						LLLL: moment.localeData( 'en' ).longDateFormat( 'LLLL' )
+					}
+				} );
+			} )( %s );",
+			wp_json_encode(
+				array(
+					'locale'         => get_user_locale(),
+					'months'         => array_values( $wp_locale->month ),
+					'monthsShort'    => array_values( $wp_locale->month_abbrev ),
+					'weekdays'       => array_values( $wp_locale->weekday ),
+					'weekdaysShort'  => array_values( $wp_locale->weekday_abbrev ),
+					'dow'            => (int) get_option( 'start_of_week', 0 ),
+					'meridiem'       => (object) $wp_locale->meridiem,
+					'longDateFormat' => array(
+						'LT'   => bookacti_convert_php_datetime_format_to_moment_js( get_option( 'time_format', __( 'g:i a' ) ) ),
+						'LTS'  => null,
+						'L'    => null,
+						'LL'   => bookacti_convert_php_datetime_format_to_moment_js( get_option( 'date_format', __( 'F j, Y' ) ) ),
+						'LLL'  => bookacti_convert_php_datetime_format_to_moment_js( __( 'F j, Y g:i a' ) ),
+						'LLLL' => null,
+					),
+				)
+			)
+		),
+		'after'
+	);
+}
+
+
+/**
+ * Convert a PHP datetime format to moment JS format
+ * @since 1.15.0
+ * @param string php_format
+ * @return string
+ */
+function bookacti_convert_php_datetime_format_to_moment_js( $php_format ) {
+	$format_map = array(
+		'd' => 'DD',
+		'D' => 'ddd',
+		'j' => 'D',
+		'l' => 'dddd',
+		'N' => 'E',
+		'w' => 'd',
+		'W' => 'W',
+		'F' => 'MMMM',
+		'm' => 'MM',
+		'M' => 'MMM',
+		'n' => 'M',
+		'o' => 'GGGG',
+		'Y' => 'YYYY',
+		'y' => 'YY',
+		'a' => 'a',
+		'A' => 'A',
+		'g' => 'h',
+		'G' => 'H',
+		'h' => 'hh',
+		'H' => 'HH',
+		'i' => 'mm',
+		's' => 'ss',
+		'u' => 'X',
+		'e' => 'z',
+		'O' => 'ZZ',
+		'P' => 'Z',
+		'T' => 'z',
+		'c' => 'YYYY-MM-DD[T]HH:mm:ssZ',
+		'r' => 'ddd, DD MMM YYYY HH:mm:ss ZZ',
+		'U' => 'X'
+	);
+	
+	$has_backslash = false;
+	$moment_js_format = '';
+	foreach( str_split( $php_format ) as $char ) {
+		if( $char === '\\' && ! $has_backslash ) { $has_backslash = true; continue; }
+		$moment_js_format .= $has_backslash || ! isset( $format_map[ $char ] ) ? '[' . $char . ']' : $format_map[ $char ];
+		$has_backslash = false;
+	}
+	
+	return $moment_js_format;
 }

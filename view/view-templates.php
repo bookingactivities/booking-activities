@@ -1,7 +1,7 @@
 <?php
 /**
  * Calendar editor page
- * @version 1.14.0
+ * @version 1.15.0
  */
 
 // Exit if accessed directly
@@ -33,7 +33,7 @@ $default_template = false;
 
 <div id='bookacti-template-container'>
 <?php 
-	$templates = bookacti_fetch_templates();
+	$templates = bookacti_get_templates_data();
 	wp_nonce_field( 'bookacti_get_calendar_editor_data', 'nonce_get_calendar_editor_data', false );
 	wp_nonce_field( 'bookacti_edit_template', 'nonce_edit_template', false );
 ?>
@@ -142,7 +142,9 @@ $default_template = false;
 	
 	<div id='bookacti-template-content'>
 		<?php if( $templates ) { ?>
-		<div id='bookacti-template-calendar' class='bookacti-calendar'></div>
+		<div class='bookacti-booking-system-editor' id='bookacti-template-calendar'>
+			<div class='bookacti-calendar'></div>
+		</div>
 		<?php } ?>
 		<div id='bookacti-first-template-container' <?php if( $templates ) { echo 'style="display:none;"'; } ?>>
 			<h2>

@@ -308,7 +308,7 @@ function bookacti_display_form( $form_id, $instance_id = '', $context = 'display
 /**
  * Get form fields array
  * @since 1.5.4
- * @version 1.14.0
+ * @version 1.15.0
  * @param int $form_id
  * @param boolean $active_only   Whether to fetch only active fields. Default "true".
  * @param boolean $index_by_name Whether to index by name. Else, indexed by field id.
@@ -325,8 +325,7 @@ function bookacti_get_form_fields_data( $form_id, $active_only = true, $index_by
 			// Get fields meta
 			$fields_meta = bookacti_get_metadata( 'form_field', array_keys( $fields ) );
 
-			// Add form field metadata and 
-			// Format form fields
+			// Add form field metadata
 			$fields_data_by_id = array();
 			foreach( $fields as $field_id => $field ) {
 				// Add field-specific data
@@ -576,7 +575,7 @@ function bookacti_get_default_form_fields_data( $field_name = '', $context = 'vi
  * Get fields metadata
  * @see bookacti_format_form_field_data to properly format your array
  * @since 1.5.0
- * @version 1.14.0
+ * @version 1.15.0
  * @param string $field_name
  * @param string $context 'view' or 'edit'
  * @return array
@@ -633,8 +632,8 @@ function bookacti_get_default_form_fields_meta( $field_name = '', $context = 'vi
 			'when_perform_form_action'       => 'on_submit',
 			'redirect_url_by_activity'       => array(),
 			'redirect_url_by_group_category' => array(),
-			'minTime'                        => '00:00',
-			'maxTime'                        => '00:00'
+			'slotMinTime'                    => '00:00',
+			'slotMaxTime'                    => '00:00'
 		),
 		'login' => array(
 			'automatic_login'        => 1,
@@ -696,7 +695,7 @@ function bookacti_get_available_form_action_triggers() {
 /**
  * Format field data according to its type
  * @since 1.5.0
- * @version 1.14.0
+ * @version 1.15.0
  * @param array|string $raw_field_data
  * @param $context "view" or "edit"
  * @return array
@@ -842,7 +841,7 @@ function bookacti_format_form_field_data( $raw_field_data, $context = 'view' ) {
 	} else if( $raw_field_data[ 'name' ] === 'quantity' ) {
 	} else if( $raw_field_data[ 'name' ] === 'terms' ) {
 		// Format common values (specific cases)
-		$field_data[ 'label' ] = $raw_field_data[ 'label' ];
+		$field_data[ 'label' ] = isset( $raw_field_data[ 'label' ] ) && is_string( $raw_field_data[ 'label' ] ) ? sanitize_text_field( stripslashes( $raw_field_data[ 'label' ] ) ) : $default_data[ 'label' ];
 		
 	} else if( $raw_field_data[ 'name' ] === 'submit' ) {
 		// Format Submit button label
@@ -1180,7 +1179,7 @@ function bookacti_display_form_field( $field, $instance_id = '', $context = 'dis
 /**
  * Display a form field for the form editor
  * @since 1.5.0
- * @version 1.14.0
+ * @version 1.15.0
  * @param array $field
  * @param boolean $echo
  * @return string|void
@@ -1199,12 +1198,10 @@ function bookacti_display_form_field_for_editor( $field, $echo = true ) {
 	<div id='bookacti-form-editor-field-<?php echo esc_attr( $field[ 'field_id' ] ); ?>' class='<?php echo $field_class; ?>' data-field-id='<?php echo esc_attr( $field[ 'field_id' ] ); ?>' data-field-name='<?php echo esc_attr( $field[ 'name' ] ); ?>' >
 		<div class='bookacti-form-editor-field-header' >
 			<div class='bookacti-form-editor-field-title' >
-				<h3><?php echo wp_kses_post( $field[ 'title' ] ); ?></h3>
+				<h3><?php echo apply_filters( 'bookacti_form_editor_field_title', wp_kses_post( $field[ 'title' ] ), $field ); ?></h3>
 			</div>
 			<div class='bookacti-form-editor-field-actions' >
-			<?php
-				do_action( 'bookacti_form_editor_field_actions_before', $field );
-			?>
+			<?php do_action( 'bookacti_form_editor_field_actions_before', $field ); ?>
 				<div id='bookacti-edit-form-field-<?php echo esc_attr( $field[ 'field_id' ] ); ?>' class='bookacti-form-editor-field-action bookacti-edit-form-field <?php echo $field_name === 'calendar' ? 'button button-secondary' : 'dashicons dashicons-admin-generic'; ?>' title='<?php esc_attr_e( 'Change field settings', 'booking-activities' ); ?>'><?php if( $field_name === 'calendar' ) { esc_attr_e( 'Calendar settings', 'booking-activities' ); } ?></div>
 			<?php if( ! $field[ 'compulsory' ] ) { ?>
 				<div id='bookacti-remove-form-field-<?php echo esc_attr( $field[ 'field_id' ] ); ?>' class='bookacti-form-editor-field-action bookacti-remove-form-field dashicons dashicons-trash' title='<?php esc_attr_e( 'Remove this field', 'booking-activities' ); ?>'></div>
@@ -1312,8 +1309,8 @@ function bookacti_register_a_new_user( $login_values, $login_data ) {
 	// Create the user
 	$user_id = wp_insert_user( $new_user_data );
 	if( is_wp_error( $user_id ) ) { 
-		$return_array[ 'error' ]	= $user_id->get_error_code();
-		$return_array[ 'message' ]	= $user_id->get_error_message();
+		$return_array[ 'error' ]   = $user_id->get_error_code();
+		$return_array[ 'message' ] = $user_id->get_error_message();
 		return $return_array;
 	}
 	$user = get_user_by( 'id', $user_id );
@@ -1337,29 +1334,33 @@ function bookacti_register_a_new_user( $login_values, $login_data ) {
 /**
  * Validate login fields
  * @since 1.5.0
- * @version 1.5.1
+ * @version 1.15.0
  * @param array $login_values
  * @param boolean $require_authentication Whether to authenticate the user
  * @return WP_User|array
  */
 function bookacti_validate_login( $login_values, $require_authentication = true ) {
-		
-	$return_array = array( 'status' => 'failed' );
-
 	// Check if email is correct
 	$user = get_user_by( 'email', $login_values[ 'email' ] );
 	if( ! $user ) { 
-		$return_array[ 'error' ]	= 'user_not_found';
-		$return_array[ 'message' ]	= esc_html__( 'This email address doesn\'t match any account.', 'booking-activities' );
-		return $return_array;
+		return array( 
+			'status'  => 'failed',
+			'error'   => 'user_not_found',
+			'message' => esc_html__( 'This email address doesn\'t match any account.', 'booking-activities' )
+		);
 	}
 
 	// Check if password is correct
 	if( $require_authentication ) {
 		$user = wp_authenticate( $user->user_email, $login_values[ 'password' ] );
-		if( ! is_a( $user, 'WP_User' ) ) { 
-			$return_array[ 'error' ]	= 'wrong_password';
-			$return_array[ 'message' ]	= esc_html__( 'The password is incorrect. Try again.', 'booking-activities' );
+		if( ! is_a( $user, 'WP_User' ) ) {
+			$return_array = array( 'status' => 'failed' );
+			if( is_wp_error( $user ) ) {
+				$return_array[ 'error' ]   = $user->get_error_code();
+				$return_array[ 'message' ] = $user->get_error_message();
+			}
+			if( empty( $return_array[ 'error' ] ) )   { $return_array[ 'error' ]   = 'authentication_failed'; }
+			if( empty( $return_array[ 'message' ] ) ) { $return_array[ 'message' ] = __( '<strong>Error</strong>: Invalid username, email address or incorrect password.' ); }
 			return $return_array;
 		}
 	}

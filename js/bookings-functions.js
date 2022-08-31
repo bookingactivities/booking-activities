@@ -51,6 +51,7 @@ $j( document ).ready( function() {
 /**
  * Filter the booking list with current filters values
  * @since 1.8.0
+ * @version 1.15.0
  * @param {Int} paged
  */
 function bookacti_filter_booking_list( paged ) {
@@ -75,12 +76,7 @@ function bookacti_filter_booking_list( paged ) {
 	bookacti_start_loading_booking_system( booking_system );
 	
 	var column_nb = $j( '#bookacti-booking-list thead .manage-column:not(.hidden)' ).length ? $j( '#bookacti-booking-list thead .manage-column:not(.hidden)' ).length : 1;
-	var loading_div = 
-	'<div class="bookacti-loading-alt">' 
-		+ '<img class="bookacti-loader" src="' + bookacti_localized.plugin_path + '/img/ajax-loader.gif" title="' + bookacti_localized.loading + '" />'
-		+ '<span class="bookacti-loading-alt-text" >' + bookacti_localized.loading + '</span>'
-	+ '</div>';
-	$j( '#bookacti-booking-list #the-list' ).html( '<tr class="no-items" ><td class="colspanchange" colspan="' + column_nb + '" >' + loading_div + '</td></tr>' );
+	$j( '#bookacti-booking-list #the-list' ).html( '<tr class="no-items" ><td class="colspanchange" colspan="' + column_nb + '" >' + bookacti_get_loading_html() + '</td></tr>' );
 	
 	$j.ajax({
 		url: bookacti_localized.ajaxurl,
@@ -113,6 +109,7 @@ function bookacti_filter_booking_list( paged ) {
 		},
 		complete: function() {
 			bookacti_stop_loading_booking_system( booking_system );
+			bookacti_remove_loading_html( $j( '#bookacti-booking-list #the-list' ) );
 		}
 	});
 }
@@ -155,16 +152,15 @@ function bookacti_update_template_related_filters() {
 
 /**
  * Refresh booking list calendar accoding to dates
- * @version 1.8.6
+ * @version 1.15.0
  */
 function bookacti_refresh_calendar_according_to_date_filter() {
 	if( ! $j( '#bookacti-booking-system-filter-container' ).is( ':visible' ) ) { return false; }
 
-	var booking_system		= $j( '#bookacti-booking-system-bookings-page' );
-	var booking_system_id	= booking_system.attr( 'id' );
-	var calendar			= booking_system.find( '.bookacti-calendar' );
-	var from_date			= $j( '#bookacti-booking-filter-dates-from' ).val();
-	var to_date				= $j( '#bookacti-booking-filter-dates-to' ).val();
+	var booking_system    = $j( '#bookacti-booking-system-bookings-page' );
+	var booking_system_id = booking_system.attr( 'id' );
+	var from_date         = $j( '#bookacti-booking-filter-dates-from' ).val();
+	var to_date           = $j( '#bookacti-booking-filter-dates-to' ).val();
 	
 	var interval_filter = {
 		"start": moment.utc( from_date ? from_date + ' 00:00:00' : '1970-02-01 00:00:00' ).locale( 'en' ),
@@ -179,7 +175,7 @@ function bookacti_refresh_calendar_according_to_date_filter() {
 		"end": interval_filter.end.add( 1, 'days' ).format( 'YYYY-MM-DD' )
 	};
 	
-	calendar.fullCalendar( 'option', 'validRange', valid_range );
+	bookacti.fc_calendar[ booking_system_id ].setOption( 'validRange', valid_range );
 }
 
 
@@ -337,13 +333,12 @@ function bookacti_change_export_type_according_to_active_tab() {
 
 /**
  * Show bookings of a group
- * @version 1.12.2
+ * @version 1.15.0
  * @param {int} booking_group_id
- * @returns {false|null}
  */
 function bookacti_display_grouped_bookings( booking_group_id ) {
 	booking_group_id = typeof booking_group_id !== 'undefined' && $j.isNumeric( booking_group_id ) ? booking_group_id : false;
-	if( ! booking_group_id ) { return false; }
+	if( ! booking_group_id ) { return; }
 	
 	var group_row = $j( '.bookacti-show-booking-group-bookings[data-booking-group-id="' + booking_group_id + '"]:focus' ).first().closest( 'tr' );
 	
@@ -360,7 +355,7 @@ function bookacti_display_grouped_bookings( booking_group_id ) {
 			group_row.next( '.bookacti-gouped-booking.hidden.dummy' ).remove();
 			group_row.nextUntil( 'tr:not(.bookacti-gouped-booking)' ).removeClass( 'hidden' );
 		}
-		return false; 
+		return; 
 	}
 	
 	// Columns to display
@@ -419,25 +414,23 @@ function bookacti_display_grouped_bookings( booking_group_id ) {
 
 /**
  * Start booking row loading
+ * @version 1.15.0
  * @param {HTMLElement} row
  */
 function bookacti_booking_row_enter_loading_state( row ) {
-	var loading_div = 
-	'<div class="bookacti-loading-alt">' 
-		+ '<img class="bookacti-loader" src="' + bookacti_localized.plugin_path + '/img/ajax-loader.gif" title="' + bookacti_localized.loading + '" />'
-	+ '</div>';
 	row.find( '.bookacti-booking-state' ).hide();
-	row.find( '.bookacti-booking-state' ).after( loading_div );
+	bookacti_add_loading_html( row.find( '.bookacti-booking-state' ), 'after' );
 	row.find( '.bookacti-booking-action' ).attr( 'disabled', true );
 }
 
 
 /**
  * Stop booking row loading
+ * @version 1.15.0
  * @param {HTMLElement} row
  */
 function bookacti_booking_row_exit_loading_state( row ) {
-	row.find( '.bookacti-loading-alt' ).remove();
+	bookacti_remove_loading_html( row );
 	row.find( '.bookacti-booking-state' ).show();
 	row.find( '.bookacti-booking-action' ).attr( 'disabled', false );
 }

@@ -1,14 +1,14 @@
 <?php 
 /**
  * Calendar editor dialogs
- * @version 1.13.0
+ * @version 1.15.0
  */
 
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 // Templates options list
-if( empty( $templates ) ) { $templates = bookacti_fetch_templates(); }
+if( empty( $templates ) ) { $templates = bookacti_get_templates_data(); }
 $templates_options = array();
 foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = esc_html( $template[ 'title' ] ); }
 ?>
@@ -283,7 +283,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			/**
 			 * Fill the "Editor" tab in calendar settings
 			 * @since 1.7.18 (was bookacti_fill_template_tab_agenda)
-			 * @version 1.13.0
+			 * @version 1.15.0
 			 * @param array $params
 			 */
 			function bookacti_fill_template_tab_editor( $params = array() ) {
@@ -301,10 +301,10 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 				do_action( 'bookacti_template_tab_editor_before', $params );
 			?>
 				<fieldset>
-					<legend><?php esc_html_e( 'Agenda views', 'booking-activities' ); ?></legend>
+					<legend><?php esc_html_e( 'Time Grid views', 'booking-activities' ); ?></legend>
 					<?php
-						$agenda_fields = array( 'minTime', 'maxTime', 'snapDuration' );
-						$fields = apply_filters( 'bookacti_template_tab_editor_agenda_fields', bookacti_get_fullcalendar_fields_default_data( $agenda_fields ) );
+						$timeGrid_fields = array( 'slotMinTime', 'slotMaxTime', 'snapDuration' );
+						$fields = apply_filters( 'bookacti_template_tab_editor_time_grid_fields', bookacti_get_fullcalendar_fields_default_data( $timeGrid_fields ) );
 						bookacti_display_fields( $fields );
 					?>
 				</fieldset>

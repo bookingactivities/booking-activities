@@ -166,19 +166,18 @@ add_filter( 'bookacti_is_total_price_field_used', '__return_true' );
 /**
  * Add an icon before WC unsupported form field in form editor
  * @since 1.5.0
- * @version 1.14.0
+ * @version 1.15.0
+ * @param string $field_title
  * @param array $field_data
- * @param array $raw_field_data
- * @param string $context
  * @return array
  */
-function bookacti_form_editor_wc_field_title( $field_data, $raw_field_data, $context ) {
-	if( $context === 'edit' && in_array( $field_data[ 'name' ], bookacti_get_wc_unsupported_form_fields(), true ) ) {
-		$field_data[ 'title' ] = '<span class="bookacti-wc-icon-not-supported"></span>' . $field_data[ 'title' ];
+function bookacti_form_editor_wc_field_title( $field_title, $field_data ) {
+	if( ! bookacti_wc_is_form_field_supported( $field_data ) ) {
+		$field_title = '<span class="bookacti-wc-icon-not-supported"></span>' . $field_title;
 	}
-	return $field_data;
+	return $field_title;
 }
-add_filter( 'bookacti_formatted_field_data', 'bookacti_form_editor_wc_field_title', 10, 3 );
+add_filter( 'bookacti_form_editor_field_title', 'bookacti_form_editor_wc_field_title', 10, 2 );
 
 
 /**

@@ -2,7 +2,7 @@
 /**
  * Form editor dialogs
  * @since 1.5.0
- * @version 1.14.0
+ * @version 1.15.0
  */
 
 // Exit if accessed directly
@@ -375,7 +375,7 @@ foreach( $fields_default as $field_name => $field_data ) {
 		/**
 		 * Display the content of the "Calendar" tab of the "Calendar" dialog
 		 * @since 1.5.0
-		 * @version 1.13.0
+		 * @version 1.15.0
 		 * @param array $params
 		 */
 		function bookacti_fill_calendar_dialog_calendar_tab( $params ) {
@@ -384,7 +384,7 @@ foreach( $fields_default as $field_name => $field_data ) {
 		<fieldset id='bookacti-working-time-fieldset'>
 			<legend><?php esc_html_e( 'Working time', 'booking-activities' ); ?></legend>
 			<?php 
-				$fields = bookacti_get_fullcalendar_fields_default_data( array( 'minTime', 'maxTime' ) );
+				$fields = bookacti_get_fullcalendar_fields_default_data( array( 'slotMinTime', 'slotMaxTime' ) );
 				bookacti_display_fields( $fields );
 			?>
 		</fieldset>
@@ -1227,7 +1227,7 @@ foreach( $fields_default as $field_name => $field_data ) {
 				bookacti_update_metadata( 'form', $form_id, array( 'secret_key' => $secret_key ) );
 			}
 			
-			$ical_url = esc_url( home_url( '?action=bookacti_export_form_events&filename=booking-activities-events-form-' . $form_id . '&form_id=' . $form_id . '&key=' . $secret_key . '&past_events=auto&lang=' . $lang ) );
+			$ical_url = esc_url( home_url( '?action=bookacti_export_form_events&filename=booking-activities-events-form-' . $form_id . '&form_id=' . $form_id . '&key=' . $secret_key . '&past_events=auto&locale=' . $lang ) );
 			
 			$gcal_import_ical = '<a href="https://support.google.com/calendar/answer/37118" target="_blank">' . esc_html_x( 'import', 'verb', 'booking-activities' ) . '</a>';
 			$gcal_sync_ical   = '<a href="https://support.google.com/calendar/answer/37100" target="_blank">' . esc_html_x( 'sync', 'verb', 'booking-activities' ) . '</a>';

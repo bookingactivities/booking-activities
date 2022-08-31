@@ -527,9 +527,9 @@ function bookacti_display_compulsory_quantity_form_field( $fields, $form, $insta
 	// If there is no "quantity" input, add a default hidden quantity input
 	if( ! in_array( 'quantity', $fields_types, true ) && ( in_array( 'submit', $fields_types, true ) || $form_action_trigger = 'on_event_click' ) ) {
 		$field = bookacti_get_default_form_fields_data( 'quantity' );
-		$field[ 'id' ]		= 'bookacti-compulsory-quantity-field';
-		$field[ 'class' ]	.= ' bookacti-hidden-field';
-		$field[ 'value' ]	= ! empty( $_REQUEST[ 'quantity' ] ) && is_numeric( $_REQUEST[ 'quantity' ] ) ? intval( $_REQUEST[ 'quantity' ] ) : 1;
+		$field[ 'id' ]     = 'bookacti-compulsory-quantity-field';
+		$field[ 'class' ] .= ' bookacti-hidden-field';
+		$field[ 'value' ]  = ! empty( $_REQUEST[ 'quantity' ] ) && is_numeric( $_REQUEST[ 'quantity' ] ) ? intval( $_REQUEST[ 'quantity' ] ) : 1;
 		$fields[] = $field;
 	}
 	

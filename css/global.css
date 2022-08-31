@@ -8,6 +8,7 @@
 .select2-dropdown			{ z-index: 3999999 !important; }
 .bookacti-user-selectbox + .select2-container .select2-selection--single { margin: 0; }
 .bookacti-wc-products-selectbox + .select2-container .select2-selection--single { margin: 0; }
+.bookacti-form-field-container .select2-container--default .select2-selection--single { border-radius: 0; }
 
 /* Radio box */
 .bookacti-custom-radio-button		{ display: inline-block; margin: 0 0.5em 0.5em 0; }
@@ -19,7 +20,6 @@
 	border-radius: 0.25em;
 	border: 1px solid rgba( 0, 0, 0, 0.1 );
 	background: #f5f5f5;
-	box-shadow: inset 0 -2px 0 rgba( 0, 0, 0, 0.22 );
 	transition: 0.3s;
 	-webkit-user-select: none;
 	   -moz-user-select: none;
@@ -29,12 +29,6 @@
 .bookacti-custom-radio-button label:hover {
 	background: #efefef;
 	color: #101010;
-	box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.32);
-}
-.bookacti-custom-radio-button label:active {
-	-webkit-transform: translateY( 2px );
-			transform: translateY( 2px );
-	box-shadow: inset 0px -1px 0 rgba(0, 0, 0, 0.22);
 }
 @media ( max-width: 40em ) {
 	.bookacti-custom-radio-button		{ margin: 0.5em 0.5em 0 0; }
@@ -42,12 +36,14 @@
 }
 .bookacti-custom-radio-button input:checked + label			{ background: #52b7e9; color: #fff; }
 .bookacti-custom-radio-button input:checked + label:hover	{ background: #1e8cbe; }
-.bookacti-custom-radio-button::before				{ content: attr(data-separator); margin-right: 0.5em; }
-.bookacti-custom-radio-button:first-child::before	{ content: none; }
+.bookacti-custom-radio-button::before             { content: attr(data-separator); margin-right: 0.5em; }
+.rtl .bookacti-custom-radio-button::before        { margin-right: 0; margin-left: 0.5em; }
+.bookacti-custom-radio-button:first-child::before { content: none; }
 
 /* Tooltip */
 .bookacti-tip-icon        { margin: 0; }
 .bookacti-tip-icon        { padding-left: 5px; }
+.rtl .bookacti-tip-icon   { padding-right: 5px; }
 .bookacti-tip-icon:before { content:'\0043'; font-family: 'booking_activities_icons'; color: #565d61; font-weight: normal; font-size: 14px; cursor: help; vertical-align: middle; }
 
 /* Custom Scrollbar */
@@ -70,38 +66,49 @@
 .bookacti-picked-events-list.bookacti-custom-scrollbar,
 .bookacti-booking-events-list.bookacti-custom-scrollbar { max-height: 200px; overflow: auto; }
 
-.bookacti-picked-group-of-events-list { list-style-type: none; border-left: 1px solid rgba(0,0,0,0.2); padding-left: 10px; margin: 5px 2px 10px 1px; white-space: nowrap; overflow: auto; }
+.bookacti-picked-group-of-events-list      { list-style-type: none; border-left: 1px solid rgba(0,0,0,0.2); padding-left: 10px; margin: 5px 2px 10px 1px; white-space: nowrap; overflow: auto; }
+.rtl .bookacti-picked-group-of-events-list { border-left: none; border-right: 1px solid rgba(0,0,0,0.2); padding-left: 0; padding-right: 10px; margin: 5px 1px 10px 2px; }
 .bookacti-picked-group-of-events-list li:last-child { margin-bottom: 0; }
 
 .bookacti-unpick-event-icon:before { content: '\0044'; font-family: 'booking_activities_icons'; color: #a00; padding-left: 5px; vertical-align: bottom; cursor: pointer; }
 
 /* Choose group dialog */
-.bookacti-group-of-events-list			{ display: none; list-style-type: none; border-left: 1px solid rgba(0,0,0,0.2); padding-left: 10px; margin: 5px 2px 10px 25px; max-height: 200px; white-space: nowrap; overflow: auto; font-size: small; }
-.bookacti-groups-of-events-list > div	{ margin-top: 15px; }
-.bookacti-group-of-events-option label	{ display: inline; margin: 0; padding-left: 10px; }
-.bookacti-group-availability			{ font-size: 0.8em; font-style: italic; }
-.bookacti-group-of-events-option input	{ display: inline-block; margin: 0; }
+.bookacti-group-of-events-list              { display: none; list-style-type: none; border-left: 1px solid rgba(0,0,0,0.2); padding-left: 10px; margin: 5px 2px 10px 25px; max-height: 200px; white-space: nowrap; overflow: auto; font-size: small; }
+.rtl .bookacti-group-of-events-list         { border-left: none; border-right: 1px solid rgba(0,0,0,0.2); padding-left: 0; padding-right: 10px; margin: 5px 25px 10px 2px; }
+.bookacti-groups-of-events-list > div       { margin-top: 15px; }
+.bookacti-group-of-events-option label      { display: inline; margin: 0; padding-left: 10px; }
+.rtl .bookacti-group-of-events-option label { padding-left: 0; padding-right: 10px; }
+.bookacti-group-availability                { font-size: 0.8em; font-style: italic; }
+.bookacti-group-of-events-option input      { display: inline-block; margin: 0; }
 .bookacti-group-of-events-option input[name="group_of_events"][disabled] + label { opacity: 0.5; }
-.bookacti-group-of-events-list .bookacti-booking-event-duration	{ font-size: smaller; font-style: italic; }
-.bookacti-group-of-events-list .bookacti-booking-event-title	{ font-weight: 600; }
+.bookacti-group-of-events-list .bookacti-booking-event-duration { font-size: smaller; font-style: italic; }
+.bookacti-group-of-events-list .bookacti-booking-event-title    { font-weight: 600; }
+
+/* Dialog */
+.bookacti-dialog .ui-widget-header,
+.bookacti-dialog .bookacti-tabs.ui-widget.ui-widget-content,
+.bookacti-dialog .ui-dialog-buttonpane.ui-widget-content,
+.bookacti-dialog .ui-dialog-buttonpane .ui-dialog-buttonset { border: none; }
+.bookacti-dialog .ui-widget-header,
+.bookacti-dialog .ui-tabs .ui-tabs-nav                      { border-bottom: 1px solid #a5a5a5; }
 
 @media screen and ( max-width: 540px ) {
-	.ui-dialog.ui-widget.bookacti-dialog { max-width: 460px; }
+	.bookacti-dialog.ui-dialog.ui-widget { max-width: 460px; }
 }
 
 @media screen and ( max-width: 460px ) {
-	.ui-dialog.ui-widget.bookacti-dialog { max-width: 400px; }
-	.ui-dialog.bookacti-dialog .ui-dialog-content.ui-widget-content	{ padding: .5em; }
-	.ui-dialog.bookacti-dialog .ui-dialog-titlebar.ui-widget-header	{ padding: .4em; }
-	.ui-dialog.bookacti-dialog .ui-dialog-titlebar .ui-dialog-title	{ white-space: normal; }
+	.bookacti-dialog.ui-dialog.ui-widget { max-width: 400px; }
+	.bookacti-dialog.ui-dialog .ui-dialog-content.ui-widget-content	{ padding: .5em; }
+	.bookacti-dialog.ui-dialog .ui-dialog-titlebar.ui-widget-header	{ padding: .4em; }
+	.bookacti-dialog.ui-dialog .ui-dialog-titlebar .ui-dialog-title	{ white-space: normal; }
 	.bookacti-group-of-events-list { margin: 5px 0px 10px 5px; }
 }
 
 @media screen and ( max-width: 400px ) {
-	.ui-dialog.ui-widget.bookacti-dialog { max-width: 360px; }
+	.bookacti-dialog.ui-dialog.ui-widget { max-width: 360px; }
 }
 @media screen and ( max-width: 320px ) {
-	.ui-dialog.ui-widget.bookacti-dialog { max-width: 320px; }
+	.bookacti-dialog.ui-dialog.ui-widget { max-width: 320px; }
 }
 
 
@@ -113,12 +120,11 @@
 
 /** CALENDAR **/
 .bookacti-calendar { width: 100%; }
-.bookacti-calendar .fc-unthemed td.fc-today	{ background: rgba( 220, 193, 6, 0.1 ); }
 .bookacti-calendar table, 
 .bookacti-calendar tr, 
-.bookacti-calendar .fc-agenda-view th, .bookacti-calendar .fc-basic-view th, 
-.bookacti-calendar .fc-agenda-view td, .bookacti-calendar .fc-basic-view td { margin: 0 !important; padding: 0 !important; overflow: visible !important; }
-.bookacti-calendar .fc-time { text-transform: lowercase; }
+.bookacti-calendar .fc-view.fc-timegrid th, .bookacti-calendar .fc-view.fc-daygrid th, 
+.bookacti-calendar .fc-view.fc-timegrid td, .bookacti-calendar .fc-view.fc-daygrid td { margin: 0 !important; padding: 0 !important; overflow: visible !important; }
+.bookacti-calendar .fc-event-time, .bookacti-calendar .fc-timegrid-slot-label { text-transform: lowercase; }
 
 /* Header */
 .bookacti-calendar .fc-toolbar { margin-bottom: 0; }
@@ -126,86 +132,79 @@
 .bookacti-picked-events-list-title	{ font-weight: bolder; }
 
 /* Events */
-.bookacti-calendar .fc-event	{ overflow: hidden; }
+.bookacti-calendar .fc-event { overflow: hidden; }
 .bookacti-calendar .fc-event:not(.bookacti-event-unavailable) { cursor: pointer; }
-.bookacti-event-unavailable		{ opacity: 0.5; }
-.bookacti-picked-event .fc-bg	{ opacity: 0.5; transition: opacity 0.2s; }
-.bookacti-picked-event			{ border-width: 2px; z-index: 15 !important; transition: border 0.2s; }
+.bookacti-calendar .fc-event .fc-event-main { background: rgba( 255, 255, 255, 0.15 ); transition: background 0.2s; }
+.bookacti-calendar .fc-event-time,
+.bookacti-calendar .fc-event-title-container { line-height: 1.3em; }
+.bookacti-calendar .bookacti-event-unavailable { opacity: 0.5; }
+.bookacti-calendar .fc-event.bookacti-picked-event { border-width: 2px; transition: border 0.2s; }
+.bookacti-calendar .fc-event.bookacti-picked-event .fc-event-main { background: rgba( 255, 255, 255, 0.5 ); }
+.bookacti-calendar .fc-timegrid-event.bookacti-event-hidden { display: none; }
+.bookacti-calendar .fc-daygrid-event.bookacti-event-hidden { visibility: hidden; }
 
-.bookacti-calendar .fc-basic-view .fc-event .fc-title		{ display: block; }
-.bookacti-calendar .fc-basic-view .fc-content-skeleton tr	{ background-color: transparent !important; }
-.bookacti-calendar:not( .badp-eventLimit-auto ) .fc-basic-view .bookacti-availability-container { position: relative; text-align: right; }
+.bookacti-calendar .fc-view.fc-daygrid .fc-event .fc-event-title-container,
+.bookacti-calendar .fc-view.fc-daygrid .fc-event .fc-event-title-container,
+.bookacti-calendar .fc-popover .fc-event .fc-event-title,
+.bookacti-calendar .fc-popover .fc-event .fc-event-title { display: block; }
+.bookacti-calendar .fc-view.fc-daygrid .fc-daygrid-body tr,
+.bookacti-calendar .fc-popover .fc-daygrid-body tr	{ background-color: transparent !important; }
 
 .fc-popover .fc-widget-content { max-height: 300px; overflow-y: auto; }
 
-	/* Small events */
-	.bookacti-calendar .fc-agenda-view .bookacti-small-event .fc-title,
-	.bookacti-calendar .fc-agenda-view .bookacti-small-event .fc-time									{ display: inline; }
-	.bookacti-calendar .fc-agenda-view .bookacti-small-event:not(.bookacti-wide-event) .fc-time span	{ display: none; }
-	.bookacti-calendar .fc-agenda-view .bookacti-small-event:not(.bookacti-wide-event) .fc-time:before { content: attr(data-start); }
-	.bookacti-calendar .fc-agenda-view .bookacti-small-event:not(.bookacti-wide-event) .fc-time:after	{ content: "\000A0-\000A0"; }
-	.bookacti-calendar .fc-agenda-view .bookacti-small-event .fc-content								{ white-space: nowrap; }
-	.bookacti-calendar .fc-agenda-view .bookacti-small-event .fc-title									{ font-size: .85em; padding: 0; }
-	.bookacti-calendar .fc-agenda-view .bookacti-small-event.bookacti-wide-event .fc-title				{ padding-left: 5px; }
-	
-	/* Tiny events */
-	.bookacti-calendar .fc-agenda-view .bookacti-tiny-event .fc-title,
-	.bookacti-calendar .fc-agenda-view .bookacti-tiny-event .fc-time															{ display: inline; }
-	.bookacti-calendar .fc-agenda-view .bookacti-tiny-event:not(.bookacti-wide-event) .bookacti-available-places-unit-name,
-	.bookacti-calendar .fc-agenda-view .bookacti-tiny-event:not(.bookacti-wide-event) .bookacti-available-places-avail-particle	{ display: none; }
-	.bookacti-calendar .fc-agenda-view .bookacti-tiny-event .bookacti-availability-container									{ height: 100%; }
-	.bookacti-calendar .fc-agenda-view .bookacti-tiny-event .bookacti-available-places											{ height: 100%; display: block; border-radius: 0; }
-	
-	/* Narrow events */
-	.bookacti-calendar .fc-agenda-view .bookacti-narrow-event.bookacti-tiny-event .fc-time:before,
-	.bookacti-calendar .fc-agenda-view .bookacti-narrow-event.bookacti-tiny-event .fc-time:after,
-	.bookacti-narrow-event .bookacti-available-places-unit-name,
-	.bookacti-narrow-event .bookacti-available-places-avail-particle { display: none; }
+/* Tiny events */
+.bookacti-calendar .fc-view.fc-timegrid .bookacti-tiny-event:not(.bookacti-wide-event) .bookacti-available-places-unit-name,
+.bookacti-calendar .fc-view.fc-timegrid .bookacti-tiny-event:not(.bookacti-wide-event) .bookacti-available-places-avail-particle,
+
+/* Narrow events */
+.bookacti-calendar .fc-view.fc-timegrid .bookacti-narrow-event .bookacti-event-time-separator,
+.bookacti-calendar .fc-view.fc-timegrid .bookacti-narrow-event .bookacti-event-time-end,
+.bookacti-calendar .bookacti-narrow-event .bookacti-available-places-unit-name,
+.bookacti-calendar .bookacti-narrow-event .bookacti-available-places-avail-particle { display: none; }
 	
 	
 /* Availability */
-.bookacti-availability-container  { 
-	white-space: nowrap;
-	display: block;
-	position: absolute;
-	bottom: 0;
-	right: -2px;
-	z-index: 5;
-	overflow: hidden;
-}
-.bookacti-availability-container .bookacti-available-places { 
-	padding: 2px 3px;
-	background-color: #000;
-	color: #fff;
-	text-align: right;
-	font-size: 0.85em;
-}
-.bookacti-availability-container > span								{ -webkit-border-radius: 3px 0 0 3px; border-radius: 3px 0 0 3px; }
-.bookacti-availability-container .bookacti-bookings					{ padding: 1px 0 1px 1px; }
-.bookacti-availability-container .bookacti-total-availability		{ padding: 1px 1px 1px 0; }
+.bookacti-availability-container                                   { white-space: nowrap; display: block; position: absolute; bottom: 0; right: 0; z-index: 5; overflow: hidden; }
+.bookacti-availability-container .bookacti-available-places        { height: 100%; padding: 2px 3px; line-height: 1.2em; background-color: #000; color: #fff; text-align: right; font-size: 0.85em; border-radius: 3px 0 0 0; }
+.bookacti-availability-container .bookacti-bookings                { padding: 1px 0 1px 1px; }
+.bookacti-availability-container .bookacti-total-availability      { padding: 1px 1px 1px 0; }
 .bookacti-availability-container .bookacti-active-bookings-number,
-.bookacti-availability-container .bookacti-available-places-number	{ font-weight: bold; font-size: larger; }
-.bookacti-availability-container.bookacti-hide-availability			{ display: none; }
+.bookacti-availability-container .bookacti-available-places-number { font-weight: bold; font-size: larger; }
+.bookacti-availability-container.bookacti-hide-availability        { display: none; }
+.bookacti-available-places-avail-particle::before                  { content: ' '; }
 
 .bookacti-available-places.bookacti-booked, 
-.bookacti-available-places.bookacti-not-booked		{ background-color: rgba(0, 0, 0, 0.4); }
+.bookacti-available-places.bookacti-not-booked      { background-color: rgba( 0, 0, 0, 0.4 ); }
 .bookacti-available-places.bookacti-full, 
-.bookacti-available-places.bookacti-no-availability	{ background-color: rgba(255, 0, 0, 0.4); }
+.bookacti-available-places.bookacti-no-availability { background-color: rgba( 255, 0, 0, 0.4 ); }
 
-.bookacti-events-overlap .bookacti-availability-container		{ right: auto; left: -2px; }
-.bookacti-events-overlap .bookacti-availability-container > span{ -webkit-border-radius: 0 3px 3px 0; border-radius: 0 3px 3px 0; }
+.rtl .bookacti-availability-container { right: auto; left: 0; }
+.rtl .bookacti-availability-container .bookacti-available-places { border-radius: 0 3px 0 0; }
 
 /* Loading */
-.bookacti-loading-overlay	{ position: absolute; width: 100%; height: 100%; top: 0; left: 0; background: rgba( 0, 0, 0, 0.6 ); z-index: 10; overflow: hidden; }
-.bookacti-loading-content	{ position: relative; top: 50%; left: 50%; margin: -60px 0 0 -60px; z-index: 10; }
-.bookacti-loading-box		{ -webkit-border-radius: 6px; border-radius: 6px; width: 120px; height: 120px; background: rgba( 0, 0, 0, 0.6 ); text-align: center; }
-.bookacti-loading-image		{ box-sizing: border-box; padding: 25px 0 20px 0; width: 100%; }
-.bookacti-loader			{ width: 32px; height: 32px; vertical-align: middle; }
-.bookacti-loading-text		{ color: #fff; font-size: 0.8em; }
-.bookacti-loading-alt		{ width: fit-content; margin: 30px auto; }
-.bookacti-loading-alt-text	{ margin-left: 10px; vertical-align: middle; font-size: 0.9em; }
+.bookacti-loading-container   { display: inline-block; box-sizing: border-box; width: 100%; padding: 10px 20px; white-space: nowrap; text-align: center; }
+.bookacti-loading-image,
+.bookacti-loading-text        { display: inline-block; vertical-align: middle; }
+.bookacti-loading-text        { margin-left: 1em; text-transform: uppercase; }
+.rtl .bookacti-loading-text   { margin-left: 0; margin-right: 1em; }
+.bookacti-loading-text::after { content: '\2026'; }
 
-.bookacti-form-field-name-submit .bookacti-loading-alt { margin-bottom: 0; }
+.bookacti-spinner         { position: relative; display: block; box-sizing: border-box; width: 20px; height: 30px; animation: bookacti-spinner-rotate 1.5s infinite ease-in-out; }
+.bookacti-spinner::after,
+.bookacti-spinner::before { content: ''; position: absolute; box-sizing: border-box; top: 0; left: 0; width: 16px; height: 16px; border-radius: 10%; transform: translate( 0, 14px ); background-color: rgba( 82, 183, 233, 0.85 ); animation: bookacti-spinner-pulse 1.5s infinite ease-in-out; z-index: 20; }
+.bookacti-spinner::after  { transform: translate( 4px, 0 ); background-color: #565D61;  z-index: 18; }
+
+@keyframes bookacti-spinner-rotate { 0% { transform: rotate( 0 ); } 100% { transform: rotate( 360deg ); } }
+@keyframes bookacti-spinner-pulse  { 50% { transform: scale( 0.75 ) translate( 2px, 50% ); } }
+
+.bookacti-loading-overlay         { position: absolute; width: 100%; height: 100%; top: 0; left: 0; background: rgba( 0, 0, 0, 0.6 ); z-index: 10; overflow: hidden; }
+.bookacti-loading-overlay-content { position: absolute; top: 50%; width: 100%; transform: translate( 0, -50% ); text-align: center; z-index: 10; }
+
+.bookacti-loading-overlay .bookacti-loading-container { border-radius: 3px; background: rgba( 0, 0, 0, 0.6 ); }
+.bookacti-loading-overlay .bookacti-loading-text      { color: #F5F5F5; }
+.bookacti-loading-overlay .bookacti-spinner::after    { background-color: #F5F5F5; }
+
+.bookacti-form-field-name-submit .bookacti-loading-container { margin-bottom: 0; }
 
 
 
@@ -213,7 +212,13 @@
 /** RESPONSIVE DESIGN **/
 
 /* Smartphone only */
-@media screen and ( max-width: 480px ){
+@media screen and ( max-width: 480px ) {
 	/* Calendar */
 	.bookacti-calendar .fc-today-button { display: none; }
+	
+	/* Loading */
+	.bookacti-loading-container { white-space: normal; }
+	.bookacti-loading-image,
+	.bookacti-loading-text      { display: block; margin: auto;  }
+	.bookacti-spinner           { display: inline-block;  }
 }

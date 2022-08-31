@@ -13,7 +13,7 @@ $j( document ).ready( function() {
 /**
  * Perform WC form action
  * @since 1.7.19
- * @version 1.10.1
+ * @version 1.15.0
  * @param {HTMLElement} booking_system
  */
 function bookacti_wc_perform_form_action( booking_system ) {
@@ -42,14 +42,14 @@ function bookacti_wc_perform_form_action( booking_system ) {
 	}
 	
 	var group_id = parseInt( attributes[ 'picked_events' ][ 0 ][ 'group_id' ] );
-	var event = attributes[ 'picked_events' ][ 0 ];
+	var picked_event = attributes[ 'picked_events' ][ 0 ];
 	
 	// Redirect to activity / group category URL
 	if( form_action === 'redirect_to_product_page' ) {
 		if( group_id > 0 ) {
 			bookacti_redirect_to_group_category_product_page( booking_system, group_id );
 		} else {
-			bookacti_redirect_to_activity_product_page( booking_system, event.id );
+			bookacti_redirect_to_activity_product_page( booking_system, picked_event.id );
 		}
 	}
 	
@@ -124,7 +124,7 @@ function bookacti_redirect_to_group_category_product_page( booking_system, group
 /**
  * Add a product to cart from a booking form
  * @since 1.7.0
- * @version 1.12.5
+ * @version 1.15.0
  * @param {HTMLElement} booking_system
  */
 function bookacti_add_product_to_cart_via_booking_system( booking_system ) {
@@ -168,16 +168,10 @@ function bookacti_add_product_to_cart_via_booking_system( booking_system ) {
 		return false;
 	}
 	
-	// Display a loader after the submit button too
-	if( submit_button.length ) { 
-		var loading_div = '<div class="bookacti-loading-alt">' 
-						+ '<img class="bookacti-loader" src="' + bookacti_localized.plugin_path + '/img/ajax-loader.gif" title="' + bookacti_localized.loading + '" />'
-						+ '<span class="bookacti-loading-alt-text" >' + bookacti_localized.loading + '</span>'
-					+ '</div>';
-		submit_button.after( loading_div );
-	}
-	
 	bookacti_start_loading_booking_system( booking_system );
+	
+	// Display a loader after the submit button too
+	if( submit_button.length ) { bookacti_add_loading_html( submit_button, 'after' ); }
 	
 	$j.ajax({
 		url: bookacti_localized.ajaxurl,
@@ -231,8 +225,7 @@ function bookacti_add_product_to_cart_via_booking_system( booking_system ) {
         },
         complete: function() {
 			if( submit_button.length ) { 
-				submit_button.next( '.bookacti-loading-alt' ).remove();
-				// Re-enable the submit button
+				bookacti_remove_loading_html( submit_button.parent() );
 				submit_button.prop( 'disabled', false );
 			}
 			bookacti_stop_loading_booking_system( booking_system );

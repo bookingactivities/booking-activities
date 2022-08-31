@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Get a booking system based on given parameters
- * @version 1.12.0
+ * @version 1.15.0
  * @param array $atts (see bookacti_format_booking_system_attributes())
  * @return string
  */
@@ -59,13 +59,7 @@ function bookacti_get_booking_system( $atts ) {
 		
 		<div id='<?php echo esc_attr( $booking_system_data[ 'id' ] ); ?>' class='bookacti-booking-system <?php echo esc_attr( $booking_system_data[ 'class' ] ); ?>' >
 			<?php echo bookacti_get_booking_method_html( $booking_system_data[ 'method' ], $booking_system_data ); 
-			if( $booking_system_data[ 'auto_load' ] ) { 
-			?>
-			<div class='bookacti-loading-alt'> 
-				<img class='bookacti-loader' src='<?php echo plugins_url() . '/' . BOOKACTI_PLUGIN_NAME; ?>/img/ajax-loader.gif' title='<?php esc_html_e( 'Loading', 'booking-activities' ); ?>' />
-				<span class='bookacti-loading-alt-text' ><?php esc_html_e( 'Loading', 'booking-activities' ); ?></span>
-			</div>
-			<?php } ?>
+			if( $booking_system_data[ 'auto_load' ] ) { echo bookacti_get_loading_html(); } ?>
 		</div>
 		
 		<?php do_action( 'bookacti_after_booking_system', $atts, $booking_system_data ); ?>
@@ -135,7 +129,7 @@ function bookacti_get_booking_system_data( $atts ) {
 	$start_dt = new DateTime( $booking_system_data[ 'start' ] );
 	$end_dt   = new DateTime( $booking_system_data[ 'end' ] );
 	if( $start_dt >= $end_dt ) { 
-		$booking_system_data[ 'no_events' ] = 1; 
+		$booking_system_data[ 'no_events' ] = 1;
 		$booking_system_data[ 'start' ] = $booking_system_data[ 'end' ] = $now;
 	}
 	
@@ -364,7 +358,7 @@ function bookacti_get_booking_system_default_attributes() {
 
 /**
  * Check booking system attributes and format them to be correct
- * @version 1.13.0
+ * @version 1.15.0
  * @param array $raw_atts 
  * @return array
  */
@@ -433,7 +427,7 @@ function bookacti_format_booking_system_attributes( $raw_atts = array() ) {
 	$activities	= is_array( $activities ) ? array_values( array_unique( $activities ) ) : $defaults[ 'activities' ];
 	
 	// Check if the desired templates are active and allowed
-	$available_template_ids = array_keys( bookacti_fetch_templates( array(), true ) );
+	$available_template_ids = array_keys( bookacti_fetch_templates( array(), 0 ) );
 	// Remove unauthorized templates
 	$had_templates = ! empty( $calendars );
 	$bypass_template_managers_check = apply_filters( 'bookacti_bypass_template_managers_check', false );
@@ -765,12 +759,13 @@ function bookacti_get_calendar_field_booking_system_attributes( $calendar_field 
 /**
  * Get booking system default display data
  * @since 1.7.17
+ * @version 1.15.0
  * @return array
  */
 function bookacti_get_booking_system_default_display_data() {
 	return apply_filters( 'bookacti_booking_system_default_display_data', array(
-		'minTime'	=> '00:00',
-		'maxTime'	=> '00:00'
+		'slotMinTime'	=> '00:00',
+		'slotMaxTime'	=> '00:00'
 	));
 }
 
@@ -778,7 +773,7 @@ function bookacti_get_booking_system_default_display_data() {
 /**
  * Format booking system display data
  * @since 1.7.17
- * @version 1.9.3
+ * @version 1.15.0
  * @param array $raw_display_data
  * @return array
  */
@@ -793,13 +788,13 @@ function bookacti_format_booking_system_display_data( $raw_display_data ) {
 		else if( ! isset( $raw_display_data[ $key ] ) ) { $display_data[ $key ] = $default_value; }
 	}
 	
-	// Format 24-h times: minTime (up to 23:59) and maxTime (up to 47:59 to display calendars overnight)
-	if( ! preg_match( '/^([0-1][0-9]|2[0-3]):([0-5][0-9])$/', $display_data[ 'minTime' ] ) ){ $display_data[ 'minTime' ] = $default_data[ 'minTime' ]; }
-	if( ! preg_match( '/^([0-3][0-9]|4[0-7]):([0-5][0-9])$/', $display_data[ 'maxTime' ] ) ){ $display_data[ 'maxTime' ] = $default_data[ 'maxTime' ]; }
+	// Format 24-h times: slotMinTime (up to 23:59) and slotMaxTime (up to 47:59 to display calendars overnight)
+	if( ! preg_match( '/^([0-1][0-9]|2[0-3]):([0-5][0-9])$/', $display_data[ 'slotMinTime' ] ) ) { $display_data[ 'slotMinTime' ] = $default_data[ 'slotMinTime' ]; }
+	if( ! preg_match( '/^([0-3][0-9]|4[0-7]):([0-5][0-9])$/', $display_data[ 'slotMaxTime' ] ) ) { $display_data[ 'slotMaxTime' ] = $default_data[ 'slotMaxTime' ]; }
 	
-	// If minTime >= maxTime, add one day to maxTime
-	if( intval( str_replace( ':', '', $display_data[ 'minTime' ] ) ) >= intval( str_replace( ':', '', $display_data[ 'maxTime' ] ) ) ) { 
-		$display_data[ 'maxTime' ] = str_pad( 24 + ( intval( substr( $display_data[ 'maxTime' ], 0, 2 ) ) % 24 ), 2, '0', STR_PAD_LEFT ) . substr( $display_data[ 'maxTime' ], 2 );
+	// If slotMinTime >= slotMaxTime, add one day to slotMaxTime
+	if( intval( str_replace( ':', '', $display_data[ 'slotMinTime' ] ) ) >= intval( str_replace( ':', '', $display_data[ 'slotMaxTime' ] ) ) ) { 
+		$display_data[ 'slotMaxTime' ] = str_pad( 24 + ( intval( substr( $display_data[ 'slotMaxTime' ], 0, 2 ) ) % 24 ), 2, '0', STR_PAD_LEFT ) . substr( $display_data[ 'slotMaxTime' ], 2 );
 	}
 	
 	return apply_filters( 'bookacti_formatted_booking_system_display_data', $display_data, $raw_display_data );
@@ -809,7 +804,7 @@ function bookacti_format_booking_system_display_data( $raw_display_data ) {
 /**
  * Sanitize booking system display data
  * @since 1.7.17
- * @version 1.9.3
+ * @version 1.15.0
  * @param array $raw_display_data
  * @return array
  */
@@ -817,8 +812,8 @@ function bookacti_sanitize_booking_system_display_data( $raw_display_data ) {
 	// Get the default values
 	$default_data = bookacti_get_booking_system_default_display_data();
 	
-	// When sanitizing maxTime, the max input value is 23:59
-	if( isset( $raw_display_data[ 'maxTime' ] ) && ! preg_match( '/^([0-1][0-9]|2[0-3]):([0-5][0-9])$/', $raw_display_data[ 'maxTime' ] ) ) { $raw_display_data[ 'maxTime' ] = $default_data[ 'maxTime' ]; }
+	// When sanitizing slotMaxTime, the max input value is 23:59
+	if( isset( $raw_display_data[ 'slotMaxTime' ] ) && ! preg_match( '/^([0-1][0-9]|2[0-3]):([0-5][0-9])$/', $raw_display_data[ 'slotMaxTime' ] ) ) { $raw_display_data[ 'slotMaxTime' ] = $default_data[ 'slotMaxTime' ]; }
 	
 	// Sanitizing these values happens to be the same process as formatting for now, but it may not always be true
 	$display_data = bookacti_format_booking_system_display_data( $raw_display_data );
@@ -890,7 +885,7 @@ function bookacti_format_booking_system_url_attributes( $atts = array() ) {
 /**
  * Get booking system fields default data
  * @since 1.5.0
- * @version 1.14.0
+ * @version 1.15.0
  * @param array $fields
  * @return array
  */
@@ -901,7 +896,7 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 	// Calendars
 	if( ! $fields || in_array( 'calendars', $fields, true ) ) {
 		// Format template options array
-		$templates = bookacti_fetch_templates();
+		$templates = bookacti_get_templates_data();
 		$templates_options = array();
 		foreach( $templates as $template ) {
 			$templates_options[ $template[ 'id' ] ] = $template[ 'title' ];
@@ -1174,7 +1169,7 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 /**
  * Get additional calendar fields default data
  * @since 1.13.0 (was bookacti_get_calendar_fields_default_data)
- * @version 1.14.0
+ * @version 1.15.0
  * @param array $fields
  * @return array
  */
@@ -1183,40 +1178,40 @@ function bookacti_get_fullcalendar_fields_default_data( $fields = array() ) {
 	$defaults = array();
 
 	// Day Begin
-	if( ! $fields || in_array( 'minTime', $fields, true ) ) {
-		$defaults[ 'minTime' ] = array(
-			'type'			=> 'time',
-			'name'			=> 'minTime',
-			'value'			=> '00:00',
-			/* translators: Refers to the first hour displayed on calendar. More information: http://fullcalendar.io/docs/agenda/minTime/ */
-			'title'			=> esc_html__( 'Day begin', 'booking-activities' ),
-			'tip'			=> esc_html__( 'Set when you want the days to begin on the calendar. E.g.: "06:00" Days will begin at 06:00am.', 'booking-activities' )
+	if( ! $fields || in_array( 'slotMinTime', $fields, true ) ) {
+		$defaults[ 'slotMinTime' ] = array(
+			'type'  => 'time',
+			'name'  => 'slotMinTime',
+			'value' => '00:00',
+			/* translators: Refers to the first hour displayed on calendar. More information: https://fullcalendar.io/docs/slotMinTime */
+			'title' => esc_html__( 'Day begin', 'booking-activities' ),
+			'tip'   => esc_html__( 'Set when you want the days to begin on the calendar. E.g.: "06:00" Days will begin at 06:00am.', 'booking-activities' )
 		);
 	}
 
 	// Day end
-	if( ! $fields || in_array( 'maxTime', $fields, true ) ) {
-		$defaults[ 'maxTime' ] = array(
-			'type'			=> 'time',
-			'name'			=> 'maxTime',
-			'value'			=> '00:00',
-			/* translators: Refers to the last hour displayed on calendar. More information: http://fullcalendar.io/docs/agenda/maxTime/ */
-			'title'			=> esc_html__( 'Day end', 'booking-activities' ),
-			'tip'			=> esc_html__( 'Set when you want the days to end on the calendar. E.g.: "18:00" Days will end at 06:00pm.', 'booking-activities' )
+	if( ! $fields || in_array( 'slotMaxTime', $fields, true ) ) {
+		$defaults[ 'slotMaxTime' ] = array(
+			'type'  => 'time',
+			'name'  => 'slotMaxTime',
+			'value' => '00:00',
+			/* translators: Refers to the last hour displayed on calendar. More information: https://fullcalendar.io/docs/slotMaxTime */
+			'title' => esc_html__( 'Day end', 'booking-activities' ),
+			'tip'   => esc_html__( 'Set when you want the days to end on the calendar. E.g.: "18:00" Days will end at 06:00pm.', 'booking-activities' )
 		);
 	}
 
 	// Snap Duration
 	if( ! $fields || in_array( 'snapDuration', $fields, true ) ) {
 		$defaults[ 'snapDuration' ] = array(
-			'type'			=> 'text',
-			'name'			=> 'snapDuration',
-			'class'			=> 'bookacti-time-field',
-			'placeholder'	=> '23:59',
-			'value'			=> '00:05',
-			/* translators: Refers to the time interval at which a dragged event will snap to the agenda view time grid. E.g.: 00:20', you will be able to drop an event every 20 minutes (at 6:00am, 6:20am, 6:40am...). More information: http://fullcalendar.io/docs/agenda/snapDuration/ */
-			'title'			=> esc_html__( 'Snap frequency', 'booking-activities' ),
-			'tip'			=> esc_html__( 'The time interval at which a dragged event will snap to the agenda view time grid. E.g.: "00:20", you will be able to drop an event every 20 minutes (at 6:00am, 6:20am, 6:40am...).', 'booking-activities' )
+			'type'        => 'text',
+			'name'        => 'snapDuration',
+			'class'       => 'bookacti-time-field',
+			'placeholder' => '23:59',
+			'value'       => '00:05',
+			/* translators: Refers to the time interval at which a dragged event will snap to the time grid. E.g.: 00:20', you will be able to drop an event every 20 minutes (at 6:00am, 6:20am, 6:40am...). More information: http://fullcalendar.io/docs/snapDuration/ */
+			'title'       => esc_html__( 'Snap frequency', 'booking-activities' ),
+			'tip'         => esc_html__( 'The time interval at which a dragged event will snap to the time grid. E.g.: "00:20", you will be able to drop an event every 20 minutes (at 6:00am, 6:20am, 6:40am...).', 'booking-activities' )
 		);
 	}
 
@@ -1955,11 +1950,11 @@ function bookacti_get_events_array_from_db_events( $events, $raw_args = array() 
 		
 		$event_id = ! empty( $event->event_id ) ? intval( $event->event_id ) : ( ! empty( $event->id ) ? intval( $event->id ) : 0 );
 		$event_fc_data = array(
-			'id'    => $event_id,
-			'title' => ! empty( $event->title ) ? apply_filters( 'bookacti_translate_text', $event->title ) : '',
-			'start' => $event->start,
-			'end'   => $event->end,
-			'color' => $event->color
+			'id'      => $event_id,
+			'title'   => ! empty( $event->title ) ? apply_filters( 'bookacti_translate_text', $event->title ) : '',
+			'start'   => $event->start,
+			'end'     => $event->end,
+			'color'   => $event->color
 		);
 
 		$event_bookacti_data = array(
@@ -2848,7 +2843,7 @@ function bookacti_get_availability_period( $absolute_period = array(), $relative
 /**
  * Get booking system trimmed availability period
  * @since 1.13.0
- * @version 1.14.0
+ * @version 1.15.0
  * @param array $booking_system_data
  * @return array
  */
@@ -2858,6 +2853,7 @@ function bookacti_get_booking_system_availability_period( $booking_system_data )
 		'end'      => $booking_system_data[ 'end' ],
 		'end_last' => $booking_system_data[ 'end' ]
 	);
+	$bounding_events = array();
 	
 	// Check if the availability period starts before it ends
 	$start_dt = new DateTime( $availability_period[ 'start' ] );
@@ -2867,7 +2863,6 @@ function bookacti_get_booking_system_availability_period( $booking_system_data )
 	// Trim the availability period
 	else if( $booking_system_data[ 'trim' ] ) {
 		// Get bounding events
-		$bounding_events = array();
 		if( $booking_system_data[ 'groups_only' ] ) {
 			$bounding_groups = ! in_array( 'none', $booking_system_data[ 'group_categories' ], true ) ? bookacti_get_groups_of_events( array( 'templates' => $booking_system_data[ 'calendars' ], 'group_categories' => $booking_system_data[ 'group_categories' ], 'interval' => $availability_period, 'interval_started' => 1, 'past_events' => $booking_system_data[ 'past_events' ], 'data_only' => 1 ) ) : array();
 			$bounding_events = bookacti_get_bounding_events_from_groups_of_events_heuristic( $bounding_groups, array( 'past_events' => $booking_system_data[ 'past_events' ], 'interval' => $availability_period ) );
@@ -2930,7 +2925,7 @@ function bookacti_get_booking_system_availability_period( $booking_system_data )
 		} else { $availability_period[ 'start' ] = $availability_period[ 'end_last' ] = $availability_period[ 'end' ]; }
 	}
 	
-	return apply_filters( 'bookacti_booking_system_availability_period', $availability_period, $booking_system_data );
+	return apply_filters( 'bookacti_booking_system_availability_period', $availability_period, $booking_system_data, $bounding_events );
 }
 
 

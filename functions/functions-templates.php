@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Get booking system data
  * @since 1.7.4
- * @version 1.13.0
+ * @version 1.15.0
  * @param array $atts (see bookacti_format_booking_system_attributes())
  * @param int $template_id
  * @return array
@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 	$booking_system_data = $atts;
 	$groups = bookacti_get_groups_of_events( array( 'templates' => array( $template_id ), 'nb_events' => array(), 'past_events' => 1, 'data_only' => 1 ) );
-	$templates_data = bookacti_get_templates_data( $template_id, true );
+	$template_data = bookacti_get_template_data( $template_id );
 	
 	$booking_system_data[ 'calendars' ]				= array( $template_id );
 	$booking_system_data[ 'events' ]				= array();
@@ -28,9 +28,9 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 	$booking_system_data[ 'group_categories_data' ]	= bookacti_get_group_categories( array( 'templates' => array( $template_id ) ) );
 	$booking_system_data[ 'start' ]					= '1970-02-01 00:00:00';
 	$booking_system_data[ 'end' ]					= '2037-12-31 23:59:59';
-	$booking_system_data[ 'display_data' ]			= $templates_data[ $template_id ][ 'settings' ];
-	$booking_system_data[ 'template_data' ]			= $templates_data[ $template_id ];
-
+	$booking_system_data[ 'display_data' ]			= $template_data[ 'settings' ];
+	$booking_system_data[ 'template_data' ]			= $template_data;
+	
 	return apply_filters( 'bookacti_editor_booking_system_data', $booking_system_data, $atts );
 }
 
@@ -128,7 +128,7 @@ function bookacti_get_activity_managers( $activity_ids ) {
 
 /**
  * Retrieve template activities list
- * @version 1.14.0
+ * @version 1.15.0
  * @param array $activities see bookacti_get_activities_by_template
  * @param int $template_id
  * @return string 
@@ -150,18 +150,19 @@ function bookacti_get_template_activities_list( $activities, $template_id = 0 ) 
 	ob_start();
 	foreach( $ordered_activities as $activity ) {
 		$title = $activity[ 'title' ];
+		$duration = $activity[ 'duration' ] ? $activity[ 'duration' ] : '000.01:00:00';
 		?>
 		<div class='bookacti-activity' data-activity-id='<?php echo esc_attr( $activity[ 'id' ] ); ?>'>
 			<div class='bookacti-activity-visibility dashicons dashicons-visibility' data-activity-visible='1'></div>
 			<div class='bookacti-activity-container'>
 				<div
-					class='fc-event ui-draggable ui-draggable-handle'
-					data-event='{"title": "<?php echo htmlentities( esc_attr( $title ), ENT_QUOTES ); ?>", "activity_id": "<?php echo esc_attr( $activity[ 'id' ] ); ?>", "color": "<?php echo esc_attr( $activity[ 'color' ] ); ?>", "stick":"true"}' 
+					class='bookacti-activity-draggable'
+					data-event='{"title": "<?php echo htmlentities( esc_attr( $title ), ENT_QUOTES ); ?>", "duration": "<?php echo esc_attr( $duration ); ?>", "color": "<?php echo esc_attr( $activity[ 'color' ] ); ?>", "extendedProps": { "activity_id": <?php echo intval( $activity[ 'id' ] ); ?> } }' 
 					data-activity-id='<?php echo esc_attr( $activity[ 'id' ] ); ?>'
-					data-duration='<?php echo esc_attr( $activity[ 'duration' ] ? $activity[ 'duration' ] : '000.01:00:00' ); ?>'
+					data-duration='<?php echo esc_attr( $duration ); ?>'
 					title='<?php esc_attr_e( $title ); ?>'
 					style='border-color:<?php echo esc_attr( $activity[ 'color' ] ); ?>; background-color:<?php echo esc_attr( $activity[ 'color' ] ); ?>'
-					>
+				>
 					<?php echo $title; ?>
 				</div>
 			</div>
@@ -184,15 +185,40 @@ function bookacti_get_template_activities_list( $activities, $template_id = 0 ) 
 // TEMPLATES
 
 /**
- * Get templates data
- * @since 1.7.3 (was bookacti_fetch_templates)
- * @param array $template_ids
- * @param boolean $ignore_permissions
- * @param int $user_id
+ * Get template data
+ * @since 1.15.0
+ * @param int $template_id
+ * @param boolean $raw
+ * @param int $user_id User ID to check the permissions for. -1 for current user (default). 0 to ignore permission. 
  * @return array
  */
-function bookacti_get_templates_data( $template_ids = array(), $ignore_permissions = false, $user_id = 0 ) {
-	$templates = bookacti_fetch_templates( $template_ids, $ignore_permissions, $user_id );
+function bookacti_get_template_data( $template_id, $raw = false, $user_id = -1 ) {
+	$template  = array();
+	$templates = bookacti_fetch_templates( $template_id, $user_id );
+	
+	if( isset( $templates[ $template_id ] ) ) { 
+		$template_meta     = bookacti_get_metadata( 'template', $template_id );
+		$template_managers = bookacti_get_managers( 'template', $template_id );
+		$template_meta     = is_array( $template_meta ) ? $template_meta : array();
+		$template          = ! $raw ? bookacti_format_template_data( array_merge( $templates[ $template_id ], $template_meta ) ) : array_merge( $templates[ $template_id ], $template_meta );
+		$template[ 'admin' ] = ! empty( $template_managers ) ? ( ! $raw ? bookacti_ids_to_array( $template_managers ) : $template_managers ) : array();
+	}
+
+	return $template;
+}
+
+
+/**
+ * Get templates data
+ * @since 1.7.3
+ * @version 1.15.0
+ * @param array $template_ids
+ * @param boolean $raw
+ * @param int $user_id User ID to check the permissions for. -1 for current user (default). 0 to ignore permission. 
+ * @return array
+ */
+function bookacti_get_templates_data( $template_ids = array(), $raw = false, $user_id = -1 ) {
+	$templates = bookacti_fetch_templates( $template_ids, $user_id );
 
 	$retrieved_template_ids = array_keys( $templates );
 
@@ -200,8 +226,9 @@ function bookacti_get_templates_data( $template_ids = array(), $ignore_permissio
 	$templates_managers = bookacti_get_managers( 'template', $retrieved_template_ids );
 
 	foreach( $templates as $template_id => $template ) {
-		$templates[ $template_id ][ 'settings' ] = isset( $templates_meta[ $template_id ] ) ? $templates_meta[ $template_id ] : array();
-		$templates[ $template_id ][ 'admin' ]    = isset( $templates_managers[ $template_id ] ) ? $templates_managers[ $template_id ] : array();
+		$template_meta = isset( $templates_meta[ $template_id ] ) ? $templates_meta[ $template_id ] : array();
+		$templates[ $template_id ] = ! $raw ? bookacti_format_template_data( array_merge( $template, $template_meta ) ) : array_merge( $template, $template_meta );
+		$templates[ $template_id ][ 'admin' ] = ! empty( $templates_managers[ $template_id ] ) ? ( ! $raw ? bookacti_ids_to_array( $templates_managers[ $template_id ] ) : $templates_managers[ $template_id ] ) : array();
 	}
 
 	return $templates;
@@ -211,31 +238,31 @@ function bookacti_get_templates_data( $template_ids = array(), $ignore_permissio
 /**
  * Get a unique template setting made from a combination of multiple template settings
  * @since 1.2.2 (was bookacti_get_mixed_template_settings)
- * @version 1.13.0
+ * @version 1.15.0
  * @param array $template_ids Array of template ids
  * @return array
  */
 function bookacti_get_mixed_template_data( $template_ids ) {
-	$templates_data = bookacti_get_templates_data( $template_ids, true );
+	$templates_data = bookacti_get_templates_data( $template_ids );
 	$mixed_data = array();
 	$mixed_settings	= array();
 
 	foreach( $templates_data as $template_data ){
 		$settings = $template_data[ 'settings' ];
-		if( isset( $settings[ 'minTime' ] ) ) {
+		if( isset( $settings[ 'slotMinTime' ] ) ) {
 			// Keep the lower value
-			if(  ! isset( $mixed_settings[ 'minTime' ] ) 
-				|| isset( $mixed_settings[ 'minTime' ] ) && intval( str_replace( ':', '', $settings[ 'minTime' ] ) ) < intval( str_replace( ':', '', $mixed_settings[ 'minTime' ] ) ) ) {
+			if(  ! isset( $mixed_settings[ 'slotMinTime' ] ) 
+				|| isset( $mixed_settings[ 'slotMinTime' ] ) && intval( str_replace( ':', '', $settings[ 'slotMinTime' ] ) ) < intval( str_replace( ':', '', $mixed_settings[ 'slotMinTime' ] ) ) ) {
 
-				$mixed_settings[ 'minTime' ] = $settings[ 'minTime' ];
+				$mixed_settings[ 'slotMinTime' ] = $settings[ 'slotMinTime' ];
 			} 
 		}
-		if( isset( $settings[ 'maxTime' ] ) ) {
+		if( isset( $settings[ 'slotMaxTime' ] ) ) {
 			// Keep the higher value
-			if(  ! isset( $mixed_settings[ 'maxTime' ] ) 
-				|| isset( $mixed_settings[ 'maxTime' ] ) && intval( str_replace( ':', '', $settings[ 'maxTime' ] ) ) > intval( str_replace( ':', '', $mixed_settings[ 'maxTime' ] ) ) ) {
+			if(  ! isset( $mixed_settings[ 'slotMaxTime' ] ) 
+				|| isset( $mixed_settings[ 'slotMaxTime' ] ) && intval( str_replace( ':', '', $settings[ 'slotMaxTime' ] ) ) > intval( str_replace( ':', '', $mixed_settings[ 'slotMaxTime' ] ) ) ) {
 
-				$mixed_settings[ 'maxTime' ] = $settings[ 'maxTime' ];
+				$mixed_settings[ 'slotMaxTime' ] = $settings[ 'slotMaxTime' ];
 			} 
 		}
 		if( isset( $settings[ 'snapDuration' ] ) ) {
@@ -253,7 +280,7 @@ function bookacti_get_mixed_template_data( $template_ids ) {
 		}
 	}
 	
-	// Snaitize merged days off
+	// Sanitize merged days off
 	if( ! empty( $mixed_settings[ 'days_off' ] ) ) { $mixed_settings[ 'days_off' ] = bookacti_sanitize_days_off( $mixed_settings[ 'days_off' ] ); }
 
 	// Add mixed settings
@@ -809,7 +836,7 @@ function bookacti_get_template_groups_of_events_list( $categories, $groups, $tem
 
 /**
  * Display a promo area of Prices and Credits add-on
- * @version 1.12.0
+ * @version 1.15.0
  * @param string $type
  */
 function bookacti_promo_for_bapap_addon( $type = 'event' ) {
@@ -858,70 +885,61 @@ function bookacti_promo_for_bapap_addon( $type = 'event' ) {
 				$event_name = esc_html__( 'My event', 'booking-activities' );
 			}
 			echo sprintf( $message, $addon_link );
-			$price_div_style = 'display: block; width: fit-content; white-space: nowrap; margin: 4px auto; padding: 5px; font-weight: bolder; font-size: 1.2em; border: 1px solid #fff; -webkit-border-radius: 3px;  border-radius: 3px;  background-color: rgba(0,0,0,0.3); color: #fff;';
 			?>
 			<div class='bookacti-promo-events-examples'>
-				<a class='fc-time-grid-event fc-v-event fc-event fc-start fc-end bookacti-event-has-price bookacti-narrow-event'>
-					<div class='fc-content'>
-						<div class='fc-time' data-start='7:00' data-full='7:00 AM - 8:30 AM'>
-							<span>7:00 - 8:30</span>
+				<a class='fc-timegrid-event fc-v-event fc-event fc-event-start fc-event-end bookacti-narrow-event'>
+					<div class='fc-event-main'>
+						<div class='fc-event-time'><span>7:00 - 8:30</span></div>
+						<div class='fc-event-title-container'><div class='fc-event-title'><?php echo $event_name; ?></div></div>
+						<div class='bookacti-price-container'>
+							<span class='bookacti-price bookacti-promo'>$30</span>
 						</div>
-						<div class='fc-title'><?php echo $event_name; ?></div>
-					</div>
-					<div class='fc-bg'></div>
-					<div class='bookacti-availability-container'>
-						<span class='bookacti-available-places bookacti-not-booked '>
-							<span class='bookacti-available-places-number'>50</span>
-							<span class='bookacti-available-places-unit-name'> </span>
-							<span class='bookacti-available-places-avail-particle'> <?php esc_html( _ex( 'avail.', 'Short for availabilities [plural noun]', 'booking-activities' ) ); ?></span>
-						</span>
-					</div>
-					<div class='bookacti-price-container' style='<?php echo esc_attr( $price_div_style ); ?>'>
-						<span class='bookacti-price bookacti-promo'>$30</span>
+						<div class='bookacti-availability-container'>
+							<span class='bookacti-available-places bookacti-not-booked'>
+								<span class='bookacti-available-places-number'>50</span>
+								<span class='bookacti-available-places-unit-name'> </span>
+								<span class='bookacti-available-places-avail-particle'> <?php esc_html( _ex( 'avail.', 'Short for availabilities [plural noun]', 'booking-activities' ) ); ?></span>
+							</span>
+						</div>
 					</div>
 				</a>
-				<a class='fc-time-grid-event fc-v-event fc-event fc-start fc-end bookacti-event-has-price bookacti-narrow-event'>
-					<div class='fc-content'>
-						<div class='fc-time' data-start='7:00' data-full='7:00 AM - 8:30 AM'>
-							<span>7:00 - 8:30</span>
+				<a class='fc-timegrid-event fc-v-event fc-event fc-event-start fc-event-end bookacti-narrow-event'>
+					<div class='fc-event-main'>
+						<div class='fc-event-time'><span>7:00 - 8:30</span></div>
+						<div class='fc-event-title-container'><div class='fc-event-title'><?php echo $event_name; ?></div></div>
+					
+						<div class='bookacti-price-container'>
+							<span class='bookacti-price bookacti-promo'>- 20%</span>
 						</div>
-						<div class='fc-title'><?php echo $event_name; ?></div>
-					</div>
-					<div class='fc-bg'></div>
-					<div class='bookacti-availability-container'>
-						<span class='bookacti-available-places bookacti-not-booked '>
-							<span class='bookacti-available-places-number'>50</span>
-							<span class='bookacti-available-places-unit-name'> </span>
-							<span class='bookacti-available-places-avail-particle'> <?php _ex( 'avail.', 'Short for availabilities [plural noun]', 'booking-activities' ); ?></span>
-						</span>
-					</div>
-					<div class='bookacti-price-container' style='<?php echo esc_attr( $price_div_style ); ?>'>
-						<span class='bookacti-price bookacti-promo'>- 20%</span>
+						<div class='bookacti-availability-container'>
+							<span class='bookacti-available-places bookacti-not-booked'>
+								<span class='bookacti-available-places-number'>50</span>
+								<span class='bookacti-available-places-unit-name'> </span>
+								<span class='bookacti-available-places-avail-particle'> <?php _ex( 'avail.', 'Short for availabilities [plural noun]', 'booking-activities' ); ?></span>
+							</span>
+						</div>
 					</div>
 				</a>
-				<a class='fc-time-grid-event fc-v-event fc-event fc-start fc-end bookacti-event-has-price bookacti-narrow-event'>
-					<div class='fc-content'>
-						<div class='fc-time' data-start='7:00' data-full='7:00 AM - 8:30 AM'>
-							<span>7:00 - 8:30</span>
+				<a class='fc-timegrid-event fc-v-event fc-event fc-event-start fc-event-end bookacti-narrow-event'>
+					<div class='fc-event-main'>
+						<div class='fc-event-time'><span>7:00 - 8:30</span></div>
+						<div class='fc-event-title-container'><div class='fc-event-title'><?php echo $event_name; ?></div></div>
+						<div class='bookacti-price-container'>
+							<span class='bookacti-price bookacti-promo'>
+								<?php 
+								$amount = 12;
+								/* translators: %d is an integer (an amount of credits) */
+								echo sprintf( _n( '%d credit', '%d credits', $amount, 'booking-activities' ), $amount ); 
+								?>
+							</span>
 						</div>
-						<div class='fc-title'><?php echo $event_name; ?></div>
-					</div>
-					<div class='fc-bg'></div>
-					<div class='bookacti-availability-container'>
-						<span class='bookacti-available-places bookacti-not-booked '>
-							<span class='bookacti-available-places-number'>50</span>
-							<span class='bookacti-available-places-unit-name'> </span>
-							<span class='bookacti-available-places-avail-particle'> <?php _ex( 'avail.', 'Short for availabilities [plural noun]', 'booking-activities' ); ?></span>
-						</span>
-					</div>
-					<div class='bookacti-price-container' style='<?php echo esc_attr( $price_div_style ); ?>'>
-						<span class='bookacti-price bookacti-promo'>
-							<?php 
-							$amount = 12;
-							/* translators: %d is an integer (an amount of credits) */
-							echo sprintf( _n( '%d credit', '%d credits', $amount, 'booking-activities' ), $amount ); 
-							?>
-						</span>
+						<div class='bookacti-availability-container'>
+							<span class='bookacti-available-places bookacti-not-booked'>
+								<span class='bookacti-available-places-number'>50</span>
+								<span class='bookacti-available-places-unit-name'> </span>
+								<span class='bookacti-available-places-avail-particle'> <?php _ex( 'avail.', 'Short for availabilities [plural noun]', 'booking-activities' ); ?></span>
+							</span>
+						</div>
 					</div>
 				</a>
 			</div>

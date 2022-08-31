@@ -14,9 +14,9 @@ $j( document ).ready( function() {
 	/**
 	 * Validate the repetition fields
 	 * @since 1.8.0 (was in bookacti_validate_event_repetition_data)
-	 * @version 1.12.0
+	 * @version 1.15.0
 	 */
-	$j( 'select[name="repeat_freq"], input[name="repeat_from"], input[name="repeat_to"]' ).on( 'keyup mouseup change', function() { 
+	$j( '#bookacti-event-data-dialog, #bookacti-group-of-events-dialog' ).on( 'keyup mouseup change', 'select[name="repeat_freq"], input[name="repeat_from"], input[name="repeat_to"]', function() { 
 		var object_type = $j( this ).closest( '#bookacti-group-of-events-dialog' ).length ? 'group' : 'event';
 		bookacti_validate_event_repetition_data( object_type );
 	});
@@ -107,22 +107,22 @@ $j( document ).ready( function() {
  */
 function bookacti_validate_template_form() {
 	// Get template params
-	var title       = $j( '#bookacti-template-title' ).val();
-	var duplicate_id= $j( '#bookacti-template-duplicated-template-id' ).val();
-	var snap_freq	= $j( '#bookacti-snapduration' ).val();
+	var title        = $j( '#bookacti-template-title' ).val();
+	var duplicate_id = $j( '#bookacti-template-duplicated-template-id' ).val();
+	var snap_freq    = $j( '#bookacti-snapduration' ).val();
 
 	// Init boolean test variables
 	var valid_form = {
-		'isTitle'				: false,
-		'isSnapFreqFormatted'	: false,
-		'isDuplicateIdPositive'	: false,
-		'send'					: false
+		'isTitle':               false,
+		'isSnapFreqFormatted':   false,
+		'isDuplicateIdPositive': false,
+		'send':                  false
 	};
 
 	// Make the tests and change the booleans
-	if( title !== '' )																			{ valid_form.isTitle = true; }
-	if( duplicate_id !== '' && $j.isNumeric( duplicate_id ) && parseInt( duplicate_id ) >= 0 )	{ valid_form.isDuplicateIdPositive = true; }
-	if( /^([0-1][0-9]|2[0-3]):([0-5][0-9])$/.test( snap_freq ) )								{ valid_form.isSnapFreqFormatted = true; }
+	if( title !== '' )                                                                         { valid_form.isTitle = true; }
+	if( duplicate_id !== '' && $j.isNumeric( duplicate_id ) && parseInt( duplicate_id ) >= 0 ) { valid_form.isDuplicateIdPositive = true; }
+	if( /^([0-1][0-9]|2[0-3]):([0-5][0-9])$/.test( snap_freq ) )                               { valid_form.isSnapFreqFormatted = true; }
 
 	if( valid_form.isTitle 
 	&&  valid_form.isDuplicateIdPositive
@@ -167,43 +167,43 @@ function bookacti_validate_template_form() {
  */
 function bookacti_validate_activity_form() {
 	// Get template params
-	var title       = $j( '#bookacti-activity-title' ).val();
-	var color       = $j( '#bookacti-activity-color' ).val();
-	var avail		= $j( '#bookacti-activity-availability' ).val();
-	var days        = $j( '#bookacti-activity-duration-days' ).val();
-	var hours       = $j( '#bookacti-activity-duration-hours' ).val();
-	var minutes     = $j( '#bookacti-activity-duration-minutes' ).val();
+	var title   = $j( '#bookacti-activity-title' ).val();
+	var color   = $j( '#bookacti-activity-color' ).val();
+	var avail   = $j( '#bookacti-activity-availability' ).val();
+	var days    = $j( '#bookacti-activity-duration-days' ).val();
+	var hours   = $j( '#bookacti-activity-duration-hours' ).val();
+	var minutes = $j( '#bookacti-activity-duration-minutes' ).val();
 
 	// Init boolean test variables
 	var valid_form = {
-		'isTitle'			: false,
-		'isColor'			: false,
-		'isColorWhite'		: false,
-		'isAvail'			: false,
-		'isAvailPositive'	: false,
-		'isDays'			: false,
-		'isHours'			: false,
-		'isMinutes'			: false,
-		'isDaysInfTo365'	: false,
-		'isHoursInfTo23'	: false,
-		'isMinutesInfTo59'	: false,
-		'isSupToZero'		: false,
-		'send'				: false
+		'isTitle':          false,
+		'isColor':          false,
+		'isColorWhite':     false,
+		'isAvail':          false,
+		'isAvailPositive':  false,
+		'isDays':           false,
+		'isHours':          false,
+		'isMinutes':        false,
+		'isDaysInfTo365':   false,
+		'isHoursInfTo23':   false,
+		'isMinutesInfTo59': false,
+		'isSupToZero':      false,
+		'send':             false
 	};
 
 	// Make the tests and change the booleans
-	if( title.length  )												{ valid_form.isTitle			= true; }
-	if( color.length  )												{ valid_form.isColor			= true; }
-	if( valid_form.isColor && color === '#ffffff' )					{ valid_form.isColorWhite		= true; }
-	if( avail.length  )												{ valid_form.isAvail			= true; }
-	if( valid_form.isAvail && parseInt( avail ) >= 0 )				{ valid_form.isAvailPositive	= true; }
-	if( days.length  )												{ valid_form.isDays				= true; }
-	if( hours.length  )												{ valid_form.isHours			= true; }
-	if( minutes.length )											{ valid_form.isMinutes			= true; }
-	if( valid_form.isDays      && days <= 365   && days >= 0 )		{ valid_form.isDaysInfTo365		= true; }
-	if( valid_form.isHours     && hours <= 23   && hours >= 0 )		{ valid_form.isHoursInfTo23		= true; }
-	if( valid_form.isMinutes   && minutes <= 59 && minutes >= 0 )	{ valid_form.isMinutesInfTo59	= true; }
-	if( days > 0 || hours > 0 || minutes > 0 )						{ valid_form.isSupToZero		= true; }
+	if( title.length )                                            { valid_form.isTitle          = true; }
+	if( color.length )                                            { valid_form.isColor          = true; }
+	if( valid_form.isColor && color === '#ffffff' )               { valid_form.isColorWhite     = true; }
+	if( avail.length )                                            { valid_form.isAvail          = true; }
+	if( valid_form.isAvail && parseInt( avail ) >= 0 )            { valid_form.isAvailPositive  = true; }
+	if( days.length )                                             { valid_form.isDays           = true; }
+	if( hours.length )                                            { valid_form.isHours          = true; }
+	if( minutes.length )                                          { valid_form.isMinutes        = true; }
+	if( valid_form.isDays      && days <= 365   && days >= 0 )    { valid_form.isDaysInfTo365   = true; }
+	if( valid_form.isHours     && hours <= 23   && hours >= 0 )   { valid_form.isHoursInfTo23   = true; }
+	if( valid_form.isMinutes   && minutes <= 59 && minutes >= 0 ) { valid_form.isMinutesInfTo59 = true; }
+	if( days > 0 || hours > 0 || minutes > 0 )                    { valid_form.isSupToZero      = true; }
 
 	if( valid_form.isTitle 
 	&&  valid_form.isColor 
@@ -287,9 +287,9 @@ function bookacti_validate_event_form() {
 	$j( '#bookacti-event-data-dialog .bookacti-notices' ).remove();
 	
 	var valid_form = {
-		'isGeneralValid'	: bookacti_validate_event_general_data(),
-		'isRepetitionValid'	: bookacti_validate_event_repetition_data( 'event' ),
-		'send'				: false
+		'isGeneralValid':    bookacti_validate_event_general_data(),
+		'isRepetitionValid': bookacti_validate_event_repetition_data( 'event' ),
+		'send':              false
 	};
     
     if( valid_form.isRepetitionValid && valid_form.isGeneralValid ) { valid_form.send = true; }
@@ -308,19 +308,19 @@ function bookacti_validate_event_form() {
  */
 function bookacti_validate_event_general_data() {
 	// Get template params
-	var title           = $j( '#bookacti-event-data-dialog #bookacti-event-title' ).val();
-	var availability    = parseInt( $j( '#bookacti-event-data-dialog #bookacti-event-availability' ).val() );
+	var title        = $j( '#bookacti-event-data-dialog #bookacti-event-title' ).val();
+	var availability = parseInt( $j( '#bookacti-event-data-dialog #bookacti-event-availability' ).val() );
 
 	// Init boolean test variables
 	var valid_form = {
-		'isTitle' : false,
-		'isAvailPositive' : false,
-		'send' : false
+		'isTitle':         false,
+		'isAvailPositive': false,
+		'send':            false
 	};
 
 	// Make the tests and change the booleans    
-	if( title !== '' ) { valid_form.isTitle = true; }
-	if( availability >= 0 ) { valid_form.isAvailPositive = true; }
+	if( title !== '' )                                     { valid_form.isTitle = true; }
+	if( availability >= 0 )                                { valid_form.isAvailPositive = true; }
 	if( valid_form.isTitle && valid_form.isAvailPositive ) { valid_form.send = true; }
 
 	// Clean the feedbacks before displaying new feedbacks
@@ -362,33 +362,33 @@ function bookacti_validate_event_repetition_data( object_type ) {
 	if( object_type === 'group' && typeof bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ][ 0 ] === 'undefined' ) { return; }
 	else if( object_type === 'event' && typeof bookacti.booking_system[ 'bookacti-template-calendar' ][ 'picked_events' ][ 0 ] === 'undefined' ) { return; }
 	
-	var event		= object_type === 'group' ? bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ][ 0 ] : bookacti.booking_system[ 'bookacti-template-calendar' ][ 'picked_events' ][ 0 ];
-	var event_start	= moment.utc( event.start ).clone().locale( 'en' );
+	var event       = object_type === 'group' ? bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ][ 0 ] : bookacti.booking_system[ 'bookacti-template-calendar' ][ 'picked_events' ][ 0 ];
+	var event_start = moment.utc( event.start ).clone().locale( 'en' );
 	
 	var scope = object_type === 'group' ? '#bookacti-group-of-events-dialog' : '#bookacti-event-data-dialog';
 	
-	var repeat_freq	= $j( scope + ' select[name="repeat_freq"]' ).val() ? $j( scope + ' select[name="repeat_freq"]' ).val() : 'none';
-	var repeat_from	= moment.utc( $j( scope + ' input[name="repeat_from"]' ).val() ).locale( 'en' );
-	var repeat_to	= moment.utc( $j( scope + ' input[name="repeat_to"]' ).val() ).locale( 'en' );
+	var repeat_freq = $j( scope + ' select[name="repeat_freq"]' ).val() ? $j( scope + ' select[name="repeat_freq"]' ).val() : 'none';
+	var repeat_from = moment.utc( $j( scope + ' input[name="repeat_from"]' ).val() ).locale( 'en' );
+	var repeat_to   = moment.utc( $j( scope + ' input[name="repeat_to"]' ).val() ).locale( 'en' );
 
 	// Init boolean test variables
 	var valid_form = {
-		'isRepeated'				: false,
-		'isRepeatFrom'				: false,
-		'isRepeatTo'				: false,
-		'isFromBeforeTo'			: false,
-		'isEventBetweenFromAndTo'	: false,
-		'send'						: false
+		'isRepeated':              false,
+		'isRepeatFrom':            false,
+		'isRepeatTo':              false,
+		'isFromBeforeTo':          false,
+		'isEventBetweenFromAndTo': false,
+		'send':                    false
 	};
 
 	// Make the tests and change the booleans
-	if( repeat_freq !== 'none' )														{ valid_form.isRepeated = true; }
-	if( ! isNaN( repeat_from ) && repeat_from !== '' && repeat_from !== null )			{ valid_form.isRepeatFrom = true; }
-	if( ! isNaN( repeat_to ) && repeat_to !== '' && repeat_to !== null )				{ valid_form.isRepeatTo = true; }
-	if( valid_form.isRepeatFrom && valid_form.isRepeatTo && repeat_from < repeat_to )	{ valid_form.isFromBeforeTo = true; }
+	if( repeat_freq !== 'none' )                                                      { valid_form.isRepeated = true; }
+	if( ! isNaN( repeat_from ) && repeat_from !== '' && repeat_from !== null )        { valid_form.isRepeatFrom = true; }
+	if( ! isNaN( repeat_to ) && repeat_to !== '' && repeat_to !== null )              { valid_form.isRepeatTo = true; }
+	if( valid_form.isRepeatFrom && valid_form.isRepeatTo && repeat_from < repeat_to ) { valid_form.isFromBeforeTo = true; }
 	if( valid_form.isRepeated 
 	&& repeat_from.isSameOrBefore( event_start, 'day' )
-	&& repeat_to.isSameOrAfter( event_start, 'day' ) )									{ valid_form.isEventBetweenFromAndTo = true; }
+	&& repeat_to.isSameOrAfter( event_start, 'day' ) )                                { valid_form.isEventBetweenFromAndTo = true; }
 	
 	if( ! valid_form.isRepeated || ( valid_form.isRepeated && valid_form.isRepeatFrom && valid_form.isRepeatTo && valid_form.isFromBeforeTo && valid_form.isEventBetweenFromAndTo ) ) {
 		valid_form.send = true;
@@ -413,8 +413,8 @@ function bookacti_validate_event_repetition_data( object_type ) {
 	if( exceptions_min.isAfter( exceptions_max ) ) { exceptions_disabled = true; };
 	
 	if( ! exceptions_disabled ) {
-		if( valid_form.isRepeatFrom )	{ $j( scope + ' input.bookacti-date-interval-from, ' + scope + ' input.bookacti-date-interval-to' ).attr( 'min', exceptions_min.format( 'YYYY-MM-DD' ) ); }
-		if( valid_form.isRepeatTo )		{ $j( scope + ' input.bookacti-date-interval-from, ' + scope + ' input.bookacti-date-interval-to' ).attr( 'max', exceptions_max.format( 'YYYY-MM-DD' ) ); }
+		if( valid_form.isRepeatFrom ) { $j( scope + ' input.bookacti-date-interval-from, ' + scope + ' input.bookacti-date-interval-to' ).attr( 'min', exceptions_min.format( 'YYYY-MM-DD' ) ); }
+		if( valid_form.isRepeatTo )   { $j( scope + ' input.bookacti-date-interval-from, ' + scope + ' input.bookacti-date-interval-to' ).attr( 'max', exceptions_max.format( 'YYYY-MM-DD' ) ); }
 	}
 
 	// Clean the feedbacks before displaying new feedbacks
@@ -476,9 +476,9 @@ function bookacti_validate_group_of_events_form() {
 	$j( '#bookacti-group-of-events-dialog .bookacti-notices' ).remove();
 	
 	var valid_form = {
-		'isGeneralValid'	: bookacti_validate_group_of_events_general_data(),
-		'isRepetitionValid'	: bookacti_validate_event_repetition_data( 'group' ),
-		'send'				: false
+		'isGeneralValid':    bookacti_validate_group_of_events_general_data(),
+		'isRepetitionValid': bookacti_validate_event_repetition_data( 'group' ),
+		'send':              false
 	};
     
     if( valid_form.isRepetitionValid && valid_form.isGeneralValid ) { valid_form.send = true; }
@@ -497,28 +497,28 @@ function bookacti_validate_group_of_events_form() {
  */
 function bookacti_validate_group_of_events_general_data() {
 	// Get group params
-	var title		= $j( '#bookacti-group-of-events-title-field' ).val();
-	var category	= $j( '#bookacti-group-of-events-category-selectbox' ).val();
-	var cat_title	= $j( '#bookacti-group-of-events-category-title-field' ).val();
+	var title     = $j( '#bookacti-group-of-events-title-field' ).val();
+	var category  = $j( '#bookacti-group-of-events-category-selectbox' ).val();
+	var cat_title = $j( '#bookacti-group-of-events-category-title-field' ).val();
 	
 	// Init boolean test variables
 	var valid_form = {
-		'isTitle'			: false,
-		'isCategory'		: false,
-		'isCategoryTitle'	: false,
-		'isSelectedEvents'	: false,
-		'send'				: false
+		'isTitle':          false,
+		'isCategory':       false,
+		'isCategoryTitle':  false,
+		'isSelectedEvents': false,
+		'send':             false
 	};
 
 	// Make the tests and change the booleans
-	if( typeof title		=== 'string' && title		!== '' )	{ valid_form.isTitle = true; }
-	if( typeof category		=== 'string' && category	!== 'new' )	{ valid_form.isCategory = true; }
-	if( typeof cat_title	=== 'string' && cat_title	!== '' )	{ valid_form.isCategoryTitle = true; }
-	if( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ].length >= 2 )					{ valid_form.isSelectedEvents = true; }
+	if( typeof title     === 'string' && title     !== '' )    { valid_form.isTitle = true; }
+	if( typeof category  === 'string' && category  !== 'new' ) { valid_form.isCategory = true; }
+	if( typeof cat_title === 'string' && cat_title !== '' )    { valid_form.isCategoryTitle = true; }
+	if( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ].length >= 2 ) { valid_form.isSelectedEvents = true; }
 
 	if( valid_form.isTitle 
-	&&  ( valid_form.isCategory || valid_form.isCategoryTitle ) 
-	&&  valid_form.isSelectedEvents ) { valid_form.send = true; }
+	&& ( valid_form.isCategory || valid_form.isCategoryTitle ) 
+	&& valid_form.isSelectedEvents ) { valid_form.send = true; }
 
 	// Clean the feedbacks before displaying new feedbacks
 	$j( '#bookacti-group-of-events-dialog .bookacti-form-error, #bookacti-group-of-events-dialog .bookacti-form-field-error' ).remove();
@@ -565,7 +565,7 @@ function bookacti_validate_group_category_form() {
 	// Init boolean test variables
 	var valid_form = {
 		'isTitle': false,
-		'send': false
+		'send':    false
 	};
 
 	// Make the tests and change the booleans

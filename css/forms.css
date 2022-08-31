@@ -40,6 +40,7 @@ body.booking-activities_page_bookacti_forms label[for='bookacti_form_publish-hid
 .bookacti-form-editor-field				{ margin-bottom: 1em; border: 1px solid #e5e5e5; background: #fff; box-sizing: border-box; }
 .bookacti-form-editor-field-header		{ display: flex; justify-content: space-between; border-bottom: 1px solid #e5e5e5; transition: max-height 0.2s; }
 .bookacti-form-editor-field-title		{ cursor: move; padding: 1em; padding-right: 0; width: 100%; text-align: left; }
+.rtl .bookacti-form-editor-field-title  { padding-right: 1em; padding-left: 0; text-align: right; }
 .bookacti-form-editor-field-header h3	{ display: inline-block; vertical-align: middle; margin: 0; padding: 0; }
 .bookacti-form-editor-field-actions		{ margin: 1em; white-space: nowrap; position: relative; }
 .bookacti-form-editor-field-body		{ padding: 1em; }

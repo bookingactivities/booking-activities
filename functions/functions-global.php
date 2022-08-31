@@ -343,11 +343,12 @@ function bookacti_generate_ical( $vevents, $vcalendar = array() ) {
 /**
  * Get the variables used with javascript
  * @since 1.8.0
- * @version 1.14.2
+ * @version 1.15.0
  * @return array
  */
 function bookacti_get_js_variables() {
-	$timezone = new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
+	$timezone_name = bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' );
+	$timezone = new DateTimeZone( $timezone_name );
 	$current_datetime = new DateTime( 'now', $timezone );
 	$current_datetime_utc = new DateTime( 'now', new DateTimeZone( 'UTC' ) );
 	$can_edit_bookings = current_user_can( 'bookacti_edit_bookings' );
@@ -390,6 +391,7 @@ function bookacti_get_js_variables() {
 		'nonce_refund_booking'				=> wp_create_nonce( 'bookacti_refund_booking' ),
 		'nonce_reschedule_booking'			=> wp_create_nonce( 'bookacti_reschedule_booking' ),
 
+		'fullcalendar_timezone'             => 'UTC',
 		'fullcalendar_locale'				=> bookacti_convert_wp_locale_to_fc_locale( bookacti_get_current_lang_code( true ) ),
 		'current_lang_code'					=> bookacti_get_current_lang_code(),
 		'current_locale'					=> bookacti_get_current_lang_code( true ),
@@ -397,7 +399,7 @@ function bookacti_get_js_variables() {
 		'available_booking_methods'			=> array_keys( bookacti_get_available_booking_methods() ),
 		'booking_system_attributes_keys'	=> array_keys( bookacti_get_booking_system_default_attributes() ),
 
-		'event_tiny_height'					=> apply_filters( 'bookacti_event_tiny_height', 30 ),
+		'event_tiny_height'					=> apply_filters( 'bookacti_event_tiny_height', 32 ),
 		'event_small_height'				=> apply_filters( 'bookacti_event_small_height', 75 ),
 		'event_narrow_width'				=> apply_filters( 'bookacti_event_narrow_width', 70 ),
 		'event_wide_width'					=> apply_filters( 'bookacti_event_wide_width', 250 ),
@@ -405,7 +407,7 @@ function bookacti_get_js_variables() {
 		'started_events_bookable'			=> bookacti_get_setting_value( 'bookacti_general_settings',	'started_events_bookable' ) ? 1 : 0,
 		'started_groups_bookable'			=> bookacti_get_setting_value( 'bookacti_general_settings',	'started_groups_bookable' ) ? 1 : 0,
 		'event_load_interval'				=> bookacti_get_setting_value( 'bookacti_general_settings', 'event_load_interval' ),
-		'default_view_threshold'			=> bookacti_get_setting_value( 'bookacti_general_settings', 'default_calendar_view_threshold' ),
+		'initial_view_threshold'			=> bookacti_get_setting_value( 'bookacti_general_settings', 'default_calendar_view_threshold' ),
 		'bookings_tooltip_mouseover_timeout'=> 250,
 
 		'date_format'						=> $messages[ 'date_format_short' ][ 'value' ],
@@ -535,7 +537,7 @@ function bookacti_get_active_add_ons( $prefix = '', $exclude = array( 'balau' ) 
 /**
  * Get add-on data by prefix
  * @since 1.7.14
- * @version 1.14.2
+ * @version 1.15.0
  * @param string $prefix
  * @param array $exclude
  * @return array
@@ -548,7 +550,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name'	=> 'ba-display-pack', 
 			'end_of_life'	=> '', 
 			'download_id'	=> 482,
-			'min_version'	=> '1.4.23'
+			'min_version'	=> '1.4.25'
 		),
 		'banp'	=> array( 
 			'title'			=> 'Notification Pack', 
@@ -556,7 +558,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name'	=> 'ba-notification-pack', 
 			'end_of_life'	=> '', 
 			'download_id'	=> 1393,
-			'min_version'	=> '1.2.13'
+			'min_version'	=> '1.2.15'
 		),
 		'bapap' => array( 
 			'title'			=> 'Prices and Credits', 
@@ -564,7 +566,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name'	=> 'ba-prices-and-credits', 
 			'end_of_life'	=> '', 
 			'download_id'	=> 438,
-			'min_version'	=> '1.7.6'
+			'min_version'	=> '1.7.8'
 		),
 		'baaf' => array( 
 			'title'			=> 'Advanced Forms', 
@@ -572,7 +574,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name'	=> 'ba-advanced-forms', 
 			'end_of_life'	=> '', 
 			'download_id'	=> 2705,
-			'min_version'	=> '1.2.24'
+			'min_version'	=> '1.2.25'
 		),
 		'baofc'	=> array( 
 			'title'			=> 'Order for Customers', 
@@ -580,7 +582,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name'	=> 'ba-order-for-customers', 
 			'end_of_life'	=> '', 
 			'download_id'	=> 436,
-			'min_version'	=> '1.2.14'
+			'min_version'	=> '1.2.25'
 		),
 		'balau' => array( 
 			'title'			=> 'Licenses & Updates', 
@@ -831,20 +833,22 @@ add_filter( 'plugin_locale', 'bookacti_set_plugin_locale', 100, 1 );
 /**
  * Get FullCalendar supported locale
  * @since 1.5.2
- * @version 1.8.5
+ * @version 1.15.0
  * @return array
  */
 function bookacti_get_fullcalendar_supported_locales() {
 	return apply_filters( 'bookacti_fullcalendar_locales', array( 
-		'af', 'ar-dz', 'ar-kw', 'ar-ly', 'ar-ma', 'ar-sa', 'ar-tn', 'ar', 'be', 'bg', 'bs', 'ca', 'cs', 
-		'da', 'de-at', 'de-ch', 'de', 'el', 'en-au', 'en-ca', 'en-gb', 'en-ie', 'en-nz', 'es-do', 'es-us', 'es', 'et', 'eu', 'fa', 'fi', 'fr-ca', 'fr-ch', 'fr', 
-		'gl', 'he', 'hi', 'hr', 'hu', 'id', 'is', 'it', 
-		'ja', 'ka', 'kk', 'ko', 'lb', 'lt', 'lv', 
-		'mk', 'ms-my', 'ms', 'nb', 'nl-be', 'nl', 'nn', 
+		'af', 'ar-dz', 'ar-kw', 'ar-ly', 'ar-ma', 'ar-sa', 'ar-tn', 'ar', 'az', 
+		'bg', 'bn', 'bs', 'ca', 'cs', 'cy', 'da', 'de-at', 'de', 
+		'el', 'en-au', 'en-gb', 'en-nz', 'eo', 'es-us', 'es', 'et', 'eu', 
+		'fa', 'fi', 'fr-ca', 'fr-ch', 'fr', 
+		'gl', 'he', 'hi', 'hr', 'hu', 'hy-am', 'id', 'is', 'it', 
+		'ja', 'ka', 'kk', 'km', 'ko', 'ku', 'lb', 'lt', 'lv', 
+		'mk', 'ms', 'nb', 'ne', 'nl', 'nn', 
 		'pl', 'pt-br', 'pt', 'ro', 'ru', 
-		'sk', 'sl', 'sq', 'sr-cyrl', 'sr', 'sv', 'th', 'tr', 'uk', 
-		'vi', 
-		'zh-cn', 'zh-hk', 'zh-tw' 
+		'si-lk', 'sk', 'sl', 'sm', 'sq', 'sr-cyrl', 'sr', 'sv', 
+		'ta-in', 'th', 'tr', 'ug', 'uk', 'uz', 'vi', 
+		'zh-cn', 'zh-tw' 
 	));
 }
 
@@ -1662,6 +1666,14 @@ function bookacti_display_date_intervals_field( $field, $field_name ) {
 add_action( 'bookacti_display_custom_field', 'bookacti_display_date_intervals_field', 10, 2 );
 
 
+/**
+ * Get loading HTML
+ * @since 1.15.0
+ * @return string
+ */
+function bookacti_get_loading_html() {
+	return '<div class="bookacti-loading-container"><div class="bookacti-loading-image"><div class="bookacti-spinner"></div></div><div class="bookacti-loading-text">' . esc_html__( 'Loading', 'booking-activities' ) . '</div></div>';
+}
 
 
 // FORMATING AND SANITIZING
@@ -1765,11 +1777,11 @@ function bookacti_str_ids_to_array( $ids ) {
 /**
  * Convert an array to string recursively
  * @since 1.6.0
- * @version 1.14.3
+ * @version 1.15.0
  * @param array $array
  * @param int|boolean $display_keys If int, keys will be displayed if >= $level
  * @param int $type "csv" or "ical"
- * @param int $level Used for recursivity for multidimensional arrays. "1" is the first level.
+ * @param int $level Used for recursion for multidimensional arrays. "1" is the first level.
  * @return string
  */
 function bookacti_format_array_for_export( $array, $display_keys = false, $type = 'csv', $level = 1 ) {
@@ -1792,6 +1804,7 @@ function bookacti_format_array_for_export( $array, $display_keys = false, $type 
 		if( $this_display_keys )   { $string .= $key . ': '; }                       // Display key before value
 		
 		if( is_array( $value ) )   { $string .= bookacti_format_array_for_export( $value, $display_keys, $type, $level+1 ); } // Repeat. (for multidimentional array)
+		else                       { $string .= $value; }
 		
 		++$i;
 	}
@@ -2152,7 +2165,7 @@ function bookacti_sanitize_ical_property( $value, $property_name = '' ) {
 
 /**
  * Get users metadata
- * @version 1.14.3
+ * @version 1.15.0
  * @param array $args
  * @return array
  */
@@ -2181,7 +2194,7 @@ function bookacti_get_users_data( $args = array() ) {
 	}
 	
 	// Add user meta
-	if( $args[ 'meta' ] ) {
+	if( $args[ 'meta' ] && $sorted_users ) {
 		// Make sure that all the desired users meta are in cache with a single db query
 		update_meta_cache( 'user', array_keys( $sorted_users ) );
 		

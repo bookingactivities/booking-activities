@@ -1738,7 +1738,7 @@ function bookacti_sanitize_bookings_export_settings( $raw_settings ) {
 	$settings = bookacti_sanitize_values( $default_settings, $raw_settings, $keys_by_type );
 	
 	// Sanitize export groups value
-	if( ! in_array( $settings[ 'csv_export_groups' ], array( 'groups', 'bookings' ), true ) )	{ $settings[ 'csv_export_groups' ] = $default_settings[ 'csv_export_groups' ]; }
+	if( ! in_array( $settings[ 'csv_export_groups' ], array( 'groups', 'bookings' ), true ) ) { $settings[ 'csv_export_groups' ] = $default_settings[ 'csv_export_groups' ]; }
 	
 	// Keep only allowed columns
 	$allowed_columns = bookacti_get_bookings_export_columns();

@@ -396,7 +396,7 @@ function bookacti_get_notifications_tags( $notification_id = '' ) {
 /**
  * Get notifications tags and values corresponding to given booking
  * @since 1.2.0
- * @version 1.14.0
+ * @version 1.15.0
  * @param object $booking
  * @param string $booking_type 'group' or 'single'
  * @param array $notification
@@ -482,7 +482,7 @@ function bookacti_get_notifications_tags_values( $booking, $booking_type, $notif
 					$user_ical_key = md5( microtime().rand() );
 					update_user_meta( $booking->user_id, 'bookacti_secret_key', $user_ical_key );
 				}
-				$booking_data[ '{user_ical_url}' ] = esc_url( home_url( '?action=bookacti_export_user_booked_events&filename=my-bookings&key=' . $user_ical_key . '&lang=' . $locale ) );
+				$booking_data[ '{user_ical_url}' ] = esc_url( home_url( '?action=bookacti_export_user_booked_events&filename=my-bookings&key=' . $user_ical_key . '&locale=' . $locale ) );
 			} else {
 				$booking_data[ '{user_firstname}' ] = ! empty( $booking->user_first_name ) ? $booking->user_first_name : '';
 				$booking_data[ '{user_lastname}' ]  = ! empty( $booking->user_last_name ) ? $booking->user_last_name : '';
@@ -498,7 +498,7 @@ function bookacti_get_notifications_tags_values( $booking, $booking_type, $notif
 			bookacti_update_metadata( $object_type, $booking->id, array( 'secret_key' => $booking_ical_key ) );
 		}
 		$booking_id_param_name = $booking_type === 'group' ? 'booking_group_id' : 'booking_id';
-		$booking_data[ '{booking_ical_url}' ] = esc_url( home_url( '?action=bookacti_export_booked_events&filename=my-bookings&key=' . $booking_ical_key . '&' . $booking_id_param_name . '=' . $booking->id . '&lang=' . $locale ) );
+		$booking_data[ '{booking_ical_url}' ] = esc_url( home_url( '?action=bookacti_export_booked_events&filename=my-bookings&key=' . $booking_ical_key . '&' . $booking_id_param_name . '=' . $booking->id . '&locale=' . $locale ) );
 		if( empty( $booking_data[ '{user_ical_url}' ] ) ) { $booking_data[ '{user_ical_url}' ] = $booking_data[ '{booking_ical_url}' ]; }
 	}
 	

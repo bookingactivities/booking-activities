@@ -745,7 +745,7 @@ function bookacti_settings_field_notifications_from_name_callback() {
 
 /**
  * Notification from email setting field
- * @version 1.14.3
+ * @version 1.15.0
  * @global PHPMailer\PHPMailer\PHPMailer $phpmailer
  */
 function bookacti_settings_field_notifications_from_email_callback() {
@@ -766,16 +766,23 @@ function bookacti_settings_field_notifications_from_email_callback() {
 	}
 	$from_email = apply_filters( 'wp_mail_from', $default_from_email );
 	
+	// Get the current value
+	$current_from_email = bookacti_get_setting_value( 'bookacti_notifications_settings', 'notifications_from_email' );
+	
 	$message = esc_html__( 'You must create an email address at your webhost and use it here.', 'booking-activities' );
-	if( $smtp_host !== 'localhost' || $from_email !== $default_from_email ) {
-		$message = esc_html__( 'You must use your SMTP server\'s email address.', 'booking-activities' ) . ' (' . $smtp_host . ')';
+	if( $smtp_host !== 'localhost' ) {
+		/* translators: %s is the SMTP server name ($phpmailer->Host). */
+		$message = sprintf( esc_html__( 'You have configured your site to use a specific SMTP server (%s). You must use an email address corresponding to that SMTP server.', 'booking-activities' ), $smtp_host );
+	} else if( $from_email !== $default_from_email ) {
+		/* translators: %s is an email address. */
+		$message = sprintf( esc_html__( 'A third party plugin is overriding the default sender to %s. It is recommended to use the same (leave the field empty).', 'booking-activities' ), '<strong>' . $from_email . '</strong>' );
 	}
 	
 	$args = array(
 		'type'        => 'text',
 		'name'        => 'bookacti_notifications_settings[notifications_from_email]',
 		'id'          => 'notifications_from_email',
-		'value'       => bookacti_get_setting_value( 'bookacti_notifications_settings', 'notifications_from_email' ),
+		'value'       => $current_from_email,
 		'placeholder' => $from_email,
 		'tip'         => esc_html__( 'The sender email address.', 'booking-activities' ) . ' ' . $message
 	);

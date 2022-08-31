@@ -40,14 +40,13 @@ add_filter( 'bookacti_translation_array', 'bookacti_woocommerce_translation_arra
 
 /**
  * Change 'user_id' of bookings from customer id to user id when he logs in
- * @version 1.13.0
+ * @version 1.15.0
  * @global WooCommerce $woocommerce
  * @param string $user_login
  * @param WP_User $user
  */
 function bookacti_change_customer_id_to_user_id( $user_login, $user ) {
 	global $woocommerce;
-
 	// Replace bookings customer ID with user ID
 	if( ! empty( $woocommerce->session ) && is_object( $woocommerce->session ) && method_exists( $woocommerce->session, 'get_customer_id' ) ) {
 		$customer_id = $woocommerce->session->get_customer_id();
@@ -72,42 +71,43 @@ function bookacti_change_customer_id_to_user_id( $user_login, $user ) {
 	}
 	
 	// Check if user's cart is still valid or change it if necessary
-	global $woocommerce;
-	$cart_items_bookings = bookacti_wc_get_cart_items_bookings();
-	if( $cart_items_bookings ) {
-		foreach( $cart_items_bookings as $cart_item_key => $cart_item_bookings ) {
-			$item = $woocommerce->cart->get_cart_item( $cart_item_key );
-			$old_quantity = $item[ 'quantity' ];
-			$quantity = $old_quantity;
-			
-			// User check
-			$response = bookacti_wc_validate_cart_item_bookings_new_user( $cart_item_bookings, $user->ID );
-			
-			// Quantity check
-			if( $response[ 'status' ] === 'success' ) {
-				// Check if the cart item bookings quantity can be "changed" to its own quantity
-				// is the same as checking if an inactive cart item can be turned to active
-				$response = bookacti_wc_validate_cart_item_bookings_new_quantity( $cart_item_bookings, $quantity );
+	if( ! empty( $woocommerce->cart ) ) {
+		$cart_items_bookings = bookacti_wc_get_cart_items_bookings();
+		if( $cart_items_bookings ) {
+			foreach( $cart_items_bookings as $cart_item_key => $cart_item_bookings ) {
+				$item = $woocommerce->cart->get_cart_item( $cart_item_key );
+				$old_quantity = $item[ 'quantity' ];
+				$quantity = $old_quantity;
 
-				// If the quantity > availability, change the $new_quantity to the available quantity
-				if( $response[ 'status' ] === 'failed' && ! empty( $response[ 'messages' ][ 'qty_sup_to_avail' ] ) && ! empty( $response[ 'availability' ] ) ) {
-					$quantity += intval( $response[ 'availability' ] );
+				// User check
+				$response = bookacti_wc_validate_cart_item_bookings_new_user( $cart_item_bookings, $user->ID );
+
+				// Quantity check
+				if( $response[ 'status' ] === 'success' ) {
+					// Check if the cart item bookings quantity can be "changed" to its own quantity
+					// is the same as checking if an inactive cart item can be turned to active
 					$response = bookacti_wc_validate_cart_item_bookings_new_quantity( $cart_item_bookings, $quantity );
-				}
-			}
 
-			// Display the error and remove cart item
-			if( $response[ 'status' ] !== 'success' ) {
-				$removed_message = esc_html__( 'The item has been automatically removed from your cart.', 'booking-activities' );
-				foreach( $response[ 'messages' ] as $message ) {
-					wc_add_notice( $message . ' ' . $removed_message, 'error' );
+					// If the quantity > availability, change the $new_quantity to the available quantity
+					if( $response[ 'status' ] === 'failed' && ! empty( $response[ 'messages' ][ 'qty_sup_to_avail' ] ) && ! empty( $response[ 'availability' ] ) ) {
+						$quantity += intval( $response[ 'availability' ] );
+						$response = bookacti_wc_validate_cart_item_bookings_new_quantity( $cart_item_bookings, $quantity );
+					}
 				}
-				$woocommerce->cart->remove_cart_item( $cart_item_key );
-			} 
-			
-			// If the validation passed with a different quantity, change the cart item quantity
-			else if( $quantity !== $old_quantity ) {
-				$woocommerce->cart->set_quantity( $cart_item_key, $quantity );
+
+				// Display the error and remove cart item
+				if( $response[ 'status' ] !== 'success' ) {
+					$removed_message = esc_html__( 'The item has been automatically removed from your cart.', 'booking-activities' );
+					foreach( $response[ 'messages' ] as $message ) {
+						wc_add_notice( $message . ' ' . $removed_message, 'error' );
+					}
+					$woocommerce->cart->remove_cart_item( $cart_item_key );
+				} 
+
+				// If the validation passed with a different quantity, change the cart item quantity
+				else if( $quantity !== $old_quantity ) {
+					$woocommerce->cart->set_quantity( $cart_item_key, $quantity );
+				}
 			}
 		}
 	}
@@ -212,7 +212,7 @@ add_action( 'woocommerce_before_single_product_summary', 'bookacti_move_add_to_c
 
 /**
  * Add booking forms to single product page (front-end)
- * @version 1.8.0
+ * @version 1.15.0
  * @global WC_Product $product
  */
 function bookacti_add_booking_system_in_single_product_page() {
@@ -234,13 +234,13 @@ function bookacti_add_booking_system_in_single_product_page() {
 	}
 	if( ! $form_id ) { return; }
 
-	$form_instance_id		= '';
-	$variation_id			= 0;
-	$default_variation_id	= 0;
+	$form_instance_id     = '';
+	$variation_id         = 0;
+	$default_variation_id = 0;
 
 	// Show form on single product page or on variable product with a default value
 	if( $product->is_type( 'simple' ) ) {
-		$form_instance_id = 'product-' . $product->get_id();
+		$form_instance_id = 'bookacti-wc-form-fields-product-' . $product->get_id();
 	}
 	else if( $product->is_type( 'variable' ) ) {
 		$default_attributes = bookacti_get_product_default_attributes( $product );
@@ -250,7 +250,7 @@ function bookacti_add_booking_system_in_single_product_page() {
 			if( $default_variation_id ) { 
 				$form_id = get_post_meta( $default_variation_id, 'bookacti_variable_form', true );
 				if( $form_id ) { 
-					$form_instance_id = 'product-variation-' . $default_variation_id;
+					$form_instance_id = 'bookacti-wc-form-fields-product-variation-' . $default_variation_id;
 				}	
 			}
 		}
@@ -259,7 +259,7 @@ function bookacti_add_booking_system_in_single_product_page() {
 		$variation_id = $product->get_id();
 		$form_id = get_post_meta( $variation_id, 'bookacti_variable_form', true );
 		if( $form_id ) { 
-			$form_instance_id = 'product-variation-' . $variation_id;
+			$form_instance_id = 'bookacti-wc-form-fields-product-variation-' . $variation_id;
 		}
 	}
 
@@ -274,6 +274,7 @@ function bookacti_add_booking_system_in_single_product_page() {
 
 	// Add compulsory class
 	$form_atts[ 'class' ] .= ' bookacti-wc-form-fields';
+	if( ! empty( $_REQUEST[ 'add-to-cart' ] ) ) { $form_atts[ 'class' ] .= ' bookacti-wc-form-fields-reset'; }
 
 	// Convert $form_atts array to inline attributes
 	$form_attributes_str = '';
@@ -284,7 +285,7 @@ function bookacti_add_booking_system_in_single_product_page() {
 	// If no default variation are selected, or if it's not an activity, or if doesn't have a form bound
 	// display an empty form fields container
 	if( ! $form_atts[ 'id' ] ) { 
-		?><div class='bookacti-wc-form-fields'></div><?php
+		?><div class='<?php echo esc_attr( $form_atts[ 'class' ] ); ?>'></div><?php
 		return;
 	}
 
@@ -336,7 +337,7 @@ add_filter( 'bookacti_form_action_field_value', 'bookacti_wc_form_action_field_v
 /**
  * Remove WC unsupported fields on product pages
  * @since 1.5.0
- * @version 1.7.15
+ * @version 1.15.0
  * @param array $fields
  * @param array $form
  * @param string $instance_id
@@ -346,14 +347,9 @@ add_filter( 'bookacti_form_action_field_value', 'bookacti_wc_form_action_field_v
 function bookacti_remove_unsupported_fields_from_product_page( $fields, $form, $instance_id, $context ) {
 	if( $context !== 'wc_product_init' && $context !== 'wc_switch_variation' ) { return $fields; }
 
-	$unsupported_fields = bookacti_get_wc_unsupported_form_fields();
 	foreach( $fields as $i => $field ) {
-		if( $field[ 'type' ] === 'calendar' ) {
-			$fields[ $i ][ 'form_action' ] = 'default';
-		}
-		if( in_array( $field[ 'type' ], $unsupported_fields, true ) ) {
-			unset( $fields[ $i ] );
-		}
+		if( $field[ 'type' ] === 'calendar' ) { $fields[ $i ][ 'form_action' ] = 'default'; }
+		if( ! bookacti_wc_is_form_field_supported( $field ) ) { unset( $fields[ $i ] ); }
 	}
 	return $fields;
 }
@@ -450,7 +446,7 @@ function bookacti_validate_add_to_cart_and_book_temporarily( $true, $product_id,
 	
 	// Check if there are picked events
 	if( ! $picked_events ) {
-		wc_add_notice( esc_html__( 'You haven\'t picked any event. Please pick an event first.', 'booking-activities' ), 'error' ); 
+		wc_add_notice( esc_html__( 'You haven\'t picked any event. Please pick an event first.', 'booking-activities' ), 'error' );
 		return false;
 	}
 
@@ -493,7 +489,7 @@ function bookacti_validate_add_to_cart_and_book_temporarily( $true, $product_id,
 		foreach( $messages as $message ) { wc_add_notice( $message, 'error' ); }
 		return false;
 	}
-
+	
 	// Let third party plugins change form values before booking
 	$product_bookings_data = apply_filters( 'bookacti_wc_product_booking_form_values_before_add_to_cart', $product_bookings_data, $product_id, $variation_id, $form_id );
 	
@@ -518,7 +514,7 @@ function bookacti_validate_add_to_cart_and_book_temporarily( $true, $product_id,
 		
 		// Book temporarily
 		$response = bookacti_wc_add_bookings_to_cart( $product_bookings_data );
-
+		
 		// If the event is booked, add the booking ID to the corresponding hidden field
 		if( $response[ 'status' ] === 'success' ) {
 			$validated = true;

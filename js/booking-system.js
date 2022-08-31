@@ -4,7 +4,7 @@ $j( document ).ready( function() {
 	 * @since 1.7.19
 	 * @version 1.12.0
 	 * @param {Event} e
-	 * @param {Object} picked_event
+	 * @param {(FullCalendar.EventApi|Object)} picked_event
 	 * @param {Int} group_id
 	 * @param {String} group_date
 	 */
@@ -19,15 +19,15 @@ $j( document ).ready( function() {
 	 * Init actions to perfoms when the user picks an event
 	 * @version 1.12.0
 	 * @param {Event} e
-	 * @param {Object} picked_event
+	 * @param {(FullCalendar.EventApi|Object)} picked_event
 	 * @param {Int} group_id
 	 * @param {String} group_date
 	 */
 	$j( 'body' ).on( 'bookacti_events_picked', '.bookacti-booking-system', function( e, picked_event, group_id, group_date ) {
 		// Retrieve the info required to show the desired events
-		var booking_system		= $j( this );
-		var booking_system_id	= booking_system.attr( 'id' );
-		var attributes			= bookacti.booking_system[ booking_system_id ];
+		var booking_system    = $j( this );
+		var booking_system_id = booking_system.attr( 'id' );
+		var attributes        = bookacti.booking_system[ booking_system_id ];
 		
 		bookacti_set_min_and_max_quantity( booking_system );
 		bookacti_fill_booking_system_fields( booking_system );
@@ -57,9 +57,9 @@ $j( document ).ready( function() {
 	 */
 	$j( 'body' ).on( 'bookacti_group_of_events_chosen', '.bookacti-booking-system', function( e, group_id, group_date, event ) {
 		// Retrieve the info required to show the desired events
-		var booking_system		= $j( this );
-		var booking_system_id	= booking_system.attr( 'id' );
-		var attributes			= bookacti.booking_system[ booking_system_id ];
+		var booking_system    = $j( this );
+		var booking_system_id = booking_system.attr( 'id' );
+		var attributes        = bookacti.booking_system[ booking_system_id ];
 		
 		// Perform form action for groups only (for single events, see bookacti_events_picked)
 		if( attributes[ 'when_perform_form_action' ] === 'on_event_click' ) {
@@ -105,9 +105,9 @@ $j( document ).ready( function() {
 	 * @param {String} group_date
 	 */
 	$j( 'body' ).on( 'bookacti_events_unpicked', '.bookacti-booking-system', function( e, event, group_id, group_date ) {
-		var booking_system		= $j( this );
-		var booking_system_id	= booking_system.attr( 'id' );
-		var booking_method		= bookacti.booking_system[ booking_system_id ][ 'method' ];
+		var booking_system    = $j( this );
+		var booking_system_id = booking_system.attr( 'id' );
+		var booking_method    = bookacti.booking_system[ booking_system_id ][ 'method' ];
 		
 		bookacti_set_min_and_max_quantity( booking_system );
 		bookacti_fill_booking_system_fields( booking_system );
@@ -167,25 +167,28 @@ $j( document ).ready( function() {
 	/**
 	 * Display the booking list tooltip when an event is hovered
 	 * @since 1.8.0
-	 * @version 1.9.0
-	 * @param {Event} e
-	 * @param {Object} event
-	 * @param {HTMLElement} element
+	 * @version 1.15.0
+	 * @param {Object} info {
+		* @type {(FullCalendar.EventApi|Object)} event
+		* @type {HTMLElement} el
+		* @type {Event} jsEvent
+	 * }
 	 */
-	$j( 'body' ).on( 'bookacti_event_mouse_over bookacti_event_touch_start', '.bookacti-booking-system', function( e, event, element ) {
-		var booking_system		= $j( this );
-		var booking_system_id	= booking_system.attr( 'id' );
-		var attributes			= bookacti.booking_system[ booking_system_id ];
+	$j( 'body' ).on( 'bookacti_calendar_event_mouse_enter bookacti_calendar_event_touch_start', '.bookacti-booking-system', function( e, info ) {
+		var booking_system    = $j( this );
+		var booking_system_id = booking_system.attr( 'id' );
+		var attributes        = bookacti.booking_system[ booking_system_id ];
 		
 		// Check if the booking list should be displayed
 		if( ! attributes[ 'tooltip_booking_list' ] ) { return; }
 		
 		// Check if the booking list exists
-		var event_start = moment.utc( event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
-		if( typeof attributes[ 'booking_lists' ][ event.id ] === 'undefined' ) { return; }
-		if( typeof attributes[ 'booking_lists' ][ event.id ][ event_start ] === 'undefined' ) { return; }
+		var event_id = typeof info.event.groupId !== 'undefined' ? parseInt( info.event.groupId ) : parseInt( info.event.id );
+		var event_start = moment.utc( info.event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
+		if( typeof attributes[ 'booking_lists' ][ event_id ] === 'undefined' ) { return; }
+		if( typeof attributes[ 'booking_lists' ][ event_id ][ event_start ] === 'undefined' ) { return; }
 		
-		var booking_list = attributes[ 'booking_lists' ][ event.id ][ event_start ];
+		var booking_list = attributes[ 'booking_lists' ][ event_id ][ event_start ];
 		if( ! booking_list ) { return; }
 		
 		var tooltip_mouseover_timeout = parseInt( bookacti_localized.bookings_tooltip_mouseover_timeout );
@@ -205,10 +208,10 @@ $j( document ).ready( function() {
 
 			// Display the tooltip above the event
 			var tooltip_container = booking_system.siblings( '.bookacti-tooltips-container' ).find( '.bookacti-booking-list-tooltip.bookacti-tooltip-mouseover' );
-			bookacti_set_tooltip_position( element, tooltip_container, 'above' );
+			bookacti_set_tooltip_position( $j( info.el ), tooltip_container, 'above' );
 			
 			// Hook for plugins
-			$j( 'body' ).trigger( 'bookacti_event_booking_list_displayed', [ tooltip_container, booking_system, event, element ] );
+			$j( 'body' ).trigger( 'bookacti_event_booking_list_displayed', [ tooltip_container, booking_system, info.event, $j( info.el ) ] );
 		}, tooltip_mouseover_timeout );
 	});
 	
@@ -216,11 +219,15 @@ $j( document ).ready( function() {
 	/**
 	 * Remove the tooltips on mouse out
 	 * @since 1.8.0
+	 * @version 1.15.0
 	 * @param {Event} e
-	 * @param {Object} event
-	 * @param {HTMLElement} element
+	 * @param {Object} info {
+		* @type {(FullCalendar.EventApi|Object)} event
+		* @type {HTMLElement} el
+		* @type {Event} jsEvent
+	 * }
 	 */
-	$j( 'body' ).on( 'bookacti_event_mouse_out', '.bookacti-booking-system', function( e, event, element ) {
+	$j( 'body' ).on( 'bookacti_calendar_event_mouse_leave', '.bookacti-booking-system', function( e, info ) {
 		// Clear the timeout
 		if( typeof bookacti_display_bookings_tooltip_monitor !== 'undefined' ) { 
 			if( bookacti_display_bookings_tooltip_monitor ) { clearTimeout( bookacti_display_bookings_tooltip_monitor ); }
@@ -301,12 +308,16 @@ $j( document ).ready( function() {
 	if( $j( '.bookacti-booking-system' ).length ) {
 		// Init the Dialogs
 		bookacti_init_booking_system_dialogs();
-				
+		
+		/**
+		 * Load booking system on page load
+		 * @version 1.15.0
+		 */
 		$j( '.bookacti-booking-system' ).each( function() {
 			// Retrieve the info required to show the desired events
-			var booking_system		= $j( this );
-			var booking_system_id	= booking_system.attr( 'id' );
-			var attributes			= bookacti.booking_system[ booking_system_id ];
+			var booking_system    = $j( this );
+			var booking_system_id = booking_system.attr( 'id' );
+			var attributes        = bookacti.booking_system[ booking_system_id ];
 			
 			if( typeof bookacti.booking_system[ booking_system_id ][ 'loading_number' ] === 'undefined' ) {
 				bookacti.booking_system[ booking_system_id ][ 'loading_number' ] = 0;
@@ -321,12 +332,14 @@ $j( document ).ready( function() {
 			
 			if( load.load ) {
 				if( load.auto_load ) {
+					// Remove initial loading feedback
+					bookacti_remove_loading_html( booking_system );
+					
+					// Load booking system with existing data
 					bookacti_booking_method_set_up( booking_system );
 					
-					// Remove initial loading feedback
-					booking_system.find( '.bookacti-loading-alt' ).remove();
-					
 				} else {
+					// Load booking system from scratch
 					bookacti_reload_booking_system( booking_system, true );
 				}
 			}

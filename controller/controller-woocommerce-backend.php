@@ -300,7 +300,7 @@ add_filter( 'woocommerce_product_data_tabs', 'bookacti_create_activity_tab', 10,
 
 /**
  * Content of the activity tab
- * @version 1.14.0
+ * @version 1.15.0
  * @global int $thepostid
  */
 function bookacti_activity_tab_content() {
@@ -332,7 +332,7 @@ function bookacti_activity_tab_content() {
 						++$forms_nb;
 						?>
 						<option value='<?php echo esc_attr( $form->id ); ?>' <?php echo selected( $form->id, $current_form, true ); ?>>
-							<?php echo ! empty( $form->title ) ? esc_html( apply_filters( 'bookacti_translate_text', $form->title ) ) : ''; ?>
+							<?php echo ! empty( $form->title ) ? esc_html( apply_filters( 'bookacti_translate_text', $form->title ) ) : sprintf( esc_html__( 'Form #%d', 'booking-activities' ), $form->id ); ?>
 						</option>
 						<?php
 					}
@@ -419,7 +419,7 @@ add_action( 'woocommerce_variation_options', 'bookacti_add_variation_option', 10
 
 /**
  * Add custom fields for activity variation product type
- * @version 1.14.0
+ * @version 1.15.0
  * @param int $loop
  * @param array $variation_data
  * @param WP_Post $variation
@@ -453,7 +453,7 @@ function bookacti_add_variation_fields( $loop, $variation_data, $variation ) {
 					++$forms_nb;
 					?>
 					<option value='<?php echo esc_attr( $form->id ); ?>' <?php echo selected( $form->id, $current_form, true ); ?>>
-						<?php echo ! empty( $form->title ) ? esc_html( apply_filters( 'bookacti_translate_text', $form->title ) ) : ''; ?>
+						<?php echo ! empty( $form->title ) ? esc_html( apply_filters( 'bookacti_translate_text', $form->title ) ) : sprintf( esc_html__( 'Form #%d', 'booking-activities' ), $form->id ); ?>
 					</option>
 					<?php
 				}

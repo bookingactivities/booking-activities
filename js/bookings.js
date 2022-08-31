@@ -12,6 +12,18 @@ $j( document ).ready( function() {
 	
 	
 	/**
+	 * Do not init bookings booking system automatically if it is hidden
+	 * @since 1.15.0
+	 * @param {Event} e
+	 * @param {Object} load
+	 * @param {Object} attributes
+	 */
+	$j( 'body' ).on( 'bookacti_init_booking_sytem', '.bookacti-booking-system#bookacti-booking-system-bookings-page', function( e, load, attributes ) {
+		if( ! $j( '#bookacti-booking-system-filter-container' ).is( ':visible' ) ) { load.load = false; }
+	});
+	
+	
+	/**
 	 * Display or hide activities filter according to selected templates - on change
 	 * @version 1.8.0
 	 */
@@ -78,7 +90,7 @@ $j( document ).ready( function() {
 	 * Display the "unpick events" button
 	 * @version 1.12.0
 	 * @param {Event} e
-	 * @param {Object} event
+	 * @param {(FullCalendar.EventApi|Object)} event
 	 * @param {Object} groups
 	 * @param {Boolean} open_dialog
 	 */
@@ -93,7 +105,7 @@ $j( document ).ready( function() {
 	 * Filter the booking list when an event is picked
 	 * @version 1.12.0
 	 * @param {Event} e
-	 * @param {Object} event
+	 * @param {(FullCalendar.EventApi|Object)} event
 	 * @param {Object} groups
 	 * @param {Boolean} open_dialog
 	 */
@@ -110,7 +122,7 @@ $j( document ).ready( function() {
 	 * @param {Event} e
 	 * @param {Int} group_id
 	 * @param {String} group_date
-	 * @param {Object} event
+	 * @param {(FullCalendar.EventApi|Object)} event
 	 */
 	$j( '#bookacti-booking-system-bookings-page' ).on( 'bookacti_group_of_events_chosen', function( e, group_id, group_date, event ) {
 		if( $j( '#bookacti-submit-filter-button' ).data( 'ajax' ) ) { bookacti_filter_booking_list(); }
@@ -119,13 +131,11 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Display / Hide activities on the bookings calendar
-	 * @version 1.8.0
+	 * @version 1.15.0
 	 */
 	$j( '#bookacti-booking-filter-activities' ).on( 'change', function() {
 		bookacti_unpick_all_events_filter();
-		var booking_system	= $j( '#bookacti-booking-system-bookings-page' );
-		var calendar		= booking_system.find( '.bookacti-calendar' );
-		calendar.fullCalendar( 'rerenderEvents' );
+		bookacti_booking_method_rerender_events( $j( '#bookacti-booking-system-bookings-page' ) );
 		if( $j( '#bookacti-submit-filter-button' ).data( 'ajax' ) ) { bookacti_filter_booking_list(); }
 	});
 	
@@ -143,34 +153,80 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Hide filtered events
-	 * @version 1.12.9
+	 * @version 1.15.0
 	 * @param {Event} e
-	 * @param {Object} event
-	 * @param {HTMLElement} element
-	 * @param {object} view
+	 * @param {Object} return_object {
+	 *  @type {Array} class_names
+	 * }
+	 * @param {Object} info {
+	 *  @type {FullCalendar.EventApi} event
+	 *  @type {String} timeText
+	 *  @type {Boolean} isStart
+	 *  @type {Boolean} isEnd
+	 *  @type {Boolean} isMirror
+	 *  @type {Boolean} isPast
+	 *  @type {Boolean} isFuture
+	 *  @type {Boolean} isToday
+	 *  @type {HTMLElement} el
+	 *  @type {FullCalendar.ViewApi} view The current View Object.
+	 * }
 	 */
-	booking_system.on( 'bookacti_event_render', function( e, event, element, view ) { 
-		element = element || undefined;
-		
+	booking_system.on( 'bookacti_calendar_event_class_names', function( e, return_object, info ) { 
 		// Check if the event is hidden
-		var activity_id			= bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event.id ][ 'activity_id' ];
-		var visible_activities	= $j( '#bookacti-booking-filter-activities' ).val() ? $j( '#bookacti-booking-filter-activities' ).val() : [];
+		var event_id           = typeof info.event.groupId !== 'undefined' ? parseInt( info.event.groupId ) : parseInt( info.event.id );
+		var activity_id        = bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event_id ][ 'activity_id' ];
+		var visible_activities = $j( '#bookacti-booking-filter-activities' ).val() ? $j( '#bookacti-booking-filter-activities' ).val() : [];
 		if( $j.isNumeric( visible_activities ) ) { visible_activities = [ visible_activities ]; }
 		
 		// Hide events according to the Activities filter values
 		if( visible_activities ) { 
 			if( $j.isArray( visible_activities ) ) {
-				if( visible_activities.length && $j.inArray( activity_id + '', visible_activities ) === -1 ) { event.render = 0; }
+				if( visible_activities.length && $j.inArray( activity_id + '', visible_activities ) === -1 ) { 
+					return_object.class_names.push( 'bookacti-event-hidden' );
+				}
 			}
-		}
-		
-		// Add the total availability
-		if( typeof element !== 'undefined' ) {
-			var availability = parseInt( bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event.id ][ 'availability' ] );
-			element.find( '.bookacti-availability-container .bookacti-available-places' ).append( ' / <span class="bookacti-total-places-number">' + availability + '</span>' );
 		}
 	});
 	
+	
+	/**
+	 * Add total availability to availbaility div in Bookings calendar events
+	 * @version 1.15.0
+	 * @param {Event} e
+	 * @param {Object} return_object {
+	 *  @type {Array} domNodes
+	 * }
+	 * @param {Object} info {
+	 *  @type {FullCalendar.EventApi} event
+	 *  @type {String} timeText
+	 *  @type {Boolean} isStart
+	 *  @type {Boolean} isEnd
+	 *  @type {Boolean} isMirror
+	 *  @type {Boolean} isPast
+	 *  @type {Boolean} isFuture
+	 *  @type {Boolean} isToday
+	 *  @type {HTMLElement} el
+	 *  @type {FullCalendar.ViewApi} view The current View Object.
+	 * }
+	 */
+	booking_system.on( 'bookacti_calendar_event_content', function( e, return_object, info ) { 
+		// Find the availability div
+		var avail_div_i = -1;
+		for( var i = 0; i < return_object.domNodes.length; i++ ) {
+			if( return_object.domNodes[ i ].classList.contains( 'bookacti-availability-container' ) ) {
+				avail_div_i = i;
+				break;
+			}
+		}
+		if( avail_div_i < 0 ) { return; }
+		
+		var availability  = parseInt( bookacti.booking_system[ booking_system_id ][ 'events_data' ][ info.event.groupId ][ 'availability' ] );
+		var new_avail_div = $j( return_object.domNodes[ avail_div_i ] );
+		new_avail_div.find( '.bookacti-available-places' ).append( ' / <span class="bookacti-total-places-number">' + availability + '</span>' );
+		
+		return_object.domNodes[ avail_div_i ] = new_avail_div[ 0 ];
+	});
+
 	
 	/**
 	 * Open the bookings page calendar settings dialog

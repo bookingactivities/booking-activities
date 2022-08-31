@@ -94,6 +94,42 @@ function bookacti_init_tooltip() {
 
 
 /**
+ * Get loading spinner and text
+ * @since 1.15.0
+ * @returns {HTMLElement}
+ */
+function bookacti_get_loading_html() {
+	return '<div class="bookacti-loading-container"><div class="bookacti-loading-image"><div class="bookacti-spinner"></div></div><div class="bookacti-loading-text">' + bookacti_localized.loading + '</div></div>';
+}
+
+
+/**
+ * Add loading spinner + text
+ * @since 1.15.0
+ * @param {HTMLElement} element
+ * @param {String} where 'append' (Default), 'prepend', 'before', after'
+ */
+function bookacti_add_loading_html( element, where ) {
+	where = where ? where : 'append';
+	var loading_html = bookacti_get_loading_html();
+	     if( where === 'before' )  { element.before( loading_html ); }
+	else if( where === 'after' )   { element.after( loading_html ); }
+	else if( where === 'prepend' ) { element.prepend( loading_html ); }
+	else                           { element.append( loading_html ); }
+}
+
+
+/**
+ * Remove loading spinner + text
+ * @since 1.15.0
+ * @param {HTMLElement} element
+ */
+function bookacti_remove_loading_html( element ) {
+	element.find( '.bookacti-loading-container' ).addBack( '.bookacti-loading-container' ).remove();
+}
+
+
+/**
  * Scroll to element or to position
  * @version 1.7.19
  * @param {HTMLElement|Number} element
@@ -359,41 +395,42 @@ function bookacti_init_moment_format_from_php_date_format() {
 /**
  * Convert a PHP datetime format to moment JS format
  * @since 1.7.16
+ * @version 1.15.0
  * @param {string} php_format
  * @returns {string}
  */
 function bookacti_convert_php_datetime_format_to_moment_js( php_format ) {
 	var format_map = {
-		d: 'DD',
-		D: 'ddd',
-		j: 'D',
-		l: 'dddd',
-		N: 'E',
-		w: 'd',
-		W: 'W',
-		F: 'MMMM',
-		m: 'MM',
-		M: 'MMM',
-		n: 'M',
-		o: 'GGGG',
-		Y: 'YYYY',
-		y: 'YY',
-		a: 'a',
-		A: 'A',
-		g: 'h',
-		G: 'H',
-		h: 'hh',
-		H: 'HH',
-		i: 'mm',
-		s: 'ss',
-		u: '[u]', // not sure if moment has this
-		e: '[e]', // moment does not have this
-		O: 'ZZ',
-		P: 'Z',
-		T: '[T]', // deprecated in moment
-		c: 'YYYY-MM-DD[T]HH:mm:ssZ',
-		r: 'ddd, DD MMM YYYY HH:mm:ss ZZ',
-		U: 'X'
+		"d": 'DD',
+		"D": 'ddd',
+		"j": 'D',
+		"l": 'dddd',
+		"N": 'E',
+		"w": 'd',
+		"W": 'W',
+		"F": 'MMMM',
+		"m": 'MM',
+		"M": 'MMM',
+		"n": 'M',
+		"o": 'GGGG',
+		"Y": 'YYYY',
+		"y": 'YY',
+		"a": 'a',
+		"A": 'A',
+		"g": 'h',
+		"G": 'H',
+		"h": 'hh',
+		"H": 'HH',
+		"i": 'mm',
+		"s": 'ss',
+		"u": 'X',
+		"e": 'z',
+		"O": 'ZZ',
+		"P": 'Z',
+		"T": 'z',
+		"c": 'YYYY-MM-DD[T]HH:mm:ssZ',
+		"r": 'ddd, DD MMM YYYY HH:mm:ss ZZ',
+		"U": 'X'
 	};
 	
 	window.has_backslash = false;
@@ -409,10 +446,69 @@ function bookacti_convert_php_datetime_format_to_moment_js( php_format ) {
 
 
 /**
+ * Convert a PHP datetime format to FullCalendar Date-Formatting Object, see https://fullcalendar.io/docs/date-formatting/
+ * @since 1.15.0
+ * @param {string} php_format
+ * @returns {string}
+ */
+function bookacti_convert_php_datetime_format_to_fc_date_formatting_object( php_format ) {
+	if( ! php_format.length ) { return {}; }
+	
+	var format_map = {
+		"d": { 'day': '2-digit' },
+		"D": { 'weekday': 'short' },
+		"j": { 'day': 'numeric' },
+		"l": { 'weekday': 'long' },
+		"N": {},
+		"w": {},
+		"W": { 'week': 'numeric' },
+		"F": { 'month': 'long' },
+		"m": { 'month': '2-digit' },
+		"M": { 'month': 'short' },
+		"n": { 'month': 'numeric' },
+		"o": { 'year': 'numeric' },
+		"Y": { 'year': 'numeric' },
+		"y": { 'year': '2-digit' },
+		"a": { 'meridiem': 'lowercase' },
+		"A": {},
+		"g": { 'hour': 'numeric', 'hour12': true },
+		"G": { 'hour': 'numeric', 'hour12': false },
+		"h": { 'hour': '2-digit', 'hour12': true },
+		"H": { 'hour': '2-digit', 'hour12': false },
+		"i": { 'minute': '2-digit' },
+		"s": { 'second': '2-digit' },
+		"u": { 'timeZoneName': 'short' },
+		"e": { 'timeZoneName': 'short' },
+		"O": {},
+		"P": {},
+		"T": { 'timeZoneName': 'short' },
+		"c": { 'year': 'numeric', 'month': '2-digit', 'day': '2-digit', 'hour': '2-digit', 'hour12': false, 'minute': '2-digit', 'second': '2-digit' },
+		"r": { 'year': 'numeric', 'month': 'short', 'day': '2-digit', 'weekday': 'short', 'hour': '2-digit', 'hour12': false, 'minute': '2-digit', 'second': '2-digit' },
+		"U": {}
+	};
+	
+	var date_formatting_obj = { 'meridiem': false };
+	
+	var i = php_format.length;
+	window.has_backslash = false;
+	while( i-- ) {
+		if( str[ i ] === '\\' ) { window.has_backslash = true; continue; }
+		if( ! window.has_backslash && typeof format_map[ str[ i ] ] !== 'undefined' ) {
+			$j.extend( true, date_formatting_obj, format_map[ str[ i ] ] );
+		}
+		window.has_backslash = false;
+	}
+	
+	return date_formatting_obj;
+}
+
+
+/**
  * Get URL parameter value
  * @since 1.7.4
+ * @version 1.15.0
  * @param {string} desired_param
- * @returns {string|null}
+ * @returns {String}
  */
 function bookacti_get_url_parameter( desired_param ) {
 	var url = window.location.search.substring( 1 );
@@ -424,7 +520,7 @@ function bookacti_get_url_parameter( desired_param ) {
 			return decodeURIComponent( param_name[ 1 ].replace( /\+/g, '%20' ) );
 		}
 	}
-	return null;
+	return '';
 }
 
 

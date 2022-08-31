@@ -84,7 +84,7 @@ add_action( 'wp_ajax_bookactiInsertTemplate', 'bookacti_controller_insert_templa
 
 /**
  * AJAX Controller - Update template
- * @version	1.12.3
+ * @version	1.15.0
  */
 function bookacti_controller_update_template() {
 	// Check nonce and capabilities
@@ -122,11 +122,11 @@ function bookacti_controller_update_template() {
 		bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_updated', 'template_data' => $template_data ), 'update_template' );
 	}
 	
-	$templates_data = bookacti_get_templates_data( $template_id, true );
+	$template_data = bookacti_get_template_data( $template_id );
+	
+	do_action( 'bookacti_template_updated', $template_id, $template_data );
 
-	do_action( 'bookacti_template_updated', $template_id, $templates_data[ $template_id ] );
-
-	bookacti_send_json( array( 'status' => 'success', 'template_data' => $templates_data[ $template_id ] ), 'update_template' );
+	bookacti_send_json( array( 'status' => 'success', 'template_data' => $template_data ), 'update_template' );
 }
 add_action( 'wp_ajax_bookactiUpdateTemplate', 'bookacti_controller_update_template' );
 
@@ -179,7 +179,7 @@ function bookacti_controller_get_calendar_editor_data_by_interval() {
 	$interval = bookacti_sanitize_events_interval( $interval );
 	
 	$events_args = array( 'templates' => array( $template_id ), 'interval' => $interval, 'past_events' => 1 );
-	$events	= bookacti_fetch_events_for_calendar_editor( $events_args );
+	$events = bookacti_fetch_events_for_calendar_editor( $events_args );
 	
 	$group_ids = isset( $_POST[ 'group_ids' ] ) ? ( is_array( $_POST[ 'group_ids' ] ) ? $_POST[ 'group_ids' ] : ( is_string( $_POST[ 'group_ids' ] ) ? bookacti_maybe_decode_json( stripslashes( $_POST[ 'group_ids' ] ), true ) : array() ) ) : array();
 	$group_ids = bookacti_ids_to_array( $group_ids );
@@ -190,11 +190,11 @@ function bookacti_controller_get_calendar_editor_data_by_interval() {
 	$bookings_nb = $events[ 'data' ] ? bookacti_get_number_of_bookings_per_event( $bookings_nb_args ) : array();
 	
 	bookacti_send_json( array( 
-		'status' => 'success', 
-		'events' => $events[ 'events' ] ? $events[ 'events' ] : array(),
-		'events_data' => $events[ 'data' ] ? $events[ 'data' ] : array(),
+		'status'        => 'success', 
+		'events'        => $events[ 'events' ] ? $events[ 'events' ] : array(),
+		'events_data'   => $events[ 'data' ] ? $events[ 'data' ] : array(),
 		'groups_events' => ! empty( $groups[ 'groups' ] ) ? $groups[ 'groups' ] : array(),
-		'bookings' => $bookings_nb
+		'bookings'      => $bookings_nb
 	), 'get_calendar_editor_data_by_interval' );
 }
 add_action( 'wp_ajax_bookactiGetCalendarEditorDataByInterval', 'bookacti_controller_get_calendar_editor_data_by_interval' );
@@ -202,7 +202,7 @@ add_action( 'wp_ajax_bookactiGetCalendarEditorDataByInterval', 'bookacti_control
 
 /**
  * AJAX Controller - Add new event on calendar
- * @version 1.11.0
+ * @version 1.15.0
  */
 function bookacti_controller_insert_event() {
 	// Check nonce and capabilities
@@ -228,7 +228,7 @@ function bookacti_controller_insert_event() {
 	bookacti_send_json( array( 
 		'status' => 'success', 
 		'event_id' => $event_id,
-		'event_data' => $events[ 'data' ][ $event_id ] ? $events[ 'data' ][ $event_id ] : array(),
+		'event_data' => ! empty( $events[ 'data' ][ $event_id ] ) ? $events[ 'data' ][ $event_id ] : array()
 	), 'insert_event' );
 }
 add_action( 'wp_ajax_bookactiInsertEvent', 'bookacti_controller_insert_event' );
@@ -237,7 +237,7 @@ add_action( 'wp_ajax_bookactiInsertEvent', 'bookacti_controller_insert_event' );
 /**
  * AJAX Controller - Update event dates (move or resize an event in the editor)
  * @since 1.10.0 (was bookacti_controller_move_or_resize_event)
- * @version 1.14.2
+ * @version 1.15.0
  */
 function bookacti_controller_update_event_dates() {
 	// Check nonce
@@ -245,7 +245,7 @@ function bookacti_controller_update_event_dates() {
 	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'update_event_dates' ); }
 
 	// Get event data
-	$event_id = intval( $_POST[ 'event_id' ] );
+	$event_id  = ! empty( $_POST[ 'event_id' ] ) ? intval( $_POST[ 'event_id' ] ) : 0;
 	$old_event = bookacti_get_event_by_id( $event_id );
 	
 	if( ! $old_event ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'event_not_found' ), 'update_event_dates' ); }
@@ -255,28 +255,28 @@ function bookacti_controller_update_event_dates() {
 	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'update_event_dates' ); }
 	
 	// Sanitize update data
-	$forced_update		= ! empty( $_POST[ 'forced_update' ] ) ? true : false;
-	$send_notifications	= ! empty( $_POST[ 'send_notifications' ] ) ? true : false;
+	$forced_update      = ! empty( $_POST[ 'forced_update' ] ) ? true : false;
+	$send_notifications = ! empty( $_POST[ 'send_notifications' ] ) ? true : false;
 	
 	$timezone = bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' );
-	$now_dt = new DateTime( 'now', new DateTimeZone( $timezone ) );
+	$now_dt   = new DateTime( 'now', new DateTimeZone( $timezone ) );
 	
 	// Sanitize new event data
-	$old_event_start = bookacti_sanitize_datetime( $_POST[ 'old_event_start' ] );
-	$old_event_end   = bookacti_sanitize_datetime( $_POST[ 'old_event_end' ] );
-	$new_event_start = bookacti_sanitize_datetime( $_POST[ 'event_start' ] );
-	$new_event_end   = bookacti_sanitize_datetime( $_POST[ 'event_end' ] );
+	$old_event_start = ! empty( $_POST[ 'old_event_start' ] ) ? bookacti_sanitize_datetime( $_POST[ 'old_event_start' ] ) : '';
+	$old_event_end   = ! empty( $_POST[ 'old_event_end' ] ) ? bookacti_sanitize_datetime( $_POST[ 'old_event_end' ] ) : '';
+	$new_event_start = ! empty( $_POST[ 'event_start' ] ) ? bookacti_sanitize_datetime( $_POST[ 'event_start' ] ) : '';
+	$new_event_end   = ! empty( $_POST[ 'event_end' ] ) ? bookacti_sanitize_datetime( $_POST[ 'event_end' ] ) : '';
 	
 	// Compute delta
-	$old_event_start_dt  = DateTime::createFromFormat( 'Y-m-d H:i:s', $old_event_start, new DateTimeZone( $timezone ) );
-	$old_event_end_dt    = DateTime::createFromFormat( 'Y-m-d H:i:s', $old_event_end, new DateTimeZone( $timezone ) );
-	$new_event_start_dt  = DateTime::createFromFormat( 'Y-m-d H:i:s', $new_event_start, new DateTimeZone( $timezone ) );
-	$new_event_end_dt    = DateTime::createFromFormat( 'Y-m-d H:i:s', $new_event_end, new DateTimeZone( $timezone ) );
+	$old_event_start_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $old_event_start, new DateTimeZone( $timezone ) );
+	$old_event_end_dt   = DateTime::createFromFormat( 'Y-m-d H:i:s', $old_event_end, new DateTimeZone( $timezone ) );
+	$new_event_start_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $new_event_start, new DateTimeZone( $timezone ) );
+	$new_event_end_dt   = DateTime::createFromFormat( 'Y-m-d H:i:s', $new_event_end, new DateTimeZone( $timezone ) );
 	
 	$delta_seconds_start = $new_event_start_dt->format( 'U' ) - $old_event_start_dt->format( 'U' );
 	$delta_seconds_end   = $new_event_end_dt->format( 'U' ) - $old_event_end_dt->format( 'U' );
 	
-	$delta_start_di      = date_diff( new DateTime( $old_event_end_dt->format( 'Y-m-d' ) ), new DateTime( $new_event_start_dt->format( 'Y-m-d' ) ) );
+	$delta_start_di      = date_diff( new DateTime( $old_event_start_dt->format( 'Y-m-d' ) ), new DateTime( $new_event_start_dt->format( 'Y-m-d' ) ) );
 	$delta_days_start    = intval( $delta_start_di->format( '%r%a' ) );
 	$delta_days_start_di = new DateInterval( 'P' . abs( $delta_days_start ). 'D' );
 	$delta_days_start_di->invert = $delta_days_start < 0 ? 1 : 0;
@@ -328,24 +328,24 @@ function bookacti_controller_update_event_dates() {
 	}
 
 	// Delay by the same amount of time the repetion period
-	$repeat_from_dt	= $old_event->repeat_from && $old_event->repeat_freq && $old_event->repeat_freq !== 'none' ? DateTime::createFromFormat( 'Y-m-d', $old_event->repeat_from ) : false;
-	$repeat_to_dt	= $old_event->repeat_to && $old_event->repeat_freq && $old_event->repeat_freq !== 'none' ? DateTime::createFromFormat( 'Y-m-d', $old_event->repeat_to ) : false;
+	$repeat_from_dt = $old_event->repeat_from && $old_event->repeat_freq && $old_event->repeat_freq !== 'none' ? DateTime::createFromFormat( 'Y-m-d', $old_event->repeat_from ) : false;
+	$repeat_to_dt   = $old_event->repeat_to && $old_event->repeat_freq && $old_event->repeat_freq !== 'none' ? DateTime::createFromFormat( 'Y-m-d', $old_event->repeat_to ) : false;
 	
 	if( $repeat_from_dt && $repeat_to_dt && $delta_days_start !== 0 ) { 
 		$repeat_from_dt->add( $delta_days_start_di );
 		$repeat_to_dt->add( $delta_days_start_di );
 	}
 	
-	$new_event_repeat_from	= $repeat_from_dt ? $repeat_from_dt->format( 'Y-m-d' ) : 'null';
-	$new_event_repeat_to	= $repeat_to_dt ? $repeat_to_dt->format( 'Y-m-d' ) : 'null';
+	$new_event_repeat_from = $repeat_from_dt ? $repeat_from_dt->format( 'Y-m-d' ) : 'null';
+	$new_event_repeat_to   = $repeat_to_dt ? $repeat_to_dt->format( 'Y-m-d' ) : 'null';
 	
 	// Update the event
 	$event_data = array_merge( (array) $old_event, array( 'start' => $new_event_start, 'end' => $new_event_end, 'repeat_from' => $new_event_repeat_from, 'repeat_to' => $new_event_repeat_to ) );
 	$event_data = bookacti_sanitize_event_data( $event_data );
-	$updated = bookacti_update_event( $event_data );
+	$updated    = bookacti_update_event( $event_data );
 
-	if( $updated === false ){ bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_updated' ), 'update_event_dates' ); }
-	if( $updated === 0 )	{ bookacti_send_json( array( 'status' => 'no_changes' ), 'update_event_dates' ); }
+	if( $updated === false ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_updated' ), 'update_event_dates' ); }
+	if( $updated === 0 )     { bookacti_send_json( array( 'status' => 'no_changes' ), 'update_event_dates' ); }
 	
 	$new_event = (object) $event_data;
 	
@@ -364,14 +364,14 @@ function bookacti_controller_update_event_dates() {
 
 	// Fetch new events
 	$interval = ! empty( $_POST[ 'interval' ] ) ? bookacti_sanitize_events_interval( $_POST[ 'interval' ] ) : array();
-	$events = bookacti_fetch_events_for_calendar_editor( array( 'events' => array( $event_id ), 'interval' => $interval ) );
+	$events   = bookacti_fetch_events_for_calendar_editor( array( 'events' => array( $event_id ), 'interval' => $interval ) );
 	
 	do_action( 'bookacti_event_dates_updated', $old_event, $new_event, $events );
 
 	bookacti_send_json( array( 
-		'status' => 'success', 
-		'events' => $events[ 'events' ] ? $events[ 'events' ] : array(),
-		'event_data' => $events[ 'data' ][ $event_id ] ? $events[ 'data' ][ $event_id ] : array()
+		'status'     => 'success', 
+		'events'     => $events[ 'events' ] ? $events[ 'events' ] : array(),
+		'event_data' => ! empty( $events[ 'data' ][ $event_id ] ) ? $events[ 'data' ][ $event_id ] : array()
 	), 'update_event_dates' );
 }
 add_action( 'wp_ajax_bookactiUpdateEventDates', 'bookacti_controller_update_event_dates' );
@@ -380,7 +380,7 @@ add_action( 'wp_ajax_bookactiUpdateEventDates', 'bookacti_controller_update_even
 /**
  * AJAX Controller - Duplicate an event
  * @since 1.10.0
- * @version 1.13.0
+ * @version 1.15.0
  */
 function bookacti_controller_duplicate_event() {
 	// Check nonce
@@ -397,9 +397,15 @@ function bookacti_controller_duplicate_event() {
 	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'duplicate_event' ); }
 	
 	// Compute new event repetition period
-	$repeat_from_dt	= $event->repeat_from ? DateTime::createFromFormat( 'Y-m-d', $event->repeat_from ) : false;
-	$repeat_to_dt	= $event->repeat_to ? DateTime::createFromFormat( 'Y-m-d', $event->repeat_to ) : false;
-	$delta_days		= ! empty( $_POST[ 'delta_days' ] ) ? intval( $_POST[ 'delta_days' ] ) : 0;
+	$timezone           = bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' );
+	$old_event_start    = bookacti_sanitize_datetime( $_POST[ 'old_event_start' ] );
+	$new_event_start    = bookacti_sanitize_datetime( $_POST[ 'event_start' ] );
+	$old_event_start_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $old_event_start, new DateTimeZone( $timezone ) );
+	$new_event_start_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $new_event_start, new DateTimeZone( $timezone ) );
+	$delta_start_di     = date_diff( new DateTime( $old_event_start_dt->format( 'Y-m-d' ) ), new DateTime( $new_event_start_dt->format( 'Y-m-d' ) ) );
+	$delta_days         = intval( $delta_start_di->format( '%r%a' ) );
+	$repeat_from_dt	    = $event->repeat_from ? DateTime::createFromFormat( 'Y-m-d', $event->repeat_from ) : false;
+	$repeat_to_dt       = $event->repeat_to ? DateTime::createFromFormat( 'Y-m-d', $event->repeat_to ) : false;
 	
 	// Delay by the same amount of time the repetion period
 	if( $event->repeat_freq !== 'none' && $repeat_from_dt && $repeat_to_dt && $delta_days !== 0 ) { 
@@ -412,8 +418,8 @@ function bookacti_controller_duplicate_event() {
 	// Get new event dates
 	$new_event_start = bookacti_sanitize_datetime( $_POST[ 'event_start' ] );
 	$new_event_end = bookacti_sanitize_datetime( $_POST[ 'event_end' ] );
-	$new_event_repeat_from	= $repeat_from_dt ? $repeat_from_dt->format( 'Y-m-d' ) : 'null';
-	$new_event_repeat_to	= $repeat_to_dt ? $repeat_to_dt->format( 'Y-m-d' ) : 'null';
+	$new_event_repeat_from = $repeat_from_dt ? $repeat_from_dt->format( 'Y-m-d' ) : 'null';
+	$new_event_repeat_to   = $repeat_to_dt ? $repeat_to_dt->format( 'Y-m-d' ) : 'null';
 	
 	// Get new event data
 	$event_data = array_merge( (array) $event, array( 'start' => $new_event_start, 'end' => $new_event_end, 'repeat_from' => $new_event_repeat_from, 'repeat_to' => $new_event_repeat_to ) );
@@ -427,16 +433,16 @@ function bookacti_controller_duplicate_event() {
 	bookacti_duplicate_metadata( 'event', $event_id, $new_event_id );
 	
 	// Fetch new events
-	$interval	= ! empty( $_POST[ 'interval' ] ) ? bookacti_sanitize_events_interval( $_POST[ 'interval' ] ) : array();
-	$events		= bookacti_fetch_events_for_calendar_editor( array( 'events' => array( $new_event_id ), 'interval' => $interval ) );
+	$interval = ! empty( $_POST[ 'interval' ] ) ? bookacti_sanitize_events_interval( $_POST[ 'interval' ] ) : array();
+	$events   = bookacti_fetch_events_for_calendar_editor( array( 'events' => array( $new_event_id ), 'interval' => $interval ) );
 	
 	do_action( 'bookacti_event_duplicated', $event_id, $new_event_id, $events );
 
 	bookacti_send_json( array( 
-		'status'		=> 'success', 
-		'event_id'		=> $new_event_id, 
-		'events'		=> $events[ 'events' ] ? $events[ 'events' ] : array(),
-		'event_data'	=> $events[ 'data' ][ $new_event_id ] ? $events[ 'data' ][ $new_event_id ] : array()
+		'status'     => 'success', 
+		'event_id'   => $new_event_id, 
+		'events'     => ! empty( $events[ 'events' ] ) ? $events[ 'events' ] : array(),
+		'event_data' => ! empty( $events[ 'data' ][ $event_id ] ) ? $events[ 'data' ][ $event_id ] : array()
 	), 'duplicate_event' );
 }
 add_action( 'wp_ajax_bookactiDuplicateEvent', 'bookacti_controller_duplicate_event' );
@@ -507,8 +513,8 @@ function bookacti_controller_update_event() {
 	}
 
 	// Retrieve new events
-	$interval	= ! empty( $_POST[ 'interval' ] ) ? bookacti_sanitize_events_interval( $_POST[ 'interval' ] ) : array();
-	$events		= bookacti_fetch_events_for_calendar_editor( array( 'events' => array( $event_id ), 'interval' => $interval ) );
+	$interval = ! empty( $_POST[ 'interval' ] ) ? bookacti_sanitize_events_interval( $_POST[ 'interval' ] ) : array();
+	$events   = bookacti_fetch_events_for_calendar_editor( array( 'events' => array( $event_id ), 'interval' => $interval ) );
 
 	// Retrieve groups of events
 	$groups = bookacti_get_groups_of_events( array( 'templates' => array( $old_event->template_id ), 'nb_events' => array(), 'past_events' => 1, 'data_only' => 1 ) );
@@ -516,11 +522,11 @@ function bookacti_controller_update_event() {
 	do_action( 'bookacti_event_updated', $event_id, $events );
 	
 	bookacti_send_json( array( 
-		'status'			=> 'success', 
-		'events'			=> $events[ 'events' ] ? $events[ 'events' ] : array(),
-		'events_data'		=> $events[ 'data' ] ? $events[ 'data' ] : array(),
-		'groups_data'		=> $groups[ 'data' ],
-		'updated'			=> $updated
+		'status'      => 'success', 
+		'events'      => $events[ 'events' ] ? $events[ 'events' ] : array(),
+		'events_data' => $events[ 'data' ] ? $events[ 'data' ] : array(),
+		'groups_data' => $groups[ 'data' ],
+		'updated'     => $updated
 	), 'update_event' );
 }
 add_action( 'wp_ajax_bookactiUpdateEvent', 'bookacti_controller_update_event' );

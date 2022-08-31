@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking list page
- * @version 1.14.0
+ * @version 1.15.0
  */
 
 // Exit if accessed directly
@@ -13,16 +13,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	<hr class='wp-header-end'>
 
 	<?php
-	$templates = bookacti_fetch_templates();
+	// Check if the user has available calendars
+	$templates = bookacti_get_templates_data();
 	if( ! $templates ) {
 		$editor_path = 'admin.php?page=bookacti_calendars';
 		$editor_url = admin_url( $editor_path );
 		?>
-			<div id='bookacti-first-template-container' >
+			<div id='bookacti-first-template-container'>
 				<h2>
 					<?php
-					/* translators: %1$s and %2$s delimit the link to Calendar Editor page. */
-					echo sprintf( esc_html__( 'Welcome! It seems you don\'t have any calendar yet. Go to %1$sCalendar Editor%2$s to create your first calendar.', 'booking-activities' ), '<a href="' . esc_url( $editor_url ) . '" >', '</a>' );
+					/* translators: %s is a link to "Calendar Editor" page. */
+					echo sprintf( esc_html__( 'Welcome! It seems you don\'t have any calendar yet. Go to %s to create your first calendar', 'booking-activities' ), '<a href="' . esc_url( $editor_url ) . '" >' . esc_html__( 'Calendar Editor', 'booking-activities' ) . '</a>' );
 					?>
 				</h2>
 			</div>
@@ -42,6 +43,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	$templates_select_options = array();
 	foreach( $templates as $template_id => $template ) {
 		$templates_select_options[ $template_id ] = esc_html( $template[ 'title' ] );
+	}
+	
+	// Format activities from URL
+	$selected_activities = isset( $_REQUEST[ 'activities' ] ) ? $_REQUEST[ 'activities' ] : array();
+	
+	$activities = bookacti_fetch_activities_with_templates_association( $available_template_ids );
+	$activities_select_options = array();
+	foreach( $activities as $activity_id => $activity ) {
+		$activities_select_options[ $activity_id ] = ! empty( $activity[ 'title' ] ) ? esc_html( apply_filters( 'bookacti_translate_text', $activity[ 'title' ] ) ) : '';
 	}
 	?>
 	
@@ -95,19 +105,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					?>
 					</div>
 				</div>
-				<div id='bookacti-activities-filter-container' class='bookacti-filter-container'>
+				<div id='bookacti-activities-filter-container' class='bookacti-filter-container' style='<?php if( count( $activities_select_options ) < 2 ) { echo 'display:none;'; } ?>'>
 					<div class='bookacti-filter-title' >
 						<?php esc_html_e( 'Activities', 'booking-activities' ); ?>
 					</div>
 					<div class='bookacti-filter-content'>
 					<?php
-						// Format activities from URL
-						$activities = bookacti_fetch_activities_with_templates_association( $available_template_ids );
-						$activities_select_options = array();
-						foreach ( $activities as $activity_id => $activity ) {
-							$activities_select_options[ $activity_id ] = ! empty( $activity[ 'title' ] ) ? esc_html( apply_filters( 'bookacti_translate_text', $activity[ 'title' ] ) ) : '';
-						}
-						$selected_activities = isset( $_REQUEST[ 'activities' ] ) ? $_REQUEST[ 'activities' ] : array();
 						$args = array(
 							'type'		=> 'select',
 							'name'		=> 'activities',

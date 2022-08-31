@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Fetch events to display on calendar editor
  * @since 1.1.0 (replace bookacti_fetch_events)
- * @version 1.13.0
+ * @version 1.15.0
  * @global wpdb $wpdb
  * @param array $raw_args {
  *  @type array $templates Array of template IDs
@@ -25,7 +25,8 @@ function bookacti_fetch_events_for_calendar_editor( $raw_args = array() ) {
 		'templates' => array(),
 		'events' => array(),
 		'interval' => array(),
-		'skip_exceptions' => 0,
+		'skip_exceptions' => 1,
+		'skip_days_off' => 1,
 		'past_events' => 1,
 		'bounding_only' => 0,
 		'data_only' => 0
@@ -35,9 +36,9 @@ function bookacti_fetch_events_for_calendar_editor( $raw_args = array() ) {
 	global $wpdb;
 
 	// Set current datetime
-	$timezone					= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
-	$current_datetime_object	= new DateTime( 'now', $timezone );
-	$user_timestamp_offset		= $current_datetime_object->format( 'P' );
+	$timezone                = new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
+	$current_datetime_object = new DateTime( 'now', $timezone );
+	$user_timestamp_offset   = $current_datetime_object->format( 'P' );
 
 	// Select events
 	$query  = 'SELECT E.id as event_id, E.template_id, E.activity_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_step, E.repeat_on, E.repeat_from, E.repeat_to, E.repeat_exceptions, E.availability, A.color ' 
@@ -121,14 +122,48 @@ function bookacti_fetch_events_for_calendar_editor( $raw_args = array() ) {
 	}
 
 	// Allow plugins to change the query
-	$query = apply_filters( 'bookacti_get_events_for_editor_query', $query, $args );
+	$query = apply_filters( 'bookacti_calendar_editor_events_query', $query, $args );
 
 	$events = $wpdb->get_results( $query, OBJECT );
 
 	// Transform raw events from database to array of individual events
 	$events_array = bookacti_get_events_array_from_db_events( $events, $args );
+	
+	// Remove events on days off
+	if( $args[ 'skip_days_off' ] && ! empty( $events_array[ 'data' ] ) && ! empty( $events_array[ 'events' ] ) ) {
+		$events_from_dt = ! empty( $args[ 'interval' ][ 'start' ] ) ? new DateTime( $args[ 'interval' ][ 'start' ] ) : new DateTime( '1970-02-01' );
+		$events_to_dt   = ! empty( $args[ 'interval' ][ 'end' ] ) ? new DateTime( $args[ 'interval' ][ 'end' ] ) : new DateTime( '2038-01-01' );
+		
+		$first_event_data = reset( $events_array[ 'data' ] );
+		$template_ids     = $args[ 'templates' ] ? $args[ 'templates' ] : array( $first_event_data[ 'template_id' ] );
+		$template_data    = bookacti_get_mixed_template_data( $template_ids );
+		
+		$events_removed       = false;
+		$remaining_events_ids = array();
+		
+		if( ! empty( $template_data[ 'settings' ][ 'days_off' ] ) ) {
+			foreach( $template_data[ 'settings' ][ 'days_off' ] as $off_period ) {
+				$off_from_dt = new DateTime( $off_period[ 'from' ] . ' 00:00:00' );
+				$off_to_dt   = new DateTime( $off_period[ 'to' ] . ' 23:59:59' );
+				if( $off_from_dt > $events_to_dt || $off_to_dt < $events_from_dt ) { continue; }
 
-	return apply_filters( 'bookacti_get_events_for_editor', $events_array, $query, $args ) ;
+				foreach( $events_array[ 'events' ] as $i => $event ) {
+					$event_start_dt = new DateTime( $event[ 'start' ] );
+					if( $event_start_dt >= $off_from_dt && $event_start_dt <= $off_to_dt ) {
+						unset( $events_array[ 'events' ][ $i ] );
+						$events_removed = true;
+					} else { $remaining_events_ids[] = $event[ 'id' ]; }
+				}
+			}
+		}
+		
+		if( $events_removed ) {
+			$events_array[ 'data' ]   = array_intersect_key( $events_array[ 'data' ], array_flip( $remaining_events_ids ) );
+			$events_array[ 'events' ] = array_values( $events_array[ 'events' ] );
+		}
+	}
+	
+	return apply_filters( 'bookacti_calendar_editor_events', $events_array, $query, $args ) ;
 }
 
 
@@ -853,19 +888,19 @@ function bookacti_get_group_category_template_id( $category_id ) {
 
 /**
  * Get templates
- * @version 1.14.0
+ * @version 1.15.0
  * @global wpdb $wpdb
  * @param array $template_ids
- * @param boolean $ignore_permissions
- * @param int $user_id
+ * @param int $user_id User ID to check the permissions for. -1 for current user (default). 0 to ignore permission. 
  * @return array
  */
-function bookacti_fetch_templates( $template_ids = array(), $ignore_permissions = false, $user_id = 0 ) {
+function bookacti_fetch_templates( $template_ids = array(), $user_id = -1 ) {
 	if( is_numeric( $template_ids ) ) { $template_ids = array( $template_ids ); }
 
 	// Check if we need to check permissions
-	if( ! $user_id ) { $user_id = get_current_user_id(); }
-	if( ! $ignore_permissions ) {
+	$ignore_permissions = $user_id === 0;
+	if( $user_id < -1 ) { $user_id = get_current_user_id(); }
+	if( $user_id ) {
 		$bypass_template_managers_check = apply_filters( 'bookacti_bypass_template_managers_check', false );
 		if( $bypass_template_managers_check || is_super_admin( $user_id ) ) {
 			$ignore_permissions = true;
@@ -907,19 +942,12 @@ function bookacti_fetch_templates( $template_ids = array(), $ignore_permissions 
 		}
 	}
 
-	if( $variables ) {
-		$query = $wpdb->prepare( $query, $variables );
-	}
+	if( $variables ) { $query = $wpdb->prepare( $query, $variables ); }
 
 	$templates = $wpdb->get_results( $query, ARRAY_A );
 
 	$templates_by_id = array();
-	foreach( $templates as $template ) {
-		$template[ 'multilingual_title' ] = $template[ 'title' ];
-		$template[ 'title' ]              = $template[ 'title' ] ? apply_filters( 'bookacti_translate_text', $template[ 'title' ] ) : '';
-		
-		$templates_by_id[ $template[ 'id' ] ] = $template;
-	}
+	foreach( $templates as $template ) { $templates_by_id[ $template[ 'id' ] ] = $template; }
 
 	return $templates_by_id;
 }
@@ -1203,7 +1231,7 @@ function bookacti_delete_templates_x_activities( $template_ids, $activity_ids ) 
 
 /**
  * Get activities by template
- * @version 1.14.0
+ * @version 1.15.0
  * @global wpdb $wpdb
  * @param array $template_ids
  * @param boolean $based_on_events Whether to retrieve activities bound to templates or activities bound to events of templates
@@ -1214,7 +1242,7 @@ function bookacti_get_activities_by_template( $template_ids = array(), $based_on
 	global $wpdb;
 
 	// If empty, take them all
-	if( ! $template_ids ) { $template_ids = array_keys( bookacti_fetch_templates( array(), true ) ); }
+	if( ! $template_ids ) { $template_ids = array_keys( bookacti_fetch_templates( array(), 0 ) ); }
 
 	// Convert numeric to array
 	if( ! is_array( $template_ids ) ) { $template_ids = bookacti_ids_to_array( $template_ids ); }

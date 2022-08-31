@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 6.0
 Requires PHP: 5.3
-Stable tag: 1.14.3
+Stable tag: 1.15.0
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -168,7 +168,7 @@ Or read the full [features description](https://booking-activities.fr/en/documen
 1. Go to Booking Activities / Calendar Editor page
 2. Click on the big '+' button
 3. Set a title, an opening date and a closing date
-4. In the "Agenda" tab, you can also set your working hours
+4. In the "Editor" tab, you can also set your working hours
 5. Click on the dialog OK button, the calendar is loading!
 
 **Create your first activity**
@@ -320,6 +320,28 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.15.0 - 2022/08/31 =
+* Lib - Update FullCalendar to 5.11.3 (**major changes!**)
+* Lib - Update Moment JS to 2.29.3
+* Feature - Calendar locales newly supported: az, bn, cy, eo, hy-am, km, ku, ne, si-lk, sm, ta-in, ug, uz ([complete list](https://github.com/fullcalendar/fullcalendar/tree/v5.11.3/packages/core/src/locales))
+* Tweak - Replace the GIF spinner with a CSS3 spinner
+* Tweak - Empty the form fields after adding a booking to cart with WooCommerce
+* Tweak - Improve CSS for RTL languages
+* Tweak - Events no longer visually overlap on calendar by default, to make events overlap see Display Pack add-on
+* Tweak - Few changes to jQuery UI CSS
+* Tweak - Display a more specific error message (if available) when login fails
+* Tweak - Hide booking forms list if current user cannot manage any calendar
+* Tweak - Hide activities filters in Bookings page if only one activity is available
+* Fix - Array of values were not properly displayed in bookings exports
+* Fix - Prevent to double click the Add to cart button on WC activity product pages
+* Fix - PHP error when login and WooCommerce is active ([#158](https://github.com/bookingactivities/booking-activities/issues/158))
+* Fix - Do not load the backend bookings booking system if it is hidden ([#156](https://github.com/bookingactivities/booking-activities/issues/156))
+* Fix - Display a default booking form title in WC product edit page selectboxes for untitled forms
+* Fix - Database was not updated if Booking Activities was deactivated during the update
+* Fix - Display default Terms label if empty
+* Fix - Fields required by default were not required when added to form 
+* Dev - Refactor functions to get and format templates data
 
 = 1.14.3 - 2022/06/22 =
 * Tweak - Use the default WP From email if the option is empty
@@ -1346,6 +1368,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Upgrade Notice ==
+
+= 1.15.0 =
+Major changes in code:
+* If you have custom code, especially javascript and CSS affecting the calendars, you will probably need to adapt it. No support can be provided for your custom code.
 
 = 1.12.0 =
 Major changes in code:

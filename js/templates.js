@@ -3,36 +3,36 @@ $j( document ).ready( function() {
 	if( ! $j( '#bookacti-template-container' ).length ) { return; }
 	
 	// Init calendar editor specific globals
-	bookacti.selected_template	= parseInt( $j( '#bookacti-template-picker' ).val() ) || 0;
-	bookacti.hidden_activities	= [];
-	bookacti.selected_category	= 'new';
-	bookacti.is_dragging		= false;
-	bookacti.is_resizing		= false;
-	bookacti.is_hovering		= false;
-	bookacti.load_events		= false;
+	bookacti.selected_template = parseInt( $j( '#bookacti-template-picker' ).val() ) || 0;
+	bookacti.hidden_activities = [];
+	bookacti.selected_category = 'new';
+	bookacti.load_events       = false;
 	
 	// Init globals
-	bookacti.booking_system[ 'bookacti-template-calendar' ]								= {};
-	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'calendars' ]				= bookacti.selected_template ? [ bookacti.selected_template ] : [];
-	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'bookings' ]				= [];
-	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ]			= [];
-	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_data' ]			= [];
-	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'activities_data' ]		= {};
-	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ]			= [];
-	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_interval' ]		= [];
-	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'group_categories_data' ]	= [];
-	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'start' ]					= '1970-02-01 00:00:00';
-	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'end' ]					= '2037-12-31 23:59:59';
-	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'display_data' ]			= [];
-	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ]			= [];
-
-	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ]		= [];
-	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'picked_events' ]			= [];
-	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'loading_number' ]			= 0;
-	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'method' ]					= 'calendar';
-	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'past_events' ]			= true;
-	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'past_events_bookable' ]	= true;
-
+	bookacti.booking_system[ 'bookacti-template-calendar' ]                            = {};
+	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'calendars' ]             = bookacti.selected_template ? [ bookacti.selected_template ] : [];
+	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'bookings' ]              = [];
+	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ]         = [];
+	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_data' ]           = [];
+	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'activities_data' ]       = {};
+	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ]           = [];
+	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_interval' ]       = [];
+	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'group_categories_data' ] = [];
+	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'start' ]                 = '1970-02-01 00:00:00';
+	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'end' ]                   = '2037-12-31 23:59:59';
+	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'display_data' ]          = [];
+	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ]         = [];
+	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ]       = [];
+	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'picked_events' ]         = [];
+	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'loading_number' ]        = 0;
+	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'method' ]                = 'calendar';
+	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'past_events' ]           = true;
+	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'past_events_bookable' ]  = true;
+	
+	// Make activities draggable and sortable (needs to be done only once, even if activities are added afterwards to the DOM)
+	bookacti_make_activities_draggable();
+	bookacti_make_activities_sortable();
+	
 	// Initialize groups
 	bookacti_init_groups_of_events();
 
@@ -54,15 +54,21 @@ $j( document ).ready( function() {
 		bookacti_switch_template( $j( this ).val() );
 	});
 
-	// Load Template calendar
-	if ( $j( '#bookacti-template-calendar' ).length ) {
-		bookacti_load_template_calendar( $j( '#bookacti-template-calendar' ) );
-	}
-
 	// Load the template
 	if( bookacti.selected_template ) {
 		bookacti_switch_template( bookacti.selected_template );
 	}
+	
+	/**
+	 * Do not init calendar editor booking system automatically
+	 * @since 1.15.0
+	 * @param {Event} e
+	 * @param {Object} load
+	 * @param {Object} attributes
+	 */
+	$j( 'body' ).on( 'bookacti_init_booking_sytem', '#bookacti-template-calendar', function( e, load, attributes ) {
+		load.load = false;
+	});
 
 	/**
 	 * Resize draggable external events helper to the original event size
@@ -101,9 +107,10 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Exit template loading (forced) - on click on button
+	 * @version 1.15.0
 	 */
 	$j( 'body' ).on( 'click', '#bookacti-exit-loading', function(){
-		bookacti_exit_template_loading_state( true );
+		bookacti_stop_template_loading( true );
 		bookacti.load_events = true;
 	});
 });
@@ -111,61 +118,57 @@ $j( document ).ready( function() {
 
 /**
  * Initialize and display the template calendar
- * @version 1.14.0
- * @param {HTMLElement} calendar
+ * @version 1.15.0
  */
-function bookacti_load_template_calendar( calendar ) {
-	calendar = calendar || $j( '#bookacti-template-calendar' );
+function bookacti_load_template_calendar() {
+	var booking_system = $j( '#bookacti-template-calendar' );
 
 	// Get calendar settings
-	var availability_period	= bookacti_get_availability_period( calendar );
-	var display_data		= typeof bookacti.booking_system[ 'bookacti-template-calendar' ][ 'display_data' ] !== 'undefined' ? bookacti.booking_system[ 'bookacti-template-calendar' ][ 'display_data' ] : {};
-	var min_time			= typeof display_data.minTime !== 'undefined' ? display_data.minTime : '00:00';
-	var max_time			= typeof display_data.maxTime !== 'undefined' ? display_data.maxTime : '24:00';
-	var snap_duration		= typeof display_data.snapDuration !== 'undefined' ? display_data.snapDuration : '00:05';
+	var availability_period = bookacti_get_availability_period( booking_system );
+	var display_data        = typeof bookacti.booking_system[ 'bookacti-template-calendar' ][ 'display_data' ] !== 'undefined' ? bookacti.booking_system[ 'bookacti-template-calendar' ][ 'display_data' ] : {};
+	var event_min_height    = typeof bookacti_localized.event_tiny_height !== 'undefined' ? parseInt( bookacti_localized.event_tiny_height ) : 32;
+	var slot_min_time       = typeof display_data.slotMinTime !== 'undefined' ? display_data.slotMinTime : '00:00';
+	var slot_max_time       = typeof display_data.slotMaxTime !== 'undefined' ? display_data.slotMaxTime : '24:00';
+	var snap_duration       = typeof display_data.snapDuration !== 'undefined' ? display_data.snapDuration : '00:05';
 
 	// See https://fullcalendar.io/docs/
 	var init_data = {
-		// OPTIONS
-		locale:					bookacti_localized.fullcalendar_locale,
-		
-		defaultView:            'agendaWeek',
-		minTime:                min_time,
-		maxTime:                max_time,
-		slotLabelFormat:		'LT',
-		slotDuration:           '00:30',
-		snapDuration:           snap_duration,
-		scrollTime:				'00:00',
-		aspectRatio:			'auto',
+		locale:                  bookacti_localized.fullcalendar_locale,
+		timeZone:                bookacti_localized.fullcalendar_timezone,
+		initialView:             'timeGridWeek',
+		eventShortHeight:        0,
+		eventMinHeight:          event_min_height,
+		slotMinTime:             slot_min_time,
+		slotMaxTime:             slot_max_time,
+		slotDuration:            '00:30',
+		snapDuration:            snap_duration,
+		scrollTime:              '00:00',
+		height:                  'auto',
+		contentHeight:           'auto',
+		nowIndicator:            false,
+		weekNumbers:	         false,
+		navLinks:		         true,
+		slotEventOverlap:        false,
+		dayMaxEvents:            false,
+		moreLinkClick:           'popover',
+		eventDisplay:            'block',
+		allDaySlot:              false,
+		defaultAllDay:           false,
+		fixedWeekCount:          false,
+		showNonCurrentDates:     true,
+		eventResizableFromStart: false,
+		rerenderDelay:           100,
+		editable:                true,
+		droppable:               true,
+		dropAccept:              '.fc-event, .bookacti-activity-draggable',
+		eventDurationEditable:   true,
+		dragRevertDuration:      0,
 		
 		validRange: {
-            start: availability_period.start ? moment.utc( availability_period.start.substr( 0, 10 ) ) : moment.utc( '1970-02-01 00:00:00' ),
-            end: availability_period.end ? moment.utc( availability_period.end.substr( 0, 10 ) ).add( 1, 'days' ) : moment.utc( '2037-12-31 23:59:59' )
+            start: availability_period.start ? moment.utc( availability_period.start.substr( 0, 10 ) ).format( 'YYYY-MM-DD' ) : '1970-02-01',
+            end:   availability_period.end ? moment.utc( availability_period.end.substr( 0, 10 ) ).add( 1, 'days' ).format( 'YYYY-MM-DD' ) : '2038-01-01'
         },
 		
-		nowIndicator:           false,
-		weekNumbers:	        false,
-		weekNumbersWithinDays:	true,
-		navLinks:		        true,
-
-		slotEventOverlap:		false,
-		eventLimit:				false,
-		eventLimitClick:		'popover',
-
-		allDaySlot:             false,
-		allDayDefault:          false,
-
-		fixedWeekCount:         false,
-		showNonCurrentDates:	true,
-
-		editable:               true,
-		droppable:              true,
-		dropAccept:             '.fc-event',
-		eventDurationEditable:  true,
-		dragRevertDuration:     0,
-		
-		
-		// Header : Functionnality to Display above the calendar
 		customButtons: {
 			goTo: {
 				text: bookacti_localized.go_to_button,
@@ -178,297 +181,406 @@ function bookacti_load_template_calendar( calendar ) {
 				}
 			}
 		},
-		header: {
-			left: 'prevYear,prev,next,nextYear today goTo',
-			center: 'title',
-			right: 'month,agendaWeek,agendaDay'
-		},
-
 		
-		// Always call "callback" for proper operations, even with an empty array of events
-		events: function( start, end, timezone, callback ) {
-			callback( [] );
+		headerToolbar: {
+			start: 'prevYear,prev,next,nextYear today goTo',
+			center: 'title',
+			end: 'dayGridMonth,timeGridWeek,timeGridDay'
 		},
 
 		
 		/**
-		 * When a view is rendered
-		 * @version 1.13.0
-		 * @param {object} view
-		 * @param {HTMLElement} element
+		 * Default events (empty because events will be added with bookacti_fc_add_events())
+		 * Always call successCallback or failureCallback for proper operations, even with an empty array of events
+		 * @version 1.15.0
+		 * @param {Object} info
+		 * @param {Function} successCallback
+		 * @param {Function} failureCallback
 		 */
-		viewRender: function( view, element ) {
-			// Maybe fetch the events on the view (if not already)
-			if( bookacti.load_events === true ) { 
-				var interval = { 'start': moment.utc( moment.utc( view.intervalStart ).clone().locale( 'en' ).format( 'YYYY-MM-DD' ) + ' 00:00:00' ).locale( 'en' ), 'end': moment.utc( moment.utc( view.intervalEnd ).clone().locale( 'en' ).subtract( 1, 'days' ).format( 'YYYY-MM-DD' ) + ' 23:59:59' ).locale( 'en' ) };
-				var new_interval = bookacti_get_interval_of_events( $j( '#bookacti-template-calendar' ), interval );
-				if( ! $j.isEmptyObject( new_interval ) ) { bookacti_get_calendar_editor_data_by_interval( new_interval ); }
-			}
+		events: function( info, successCallback, failureCallback ) {
+			successCallback( [] );
+		},
+		
+		
+		/**
+		 * Add classes to the view
+		 * @since 1.15.0
+		 * @param {Object} info {
+		 *  @type {FullCalendar.ViewApi} view
+		 *  @type {HTMLElement} el
+		 * }
+		 * @returns {Array}
+		 */
+		viewClassNames: function( info ) {
+			var return_object = { 'class_names': [] };
 			
-			// Add a class if the events are overlapping
-			if( view.name.indexOf( 'agenda' ) > -1 ){
-				var event_overlap = typeof display_data.slotEventOverlap !== 'undefined' ? display_data.slotEventOverlap : calendar.fullCalendar( 'option', 'slotEventOverlap' );
-				if( event_overlap ) { element.addClass( 'bookacti-events-overlap' ); }
-			}
+			booking_system.trigger( 'bookacti_calendar_editor_view_class_names', [ return_object, info ] );
+			
+			return return_object.class_names;
+		},
+		
+		
+		/**
+		 * Add classes to the day header
+		 * @since 1.15.0
+		 * @param {Object} info {
+		 *  @type {Date} date
+		 *  @type {String} dayNumberText
+		 *  @type {Boolean} isPast
+		 *  @type {Boolean} isFuture
+		 *  @type {Boolean} isToday
+		 *  @type {Boolean} isOther
+		 * }
+		 * @returns {Array}
+		 */
+		dayHeaderClassNames: function( info ) {
+			var return_object = { 'class_names': [] };
 			
 			// Gray out days off
 			var template_data = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ];
 			if( typeof template_data !== 'undefined' ) {
 				if( typeof template_data.settings !== 'undefined' ) {
 					if( typeof template_data.settings.days_off !== 'undefined' ) {
+						var day_date = moment.utc( info.date );
 						$j.each( template_data.settings.days_off, function ( i, day_off ) {
 							var day_off_from = moment.utc( day_off.from + ' 00:00:00' );
 							var day_off_to = moment.utc( day_off.to + ' 23:59:59' );
-							if( day_off_to.isBefore( view.start ) || day_off_from.isAfter( view.end ) ) { return true; } // continue
-
-							do {
-								var disabled_date  = day_off_from.format( 'YYYY-MM-DD' );
-								var disabled_cells = calendar.find( 'th[data-date="' + disabled_date + '"], td[data-date="' + disabled_date + '"]' );
-								disabled_cells.addClass( 'fc-disabled-day' );
-								disabled_cells.find( 'a' ).contents().unwrap();
-								day_off_from.add( 1, 'days' );
-							} while ( day_off_from.isSameOrBefore( day_off_to ) );
-						});
-					}
-				}
-			}
-			
-			calendar.trigger( 'bookacti_view_render', [ view, element ] );
-		},
-
-		
-		/**
-		 * When an event is rendered
-		 * @version 1.13.0
-		 * @param {object} event
-		 * @param {HTMLElement} element
-		 * @param {object} view
-		 * @returns {Boolean}
-		 */
-		eventRender: function( event, element, view ) { 
-			// Do not render the event if it has no start or no end or no duration
-			if( ! event.start || ! event.end || event.start === event.end ) { return false; }
-			
-			// Directly return true if the event is resizing or dragging to avoid overload
-			if( bookacti.is_dragging || bookacti.is_resizing ) { return true; }
-			
-			var event_data = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ];
-			var activity_id = 0;
-			var event_start_formatted = moment.utc( event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
-			var event_end_formatted = moment.utc( event.end ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
-			
-			// Add some info to the event
-			element.data( 'event-id',			event.id );
-			element.attr( 'data-event-id',		event.id );
-			element.data( 'event-start',		event_start_formatted );
-			element.attr( 'data-event-start',	event_start_formatted );
-			element.data( 'event-end',			event_end_formatted );
-			element.attr( 'data-event-end',		event_end_formatted );
-			event.render = 1;
-			
-			if( typeof event_data !== 'undefined' ) {
-				activity_id = event_data.activity_id;
-				element.data( 'activity-id', activity_id );
-				element.attr( 'data-activity-id', activity_id );
-			}
-			
-			// Allow HTML in titles
-			var title = element.find( '.fc-title' );
-			title.html( title.text() );
-			
-			// Display start and end time in spans
-			var time_format	= 'LT';
-			// Remove trailing AM/PM in agenda views
-			if( view.name.indexOf( 'agenda' ) > -1 ){
-				time_format = calendar.fullCalendar( 'option', 'noMeridiemTimeFormat' );
-			}
-			if( bookacti_localized.calendar_localization === 'wp_settings' ){
-				time_format = bookacti_convert_php_datetime_format_to_moment_js( bookacti_localized.wp_time_format );
-			}
-			element.find( '.fc-time' ).html( '<span class="bookacti-event-time-start">' + event.start.format( time_format ) + '</span><span class="bookacti-event-time-separator"> - </span><span class="bookacti-event-time-end">' + event.end.format( time_format ) + '</span>' );
-			
-			// Add availability div
-			var availability = typeof event_data !== 'undefined' ? parseInt( event_data.availability ) : 0;
-			event.bookings = bookacti_get_event_number_of_bookings( $j( '#bookacti-template-calendar' ), event );
-			if( event.bookings != null ) {
-				var class_no_availability = '', class_booked = '', class_full = '';
-
-				if( availability === 0 ) { class_no_availability = 'bookacti-no-availability'; }
-				else {  
-					if( event.bookings > 0 ) { 
-						class_booked = 'bookacti-booked'; 
-					} else { 
-						class_booked = 'bookacti-not-booked'; 
-					}
-					if( event.bookings >= availability )  { 
-						class_full = 'bookacti-full'; 
-					} 
-				}
-
-				var avail_div	= '<div class="bookacti-availability-container" >' 
-								+	'<span class="bookacti-available-places ' + class_no_availability + ' ' + class_booked + ' ' + class_full + '" >' 
-								+		'<span class="bookacti-bookings" >' + event.bookings + '</span>' 
-								+		'<span class="bookacti-total-availability" >/' + availability + '</span>'
-								+	'</span>'
-								+ '</div>';
-
-				element.append( avail_div );
-			}
-			
-			
-			// Add event actions div
-			// Init var
-			var event_actions_div	= element.find( '.bookacti-event-actions' ).length ? element.find( '.bookacti-event-actions' ) : $j( '<div></div>', { 'class': 'bookacti-event-actions' } );
-			var event_actions		= [];
-			
-			// EDIT ACTION
-			if( ! event_actions_div.find( '.bookacti-event-action-edit' ).length ) {
-				var edit_div	=	$j( '<div></div>', {
-										'class': 'bookacti-event-action bookacti-event-action-edit',
-										'data-hide-on-mouseout': '1'
-									} );
-				var edit_button =	$j( '<span></span>', {
-										'type': 'checkbox',
-										'class': 'dashicons dashicons-admin-generic bookacti-event-action-edit-button',
-										'aria-hidden': 'true'
-									} );
-				event_actions.push( edit_div.prepend( edit_button ) );
-			}
-			
-			// SELECT ACTION
-			if( ! event_actions_div.find( '.bookacti-event-action-select' ).length ) {
-				
-				// Check if the event is selected
-				var event_start_date = moment.utc( event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD' );
-				var is_selected = false;
-				$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ], function( i, selected_event ){
-					if( selected_event.id == event.id 
-					&&  selected_event.start.substr( 0, 10 ) === event_start_date ) {
-						is_selected = true;
-						return false; // break the loop
-					}
-				});
-				
-				var select_div		=	$j( '<div></div>', {
-											'class': 'bookacti-event-action bookacti-event-action-select',
-											'data-hide-on-mouseout': '0'
-										} );
-				var select_checkbox =	$j( '<input />', {
-											'type': 'checkbox',
-											'class': 'bookacti-event-action-select-checkbox',
-											'value': '0',
-											'checked': is_selected
-										} );
-				event_actions.push( select_div.append( select_checkbox ) );
-			}
-			
-			// Fill the event actions array
-			$j.each( event_actions, function( i, event_action ) {
-				event_actions_div.append( event_action );
-			});
-			
-			// Allow thir party to edit the list of event actions
-			calendar.trigger( 'bookacti_event_actions', [ event_actions_div, event, element, view ] );
-			
-			// Append the event actions list to the event
-			element.append( event_actions_div );
-			
-			
-			// Add background to basic views
-			if( view.hasOwnProperty( 'dayGrid' ) ) {
-				var bg_div = $j( '<div></div>', { 'class': 'fc-bg' } );
-				element.append( bg_div );
-			}
-			
-			// Check if the event is on an a day off
-			var template_data = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ];
-			if( typeof template_data !== 'undefined' && event.render ) {
-				if( typeof template_data.settings !== 'undefined' ) {
-					if( typeof template_data.settings.days_off !== 'undefined' ) {
-						var event_start = moment.utc( event.start );
-						$j.each( template_data.settings.days_off, function ( i, day_off ) {
-							var day_off_from = moment.utc( day_off.from + ' 00:00:00' );
-							var day_off_to = moment.utc( day_off.to + ' 23:59:59' );
-							if( event_start.isBetween( day_off_from, day_off_to, 'second', '[]' ) ) {
-								event.render = 0;
+							if( day_date.isBetween( day_off_from, day_off_to, 'second', '[]' ) ) {
+								return_object.class_names.push( 'fc-day-disabled' );
+								return false; // break
 							}
 						});
 					}
 				}
 			}
 			
-			// Check if the event is on an exception
-			if( typeof event_data !== 'undefined' && event.render ) {
-				if( event_data.repeat_freq && event_data.repeat_freq !== 'none' && typeof event_data.repeat_exceptions !== 'undefined' ) {
-					var event_start = moment.utc( event.start );
-					$j.each( event_data.repeat_exceptions, function ( i, repeat_exception ) {
-						var repeat_exception_from = moment.utc( repeat_exception.from + ' 00:00:00' );
-						var repeat_exception_to = moment.utc( repeat_exception.to + ' 23:59:59' );
-						if( event_start.isBetween( repeat_exception_from, repeat_exception_to, 'second', '[]' ) ) {
-							event.render = 0;
-						}
-					});
-				}
-			}
+			booking_system.trigger( 'bookacti_calendar_editor_day_header_class_names', [ return_object, info ] );
 			
-			// Check if the event is hidden
-			if( bookacti.hidden_activities && activity_id && event.render ) {
-				if( $j.inArray( parseInt( activity_id ), bookacti.hidden_activities ) >= 0 ) {
-					event.render = 0;
-				}
-			}
-
-			calendar.trigger( 'bookacti_event_render', [ event, element, view ] );
-
-			if( ! event.render ) { return false; }
+			return return_object.class_names;
 		},
-
-
-		/**
-		 * After an event is rendered in the view
-		 * @version 1.12.0
-		 * @param {object} event
-		 * @param {HTMLElement} element
-		 * @param {object} view
-		 */
-		eventAfterRender: function( event, element, view ) { 
-			bookacti_add_class_according_to_event_size( element );
-			calendar.trigger( 'bookacti_calendar_editor_event_after_render', [ event, element, view ] );
-		},
-
+		
 		
 		/**
-		 * After all events are rendered in the view
-		 * @version 1.12.0
-		 * @param {object} view
+		 * Add classes to the day cell
+		 * @since 1.15.0
+		 * @param {Object} info {
+		 *  @type {Date} date
+		 *  @type {String} dayNumberText
+		 *  @type {Boolean} isPast
+		 *  @type {Boolean} isFuture
+		 *  @type {Boolean} isToday
+		 *  @type {Boolean} isOther
+		 * }
+		 * @returns {Array}
 		 */
-		eventAfterAllRender: function( view ) {
-			// Block the event if loading
-			calendar.find( '.fc-event' ).toggleClass( 'bookacti-event-unavailable', bookacti.booking_system[ 'bookacti-template-calendar' ][ 'loading_number' ] > 0 );
+		dayCellClassNames: function( info ) {
+			var return_object = { 'class_names': [] };
 			
-			// Hide event actions
-			$j( '.bookacti-event-action[data-hide-on-mouseout="1"]' ).hide();
+			// Gray out days off
+			var template_data = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ];
+			if( typeof template_data !== 'undefined' ) {
+				if( typeof template_data.settings !== 'undefined' ) {
+					if( typeof template_data.settings.days_off !== 'undefined' ) {
+						var day_date = moment.utc( info.date );
+						$j.each( template_data.settings.days_off, function ( i, day_off ) {
+							var day_off_from = moment.utc( day_off.from + ' 00:00:00' );
+							var day_off_to = moment.utc( day_off.to + ' 23:59:59' );
+							if( day_date.isBetween( day_off_from, day_off_to, 'second', '[]' ) ) {
+								return_object.class_names.push( 'fc-day-disabled' );
+								return false; // break
+							}
+						});
+					}
+				}
+			}
+			
+			booking_system.trigger( 'bookacti_calendar_editor_day_cell_class_names', [ return_object, info ] );
+			
+			return return_object.class_names;
+		},
+		
+		
+		/**
+		 * Called after the calendar’s date range has been initially set or changed in some way and the DOM has been updated.
+		 * @version 1.15.0
+		 * @param {Object} info {
+		 *  @type {Date} start                A Date for the beginning of the range the calendar needs events for.
+		 *  @type {Date} end                  A Date for the end of the range the calendar needs events for. Note: This value is exclusive.
+		 *  @type {String} startStr           An ISO8601 string representation of the start date. Will have a time zone offset according to the calendar’s timeZone like 2018-09-01T12:30:00-05:00.
+		 *  @type {String} endStr             Just like startStr, but for the end date.
+		 *  @type {String} timeZone           The exact value of the calendar’s timeZone setting.
+		 *  @type {FullCalendar.ViewApi} view The current View Object.
+		 * }
+		 */
+		datesSet: function( info ) {
+			// Maybe fetch the events on the view (if not already)
+			if( bookacti.load_events === true ) { 
+				var interval = { 
+					'start': moment.utc( moment.utc( info.view.currentStart ).clone().locale( 'en' ).format( 'YYYY-MM-DD' ) + ' 00:00:00' ), 
+					'end': moment.utc( moment.utc( info.view.currentEnd ).clone().locale( 'en' ).subtract( 1, 'days' ).format( 'YYYY-MM-DD' ) + ' 23:59:59' )
+				};
+				var new_interval = bookacti_get_interval_of_events( booking_system, interval );
+				if( ! $j.isEmptyObject( new_interval ) ) { bookacti_get_calendar_editor_data_by_interval( new_interval ); }
+			}
+			
+			booking_system.trigger( 'bookacti_calendar_editor_view_render', [ info ] );
+		},
+		
+		
+		/**
+		 * Called right after the element has been added to the DOM.
+		 * If the event data changes, this is NOT called again.
+		 * @since 1.15.0
+		 * @param {Object} info {
+		 *  @type {FullCalendar.EventApi} event
+		 *  @type {String} timeText
+		 *  @type {Boolean} isStart
+		 *  @type {Boolean} isEnd
+		 *  @type {Boolean} isMirror
+		 *  @type {Boolean} isPast
+		 *  @type {Boolean} isFuture
+		 *  @type {Boolean} isToday
+		 *  @type {HTMLElement} el
+		 *  @type {FullCalendar.ViewApi} view The current View Object.
+		 * }
+		 */
+		eventDidMount: function( info ) {
+			// Directly return if the event is resizing or dragging to avoid overload
+			if( info.isMirror ) { return; }
+			
+			// Add data to the event element
+			var event_id    = info.event.groupId;
+			var event_data  = event_id ? bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event_id ] : [];
+			var activity_id = typeof event_data.activity_id !== 'undefined' ? parseInt( event_data.activity_id ) : ( typeof info.event.extendedProps.activity_id !== 'undefined' ? parseInt( info.event.extendedProps.activity_id ) : 0 );
+			var event_start_formatted = moment.utc( info.event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
+			var event_end_formatted   = moment.utc( info.event.end ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
+			
+			// Add data to the event element
+			$j( info.el ).data( 'event-id', event_id ? event_id : '' ).attr( 'data-event-id', event_id ? event_id : '' );
+			$j( info.el ).data( 'event-start', event_start_formatted ).attr( 'data-event-start', event_start_formatted );
+			$j( info.el ).data( 'event-end', event_end_formatted ).attr( 'data-event-end', event_end_formatted );			
+			$j( info.el ).data( 'activity-id', activity_id ? activity_id : '' ).attr( 'data-activity-id', activity_id ? activity_id : '' );
+
+			booking_system.trigger( 'bookacti_calendar_editor_event_did_mount', [ info ] );
+		},
+		
+		
+		/**
+		 * Add classes to the event
+		 * It is called every time the associated event data changes
+		 * @since 1.15.0
+		 * @param {Object} info {
+		 *  @type {FullCalendar.EventApi} event
+		 *  @type {String} timeText
+		 *  @type {Boolean} isStart
+		 *  @type {Boolean} isEnd
+		 *  @type {Boolean} isMirror
+		 *  @type {Boolean} isPast
+		 *  @type {Boolean} isFuture
+		 *  @type {Boolean} isToday
+		 *  @type {FullCalendar.ViewApi} view The current View Object.
+		 * }
+		 * @returns {Array}
+		 */
+		eventClassNames: function( info ) {
+			var return_object = { 'class_names': [] };
+			
+			// Directly return if the event is hidden, or resizing or dragging to avoid overload
+			if( info.isMirror || info.event.display === 'none' ) { return return_object; }
+			
+			// Check if the activity is hidden
+			var event_data = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ info.event.groupId ];
+			var activity_id = typeof event_data !== 'undefined' ? parseInt( event_data.activity_id ) : 0;
+			if( bookacti.hidden_activities && activity_id ) {
+				if( $j.inArray( activity_id, bookacti.hidden_activities ) >= 0 ) {
+					return_object.class_names.push( 'bookacti-event-hidden' );
+				}
+			}
 			
 			// Display element as picked or selected if they actually are
+			var event_start = moment.utc( info.event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
 			$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'picked_events' ], function( i, picked_event ) {
 				var picked_event_start = moment.utc( picked_event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
-				calendar.find( '.fc-event[data-event-id="' + picked_event[ 'id' ] + '"][data-event-start="' + picked_event_start + '"]' ).addClass( 'bookacti-picked-event' );
+				if( picked_event.id == info.event.groupId && event_start === picked_event_start ) { 
+					return_object.class_names.push( 'bookacti-picked-event' );
+				}
 			});
 			
-			bookacti_refresh_selected_events_display();
+			// Make sure selected events appears as selected
+			$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ], function( i, selected_event ) {
+				var selected_event_start = moment.utc( selected_event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
+				if( selected_event.id == info.event.groupId && event_start === selected_event_start ) { 
+					return_object.class_names.push( 'bookacti-selected-event' );
+				}
+			});
 			
-			calendar.trigger( 'bookacti_calendar_editor_event_after_all_render', [ view ] );
+			// Add classes to the event according to its expected size
+			if( info.view.type.indexOf( 'dayGrid' ) > -1 || info.view.type.indexOf( 'timeGrid' ) > -1 ) { 
+				var event_size_classes = bookacti_fc_get_event_size_classes( booking_system, info.event, info.view );
+				if( event_size_classes.length ) {
+					return_object.class_names = $j.merge( return_object.class_names, event_size_classes );
+				}
+			}
+			
+			booking_system.trigger( 'bookacti_calendar_editor_event_class_names', [ return_object, info ] );
+			
+			return return_object.class_names;
+		},
+		
+		
+		/**
+		 * Add HTML elements in the event
+		 * It is called every time the associated event data changes
+		 * @since 1.15.0
+		 * @param {Object} info {
+		 *  @type {FullCalendar.EventApi} event
+		 *  @type {String} timeText
+		 *  @type {Boolean} isStart
+		 *  @type {Boolean} isEnd
+		 *  @type {Boolean} isMirror
+		 *  @type {Boolean} isPast
+		 *  @type {Boolean} isFuture
+		 *  @type {Boolean} isToday
+		 *  @type {FullCalendar.ViewApi} view The current View Object.
+		 * }
+		 * @returns {Array}
+		 */
+		eventContent: function( info ) {
+			var return_object = { 'domNodes': [] };
+			
+			// Directly return if the event is hidden
+			if( info.event.display === 'none' ) { return return_object; }
+			
+			// Display a dot in dayGrid views
+			if( info.view.type.indexOf( 'dayGrid' ) > -1 ) {
+				var multi_day     = moment.utc( info.event.start ).locale( 'en' ).format( 'YYYY-MM-DD' ) !== moment.utc( info.event.end ).locale( 'en' ).format( 'YYYY-MM-DD' );
+				var event_display = bookacti.fc_calendar[ 'bookacti-template-calendar' ].getOption( 'eventDisplay' );
+				if( info.event.display === 'list-item' || ( info.event.display === 'auto' && ( event_display === 'list-item' || ( event_display === 'auto' && ! info.event.allDay && ! multi_day ) ) ) ) {
+					var dot_div = $j( '<div></div>', { 'class': 'fc-daygrid-event-dot' } );
+					return_object.domNodes.push( dot_div[ 0 ] );
+				}
+			}
+			
+			// Display start and end time in spans
+			var time_format	= 'LT';
+			if( info.view.type.indexOf( 'timeGrid' ) > -1 ) {
+				// Remove trailing AM/PM in Time Grid views
+				var lt_format = moment.localeData().longDateFormat( 'LT' );
+				time_format = lt_format.replace( /[aA]/g, '' );
+			}
+			if( bookacti_localized.calendar_localization === 'wp_settings' ) {
+				time_format = bookacti_convert_php_datetime_format_to_moment_js( bookacti_localized.wp_time_format );
+			}
+			var time_div = $j( '<div></div>', { 
+				'class': 'fc-event-time', 
+				'html': '<span class="bookacti-event-time-start">' + moment.utc( info.event.start ).format( time_format ) + '</span>' 
+				      + '<span class="bookacti-event-time-separator"> - </span>' 
+					  + '<span class="bookacti-event-time-end">' + moment.utc( info.event.end ).format( time_format ) + '</span>'
+			} );
+			return_object.domNodes.push( time_div[ 0 ] );
+			
+			// Display event title
+			var title_div = $j( '<div></div>', { 'class': 'fc-event-title-container', 'html': '<div class="fc-event-title">' + info.event.title + '</div>' } );
+			return_object.domNodes.push( title_div[ 0 ] );
+			
+			// Directly return if the event is resizing or dragging or hidden to avoid overload
+			if( info.isMirror || info.event.display === 'none' ) { return return_object; }
+			
+			// Add availability div
+			var event_data = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ info.event.groupId ];
+			var availability = typeof event_data !== 'undefined' ? parseInt( event_data.availability ) : 0;
+			var event_bookings = bookacti_get_event_number_of_bookings( booking_system, info.event );
+			if( event_bookings != null ) {
+				var availability_classes = '';
+				if( availability === 0 ) { availability_classes += 'bookacti-no-availability'; }
+				else {
+					availability_classes += event_bookings > 0 ? ' bookacti-booked' : ' bookacti-not-booked';
+					if( event_bookings >= availability ) { availability_classes += ' bookacti-full'; } 
+				}
+
+				var avail_div   = $j( '<div></div>', { 'class': 'bookacti-availability-container' } );
+				var places_span = $j( '<div></div>', { 'class': 'bookacti-available-places ' + availability_classes } );
+				var booked_span = $j( '<span></span>', { 'class': 'bookacti-bookings', 'html': event_bookings } );
+				var total_span  = $j( '<span></span>', { 'class': 'bookacti-total-availability', 'html': availability } );
+				
+				places_span.append( booked_span );
+				places_span.append( total_span );
+				avail_div.append( places_span );
+				
+				return_object.domNodes.push( avail_div[ 0 ] );
+			}
+			
+			
+			// Add event actions div
+			// Init var
+			var event_actions_div = $j( '<div></div>', { 'class': 'bookacti-event-actions' } );
+			var event_actions = { 'actions': [] };
+			
+			// EDIT ACTION
+			var edit_div = $j( '<div></div>', { 'class': 'bookacti-event-action bookacti-event-action-edit' } );
+			var edit_button = $j( '<span></span>', {
+				'type': 'checkbox',
+				'class': 'dashicons dashicons-admin-generic bookacti-event-action-edit-button'
+			});
+			edit_div.prepend( edit_button );
+			event_actions.actions.push( edit_div );
+			
+			// SELECT ACTION
+			// Check if the event is selected
+			var event_start_date = moment.utc( info.event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD' );
+			var is_selected = false;
+			$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ], function( i, selected_event ){
+				if( selected_event.id == info.event.groupId 
+				&&  selected_event.start.substr( 0, 10 ) === event_start_date ) {
+					is_selected = true;
+					return false; // break the loop
+				}
+			});
+
+			var select_div = $j( '<div></div>', { 'class': 'bookacti-event-action bookacti-event-action-select' });
+			var select_checkbox = $j( '<input/>', {
+				'type': 'checkbox',
+				'class': 'bookacti-event-action-select-checkbox',
+				'value': '0',
+				'checked': is_selected
+			});
+			select_div.append( select_checkbox );
+			event_actions.actions.push( select_div );
+			
+			// Allow third party to edit the list of event actions
+			booking_system.trigger( 'bookacti_calendar_editor_event_actions', [ event_actions, info ] );
+			
+			// Fill the event actions array
+			if( event_actions.actions.length ) {
+				$j.each( event_actions.actions, function( i, event_action ) {
+					event_actions_div.append( event_action );
+				});
+
+				// Append the event actions list to the event
+				return_object.domNodes.push( event_actions_div[ 0 ] );
+			}
+			
+			booking_system.trigger( 'bookacti_calendar_editor_event_content', [ return_object, info ] );
+
+			return return_object;
 		},
 		
 		
 		/**
 		 * Exact programmatic control over where an event can be dropped
 		 * @since 1.13.0
-		 * @param {object} dropLocation
-		 * @param {object} draggedEvent
-		 * @return boolean
+		 * @version 1.15.0
+		 * @param {object} drop_info {
+		 *  @type {Boolean} allDay  true or false whether the event was dropped on one of the all-day cells.
+		 *  @type {Date} end        Date. The end of where the draggable event was dropped.
+		 *  @type {String} endStr   The ISO8601 string representation of the end of where the draggable event was dropped.
+		 *  @type {Date} start      Date. The beginning of where the draggable event was dropped.
+		 *  @type {String} startStr The ISO8601 string representation of the start of where the draggable event was dropped.
+		 * }
+		 * @param {FullCalendar.EventApi} dragged_event
+		 * @returns {Boolean}
 		 */
-		eventAllow: function( dropLocation, draggedEvent ) {
+		eventAllow: function( drop_info, dragged_event ) {
 			var allow_drop = { 'allow': true };
 			
 			// Do not allow to drop events on days off
@@ -479,7 +591,7 @@ function bookacti_load_template_calendar( calendar ) {
 						$j.each( template_data.settings.days_off, function ( i, day_off ) {
 							var day_off_from = moment.utc( day_off.from + ' 00:00:00' );
 							var day_off_to = moment.utc( day_off.to + ' 23:59:59' );
-							if( dropLocation.start.isBetween( day_off_from, day_off_to, 'second', '[]' ) ) { 
+							if( moment.utc( drop_info.start ).isBetween( day_off_from, day_off_to, 'second', '[]' ) ) { 
 								allow_drop.allow = false;
 								return false; // break
 							}
@@ -488,38 +600,50 @@ function bookacti_load_template_calendar( calendar ) {
 				}
 			}
 			
-			calendar.trigger( 'bookacti_calendar_editor_allow_drop', [ allow_drop.allow, dropLocation, draggedEvent ] );
+			booking_system.trigger( 'bookacti_calendar_editor_allow_drop', [ allow_drop.allow, drop_info, dragged_event ] );
 			
 			return allow_drop.allow;
 		},
 		
 		
 		/**
-		 * When an extern draggable event is dropped on the calendar. "this" refer to the new created event on the calendar.
-		 * @version 1.13.0
-		 * @param {object} event
+		 * Called when an external draggable element with associated event data was dropped onto the calendar. Or an event from another calendar.
+		 * This callback is fired before the eventAdd callback is fired.
+		 * @version 1.15.0
+		 * @param {Object} info {
+		 *  @type {FullCalendar.EventApi} event           An Event object containing the newly created/received event.
+		 *  @type {FullCalendar.EventApi[]} relatedEvents An array of other related Event Objects that have also been received. an event might have other recurring event instances or might be linked to other events with the same groupId
+		 *  @type {Function} revert                       A function that can be called to reverse this action
+		 *  @type {HTMLElement} draggedEl                 The HTML element that was being received.
+		 *  @type {FullCalendar.ViewApi} view             The current View Object.
+		 * }
 		 */
-		eventReceive: function( event ) {
-			var activity_id		= parseInt( event.activity_id );
-			var activity_data	= bookacti.booking_system[ 'bookacti-template-calendar' ][ 'activities_data' ][ activity_id ];		
-			var view			= calendar.fullCalendar( 'getView' );
+		eventReceive: function( info ) {
+			if( typeof info.event.extendedProps.activity_id === 'undefined' ) { info.revert(); return; }
+			
+			var activity_id   = parseInt( info.event.extendedProps.activity_id );
+			var activity_data = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'activities_data' ][ activity_id ];		
 			
 			// If the activity was not found, return false
-			if( ! activity_data ) { return false; }
+			if( ! activity_data ) { info.revert(); return; }
 			
-			// If the event is dropped on a non-agenda view, make it begins at the minTime
-			if( view.name.substr( 0, 6 ) !== 'agenda' ) {
-				var minTime	= calendar.fullCalendar( 'option', 'minTime' );
-				event.start.set( { 'hours': minTime.substr( 0, 2 ), 'minutes': minTime.substr( 3, 2 ), 'seconds': 0 } );
+			// If the event is dropped on a non-timeGrid view, make it begins at the slotMinTime
+			var new_event_start = moment.utc( info.event.start );
+			if( info.view.type.substr( 0, 8 ) !== 'timeGrid' ) {
+				var slot_min_time = bookacti.fc_calendar[ 'bookacti-template-calendar' ].getOption( 'slotMinTime' );
+				new_event_start.set( { 'hours': slot_min_time.substr( 0, 2 ), 'minutes': slot_min_time.substr( 3, 2 ), 'seconds': 0 } );
 			}
 			
 			// Calculate the end datetime thanks to start datetime and duration
 			var activity_duration = activity_data.duration ? activity_data.duration : '000.01:00:00';
-			event.end = event.start.clone();
-			event.end.add( moment.duration( activity_duration ) );
+			var new_event_end = new_event_start.clone();
+			new_event_end.add( moment.duration( activity_duration ) );
 			
-			var event_start_formatted = moment.utc( event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
-			var event_end_formatted = moment.utc( event.end ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
+			// Set the new event dates
+			info.event.setDates( new_event_start.toDate(), new_event_end.toDate() );
+			
+			var event_start_formatted = moment.utc( info.event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
+			var event_end_formatted = moment.utc( info.event.end ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
 			
 			var data = { 
 				'action': 'bookactiInsertEvent', 
@@ -532,10 +656,10 @@ function bookacti_load_template_calendar( calendar ) {
 				'nonce': $j( '#nonce_edit_template' ).val()
 			};
 			
-			calendar.trigger( 'bookacti_insert_event_before', [ event, data ] );
+			booking_system.trigger( 'bookacti_calendar_editor_event_before_insert', [ info, data ] );
 			
 			bookacti_start_template_loading();
-
+			
 			$j.ajax({
 				url: ajaxurl,
 				data: data, 
@@ -543,27 +667,16 @@ function bookacti_load_template_calendar( calendar ) {
 				dataType: 'json',
 				success: function( response ){
 					if( response.status === 'success' ) {
-						// Give the database generated id to the event, 
-						// so that any further changes to this event before page refresh will be also saved
-						event.id = response.event_id;
-						event.bookings = 0;
+						// Set the generated ID to the event
+						info.event.setProp( 'groupId', response.event_id );
+						$j( '.fc-event[data-event-id=""][data-activity-id="' + activity_id + '"][data-event-start="' + event_start_formatted + '"]' ).data( 'event-id', response.event_id ).attr( 'data-event-id', response.event_id );
 						
-						bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ] = response.event_data;
+						bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ response.event_id ] = response.event_data;
 						
-						calendar.fullCalendar( 'updateEvent', event );
-						
-						calendar.trigger( 'bookacti_event_inserted', [ event, response, data ] );
+						booking_system.trigger( 'bookacti_calendar_editor_event_inserted', [ info, response, data ] );
 						
 					} else {
-						// Remove event
-						if( typeof event._id !== 'undefined' ) {
-							if( event._id.indexOf('_') >= 0 ) {
-								calendar.fullCalendar( 'removeEvents', event._id );
-							}
-						} else if( typeof event.id !== 'undefined' ) {
-							calendar.fullCalendar( 'removeEvents', event.id );
-						}
-						calendar.fullCalendar( 'refetchEvents' );
+						info.revert();
 
 						// Display error message
 						var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
@@ -573,6 +686,7 @@ function bookacti_load_template_calendar( calendar ) {
 					}
 				},
 				error: function( e ) {
+					info.revert();
 					alert( 'AJAX ' + bookacti_localized.error );
 					console.log( e );
 				},
@@ -584,220 +698,212 @@ function bookacti_load_template_calendar( calendar ) {
 
 		
 		/**
-		 * eventResize : When an event is resized
-		 * @version 1.14.0
-		 * @param {object} event
-		 * @param {object} delta
-		 * @param {callable} revertFunc
+		 * Triggered when resizing stops and the event has changed in duration.
+		 * This callback is fired before the eventChange callback is fired.
+		 * @version 1.15.0
+		 * @param {Object} info {
+		 *  @type {FullCalendar.EventApi} event           An Event Object that holds information about the event (date, title, etc) after the resize.
+		 *  @type {FullCalendar.EventApi[]} relatedEvents An array of other related Event Objects that were also resized. an event might have other recurring event instances or might be linked to other events with the same groupId
+		 *  @type {FullCalendar.EventApi} oldEvent        An Event Object that holds information about the event before the resize.
+		 *  @type {Object} endDelta                       A Duration Object that represents the amount of time the event’s end date was moved by.
+		 *  @type {Object} startDelta                     A Duration Object that represents the amount of time the event’s start date was moved by.
+		 *  @type {Function} revert                       A function that, if called, reverts the event’s start/end date to the values before the drag. This is useful if an ajax call should fail.
+		 *  @type {FullCalendar.ViewApi} view             The current View Object.
+		 *  @type {HTMLElement} el                        The HTML element that was being resized.
+		 *  @type {Event} jsEvent                         The native JavaScript event with low-level information such as click coordinates.
+		 * }
 		 */
-		eventResize: function( event, delta, revertFunc ) {
-			var old_event = $j.extend( {}, event );
-			old_event.end = moment.utc( old_event.end ).subtract( delta );
-			bookacti_update_event_dates( event, old_event, revertFunc );
+		eventResize: function( info ) {
+			bookacti_update_event_dates( info.event, info.oldEvent, info.revert );
 		},
 
 		
 		/**
-		 * eventDrop : When an event is moved to an other day / hour
-		 * @version 1.14.0
-		 * @param {object} event
-		 * @param {object} delta
-		 * @param {callable} revertFunc
-		 * @param {object} e
+		 * Triggered when dragging stops and the event has moved to a different day/time.
+		 * This callback is fired before the eventChange callback is fired.
+		 * eventDrop does not get called when an external event lands on the calendar. eventReceive is called instead.
+		 * @version 1.15.0
+		 * @param {Object} info {
+		 *  @type {FullCalendar.EventApi} event           An Event Object that holds information about the event (date, title, etc) after the drop.
+		 *  @type {FullCalendar.EventApi[]} relatedEvents An array of other related Event Objects that were also dropped. an event might have other recurring event instances or might be linked to other events with the same groupId
+		 *  @type {FullCalendar.EventApi} oldEvent        An Event Object that holds information about the event before the drop.
+		 *  @type {Object} delta                          A Duration Object that represents the amount of time the event was moved by.
+		 *  @type {Function} revert                       A function that, if called, reverts the event’s start/end date to the values before the drag. This is useful if an ajax call should fail.
+		 *  @type {FullCalendar.ViewApi} view             The current View Object.
+		 *  @type {HTMLElement} el                        The HTML element that was dragged.
+		 *  @type {Event} jsEvent                         The native JavaScript event with low-level information such as click coordinates.
+		 * }
 		 */
-		eventDrop: function( event, delta, revertFunc, e ) {
-			// Check if the alt key is pressed
-			var is_alt_key_pressed = 0;
-			if( e.altKey ) { is_alt_key_pressed = 1; }
-			
+		eventDrop: function( info ) {
 			// The event is duplicated
-			if( is_alt_key_pressed ) {
-				revertFunc();
-				bookacti_duplicate_event( event, delta, revertFunc );
+			if( info.jsEvent.altKey ) {
+				info.revert();
+				bookacti_duplicate_event( info.event, info.oldEvent );
 			}
 			// The event is moved
 			else {
-				var old_event = $j.extend( {}, event );
-				old_event.start = moment.utc( old_event.start ).subtract( delta );
-				old_event.end = moment.utc( old_event.end ).subtract( delta );
-				bookacti_update_event_dates( event, old_event, revertFunc );
+				bookacti_update_event_dates( info.event, info.oldEvent, info.revert );
 			}
 		},
 		
 		
 		/**
-		 * When the user drag an event
+		 * Triggered when event dragging begins.
 		 * @since 1.7.14
-		 * @version 1.12.0
-		 * @param {object} event
-		 * @param {object} jsEvent
-		 * @param {object} ui - deprecated
-		 * @param {object} view
+		 * @version 1.15.0
+		 * @param {Object} info {
+		 *  @type {FullCalendar.EventApi} event An Event Object that holds information about the event (date, title, etc) after the drop.
+		 *  @type {Event} jsEvent               The native JavaScript event with low-level information such as click coordinates.
+		 *  @type {FullCalendar.ViewApi} view   The current View Object.
+		 * }
 		 */
-		eventDragStart: function ( event, jsEvent, ui, view ) {
-			var element = $j( this );
-			bookacti.is_dragging = true;
-			
+		eventDragStart: function( info ) {
 			// Add a class to all events having this ID
-			var elements = $j( '.fc-event[data-event-id="' + event.id + '"]' );
+			var elements = $j( '.fc-event[data-event-id="' + info.event.groupId + '"]' );
 			elements.addClass( 'bookacti-event-dragged' );
-			calendar.trigger( 'bookacti_calendar_editor_drag_start', [ event, element ] );
+			
+			booking_system.trigger( 'bookacti_calendar_editor_drag_start', [ info ] );
 		},
 
 		
 		/**
-		 * When the user drop an event, even if it is not on the calendar or if there is no change of date / hour
+		 * Triggered when event dragging stops.
 		 * @since 1.7.14
-		 * @version 1.12.0
-		 * @param {object} event
-		 * @param {object} jsEvent
-		 * @param {object} ui - deprecated
-		 * @param {object} view
+		 * @version 1.15.0
+		 * @param {Object} info {
+		 *  @type {FullCalendar.EventApi} event An Event Object that holds information about the event (date, title, etc) before the drop.
+		 *  @type {Event} jsEvent               The native JavaScript event with low-level information such as click coordinates.
+		 *  @type {FullCalendar.ViewApi} view   The current View Object.
+		 * }
 		 */
-		eventDragStop: function ( event, jsEvent, ui, view ) {
-			var element = $j( this );
-			bookacti.is_dragging = false;
-			
+		eventDragStop: function( info ) {
 			// Remove the class from all events having this ID
-			var elements = $j( '.fc-event[data-event-id="' + event.id + '"]' );
+			var elements = $j( '.fc-event.bookacti-event-dragged[data-event-id="' + info.event.groupId + '"]' );
 			elements.removeClass( 'bookacti-event-dragged' );
-			calendar.trigger( 'bookacti_calendar_editor_drag_stop', [ event, element ] );
+			
+			booking_system.trigger( 'bookacti_calendar_editor_drag_stop', [ info ] );
 		},
 
 
 		/**
-		 * When the user resize an event
-		 * @version 1.12.0
-		 * @param {object} event
-		 * @param {object} jsEvent
-		 * @param {object} ui - deprecated
-		 * @param {object} view
+		 * Triggered when event resizing begins.
+		 * @version 1.15.0
+		 * @param {Object} info {
+		 *  @type {FullCalendar.EventApi} event An Event Object that holds information about the event (date, title, etc) after the resize.
+		 *  @type {Event} jsEvent               The native JavaScript event with low-level information such as click coordinates.
+		 *  @type {FullCalendar.ViewApi} view   The current View Object.
+		 * }
 		 */
-		eventResizeStart: function ( event, jsEvent, ui, view ) {
-			var element = $j( this );
-			bookacti.is_resizing = true;
-			calendar.trigger( 'bookacti_calendar_editor_resize_start', [ event, element ] );
+		eventResizeStart: function( info ) {
+			booking_system.trigger( 'bookacti_calendar_editor_resize_start', [ info ] );
 		},
 
 
 		/**
-		 * When the user re an event, even if it is not on the calendar or if there is no change of date / hour
-		 * @version 1.12.0
-		 * @param {object} event
-		 * @param {object} jsEvent
-		 * @param {object} ui - deprecated
-		 * @param {object} view
+		 * Triggered when event resizing stops.
+		 * This callback is guaranteed to be triggered after the user resizes an event, even if the event doesn’t change in duration. 
+		 * It is triggered before the event’s information has been modified (if changed in duration) and before the eventResize callback is triggered.
+		 * If you want to get the event’s information after it has changed, use the eventResize callback.
+		 * @version 1.15.0
+		 * @param {Object} info {
+		 *  @type {FullCalendar.EventApi} event An Event Object that holds information about the event (date, title, etc) before the resize.
+		 *  @type {Event} jsEvent               The native JavaScript event with low-level information such as click coordinates.
+		 *  @type {FullCalendar.ViewApi} view   The current View Object.
+		 * }
 		 */
-		eventResizeStop: function ( event, jsEvent, ui, view ) {
-			var element = $j( this );
-			bookacti.is_resizing = false;
-			calendar.trigger( 'bookacti_calendar_editor_resize_stop', [ event, element ] );
+		eventResizeStop: function ( info ) {
+			booking_system.trigger( 'bookacti_calendar_editor_resize_stop', [ info ] );
 		},
 
 
 		/**
-		 * When an event is clicked
-		 * @version 1.12.0
-		 * @param {object} event
-		 * @param {object} jsEvent
-		 * @param {object} view
+		 * Triggered when the user clicks an event.
+		 * @version 1.15.0
+		 * @param {Object} info {
+		 *  @type {FullCalendar.EventApi} event The associated Event Object.
+		 *  @type {HTMLElement} el              The HTML element for this event.
+		 *  @type {Event} jsEvent               The native JavaScript event with low-level information such as click coordinates.
+		 *  @type {FullCalendar.ViewApi} view   The current View Object.
+		 * }
 		 */
-		eventClick: function( event, jsEvent, view ) {
-			var element = $j( this );
-			var event_start_formatted = moment.utc( event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
-			
-			// Because of popover and long events (spreading on multiple days), 
-			// the same event can appears twice, so we need to apply changes on each
-			var elements = $j( '.fc-event[data-event-id="' + event.id + '"][data-event-start="' + event_start_formatted + '"]' );
-			
-			// Display event action on touch devices because they cannot be displayed on hover
-			if( bookacti.is_touch_device ) {
-				if( ! element.find( '.bookacti-event-action' ).is( ':visible' ) ) {
-					$j( '.bookacti-event-over' ).removeClass( 'bookacti-event-over' );
-					bookacti_show_event_actions( element );
-				} else {
-					bookacti_hide_event_actions( element, event );
-				}
-			}
-			
-			// Format the picked events
+		eventClick: function( info ) {
+			// Unpick all the other events
 			bookacti.booking_system[ 'bookacti-template-calendar' ][ 'picked_events' ] = [];
-			$j( '.fc-event' ).removeClass( 'bookacti-picked-event' );
-			elements.addClass( 'bookacti-picked-event' );
-
-			// Keep picked events in memory 
-			bookacti_pick_event( $j( '#bookacti-template-calendar' ), event );
+			bookacti_unpick_all_events_on_calendar( booking_system );
+			
+			// Pick this event
+			bookacti_pick_event( booking_system, info.event );
 			
 			// If the user click on an event action, execute it
-			if( $j( jsEvent.target ).closest( '.bookacti-event-actions' ).length ) {
+			if( $j( info.jsEvent.target ).closest( '.bookacti-event-actions' ).length ) {
 				// EDIT ACTION
-				if( $j( jsEvent.target ).is( '.bookacti-event-action-edit' ) 
-				||  $j( jsEvent.target ).closest( '.bookacti-event-action-edit' ).length ) {
+				if( $j( info.jsEvent.target ).is( '.bookacti-event-action-edit' ) 
+				||  $j( info.jsEvent.target ).closest( '.bookacti-event-action-edit' ).length ) {
 					// Display the dialog to modify the event
-					if( event.editable !== false ){
-						bookacti_dialog_update_event( event );
+					if( info.event.editable !== false ){
+						bookacti_dialog_update_event( info.event );
 					}
 					
 				// SELECT ACTION
-				} else if( $j( jsEvent.target ).is( '.bookacti-event-action-select' )
-						|| $j( jsEvent.target ).closest( '.bookacti-event-action-select' ).length ) {
+				} else if( $j( info.jsEvent.target ).is( '.bookacti-event-action-select' )
+						|| $j( info.jsEvent.target ).closest( '.bookacti-event-action-select' ).length ) {
 					
 					// Format selected events and keep them / remove them from memory
-					if( element.find( '.bookacti-event-action-select-checkbox' ).is( ':checked' ) ) {
-						bookacti_select_event( event );
+					if( $j( info.el ).find( '.bookacti-event-action-select-checkbox' ).is( ':checked' ) ) {
+						bookacti_select_event( info.event );
 					
 					} else {
-						bookacti_unselect_event( event );
-						element.find( '.bookacti-event-action-select' ).show();
+						bookacti_unselect_event( info.event );
+						$j( info.el ).find( '.bookacti-event-action-select' ).show();
 					}
 				}
 			}
 			
-			calendar.trigger( 'bookacti_calendar_editor_event_click', [ event, jsEvent, view ] );
+			booking_system.trigger( 'bookacti_calendar_editor_event_click', [ info ] );
 		},
 		
 		
 		/**
-		 * eventMouseover : When your mouse get over an event
-		 * @version 1.12.0
-		 * @param {object} event
-		 * @param {object} jsEvent
-		 * @param {object} view
+		 * Triggered when the user mouses over an event. Similar to the native mouseenter.
+		 * @version 1.15.0
+		 * @param {Object} info {
+		 *  @type {FullCalendar.EventApi} event The associated Event Object.
+		 *  @type {HTMLElement} el              The HTML element for this event.
+		 *  @type {Event} jsEvent               The native JavaScript event with low-level information such as click coordinates.
+		 *  @type {FullCalendar.ViewApi} view   The current View Object.
+		 * }
 		 */
-		eventMouseover: function( event, jsEvent, view ) { 
-			// Add the "over" class
-			var element = $j( this );
-			bookacti_show_event_actions( element );
-			
-			bookacti.is_hovering = true;
-			calendar.trigger( 'bookacti_calendar_editor_event_mouse_over', [ event, element ] );
+		eventMouseEnter: function( info ) {
+			booking_system.trigger( 'bookacti_calendar_editor_event_mouse_enter', [ info ] );
 		},
 		
 		
 		/**
-		 * eventMouseover : When your mouse move out an event
-		 * @version 1.12.0
-		 * @param {object} event
-		 * @param {object} jsEvent
-		 * @param {object} view
+		 * Triggered when the user mouses out of an event. Similar to the native mouseleave.
+		 * @version 1.15.0
+		 * @param {Object} info {
+		 *  @type {FullCalendar.EventApi} event The associated Event Object.
+		 *  @type {HTMLElement} el              The HTML element for this event.
+		 *  @type {Event} jsEvent               The native JavaScript event with low-level information such as click coordinates.
+		 *  @type {FullCalendar.ViewApi} view   The current View Object.
+		 * }
 		 */
-		eventMouseout: function( event, jsEvent, view ) { 
-			// Remove the "over" class
-			var element = $j( this );
-			bookacti_hide_event_actions( element, event );
-			
-			bookacti.is_hovering = false;
-			calendar.trigger( 'bookacti_calendar_editor_event_mouse_out', [ event, element ] );
+		eventMouseLeave: function( info ) {
+			booking_system.trigger( 'bookacti_calendar_editor_event_mouse_leave', [ info ] );
 		},
 		
 		
+		/**
+		 * Triggered when event or resource fetching starts/stops.
+		 * Triggered with a true argument when the calendar begins fetching events via AJAX. Triggered with false when done.
+		 * @version 1.15.0
+		 * @param {Boolean} isLoading
+		 */
 		loading: function( isLoading ) {
 			if( ! isLoading && bookacti.is_touch_device ) {
-				// Since the draggable events are lazy(bind)loaded, we need to
-				// trigger them all so they're all ready for us to drag/drop
-				// on the iPad.
+				// Trigger mouseover when an event is clicked on touch devices
 				$j( '.fc-event' ).each( function(){
-					var e = $j.Event( "mouseover", { target: this.firstChild, _dummyCalledOnStartup: true } );
+					var e = $j.Event( 'mouseover', { target: this.firstChild, _dummyCalledOnStartup: true } );
 					$j( this ).trigger( e );
 				});
 			}
@@ -805,16 +911,19 @@ function bookacti_load_template_calendar( calendar ) {
 	};
 	
 	if( bookacti_localized.calendar_localization === 'wp_settings' ) {
-		init_data.firstDay			= bookacti_localized.wp_start_of_week;
-		init_data.slotLabelFormat	= bookacti_convert_php_datetime_format_to_moment_js( bookacti_localized.wp_time_format );
-		init_data.timeFormat		= bookacti_convert_php_datetime_format_to_moment_js( bookacti_localized.wp_time_format );
+		var fc_time_format_obj    = bookacti_convert_php_datetime_format_to_fc_date_formatting_object( bookacti_localized.wp_time_format );
+		init_data.firstDay        = bookacti_localized.wp_start_of_week;
+		init_data.slotLabelFormat = fc_time_format_obj;
+		init_data.eventTimeFormat = fc_time_format_obj;
 	}
 	
 	// Let third-party plugin change initial calendar data
-	calendar.trigger( 'bookacti_calendar_editor_init_data', [ init_data ] );
+	booking_system.trigger( 'bookacti_calendar_editor_init_data', [ init_data ] );
 	
 	// Load the calendar
-	calendar.fullCalendar( init_data );
+	if( typeof bookacti.fc_calendar[ 'bookacti-template-calendar' ] !== 'undefined' ) { bookacti.fc_calendar[ 'bookacti-template-calendar' ].destroy(); }
+	bookacti.fc_calendar[ 'bookacti-template-calendar' ] = new FullCalendar.Calendar( booking_system.find( '.bookacti-calendar:first' )[ 0 ], init_data );
+	bookacti.fc_calendar[ 'bookacti-template-calendar' ].render();
 	
-	calendar.trigger( 'bookacti_after_calendar_editor_set_up' );
+	booking_system.trigger( 'bookacti_calendar_editor_after_set_up' );
 }
