@@ -322,6 +322,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 == Changelog ==
 
 = 1.15.0 - 2022/08/31 =
+* **[See the user-friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-15-fullcalendar-v5/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
 * Lib - Update FullCalendar to 5.11.3 (**major changes!**)
 * Lib - Update Moment JS to 2.29.3
 * Feature - Calendar locales newly supported: az, bn, cy, eo, hy-am, km, ku, ne, si-lk, sm, ta-in, ug, uz ([complete list](https://github.com/fullcalendar/fullcalendar/tree/v5.11.3/packages/core/src/locales))
