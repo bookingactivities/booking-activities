@@ -395,11 +395,14 @@ function bookacti_init_moment_format_from_php_date_format() {
 /**
  * Convert a PHP datetime format to moment JS format
  * @since 1.7.16
- * @version 1.15.0
+ * @version 1.15.1
  * @param {string} php_format
  * @returns {string}
  */
 function bookacti_convert_php_datetime_format_to_moment_js( php_format ) {
+	if( typeof php_format !== 'string' ) { return ''; }
+	if( ! php_format.length ) { return ''; }
+	
 	var format_map = {
 		"d": 'DD',
 		"D": 'ddd',
@@ -433,13 +436,14 @@ function bookacti_convert_php_datetime_format_to_moment_js( php_format ) {
 		"U": 'X'
 	};
 	
-	window.has_backslash = false;
-	var moment_js_format = php_format.replace( /[dDjlNSwzWFmMntLoYyaABgGhHisueIOPTZcrU\\]/g, function ( php_str ) {
-		if( php_str === '\\' ) { window.has_backslash = true; return ''; }
-		moment_js_str = window.has_backslash ? '[' + php_str + ']' : format_map[ php_str ];
-		window.has_backslash = false;
-		return moment_js_str;
-	});
+	var has_backslash = false;
+	var moment_js_format = '';
+	for( var i = 0; i < php_format.length; i++ ) {
+		var char = php_format[ i ];
+		if( char === '\\' && ! has_backslash ) { has_backslash = true; continue; }
+		moment_js_format += has_backslash || typeof format_map[ char ] === 'undefined' ? '[' + char + ']' : format_map[ char ];
+		has_backslash = false;
+	}
 	
 	return moment_js_format;
 }
@@ -448,10 +452,12 @@ function bookacti_convert_php_datetime_format_to_moment_js( php_format ) {
 /**
  * Convert a PHP datetime format to FullCalendar Date-Formatting Object, see https://fullcalendar.io/docs/date-formatting/
  * @since 1.15.0
+ * @version 1.15.1
  * @param {string} php_format
- * @returns {string}
+ * @returns {object}
  */
 function bookacti_convert_php_datetime_format_to_fc_date_formatting_object( php_format ) {
+	if( typeof php_format !== 'string' ) { return {}; }
 	if( ! php_format.length ) { return {}; }
 	
 	var format_map = {
@@ -489,14 +495,14 @@ function bookacti_convert_php_datetime_format_to_fc_date_formatting_object( php_
 	
 	var date_formatting_obj = { 'meridiem': false };
 	
-	var i = php_format.length;
-	window.has_backslash = false;
-	while( i-- ) {
-		if( str[ i ] === '\\' ) { window.has_backslash = true; continue; }
-		if( ! window.has_backslash && typeof format_map[ str[ i ] ] !== 'undefined' ) {
-			$j.extend( true, date_formatting_obj, format_map[ str[ i ] ] );
+	var has_backslash = false;
+	for( var i = 0; i < php_format.length; i++ ) {
+		var char = php_format[ i ];
+		if( char === '\\' && ! has_backslash ) { has_backslash = true; continue; }
+		if( ! has_backslash && typeof format_map[ char ] !== 'undefined' ) {
+			$j.extend( true, date_formatting_obj, format_map[ char ] );
 		}
-		window.has_backslash = false;
+		has_backslash = false;
 	}
 	
 	return date_formatting_obj;

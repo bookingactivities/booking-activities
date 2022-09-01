@@ -1031,7 +1031,7 @@ function bookacti_update_event_dates( new_event, old_event, revertFunc, is_dialo
 /**
  * Duplicate an event
  * @since 1.10.0
- * @version 1.15.0
+ * @version 1.15.1
  * @param {(FullCalendar.EventApi|Object)} new_event
  * @param {(FullCalendar.EventApi|Object)} old_event
  */
@@ -1070,8 +1070,10 @@ function bookacti_duplicate_event( new_event, old_event ) {
 				}
 
 				// Load the new event on calendar
-				bookacti_fc_add_events( $j( '#bookacti-template-calendar' ), response.events );
-
+				if( response.events.length ) {
+					bookacti_fc_add_events( $j( '#bookacti-template-calendar' ), response.events );
+				}
+				
 				$j( '#bookacti-template-calendar' ).trigger( 'bookacti_event_duplicated', [ new_event, old_event, response, data ] );
 			}
 

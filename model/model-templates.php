@@ -888,7 +888,7 @@ function bookacti_get_group_category_template_id( $category_id ) {
 
 /**
  * Get templates
- * @version 1.15.0
+ * @version 1.15.1
  * @global wpdb $wpdb
  * @param array $template_ids
  * @param int $user_id User ID to check the permissions for. -1 for current user (default). 0 to ignore permission. 
@@ -899,7 +899,7 @@ function bookacti_fetch_templates( $template_ids = array(), $user_id = -1 ) {
 
 	// Check if we need to check permissions
 	$ignore_permissions = $user_id === 0;
-	if( $user_id < -1 ) { $user_id = get_current_user_id(); }
+	if( $user_id <= -1 ) { $user_id = get_current_user_id(); }
 	if( $user_id ) {
 		$bypass_template_managers_check = apply_filters( 'bookacti_bypass_template_managers_check', false );
 		if( $bypass_template_managers_check || is_super_admin( $user_id ) ) {
@@ -943,7 +943,7 @@ function bookacti_fetch_templates( $template_ids = array(), $user_id = -1 ) {
 	}
 
 	if( $variables ) { $query = $wpdb->prepare( $query, $variables ); }
-
+	
 	$templates = $wpdb->get_results( $query, ARRAY_A );
 
 	$templates_by_id = array();

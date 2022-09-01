@@ -380,7 +380,7 @@ add_action( 'wp_ajax_bookactiUpdateEventDates', 'bookacti_controller_update_even
 /**
  * AJAX Controller - Duplicate an event
  * @since 1.10.0
- * @version 1.15.0
+ * @version 1.15.1
  */
 function bookacti_controller_duplicate_event() {
 	// Check nonce
@@ -442,7 +442,7 @@ function bookacti_controller_duplicate_event() {
 		'status'     => 'success', 
 		'event_id'   => $new_event_id, 
 		'events'     => ! empty( $events[ 'events' ] ) ? $events[ 'events' ] : array(),
-		'event_data' => ! empty( $events[ 'data' ][ $event_id ] ) ? $events[ 'data' ][ $event_id ] : array()
+		'event_data' => ! empty( $events[ 'data' ][ $new_event_id ] ) ? $events[ 'data' ][ $new_event_id ] : array()
 	), 'duplicate_event' );
 }
 add_action( 'wp_ajax_bookactiDuplicateEvent', 'bookacti_controller_duplicate_event' );

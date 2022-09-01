@@ -688,6 +688,7 @@ function bookacti_fc_get_events_by_groupId( booking_system, groupId ) {
 /**
  * Fill calendar with events
  * @since 1.15.0 (was bookacti_display_events_on_calendar)
+ * @version 1.15.1
  * @param {HTMLElement} booking_system
  * @param {Object} events
  */
@@ -695,13 +696,16 @@ function bookacti_fc_add_events( booking_system, events ) {
 	if( ! events.length ) { return; }
 	
 	// Convert events for FullCalendar
+	var new_events = [];
 	$j.each( events, function( i, event ) {
-		event.groupId = parseInt( event.id );
-		event.id = event.id + '_' + event.start;
+		var new_event = $j.extend( true, {}, event );
+		new_event.groupId = parseInt( event.id );
+		new_event.id = event.id + '_' + event.start;
+		new_events.push( new_event );
 	});
 	
 	var booking_system_id = booking_system.attr( 'id' );
-	var source = { 'events': events, 'editable': booking_system_id === 'bookacti-template-calendar' };
+	var source = { 'events': new_events, 'editable': booking_system_id === 'bookacti-template-calendar' };
 	booking_system.trigger( 'bookacti_fc_events', [ source ] );
 	
 	bookacti.fc_calendar[ booking_system_id ].addEventSource( source );
