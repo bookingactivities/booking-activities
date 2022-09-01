@@ -49,6 +49,8 @@
 .bookacti-event-action-edit-button			{ font-size: 16px; transition: color 0.2s; padding-top: 1px; }
 .bookacti-event-action-edit-button:hover	{ color: #aaa; cursor: pointer; }
 
+/* Touch devices fix */
+#bookacti-template-calendar .fc-event-selected:before, #bookacti-template-calendar .fc-event:focus:before { z-index: 1; }
 
 
 /***** Sidebar *****/

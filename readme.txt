@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 6.0
 Requires PHP: 5.3
-Stable tag: 1.15.0
+Stable tag: 1.15.1
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -320,6 +320,12 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.15.1 - 2022/09/02 =
+* Fix - JS error when duplicating event (needed to refresh page) ([#160](https://github.com/bookingactivities/booking-activities/issues/160))
+* Fix - Permissions to calendars didn't work ([#162](https://github.com/bookingactivities/booking-activities/issues/162))
+* Fix - JS error if Calendar localization was set to Based on more WP settings (Site Language, Time Format, Week Starts On)
+* Fix - Cannot open event settings or select event to group in calendar editor on touch devices
 
 = 1.15.0 - 2022/08/31 =
 * **[See the user-friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-15-fullcalendar-v5/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**

@@ -331,6 +331,7 @@ function bookacti_load_template_calendar() {
 		 * Called right after the element has been added to the DOM.
 		 * If the event data changes, this is NOT called again.
 		 * @since 1.15.0
+		 * @version 1.15.1
 		 * @param {Object} info {
 		 *  @type {FullCalendar.EventApi} event
 		 *  @type {String} timeText
@@ -350,8 +351,14 @@ function bookacti_load_template_calendar() {
 			
 			// Add data to the event element
 			var event_id    = info.event.groupId;
-			var event_data  = event_id ? bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event_id ] : [];
-			var activity_id = typeof event_data.activity_id !== 'undefined' ? parseInt( event_data.activity_id ) : ( typeof info.event.extendedProps.activity_id !== 'undefined' ? parseInt( info.event.extendedProps.activity_id ) : 0 );
+			var event_data  = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event_id ];
+			var activity_id = 0;
+			if( typeof event_data !== 'undefined' ) {
+				activity_id = parseInt( event_data.activity_id );
+			} else if( typeof info.event.extendedProps.activity_id !== 'undefined' ) {
+				activity_id = parseInt( info.event.extendedProps.activity_id );
+			}
+			
 			var event_start_formatted = moment.utc( info.event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
 			var event_end_formatted   = moment.utc( info.event.end ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
 			

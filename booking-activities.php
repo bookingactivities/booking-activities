@@ -3,7 +3,7 @@
  * Plugin Name: Booking Activities
  * Plugin URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Description: Booking system specialized in activities (sports, cultural, leisure, events...). Works great with WooCommerce.
- * Version: 1.15.0
+ * Version: 1.15.1
  * Author: Booking Activities Team
  * Author URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Text Domain: booking-activities
@@ -40,7 +40,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 // GLOBALS AND CONSTANTS
-if( ! defined( 'BOOKACTI_VERSION' ) )		{ define( 'BOOKACTI_VERSION', '1.15.0' ); }
+if( ! defined( 'BOOKACTI_VERSION' ) )		{ define( 'BOOKACTI_VERSION', '1.15.1' ); }
 if( ! defined( 'BOOKACTI_PLUGIN_NAME' ) )	{ define( 'BOOKACTI_PLUGIN_NAME', 'booking-activities' ); }
 
 
@@ -155,7 +155,7 @@ add_action( 'wp_enqueue_scripts', 'bookacti_enqueue_js_variables', 5 );
 /**
  * Enqueue librairies (as high priority scripts)
  * @since 1.11.3 (was part of bookacti_enqueue_high_priority_global_scripts)
- * @version 1.15.0
+ * @version 1.15.1
  */
 function bookacti_enqueue_libraries_scripts() {
 	// On backend, only include these scripts on Booking Activities pages
@@ -170,7 +170,7 @@ function bookacti_enqueue_libraries_scripts() {
 	if( did_action( 'init' ) ) { bookacti_wp_moment_updateLocale_temp_fix(); }
 	
 	// FullCalendar
-	$fullcalendar_version  = '5.11.0';
+	$fullcalendar_version  = '5.11.3';
 	$registered_fc         = wp_scripts()->query( 'fullcalendar', 'registered' );
 	$registered_fc_version = $registered_fc && ! empty( $registered_fc->ver ) ? $registered_fc->ver : '';
 	if( ! $registered_fc || ( $registered_fc_version && version_compare( $registered_fc_version, $fullcalendar_version, '<' ) ) ) { 
