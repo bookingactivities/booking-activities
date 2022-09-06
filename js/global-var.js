@@ -1,4 +1,4 @@
-$j=jQuery.noConflict();
+var $j = jQuery.noConflict();
 
 if( typeof bookacti === 'undefined' ) {
 	var bookacti = {

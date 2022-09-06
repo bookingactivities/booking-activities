@@ -321,6 +321,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.15.2 =
+* Dev - Change js and css minification processor to Google Closure Compiler (replace all .min files)
+
 = 1.15.1 - 2022/09/02 =
 * Fix - JS error when duplicating event (needed to refresh page) ([#160](https://github.com/bookingactivities/booking-activities/issues/160))
 * Fix - Permissions to calendars didn't work ([#162](https://github.com/bookingactivities/booking-activities/issues/162))

@@ -1814,7 +1814,7 @@ function bookacti_stop_loading_booking_system( booking_system, force_exit ) {
  * @since 1.7.0
  * @version 1.15.0
  * @param {HTMLElement} booking_system
- * @param @param {(FullCalendar.EventApi|Object)} event
+ * @param {(FullCalendar.EventApi|Object)} event
  */
 function bookacti_redirect_to_activity_url( booking_system, event ) {
 	var booking_system_id = booking_system.attr( 'id' );

@@ -292,13 +292,13 @@ add_action( 'admin_enqueue_scripts', 'bookacti_enqueue_high_priority_backend_scr
 
 /**
  * Enqueue low priority scripts in backend only
- * @version 1.15.0
+ * @version 1.15.2
  */
 function bookacti_enqueue_backend_scripts() {
 	// Include WooCommerce scripts
 	if( bookacti_is_plugin_active( 'woocommerce/woocommerce.php' ) ) {
 		if( bookacti_is_wc_screen( array( 'product', 'product_variation', 'shop_order' ) ) || bookacti_is_booking_activities_screen() ) {
-			wp_enqueue_script( 'bookacti-js-woocommerce-backend', plugins_url( 'js/woocommerce-backend.min.js', __FILE__ ), array( 'jquery' ), BOOKACTI_VERSION, true );
+			wp_enqueue_script( 'bookacti-js-woocommerce-backend', plugins_url( 'js/woocommerce-backend.min.js', __FILE__ ), array( 'jquery', 'bookacti-js-global-var' ), BOOKACTI_VERSION, true );
 		}
 	}
 	
