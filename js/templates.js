@@ -118,7 +118,7 @@ $j( document ).ready( function() {
 
 /**
  * Initialize and display the template calendar
- * @version 1.15.0
+ * @version 1.15.2
  */
 function bookacti_load_template_calendar() {
 	var booking_system = $j( '#bookacti-template-calendar' );
@@ -130,7 +130,8 @@ function bookacti_load_template_calendar() {
 	var slot_min_time       = typeof display_data.slotMinTime !== 'undefined' ? display_data.slotMinTime : '00:00';
 	var slot_max_time       = typeof display_data.slotMaxTime !== 'undefined' ? display_data.slotMaxTime : '24:00';
 	var snap_duration       = typeof display_data.snapDuration !== 'undefined' ? display_data.snapDuration : '00:05';
-
+	var next_day_threshold  = moment.utc( '1970-02-01 ' + slot_min_time ).add( 1, 'minutes' ).format( 'HH:mm' ); // One minute after slot_min_time
+	
 	// See https://fullcalendar.io/docs/
 	var init_data = {
 		locale:                  bookacti_localized.fullcalendar_locale,
@@ -138,6 +139,7 @@ function bookacti_load_template_calendar() {
 		initialView:             'timeGridWeek',
 		eventShortHeight:        0,
 		eventMinHeight:          event_min_height,
+		nextDayThreshold:        next_day_threshold,
 		slotMinTime:             slot_min_time,
 		slotMaxTime:             slot_max_time,
 		slotDuration:            '00:30',

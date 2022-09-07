@@ -322,6 +322,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 == Changelog ==
 
 = 1.15.2 =
+* Tweak - Change the minimum time to display event on next day in DayGrid view (nextDayThreshold) to the value of Day Begin option (slotMinTime)
+* Fix - Notification Pack custom notifications not sent with WC if default notifications were configured not to be sent with WC
+* Fix - Remove unused code about Bootstrap tooltip that may cause js error
 * Dev - Change js and css minification processor to Google Closure Compiler (replace all .min files)
 
 = 1.15.1 - 2022/09/02 =
