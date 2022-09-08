@@ -2,7 +2,7 @@
 /**
  * Form editor page
  * @since 1.5.0
- * @version 1.14.0
+ * @version 1.15.2
  */
 
 // Exit if accessed directly
@@ -120,11 +120,7 @@ if( ! $form_edit ) { exit; }
 								if( ! $templates ) {
 									$editor_path   = 'admin.php?page=bookacti_calendars';
 									$editor_url    = admin_url( $editor_path );
-									$error_message = sprintf( 
-										esc_html__( 'Welcome! It seems you don\'t have any calendar yet. Go to %1$sCalendar Editor%2$s to create your first calendar.', 'booking-activities' ),
-										'<a href="' . esc_url( $editor_url ) . '" >', 
-										'</a>' 
-									);
+									$error_message = sprintf( esc_html__( 'Welcome! It seems you don\'t have any calendar yet. Go to %s to create your first calendar', 'booking-activities' ), '<a href="' . esc_url( $editor_url ) . '" >' . esc_html__( 'Calendar Editor', 'booking-activities' ) . '</a>' );
 								}
 							}
 							

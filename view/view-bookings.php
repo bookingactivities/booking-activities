@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking list page
- * @version 1.15.0
+ * @version 1.15.2
  */
 
 // Exit if accessed directly
@@ -21,10 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		?>
 			<div id='bookacti-first-template-container'>
 				<h2>
-					<?php
-					/* translators: %s is a link to "Calendar Editor" page. */
-					echo sprintf( esc_html__( 'Welcome! It seems you don\'t have any calendar yet. Go to %s to create your first calendar', 'booking-activities' ), '<a href="' . esc_url( $editor_url ) . '" >' . esc_html__( 'Calendar Editor', 'booking-activities' ) . '</a>' );
-					?>
+					<?php echo sprintf( esc_html__( 'Welcome! It seems you don\'t have any calendar yet. Go to %s to create your first calendar', 'booking-activities' ), '<a href="' . esc_url( $editor_url ) . '" >' . esc_html__( 'Calendar Editor', 'booking-activities' ) . '</a>' ); ?>
 				</h2>
 			</div>
 		</div><!-- end of wp wrap -->
