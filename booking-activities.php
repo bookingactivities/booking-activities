@@ -3,7 +3,7 @@
  * Plugin Name: Booking Activities
  * Plugin URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Description: Booking system specialized in activities (sports, cultural, leisure, events...). Works great with WooCommerce.
- * Version: 1.15.1
+ * Version: 1.15.2
  * Author: Booking Activities Team
  * Author URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Text Domain: booking-activities
@@ -40,7 +40,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 // GLOBALS AND CONSTANTS
-if( ! defined( 'BOOKACTI_VERSION' ) )		{ define( 'BOOKACTI_VERSION', '1.15.1' ); }
+if( ! defined( 'BOOKACTI_VERSION' ) )		{ define( 'BOOKACTI_VERSION', '1.15.2' ); }
 if( ! defined( 'BOOKACTI_PLUGIN_NAME' ) )	{ define( 'BOOKACTI_PLUGIN_NAME', 'booking-activities' ); }
 
 
@@ -292,13 +292,13 @@ add_action( 'admin_enqueue_scripts', 'bookacti_enqueue_high_priority_backend_scr
 
 /**
  * Enqueue low priority scripts in backend only
- * @version 1.15.0
+ * @version 1.15.2
  */
 function bookacti_enqueue_backend_scripts() {
 	// Include WooCommerce scripts
 	if( bookacti_is_plugin_active( 'woocommerce/woocommerce.php' ) ) {
 		if( bookacti_is_wc_screen( array( 'product', 'product_variation', 'shop_order' ) ) || bookacti_is_booking_activities_screen() ) {
-			wp_enqueue_script( 'bookacti-js-woocommerce-backend', plugins_url( 'js/woocommerce-backend.min.js', __FILE__ ), array( 'jquery' ), BOOKACTI_VERSION, true );
+			wp_enqueue_script( 'bookacti-js-woocommerce-backend', plugins_url( 'js/woocommerce-backend.min.js', __FILE__ ), array( 'jquery', 'bookacti-js-global-var' ), BOOKACTI_VERSION, true );
 		}
 	}
 	

@@ -2,14 +2,14 @@
 # This file is distributed under the same license as the Booking Activities plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Booking Activities 1.15.0\n"
+"Project-Id-Version: Booking Activities 1.15.2\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/booking-activities\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2022-08-30T11:34:52+00:00\n"
+"POT-Creation-Date: 2022-09-08T13:39:14+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.3.0\n"
 "X-Domain: booking-activities\n"
@@ -32,22 +32,22 @@ msgstr ""
 msgid "Booking Activities Team"
 msgstr ""
 
-#: booking-activities.php:451
+#: booking-activities.php:452
 msgctxt "Landing page tab name"
 msgid "Home"
 msgstr ""
 
-#: booking-activities.php:452
+#: booking-activities.php:453
 #: view/view-templates.php:17
 msgid "Calendar editor"
 msgstr ""
 
-#: booking-activities.php:453
+#: booking-activities.php:454
 msgid "Booking forms"
 msgstr ""
 
 #. translators: %s = link to "Bookings"
-#: booking-activities.php:454
+#: booking-activities.php:455
 #: controller/controller-woocommerce-frontend.php:1224
 #: controller/controller-woocommerce-frontend.php:1853
 #: controller/controller-woocommerce-frontend.php:1875
@@ -59,7 +59,7 @@ msgstr ""
 msgid "Bookings"
 msgstr ""
 
-#: booking-activities.php:458
+#: booking-activities.php:459
 #: controller/controller-settings.php:520
 #: functions/functions-settings.php:636
 #: view/view-bookings.php:298
@@ -276,6 +276,8 @@ msgstr ""
 #. translators: %d is the form ID
 #: class/class-forms-list.php:290
 #: controller/controller-forms.php:1947
+#: controller/controller-woocommerce-backend.php:335
+#: controller/controller-woocommerce-backend.php:456
 msgid "Form #%d"
 msgstr ""
 
@@ -975,7 +977,7 @@ msgid "Does <strong>Booking Activities</strong> help you? Help us back leaving a
 msgstr ""
 
 #: controller/controller-settings.php:812
-#: functions/functions-global.php:1470
+#: functions/functions-global.php:1472
 msgid "Current user"
 msgstr ""
 
@@ -1421,31 +1423,31 @@ msgstr ""
 msgid "You can also manage your %s."
 msgstr ""
 
-#: controller/controller-woocommerce-notifications.php:93
+#: controller/controller-woocommerce-notifications.php:89
 msgid "<h4>Refund</h4>Price: {price}<br/>Coupon: {refund_coupon_code}"
 msgstr ""
 
-#: controller/controller-woocommerce-notifications.php:204
+#: controller/controller-woocommerce-notifications.php:200
 msgid "The WooCommerce coupon code generated when the booking was refunded."
 msgstr ""
 
-#: controller/controller-woocommerce-notifications.php:206
+#: controller/controller-woocommerce-notifications.php:202
 msgid "The order item product ID."
 msgstr ""
 
-#: controller/controller-woocommerce-notifications.php:207
+#: controller/controller-woocommerce-notifications.php:203
 msgid "The order item title."
 msgstr ""
 
-#: controller/controller-woocommerce-notifications.php:208
+#: controller/controller-woocommerce-notifications.php:204
 msgid "Booking price, with currency."
 msgstr ""
 
-#: controller/controller-woocommerce-notifications.php:347
+#: controller/controller-woocommerce-notifications.php:343
 msgid "Click here to go to the order page and process the refund:"
 msgstr ""
 
-#: controller/controller-woocommerce-notifications.php:349
+#: controller/controller-woocommerce-notifications.php:345
 msgid "Go to refund page"
 msgstr ""
 
@@ -2419,9 +2421,9 @@ msgid "Remove this field"
 msgstr ""
 
 #: functions/functions-forms.php:1211
-#: view/view-form-editor.php:216
-#: view/view-form-editor.php:249
-#: view/view-form-editor.php:280
+#: view/view-form-editor.php:212
+#: view/view-form-editor.php:245
+#: view/view-form-editor.php:276
 msgid "Show / Hide"
 msgstr ""
 
@@ -2502,7 +2504,7 @@ msgid "Add manager"
 msgstr ""
 
 #: functions/functions-forms.php:1800
-#: functions/functions-global.php:1205
+#: functions/functions-global.php:1207
 #: view/view-templates-dialogs.php:368
 #: view/view-templates-dialogs.php:657
 msgid "Remove selected"
@@ -2584,7 +2586,7 @@ msgid "You want to make %1$s bookings but only %2$s are available for the select
 msgstr ""
 
 #: functions/functions-global.php:376
-#: functions/functions-global.php:1673
+#: functions/functions-global.php:1675
 msgid "Loading"
 msgstr ""
 
@@ -2722,93 +2724,93 @@ msgstr ""
 msgid "You must select a calendar first."
 msgstr ""
 
-#: functions/functions-global.php:1006
+#: functions/functions-global.php:1008
 msgid "day"
 msgid_plural "days"
 msgstr[0] ""
 msgstr[1] ""
 
-#: functions/functions-global.php:1015
+#: functions/functions-global.php:1017
 msgid "hour"
 msgid_plural "hours"
 msgstr[0] ""
 msgstr[1] ""
 
-#: functions/functions-global.php:1024
+#: functions/functions-global.php:1026
 msgid "minute"
 msgid_plural "minutes"
 msgstr[0] ""
 msgstr[1] ""
 
-#: functions/functions-global.php:1160
+#: functions/functions-global.php:1162
 msgid "Multiple selection"
 msgstr ""
 
 #. translators: %s is the "+" icon to click on.
-#: functions/functions-global.php:1171
+#: functions/functions-global.php:1173
 msgid "To select multiple values, click on %s and use CTRL+Click to pick or unpick a value."
 msgstr ""
 
-#: functions/functions-global.php:1194
+#: functions/functions-global.php:1196
 msgid "Add"
 msgstr ""
 
-#: functions/functions-global.php:1329
+#: functions/functions-global.php:1331
 #: view/view-backend-bookings-dialogs.php:385
 msgid "Available tags"
 msgstr ""
 
-#: functions/functions-global.php:1342
+#: functions/functions-global.php:1344
 #: view/view-backend-bookings-dialogs.php:398
 msgid "show"
 msgstr ""
 
-#: functions/functions-global.php:1342
+#: functions/functions-global.php:1344
 #: view/view-backend-bookings-dialogs.php:398
 msgid "hide"
 msgstr ""
 
-#: functions/functions-global.php:1464
+#: functions/functions-global.php:1466
 msgid "Search for a customer"
 msgstr ""
 
 #. translators: Followed by a date. E.g.: From 04/02/2021.
-#: functions/functions-global.php:1639
+#: functions/functions-global.php:1641
 #: view/view-bookings.php:167
 msgctxt "date"
 msgid "From"
 msgstr ""
 
 #. translators: Followed by a date. E.g.: To 04/02/2021.
-#: functions/functions-global.php:1640
+#: functions/functions-global.php:1642
 #: view/view-bookings.php:168
 msgctxt "date"
 msgid "To"
 msgstr ""
 
 #. translators: %d is a variable number of days
-#: functions/functions-global.php:1951
+#: functions/functions-global.php:1953
 msgid "%d day"
 msgid_plural "%d days"
 msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d is a variable number of hours
-#: functions/functions-global.php:1956
+#: functions/functions-global.php:1958
 msgid "%d hour"
 msgid_plural "%d hours"
 msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d is a variable number of minutes
-#: functions/functions-global.php:1961
+#: functions/functions-global.php:1963
 msgid "%d minute"
 msgid_plural "%d minutes"
 msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d is a variable number of minutes
-#: functions/functions-global.php:1966
+#: functions/functions-global.php:1968
 msgid "%d second"
 msgid_plural "%d seconds"
 msgstr[0] ""
@@ -3347,7 +3349,7 @@ msgstr ""
 #: functions/functions-settings.php:1232
 #: functions/functions-settings.php:1302
 #: functions/functions-templates.php:946
-#: view/view-form-editor.php:399
+#: view/view-form-editor.php:395
 msgid "Learn more"
 msgstr ""
 
@@ -4279,18 +4281,26 @@ msgstr ""
 msgid "Send the booking rescheduling notifications configured in %s."
 msgstr ""
 
-#. translators: %1$s and %2$s delimit the link to Calendar Editor page.
-#: view/view-bookings.php:25
-#: view/view-form-editor.php:124
-msgid "Welcome! It seems you don't have any calendar yet. Go to %1$sCalendar Editor%2$s to create your first calendar."
+#. translators: %s is a link to "Calendar Editor" page.
+#: view/view-bookings.php:24
+#: view/view-form-editor.php:123
+#: view/view-form-list.php:38
+msgid "Welcome! It seems you don't have any calendar yet. Go to %s to create your first calendar"
 msgstr ""
 
-#: view/view-bookings.php:82
+#. translators: %s is a link to "Calendar Editor" page.
+#: view/view-bookings.php:24
+#: view/view-form-editor.php:123
+#: view/view-form-list.php:38
+msgid "Calendar Editor"
+msgstr ""
+
+#: view/view-bookings.php:89
 #: view/view-templates.php:44
 msgid "Calendars"
 msgstr ""
 
-#: view/view-bookings.php:100
+#: view/view-bookings.php:107
 #: view/view-form-editor-dialogs.php:258
 #: view/view-templates.php:79
 msgid "Activities"
@@ -4743,125 +4753,125 @@ msgstr ""
 msgid "Please set a title and publish your form first."
 msgstr ""
 
-#: view/view-form-editor.php:155
+#: view/view-form-editor.php:151
 msgid "Form editor"
 msgstr ""
 
-#: view/view-form-editor.php:159
+#: view/view-form-editor.php:155
 msgid "Change form settings"
 msgstr ""
 
-#: view/view-form-editor.php:160
+#: view/view-form-editor.php:156
 msgid "Add a new field to your form"
 msgstr ""
 
-#: view/view-form-editor.php:160
+#: view/view-form-editor.php:156
 msgid "Add a field"
 msgstr ""
 
 #. translators: the placeholders are icons related to the action
-#: view/view-form-editor.php:168
+#: view/view-form-editor.php:164
 msgid "Click on %1$s to add, %2$s to edit, %3$s to remove and %4$s to preview your form fields.<br/>Drag and drop fields to switch their positions."
 msgstr ""
 
 #. translators: %s is a link to the official FAQ. The label of this link is "FAQ".
-#: view/view-form-editor.php:179
+#: view/view-form-editor.php:175
 #: view/view-templates.php:26
 msgid "A fatal error occurred. Please try to refresh the page. If the error persists, follow the process under \"Booking Activities doesn’t work as it should\" here: %s."
 msgstr ""
 
 #. translators: %s is a link to the official FAQ. The label of this link is "FAQ".
-#: view/view-form-editor.php:179
+#: view/view-form-editor.php:175
 #: view/view-templates.php:26
 msgid "FAQ"
 msgstr ""
 
-#: view/view-form-editor.php:180
+#: view/view-form-editor.php:176
 #: view/view-templates.php:29
 msgid "Advanced users, you can stop loading and free the fields to try to solve your problem:"
 msgstr ""
 
-#: view/view-form-editor.php:181
+#: view/view-form-editor.php:177
 #: view/view-templates.php:30
 msgid "Stop loading and free fields"
 msgstr ""
 
 #. translators: %1$s is the placeholder for Advanced Forms add-on link
-#: view/view-form-editor.php:207
+#: view/view-form-editor.php:203
 msgid "Add any custom fields to your booking form thanks to the %1$s add-on:"
 msgstr ""
 
-#: view/view-form-editor.php:213
-#: view/view-form-editor.php:246
-#: view/view-form-editor.php:277
+#: view/view-form-editor.php:209
+#: view/view-form-editor.php:242
+#: view/view-form-editor.php:273
 msgid "Example:"
 msgstr ""
 
-#: view/view-form-editor.php:213
+#: view/view-form-editor.php:209
 msgid "Height"
 msgstr ""
 
 #. translators: asking a human for his height
-#: view/view-form-editor.php:222
-#: view/view-form-editor.php:288
-#: view/view-form-editor.php:342
+#: view/view-form-editor.php:218
+#: view/view-form-editor.php:284
+#: view/view-form-editor.php:338
 msgid "Your height:"
 msgstr ""
 
 #. translators: %1$s is the placeholder for Advanced Forms add-on link
-#: view/view-form-editor.php:225
+#: view/view-form-editor.php:221
 msgid "In this example, a number field has been added to the form in order to ask the customer's height. Thanks to the %1$s add-on, you can add any kind of field and ask any information to your customers."
 msgstr ""
 
-#: view/view-form-editor.php:238
-#: view/view-form-editor.php:299
-#: view/view-form-editor.php:353
+#: view/view-form-editor.php:234
+#: view/view-form-editor.php:295
+#: view/view-form-editor.php:349
 msgctxt "short for centimeters"
 msgid "cm"
 msgstr ""
 
-#: view/view-form-editor.php:246
+#: view/view-form-editor.php:242
 msgid "Document(s)"
 msgstr ""
 
-#: view/view-form-editor.php:255
-#: view/view-form-editor.php:304
-#: view/view-form-editor.php:358
+#: view/view-form-editor.php:251
+#: view/view-form-editor.php:300
+#: view/view-form-editor.php:354
 msgid "Any document(s):"
 msgstr ""
 
-#: view/view-form-editor.php:257
+#: view/view-form-editor.php:253
 msgid "You can even ask your customers for digital files."
 msgstr ""
 
-#: view/view-form-editor.php:277
+#: view/view-form-editor.php:273
 msgid "Fields for each participants"
 msgstr ""
 
-#: view/view-form-editor.php:285
+#: view/view-form-editor.php:281
 msgid "Participant #1"
 msgstr ""
 
-#: view/view-form-editor.php:319
-#: view/view-form-editor.php:373
+#: view/view-form-editor.php:315
+#: view/view-form-editor.php:369
 msgid "Any other field:"
 msgstr ""
 
-#: view/view-form-editor.php:327
-#: view/view-form-editor.php:381
+#: view/view-form-editor.php:323
+#: view/view-form-editor.php:377
 msgid "Any value"
 msgstr ""
 
-#: view/view-form-editor.php:328
-#: view/view-form-editor.php:382
+#: view/view-form-editor.php:324
+#: view/view-form-editor.php:378
 msgid "Fully customizable"
 msgstr ""
 
-#: view/view-form-editor.php:339
+#: view/view-form-editor.php:335
 msgid "Participant #2"
 msgstr ""
 
-#: view/view-form-editor.php:394
+#: view/view-form-editor.php:390
 msgid "You can request data from each participant. The number of participants is proportional to the quantity reserved."
 msgstr ""
 

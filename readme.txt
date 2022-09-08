@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 6.0
 Requires PHP: 5.3
-Stable tag: 1.15.1
+Stable tag: 1.15.2
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -320,6 +320,12 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.15.2 - 2022/09/08 =
+* Tweak - Change the minimum time to display event on next day in DayGrid view (nextDayThreshold) to the value of Day Begin option (slotMinTime)
+* Fix - Notification Pack custom notifications not sent with WC if default notifications were configured not to be sent with WC
+* Fix - Remove unused code about Bootstrap tooltip that may cause js error
+* Dev - Change js and css minification processor to Google Closure Compiler (replace all .min files)
 
 = 1.15.1 - 2022/09/02 =
 * Fix - JS error when duplicating event (needed to refresh page) ([#160](https://github.com/bookingactivities/booking-activities/issues/160))

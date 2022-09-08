@@ -220,7 +220,7 @@ $j( document ).ready( function() {
 
 /**
  * Initialize the calendar
- * @version 1.15.0
+ * @version 1.15.2
  * @param {HTMLElement} booking_system
  * @param {boolean} reload_events
  */
@@ -235,6 +235,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 	var event_min_height    = typeof bookacti_localized.event_tiny_height !== 'undefined' ? parseInt( bookacti_localized.event_tiny_height ) : 32;
 	var slot_min_time       = typeof display_data.slotMinTime !== 'undefined' ? display_data.slotMinTime : '00:00';
 	var slot_max_time       = typeof display_data.slotMaxTime !== 'undefined' ? display_data.slotMaxTime : '24:00';
+	var next_day_threshold  = moment.utc( '1970-02-01 ' + slot_min_time ).add( 1, 'minutes' ).format( 'HH:mm' ); // One minute after slot_min_time
 	
 	// See https://fullcalendar.io/docs/
 	var init_data = {
@@ -258,6 +259,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		slotDuration:          '00:30',
 		slotEventOverlap:       false,
 		eventMinHeight:         event_min_height,
+		nextDayThreshold:       next_day_threshold,
 		slotMinTime:            slot_min_time,
 		slotMaxTime:            slot_max_time,
 		

@@ -1,7 +1,4 @@
-if( typeof $j === 'undefined' ) { $j=jQuery.noConflict(); }
-
 $j( document ).ready( function() {
-	
 	/**
 	 * Show or hide the activity tab on product page in the backend - on load
 	 */

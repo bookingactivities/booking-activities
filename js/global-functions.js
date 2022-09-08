@@ -7,52 +7,6 @@ $j( document ).ready( function() {
 	
 	// Add formatPHP function to moment JS
 	bookacti_init_moment_format_from_php_date_format();
-	
-	// Init Bootstrap tooltip global functions
-	var is_bootstrap = typeof $j.fn.modal !== 'undefined';
-	if( is_bootstrap ) {
-		/**
-		 * Remove the Bootstrap tooltips on click anywhere else than the tooltip
-		 * @since 1.9.0
-		 * @param {Event} e
-		 */
-		$j( document ).on( 'click', function( e ) {
-			// Do nothing if the click hit the tooltip
-			if( $j( e.target ).closest( '.bookacti-bs-tooltip' ).length ) { return; }
-
-			// Remove the tooltip
-			$j( '.bookacti-tip' ).tooltip( 'hide' );
-
-			// Clear the timeout
-			if( typeof bookacti_bs_display_bookings_tooltip_monitor !== 'undefined' ) { 
-				if( bookacti_bs_display_bookings_tooltip_monitor ) { clearTimeout( bookacti_bs_display_bookings_tooltip_monitor ); }
-			}
-		});
-
-
-		/**
-		 * Keep the Bootstrap tooltips displayed if the user mouseover it
-		 * @since 1.9.0
-		 */
-	   $j( 'body' ).on( 'mouseover', '.bookacti-bs-tooltip', function() {
-		   if( typeof bookacti_bs_remove_mouseover_tooltip_monitor !== 'undefined' ) { 
-			   if( bookacti_bs_remove_mouseover_tooltip_monitor ) { clearTimeout( bookacti_bs_remove_mouseover_tooltip_monitor ); }
-		   }
-	   });
-
-
-	   /**
-		* Remove the Bootstrap tooltips - on mouseout
-		* @since 1.9.0
-		*/
-	   $j( 'body' ).on( 'mouseout', '.bookacti-bs-tooltip', function() {
-			var tooltip_mouseover_timeout = Math.min( Math.max( parseInt( bookacti_localized.bookings_tooltip_mouseover_timeout ), 0 ), 200 );
-			var _this = this;
-			bookacti_bs_remove_mouseover_tooltip_monitor = setTimeout( function() {
-				$j( _this ).tooltip( 'hide' );
-			}, tooltip_mouseover_timeout );
-	   });
-	} 
 });
 
 
