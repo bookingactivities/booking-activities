@@ -7,7 +7,8 @@
 #bookacti-template-container::after { clear: both; }
 #bookacti-template-container + hr { margin: 30px auto; }
 
-
+#bookacti-template-container .fc-toolbar-chunk { position: relative; }
+.bookacti-go-to-datepicker { position: absolute; z-index: 10; height: 34px; }
 
 /***** Events *****/
 #bookacti-template-container .bookacti-total-availability::before { content: '/'; }
@@ -200,6 +201,16 @@
 
 /***** RESPONSIVE DESIGN *****/
 
+@media screen and ( max-width: 1200px ) {
+	#bookacti-template-container .fc-header-toolbar                     { flex-wrap: wrap; flex-direction: row; }
+	#bookacti-template-container .fc-header-toolbar .fc-today-button    { display: none; }
+	#bookacti-template-container .fc-toolbar-chunk:nth-child(2)         { order: 1; flex: 0 1 100%; margin-bottom: 1.5em; text-align: center; }
+	#bookacti-template-container .fc-toolbar-chunk:nth-child(1)         { order: 2; flex: 1 0 50%; text-align: left; }
+	#bookacti-template-container .fc-toolbar-chunk:nth-child(3)         { order: 3; flex: 1 0 50%; text-align: right; }
+	.rtl #bookacti-template-container .fc-toolbar-chunk:nth-child(1)    { text-align: right; }
+	.rtl #bookacti-template-container .fc-toolbar-chunk:nth-child(3)    { text-align: left; }
+}
+
 /* Smartphone and tablet */
 @media screen and ( max-width: 960px ) {
 	#bookacti-template-sidebar,
@@ -212,6 +223,15 @@
 	
 	.bookacti-group-category-title,
 	.bookacti-group-of-events-title	{ max-width: 82px; }
+}
+
+@media screen and ( max-width: 820px ) {
+	#bookacti-template-container .fc-header-toolbar                  { flex-direction: column; }
+	#bookacti-template-container .fc-toolbar-chunk                   { text-align: center; margin-bottom: 1.5em; }
+	#bookacti-template-container .fc-toolbar-chunk:nth-child(1),
+	.rtl #bookacti-template-container .fc-toolbar-chunk:nth-child(1) { text-align: center; }
+	#bookacti-template-container .fc-toolbar-chunk:nth-child(3),
+	.rtl #bookacti-template-container .fc-toolbar-chunk:nth-child(3) { text-align: center; margin-bottom: 0; }
 }
 
 /* Smartphone and small tablets */

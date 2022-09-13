@@ -220,7 +220,7 @@ $j( document ).ready( function() {
 
 /**
  * Initialize the calendar
- * @version 1.15.2
+ * @version 1.15.3
  * @param {HTMLElement} booking_system
  * @param {boolean} reload_events
  */
@@ -666,6 +666,16 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 	if( ! $j.isEmptyObject( bookacti.booking_system[ booking_system_id ][ 'picked_events' ] ) ) {
 		bookacti.fc_calendar[ booking_system_id ].gotoDate( moment.utc( picked_events[ 0 ][ 'start' ] ) );
 	}
+	
+	// Add a class to the calendar according to its width
+	var calendar_width_classes = bookacti_localized.calendar_width_classes;
+	var calendar_width = booking_system.find( '.bookacti-calendar:first' ).width();
+	$j.each( calendar_width_classes, function( threshold, css_class ) {
+		if( calendar_width <= threshold ) {
+			booking_system.find( '.bookacti-calendar:first' ).addClass( css_class );
+			return false; // break
+		}
+	});
 	
 	booking_system.trigger( 'bookacti_calendar_after_set_up' );
 }

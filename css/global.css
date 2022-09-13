@@ -127,9 +127,19 @@
 .bookacti-calendar .fc-event-time, .bookacti-calendar .fc-timegrid-slot-label { text-transform: lowercase; }
 
 /* Header */
-.bookacti-calendar .fc-toolbar { margin-bottom: 0; }
-.bookacti-calendar .fc-toolbar .fc-center, .fc-toolbar .fc-right, .fc-toolbar .fc-left { margin-bottom: 1em; }
 .bookacti-picked-events-list-title	{ font-weight: bolder; }
+.bookacti-calendar-narrow-width .fc-header-toolbar                     { flex-wrap: wrap; flex-direction: row; }
+.bookacti-calendar-narrow-width .fc-header-toolbar .fc-today-button    { display: none; }
+.bookacti-calendar-narrow-width .fc-toolbar-chunk:nth-child(2)         { order: 1; flex: 0 1 100%; margin-bottom: 1.5em; text-align: center; }
+.bookacti-calendar-narrow-width .fc-toolbar-chunk:nth-child(1)         { order: 2; flex: 1 0 30%; text-align: left; }
+.bookacti-calendar-narrow-width .fc-toolbar-chunk:nth-child(3)         { order: 3; flex: 1 0 70%; text-align: right; }
+.rtl .bookacti-calendar-narrow-width .fc-toolbar-chunk:nth-child(1)    { text-align: right; }
+.rtl .bookacti-calendar-narrow-width .fc-toolbar-chunk:nth-child(3)    { text-align: left; }
+.bookacti-calendar-minimal-width .fc-header-toolbar                     { flex-wrap: wrap; flex-direction: column; }
+.bookacti-calendar-minimal-width .fc-header-toolbar > .fc-toolbar-chunk { text-align: center; margin-bottom: 1.5em; }
+.bookacti-calendar-minimal-width .fc-toolbar-chunk:nth-child(2)         { order: 1; }
+.bookacti-calendar-minimal-width .fc-toolbar-chunk:nth-child(1)         { order: 2; }
+.bookacti-calendar-minimal-width .fc-toolbar-chunk:nth-child(3)         { order: 3; margin-bottom: 0; }
 
 /* Events */
 .bookacti-calendar .fc-event { overflow: hidden; }
@@ -213,9 +223,6 @@
 
 /* Smartphone only */
 @media screen and ( max-width: 480px ) {
-	/* Calendar */
-	.bookacti-calendar .fc-today-button { display: none; }
-	
 	/* Loading */
 	.bookacti-loading-container { white-space: normal; }
 	.bookacti-loading-image,
