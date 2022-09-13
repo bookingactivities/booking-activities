@@ -142,8 +142,8 @@ fieldset.bookacti-fieldset-no-css			{ border: none; border-top: 1px solid #bbb; 
 .bookacti-backend-dialog textarea											{ width: 100%; height: 50px; text-align: left; }
 .bookacti-backend-dialog input[type='number']:not(.bookacti-duration-field)	{ width: 80px; max-width: 80px; }
 
-.bookacti-backend-dialog .bookacti-multiple-select-container		{ margin-left: 5px; }
-.bookacti-backend-dialog .bookacti-multiple-select-container label	{ display: inline-block; vertical-align: top; margin-top: 0.5em; color: #565d61; }
+.bookacti-backend-dialog .bookacti-multiple-select-container       { margin-left: 5px; }
+.bookacti-backend-dialog .bookacti-multiple-select-container label { display: inline-block; vertical-align: middle; color: #565d61; }
 
 .bookacti-hidden-field								{ display: none; }
 .bookacti-show-hide-advanced-options				{ margin: auto; text-align: center; color: #0073aa; cursor: pointer; }
