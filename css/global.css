@@ -133,8 +133,8 @@
 .bookacti-calendar-narrow-width .fc-toolbar-chunk:nth-child(2)         { order: 1; flex: 0 1 100%; margin-bottom: 1.5em; text-align: center; }
 .bookacti-calendar-narrow-width .fc-toolbar-chunk:nth-child(1)         { order: 2; flex: 1 0 30%; text-align: left; }
 .bookacti-calendar-narrow-width .fc-toolbar-chunk:nth-child(3)         { order: 3; flex: 1 0 70%; text-align: right; }
-.rtl .bookacti-calendar-narrow-width .fc-toolbar-chunk:nth-child(1)    { order: 3; text-align: right; }
-.rtl .bookacti-calendar-narrow-width .fc-toolbar-chunk:nth-child(3)    { order: 2; text-align: left; }
+.rtl .bookacti-calendar-narrow-width .fc-toolbar-chunk:nth-child(1)    { text-align: right; }
+.rtl .bookacti-calendar-narrow-width .fc-toolbar-chunk:nth-child(3)    { text-align: left; }
 .bookacti-calendar-minimal-width .fc-header-toolbar                     { flex-wrap: wrap; flex-direction: column; }
 .bookacti-calendar-minimal-width .fc-header-toolbar > .fc-toolbar-chunk { text-align: center; margin-bottom: 1.5em; }
 .bookacti-calendar-minimal-width .fc-toolbar-chunk:nth-child(2)         { order: 1; }
