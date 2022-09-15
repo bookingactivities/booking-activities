@@ -343,7 +343,7 @@ function bookacti_generate_ical( $vevents, $vcalendar = array() ) {
 /**
  * Get the variables used with javascript
  * @since 1.8.0
- * @version 1.15.3
+ * @version 1.15.4
  * @return array
  */
 function bookacti_get_js_variables() {
@@ -460,10 +460,18 @@ function bookacti_get_js_variables() {
 			'dialog_button_reset'                => esc_html__( 'Reset', 'booking-activities' ),
 			'dialog_button_delete'               => esc_html__( 'Delete', 'booking-activities' ),
 			'error_time_format'                  => esc_html__( 'The time format should be HH:mm where "HH" represents hours and "mm" minutes.', 'booking-activities' ),
-			/* translators: %1$s = "At the latest". %2$s = "At the earliest". */
-			'error_availability_period'          => sprintf( esc_html__( 'The "%1$s" delay must be higher than the "%2$s" delay.', 'booking-activities' ), esc_html__( 'At the earliest', 'booking-activities' ), esc_html__( 'At the latest', 'booking-activities' ) ),
-			/* translators: %1$s = "Opening" or "Start". %2$s = "Closing" or "End". */
-			'error_closing_before_opening'       => sprintf( esc_html__( 'The "%1$s" date must be prior to the "%2$s" date.', 'booking-activities' ), esc_html__( 'Opening', 'booking-activities' ), esc_html__( 'Closing', 'booking-activities' ) ),
+			'error_availability_period'          => sprintf( 
+				/* translators: %1$s = "At the latest". %2$s = "At the earliest". */
+				esc_html__( 'The "%1$s" delay must be higher than the "%2$s" delay.', 'booking-activities' ), 
+				esc_html__( 'At the earliest', 'booking-activities' ), 
+				esc_html__( 'At the latest', 'booking-activities' )
+			),
+			'error_closing_before_opening'       => sprintf( 
+				/* translators: %1$s = "Opening" or "Start". %2$s = "Closing" or "End". */
+				esc_html__( 'The "%1$s" date must be prior to the "%2$s" date.', 'booking-activities' ), 
+				esc_html__( 'Opening', 'booking-activities' ), 
+				esc_html__( 'Closing', 'booking-activities' )
+			),
 			'nonce_get_booking_rows'             => wp_create_nonce( 'bookacti_get_booking_rows' )
 		);
 
@@ -477,7 +485,11 @@ function bookacti_get_js_variables() {
 				/* translators: 'Move' is the button label to move an event to another date. */
 				'dialog_button_move'                 => esc_html__( 'Move', 'booking-activities' ),
 				
-				'error_end_before_start'             => sprintf( esc_html__( 'The "%1$s" date must be prior to the "%2$s" date.', 'booking-activities' ), esc_html__( 'Start', 'booking-activities' ), esc_html__( 'End', 'booking-activities' ) ),
+				'error_end_before_start'             => sprintf( 
+					esc_html__( 'The "%1$s" date must be prior to the "%2$s" date.', 'booking-activities' ), 
+					esc_html__( 'Start', 'booking-activities' ), 
+					esc_html__( 'End', 'booking-activities' )
+				),
 				'error_on_a_form_field'              => esc_html__( 'There is an error on one of the form fields.', 'booking-activities' ),
 				'error_fill_field'                   => esc_html__( 'Please fill this field.', 'booking-activities' ),
 				'error_invalid_value'                => esc_html__( 'Please select a valid value.', 'booking-activities' ),

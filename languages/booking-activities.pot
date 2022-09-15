@@ -1,17 +1,17 @@
 # Copyright (C) 2022 Booking Activities Team
-# This file is distributed under the same license as the Booking Activities plugin.
+# This file is distributed under the GPL3.
 msgid ""
 msgstr ""
-"Project-Id-Version: Booking Activities 1.15.2\n"
+"Project-Id-Version: Booking Activities 1.15.3\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/booking-activities\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2022-09-08T13:39:14+00:00\n"
+"POT-Creation-Date: 2022-09-15T12:38:11+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"X-Generator: WP-CLI 2.3.0\n"
+"X-Generator: WP-CLI 2.6.0\n"
 "X-Domain: booking-activities\n"
 
 #. Plugin Name of the plugin
@@ -73,7 +73,7 @@ msgstr ""
 #: class/class-forms-list.php:303
 #: controller/controller-settings.php:294
 #: functions/functions-bookings.php:2525
-#: functions/functions-global.php:456
+#: functions/functions-global.php:458
 msgctxt "An id is a unique identification number"
 msgid "id"
 msgstr ""
@@ -144,7 +144,7 @@ msgstr ""
 
 #: class/class-bookings-list.php:76
 #: functions/functions-bookings.php:2541
-#: functions/functions-global.php:483
+#: functions/functions-global.php:490
 #: functions/functions-settings.php:1420
 #: view/view-templates-dialogs.php:1294
 msgid "Start"
@@ -152,7 +152,7 @@ msgstr ""
 
 #: class/class-bookings-list.php:77
 #: functions/functions-bookings.php:2542
-#: functions/functions-global.php:484
+#: functions/functions-global.php:491
 #: functions/functions-settings.php:1421
 #: view/view-templates-dialogs.php:1306
 msgid "End"
@@ -465,7 +465,7 @@ msgstr ""
 #: controller/controller-forms.php:1297
 #: controller/controller-forms.php:1381
 #: functions/functions-global.php:79
-#: functions/functions-global.php:371
+#: functions/functions-global.php:372
 #: view/view-form-editor.php:22
 msgid "You are not allowed to do that."
 msgstr ""
@@ -576,7 +576,7 @@ msgid "You are now logged into your account."
 msgstr ""
 
 #: controller/controller-forms.php:870
-#: functions/functions-global.php:372
+#: functions/functions-global.php:373
 msgid "You are not logged in. Please create an account and log in first."
 msgstr ""
 
@@ -977,7 +977,7 @@ msgid "Does <strong>Booking Activities</strong> help you? Help us back leaving a
 msgstr ""
 
 #: controller/controller-settings.php:812
-#: functions/functions-global.php:1472
+#: functions/functions-global.php:1480
 msgid "Current user"
 msgstr ""
 
@@ -985,7 +985,7 @@ msgstr ""
 #: controller/controller-templates.php:325
 #: controller/controller-templates.php:562
 #: controller/controller-templates.php:944
-#: functions/functions-global.php:381
+#: functions/functions-global.php:382
 msgid "booking"
 msgid_plural "bookings"
 msgstr[0] ""
@@ -1689,7 +1689,7 @@ msgstr ""
 
 #. translators: Followed by a field indicating a number of days from today. E.g.: "At the earliest 14 days before the event".
 #: functions/functions-booking-system.php:1083
-#: functions/functions-global.php:463
+#: functions/functions-global.php:466
 msgid "At the earliest"
 msgstr ""
 
@@ -1705,7 +1705,7 @@ msgstr ""
 
 #. translators: Followed by a field indicating a number of days from today. E.g.: "At the latest 1 hour before the event".
 #: functions/functions-booking-system.php:1097
-#: functions/functions-global.php:464
+#: functions/functions-global.php:467
 msgid "At the latest"
 msgstr ""
 
@@ -1714,7 +1714,7 @@ msgid "Set when an event can be booked at the latest. E.g.: \"1 hour 30 minutes\
 msgstr ""
 
 #: functions/functions-booking-system.php:1108
-#: functions/functions-global.php:467
+#: functions/functions-global.php:472
 msgid "Opening"
 msgstr ""
 
@@ -1723,7 +1723,7 @@ msgid "The calendar will start at this date."
 msgstr ""
 
 #: functions/functions-booking-system.php:1118
-#: functions/functions-global.php:468
+#: functions/functions-global.php:473
 msgid "Closing"
 msgstr ""
 
@@ -1795,7 +1795,7 @@ msgid "You cannot book multiple events or group of events at the same time. Plea
 msgstr ""
 
 #: functions/functions-booking-system.php:1264
-#: functions/functions-global.php:370
+#: functions/functions-global.php:371
 msgid "The amount of desired bookings is less than or equal to 0. Please increase the quantity."
 msgstr ""
 
@@ -2067,7 +2067,7 @@ msgstr ""
 
 #: functions/functions-bookings.php:1327
 #: functions/functions-bookings.php:1499
-#: functions/functions-global.php:430
+#: functions/functions-global.php:432
 msgctxt "Button label to trigger the refund action"
 msgid "Refund"
 msgstr ""
@@ -2078,7 +2078,7 @@ msgstr ""
 
 #: functions/functions-bookings.php:1333
 #: functions/functions-bookings.php:1505
-#: functions/functions-global.php:459
+#: functions/functions-global.php:461
 msgid "Delete"
 msgstr ""
 
@@ -2432,7 +2432,7 @@ msgid "Invalid password."
 msgstr ""
 
 #: functions/functions-forms.php:1248
-#: functions/functions-global.php:373
+#: functions/functions-global.php:374
 msgid "Your password is not strong enough."
 msgstr ""
 
@@ -2504,7 +2504,7 @@ msgid "Add manager"
 msgstr ""
 
 #: functions/functions-forms.php:1800
-#: functions/functions-global.php:1207
+#: functions/functions-global.php:1215
 #: view/view-templates-dialogs.php:368
 #: view/view-templates-dialogs.php:657
 msgid "Remove selected"
@@ -2568,249 +2568,249 @@ msgstr ""
 msgid "Invalid nonce."
 msgstr ""
 
-#: functions/functions-global.php:365
+#: functions/functions-global.php:366
 msgid "An error occurred."
 msgstr ""
 
-#: functions/functions-global.php:366
+#: functions/functions-global.php:367
 msgid "You haven't selected any event. Please select an event."
 msgstr ""
 
-#: functions/functions-global.php:367
+#: functions/functions-global.php:368
 msgid "There is an inconsistency in the selected events data, please select an event and try again."
 msgstr ""
 
 #. translators: %1$s is the quantity the user want. %2$s is the available quantity.
-#: functions/functions-global.php:369
+#: functions/functions-global.php:370
 msgid "You want to make %1$s bookings but only %2$s are available for the selected events. Please choose another event or decrease the quantity."
 msgstr ""
 
-#: functions/functions-global.php:376
-#: functions/functions-global.php:1675
+#: functions/functions-global.php:377
+#: functions/functions-global.php:1683
 msgid "Loading"
 msgstr ""
 
-#: functions/functions-global.php:377
+#: functions/functions-global.php:378
 msgid "for one person"
 msgstr ""
 
 #. translators: %1$s is the number of people who can enjoy the activity with one booking
-#: functions/functions-global.php:379
+#: functions/functions-global.php:380
 msgid "for %1$s people"
 msgstr ""
 
 #. translators: This particle is used right after the quantity of bookings. Put the plural here. E.g.: 2 bookings.
-#: functions/functions-global.php:383
+#: functions/functions-global.php:384
 msgid "bookings"
 msgstr ""
 
 #. translators: Button label to go to a specific date in the calendar
-#: functions/functions-global.php:385
+#: functions/functions-global.php:386
 msgid "Go to"
 msgstr ""
 
-#: functions/functions-global.php:426
+#: functions/functions-global.php:428
 msgid "OK"
 msgstr ""
 
-#: functions/functions-global.php:455
+#: functions/functions-global.php:457
 msgid "Create new"
 msgstr ""
 
-#: functions/functions-global.php:457
+#: functions/functions-global.php:459
 msgid "Generate export link"
 msgstr ""
 
-#: functions/functions-global.php:458
+#: functions/functions-global.php:460
 msgid "Reset"
 msgstr ""
 
-#: functions/functions-global.php:460
+#: functions/functions-global.php:462
 msgid "The time format should be HH:mm where \"HH\" represents hours and \"mm\" minutes."
 msgstr ""
 
 #. translators: %1$s = "At the latest". %2$s = "At the earliest".
-#: functions/functions-global.php:462
+#: functions/functions-global.php:465
 msgid "The \"%1$s\" delay must be higher than the \"%2$s\" delay."
 msgstr ""
 
 #. translators: %1$s = "Opening" or "Start". %2$s = "Closing" or "End".
-#: functions/functions-global.php:466
-#: functions/functions-global.php:482
+#: functions/functions-global.php:471
+#: functions/functions-global.php:489
 msgid "The \"%1$s\" date must be prior to the \"%2$s\" date."
 msgstr ""
 
-#: functions/functions-global.php:475
+#: functions/functions-global.php:481
 msgid "Create Activity"
 msgstr ""
 
-#: functions/functions-global.php:476
+#: functions/functions-global.php:482
 msgid "Import Activity"
 msgstr ""
 
 #. translators: 'unbind' is the process to isolate one (or several) occurrence(s) of a repeated event in order to edit it independently.
-#: functions/functions-global.php:478
+#: functions/functions-global.php:484
 msgid "Unbind"
 msgstr ""
 
 #. translators: 'Move' is the button label to move an event to another date.
-#: functions/functions-global.php:480
+#: functions/functions-global.php:486
 msgid "Move"
 msgstr ""
 
-#: functions/functions-global.php:485
+#: functions/functions-global.php:493
 msgid "There is an error on one of the form fields."
 msgstr ""
 
-#: functions/functions-global.php:486
+#: functions/functions-global.php:494
 msgid "Please fill this field."
 msgstr ""
 
-#: functions/functions-global.php:487
+#: functions/functions-global.php:495
 msgid "Please select a valid value."
 msgstr ""
 
-#: functions/functions-global.php:488
+#: functions/functions-global.php:496
 msgid "The repetition period is not set."
 msgstr ""
 
-#: functions/functions-global.php:489
+#: functions/functions-global.php:497
 msgid "The repetition period cannot end before it started."
 msgstr ""
 
-#: functions/functions-global.php:490
+#: functions/functions-global.php:498
 msgid "The repetition period should not start before the beginning date of the calendar."
 msgstr ""
 
-#: functions/functions-global.php:491
+#: functions/functions-global.php:499
 msgid "The repetition period should not end after the end date of the calendar."
 msgstr ""
 
-#: functions/functions-global.php:492
+#: functions/functions-global.php:500
 msgid "The number of days should be between 0 and 365."
 msgstr ""
 
-#: functions/functions-global.php:493
+#: functions/functions-global.php:501
 msgid "The number of hours should be between 0 and 23."
 msgstr ""
 
-#: functions/functions-global.php:494
+#: functions/functions-global.php:502
 msgid "The number of minutes should be between 0 and 59."
 msgstr ""
 
-#: functions/functions-global.php:495
+#: functions/functions-global.php:503
 msgid "The activity duration should not be null."
 msgstr ""
 
-#: functions/functions-global.php:496
+#: functions/functions-global.php:504
 #: functions/functions-templates-forms-control.php:729
 msgid "The selected event should be included in the period in which it will be repeated."
 msgstr ""
 
-#: functions/functions-global.php:497
+#: functions/functions-global.php:505
 msgid "Error: The repetition frequency is not a valid value."
 msgstr ""
 
-#: functions/functions-global.php:498
+#: functions/functions-global.php:506
 msgid "The activity must be bound to at least one calendar."
 msgstr ""
 
-#: functions/functions-global.php:499
+#: functions/functions-global.php:507
 #: functions/functions-templates-forms-control.php:742
 msgid "You must select at least two events."
 msgstr ""
 
-#: functions/functions-global.php:500
+#: functions/functions-global.php:508
 msgid "You must select a calendar first."
 msgstr ""
 
-#: functions/functions-global.php:1008
+#: functions/functions-global.php:1016
 msgid "day"
 msgid_plural "days"
 msgstr[0] ""
 msgstr[1] ""
 
-#: functions/functions-global.php:1017
+#: functions/functions-global.php:1025
 msgid "hour"
 msgid_plural "hours"
 msgstr[0] ""
 msgstr[1] ""
 
-#: functions/functions-global.php:1026
+#: functions/functions-global.php:1034
 msgid "minute"
 msgid_plural "minutes"
 msgstr[0] ""
 msgstr[1] ""
 
-#: functions/functions-global.php:1162
+#: functions/functions-global.php:1170
 msgid "Multiple selection"
 msgstr ""
 
 #. translators: %s is the "+" icon to click on.
-#: functions/functions-global.php:1173
+#: functions/functions-global.php:1181
 msgid "To select multiple values, click on %s and use CTRL+Click to pick or unpick a value."
 msgstr ""
 
-#: functions/functions-global.php:1196
+#: functions/functions-global.php:1204
 msgid "Add"
 msgstr ""
 
-#: functions/functions-global.php:1331
+#: functions/functions-global.php:1339
 #: view/view-backend-bookings-dialogs.php:385
 msgid "Available tags"
 msgstr ""
 
-#: functions/functions-global.php:1344
+#: functions/functions-global.php:1352
 #: view/view-backend-bookings-dialogs.php:398
 msgid "show"
 msgstr ""
 
-#: functions/functions-global.php:1344
+#: functions/functions-global.php:1352
 #: view/view-backend-bookings-dialogs.php:398
 msgid "hide"
 msgstr ""
 
-#: functions/functions-global.php:1466
+#: functions/functions-global.php:1474
 msgid "Search for a customer"
 msgstr ""
 
 #. translators: Followed by a date. E.g.: From 04/02/2021.
-#: functions/functions-global.php:1641
+#: functions/functions-global.php:1649
 #: view/view-bookings.php:167
 msgctxt "date"
 msgid "From"
 msgstr ""
 
 #. translators: Followed by a date. E.g.: To 04/02/2021.
-#: functions/functions-global.php:1642
+#: functions/functions-global.php:1650
 #: view/view-bookings.php:168
 msgctxt "date"
 msgid "To"
 msgstr ""
 
 #. translators: %d is a variable number of days
-#: functions/functions-global.php:1953
+#: functions/functions-global.php:1961
 msgid "%d day"
 msgid_plural "%d days"
 msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d is a variable number of hours
-#: functions/functions-global.php:1958
+#: functions/functions-global.php:1966
 msgid "%d hour"
 msgid_plural "%d hours"
 msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d is a variable number of minutes
-#: functions/functions-global.php:1963
+#: functions/functions-global.php:1971
 msgid "%d minute"
 msgid_plural "%d minutes"
 msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d is a variable number of minutes
-#: functions/functions-global.php:1968
+#: functions/functions-global.php:1976
 msgid "%d second"
 msgid_plural "%d seconds"
 msgstr[0] ""
@@ -3408,7 +3408,7 @@ msgstr ""
 
 #. translators: Datetime format. Must be adapted to each country. Use wp date_i18n documentation to find the appropriated combinaison https://wordpress.org/support/article/formatting-date-and-time
 #: functions/functions-settings.php:844
-msgid "l, F jS, Y g:i A"
+msgid "l, F j, Y g:i A"
 msgstr ""
 
 #. translators: %1$s si a link to wp date_i18n documentation
@@ -3418,7 +3418,7 @@ msgstr ""
 
 #. translators: Datetime format. Must be adapted to each country. Use wp date_i18n documentation to find the appropriated combinaison https://wordpress.org/support/article/formatting-date-and-time
 #: functions/functions-settings.php:850
-msgid "M, jS - g:i A"
+msgid "M, j - g:i A"
 msgstr ""
 
 #. translators: %1$s si a link to wp date_i18n documentation

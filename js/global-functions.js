@@ -349,7 +349,7 @@ function bookacti_init_moment_format_from_php_date_format() {
 /**
  * Convert a PHP datetime format to moment JS format
  * @since 1.7.16
- * @version 1.15.1
+ * @version 1.15.4
  * @param {string} php_format
  * @returns {string}
  */
@@ -361,6 +361,7 @@ function bookacti_convert_php_datetime_format_to_moment_js( php_format ) {
 		"d": 'DD',
 		"D": 'ddd',
 		"j": 'D',
+		"S": 'Do',
 		"l": 'dddd',
 		"N": 'E',
 		"w": 'd',
@@ -389,6 +390,9 @@ function bookacti_convert_php_datetime_format_to_moment_js( php_format ) {
 		"r": 'ddd, DD MMM YYYY HH:mm:ss ZZ',
 		"U": 'X'
 	};
+	
+	// Special case, "jS" takes two characters, so remove one
+	php_format = php_format.replace( 'jS', 'S' );
 	
 	var has_backslash = false;
 	var moment_js_format = '';

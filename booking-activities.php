@@ -340,7 +340,7 @@ add_action( 'wp_enqueue_scripts', 'bookacti_enqueue_frontend_scripts', 30 );
 
 /**
  * Activate Booking Activities
- * @version 1.8.0
+ * @version 1.15.4
  */
 function bookacti_activate() {
 	if( ! is_blog_installed() ) { return; }
@@ -363,11 +363,11 @@ function bookacti_activate() {
 	delete_option( 'bookacti_version' );
 	add_option( 'bookacti_version', BOOKACTI_VERSION );
 	
-	delete_transient( 'bookacti_installing' );
-	
 	do_action( 'bookacti_activate' );
 	
 	flush_rewrite_rules();
+	
+	delete_transient( 'bookacti_installing' );
 }
 register_activation_hook( __FILE__, 'bookacti_activate' );
 

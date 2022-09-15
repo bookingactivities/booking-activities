@@ -833,7 +833,7 @@ function bookacti_settings_section_messages_callback() {
 /**
  * Get all default messages
  * @since 1.2.0
- * @version 1.12.3
+ * @version 1.15.4
  */
 function bookacti_get_default_messages() {
 	$wp_date_format_link = '<a href="https://wordpress.org/support/article/formatting-date-and-time/" target="_blank" >' .  esc_html__( 'Formatting Date and Time', 'booking-activities' ) . '</a>';
@@ -841,13 +841,13 @@ function bookacti_get_default_messages() {
 	$messages = array(
 		'date_format_long' => array(
 			/* translators: Datetime format. Must be adapted to each country. Use wp date_i18n documentation to find the appropriated combinaison https://wordpress.org/support/article/formatting-date-and-time/ */
-			'value'			=> esc_html__( 'l, F jS, Y g:i A', 'booking-activities' ),
+			'value'			=> esc_html__( 'l, F j, Y g:i A', 'booking-activities' ),
 			/* translators: %1$s si a link to wp date_i18n documentation */
 			'description'	=> sprintf( esc_html__( 'Complete date and time format. See the tags here: %1$s.', 'booking-activities' ), $wp_date_format_link )
 		),
 		'date_format_short' => array(
 			/* translators: Datetime format. Must be adapted to each country. Use wp date_i18n documentation to find the appropriated combinaison https://wordpress.org/support/article/formatting-date-and-time/ */
-			'value'			=> esc_html__( 'M, jS - g:i A', 'booking-activities' ),
+			'value'			=> esc_html__( 'M, j - g:i A', 'booking-activities' ),
 			/* translators: %1$s si a link to wp date_i18n documentation */
 			'description'	=> sprintf( esc_html__( 'Short date and time format. See the tags here: %1$s.', 'booking-activities' ), $wp_date_format_link )
 		),

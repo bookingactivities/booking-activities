@@ -321,6 +321,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.15.4 =
+* Tweak - Enable the "Today" button even if today's view is not accessible
+* Dev - Add indexes to relevent database columns to improve performance on large databases
+
 = 1.15.3 - 2022/09/13 =
 * Tweak - Improve display of calendar toolbar when the calendar is narrow
 * Fix - Possible JS error with Cache / Optimization plugins
