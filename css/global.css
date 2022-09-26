@@ -4,11 +4,18 @@
 
 /* Select2 */
 .bookacti-select2-no-ajax, .bookacti-select2-ajax { transition: none !important; }
-.bookacti-user-selectbox	{ width: 100%; }
-.select2-dropdown			{ z-index: 3999999 !important; }
-.bookacti-user-selectbox + .select2-container .select2-selection--single { margin: 0; }
-.bookacti-wc-products-selectbox + .select2-container .select2-selection--single { margin: 0; }
+.bookacti-user-selectbox { width: 100%; }
+.select2-dropdown        { z-index: 3999999 !important; }
+.bookacti-select2-selection.select2-selection--single      { margin: 0; }
+.bookacti-select2-selection.select2-selection--multiple li { margin-bottom: 0; line-height: 2em; }
+.bookacti-select2-selection.select2-selection--multiple .select2-search,
+.bookacti-select2-selection.select2-selection--multiple .select2-search__field { width: 100% !important; max-width: none !important; min-height: 0; }
+.bookacti-select2-selection .select2-selection__rendered   { position: relative; }
+.bookacti-select2-selection .select2-selection__clear      { position: absolute; right: 2px; top: 0; margin: 0 !important; line-height: 1em; z-index: 15; }
+.rtl .bookacti-select2-selection .select2-selection__clear { right: auto; left: 2px; }
 .bookacti-form-field-container .select2-container--default .select2-selection--single { border-radius: 0; }
+.bookacti-select2-dropdown .select2-results__option[aria-disabled="true"] { display: none; }
+.select2-hidden-accessible[data-sortable="1"] + .select2-container .bookacti-select2-selection.select2-selection--multiple .select2-selection__choice { cursor: move; }
 
 /* Radio box */
 .bookacti-custom-radio-button		{ display: inline-block; margin: 0 0.5em 0.5em 0; }
@@ -138,8 +145,8 @@
 .bookacti-calendar-minimal-width .fc-header-toolbar                     { flex-wrap: wrap; flex-direction: column; }
 .bookacti-calendar-minimal-width .fc-header-toolbar > .fc-toolbar-chunk { text-align: center; margin-bottom: 1.5em; }
 .bookacti-calendar-minimal-width .fc-toolbar-chunk:nth-child(2)         { order: 1; }
-.bookacti-calendar-minimal-width .fc-toolbar-chunk:nth-child(1)         { order: 2; }
-.bookacti-calendar-minimal-width .fc-toolbar-chunk:nth-child(3)         { order: 3; margin-bottom: 0; }
+.bookacti-calendar-minimal-width .fc-toolbar-chunk:nth-child(3)         { order: 2; }
+.bookacti-calendar-minimal-width .fc-toolbar-chunk:nth-child(1)         { order: 3; margin-bottom: 0; }
 
 /* Events */
 .bookacti-calendar .fc-event { overflow: hidden; }

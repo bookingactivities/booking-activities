@@ -1460,7 +1460,7 @@ function bookacti_get_order_items_rows( $order_items = array() ) {
 /**
  * Display a products selectbox
  * @since 1.7.0
- * @version 1.14.0
+ * @version 1.15.4
  * @param array $raw_args
  * @return string
  */
@@ -1474,7 +1474,9 @@ function bookacti_display_product_selectbox( $raw_args = array() ) {
 		'allow_clear' => 1,
 		'ajax'        => 1,
 		'select2'     => 1, 
-		'echo'        => 1
+		'sortable'    => 0, 
+		'echo'        => 1,
+		'placeholder' => esc_html__( 'Search...', 'booking-activities' )
 	);
 	$args = apply_filters( 'bookacti_product_selectbox_args', wp_parse_args( $raw_args, $defaults ), $raw_args );
 
@@ -1488,8 +1490,9 @@ function bookacti_display_product_selectbox( $raw_args = array() ) {
 		class='bookacti-wc-products-selectbox <?php echo $args[ 'class' ]; ?>'
 		data-tags='<?php echo ! empty( $args[ 'allow_tags' ] ) ? 1 : 0; ?>'
 		data-allow-clear='<?php echo ! empty( $args[ 'allow_clear' ] ) ? 1 : 0; ?>'
-		data-placeholder='<?php esc_html_e( 'Search for a product', 'booking-activities' ); ?>'
-		data-type='products' >
+		data-placeholder='<?php echo ! empty( $args[ 'placeholder' ] ) ? esc_attr( $args[ 'placeholder' ] ) : ''; ?>'
+		data-sortable='<?php echo ! empty( $args[ 'sortable' ] ) ? 1 : 0; ?>'
+		data-type='products'>
 		<option><!-- Used for the placeholder --></option>
 	<?php
 		do_action( 'bookacti_add_product_selectbox_options', $args, $products_titles );

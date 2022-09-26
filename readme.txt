@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 6.0
 Requires PHP: 5.3
-Stable tag: 1.15.3
+Stable tag: 1.15.4
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -323,7 +323,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 = 1.15.4 =
 * Tweak - Enable the "Today" button even if today's view is not accessible
+* Tweak - Use select2 library for options using selectboxes with multiple values
+* Dev - Use WP default strings for Add New, Publish, Update, Edit, Trash, Delete, Retore
+* Dev - API to make select2 multiple select sortable
 * Dev - Add indexes to relevent database columns to improve performance on large databases
+* Dev - Use full version of Select2
 
 = 1.15.3 - 2022/09/13 =
 * Tweak - Improve display of calendar toolbar when the calendar is narrow

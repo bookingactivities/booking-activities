@@ -2,7 +2,7 @@
 
 /**
  * Initialize calendar editor dialogs
- * @version 1.15.0
+ * @version 1.15.4
  */
 function bookacti_init_template_dialogs() {
 	// Common param
@@ -47,9 +47,6 @@ function bookacti_init_template_dialogs() {
 		$j( '.bookacti-unbind-action small' ).hide();
 		$j( 'input[type="radio"][name="unbind_action"]:checked' ).closest( '.bookacti-unbind-action' ).find( 'small' ).show();
 	});
-
-	// Add and remove items in managers and templates select boxes
-	bookacti_init_add_and_remove_items();
 
 	// Load activities bound to selected template
 	$j( 'select#template-import-bound-activities' ).on( 'change', function(){
@@ -363,7 +360,7 @@ function bookacti_dialog_add_new_template() {
 
 /**
  * Dialog Update Template
- * @version 1.15.0
+ * @version 1.15.4
  * @param {int} template_id
  */
 function bookacti_dialog_update_template( template_id ) {
@@ -388,10 +385,8 @@ function bookacti_dialog_update_template( template_id ) {
 	$j( '#bookacti-template-title' ).val( template_data.multilingual_title );
 
 	// Permissions tab
-	if( template_data.admin.length ) {
-		var items_container = $j( '#bookacti-template-managers-container' );
-		bookacti_fill_items_selectbox( items_container, template_data.admin );
-	}
+	var managers_selectbox = $j( '#bookacti-template-managers-selectbox' );
+	bookacti_fill_items_selectbox( managers_selectbox, template_data.admin );
 
 	// Settings tabs
 	$j( '#bookacti-template-data-dialog' ).trigger( 'bookacti_default_template_settings' );
@@ -1598,7 +1593,7 @@ function bookacti_dialog_create_activity() {
 
 /**
  * Open a dialog to update an activity
- * @version 1.15.0
+ * @version 1.15.4
  * @param {Int} activity_id
  */
 function bookacti_dialog_update_activity( activity_id ) {
@@ -1632,10 +1627,8 @@ function bookacti_dialog_update_activity( activity_id ) {
 	$j( '#bookacti-activity-duration-minutes' ).val( activity_duration.substr( 7, 2 ) ).trigger( 'change' );
 	
 	// Permissions tab
-	if( activity_data.admin.length ) {
-		var items_container = $j( '#bookacti-activity-managers-container' );
-		bookacti_fill_items_selectbox( items_container, activity_data.admin );
-	}
+	var managers_selectbox = $j( '#bookacti-activity-managers-selectbox' );
+	bookacti_fill_items_selectbox( managers_selectbox, activity_data.admin );
 
 	// Settings tabs
 	if( activity_data.settings ) {

@@ -45,54 +45,52 @@ $j( document ).ready( function() {
 	/**
 	 * Toggle activity user roles - on check box
 	 * @since 1.13.0
+	 * @version 1.15.4
 	 */
 	$j( '#bookacti-activity-data-dialog' ).on( 'change', '#bookacti-display-activity-user-roles', function() {
-		$j( '#bookacti-activity-roles, #bookacti-activity-data-dialog .bookacti-roles-notice' ).toggle( $j( this ).prop( 'checked' ) );
+		$j( '#bookacti-activity-roles, #bookacti-activity-roles + .select2-container, #bookacti-activity-data-dialog .bookacti-roles-notice' ).toggle( $j( this ).prop( 'checked' ) );
 	});
 	
 	
 	/**
 	 * Toggle group category user roles - on check box
 	 * @since 1.13.0
+	 * @version 1.15.4
 	 */
 	$j( '#bookacti-group-category-dialog' ).on( 'change', '#bookacti-display-group-category-user-roles', function() {
-		$j( '#bookacti-group-category-roles, #bookacti-group-category-dialog .bookacti-roles-notice' ).toggle( $j( this ).prop( 'checked' ) );
+		$j( '#bookacti-group-category-roles, #bookacti-group-category-roles + .select2-container, #bookacti-group-category-dialog .bookacti-roles-notice' ).toggle( $j( this ).prop( 'checked' ) );
 	});
 	
 	
 	/**
 	 * Toggle activity user roles - on open
 	 * @since 1.13.0
+	 * @version 1.15.4
 	 */
 	$j( '#bookacti-activity-data-dialog' ).on( 'bookacti_activity_update_dialog', function() {
-		if( $j( '#bookacti-activity-roles option:selected' ).length ) {
-			$j( '#bookacti-display-activity-user-roles' ).prop( 'checked', true );
-			$j( '#bookacti-activity-roles, #bookacti-activity-data-dialog .bookacti-roles-notice' ).show();
-		}
+		$j( '#bookacti-display-activity-user-roles' ).prop( 'checked', $j( '#bookacti-activity-roles option:selected' ).length ).trigger( 'change' );
 	});
 	
 	
 	/**
 	 * Toggle group category user roles - on open
 	 * @since 1.13.0
+	 * @version 1.15.4
 	 */
 	$j( '#bookacti-group-category-dialog' ).on( 'bookacti_group_category_update_dialog', function() {
-		if( $j( '#bookacti-group-category-roles option:selected' ).length ) {
-			$j( '#bookacti-display-group-category-user-roles' ).prop( 'checked', true );
-			$j( '#bookacti-group-category-roles, #bookacti-group-category-dialog .bookacti-roles-notice' ).show();
-		}
+		$j( '#bookacti-display-group-category-user-roles' ).prop( 'checked', $j( '#bookacti-group-category-roles option:selected' ).length ).trigger( 'change' );
 	});
 	
 	
 	/**
 	 * Toggle activity user roles - on close
 	 * @since 1.13.0
+	 * @version 1.15.4
 	 * @param {Event} e
 	 * @param {String} scope
 	 */
 	$j( 'body' ).on( 'bookacti_empty_all_dialogs_forms', function( e, scope ) {
-		$j( scope + ' #bookacti-display-activity-user-roles, ' + scope + ' #bookacti-display-group-category-user-roles' ).prop( 'checked', false );
-		$j( scope + ' #bookacti-activity-roles, ' + scope + ' #bookacti-group-category-roles, ' + scope + ' .bookacti-roles-notice' ).hide();
+		$j( scope + ' #bookacti-display-activity-user-roles, ' + scope + ' #bookacti-display-group-category-user-roles' ).prop( 'checked', false ).trigger( 'change' );
 	});
 });
 
@@ -102,7 +100,7 @@ $j( document ).ready( function() {
 
 /**
  * Check template form
- * @version 1.12.0
+ * @version 1.15.4
  * @returns {Boolean}
  */
 function bookacti_validate_template_form() {
@@ -115,14 +113,14 @@ function bookacti_validate_template_form() {
 	var valid_form = {
 		'isTitle':               false,
 		'isSnapFreqFormatted':   false,
-		'isDuplicateIdPositive': false,
+		'isDuplicateIdPositive': true,
 		'send':                  false
 	};
 
 	// Make the tests and change the booleans
-	if( title !== '' )                                                                         { valid_form.isTitle = true; }
-	if( duplicate_id !== '' && $j.isNumeric( duplicate_id ) && parseInt( duplicate_id ) >= 0 ) { valid_form.isDuplicateIdPositive = true; }
-	if( /^([0-1][0-9]|2[0-3]):([0-5][0-9])$/.test( snap_freq ) )                               { valid_form.isSnapFreqFormatted = true; }
+	if( title !== '' )                                                  { valid_form.isTitle = true; }
+	if( $j.isNumeric( duplicate_id ) && parseInt( duplicate_id ) < 0 )  { valid_form.isDuplicateIdPositive = false; }
+	if( /^([0-1][0-9]|2[0-3]):([0-5][0-9])$/.test( snap_freq ) )        { valid_form.isSnapFreqFormatted = true; }
 
 	if( valid_form.isTitle 
 	&&  valid_form.isDuplicateIdPositive
@@ -152,7 +150,7 @@ function bookacti_validate_template_form() {
 		$j( '#bookacti-snapduration' ).addClass( 'bookacti-input-error' );
 		$j( '#bookacti-snapduration' ).parent().append( "<div class='bookacti-form-error'>" + bookacti_localized.error_time_format + "</div>" );
 	}
-
+	
 	return valid_form.send;
 }
 

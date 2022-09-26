@@ -545,7 +545,7 @@ function bookacti_get_active_add_ons( $prefix = '', $exclude = array( 'balau' ) 
 /**
  * Get add-on data by prefix
  * @since 1.7.14
- * @version 1.15.0
+ * @version 1.15.4
  * @param string $prefix
  * @param array $exclude
  * @return array
@@ -566,7 +566,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-notification-pack', 
 			'end_of_life' => '', 
 			'download_id' => 1393,
-			'min_version' => '1.2.15'
+			'min_version' => '1.2.16'
 		),
 		'bapap' => array( 
 			'title'       => 'Prices and Credits', 
@@ -574,7 +574,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-prices-and-credits', 
 			'end_of_life' => '', 
 			'download_id' => 438,
-			'min_version' => '1.7.8'
+			'min_version' => '1.7.10'
 		),
 		'baaf' => array( 
 			'title'       => 'Advanced Forms', 
@@ -590,7 +590,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-order-for-customers', 
 			'end_of_life' => '', 
 			'download_id' => 436,
-			'min_version' => '1.2.25'
+			'min_version' => '1.2.26'
 		),
 		'balau' => array( 
 			'title'       => 'Licenses & Updates', 
@@ -901,7 +901,7 @@ function bookacti_convert_wp_locale_to_fc_locale( $wp_locale = false ) {
 /**
  * Display fields
  * @since 1.5.0
- * @version 1.13.0
+ * @version 1.15.4
  * @param array $args
  */
 function bookacti_display_fields( $fields, $args = array() ) {
@@ -936,7 +936,7 @@ function bookacti_display_fields( $fields, $args = array() ) {
 		<?php 
 			// Display field title
 			if( ! empty( $field[ 'title' ] ) ) { 
-				$fullwidth = ! empty( $field[ 'fullwidth' ] ) || in_array( $field[ 'type' ], array( 'checkboxes', 'select_items', 'editor' ), true );
+				$fullwidth = ! empty( $field[ 'fullwidth' ] ) || in_array( $field[ 'type' ], array( 'checkboxes', 'select_items', 'editor', 'user_id' ), true );
 			?>
 				<label for='<?php echo esc_attr( sanitize_title_with_dashes( $field[ 'id' ] ) ); ?>' class='<?php if( $fullwidth ) { echo 'bookacti-fullwidth-label'; } ?>'>
 					<?php echo $field[ 'title' ]; if( $fullwidth ) { bookacti_help_tip( $field[ 'tip' ] ); unset( $field[ 'tip' ] ); } ?>
@@ -1143,12 +1143,16 @@ function bookacti_display_field( $args ) {
 		if( $is_multiple && strpos( $args[ 'name' ], '[]' ) === false ) { $args[ 'name' ] .= '[]'; }
 		if( ! $is_multiple && is_array( $args[ 'value' ] ) ) { $args[ 'value' ] = reset( $args[ 'value' ] ); }
 		?>
-		<select name='<?php echo esc_attr( $args[ 'name' ] ); ?>' 
-				id='<?php echo esc_attr( $args[ 'id' ] ); ?>' 
-				class='bookacti-select <?php echo esc_attr( $args[ 'class' ] ); ?>' 
-				<?php if( ! empty( $args[ 'attr' ][ '<select>' ] ) ) { echo $args[ 'attr' ][ '<select>' ]; } ?>
-				<?php if( $is_multiple ) { echo 'multiple'; } ?>
-				<?php if( $args[ 'required' ] ) { echo ' required'; } ?>
+		<select 
+			name='<?php echo esc_attr( $args[ 'name' ] ); ?>' 
+			id='<?php echo esc_attr( $args[ 'id' ] ); ?>' 
+			class='bookacti-select <?php echo esc_attr( $args[ 'class' ] ); ?>'
+			<?php 
+				if( ! empty( $args[ 'placeholder' ] ) ) { echo ' data-placeholder="' . esc_attr( $args[ 'placeholder' ] ) . '"'; }
+				if( ! empty( $args[ 'attr' ][ '<select>' ] ) ) { echo ' ' .$args[ 'attr' ][ '<select>' ]; }
+				if( $is_multiple ) { echo ' multiple'; }
+				if( $args[ 'required' ] ) { echo ' required'; }
+			?>
 		>
 		<?php foreach( $args[ 'options' ] as $option_id => $option_value ) { ?>
 			<option value='<?php echo esc_attr( $option_id ); ?>'
@@ -1242,7 +1246,7 @@ function bookacti_display_field( $args ) {
 /**
  * Format arguments to display a proper field
  * @since 1.2.0
- * @version 1.12.0
+ * @version 1.15.4
  * @param array $args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'attr', 'value', 'multiple', 'tip', 'required']
  * @return array|false
  */
@@ -1289,13 +1293,19 @@ function bookacti_format_field_args( $args ) {
 	$args[ 'required' ] = isset( $args[ 'required' ] ) && $args[ 'required' ] ? 1 : 0;
 	if( $args[ 'required' ] ) { $args[ 'class' ] .= ' bookacti-required-field'; }
 
-	// Make sure fields with multiple options have 'options' set
+	// Make sure 'attr' is an array for fields with multiple options
 	if( in_array( $args[ 'type' ], array( 'checkboxes', 'radio', 'select', 'user_id' ) ) ) {
 		if( ! is_array( $args[ 'attr' ] ) ) { $args[ 'attr' ] = array(); }
 	} else {
 		if( ! is_string( $args[ 'attr' ] ) ) { $args[ 'attr' ] = ''; }
 	}
-
+	
+	// Pass attributes to user_id field
+	if( $args[ 'type' ] === 'user_id' ) {
+		if( empty( $args[ 'options' ][ 'name' ] ) ) { $args[ 'options' ][ 'name' ] = $args[ 'name' ]; }
+		if( empty( $args[ 'options' ][ 'id' ] ) && ! empty( $args[ 'id' ] ) ) { $args[ 'options' ][ 'id' ] = $args[ 'id' ] . '-selectbox'; }
+	}
+	
 	// If multiple, make sure name has brackets and value is an array
 	if( $args[ 'type' ] === 'select_items' ) { $args[ 'multiple' ] = 1; }
 	if( in_array( $args[ 'multiple' ], array( 'true', true, '1', 1 ), true ) ) {
@@ -1437,15 +1447,16 @@ function bookacti_onoffswitch( $name, $current_value, $id = NULL, $disabled = fa
 /**
  * Create a user selectbox
  * @since 1.3.0
- * @version 1.8.7
+ * @version 1.15.4
  * @param array $raw_args
  * @return string|void
  */
 function bookacti_display_user_selectbox( $raw_args ) {
 	$defaults = array(
 		'allow_tags' => 0, 'allow_clear' => 1, 'allow_current' => 0, 
-		'option_label' => array( 'display_name' ), 'ajax' => 1, 'select2' => 1, 'echo' => 1,
-		'selected' => 0, 'name' => 'user_id', 'class' => '', 'id' => '',
+		'option_label' => array( 'display_name' ), 'placeholder' => esc_html__( 'Search...', 'booking-activities' ),
+		'ajax' => 1, 'select2' => 1, 'sortable' => 0, 'echo' => 1,
+		'selected' => array(), 'multiple' => 0, 'name' => 'user_id', 'class' => '', 'id' => '',
 		'include' => array(), 'exclude' => array(),
 		'role' => array(), 'role__in' => array(), 'role__not_in' => array(),
 		'meta' => true, 'meta_single' => true,
@@ -1458,36 +1469,51 @@ function bookacti_display_user_selectbox( $raw_args ) {
 	$users = ! $args[ 'ajax' ] && $is_allowed ? bookacti_get_users_data( $args ) : array();
 	$args[ 'class' ] = $args[ 'ajax' ] ? 'bookacti-select2-ajax ' . trim( $args[ 'class' ] ) : ( $args[ 'select2' ] ? 'bookacti-select2-no-ajax ' . trim( $args[ 'class' ] ) : trim( $args[ 'class' ] ) );
 	
-	if( $args[ 'ajax' ] && $args[ 'selected' ] && is_numeric( $args[ 'selected' ] ) && $is_allowed ) {
-		$user = get_user_by( 'id', $args[ 'selected' ] );
-		if( $user ) { $users[] = $user; }
+	// Format selected user ids
+	if( ! is_array( $args[ 'selected' ] ) ) { $args[ 'selected' ] = array( $args[ 'selected' ] ); }
+	$selected_user_ids = bookacti_ids_to_array( $args[ 'selected' ] );
+	
+	if( $args[ 'ajax' ] && $args[ 'selected' ] && $is_allowed ) {
+		$selected_users = $selected_user_ids ? get_users( array( 'include' => $selected_user_ids ) ) : array();
+		if( $selected_users ) { $users = $selected_users; }
 	}
+	
+	if( $args[ 'multiple' ] && strpos( $args[ 'name' ], '[]' ) === false ) { $args[ 'name' ] .= '[]'; } 
 
 	ob_start();
 	?>
-	<input type='hidden' name='<?php echo $args[ 'name' ]; ?>' value='' />
+	<input type='hidden' name='<?php echo $args[ 'name' ]; ?>' value=''/>
 	<select <?php if( $args[ 'id' ] ) { echo 'id="' . $args[ 'id' ] . '"'; } ?> 
 		name='<?php echo $args[ 'name' ]; ?>' 
 		class='bookacti-user-selectbox <?php echo $args[ 'class' ]; ?>'
 		data-tags='<?php echo ! empty( $args[ 'allow_tags' ] ) ? 1 : 0; ?>'
 		data-allow-clear='<?php echo ! empty( $args[ 'allow_clear' ] ) ? 1 : 0; ?>'
-		data-placeholder='<?php esc_html_e( 'Search for a customer', 'booking-activities' ); ?>'
-		data-type='users' >
-		<option><!-- Used for the placeholder --></option>
+		data-placeholder='<?php echo ! empty( $args[ 'placeholder' ] ) ? esc_attr( $args[ 'placeholder' ] ) : ''; ?>'
+		data-sortable='<?php echo ! empty( $args[ 'sortable' ] ) ? 1 : 0; ?>'
+		data-type='users'
+		<?php if( $args[ 'multiple' ] ) { echo ' multiple'; } ?>>
+		<?php if( ! $args[ 'multiple' ] ) {  ?>
+			<option><!-- Used for the placeholder --></option>
 		<?php
+			}
+			// Keep both numeric and string values
+			$selected_user_ids = array_merge( $selected_user_ids, array_filter( $args[ 'selected' ], 'is_string' ) );
+			
+			
 			if( $args[ 'allow_current' ] ) {
-				$_selected = selected( 'current', $args[ 'selected' ], false );
-				?><option value='current' <?php echo $_selected ?> ><?php esc_html_e( 'Current user', 'booking-activities' ); ?></option><?php
+				$selected_key = array_search( 'current', $selected_user_ids, true );
+				if( $selected_key !== false ) { unset( $selected_user_ids[ $selected_key ] ); }
+				
+				?><option value='current' <?php if( $selected_key !== false ) { echo 'selected'; } ?> ><?php esc_html_e( 'Current user', 'booking-activities' ); ?></option><?php
 			}
 
 			do_action( 'bookacti_add_user_selectbox_options', $args, $users );
-
-			$is_selected = false;
+			
 			if( $users ) {
 				foreach( $users as $user ) {
-					$_selected = selected( $user->ID, $args[ 'selected' ], false );
-					if( $_selected ) { $is_selected = true; }
-
+					$selected_key = array_search( intval( $user->ID ), $selected_user_ids, true );
+					if( $selected_key !== false ) { unset( $selected_user_ids[ $selected_key ] ); }
+					
 					// Build the option label based on the array
 					$label = '';
 					foreach( $args[ 'option_label' ] as $show ) {
@@ -1508,13 +1534,15 @@ function bookacti_display_user_selectbox( $raw_args ) {
 						}
 					}
 				?>
-					<option value='<?php echo $user->ID; ?>' <?php echo $_selected ?> ><?php echo esc_html( $label ); ?></option>
+					<option value='<?php echo $user->ID; ?>' <?php if( $selected_key !== false ) { echo 'selected'; } ?> ><?php echo esc_html( $label ); ?></option>
 				<?php
 				}
 			}
 
-			if( $args[ 'allow_tags' ] && $args[ 'selected' ] !== '' && ! $is_selected ) {
-				?><option value='<?php echo esc_attr( $args[ 'selected' ] ); ?>' selected="selected"><?php echo esc_html( $args[ 'selected' ] ); ?></option><?php
+			if( $args[ 'allow_tags' ] && $selected_user_ids ) {
+				foreach( $selected_user_ids as $selected_user_id ) {
+					?><option value='<?php echo esc_attr( $selected_user_id ); ?>' selected><?php echo esc_html( $selected_user_id ); ?></option><?php
+				}
 			}
 		?>
 	</select>
@@ -1749,13 +1777,13 @@ function bookacti_sort_array_by_order( $a, $b ) {
 
 /**
  * Sanitize int ids to array
- * @version 1.12.0
+ * @version 1.15.4
  * @param array|int $ids
  * @return array 
  */
 function bookacti_ids_to_array( $ids ) {
 	if( is_array( $ids ) ){
-		return array_filter( array_unique( array_map( 'intval', $ids ) ) );
+		return array_filter( array_unique( array_map( 'intval', array_filter( $ids, 'is_numeric' ) ) ) );
 	} else if( ! empty( $ids ) ){
 		if( is_numeric( $ids ) && intval( $ids ) ) {
 			return array( intval( $ids ) );

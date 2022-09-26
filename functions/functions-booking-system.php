@@ -885,7 +885,7 @@ function bookacti_format_booking_system_url_attributes( $atts = array() ) {
 /**
  * Get booking system fields default data
  * @since 1.5.0
- * @version 1.15.0
+ * @version 1.15.4
  * @param array $fields
  * @return array
  */
@@ -903,13 +903,16 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 		}
 		
 		$defaults[ 'calendars' ] = array( 
-			'name'     => 'calendars',
-			'type'     => 'select',
-			'multiple' => 'maybe',
-			'options'  => $templates_options,
-			'value'    => '', 
-			'title'    => esc_html__( 'Calendar', 'booking-activities' ),
-			'tip'      => esc_html__( 'Retrieve events from the selected calendars only.', 'booking-activities' )
+			'name'        => 'calendars',
+			'type'        => 'select',
+			'multiple'    => 'maybe',
+			'class'       => 'bookacti-select2-no-ajax',
+			'placeholder' => esc_html__( 'Search...', 'booking-activities' ),
+			'attr'        => array( '<select>' => ' data-allow-clear="0"' ),
+			'options'     => $templates_options,
+			'value'       => '', 
+			'title'       => esc_html__( 'Calendar', 'booking-activities' ),
+			'tip'         => esc_html__( 'Retrieve events from the selected calendars only.', 'booking-activities' )
 		);
 	}
 	
@@ -925,14 +928,17 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 		}
 		
 		$defaults[ 'activities' ] = array( 
-			'name'     => 'activities',
-			'type'     => 'select',
-			'multiple' => 'maybe',
-			'options'  => $activities_options,
-			'attr'     => $activities_options_attr,
-			'value'    => '', 
-			'title'    => esc_html__( 'Activity', 'booking-activities' ),
-			'tip'      => esc_html__( 'Retrieve events from the selected activities only.', 'booking-activities' )
+			'name'        => 'activities',
+			'type'        => 'select',
+			'multiple'    => 'maybe',
+			'class'       => 'bookacti-select2-no-ajax',
+			'placeholder' => esc_html__( 'Search...', 'booking-activities' ),
+			'attr'        => array( '<select>' => ' data-allow-clear="0"' ),
+			'options'     => $activities_options,
+			'attr'        => $activities_options_attr,
+			'value'       => '', 
+			'title'       => esc_html__( 'Activity', 'booking-activities' ),
+			'tip'         => esc_html__( 'Retrieve events from the selected activities only.', 'booking-activities' )
 		);
 	}
 	
@@ -948,14 +954,17 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 		}
 		
 		$defaults[ 'group_categories' ] = array( 
-			'name'     => 'group_categories',
-			'type'     => 'select',
-			'multiple' => 'maybe',
-			'options'  => $category_options,
-			'attr'     => $category_options_attr,
-			'value'    => '', 
-			'title'    => esc_html__( 'Group category', 'booking-activities' ),
-			'tip'      => esc_html__( 'Retrieve groups of events from the selected group categories only.', 'booking-activities' )
+			'name'        => 'group_categories',
+			'type'        => 'select',
+			'multiple'    => 'maybe',
+			'class'       => 'bookacti-select2-no-ajax',
+			'placeholder' => esc_html__( 'Search...', 'booking-activities' ),
+			'attr'        => array( '<select>' => ' data-allow-clear="0"' ),
+			'options'     => $category_options,
+			'attr'        => $category_options_attr,
+			'value'       => '', 
+			'title'       => esc_html__( 'Group category', 'booking-activities' ),
+			'tip'         => esc_html__( 'Retrieve groups of events from the selected group categories only.', 'booking-activities' )
 		);
 	}
 	

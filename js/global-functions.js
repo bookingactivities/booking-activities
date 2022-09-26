@@ -1,6 +1,7 @@
 $j( document ).ready( function() {
 	// Initialize select2
 	bookacti_select2_init();
+	bookacti_select2_sortable_init();
 	
 	// Localize moment JS
 	moment.locale( bookacti_localized.fullcalendar_locale );
@@ -206,7 +207,7 @@ $j.fn.serializeObject = function() {
 /**
  * Init selectbox with AJAX search
  * @since 1.7.19
- * @version 1.12.6
+ * @version 1.15.4
  */
 function bookacti_select2_init() {
 	if( ! $j.fn.select2 ) { return; }
@@ -214,6 +215,9 @@ function bookacti_select2_init() {
 	// Without AJAX search
 	$j( '.bookacti-select2-no-ajax:not(.select2-hidden-accessible)' ).select2({
 		language: bookacti_localized.fullcalendar_locale,
+		containerCssClass: 'bookacti-select2-selection', // Temp fix https://github.com/select2/select2/issues/5843
+		selectionCssClass: 'bookacti-select2-selection',
+		dropdownCssClass: 'bookacti-select2-dropdown',
 		minimumResultsForSearch: 1,
 		width: 'element',
 		dropdownAutoWidth: true,
@@ -224,6 +228,9 @@ function bookacti_select2_init() {
 	// With AJAX search
 	$j( '.bookacti-select2-ajax:not(.select2-hidden-accessible)' ).select2({
 		language: bookacti_localized.fullcalendar_locale,
+		containerCssClass: 'bookacti-select2-selection', // Temp fix https://github.com/select2/select2/issues/5843
+		selectionCssClass: 'bookacti-select2-selection',
+		dropdownCssClass: 'bookacti-select2-dropdown',
 		minimumInputLength: 3,
 		width: 'element',
 		dropdownAutoWidth: true,
@@ -263,6 +270,63 @@ function bookacti_select2_init() {
 			cache: true
 		}
 	});
+}
+
+
+/**
+ * Make select2 multiple select sortable
+ * @since 1.15.4
+ */
+function bookacti_select2_sortable_init() {
+	$j( '.select2-hidden-accessible[data-sortable="1"] + .select2-container .bookacti-select2-selection.select2-selection--multiple .select2-selection__rendered' ).sortable({
+		containment: 'parent',
+		items: '.select2-selection__choice',
+		
+		// When the position changes, also change the corresponding <option> position in the <select>
+		update: function( e, ui ) {
+			// Get the selectbox
+			var selectbox = $j( ui.item ).parents( '.select2-container' ).prev( '.select2-hidden-accessible' );
+			if( ! selectbox.length ) { return; }
+			if( ! selectbox.data( 'sortable' ) ) { return; }
+			
+			$j( ui.item ).parents( '.select2-container' ).find( '.select2-selection__choice' ).each( function( i, li ) {
+				// Get the option value from the list item
+				var option_value = false;
+				if( typeof $j( li ).data( 'data' ) !== 'undefined' ) {
+					if( typeof $j( li ).data( 'data' ).id !== 'undefined' ) {
+						option_value = $j( li ).data( 'data' ).id;
+					}
+				}
+				if( option_value === false ) { return true; } // continue
+
+				// Get the option
+				var option = selectbox.find( 'option[value="' + option_value + '"]' );
+				if( ! option.length ) { return true; } // continue
+
+				// Move the options
+				option.detach();
+				selectbox.append( option );
+			});
+		}
+	});
+	
+	
+	/**
+	 * Move option to the bottom of the sortable selectbox when it is selected - on select2:select
+	 * @since 1.15.4
+	 * @param {Object} e
+	 */
+	$j( 'body' ).on( 'select2:select', '.bookacti-select2-ajax[data-sortable="1"], .bookacti-select2-no-ajax[data-sortable="1"]', function( e ) {
+		if( typeof e.params === 'undefined' ) { return; }
+		if( typeof e.params.data === 'undefined' ) { return; }
+		if( typeof e.params.data.id === 'undefined' ) { return; }
+		var option_value = e.params.data.id;
+		var option = $j( this ).find( 'option[value="' + option_value + '"]' );
+		if( ! option.length ) { return; }
+		option.detach();
+		$j( this ).append( option );
+		$j( this ).trigger( 'change' );
+    });
 }
 
 

@@ -49,6 +49,13 @@ $j( document ).ready( function() {
 	
 	
 	/**
+	 * Add / remove booking pass template managers
+	 * @since 1.15.4
+	 */
+	bookacti_init_add_and_remove_items();
+	
+	
+	/**
 	 * Allow select2 to work in a jquery-ui dialog
 	 * @since 1.7.19
 	 * @version 1.15.0
@@ -160,11 +167,11 @@ function bookacti_show_hide_advanced_options( button ) {
 
 /**
  * Init Add / Remove items boxes
- * @version 1.8.3
+ * @version 1.15.4
  */
 function bookacti_init_add_and_remove_items() {
 	// Add a item to the items list
-	$j( '.bookacti-items-container' ).on( 'click', '.bookacti-add-items', function( e ){
+	$j( 'body' ).on( 'click', '.bookacti-items-container .bookacti-add-items', function( e ){
 		var wrap = $j( this ).closest( '.bookacti-items-container' );
 		
 		// Retrieve data
@@ -183,11 +190,11 @@ function bookacti_init_add_and_remove_items() {
 		});
 		
 		// Refresh select2
-		if( selectbox.hasClass( 'bookacti-select2-no-ajax' ) ) { selectbox.select2( 'destroy' ).select2(); }
+		if( selectbox.hasClass( 'select2-hidden-accessible' ) ) { selectbox.select2( 'destroy' ); bookacti_select2_init(); }
 	});
 	
 	// Remove an item from the items list
-	$j( '.bookacti-items-container' ).on( 'click', '.bookacti-remove-items', function( e ){
+	$j( 'body' ).on( 'click', '.bookacti-items-container .bookacti-remove-items', function( e ){
 		var wrap = $j( this ).closest( '.bookacti-items-container' );
 		var type = wrap.data( 'type' );
 		var cannot_delete = '';
@@ -212,14 +219,14 @@ function bookacti_init_add_and_remove_items() {
 		});
 		
 		// Refresh select2
-		if( selectbox.hasClass( 'bookacti-select2-no-ajax' ) ) { selectbox.select2( 'destroy' ).select2(); }
+		if( selectbox.hasClass( 'select2-hidden-accessible' ) ) { selectbox.select2( 'destroy' ); bookacti_select2_init(); }
 	});
 }
 
 
 /**
  * Empty all dialog forms fields
- * @version 1.13.0
+ * @version 1.15.4
  * @param {string} scope
  */
 function bookacti_empty_all_dialog_forms( scope ) {
@@ -238,9 +245,7 @@ function bookacti_empty_all_dialog_forms( scope ) {
 	$j( scope + 'input[type="color"]' ).val( '#3a87ad' );
 	$j( scope + 'input[type="checkbox"]' ).prop( 'checked', false );
 	$j( scope + 'input[type="radio"]' ).prop( 'checked', false );
-	$j( scope + 'option' ).prop( 'selected', false );
-	$j( scope + 'select.bookacti-add-new-items-select-box option' ).show().attr( 'disabled', false );
-	$j( scope + 'select.bookacti-items-select-box option' ).remove();
+	$j( scope + 'select' ).val( null ).trigger( 'change' );
 	$j( scope + '.bookacti-duration-hint' ).remove();
 	
 	if( $j( scope + 'input[type="file"]' ).length ) {
@@ -275,7 +280,7 @@ function bookacti_empty_all_dialog_forms( scope ) {
 
 /**
  * Fill custom settings fields in a form
- * @version 1.12.0
+ * @version 1.15.4
  * @param {array} fields
  * @param {string} field_prefix
  * @param {qtring} scope
@@ -364,8 +369,13 @@ function bookacti_fill_fields_from_array( fields, field_prefix, scope ) {
 		// Select multiple
 		} else if( $j( scope + 'select[name="' + field_name + '[]"]' ).length ) {
 			if( ! $j.isArray( value ) ) { value = [ value ]; }
-			$j.each( value, function( i, option ) {
-				$j( scope + 'select[name="' + field_name + '[]"] option[value="' + option + '"]' ).prop( 'selected', true );
+			$j.each( value, function( i, option_value ) {
+				var option = $j( scope + 'select[name="' + field_name + '[]"] option[value="' + option_value + '"]' );
+				$j( scope + 'select[name="' + field_name + '[]"] option[value="' + option_value + '"]' ).prop( 'selected', true );
+				if( $j( scope + 'select[name="' + field_name + '[]"]' ).data( 'sortable' ) ) {
+					option.detach();
+					$j( scope + 'select[name="' + field_name + '[]"]' ).append( option );
+				}
 			});
 			$j( scope + 'select[name="' + field_name + '[]"]' ).trigger( 'change' );
 
@@ -479,53 +489,64 @@ function bookacti_switch_select_to_multiple( checkbox ) {
 /**
  * Fill item boxes
  * @since 1.8.3
- * @param {HTMLElement} items_container
+ * @version 1.15.4
+ * @param {HTMLElement} selectbox
  * @param {Array} item_ids
  * @param {string} item_type
  */
-function bookacti_fill_items_selectbox( items_container, item_ids, item_type ) {
+function bookacti_fill_items_selectbox( selectbox, item_ids, item_type ) {
 	item_type = item_type || 'users';
-	if( ! items_container.length || ! item_ids.length ) { return; }
+	if( ! selectbox.length ) { return; }
 	
-	var add_selectbox = items_container.find( '.bookacti-add-new-items-select-box' );
-	var selectedbox = items_container.find( '.bookacti-items-select-box' );
-	if( ! add_selectbox.length || ! selectedbox.length ) { return; }
+	// Convert object to array
+	if( typeof item_ids === 'object' ) { item_ids = Object.values( item_ids ); }
 	
+	// Add unknown options, Sort the options if sortable
 	var unknown_item_ids = [];
-	$j.each( item_ids, function( i, item_id ) {
-		if( add_selectbox.find( 'option[value="' + item_id + '"]' ).length ) {
-			add_selectbox.find( 'option[value="' + item_id + '"]' ).clone().appendTo( selectedbox );
-			add_selectbox.find( 'option[value="' + item_id + '"]' ).hide().attr( 'disabled', true );
-		} else {
-			selectedbox.append( '<option value="' + item_id + '" class="bookacti-unknown-item">' + item_id + '</option>' );
-			unknown_item_ids.push( item_id );
-		}
-
-		if( add_selectbox.val() == item_id || ! add_selectbox.val() ) {
-			add_selectbox.val( add_selectbox.find( 'option:enabled:first' ).val() );
-		}
-	});
+	if( item_ids.length ) {
+		$j.each( item_ids, function( i, item_id ) {
+			var option = selectbox.find( 'option[value="' + item_id + '"]' );
+			// Add the option
+			if( ! option.length ) {
+				selectbox.append( '<option value="' + item_id + '" class="bookacti-unknown-item">' + item_id + '</option>' );
+				if( $j.isNumeric( item_id ) ) { unknown_item_ids.push( parseInt( item_id ) ); }
+			// Move the option to the bottom
+			} else if( selectbox.data( 'sortable' ) ) {
+				option.detach();
+				selectbox.append( option );
+			}
+		});
+	}
 	
-	// Try to retrieve unknow item label
+	// Select / Unselect options and trigger change for select2
+	selectbox.val( item_ids.length ? item_ids : null ).trigger( 'change' );
+	
 	if( ! unknown_item_ids.length ) { return; }
+	
+	bookacti_add_loading_html( selectbox.parent() );
+	
+	// Try to retrieve unknow items label
 	$j.ajax({
 		url: ajaxurl,
 		type: 'POST',
 		data: { 
 			action: 'bookactiSelect2Query_' + item_type,
 			id__in: unknown_item_ids,
-			name: $j( this ).attr( 'name' ) ? $j( this ).attr( 'name' ) : '',
-			id: $j( this ).attr( 'id' ) ? $j( this ).attr( 'id' ) : '',
-			allow_current: $j( this ).find( 'option[value="current"]' ).length ? 1 : 0,
+			name: selectbox.attr( 'name' ) ? selectbox.attr( 'name' ) : '',
+			id: selectbox.attr( 'id' ) ? selectbox.attr( 'id' ) : '',
 			nonce: bookacti_localized.nonce_query_select2_options
 		},
 		dataType: 'json',
 		success: function( response ){
 			if( response.status === 'success' ) {
-				$j.each( response.options, function( i, option ) {
-					selectedbox.find( '.bookacti-unknown-item[value="' + option.id + '"]' ).html( option.text ).removeClass( 'bookacti-unknown-item' );
-				});
-				
+				if( response.options.length ) {
+					$j.each( response.options, function( i, option ) {
+						selectbox.find( '.bookacti-unknown-item[value="' + option.id + '"]' ).html( option.text ).removeClass( 'bookacti-unknown-item' );
+					});
+					// Refresh select2
+					if( selectbox.hasClass( 'select2-hidden-accessible' ) ) { selectbox.select2( 'destroy' ); bookacti_select2_init(); }
+				}
+			
 			} else if( response.status === 'failed' ) {
 				var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
 				console.log( error_message );
@@ -536,7 +557,9 @@ function bookacti_fill_items_selectbox( items_container, item_ids, item_type ) {
 			console.log( 'AJAX ' + bookacti_localized.error );
 			console.log( e );
 		},
-		complete: function() {}
+		complete: function() {
+			bookacti_remove_loading_html( selectbox.parent() );
+		}
 	});
 }
 
@@ -594,6 +617,9 @@ function bookacti_show_hide_template_related_options( template_ids, options ) {
 		old_selected_option.removeAttr( 'selected' );
 		old_selected_option.siblings( 'option:not(.bookacti-hide-fields):not(:disabled):first' ).prop( 'selected', true );
 	});
+	
+	// Refresh select2
+	if( options.parent( 'select' ).hasClass( 'select2-hidden-accessible' ) ) { options.parent( 'select' ).select2( 'destroy' ); bookacti_select2_init(); }
 }
 
 
