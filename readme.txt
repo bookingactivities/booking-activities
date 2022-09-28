@@ -21,7 +21,7 @@ It is very easy to use:
 2. Copy / Paste a **shortcode** to display a booking form. Or **integrate it with WooCommerce** products.
 3. **Pick** an event on this calendar and book it. 
 
-Try this reservation tool live on the [demo website](https://demo.booking-activities.fr/en/)!
+Try this reservation tool live on the [demo website](https://demo.booking-activities.fr/en/), or [generate a temporary site](https://tastewp.com/new/?pre-installed-plugin-slug=booking-activities&pre-installed-plugin-slug=woocommerce&pre-installed-theme-slug=twentyseventeen&redirect=admin.php%3Fpage%3Dbookacti_calendars&ni=true) to test the backend!
 
 [youtube https://www.youtube.com/watch?v=Q7gbK5i4DPU]
 
@@ -324,6 +324,8 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 = 1.15.4 =
 * Tweak - Enable the "Today" button even if today's view is not accessible
 * Tweak - Use select2 library for options using selectboxes with multiple values
+* Tweak - If the refunded WC order items quantity is not set, try to compute it from the refunded amount
+* Fix - Bookings were not refunded when a WC order was totally refunded but whithout selecting the WC order items to refund
 * Dev - Use WP default strings for Add New, Publish, Update, Edit, Trash, Delete, Retore
 * Dev - API to make select2 multiple select sortable
 * Dev - Add indexes to relevent database columns to improve performance on large databases

@@ -3,6 +3,24 @@ $j( document ).ready( function() {
 	bookacti_select2_init();
 	bookacti_select2_sortable_init();
 	
+	/**
+	 * Move option to the bottom of the sortable selectbox when it is selected - on select2:select
+	 * Do it only once
+	 * @since 1.15.4
+	 * @param {Object} e
+	 */
+	$j( 'body' ).on( 'select2:select', '.bookacti-select2-ajax[data-sortable="1"], .bookacti-select2-no-ajax[data-sortable="1"]', function( e ) {
+		if( typeof e.params === 'undefined' ) { return; }
+		if( typeof e.params.data === 'undefined' ) { return; }
+		if( typeof e.params.data.id === 'undefined' ) { return; }
+		var option_value = e.params.data.id;
+		var option = $j( this ).find( 'option[value="' + option_value + '"]' );
+		if( ! option.length ) { return; }
+		option.detach();
+		$j( this ).append( option );
+		$j( this ).trigger( 'change' );
+	});
+	
 	// Localize moment JS
 	moment.locale( bookacti_localized.fullcalendar_locale );
 	
@@ -277,8 +295,12 @@ function bookacti_select2_init() {
  * Make select2 multiple select sortable
  * @since 1.15.4
  */
-function bookacti_select2_sortable_init() {
-	$j( '.select2-hidden-accessible[data-sortable="1"] + .select2-container .bookacti-select2-selection.select2-selection--multiple .select2-selection__rendered' ).sortable({
+function bookacti_select2_sortable_init( selectbox_selector ) {
+	if( typeof selectbox_selector === 'undefined' ) {
+		selectbox_selector = '.select2-hidden-accessible[data-sortable="1"] + .select2-container .bookacti-select2-selection.select2-selection--multiple .select2-selection__rendered';
+	}
+	
+	$j( selectbox_selector ).sortable({
 		containment: 'parent',
 		items: '.select2-selection__choice',
 		
@@ -309,24 +331,6 @@ function bookacti_select2_sortable_init() {
 			});
 		}
 	});
-	
-	
-	/**
-	 * Move option to the bottom of the sortable selectbox when it is selected - on select2:select
-	 * @since 1.15.4
-	 * @param {Object} e
-	 */
-	$j( 'body' ).on( 'select2:select', '.bookacti-select2-ajax[data-sortable="1"], .bookacti-select2-no-ajax[data-sortable="1"]', function( e ) {
-		if( typeof e.params === 'undefined' ) { return; }
-		if( typeof e.params.data === 'undefined' ) { return; }
-		if( typeof e.params.data.id === 'undefined' ) { return; }
-		var option_value = e.params.data.id;
-		var option = $j( this ).find( 'option[value="' + option_value + '"]' );
-		if( ! option.length ) { return; }
-		option.detach();
-		$j( this ).append( option );
-		$j( this ).trigger( 'change' );
-    });
 }
 
 

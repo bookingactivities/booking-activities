@@ -1,21 +1,7 @@
 $j( document ).ready( function() {
 	// Load this file only on form editor page
 	if( ! $j( 'form#bookacti-form-editor-page-form' ).length || typeof bookacti.form_editor === 'undefined' ) { return; }
-	
-	/**
-	 * Refresh the form managers selectbox
-	 * @since 1.8.8
-	 */
-	$j( '#bookacti-form-managers-select-box option' ).prop( 'selected', true );
-	var form_managers = $j( '#bookacti-form-managers-select-box' ).val();
-	$j( '#bookacti-form-managers-select-box' ).empty();
-	if( form_managers ) {
-		if( form_managers.length ) {
-			var items_container = $j( '#bookacti-form-managers-container' );
-			bookacti_fill_items_selectbox( items_container, form_managers );
-		}
-	}
-	
+
 	// Specific dialogs
 	$j( '#bookacti-form-field-dialog-free_text' ).dialog( 'option', 'width', 540 );
 	$j( '#bookacti-form-field-dialog-terms' ).dialog( 'option', 'width', 540 );
@@ -35,8 +21,8 @@ $j( document ).ready( function() {
 		icon.toggleClass( 'dashicons-arrow-up dashicons-arrow-down' );
 		icon.closest( '.bookacti-form-editor-field' ).find( '.bookacti-form-editor-field-body' ).toggle();
 		
-		var is_visible		= icon.closest( '.bookacti-form-editor-field' ).find( '.bookacti-form-editor-field-body' ).is( ':visible' );
-		var booking_system	= icon.closest( '.bookacti-form-editor-field' ).find( '.bookacti-booking-system' );
+		var is_visible     = icon.closest( '.bookacti-form-editor-field' ).find( '.bookacti-form-editor-field-body' ).is( ':visible' );
+		var booking_system = icon.closest( '.bookacti-form-editor-field' ).find( '.bookacti-booking-system' );
 		if( is_visible && booking_system.length ) {
 			bookacti_booking_method_rerender_events( booking_system );
 		}
@@ -313,12 +299,9 @@ $j( document ).ready( function() {
 /**
  * Save form data
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.15.4
  */
 function bookacti_save_form() {
-	// Select all form managers
-	$j( '#bookacti-form-managers-select-box option' ).prop( 'selected', true );
-	
 	// Move form editor outside the <form> before serialize
 	$j( '#bookacti-form-editor-container' ).appendTo( '#bookacti-form-editor-page-container' );
 	

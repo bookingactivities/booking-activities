@@ -1,7 +1,7 @@
 <?php 
 /**
  * Backend booking dialogs
- * @version 1.15.0
+ * @version 1.15.4
  */
 
 // Exit if accessed directly
@@ -50,6 +50,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			/**
 			 * Display the content of the "Display" tab of the "Bookings Calendar" dialog
 			 * @since 1.8.0
+			 * @since 1.15.4
 			 * @param array $params
 			 */
 			function bookacti_fill_bookings_calendar_dialog_display_tab( $params ) {
@@ -83,6 +84,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						$undesired_columns = array( 'events', 'event_id', 'event_title', 'start_date', 'end_date', 'actions' );
 						$event_booking_list_columns = array_diff_key( bookacti_get_user_booking_list_columns_labels(), array_flip( $undesired_columns ) );
 
+						// Push the selected columns at the end of the options in the selected order
+						$event_booking_list_columns_ordered = $event_booking_list_columns;
+						foreach( $params[ 'calendar_data' ][ 'tooltip_booking_list_columns' ] as $col_name ) {
+							if( isset( $event_booking_list_columns_ordered[ $col_name ] ) ) {
+								$col_title = $event_booking_list_columns_ordered[ $col_name ];
+								unset( $event_booking_list_columns_ordered[ $col_name ] );
+								$event_booking_list_columns_ordered[ $col_name ] = $col_title;
+							}
+						}
+						
 						$tooltip_fields = apply_filters( 'bookacti_bookings_calendar_tooltip_fields', array( 
 							'tooltip_booking_list' => array( 
 								'name'  => 'tooltip_booking_list',
@@ -92,13 +103,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 								'tip'   => esc_html__( 'Display the event booking list when you mouse over an event.', 'booking-activities' )
 							),
 							'tooltip_booking_list_columns' => array( 
-								'name'    => 'tooltip_booking_list_columns',
-								'type'    => 'select_items',
-								'title'   => esc_html__( 'Preview booking list columns', 'booking-activities' ),
-								'id'      => 'bookacti-event-booking-list-columns',
-								'options' => $event_booking_list_columns,
-								'value'   => $params[ 'calendar_data' ][ 'tooltip_booking_list_columns' ],
-								'tip'     => esc_html__( 'Add the columns in the order they will be displayed.', 'booking-activities' )
+								'name'        => 'tooltip_booking_list_columns',
+								'type'        => 'select',
+								'id'          => 'bookacti-event-booking-list-columns',
+								'class'       => 'bookacti-select2-no-ajax', 
+								'multiple'    => 1,
+								'attr'        => array( '<select>' => ' data-sortable="1"' ),
+								'title'       => esc_html__( 'Preview booking list columns', 'booking-activities' ),
+								'options'     => $event_booking_list_columns_ordered,
+								'value'       => $params[ 'calendar_data' ][ 'tooltip_booking_list_columns' ],
+								'tip'         => esc_html__( 'Add the columns in the order they will be displayed.', 'booking-activities' )
 							)
 						), $params[ 'calendar_data' ] );
 						bookacti_display_fields( $tooltip_fields );
@@ -279,7 +293,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		 * Display the content of the "csv" tab of the "Export bookings" dialog
 		 * @param array $args
 		 * @since 1.8.0
-		 * @version 1.8.9
+		 * @version 1.15.4
 		 */
 		function bookacti_fill_export_bookings_csv_tab( $args ) {
 			do_action( 'bookacti_fill_export_bookings_csv_tab_before', $args );
@@ -296,15 +310,29 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			</div>
 			
 			<?php
+			// Push the selected columns at the end of the options in the selected order
+			$export_columns_ordered = $args[ 'export_columns' ];
+			foreach( $args[ 'user_settings' ][ 'csv_columns' ] as $col_name ) {
+				if( isset( $export_columns_ordered[ $col_name ] ) ) {
+					$col_title = $export_columns_ordered[ $col_name ];
+					unset( $export_columns_ordered[ $col_name ] );
+					$export_columns_ordered[ $col_name ] = $col_title;
+				}
+			}
+			
 			$csv_fields = apply_filters( 'bookacti_export_bookings_csv_fields', array(
 				'csv_columns' => array(
-					'type'    => 'select_items',
-					'name'    => 'csv_columns',
-					'title'   => esc_html__( 'Columns to export (ordered)', 'booking-activities' ),
-					'id'      => 'bookacti-csv-columns-to-export',
-					'options' => $args[ 'export_columns' ],
-					'value'   => $args[ 'user_settings' ][ 'csv_columns' ],
-					'tip'     => esc_html__( 'Add the columns you want to export in the order they will be displayed.', 'booking-activities' )
+					'type'        => 'select',
+					'name'        => 'csv_columns',
+					'id'          => 'bookacti-csv-columns-to-export',
+					'class'       => 'bookacti-select2-no-ajax', 
+					'multiple'    => 1,
+					'attr'        => array( '<select>' => ' data-sortable="1"' ),
+					'title'       => esc_html__( 'Columns to export (ordered)', 'booking-activities' ),
+					'placeholder' => esc_html__( 'Search...', 'booking-activities' ),
+					'options'     => $export_columns_ordered,
+					'value'       => $args[ 'user_settings' ][ 'csv_columns' ],
+					'tip'         => esc_html__( 'Add the columns you want to export in the order they will be displayed.', 'booking-activities' )
 				),
 				'csv_raw' => array(
 					'type'  => 'checkbox',
@@ -336,7 +364,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		/**
 		 * Display the content of the "iCal" tab of the "Export bookings" dialog
 		 * @since 1.8.0
-		 * @version 1.8.9
+		 * @version 1.15.4
 		 * @param array $args
 		 */
 		function bookacti_fill_export_bookings_ical_tab( $args ) {
@@ -402,16 +430,30 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						<span class='dashicons dashicons-info'></span>
 						<span><?php esc_html_e( 'These settings are used for the {booking_list} and {booking_list_raw} tags only.', 'booking-activities' ); ?></span>
 					</div>
-				<?php 
+				<?php
+					// Push the selected columns at the end of the options in the selected order
+					$export_columns_ordered = $args[ 'export_columns' ];
+					foreach( $args[ 'user_settings' ][ 'ical_columns' ] as $col_name ) {
+						if( isset( $export_columns_ordered[ $col_name ] ) ) {
+							$col_title = $export_columns_ordered[ $col_name ];
+							unset( $export_columns_ordered[ $col_name ] );
+							$export_columns_ordered[ $col_name ] = $col_title;
+						}
+					}
+				
 					$ical_booking_list_fields = apply_filters( 'bookacti_export_bookings_ical_booking_list_fields', array(
 						'ical_columns' => array(
-							'type'    => 'select_items',
-							'name'    => 'ical_columns',
-							'title'   => esc_html__( 'Columns (ordered)', 'booking-activities' ),
-							'id'      => 'bookacti-ical-booking-list-columns',
-							'options' => $args[ 'export_columns' ],
-							'value'   => $args[ 'user_settings' ][ 'ical_columns' ],
-							'tip'     => esc_html__( 'Add the columns in the order you want them to appear when using the {booking_list} or {booking_list_raw} tags.', 'booking-activities' )
+							'type'        => 'select',
+							'name'        => 'ical_columns',
+							'id'          => 'bookacti-ical-booking-list-columns',
+							'class'       => 'bookacti-select2-no-ajax', 
+							'multiple'    => 1,
+							'attr'        => array( '<select>' => ' data-sortable="1"' ),
+							'placeholder' => esc_html__( 'Search...', 'booking-activities' ),
+							'title'       => esc_html__( 'Columns (ordered)', 'booking-activities' ),
+							'options'     => $export_columns_ordered,
+							'value'       => $args[ 'user_settings' ][ 'ical_columns' ],
+							'tip'         => esc_html__( 'Add the columns in the order you want them to appear when using the {booking_list} or {booking_list_raw} tags.', 'booking-activities' )
 						),
 						'ical_raw' => array(
 							'type'  => 'checkbox',

@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking list page
- * @version 1.15.2
+ * @version 1.15.4
  */
 
 // Exit if accessed directly
@@ -91,12 +91,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					<div id='bookacti-templates-filter-content'  class='bookacti-filter-content'>
 					<?php
 						$args = array(
-							'type'		=> 'select',
-							'name'		=> 'templates',
-							'id'		=> 'bookacti-booking-filter-templates',
-							'options'	=> $templates_select_options,
-							'value'		=> count( $selected_templates ) === count( $templates ) ? array() : $selected_templates,
-							'multiple'	=> true
+							'type'        => 'select',
+							'name'        => 'templates',
+							'id'          => 'bookacti-booking-filter-templates',
+							'class'       => 'bookacti-select2-no-ajax', 
+							'attr'        => array( '<select>' => ' data-allow-clear="0"' ),
+							'placeholder' => esc_html__( 'All', 'booking-activities' ),
+							'options'     => $templates_select_options,
+							'value'       => count( $selected_templates ) === count( $templates ) ? array() : $selected_templates,
+							'multiple'    => true
 						);
 						bookacti_display_field( $args );
 					?>
@@ -109,12 +112,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					<div class='bookacti-filter-content'>
 					<?php
 						$args = array(
-							'type'		=> 'select',
-							'name'		=> 'activities',
-							'id'		=> 'bookacti-booking-filter-activities',
-							'options'	=> $activities_select_options,
-							'value'		=> array_map( 'intval', $selected_activities ),
-							'multiple'	=> true
+							'type'        => 'select',
+							'name'        => 'activities',
+							'id'          => 'bookacti-booking-filter-activities',
+							'class'       => 'bookacti-select2-no-ajax', 
+							'attr'        => array( '<select>' => ' data-allow-clear="0"' ),
+							'placeholder' => esc_html__( 'All', 'booking-activities' ),
+							'options'     => $activities_select_options,
+							'value'       => array_map( 'intval', $selected_activities ),
+							'multiple'    => true
 						);
 						bookacti_display_field( $args );
 					?>
@@ -137,12 +143,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						$selected_status = isset( $_REQUEST[ 'status' ] ) ? $_REQUEST[ 'status' ] : $default_status;
 						$selected_status = is_array( $selected_status ) ? $selected_status : array( $selected_status );
 						$args = array(
-							'type'		=> 'select',
-							'name'		=> 'status',
-							'id'		=> 'bookacti-booking-filter-status',
-							'options'	=> $status_select_options,
-							'value'		=> $selected_status,
-							'multiple'	=> true
+							'type'        => 'select',
+							'name'        => 'status',
+							'id'          => 'bookacti-booking-filter-status',
+							'class'       => 'bookacti-select2-no-ajax', 
+							'attr'        => array( '<select>' => ' data-allow-clear="0"' ),
+							'placeholder' => esc_html__( 'All', 'booking-activities' ),
+							'options'     => $status_select_options,
+							'value'       => $selected_status,
+							'multiple'    => true
 						);
 						bookacti_display_field( $args );
 						

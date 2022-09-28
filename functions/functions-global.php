@@ -558,7 +558,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-display-pack', 
 			'end_of_life' => '', 
 			'download_id' => 482,
-			'min_version' => '1.4.25'
+			'min_version' => '1.4.27'
 		),
 		'banp' => array( 
 			'title'       => 'Notification Pack', 
@@ -582,7 +582,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-advanced-forms', 
 			'end_of_life' => '', 
 			'download_id' => 2705,
-			'min_version' => '1.2.25'
+			'min_version' => '1.2.26'
 		),
 		'baofc' => array( 
 			'title'	      => 'Order for Customers', 
@@ -921,8 +921,7 @@ function bookacti_display_fields( $fields, $args = array() ) {
 		$field[ 'hidden' ] = ! isset( $field[ 'hidden' ] ) ? ( in_array( $field_name, $args[ 'hidden' ], true ) ? 1 : 0 ) : $field[ 'hidden' ];
 		
 		$wrap_class = '';
-		if( ! empty( $field[ 'hidden' ] ) )       { $wrap_class .= ' bookacti-hidden-field'; } 
-		if( $field[ 'type' ] === 'select_items' ) { $wrap_class .= ' bookacti-items-container'; } 
+		if( ! empty( $field[ 'hidden' ] ) ) { $wrap_class .= ' bookacti-hidden-field'; } 
 		
 		// If custom type, call another function to display this field
 		if( substr( $field[ 'type' ], 0, 6 ) === 'custom' ) {
@@ -936,7 +935,7 @@ function bookacti_display_fields( $fields, $args = array() ) {
 		<?php 
 			// Display field title
 			if( ! empty( $field[ 'title' ] ) ) { 
-				$fullwidth = ! empty( $field[ 'fullwidth' ] ) || in_array( $field[ 'type' ], array( 'checkboxes', 'select_items', 'editor', 'user_id' ), true );
+				$fullwidth = ! empty( $field[ 'fullwidth' ] ) || in_array( $field[ 'type' ], array( 'checkboxes', 'editor' ), true );
 			?>
 				<label for='<?php echo esc_attr( sanitize_title_with_dashes( $field[ 'id' ] ) ); ?>' class='<?php if( $fullwidth ) { echo 'bookacti-fullwidth-label'; } ?>'>
 					<?php echo $field[ 'title' ]; if( $fullwidth ) { bookacti_help_tip( $field[ 'tip' ] ); unset( $field[ 'tip' ] ); } ?>
@@ -956,13 +955,13 @@ function bookacti_display_fields( $fields, $args = array() ) {
 /**
  * Display various fields
  * @since 1.2.0
- * @version 1.8.7
+ * @version 1.15.4
  * @param array $args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'attr', 'value', 'tip', 'required']
  */
 function bookacti_display_field( $args ) {
 	$args = bookacti_format_field_args( $args );
 	if( ! $args ) { return; }
-
+	
 	// Display field according to type
 
 	// TEXT & NUMBER
@@ -1149,7 +1148,7 @@ function bookacti_display_field( $args ) {
 			class='bookacti-select <?php echo esc_attr( $args[ 'class' ] ); ?>'
 			<?php 
 				if( ! empty( $args[ 'placeholder' ] ) ) { echo ' data-placeholder="' . esc_attr( $args[ 'placeholder' ] ) . '"'; }
-				if( ! empty( $args[ 'attr' ][ '<select>' ] ) ) { echo ' ' .$args[ 'attr' ][ '<select>' ]; }
+				if( ! empty( $args[ 'attr' ][ '<select>' ] ) ) { echo ' ' . $args[ 'attr' ][ '<select>' ]; }
 				if( $is_multiple ) { echo ' multiple'; }
 				if( $args[ 'required' ] ) { echo ' required'; }
 			?>
@@ -1193,34 +1192,6 @@ function bookacti_display_field( $args ) {
 		}
 	}
 	
-	// SELECT ITEMS
-	else if( $args[ 'type' ] === 'select_items' ) { ?>
-		<div class='bookacti-add-items-container'>
-			<select id='<?php echo $args[ 'id' ]; ?>-add-selectbox' class='bookacti-add-new-items-select-box' >
-			<?php 
-			$selected_values = array_flip( $args[ 'value' ] );
-			foreach( $args[ 'options' ] as $value => $label ) { 
-				$disabled = isset( $selected_values[ $value ] ) ? 'disabled style="display:none;"' : '';
-			?>
-				<option value='<?php echo esc_attr( $value ); ?>' <?php echo $disabled; ?>><?php echo esc_html( $label ); ?></option>
-			<?php } ?>
-			</select>
-			<button type='button' id='<?php echo $args[ 'id' ]; ?>-add-button' class='bookacti-add-items' ><?php esc_html_e( 'Add', 'booking-activities' ); ?></button>
-		</div>
-		<div class='bookacti-items-list-container' >
-			<select name='<?php echo $args[ 'name' ]; ?>' id='<?php echo $args[ 'id' ]; ?>-selectbox' class='bookacti-items-select-box' multiple>
-				<?php 
-				foreach( $args[ 'value' ] as $value ) {
-					$label = ! empty( $args[ 'options' ][ $value ] ) ? $args[ 'options' ][ $value ] : $value;
-				?>
-					<option value='<?php echo $value ?>' title='<?php echo htmlentities( esc_attr( $label ), ENT_QUOTES ); ?>'><?php echo esc_html( $label ); ?></option>
-				<?php } ?>
-			</select>
-			<button type='button' id='<?php echo $args[ 'id' ]; ?>-remove-button' class='bookacti-remove-items' ><?php esc_html_e( 'Remove selected', 'booking-activities' ); ?></button>
-		</div>
-	<?php
-	}
-
 	// TINYMCE editor
 	else if( $args[ 'type' ] === 'editor' ) {
 		wp_editor( $args[ 'value' ], $args[ 'id' ], $args[ 'options' ] );
@@ -1258,7 +1229,7 @@ function bookacti_format_field_args( $args ) {
 	if( ! isset( $args[ 'type' ] ) || ! isset( $args[ 'name' ] ) ) { return false; }
 
 	// If field type is not supported, return
-	if( ! in_array( $args[ 'type' ], array( 'text', 'hidden', 'email', 'tel', 'date', 'time', 'password', 'number', 'duration', 'checkbox', 'checkboxes', 'select', 'select_items', 'radio', 'textarea', 'file', 'color', 'editor', 'user_id' ) ) ) { 
+	if( ! in_array( $args[ 'type' ], array( 'text', 'hidden', 'email', 'tel', 'date', 'time', 'password', 'number', 'duration', 'checkbox', 'checkboxes', 'select', 'radio', 'textarea', 'file', 'color', 'editor', 'user_id' ) ) ) { 
 		return false; 
 	}
 
@@ -1307,7 +1278,6 @@ function bookacti_format_field_args( $args ) {
 	}
 	
 	// If multiple, make sure name has brackets and value is an array
-	if( $args[ 'type' ] === 'select_items' ) { $args[ 'multiple' ] = 1; }
 	if( in_array( $args[ 'multiple' ], array( 'true', true, '1', 1 ), true ) ) {
 		if( strpos( $args[ 'name' ], '[]' ) === false ) { $args[ 'name' ] .= '[]'; }
 	} else if( $args[ 'multiple' ] && $args[ 'type' ] === 'select' ) {

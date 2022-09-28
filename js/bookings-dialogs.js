@@ -108,9 +108,6 @@ function bookacti_dialog_update_bookings_calendar_settings() {
 				// Reset error notices
 				$j( '#bookacti-bookings-calendar-settings-dialog .bookacti-notices' ).remove();
 				
-				// Multiple select
-				$j( '#bookacti-bookings-calendar-settings-dialog select[multiple].bookacti-items-select-box option' ).prop( 'selected', true );
-				
 				var data = $j( '#bookacti-bookings-calendar-settings-form' ).serializeObject();
 				
 				$j( 'body' ).trigger( 'bookacti_bookings_calendar_settings_data', [ data ] );
@@ -530,7 +527,7 @@ function bookacti_dialog_refund_confirmation( message ) {
 
 /**
  * Change Booking State
- * @version 1.15.0
+ * @version 1.15.4
  * @param {int} booking_id
  * @param {string} booking_type
  */
@@ -553,8 +550,8 @@ function bookacti_dialog_change_booking_state( booking_id, booking_type ) {
 	// Select the current state
 	var booking_state  = row.first().find( '.bookacti-booking-state' ).data( 'booking-state' );
 	var payment_status = row.first().find( '.bookacti-payment-status' ).data( 'payment-status' );
-	if( booking_state )	{ $j( '#bookacti-select-booking-state option[value="' + booking_state + '"]' ).prop( 'selected', true ); }
-	if( payment_status ){ $j( '#bookacti-select-payment-status option[value="' + payment_status + '"]' ).prop( 'selected', true ); }
+	if( booking_state )  { $j( 'select#bookacti-select-booking-state' ).val( booking_state ); }
+	if( payment_status ) { $j( 'select#bookacti-select-payment-status' ).val( payment_status ); }
 	$j( '#bookacti-send-notifications-on-state-change' ).prop( 'checked', false );
 	
 	// Reset error notices
@@ -1139,7 +1136,7 @@ function bookacti_dialog_export_bookings() {
 /**
  * Generate the URL to export bookings
  * @since 1.6.0
- * @version 1.15.0
+ * @version 1.15.4
  * @param {string} reset_key
  */
 function bookacti_generate_export_bookings_url( reset_key ) {
@@ -1150,9 +1147,6 @@ function bookacti_generate_export_bookings_url( reset_key ) {
 
 	// Display a loader
 	bookacti_add_loading_html( $j( '#bookacti-export-bookings-dialog' ) );
-	
-	// Multiple select
-	$j( '#bookacti-export-bookings-dialog select[multiple].bookacti-items-select-box option' ).prop( 'selected', true );
 	
 	// Get current filters and export settings
 	var data = $j( '#bookacti-export-bookings-form' ).serializeObject();

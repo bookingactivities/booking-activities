@@ -1762,6 +1762,7 @@ function bookacti_display_form_managers_meta_box( $form_raw ) {
 		'type'      => 'user_id', 
 		'name'      => 'form-managers',
 		'id'        => 'bookacti-form-managers', 
+		'fullwidth' => 1, 
 		'options'   => array(
 			'option_label' => array( 'display_name', ' (', 'user_login', ')' ),
 			'selected'     => $manager_ids,

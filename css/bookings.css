@@ -1,15 +1,15 @@
 /***** BOOKINGS PAGE *****/
 
 /** FILTERS **/
-.bookacti-filter-container							{ display: inline-block; vertical-align: top; margin-right: 10px; }
+.bookacti-filter-container          { display: inline-block; vertical-align: top; margin-right: 10px; }
 .bookacti-filter-container input,
 .bookacti-filter-container select,
 .bookacti-filter-container button,
 .bookacti-filter-container .button,
-.bookacti-filter-container textarea				{ width: 150px; }
-.bookacti-filter-title								{ font-weight: bold; line-height: 2.5em; }
-.bookacti-filter-content select[multiple]			{ height: 66px; box-sizing: border-box; padding: 0; margin: 0; }
-.bookacti-filter-content select[multiple] option	{ height: 22px; box-sizing: border-box; padding: 2px 4px; margin: 0; }
+.bookacti-filter-container textarea { width: 150px; }
+.bookacti-filter-title              { font-weight: bold; line-height: 2.5em; }
+.bookacti-filter-content select[multiple]        { height: 66px; box-sizing: border-box; padding: 0; margin: 0; }
+.bookacti-filter-content select[multiple] option { height: 22px; box-sizing: border-box; padding: 2px 4px; margin: 0; }
 
 #bookacti-event-filter-container			{ margin: 20px 0 0 0; }
 #bookacti-event-filter-container a			{ text-align: center; overflow: hidden; text-overflow: ellipsis; vertical-align: middle; height: 32px; line-height: 32px; }

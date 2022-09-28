@@ -6,10 +6,8 @@
 .bookacti-hide-fields	{ display: none; }
 .bookacti-show-fields	{ display: block; }
 
-.wp-admin select.bookacti-select[multiple]:hover,
-.wp-admin select.bookacti-items-select-box[multiple]:hover { color: initial; }
-.wp-admin select.bookacti-select[multiple] option:hover,
-.wp-admin select.bookacti-items-select-box[multiple] option:hover { color: #007cba; }
+.wp-admin select.bookacti-select[multiple]:hover        { color: initial; }
+.wp-admin select.bookacti-select[multiple] option:hover { color: #007cba; }
 
 ul[id$='-select-box-results'] li[aria-disabled='true'] { display: none; }
 
@@ -57,15 +55,14 @@ ul[id$='-select-box-results'] li[aria-disabled='true'] { display: none; }
 
 
 /***** SETTINGS *****/
-#bookacti-settings input:not([type='submit']):not([type='checkbox']):not([type='radio']):not([type='button']):not(.button):not(.bookacti-duration-field),
-#bookacti-settings select	{ min-width: 300px; max-width: 300px; display: inline-block; }
-#bookacti-settings textarea	{ min-width: 300px;  }
+#bookacti-settings input:not([type='submit']):not([type='checkbox']):not([type='radio']):not([type='button']):not([type='search']):not(.button):not(.bookacti-duration-field),
+#bookacti-settings select   { min-width: 300px; width: 300px; max-width: 300px; display: inline-block; }
+#bookacti-settings textarea { min-width: 300px; width: 300px; }
 
 #bookacti-settings textarea { min-height: 100px; }
 #bookacti-settings .bookacti-message-setting textarea { min-height: 0; resize: both; }
 
-.bookacti-select[multiple], 
-.bookacti-items-select-box	{ resize: both; max-width: none; max-height: none; }
+.bookacti-select[multiple] { resize: both; max-width: none; max-height: none; }
 
 #bookacti_refund_actions { display: inline-block; }
 
