@@ -11,7 +11,7 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 	/**
 	 * Forms WP_List_Table
 	 * @since 1.5.0
-	 * @version 1.14.0
+	 * @version 1.15.4
 	 */
 	class Forms_List_Table extends WP_List_Table {
 		
@@ -210,7 +210,7 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 		
 		/**
 		 * Fill "Title" column and add action buttons
-		 * @version 1.7.18
+		 * @version 1.15.4
 		 * @access public
 		 * @param array $item
 		 * @return string
@@ -224,10 +224,10 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 				// Add the 'edit' and the 'duplicate' actions
 				if( $item[ 'active_raw' ] ) {
 					$actions[ 'edit' ]	= '<a href="' . esc_url( admin_url( 'admin.php?page=bookacti_forms&action=edit&form_id=' . $form_id ) ) . '" >'
-											. esc_html_x( 'Edit', 'forms', 'booking-activities' )
+											. esc_html__( 'Edit' )
 										. '</a>';
 					$actions[ 'duplicate' ]	= '<a href="' . esc_url( wp_nonce_url( admin_url( 'admin.php?page=bookacti_forms&action=duplicate&form_id=' . $form_id ), 'duplicate-form_' . $form_id ) ) . '" >'
-												. esc_html_x( 'duplicate', 'forms', 'booking-activities' )
+												. esc_html__( 'Duplicate', 'booking-activities' )
 											. '</a>';
 				}
 				
@@ -235,16 +235,16 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 					if( $item[ 'active_raw' ] ) {
 						// Add the 'trash' action
 						$actions[ 'trash' ] = '<a href="' . esc_url( wp_nonce_url( admin_url( 'admin.php?page=bookacti_forms&action=trash&form_id=' . $form_id ), 'trash-form_' . $form_id ) ) . '" >'
-												. esc_html_x( 'Trash', 'forms action', 'booking-activities' )
+												. esc_html_x( 'Trash', 'verb' )
 											. '</a>';
 					} else {
 						// Add the 'restore' action
 						$actions[ 'restore' ] = '<a href="' . esc_url( wp_nonce_url( admin_url( 'admin.php?page=bookacti_forms&action=restore&form_id=' . $form_id ), 'restore-form_' . $form_id ) ) . '" >'
-												. esc_html_x( 'Restore', 'forms', 'booking-activities' )
+												. esc_html__( 'Restore' )
 											. '</a>';
 						// Add the 'delete' action
 						$actions[ 'delete' ] = '<a href="' . esc_url( wp_nonce_url( admin_url( 'admin.php?page=bookacti_forms&status=trash&action=delete&form_id=' . $form_id ), 'delete-form_' . $form_id ) ) . '" >'
-												. esc_html_x( 'Delete Permanently', 'forms', 'booking-activities' )
+												. esc_html__( 'Delete Permanently' )
 											. '</a>';
 					}
 				}
@@ -269,13 +269,19 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 		
 		/**
 		 * Get form list items. Parameters can be passed in the URL.
-		 * @version 1.14.0
+		 * @version 1.15.4
 		 * @access public
 		 * @return array
 		 */
 		public function get_form_list_items() {
 			$forms = bookacti_get_forms( $this->filters );
 			$can_edit_forms = current_user_can( 'bookacti_edit_forms' );
+			
+			$date_format = get_option( 'date_format' );
+			$utc_timezone_obj = new DateTimeZone( 'UTC' );
+			$timezone = function_exists( 'wp_timezone_string' ) ? wp_timezone_string() : get_option( 'timezone_string' );
+			try { $timezone_obj = new DateTimeZone( $timezone ); }
+			catch ( Exception $ex ) { $timezone_obj = clone $utc_timezone_obj; }
 			
 			// Form list
 			$form_list_items = array();
@@ -299,6 +305,13 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 				$user_object = get_user_by( 'id', $form->user_id );
 				$author = $user_object ? $user_object->display_name : $form->user_id;
 				
+				// Creation date
+				$creation_date_raw = ! empty( $form->creation_date ) ? bookacti_sanitize_datetime( $form->creation_date ) : '';
+				$creation_date_dt = new DateTime( $creation_date_raw, $utc_timezone_obj );
+				$creation_date_dt->setTimezone( $timezone_obj );
+				$creation_date = $creation_date_raw ? bookacti_format_datetime( $creation_date_dt->format( 'Y-m-d H:i:s' ), $date_format ) : '';
+				$creation_date = $creation_date ? '<span title="' . esc_attr( $form->creation_date ) . '">' . $creation_date . '</span>' : '';
+				
 				// Add info on the primary column to make them directly visible in responsive view
 				$primary_data = array( '<span class="bookacti-column-id" >(' . esc_html_x( 'id', 'An id is a unique identification number', 'booking-activities' ) . ': ' . $id . ')</span>' );
 				$primary_data_html = '<div class="bookacti-form-primary-data-container">';
@@ -312,7 +325,7 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 					'title'             => $title,
 					'shortcode'         => $shortcode,
 					'author'            => $author,
-					'date'              => bookacti_format_datetime( $form->creation_date, __( 'F d, Y', 'booking-activities' ) ),
+					'date'              => $creation_date,
 					'status'            => $form->status,
 					'active'            => $active,
 					'active_raw'        => $form->active,
@@ -483,7 +496,7 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 		
 		/**
 		 * Get an associative array ( id => link ) with the list of views available on this table
-		 * @version 1.7.12
+		 * @version 1.15.4
 		 * @return array
 		 */
 		protected function get_views() {
@@ -502,8 +515,8 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 			$trash_count		= bookacti_get_number_of_form_rows( $trash_filter );
 			
 			return array(
-				'published'	=> '<a href="' . esc_url( admin_url( 'admin.php?page=bookacti_forms' ) ) . '" class="' . $published_current . '" >' . esc_html_x( 'Published', 'forms status', 'booking-activities' ) . ' <span class="count">(' . $published_count . ')</span></a>',
-				'trash'		=> '<a href="' . esc_url( admin_url( 'admin.php?page=bookacti_forms&status=trash' ) ) . '" class="' . $trash_current . '" >' . esc_html_x( 'Trash', 'forms status', 'booking-activities' ) . ' <span class="count">(' . $trash_count . ')</span></a>'
+				'published'	=> '<a href="' . esc_url( admin_url( 'admin.php?page=bookacti_forms' ) ) . '" class="' . $published_current . '" >' . esc_html__( 'Published' ) . ' <span class="count">(' . $published_count . ')</span></a>',
+				'trash'		=> '<a href="' . esc_url( admin_url( 'admin.php?page=bookacti_forms&status=trash' ) ) . '" class="' . $trash_current . '" >' . esc_html_x( 'Trash', 'noun' ) . ' <span class="count">(' . $trash_count . ')</span></a>'
 			);
 		}
 		

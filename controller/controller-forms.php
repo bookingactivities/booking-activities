@@ -1121,15 +1121,16 @@ add_action( 'user_register', 'bookacti_assign_bookings_made_without_account_to_u
 /**
  * Add form editor meta boxes
  * @since 1.5.0
+ * @version 1.15.4
  */
 function bookacti_form_editor_meta_boxes() {
 	if( empty( $_REQUEST[ 'action' ] ) || ! in_array( $_REQUEST[ 'action' ], array( 'edit', 'new' ), true ) ) { return; }
 	
 	// Sidebar
-	add_meta_box( 'bookacti_form_publish', __( 'Publish', 'booking-activities' ), 'bookacti_display_form_publish_meta_box', 'booking-activities_page_bookacti_forms', 'side', 'high' );
-	add_meta_box( 'bookacti_form_managers', __( 'Managers', 'booking-activities' ), 'bookacti_display_form_managers_meta_box', 'booking-activities_page_bookacti_forms', 'side', 'default' );
+	add_meta_box( 'bookacti_form_publish', esc_html__( 'Publish' ), 'bookacti_display_form_publish_meta_box', 'booking-activities_page_bookacti_forms', 'side', 'high' );
+	add_meta_box( 'bookacti_form_managers', esc_html__( 'Managers', 'booking-activities' ), 'bookacti_display_form_managers_meta_box', 'booking-activities_page_bookacti_forms', 'side', 'default' );
 
-	add_meta_box( 'bookacti_form_integration_tuto', __( 'How to integrate this form', 'booking-activities' ), 'bookacti_display_form_integration_tuto_meta_box', 'booking-activities_page_bookacti_forms', 'side', 'low' );
+	add_meta_box( 'bookacti_form_integration_tuto', esc_html__( 'How to integrate this form', 'booking-activities' ), 'bookacti_display_form_integration_tuto_meta_box', 'booking-activities_page_bookacti_forms', 'side', 'low' );
 }
 add_action( 'add_meta_boxes_booking-activities_page_bookacti_forms', 'bookacti_form_editor_meta_boxes' );
 

@@ -1,24 +1,7 @@
 $j( document ).ready( function() {
 	// Load this file only on form editor page
 	if( ! $j( 'form#bookacti-form-editor-page-form' ).length || typeof bookacti.form_editor === 'undefined' ) { return; }
-	
-	// Add / remove form managers
-	bookacti_init_add_and_remove_items();
-	
-	/**
-	 * Refresh the form managers selectbox
-	 * @since 1.8.8
-	 */
-	$j( '#bookacti-form-managers-select-box option' ).prop( 'selected', true );
-	var form_managers = $j( '#bookacti-form-managers-select-box' ).val();
-	$j( '#bookacti-form-managers-select-box' ).empty();
-	if( form_managers ) {
-		if( form_managers.length ) {
-			var items_container = $j( '#bookacti-form-managers-container' );
-			bookacti_fill_items_selectbox( items_container, form_managers );
-		}
-	}
-	
+
 	// Specific dialogs
 	$j( '#bookacti-form-field-dialog-free_text' ).dialog( 'option', 'width', 540 );
 	$j( '#bookacti-form-field-dialog-terms' ).dialog( 'option', 'width', 540 );
@@ -38,8 +21,8 @@ $j( document ).ready( function() {
 		icon.toggleClass( 'dashicons-arrow-up dashicons-arrow-down' );
 		icon.closest( '.bookacti-form-editor-field' ).find( '.bookacti-form-editor-field-body' ).toggle();
 		
-		var is_visible		= icon.closest( '.bookacti-form-editor-field' ).find( '.bookacti-form-editor-field-body' ).is( ':visible' );
-		var booking_system	= icon.closest( '.bookacti-form-editor-field' ).find( '.bookacti-booking-system' );
+		var is_visible     = icon.closest( '.bookacti-form-editor-field' ).find( '.bookacti-form-editor-field-body' ).is( ':visible' );
+		var booking_system = icon.closest( '.bookacti-form-editor-field' ).find( '.bookacti-booking-system' );
 		if( is_visible && booking_system.length ) {
 			bookacti_booking_method_rerender_events( booking_system );
 		}
@@ -70,17 +53,6 @@ $j( document ).ready( function() {
 	
 	
 	/**
-	 * Show or hide activities depending on the selected template - On load
-	 * @version 1.7.19
-	 */
-	if( $j( '#bookacti-calendars' ).length ) { 
-		var template_ids	= $j( '#bookacti-calendars' ).val();
-		var options			= $j( '[data-bookacti-show-if-templates]' );
-		bookacti_show_hide_template_related_options( template_ids, options ); 
-	}
-	
-	
-	/**
 	 * Calendar field settings: Fill days off
 	 * @since 1.13.0
 	 * @version 1.14.0
@@ -104,159 +76,36 @@ $j( document ).ready( function() {
 	
 	
 	/**
-	 * Add / remove activity row in the "redirect URL" table according to the currently selected activities
-	 * @since 1.7.0
-	 * @version 1.7.19
+	 * Show or hide activities depending on the selected template - on change
+	 * @since 1.15.4
 	 */
-	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'select#bookacti-calendars, select#bookacti-activities', function(){
-		var template_ids	= $j( '#bookacti-calendars' ).val();
-		var options			= $j( '[data-bookacti-show-if-templates]' );
+	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'select#bookacti-calendars', function(){
+		var template_ids = $j( '#bookacti-calendars' ).val();
+		var options = $j( '[data-bookacti-show-if-templates]' );
 		bookacti_show_hide_template_related_options( template_ids, options ); 
-		
-		var activities = $j( 'select#bookacti-activities' ).val();
-		
-		// If all activities, take them all
-		if( activities === 'all' ) {
-			activities = [];
-			$j( 'select#bookacti-activities' ).find( 'option:not(:disabled)' ).each( function() {
-				var activity_id = $j( this ).attr( 'value' );
-				if( $j.isNumeric( activity_id ) ) {
-					activities.push( activity_id );
-				}
-			});
-		}
-		
-		// If no activities, leave as is.
-		if( ! activities || ( ! $j.isArray( activities ) && ! $j.isNumeric( activities ) ) ) { return; }
-		
-		// If single activity
-		if( ! $j.isArray( activities ) ) { activities = [ activities ]; }
-		
-		var tbody = $j( '.bookacti-activities-actions-options-table tbody' );
-		
-		// Add corresponding rows
-		$j.each( activities, function( i, activity_id ) {
-			var activity_title = $j( 'option#bookacti-activities_' + activity_id ).text();
-			// If the row already exists, leave it as is
-			if( tbody.find( '.bookacti-column-redirect_url input[name="redirect_url_by_activity[' + activity_id + ']"]' ).length ) {
-				var row = tbody.find( '.bookacti-column-redirect_url input[name="redirect_url_by_activity[' + activity_id + ']"]' ).closest( 'tr' );
-				row.data( 'activity_id', activity_id );
-				row.attr( 'data-activity_id', activity_id );
-				row.find( '.bookacti-column-activity' ).text( activity_title ).attr( 'title', activity_title );
-				row.find( ':input' ).prop( 'disabled', false );
-				row.show();
-				return true; // continue
-			// If the row doesn't exist, create it
-			} else {
-				tbody.find( 'tr:first' ).clone().appendTo( tbody );
-				tbody.find( 'tr:last .select2' ).remove();
-				tbody.find( 'tr:last :input' ).each( function() {
-					var field_name_raw	= $j( this ).attr( 'name' );
-					var field_name		= field_name_raw.substring( 0, field_name_raw.lastIndexOf( '[' ) );
-					$j( this ).attr( 'name', field_name + '[' + activity_id + ']' );
-					$j( this ).removeClass( 'select2-hidden-accessible' );
-				});
-				tbody.find( 'tr:last td.bookacti-column-activity' ).text( activity_title ).attr( 'title', activity_title );
-				tbody.find( 'tr:last :input' ).val( '' ).prop( 'disabled', false );
-				tbody.find( 'tr:last' ).closest( 'tr' ).data( 'activity_id', activity_id );
-				tbody.find( 'tr:last' ).closest( 'tr' ).attr( 'data-activity_id', activity_id );
-				bookacti_select2_init();
-				tbody.find( 'tr:last' ).show();
-			}
-		});
-		
-		// Remove the other rows
-		tbody.find( 'tr' ).each( function() {
-			var row = $j( this );
-			if( ! row.data( 'activity_id' ) ) { $j( this ).remove(); return true; }
-			var activity_id = row.data( 'activity_id' );
-			if( $j.inArray( activity_id, activities ) === -1 ) {
-				row.find( ':input' ).prop( 'disabled', true );
-				row.hide();
-			}
-		});
+		bookacti_refresh_redirect_url_by_activity_table();
+		bookacti_refresh_redirect_url_by_group_category_table();
+	});
+	if( $j( '#bookacti-calendars' ).length ) { $j( '#bookacti-calendars' ).trigger( 'change' ); }
+	
+	
+	/**
+	 * Add / remove activity row in the "redirect URL" table according to the currently selected activities - on change activity
+	 * @since 1.7.0
+	 * @version 1.15.4
+	 */
+	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'select#bookacti-activities', function() {
+		bookacti_refresh_redirect_url_by_activity_table();
 	});
 	
 	
 	/**
-	 * Add / remove group category row in the "redirect URL" table according to the currently selected group categories
+	 * Add / remove group category row in the "redirect URL" table according to the currently selected group categories - on change group category
 	 * @since 1.7.0
-	 * @version 1.8.3
+	 * @version 1.15.4
 	 */
-	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'select#bookacti-calendars, select#bookacti-group_categories', function(){
-		var group_categories = $j( '#bookacti-group_categories' ).val();
-		
-		// If no group category is selected, hide the group categories actions table
-		var was_displayed = $j( '.bookacti-group-categories-actions-options-table' ).is( ':visible' );
-		if( group_categories === 'none' ) {
-			$j( '.bookacti-group-categories-actions-options-table' ).hide();
-			$j( '.bookacti-group-categories-actions-options-table :input' ).prop( 'disabled', true );
-		}
-		
-		// If all group categories, take them all
-		if( group_categories === 'all' ) {
-			group_categories = [];
-			$j( '#bookacti-group_categories' ).find( 'option:not(:disabled)' ).each( function() {
-				var group_category_id = $j( this ).attr( 'value' );
-				if( $j.isNumeric( group_category_id ) ) {
-					group_categories.push( group_category_id );
-				}
-			});
-		}
-		
-		// If no group categories, leave as is.
-		if( ! group_categories || ( ! $j.isArray( group_categories ) && ! $j.isNumeric( group_categories ) ) ) { return; }
-		
-		// If single group category
-		if( ! $j.isArray( group_categories ) ) { group_categories = [ group_categories ]; }
-		
-		// Display the group categories actions table
-		if( ! was_displayed && $j( 'select#bookacti-form_action' ).val() !== 'default' ) { $j( '.bookacti-group-categories-actions-options-table' ).show(); }
-		$j( '.bookacti-group-categories-actions-options-table :input' ).prop( 'disabled', false );
-		
-		var tbody = $j( '.bookacti-group-categories-actions-options-table tbody' );
-		
-		// Add corresponding rows
-		$j.each( group_categories, function( i, category_id ) {
-			var group_category_title = $j( 'option#bookacti-group_categories_' + category_id ).text();
-			// If the row already exists, leave it as is
-			if( tbody.find( '.bookacti-column-redirect_url input[name="redirect_url_by_group_category[' + category_id + ']"]' ).length ) {
-				var row = tbody.find( '.bookacti-column-redirect_url input[name="redirect_url_by_group_category[' + category_id + ']"]' ).closest( 'tr' );
-				row.data( 'category_id', category_id );
-				row.attr( 'data-category_id', category_id );
-				row.find( '.bookacti-column-group_category' ).text( group_category_title ).attr( 'title', group_category_title );
-				row.find( ':input' ).prop( 'disabled', false );
-				row.show();
-				return true; // continue
-			// If the row doesn't exists, create it
-			} else {
-				tbody.find( 'tr:first' ).clone().appendTo( tbody );
-				tbody.find( 'tr:last .select2' ).remove();
-				tbody.find( 'tr:last :input' ).each( function() {
-					var field_name_raw	= $j( this ).attr( 'name' );
-					var field_name		= field_name_raw.substring( 0, field_name_raw.lastIndexOf( '[' ) );
-					$j( this ).attr( 'name', field_name + '[' + category_id + ']' );
-					$j( this ).removeClass( 'select2-hidden-accessible' );
-				});
-				tbody.find( 'tr:last td.bookacti-column-group_category' ).text( group_category_title ).attr( 'title', group_category_title );
-				tbody.find( 'tr:last :input' ).val( '' ).prop( 'disabled', false );
-				tbody.find( 'tr:last' ).closest( 'tr' ).data( 'category_id', category_id );
-				tbody.find( 'tr:last' ).closest( 'tr' ).attr( 'data-category_id', category_id );
-				bookacti_select2_init();
-				tbody.find( 'tr:last' ).show();
-			}
-		});
-		
-		// Remove the other rows
-		tbody.find( 'tr' ).each( function() {
-			var row = $j( this );
-			if( ! row.data( 'category_id' ) ) { $j( this ).remove(); return true; }
-			var category_id = row.data( 'category_id' );
-			if( $j.inArray( category_id, group_categories ) === -1 ) {
-				row.find( ':input' ).prop( 'disabled', true );
-				row.hide();
-			}
-		});
+	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'select#bookacti-group_categories', function() {
+		bookacti_refresh_redirect_url_by_group_category_table();
 	});
 	
 	
@@ -450,12 +299,9 @@ $j( document ).ready( function() {
 /**
  * Save form data
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.15.4
  */
 function bookacti_save_form() {
-	// Select all form managers
-	$j( '#bookacti-form-managers-select-box option' ).prop( 'selected', true );
-	
 	// Move form editor outside the <form> before serialize
 	$j( '#bookacti-form-editor-container' ).appendTo( '#bookacti-form-editor-page-container' );
 	
@@ -585,4 +431,155 @@ function bookacti_form_editor_enter_loading_state() {
  */
 function bookacti_form_editor_exit_loading_state() {
 	$j( '.bookacti-form-editor-action, .bookacti-form-editor-field-action' ).removeClass( 'bookacti-disabled' );
+}
+
+
+/**
+ * Add / remove activity row in the "redirect URL" table according to the currently selected activities
+ * @since 1.15.4
+ */
+function bookacti_refresh_redirect_url_by_activity_table() {
+	var activities = $j( 'select#bookacti-activities' ).val();
+	
+	// If all activities, take them all
+	if( activities === 'all' ) {
+		activities = [];
+		$j( 'select#bookacti-activities' ).find( 'option:not(:disabled)' ).each( function() {
+			var activity_id = $j( this ).attr( 'value' );
+			if( $j.isNumeric( activity_id ) ) {
+				activities.push( activity_id );
+			}
+		});
+	}
+
+	// If no activities, leave as is.
+	if( ! activities || ( ! $j.isArray( activities ) && ! $j.isNumeric( activities ) ) ) { return; }
+
+	// If single activity
+	if( ! $j.isArray( activities ) ) { activities = [ activities ]; }
+
+	var tbody = $j( '.bookacti-activities-actions-options-table tbody' );
+
+	// Add corresponding rows
+	$j.each( activities, function( i, activity_id ) {
+		var activity_title = $j( 'option#bookacti-activities_' + activity_id ).text();
+		// If the row already exists, leave it as is
+		if( tbody.find( '.bookacti-column-redirect_url input[name="redirect_url_by_activity[' + activity_id + ']"]' ).length ) {
+			var row = tbody.find( '.bookacti-column-redirect_url input[name="redirect_url_by_activity[' + activity_id + ']"]' ).closest( 'tr' );
+			row.data( 'activity_id', activity_id );
+			row.attr( 'data-activity_id', activity_id );
+			row.find( '.bookacti-column-activity' ).text( activity_title ).attr( 'title', activity_title );
+			row.find( ':input' ).prop( 'disabled', false );
+			row.show();
+			return true; // continue
+		// If the row doesn't exist, create it
+		} else {
+			tbody.find( 'tr:first' ).clone().appendTo( tbody );
+			tbody.find( 'tr:last .select2' ).remove();
+			tbody.find( 'tr:last :input' ).each( function() {
+				var field_name_raw	= $j( this ).attr( 'name' );
+				var field_name		= field_name_raw.substring( 0, field_name_raw.lastIndexOf( '[' ) );
+				$j( this ).attr( 'name', field_name + '[' + activity_id + ']' );
+				$j( this ).removeClass( 'select2-hidden-accessible' );
+			});
+			tbody.find( 'tr:last td.bookacti-column-activity' ).text( activity_title ).attr( 'title', activity_title );
+			tbody.find( 'tr:last :input' ).val( '' ).prop( 'disabled', false );
+			tbody.find( 'tr:last' ).closest( 'tr' ).data( 'activity_id', activity_id );
+			tbody.find( 'tr:last' ).closest( 'tr' ).attr( 'data-activity_id', activity_id );
+			bookacti_select2_init();
+			tbody.find( 'tr:last' ).show();
+		}
+	});
+
+	// Remove the other rows
+	tbody.find( 'tr' ).each( function() {
+		var row = $j( this );
+		if( ! row.data( 'activity_id' ) ) { $j( this ).remove(); return true; }
+		var activity_id = row.data( 'activity_id' );
+		if( $j.inArray( activity_id, activities ) === -1 ) {
+			row.find( ':input' ).prop( 'disabled', true );
+			row.hide();
+		}
+	});
+}
+
+
+/**
+ * Add / remove group category row in the "redirect URL" table according to the currently selected group categories
+ * @since 1.15.4
+ */
+function bookacti_refresh_redirect_url_by_group_category_table() {
+	var group_categories = $j( '#bookacti-group_categories' ).val();
+
+	// If no group category is selected, hide the group categories actions table
+	var was_displayed = $j( '.bookacti-group-categories-actions-options-table' ).is( ':visible' );
+	if( group_categories === 'none' ) {
+		$j( '.bookacti-group-categories-actions-options-table' ).hide();
+		$j( '.bookacti-group-categories-actions-options-table :input' ).prop( 'disabled', true );
+	}
+
+	// If all group categories, take them all
+	if( group_categories === 'all' ) {
+		group_categories = [];
+		$j( '#bookacti-group_categories' ).find( 'option:not(:disabled)' ).each( function() {
+			var group_category_id = $j( this ).attr( 'value' );
+			if( $j.isNumeric( group_category_id ) ) {
+				group_categories.push( group_category_id );
+			}
+		});
+	}
+
+	// If no group categories, leave as is.
+	if( ! group_categories || ( ! $j.isArray( group_categories ) && ! $j.isNumeric( group_categories ) ) ) { return; }
+
+	// If single group category
+	if( ! $j.isArray( group_categories ) ) { group_categories = [ group_categories ]; }
+
+	// Display the group categories actions table
+	if( ! was_displayed && $j( 'select#bookacti-form_action' ).val() !== 'default' ) { $j( '.bookacti-group-categories-actions-options-table' ).show(); }
+	$j( '.bookacti-group-categories-actions-options-table :input' ).prop( 'disabled', false );
+
+	var tbody = $j( '.bookacti-group-categories-actions-options-table tbody' );
+
+	// Add corresponding rows
+	$j.each( group_categories, function( i, category_id ) {
+		var group_category_title = $j( 'option#bookacti-group_categories_' + category_id ).text();
+		// If the row already exists, leave it as is
+		if( tbody.find( '.bookacti-column-redirect_url input[name="redirect_url_by_group_category[' + category_id + ']"]' ).length ) {
+			var row = tbody.find( '.bookacti-column-redirect_url input[name="redirect_url_by_group_category[' + category_id + ']"]' ).closest( 'tr' );
+			row.data( 'category_id', category_id );
+			row.attr( 'data-category_id', category_id );
+			row.find( '.bookacti-column-group_category' ).text( group_category_title ).attr( 'title', group_category_title );
+			row.find( ':input' ).prop( 'disabled', false );
+			row.show();
+			return true; // continue
+		// If the row doesn't exists, create it
+		} else {
+			tbody.find( 'tr:first' ).clone().appendTo( tbody );
+			tbody.find( 'tr:last .select2' ).remove();
+			tbody.find( 'tr:last :input' ).each( function() {
+				var field_name_raw	= $j( this ).attr( 'name' );
+				var field_name		= field_name_raw.substring( 0, field_name_raw.lastIndexOf( '[' ) );
+				$j( this ).attr( 'name', field_name + '[' + category_id + ']' );
+				$j( this ).removeClass( 'select2-hidden-accessible' );
+			});
+			tbody.find( 'tr:last td.bookacti-column-group_category' ).text( group_category_title ).attr( 'title', group_category_title );
+			tbody.find( 'tr:last :input' ).val( '' ).prop( 'disabled', false );
+			tbody.find( 'tr:last' ).closest( 'tr' ).data( 'category_id', category_id );
+			tbody.find( 'tr:last' ).closest( 'tr' ).attr( 'data-category_id', category_id );
+			bookacti_select2_init();
+			tbody.find( 'tr:last' ).show();
+		}
+	});
+
+	// Remove the other rows
+	tbody.find( 'tr' ).each( function() {
+		var row = $j( this );
+		if( ! row.data( 'category_id' ) ) { $j( this ).remove(); return true; }
+		var category_id = row.data( 'category_id' );
+		if( $j.inArray( category_id, group_categories ) === -1 ) {
+			row.find( ':input' ).prop( 'disabled', true );
+			row.hide();
+		}
+	});
 }

@@ -299,7 +299,7 @@ function bookacti_dialog_remove_form_field( field_id, field_name ) {
 /**
  * Update Form Field
  * @since 1.5.0
- * @version 1.15.0
+ * @version 1.15.4
  * @param {int} field_id
  * @param {string} field_name
  */
@@ -344,9 +344,6 @@ function bookacti_dialog_update_form_field( field_id, field_name ) {
 				if( typeof tinyMCE !== 'undefined' ) { 
 					if( tinyMCE ) { tinyMCE.triggerSave(); }
 				}
-				
-				// Prepare the fields
-				$j( 'form#bookacti-form-field-form-' + field_name + ' select[multiple].bookacti-items-select-box option' ).prop( 'selected', true );
 				
 				var data = $j( 'form#bookacti-form-field-form-' + field_name ).serializeObject();
 				var is_visible = $j( '#bookacti-form-editor-field-' + field_id + ' .bookacti-form-editor-field-body' ).is( ':visible' );

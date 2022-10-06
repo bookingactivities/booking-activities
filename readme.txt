@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 6.0
 Requires PHP: 5.3
-Stable tag: 1.15.3
+Stable tag: 1.15.4
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -21,7 +21,7 @@ It is very easy to use:
 2. Copy / Paste a **shortcode** to display a booking form. Or **integrate it with WooCommerce** products.
 3. **Pick** an event on this calendar and book it. 
 
-Try this reservation tool live on the [demo website](https://demo.booking-activities.fr/en/)!
+Try this reservation tool live on the [demo website](https://demo.booking-activities.fr/en/), or [generate a temporary site](https://tastewp.com/template/bookingactivities/?redirect=admin.php%3Fpage%3Dbookacti_calendars&ni=true) to test the backend!
 
 [youtube https://www.youtube.com/watch?v=Q7gbK5i4DPU]
 
@@ -273,12 +273,12 @@ Else, they will be cancelled later, with the others in that case.
 
 = My events appear to be booked, but no bookings appear in the list =
 Temporary bookings (such as In cart events) take active slots but may not appear in the booking list.
-Go to the "Bookings" page, under the "States" filter select "Delivered", "Booked", "Pending" and "In cart" (use CTRL+Click to select multiple row).
+Go to the "Bookings" page, under the "States" filter select "Delivered", "Booked", "Pending" and "In cart".
 Then, just click on "Apply Filters". Now you can see all kind of active bookings.
 
 
 = Cancelled bookings disapeared from the list, I need to see them! =
-Go to the "Bookings" page. Under the "States" filter, select all the available status (click on a status and press CTRL+A to select all rows).
+Go to the "Bookings" page. Under the "States" filter, select all the available status.
 Click on "Apply Filters" and then you will be able to see inactive bookings (cancelled, expired, removed, refunded, refund requested).
 
 
@@ -320,6 +320,18 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.15.4 - 2022/10/06 =
+* Tweak - Enable the "Today" button even if today's view is not accessible
+* Tweak - Use select2 library for options using selectboxes with multiple values
+* Tweak - If the refunded WC order items quantity is not set, try to compute it from the refunded amount
+* Fix - Bookings were not refunded when a WC order was totally refunded but whithout selecting the WC order items to refund
+* Fix - The displayed booking date didn't take the timezone into account
+* Fix - The current day highlighted on the calendars didn't take the timezone into account
+* Dev - Use WP default strings for Add New, Publish, Update, Edit, Trash, Delete, Retore
+* Dev - API to make select2 multiple select sortable
+* Dev - Add indexes to relevent database columns to improve performance on large databases
+* Dev - Use full version of Select2
 
 = 1.15.3 - 2022/09/13 =
 * Tweak - Improve display of calendar toolbar when the calendar is narrow

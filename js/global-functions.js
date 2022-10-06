@@ -1,6 +1,25 @@
 $j( document ).ready( function() {
 	// Initialize select2
 	bookacti_select2_init();
+	bookacti_select2_sortable_init();
+	
+	/**
+	 * Move option to the bottom of the sortable selectbox when it is selected - on select2:select
+	 * Do it only once
+	 * @since 1.15.4
+	 * @param {Object} e
+	 */
+	$j( 'body' ).on( 'select2:select', '.bookacti-select2-ajax[data-sortable="1"], .bookacti-select2-no-ajax[data-sortable="1"]', function( e ) {
+		if( typeof e.params === 'undefined' ) { return; }
+		if( typeof e.params.data === 'undefined' ) { return; }
+		if( typeof e.params.data.id === 'undefined' ) { return; }
+		var option_value = e.params.data.id;
+		var option = $j( this ).find( 'option[value="' + option_value + '"]' );
+		if( ! option.length ) { return; }
+		option.detach();
+		$j( this ).append( option );
+		$j( this ).trigger( 'change' );
+	});
 	
 	// Localize moment JS
 	moment.locale( bookacti_localized.fullcalendar_locale );
@@ -206,7 +225,7 @@ $j.fn.serializeObject = function() {
 /**
  * Init selectbox with AJAX search
  * @since 1.7.19
- * @version 1.12.6
+ * @version 1.15.4
  */
 function bookacti_select2_init() {
 	if( ! $j.fn.select2 ) { return; }
@@ -214,6 +233,9 @@ function bookacti_select2_init() {
 	// Without AJAX search
 	$j( '.bookacti-select2-no-ajax:not(.select2-hidden-accessible)' ).select2({
 		language: bookacti_localized.fullcalendar_locale,
+		containerCssClass: 'bookacti-select2-selection', // Temp fix https://github.com/select2/select2/issues/5843
+		selectionCssClass: 'bookacti-select2-selection',
+		dropdownCssClass: 'bookacti-select2-dropdown',
 		minimumResultsForSearch: 1,
 		width: 'element',
 		dropdownAutoWidth: true,
@@ -224,6 +246,9 @@ function bookacti_select2_init() {
 	// With AJAX search
 	$j( '.bookacti-select2-ajax:not(.select2-hidden-accessible)' ).select2({
 		language: bookacti_localized.fullcalendar_locale,
+		containerCssClass: 'bookacti-select2-selection', // Temp fix https://github.com/select2/select2/issues/5843
+		selectionCssClass: 'bookacti-select2-selection',
+		dropdownCssClass: 'bookacti-select2-dropdown',
 		minimumInputLength: 3,
 		width: 'element',
 		dropdownAutoWidth: true,
@@ -261,6 +286,49 @@ function bookacti_select2_init() {
 				return results;
 			},
 			cache: true
+		}
+	});
+}
+
+
+/**
+ * Make select2 multiple select sortable
+ * @since 1.15.4
+ */
+function bookacti_select2_sortable_init( selectbox_selector ) {
+	if( typeof selectbox_selector === 'undefined' ) {
+		selectbox_selector = '.select2-hidden-accessible[data-sortable="1"] + .select2-container .bookacti-select2-selection.select2-selection--multiple .select2-selection__rendered';
+	}
+	
+	$j( selectbox_selector ).sortable({
+		containment: 'parent',
+		items: '.select2-selection__choice',
+		
+		// When the position changes, also change the corresponding <option> position in the <select>
+		update: function( e, ui ) {
+			// Get the selectbox
+			var selectbox = $j( ui.item ).parents( '.select2-container' ).prev( '.select2-hidden-accessible' );
+			if( ! selectbox.length ) { return; }
+			if( ! selectbox.data( 'sortable' ) ) { return; }
+			
+			$j( ui.item ).parents( '.select2-container' ).find( '.select2-selection__choice' ).each( function( i, li ) {
+				// Get the option value from the list item
+				var option_value = false;
+				if( typeof $j( li ).data( 'data' ) !== 'undefined' ) {
+					if( typeof $j( li ).data( 'data' ).id !== 'undefined' ) {
+						option_value = $j( li ).data( 'data' ).id;
+					}
+				}
+				if( option_value === false ) { return true; } // continue
+
+				// Get the option
+				var option = selectbox.find( 'option[value="' + option_value + '"]' );
+				if( ! option.length ) { return true; } // continue
+
+				// Move the options
+				option.detach();
+				selectbox.append( option );
+			});
 		}
 	});
 }
@@ -349,7 +417,7 @@ function bookacti_init_moment_format_from_php_date_format() {
 /**
  * Convert a PHP datetime format to moment JS format
  * @since 1.7.16
- * @version 1.15.1
+ * @version 1.15.4
  * @param {string} php_format
  * @returns {string}
  */
@@ -361,6 +429,7 @@ function bookacti_convert_php_datetime_format_to_moment_js( php_format ) {
 		"d": 'DD',
 		"D": 'ddd',
 		"j": 'D',
+		"S": 'Do',
 		"l": 'dddd',
 		"N": 'E',
 		"w": 'd',
@@ -389,6 +458,9 @@ function bookacti_convert_php_datetime_format_to_moment_js( php_format ) {
 		"r": 'ddd, DD MMM YYYY HH:mm:ss ZZ',
 		"U": 'X'
 	};
+	
+	// Special case, "jS" takes two characters, so remove one
+	php_format = php_format.replace( 'jS', 'S' );
 	
 	var has_backslash = false;
 	var moment_js_format = '';

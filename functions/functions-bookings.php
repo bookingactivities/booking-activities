@@ -1974,7 +1974,7 @@ function bookacti_get_bookings_export_events_tags_values( $booking_items, $args 
 /**
  * Get an array of bookings data formatted to be exported
  * @since 1.6.0
- * @version 1.14.0
+ * @version 1.15.4
  * @param array $args_raw
  * @return array
  */
@@ -2046,6 +2046,11 @@ function bookacti_get_bookings_for_export( $args_raw = array() ) {
 	$booking_status  = $args[ 'raw' ] ? array() : bookacti_get_booking_state_labels();
 	$payment_status  = $args[ 'raw' ] ? array() : bookacti_get_payment_status_labels();
 	
+	$utc_timezone_obj = new DateTimeZone( 'UTC' );
+	$timezone = function_exists( 'wp_timezone_string' ) ? wp_timezone_string() : get_option( 'timezone_string' );
+	try { $timezone_obj = new DateTimeZone( $timezone ); }
+	catch ( Exception $ex ) { $timezone_obj = clone $utc_timezone_obj; }
+	
 	// Build booking list
 	$booking_items = array();
 	foreach( $bookings as $booking ) {
@@ -2095,7 +2100,13 @@ function bookacti_get_bookings_for_export( $args_raw = array() ) {
 			$activity_title = $booking->activity_title;
 			$active         = $booking->active;
 		}
-
+		
+		// Creation date
+		$creation_date_raw = ! empty( $booking->creation_date ) ? bookacti_sanitize_datetime( $booking->creation_date ) : '';
+		$creation_date_dt = new DateTime( $creation_date_raw, $utc_timezone_obj );
+		$creation_date_dt->setTimezone( $timezone_obj );
+		$creation_date = $creation_date_raw ? bookacti_format_datetime( $creation_date_dt->format( 'Y-m-d H:i:s' ), $date_format ) : '';
+		
 		$booking_data = array( 
 			'booking_id'            => $id,
 			'booking_type'          => $booking_type,
@@ -2106,7 +2117,7 @@ function bookacti_get_bookings_for_export( $args_raw = array() ) {
 			'payment_status_raw'    => $paid,
 			'quantity'              => $quantity,
 			'availability'          => $availability,
-			'creation_date'         => $args[ 'raw' ] ? $booking->creation_date : bookacti_format_datetime( $booking->creation_date, $date_format ),
+			'creation_date'         => $args[ 'raw' ] ? $booking->creation_date : $creation_date,
 			'creation_date_raw'     => $booking->creation_date,
 			'event_id'              => $event_id,
 			'event_title'           => $title ? apply_filters( 'bookacti_translate_text', $title ) : '',
@@ -2614,7 +2625,7 @@ function bookacti_get_user_booking_list_private_columns() {
 /**
  * Get booking list items
  * @since 1.7.4
- * @version 1.14.0
+ * @version 1.15.4
  * @param array $filters
  * @param array $columns
  * @return string
@@ -2689,6 +2700,11 @@ function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
 	
 	// Get datetime format
 	$datetime_format = bookacti_get_message( 'date_format_long' );
+	$date_format = get_option( 'date_format' );
+	$utc_timezone_obj = new DateTimeZone( 'UTC' );
+	$timezone = function_exists( 'wp_timezone_string' ) ? wp_timezone_string() : get_option( 'timezone_string' );
+	try { $timezone_obj = new DateTimeZone( $timezone ); }
+	catch ( Exception $ex ) { $timezone_obj = clone $utc_timezone_obj; }
 	
 	// Build an array of bookings rows
 	$booking_list_items = array();
@@ -2750,12 +2766,13 @@ function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
 			$booking_type    = 'single';
 		}
 		
-		// Format creation date
+		// Creation date
 		$creation_date_raw = ! empty( $booking->creation_date ) ? bookacti_sanitize_datetime( $booking->creation_date ) : '';
-		/* translators: Datetime format. Must be adapted to each country. Use wp date_i18n documentation to find the appropriated combinaison https://wordpress.org/support/article/formatting-date-and-time/ */
-		$creation_date = $creation_date_raw ? bookacti_format_datetime( $creation_date_raw, __( 'F d, Y', BOOKACTI_PLUGIN_NAME ) ) : '';
-		$creation_date = $creation_date ? '<span title="' . $booking->creation_date . '">' . $creation_date . '</span>' : '';
-
+		$creation_date_dt = new DateTime( $creation_date_raw, $utc_timezone_obj );
+		$creation_date_dt->setTimezone( $timezone_obj );
+		$creation_date = $creation_date_raw ? bookacti_format_datetime( $creation_date_dt->format( 'Y-m-d H:i:s' ), $date_format ) : '';
+		$creation_date = $creation_date ? '<span title="' . esc_attr( $booking->creation_date ) . '">' . $creation_date . '</span>' : '';
+		
 		// Format customer column
 		// If the customer has an account
 		if( ! empty( $users[ $user_id ] ) ) {

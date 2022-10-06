@@ -1152,7 +1152,7 @@ add_filter( 'bookacti_refund_booking', 'bookacti_woocommerce_refund_booking', 10
  * Update quantity when a partial refund in done, 
  * Update booking state when a total refund is done
  * @since 1.2.0 (was named bookacti_update_booking_when_order_item_is_refunded before)
- * @version 1.9.0
+ * @version 1.15.4
  * @param int $refund_id
  * @param array $args
  */
@@ -1161,9 +1161,9 @@ function bookacti_update_order_bookings_on_refund( $refund_id, $args ) {
 	if( ! $refund ) { return; }
 	
 	// Partial refund: the refund has been perform on one or several items
-	if( ! empty( $args[ 'line_items' ] ) ) {
+	if( ! empty( $refund->get_items() ) ) {
 		bookacti_update_order_bookings_on_items_refund( $refund );
-
+	
 	// Total refund: the order state has changed to 'Refunded'
 	} else {
 		bookacti_update_order_bookings_on_order_refund( $refund );

@@ -1749,65 +1749,43 @@ function bookacti_format_form_filters( $filters = array() ) {
 /**
  * Display 'managers' metabox content for forms
  * @since 1.5.0
- * @version 1.14.0
+ * @version 1.15.4
  * @param array $form_raw
  */
 function bookacti_display_form_managers_meta_box( $form_raw ) {
-	// Get current form managers option list
-	$managers_already_added = array();
-	$manager_ids = bookacti_get_form_managers( $form_raw[ 'form_id' ] );
+	$manager_ids  = bookacti_get_form_managers( $form_raw[ 'form_id' ] );
+	$capabilities = array( 'bookacti_edit_forms' );
+	$role_in      = apply_filters( 'bookacti_managers_roles', array_merge( bookacti_get_roles_by_capabilities( $capabilities ), $capabilities ), 'form' );
+	$role_not_in  = apply_filters( 'bookacti_managers_roles_exceptions', array( 'administrator' ), 'form' );
 	
-	// Get available form managers option list
-	$form_managers_cap = array( 'bookacti_edit_forms' );
-	$form_managers_args = array(
-		'option_label' => array( 'display_name', ' (', 'user_login', ')' ), 
-		'id' => 'bapap-add-new-form-managers-select-box', 
-		'name' => '', 
-		'class' => 'bookacti-add-new-items-select-box bookacti-managers-selectbox',
-		'role__in' => apply_filters( 'bookacti_managers_roles', array_merge( bookacti_get_roles_by_capabilities( $form_managers_cap ), $form_managers_cap ), 'form' ),
-		'role__not_in' => apply_filters( 'bookacti_managers_roles_exceptions', array( 'administrator' ), 'form' ),
-		'meta' => false,
-		'ajax' => 0
-	);
-	
-	?>
-	<div id='bookacti-form-managers-container' class='bookacti-items-container' data-type='users' >
-		<label id='bookacti-form-managers-title' class='bookacti-fullwidth-label' for='bookacti-add-new-form-managers-select-box' >
-		<?php 
-			esc_html_e( 'Who can manage this form?', 'booking-activities' );
-			$tip  = esc_html__( 'Choose who is allowed to access this form.', 'booking-activities' );
-			/* translators: %s = comma separated list of user roles */
-			$tip .= '<br/>' . sprintf( esc_html__( 'These roles already have this privilege: %s.', 'booking-activities' ), '<code>' . implode( '</code>, <code>', array_intersect_key( bookacti_get_roles(), array_flip( $form_managers_args[ 'role__not_in' ] ) ) ) . '</code>' );
-			/* translators: %s = capabilities name */
-			$tip .= '<br/>' . sprintf( esc_html__( 'If the selectbox is empty, it means that no other users have these capabilities: %s.', 'booking-activities' ), '<code>' . implode( '</code>, <code>', $form_managers_cap ) . '</code>' );
-			/* translators: %1$s = User Role Editor plugin link. */
-			$tip .= '<br/>' . sprintf( esc_html__( 'If you want to grant a user these capabilities, use a plugin such as %1$s.', 'booking-activities' ), '<a href="https://wordpress.org/plugins/user-role-editor/" target="_blank">User Role Editor</a>' );
-			bookacti_help_tip( $tip );
-		?>
-		</label>
-		<div id='bookacti-add-form-managers-container' class='bookacti-add-items-container' >
-			<?php bookacti_display_user_selectbox( $form_managers_args ); ?>
-			<button type='button' id='bookacti-add-form-managers' class='bookacti-add-items' ><?php esc_html_e( 'Add manager', 'booking-activities' ); ?></button>
-		</div>
-		<div id='bookacti-form-managers-list-container' class='bookacti-items-list-container' >
-			<select name='form-managers[]' id='bookacti-form-managers-select-box' class='bookacti-items-select-box' multiple >
-			<?php 
-				foreach( $manager_ids as $manager_id ) {
-					?><option value='<?php echo $manager_id; ?>'><?php echo $manager_id; ?></option><?php
-				}
-			?>
-			</select>
-			<button type='button' id='bookacti-remove-form-managers' class='bookacti-remove-items' ><?php esc_html_e( 'Remove selected', 'booking-activities' ); ?></button>
-		</div>
-	</div>
-	<?php
+	$fields = array( 'form-managers' => array( 
+		'type'      => 'user_id', 
+		'name'      => 'form-managers',
+		'id'        => 'bookacti-form-managers', 
+		'fullwidth' => 1, 
+		'options'   => array(
+			'option_label' => array( 'display_name', ' (', 'user_login', ')' ),
+			'selected'     => $manager_ids,
+			'role__in'     => $role_in,
+			'role__not_in' => $role_not_in,
+			'meta'         => false,
+			'multiple'     => 1,
+			'ajax'         => 0
+		),
+		'title'     => esc_html__( 'Who can manage this form?', 'booking-activities' ),
+		'tip'       => esc_html__( 'Choose who is allowed to access this form.', 'booking-activities' )
+					. '<br/>' . sprintf( esc_html__( 'These roles already have this privilege: %s.', 'booking-activities' ), '<code>' . implode( '</code>, <code>', array_intersect_key( bookacti_get_roles(), array_flip( $role_not_in ) ) ) . '</code>' )
+					. '<br/>' . sprintf( esc_html__( 'If the selectbox is empty, it means that no other users have these capabilities: %s.', 'booking-activities' ), '<code>' . implode( '</code>, <code>', $capabilities ) . '</code>' )
+					. ' ' . sprintf( esc_html__( 'If you want to grant a user these capabilities, use a plugin such as %1$s.', 'booking-activities' ), '<a href="https://wordpress.org/plugins/user-role-editor/" target="_blank" >User Role Editor</a>' )
+	) );
+	bookacti_display_fields( $fields );
 }
 
 
 /**
  * Display 'publish' metabox content for forms
  * @since 1.5.0
- * @version 1.14.0
+ * @version 1.15.4
  * @param array $form_raw
  */
 function bookacti_display_form_publish_meta_box( $form_raw ) {
@@ -1819,11 +1797,11 @@ function bookacti_display_form_publish_meta_box( $form_raw ) {
 				if ( current_user_can( 'bookacti_delete_forms' ) ) {
 					if( ! $form_raw[ 'active' ] ) {
 						echo '<a href="' . esc_url( wp_nonce_url( admin_url( 'admin.php?page=bookacti_forms&action=delete&form_id=' . $form_raw[ 'form_id' ] ), 'delete-form_' . $form_raw[ 'form_id' ] ) ) . '" class="submitdelete deletion" >'
-								. esc_html_x( 'Delete Permanently', 'forms', 'booking-activities' )
+								. esc_html__( 'Delete Permanently' )
 							. '</a>';
 					} else {
 						echo '<a href="' . esc_url( wp_nonce_url( admin_url( 'admin.php?page=bookacti_forms&status=trash&action=trash&form_id=' . $form_raw[ 'form_id' ] ), 'trash-form_' . $form_raw[ 'form_id' ] ) ) . '" class="submitdelete deletion" >'
-								. esc_html_x( 'Move to trash', 'forms', 'booking-activities' )
+								. esc_html_x( 'Trash', 'verb' )
 							. '</a>';
 					}
 				}
@@ -1837,7 +1815,7 @@ function bookacti_display_form_publish_meta_box( $form_raw ) {
 					   type='submit' 
 					   class='button button-primary button-large' 
 					   id='publish' 
-					   value='<?php echo $form_raw[ 'active' ] ? esc_attr_x( 'Update', 'forms', 'booking-activities' ) : ( $form_raw[ 'status' ] === 'auto-draft' ? esc_attr_x( 'Publish', 'forms', 'booking-activities' ) : esc_attr_x( 'Restore', 'forms', 'booking-activities' ) ); ?>' 
+					   value='<?php echo $form_raw[ 'active' ] ? esc_attr__( 'Update' ) : ( $form_raw[ 'status' ] === 'auto-draft' ? esc_attr__( 'Publish' ) : esc_attr__( 'Restore' ) ); ?>' 
 				/>
 			</div>
 			<div class='clear'></div>

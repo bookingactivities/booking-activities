@@ -885,7 +885,7 @@ function bookacti_format_booking_system_url_attributes( $atts = array() ) {
 /**
  * Get booking system fields default data
  * @since 1.5.0
- * @version 1.15.0
+ * @version 1.15.4
  * @param array $fields
  * @return array
  */
@@ -903,13 +903,16 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 		}
 		
 		$defaults[ 'calendars' ] = array( 
-			'name'     => 'calendars',
-			'type'     => 'select',
-			'multiple' => 'maybe',
-			'options'  => $templates_options,
-			'value'    => '', 
-			'title'    => esc_html__( 'Calendar', 'booking-activities' ),
-			'tip'      => esc_html__( 'Retrieve events from the selected calendars only.', 'booking-activities' )
+			'name'        => 'calendars',
+			'type'        => 'select',
+			'multiple'    => 'maybe',
+			'class'       => 'bookacti-select2-no-ajax',
+			'placeholder' => esc_html__( 'Search...', 'booking-activities' ),
+			'attr'        => array( '<select>' => ' data-allow-clear="0"' ),
+			'options'     => $templates_options,
+			'value'       => '', 
+			'title'       => esc_html__( 'Calendar', 'booking-activities' ),
+			'tip'         => esc_html__( 'Retrieve events from the selected calendars only.', 'booking-activities' )
 		);
 	}
 	
@@ -918,21 +921,23 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 		// Format activity options array
 		$activities = bookacti_fetch_activities_with_templates_association();
 		$activities_options			= array( 'all' => esc_html__( 'All', 'booking-activities' ) );
-		$activities_options_attr	= array();
+		$activities_options_attr	= array( '<select>' => ' data-allow-clear="0"' );
 		foreach( $activities as $activity ) {
 			$activities_options[ $activity[ 'id' ] ]      = ! empty( $activity[ 'title' ] ) ? apply_filters( 'bookacti_translate_text', $activity[ 'title' ] ) : '';
 			$activities_options_attr[ $activity[ 'id' ] ] = 'data-bookacti-show-if-templates="' .esc_attr( implode( ',', $activity[ 'template_ids' ] ) ) . '"';
 		}
 		
 		$defaults[ 'activities' ] = array( 
-			'name'     => 'activities',
-			'type'     => 'select',
-			'multiple' => 'maybe',
-			'options'  => $activities_options,
-			'attr'     => $activities_options_attr,
-			'value'    => '', 
-			'title'    => esc_html__( 'Activity', 'booking-activities' ),
-			'tip'      => esc_html__( 'Retrieve events from the selected activities only.', 'booking-activities' )
+			'name'        => 'activities',
+			'type'        => 'select',
+			'multiple'    => 'maybe',
+			'class'       => 'bookacti-select2-no-ajax',
+			'placeholder' => esc_html__( 'Search...', 'booking-activities' ),
+			'options'     => $activities_options,
+			'attr'        => $activities_options_attr,
+			'value'       => '', 
+			'title'       => esc_html__( 'Activity', 'booking-activities' ),
+			'tip'         => esc_html__( 'Retrieve events from the selected activities only.', 'booking-activities' )
 		);
 	}
 	
@@ -941,21 +946,23 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 		// Format group category options array
 		$categories = bookacti_get_group_categories();
 		$category_options		= array( 'all' => esc_html__( 'All', 'booking-activities' ), 'none' => esc_html_x( 'None', 'About group category', 'booking-activities' ) );
-		$category_options_attr	= array();
+		$category_options_attr	= array( '<select>' => ' data-allow-clear="0"' );
 		foreach( $categories as $category ) {
 			$category_options[ $category[ 'id' ] ]      = ! empty( $category[ 'title' ] ) ? $category[ 'title' ] : '';
 			$category_options_attr[ $category[ 'id' ] ] = 'data-bookacti-show-if-templates="' . esc_attr( implode( ',', (array) $category[ 'template_id' ] ) ) . '"';
 		}
 		
 		$defaults[ 'group_categories' ] = array( 
-			'name'     => 'group_categories',
-			'type'     => 'select',
-			'multiple' => 'maybe',
-			'options'  => $category_options,
-			'attr'     => $category_options_attr,
-			'value'    => '', 
-			'title'    => esc_html__( 'Group category', 'booking-activities' ),
-			'tip'      => esc_html__( 'Retrieve groups of events from the selected group categories only.', 'booking-activities' )
+			'name'        => 'group_categories',
+			'type'        => 'select',
+			'multiple'    => 'maybe',
+			'class'       => 'bookacti-select2-no-ajax',
+			'placeholder' => esc_html__( 'Search...', 'booking-activities' ),
+			'options'     => $category_options,
+			'attr'        => $category_options_attr,
+			'value'       => '', 
+			'title'       => esc_html__( 'Group category', 'booking-activities' ),
+			'tip'         => esc_html__( 'Retrieve groups of events from the selected group categories only.', 'booking-activities' )
 		);
 	}
 	
@@ -1012,13 +1019,16 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 			$status_options[ $status_id ] = esc_html( $status[ 'label' ] );
 		}
 		$defaults[ 'status' ] = array(
-			'name'     => 'status',
-			'type'     => 'select',
-			'multiple' => 'maybe',
-			'options'  => $status_options,
-			'value'    => '', 
-			'title'    => esc_html__( 'Bookings status', 'booking-activities' ),
-			'tip'      => esc_html__( 'Retrieve booked events with the selected booking status only.', 'booking-activities' ) . ' ' . esc_html__( '"Booked only" option must be activated.', 'booking-activities' )
+			'name'        => 'status',
+			'type'        => 'select',
+			'multiple'    => 'maybe',
+			'class'       => 'bookacti-select2-no-ajax',
+			'placeholder' => esc_html__( 'Search...', 'booking-activities' ),
+			'attr'        => array( '<select>' => ' data-allow-clear="0"' ),
+			'options'     => $status_options,
+			'value'       => '', 
+			'title'       => esc_html__( 'Bookings status', 'booking-activities' ),
+			'tip'         => esc_html__( 'Retrieve booked events with the selected booking status only.', 'booking-activities' ) . ' ' . esc_html__( '"Booked only" option must be activated.', 'booking-activities' )
 		);
 	}
 	
@@ -1632,7 +1642,7 @@ function bookacti_picked_group_of_events_exists( $picked_event_group, $occurrenc
 /**
  * Check if an event can be book with the given form
  * @since 1.12.0 (was bookacti_is_event_available_on_form)
- * @version 1.13.0
+ * @version 1.15.4
  * @param array $picked_event
  * @param array $event_data
  * @param int $form_id
@@ -1706,7 +1716,7 @@ function bookacti_is_picked_event_available_on_form( $picked_event, $event_data,
 	$days_off       = ! empty( $calendar_data[ 'days_off' ] ) && is_array( $calendar_data[ 'days_off' ] ) ? $calendar_data[ 'days_off' ] : array();
 	
 	if( $days_off ) {
-		$date_format = esc_html__( 'F d, Y', 'booking-activities' );
+		$date_format = get_option( 'date_format' );
 		foreach( $days_off as $off_period ) {
 			$off_from = new DateTime( $off_period[ 'from' ] . ' 00:00:00', $timezone );
 			$off_to   = new DateTime( $off_period[ 'to' ] . ' 23:59:59', $timezone );
@@ -1768,7 +1778,7 @@ function bookacti_is_picked_event_available_on_form( $picked_event, $event_data,
 /**
  * Check if a group of events can be book with the given form
  * @since 1.12.0 (was bookacti_is_group_of_events_available_on_form)
- * @version 1.13.0
+ * @version 1.15.4
  * @param array $picked_event_group
  * @param array $group_data
  * @param int $form_id
@@ -1831,7 +1841,7 @@ function bookacti_is_picked_group_of_events_available_on_form( $picked_event_gro
 	$days_off = ! empty( $calendar_data[ 'days_off' ] ) && is_array( $calendar_data[ 'days_off' ] ) ? $calendar_data[ 'days_off' ] : array();
 	
 	if( $days_off ) {
-		$date_format = esc_html__( 'F d, Y', 'booking-activities' );
+		$date_format = get_option( 'date_format' );
 		foreach( $picked_event_group[ 'events' ] as $grouped_event ) {
 			$grouped_event_start_dt = new DateTime( $grouped_event[ 'start' ], $timezone );
 			foreach( $days_off as $off_period ) {

@@ -1,7 +1,7 @@
 <?php 
 /**
  * Calendar editor dialogs
- * @version 1.15.0
+ * @version 1.15.4
  */
 
 // Exit if accessed directly
@@ -325,50 +325,42 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			
 			/**
 			 * Display the 'Permission' tab content of calendar settings
-			 * @version 1.12.0
+			 * @version 1.15.4
 			 * @param array $params
 			 */
 			function bookacti_fill_template_tab_permissions( $params = array() ) {
 				do_action( 'bookacti_template_tab_permissions_before', $params );
 				
-				$template_managers_cap = array( 'bookacti_manage_bookings', 'bookacti_edit_bookings', 'bookacti_edit_templates', 'bookacti_read_templates' );
-				$template_managers_args = array(
-					'option_label' => array( 'display_name', ' (', 'user_login', ')' ), 
-					'id'           => 'bookacti-add-new-template-managers-select-box', 
-					'name'         => '', 
-					'class'        => 'bookacti-add-new-items-select-box bookacti-managers-selectbox',
-					'role__in'     => apply_filters( 'bookacti_managers_roles', array_merge( bookacti_get_roles_by_capabilities( $template_managers_cap ), $template_managers_cap ), 'template' ),
-					'role__not_in' => apply_filters( 'bookacti_managers_roles_exceptions', array( 'administrator' ), 'template' ),
-					'meta'         => false,
-					'ajax'         => 0
-				);
-			?>	
-				<div id='bookacti-template-managers-container' class='bookacti-items-container' data-type='users' >
-					<label id='bookacti-template-managers-title' class='bookacti-fullwidth-label' for='bookacti-add-new-template-managers-select-box' >
-					<?php 
-						esc_html_e( 'Who can manage this calendar?', 'booking-activities' );
-						$tip  = esc_html__( 'Choose who is allowed to access this calendar.', 'booking-activities' );
-						/* translators: %s = comma separated list of user roles */
-						$tip .= '<br/>' . sprintf( esc_html__( 'These roles already have this privilege: %s.', 'booking-activities' ), '<code>' . implode( '</code>, <code>', array_intersect_key( bookacti_get_roles(), array_flip( $template_managers_args[ 'role__not_in' ] ) ) ) . '</code>' );
-						/* translators: %s = capabilities name */
-						$tip .= '<br/>' . sprintf( esc_html__( 'If the selectbox is empty, it means that no other users have these capabilities: %s.', 'booking-activities' ), '<code>' . implode( '</code>, <code>', $template_managers_cap ) . '</code>' );
-						/* translators: %1$s = Order for Customers add-on link. */
-						$tip .= '<br/>' . sprintf( esc_html__( 'Operators from %1$s add-on have these capabilities.', 'booking-activities' ), '<a href="https://booking-activities.fr/en/downloads/order-for-customers/?utm_source=plugin&utm_medium=plugin&utm_campaign=order-for-customers&utm_content=infobulle-permission" target="_blank" >Order for Customers</a>' );
-						/* translators: %1$s = User Role Editor plugin link. */
-						$tip .= ' ' . sprintf( esc_html__( 'If you want to grant a user these capabilities, use a plugin such as %1$s.', 'booking-activities' ), '<a href="https://wordpress.org/plugins/user-role-editor/" target="_blank">User Role Editor</a>' );
-						bookacti_help_tip( $tip );
-					?>
-					</label>
-					<div id='bookacti-add-template-managers-container' class='bookacti-add-items-container' >
-						<?php bookacti_display_user_selectbox( $template_managers_args ); ?>
-						<button type='button' id='bookacti-add-template-managers' class='bookacti-add-items' ><?php esc_html_e( 'Add manager', 'booking-activities' ); ?></button>
-					</div>
-					<div id='bookacti-template-managers-list-container' class='bookacti-items-list-container' >
-						<select name='managers[]' id='bookacti-template-managers-select-box' class='bookacti-items-select-box' multiple></select>
-						<button type='button' id='bookacti-remove-template-managers' class='bookacti-remove-items' ><?php esc_html_e( 'Remove selected', 'booking-activities' ); ?></button>
-					</div>
-				</div>
-			<?php 
+				$capabilities = array( 'bookacti_manage_bookings', 'bookacti_edit_bookings', 'bookacti_edit_templates', 'bookacti_read_templates' );
+				$role_in      = apply_filters( 'bookacti_managers_roles', array_merge( bookacti_get_roles_by_capabilities( $capabilities ), $capabilities ), 'template' );
+				$role_not_in  = apply_filters( 'bookacti_managers_roles_exceptions', array( 'administrator' ), 'template' );
+
+				$fields = array( 'managers' => array( 
+					'type'      => 'user_id', 
+					'name'      => 'managers',
+					'id'        => 'bookacti-template-managers', 
+					'fullwidth' => 1, 
+					'options'   => array(
+						'option_label' => array( 'display_name', ' (', 'user_login', ')' ),
+						'role__in'     => $role_in,
+						'role__not_in' => $role_not_in,
+						'meta'         => false,
+						'multiple'     => 1,
+						'ajax'         => 0
+					),
+					'title'     => esc_html__( 'Who can manage this calendar?', 'booking-activities' ),
+					'tip'       => esc_html__( 'Choose who is allowed to access this calendar.', 'booking-activities' )
+					            /* translators: %s = comma separated list of user roles */
+					            . '<br/>' . sprintf( esc_html__( 'These roles already have this privilege: %s.', 'booking-activities' ), '<code>' . implode( '</code>, <code>', array_intersect_key( bookacti_get_roles(), array_flip( $role_not_in ) ) ) . '</code>' )
+					            /* translators: %s = capabilities name */
+					            . '<br/>' . sprintf( esc_html__( 'If the selectbox is empty, it means that no other users have these capabilities: %s.', 'booking-activities' ), '<code>' . implode( '</code>, <code>', $capabilities ) . '</code>' )
+					            /* translators: %1$s = Order for Customers add-on link. */
+					            . '<br/>' . sprintf( esc_html__( 'Operators from %1$s add-on have these capabilities.', 'booking-activities' ), '<a href="https://booking-activities.fr/en/downloads/order-for-customers/?utm_source=plugin&utm_medium=plugin&utm_campaign=order-for-customers&utm_content=infobulle-permission" target="_blank" >Order for Customers</a>' )
+					            /* translators: %1$s = User Role Editor plugin link. */
+					            . ' ' . sprintf( esc_html__( 'If you want to grant a user these capabilities, use a plugin such as %1$s.', 'booking-activities' ), '<a href="https://wordpress.org/plugins/user-role-editor/" target="_blank">User Role Editor</a>' )
+				) );
+				bookacti_display_fields( $fields );
+	
 				do_action( 'bookacti_template_tab_permissions_after', $params );
 			} ?>
 	</form>
@@ -464,56 +456,68 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			/**
 			 * Display the fields in the "Availability" tab of the Activity dialog
 			 * @since 1.4.0
-			 * @version 1.12.0
+			 * @version 1.15.4
 			 * @param array $params
 			 */
 			function bookacti_fill_activity_tab_availability( $params = array() ) {
 				do_action( 'bookacti_activity_tab_availability_before', $params );
-				
-				$fields = array(
-					'min_bookings_per_user' => array(
-						'type'    => 'number',
-						'name'    => 'min_bookings_per_user',
-						'id'      => 'bookacti-activity-min-bookings-per-user',
-						'title'   => esc_html__( 'Min bookings per user', 'booking-activities' ),
-						'options' => array( 'min' => 0, 'step' => 1 ),
-						'tip'     => esc_html__( 'The minimum booking quantity a user has to make on an event of this activity. E.g.: "3", the customer must book at least 3 places of the desired event.', 'booking-activities' )
-						          . '<br/>' . esc_html__( 'Set it to "0" to ignore this parameter.', 'booking-activities' )
-					),
-					'max_bookings_per_user' => array(
-						'type'    => 'number',
-						'name'    => 'max_bookings_per_user',
-						'id'      => 'bookacti-activity-max-bookings-per-user',
-						'title'   => esc_html__( 'Max bookings per user', 'booking-activities' ),
-						'options' => array( 'min' => 0, 'step' => 1 ),
-						'tip'     => esc_html__( 'The maximum booking quantity a user can make on an event of this activity. E.g.: "1", the customer can only book one place of the desired event, and he / she won\'t be allowed to book it twice.', 'booking-activities' )
-						          . '<br/>' . esc_html__( 'Set it to "0" to ignore this parameter.', 'booking-activities' )
-					),
-					'max_users_per_event' => array(
-						'type'    => 'number',
-						'name'    => 'max_users_per_event',
-						'id'      => 'bookacti-activity-max-users-per-event',
-						'title'   => esc_html__( 'Max users per event', 'booking-activities' ),
-						'options' => array( 'min' => 0, 'step' => 1 ),
-						'tip'     => esc_html__( 'Set how many different users can book the same event. E.g.: "1", only one user can book a specific event; once he / she has booked it, the event won\'t be available for anyone else anymore, even if it isn\'t full. Useful for private events.', 'booking-activities' )
-						          . '<br/>' . esc_html__( 'Set it to "0" to ignore this parameter.', 'booking-activities' )
-					),
-					'booking_changes_deadline' => array(
-						'type'  => 'duration',
-						'name'  => 'booking_changes_deadline',
-						'id'    => 'bookacti-activity-booking-changes-deadline',
-						/* translators: Followed by a field indicating a number of days, hours and minutes from now. E.g.: "Changes are allowed for bookings starting in at least 2 days, 12 hours, 25 minutes". */
-						'title' => esc_html__( 'Changes are allowed for bookings starting in at least', 'booking-activities' ),
-						'label' => bookacti_help_tip( esc_html__( 'Define when a customer can change a booking (cancel, reschedule). E.g.: "2 days 5 hours 30 minutes", your customers will be able to change the bookings starting in 2 days, 5 hours and 30 minutes at least. They won\'t be allowed to cancel a booking starting tomorrow for example.', 'booking-activities' )
-						        . '<br/>' . esc_html__( 'This parameter applies to the events of this activity only. A global parameter is available in global settings.', 'booking-activities' )
-						        . ' ' . esc_html__( 'Leave it empty to use the global value.', 'booking-activities' ), false )
-								/* translators: %s = [bookingactivities_list] */
-						        .  '<br/><small><em>' . sprintf( esc_html__( 'Bookings can be changed from the booking list only (%s)', 'booking-activities' ), '<a href="https://booking-activities.fr/en/docs/user-documentation/get-started-with-booking-activities/display-customers-bookings-list-on-the-frontend/" target="_blank"><code style="font-size: inherit;">[bookingactivities_list]</code></a>' ) . '</em></small>'
-					)
-				);
-				
-				bookacti_display_fields( $fields );
-			
+			?>
+				<fieldset>
+					<legend><?php esc_html_e( 'Booking restrictions', 'booking-activities' ); ?></legend>
+					<?php 
+						$fields = apply_filters( 'bookacti_activity_tab_availability_booking_restrictions_fields', array(
+							'min_bookings_per_user' => array(
+								'type'    => 'number',
+								'name'    => 'min_bookings_per_user',
+								'id'      => 'bookacti-activity-min-bookings-per-user',
+								'title'   => esc_html__( 'Min bookings per user', 'booking-activities' ),
+								'options' => array( 'min' => 0, 'step' => 1 ),
+								'tip'     => esc_html__( 'The minimum booking quantity a user has to make on an event of this activity. E.g.: "3", the customer must book at least 3 places of the desired event.', 'booking-activities' )
+										  . '<br/>' . esc_html__( 'Set it to "0" to ignore this parameter.', 'booking-activities' )
+							),
+							'max_bookings_per_user' => array(
+								'type'    => 'number',
+								'name'    => 'max_bookings_per_user',
+								'id'      => 'bookacti-activity-max-bookings-per-user',
+								'title'   => esc_html__( 'Max bookings per user', 'booking-activities' ),
+								'options' => array( 'min' => 0, 'step' => 1 ),
+								'tip'     => esc_html__( 'The maximum booking quantity a user can make on an event of this activity. E.g.: "1", the customer can only book one place of the desired event, and he / she won\'t be allowed to book it twice.', 'booking-activities' )
+										  . '<br/>' . esc_html__( 'Set it to "0" to ignore this parameter.', 'booking-activities' )
+							),
+							'max_users_per_event' => array(
+								'type'    => 'number',
+								'name'    => 'max_users_per_event',
+								'id'      => 'bookacti-activity-max-users-per-event',
+								'title'   => esc_html__( 'Max users per event', 'booking-activities' ),
+								'options' => array( 'min' => 0, 'step' => 1 ),
+								'tip'     => esc_html__( 'Set how many different users can book the same event. E.g.: "1", only one user can book a specific event; once he / she has booked it, the event won\'t be available for anyone else anymore, even if it isn\'t full. Useful for private events.', 'booking-activities' )
+										  . '<br/>' . esc_html__( 'Set it to "0" to ignore this parameter.', 'booking-activities' )
+							)
+						) );
+						bookacti_display_fields( $fields );
+					?>
+				</fieldset>
+				<fieldset>
+					<legend><?php esc_html_e( 'Booking changes restrictions', 'booking-activities' ); ?></legend>
+					<?php
+						$fields = apply_filters( 'bookacti_activity_tab_availability_booking_changes_restrictions_fields', array(
+							'booking_changes_deadline' => array(
+								'type'  => 'duration',
+								'name'  => 'booking_changes_deadline',
+								'id'    => 'bookacti-activity-booking-changes-deadline',
+								/* translators: Followed by a field indicating a number of days, hours and minutes from now. E.g.: "Changes are allowed for bookings starting in at least 2 days, 12 hours, 25 minutes". */
+								'title' => esc_html__( 'Changes are allowed for bookings starting in at least', 'booking-activities' ),
+								'label' => bookacti_help_tip( esc_html__( 'Define when a customer can change a booking (cancel, reschedule). E.g.: "2 days 5 hours 30 minutes", your customers will be able to change the bookings starting in 2 days, 5 hours and 30 minutes at least. They won\'t be allowed to cancel a booking starting tomorrow for example.', 'booking-activities' )
+										. '<br/>' . esc_html__( 'This parameter applies to the events of this activity only. A global parameter is available in global settings.', 'booking-activities' )
+										. ' ' . esc_html__( 'Leave it empty to use the global value.', 'booking-activities' ), false )
+										/* translators: %s = [bookingactivities_list] */
+										.  '<br/><small><em>' . sprintf( esc_html__( 'Bookings can be changed from the booking list only (%s)', 'booking-activities' ), '<a href="https://booking-activities.fr/en/docs/user-documentation/get-started-with-booking-activities/display-customers-bookings-list-on-the-frontend/" target="_blank"><code style="font-size: inherit;">[bookingactivities_list]</code></a>' ) . '</em></small>'
+							)
+						) );
+						bookacti_display_fields( $fields );
+					?>
+				</fieldset>
+			<?php
 				do_action( 'bookacti_activity_tab_availability_after', $params );
 			}
 			
@@ -573,9 +577,10 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 				do_action( 'bookacti_activity_tab_text_after', $params );
 			}
 			
+			
 			/**
 			 * Display the fields in the "Permissions" tab of the Activity dialog
-			 * @version 1.13.0
+			 * @version 1.15.4
 			 * @param array $params
 			 */
 			function bookacti_fill_activity_tab_permissions( $params = array() ) {
@@ -590,20 +595,23 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 					<input type='checkbox' name='is_restricted' id='bookacti-display-activity-user-roles'/>
 					<label for='bookacti-display-activity-user-roles' class='bookacti-fullwidth-label'>
 						<strong><?php esc_html_e( 'I want to restrict this activity to certain users only', 'booking-activities' ); ?></strong>
+						<?php
+						$tip = esc_html__( 'Choose who is allowed to book the events of this activity.', 'booking-activities' )
+							 . ' ' . esc_html__( 'Don\'t pick any role to allow everybody.', 'booking-activities' );
+						bookacti_help_tip( $tip );
+						?>
 					</label>
+					
 					<?php
-					$tip = esc_html__( 'Choose who is allowed to book the events of this activity.', 'booking-activities' )
-						 . '<br/>' . esc_html__( 'Use CTRL+Click to pick or unpick a role.', 'booking-activities' ) 
-						 . ' ' . esc_html__( 'Don\'t pick any role to allow everybody.', 'booking-activities' );
-					bookacti_help_tip( $tip );
-				
 					$allowed_roles = array( 
-						'type'      => 'select',
-						'multiple'  => 1,
-						'name'      => 'allowed_roles',
-						'id'        => 'bookacti-activity-roles',
-						'fullwidth' => 1,
-						'options'   => array_merge( $roles_options, array( 'all' => esc_html__( 'Everybody', 'booking-activities' ) ) )
+						'type'        => 'select',
+						'multiple'    => 1,
+						'name'        => 'allowed_roles',
+						'id'          => 'bookacti-activity-roles',
+						'class'       => 'bookacti-select2-no-ajax',
+						'placeholder' => esc_html__( 'Search...', 'booking-activities' ),
+						'fullwidth'   => 1,
+						'options'     => array_merge( $roles_options, array( 'all' => esc_html__( 'Everybody', 'booking-activities' ) ) )
 					);
 					bookacti_display_field( $allowed_roles );
 					?>
@@ -612,52 +620,35 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 						<span class='dashicons dashicons-info'></span>
 						<span><?php esc_html_e( 'Don\'t pick any role to allow everybody.', 'booking-activities' ); ?></span>
 					</div>
-					<div class='bookacti-roles-notice bookacti-info'>
-						<span class='dashicons dashicons-info'></span>
-						<span><?php esc_html_e( 'Use CTRL+Click to pick or unpick a role.', 'booking-activities' ); ?></span>
-					</div>
 				</div>
 				
 				<?php
-				// Managers
-				$activity_managers_cap = array( 'bookacti_edit_bookings', 'bookacti_edit_templates', 'bookacti_read_templates' );
-				$activity_managers_args = array(
-					'option_label' => array( 'display_name', ' (', 'user_login', ')' ), 
-					'id'           => 'bookacti-add-new-activity-managers-select-box', 
-					'name'         => '', 
-					'class'        => 'bookacti-add-new-items-select-box bookacti-managers-selectbox',
-					'role__in'     => apply_filters( 'bookacti_managers_roles', array_merge( bookacti_get_roles_by_capabilities( $activity_managers_cap ), $activity_managers_cap ), 'activity' ),
-					'role__not_in' => apply_filters( 'bookacti_managers_roles_exceptions', array( 'administrator' ), 'activity' ),
-					'meta'         => false,
-					'ajax'         => 0
-				);
-				?>
-				<div id='bookacti-activity-managers-container' class='bookacti-items-container' data-type='users' >
-					<label id='bookacti-activity-managers-title' class='bookacti-fullwidth-label' >
-					<?php 
-						esc_html_e( 'Who can manage this activity?', 'booking-activities' );
-						$tip  = esc_html__( 'Choose who is allowed to access this activity.', 'booking-activities' );
-						/* translators: %s = comma separated list of user roles */
-						$tip .= '<br/>' . sprintf( esc_html__( 'These roles already have this privilege: %s.', 'booking-activities' ), '<code>' . implode( '</code>, <code>', array_intersect_key( bookacti_get_roles(), array_flip( $activity_managers_args[ 'role__not_in' ] ) ) ) . '</code>' );
-						/* translators: %s = capabilities name */
-						$tip .= '<br/>' . sprintf( esc_html__( 'If the selectbox is empty, it means that no other users have these capabilities: %s.', 'booking-activities' ), '<code>' . implode( '</code>, <code>', $activity_managers_cap ) . '</code>' );
-						/* translators: %1$s = Order for Customers add-on link. */
-						$tip .= '<br/>' . sprintf( esc_html__( 'Operators from %1$s add-on have these capabilities.', 'booking-activities' ), '<a href="https://booking-activities.fr/en/downloads/order-for-customers/?utm_source=plugin&utm_medium=plugin&utm_campaign=order-for-customers&utm_content=infobulle-permission" target="_blank" >Order for Customers</a>' );
-						/* translators: %1$s = User Role Editor plugin link. */
-						$tip .= ' ' . sprintf( esc_html__( 'If you want to grant a user these capabilities, use a plugin such as %1$s.', 'booking-activities' ), '<a href="https://wordpress.org/plugins/user-role-editor/" target="_blank" >User Role Editor</a>' );
-						bookacti_help_tip( $tip );
-					?>
-					</label>
-					<div id='bookacti-add-activity-managers-container' >
-						<?php bookacti_display_user_selectbox( $activity_managers_args ); ?>
-						<button type='button' id='bookacti-add-activity-managers' class='bookacti-add-items' ><?php esc_html_e( 'Add manager', 'booking-activities' ); ?></button>
-					</div>
-					<div id='bookacti-activity-managers-list-container' class='bookacti-items-list-container' >
-						<select name='managers[]' id='bookacti-activity-managers-select-box' class='bookacti-items-select-box' multiple></select>
-						<button type='button' id='bookacti-remove-activity-managers' class='bookacti-remove-items' ><?php esc_html_e( 'Remove selected', 'booking-activities' ); ?></button>
-					</div>
-				</div>
-			<?php
+				$capabilities = array( 'bookacti_edit_bookings', 'bookacti_edit_templates', 'bookacti_read_templates' );
+				$role_in      = apply_filters( 'bookacti_managers_roles', array_merge( bookacti_get_roles_by_capabilities( $capabilities ), $capabilities ), 'activity' );
+				$role_not_in  = apply_filters( 'bookacti_managers_roles_exceptions', array( 'administrator' ), 'activity' );
+
+				$fields = array( 'managers' => array( 
+					'type'      => 'user_id', 
+					'name'      => 'managers',
+					'id'        => 'bookacti-activity-managers', 
+					'fullwidth' => 1, 
+					'options'   => array(
+						'option_label' => array( 'display_name', ' (', 'user_login', ')' ),
+						'role__in'     => $role_in,
+						'role__not_in' => $role_not_in,
+						'meta'         => false,
+						'multiple'     => 1,
+						'ajax'         => 0
+					),
+					'title'     => esc_html__( 'Who can manage this activity?', 'booking-activities' ),
+					'tip'       => esc_html__( 'Choose who is allowed to access this activity.', 'booking-activities' )
+								. '<br/>' . sprintf( esc_html__( 'These roles already have this privilege: %s.', 'booking-activities' ), '<code>' . implode( '</code>, <code>', array_intersect_key( bookacti_get_roles(), array_flip( $role_not_in ) ) ) . '</code>' )
+								. '<br/>' . sprintf( esc_html__( 'If the selectbox is empty, it means that no other users have these capabilities: %s.', 'booking-activities' ), '<code>' . implode( '</code>, <code>', $capabilities ) . '</code>' )
+								. '<br/>' . sprintf( esc_html__( 'Operators from %1$s add-on have these capabilities.', 'booking-activities' ), '<a href="https://booking-activities.fr/en/downloads/order-for-customers/?utm_source=plugin&utm_medium=plugin&utm_campaign=order-for-customers&utm_content=infobulle-permission" target="_blank" >Order for Customers</a>' )
+					            . ' ' . sprintf( esc_html__( 'If you want to grant a user these capabilities, use a plugin such as %1$s.', 'booking-activities' ), '<a href="https://wordpress.org/plugins/user-role-editor/" target="_blank" >User Role Editor</a>' )
+				) );
+				bookacti_display_fields( $fields );
+
 				do_action( 'bookacti_activity_tab_permissions_after', $params );
 			}
 			?>
@@ -696,13 +687,15 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 					'options' => $templates_options
 				),
 				'activities_to_import' => array(
-					'type'     => 'select',
-					'multiple' => 1,
-					'name'     => 'activities_to_import',
-					'id'       => 'bookacti-activities-to-import',
+					'type'        => 'select',
+					'multiple'    => 1,
+					'name'        => 'activities_to_import',
+					'id'          => 'bookacti-activities-to-import',
+					'class'       => 'bookacti-select2-no-ajax',
+					'placeholder' => esc_html__( 'Search...', 'booking-activities' ),
 					/* translators: the user is asked to select an activity he already created on an other calendar in order to use it on the current calendar. This is the label of the select box. */
-					'title'    => esc_html__( 'Activities to import', 'booking-activities' ),
-					'options'  => array()
+					'title'       => esc_html__( 'Activities to import', 'booking-activities' ),
+					'options'     => array()
 				)
 			);
 			bookacti_display_fields( $fields );
@@ -997,6 +990,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			// Display tabs
 			bookacti_display_tabs( $group_category_tabs, 'group-category' );
 			
+			
 			/**
 			 * Fill "General" tab of "Group category" dialog
 			 * @version 1.14.0
@@ -1017,79 +1011,92 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 				do_action( 'bookacti_group_category_tab_general_after', $params );
 			}
 			
+			
 			/**
 			 * Display the fields in the "Availability" tab of the Group Category dialog
 			 * @since 1.4.0
-			 * @version 1.12.0
+			 * @version 1.15.4
 			 * @param array $params
 			 */
 			function bookacti_fill_group_category_tab_availability( $params = array() ) {
 				do_action( 'bookacti_group_category_tab_availability_before', $params );
-				
-				$fields = array(
-					'min_bookings_per_user' => array(
-						'type'    => 'number',
-						'name'    => 'min_bookings_per_user',
-						'id'      => 'bookacti-group-category-min-bookings-per-user',
-						'title'   => esc_html__( 'Min bookings per user', 'booking-activities' ),
-						'options' => array( 'min' => 0, 'step' => 1 ),
-						'tip'     => esc_html__( 'The minimum booking quantity a user has to make on a group of events of this category. E.g.: "3", the customer must book at least 3 places of the desired group of events.', 'booking-activities' )
-						          . '<br/>' . esc_html__( 'Set it to "0" to ignore this parameter.', 'booking-activities' )
-					),
-					'max_bookings_per_user' => array(
-						'type'    => 'number',
-						'name'    => 'max_bookings_per_user',
-						'id'      => 'bookacti-group-category-max-bookings-per-user',
-						'title'   => esc_html__( 'Max bookings per user', 'booking-activities' ),
-						'options' => array( 'min' => 0, 'step' => 1 ),
-						'tip'     => esc_html__( 'The maximum booking quantity a user can make on a group of events of this category. E.g.: "1", the customer can only book one place of the desired group of events, and he / she won\'t be allowed to book it twice.', 'booking-activities' )
-						          . '<br/>' . esc_html__( 'Set it to "0" to ignore this parameter.', 'booking-activities' )
-					),
-					'max_users_per_event' => array(
-						'type'    => 'number',
-						'name'    => 'max_users_per_event',
-						'id'      => 'bookacti-group-category-max-users-per-event',
-						'title'   => esc_html__( 'Max users per event', 'booking-activities' ),
-						'options' => array( 'min' => 0, 'step' => 1 ),
-						'tip'     => esc_html__( 'Set how many different users can book the same group of events. E.g.: "1", only one user can book a specific group of events; once he / she has booked it, the group of events won\'t be available for anyone else anymore, even if it isn\'t full. Useful for private events.', 'booking-activities' )
-						          . '<br/>' . esc_html__( 'Set it to "0" to ignore this parameter.', 'booking-activities' )
-					),
-					'booking_changes_deadline' => array(
-						'type'  => 'duration',
-						'name'  => 'booking_changes_deadline',
-						'id'    => 'bookacti-group-category-booking-changes-deadline',
-								/* translators: Followed by a field indicating a number of days, hours and minutes from now. E.g.: "Changes are allowed for bookings starting in at least 2 days, 12 hours, 25 minutes". */
-						'title' => esc_html__( 'Changes are allowed for bookings starting in at least', 'booking-activities' ),
-						'label' => bookacti_help_tip( esc_html__( 'Define when a customer can change a booking (cancel, reschedule). E.g.: "2 days 5 hours 30 minutes", your customers will be able to change the bookings starting in 2 days, 5 hours and 30 minutes at least. They won\'t be allowed to cancel a booking starting tomorrow for example.', 'booking-activities' )
-						        . '<br/>' . esc_html__( 'This parameter applies to the groups of events of this category only. A global parameter is available in global settings.', 'booking-activities' )
-						        . ' ' . esc_html__( 'Leave it empty to use the global value.', 'booking-activities' ), false )
-						        . '<br/><small><em>' . sprintf( esc_html__( 'Bookings can be changed from the booking list only (%s)', 'booking-activities' ), '<a href="https://booking-activities.fr/en/docs/user-documentation/get-started-with-booking-activities/display-customers-bookings-list-on-the-frontend/" target="_blank"><code style="font-size: inherit;">[bookingactivities_list]</code></a>' ) . '</em></small>'
-					),
-					'started_groups_bookable' => array(
-						'type'    => 'select',
-						'name'    => 'started_groups_bookable',
-						'id'      => 'bookacti-group-category-started-groups-bookable',
-						'title'   => esc_html__( 'Are started groups bookable?', 'booking-activities' ),
-						'options' => array( 
-							'-1' => esc_html__( 'Site setting', 'booking-activities' ),
-							'0'  => esc_html__( 'No', 'booking-activities' ),
-							'1'  => esc_html__( 'Yes', 'booking-activities' )
-						),
-						'tip'     => esc_html__( 'Allow or disallow users to book a group of events that has already begun.', 'booking-activities' )
-						          . '<br/>' . esc_html__( 'This parameter applies to the groups of events of this category only. A global parameter is available in global settings.', 'booking-activities' )
-						          . '<br/>' . esc_html__( 'Set it to "Site setting" to use the global value.', 'booking-activities' )
-					)
-				);
-				
-				bookacti_display_fields( $fields );
-				
+			?>
+				<fieldset>
+					<legend><?php esc_html_e( 'Booking restrictions', 'booking-activities' ); ?></legend>
+					<?php 
+						$fields = apply_filters( 'bookacti_group_category_tab_availability_booking_restrictions_fields', array(
+							'min_bookings_per_user' => array(
+								'type'    => 'number',
+								'name'    => 'min_bookings_per_user',
+								'id'      => 'bookacti-group-category-min-bookings-per-user',
+								'title'   => esc_html__( 'Min bookings per user', 'booking-activities' ),
+								'options' => array( 'min' => 0, 'step' => 1 ),
+								'tip'     => esc_html__( 'The minimum booking quantity a user has to make on a group of events of this category. E.g.: "3", the customer must book at least 3 places of the desired group of events.', 'booking-activities' )
+										  . '<br/>' . esc_html__( 'Set it to "0" to ignore this parameter.', 'booking-activities' )
+							),
+							'max_bookings_per_user' => array(
+								'type'    => 'number',
+								'name'    => 'max_bookings_per_user',
+								'id'      => 'bookacti-group-category-max-bookings-per-user',
+								'title'   => esc_html__( 'Max bookings per user', 'booking-activities' ),
+								'options' => array( 'min' => 0, 'step' => 1 ),
+								'tip'     => esc_html__( 'The maximum booking quantity a user can make on a group of events of this category. E.g.: "1", the customer can only book one place of the desired group of events, and he / she won\'t be allowed to book it twice.', 'booking-activities' )
+										  . '<br/>' . esc_html__( 'Set it to "0" to ignore this parameter.', 'booking-activities' )
+							),
+							'max_users_per_event' => array(
+								'type'    => 'number',
+								'name'    => 'max_users_per_event',
+								'id'      => 'bookacti-group-category-max-users-per-event',
+								'title'   => esc_html__( 'Max users per event', 'booking-activities' ),
+								'options' => array( 'min' => 0, 'step' => 1 ),
+								'tip'     => esc_html__( 'Set how many different users can book the same group of events. E.g.: "1", only one user can book a specific group of events; once he / she has booked it, the group of events won\'t be available for anyone else anymore, even if it isn\'t full. Useful for private events.', 'booking-activities' )
+										  . '<br/>' . esc_html__( 'Set it to "0" to ignore this parameter.', 'booking-activities' )
+							),
+							'started_groups_bookable' => array(
+								'type'    => 'select',
+								'name'    => 'started_groups_bookable',
+								'id'      => 'bookacti-group-category-started-groups-bookable',
+								'title'   => esc_html__( 'Are started groups bookable?', 'booking-activities' ),
+								'options' => array( 
+									'-1' => esc_html__( 'Site setting', 'booking-activities' ),
+									'0'  => esc_html__( 'No', 'booking-activities' ),
+									'1'  => esc_html__( 'Yes', 'booking-activities' )
+								),
+								'tip'     => esc_html__( 'Allow or disallow users to book a group of events that has already begun.', 'booking-activities' )
+										  . '<br/>' . esc_html__( 'This parameter applies to the groups of events of this category only. A global parameter is available in global settings.', 'booking-activities' )
+										  . '<br/>' . esc_html__( 'Set it to "Site setting" to use the global value.', 'booking-activities' )
+							)
+						) );
+						bookacti_display_fields( $fields );
+					?>
+				</fieldset>
+				<fieldset>
+					<legend><?php esc_html_e( 'Booking changes restrictions', 'booking-activities' ); ?></legend>
+					<?php
+						$fields = apply_filters( 'bookacti_group_category_tab_availability_booking_changes_restrictions_fields', array(
+							'booking_changes_deadline' => array(
+								'type'  => 'duration',
+								'name'  => 'booking_changes_deadline',
+								'id'    => 'bookacti-group-category-booking-changes-deadline',
+										/* translators: Followed by a field indicating a number of days, hours and minutes from now. E.g.: "Changes are allowed for bookings starting in at least 2 days, 12 hours, 25 minutes". */
+								'title' => esc_html__( 'Changes are allowed for bookings starting in at least', 'booking-activities' ),
+								'label' => bookacti_help_tip( esc_html__( 'Define when a customer can change a booking (cancel, reschedule). E.g.: "2 days 5 hours 30 minutes", your customers will be able to change the bookings starting in 2 days, 5 hours and 30 minutes at least. They won\'t be allowed to cancel a booking starting tomorrow for example.', 'booking-activities' )
+										. '<br/>' . esc_html__( 'This parameter applies to the groups of events of this category only. A global parameter is available in global settings.', 'booking-activities' )
+										. ' ' . esc_html__( 'Leave it empty to use the global value.', 'booking-activities' ), false )
+										. '<br/><small><em>' . sprintf( esc_html__( 'Bookings can be changed from the booking list only (%s)', 'booking-activities' ), '<a href="https://booking-activities.fr/en/docs/user-documentation/get-started-with-booking-activities/display-customers-bookings-list-on-the-frontend/" target="_blank"><code style="font-size: inherit;">[bookingactivities_list]</code></a>' ) . '</em></small>'
+							)
+						) );
+						bookacti_display_fields( $fields );
+					?>
+				</fieldset>
+			<?php
 				do_action( 'bookacti_group_category_tab_availability_after', $params );
 			}
 			
 			
 			/**
 			 * Display the fields in the "Permissions" tab of the Group Category dialog
-			 * @version 1.13.0
+			 * @version 1.15.4
 			 * @param array $params
 			 */
 			function bookacti_fill_group_category_tab_permissions( $params = array() ) {
@@ -1104,30 +1111,30 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 					<input type='checkbox' name='is_restricted' id='bookacti-display-group-category-user-roles'/>
 					<label for='bookacti-display-group-category-user-roles' class='bookacti-fullwidth-label'>
 						<strong><?php esc_html_e( 'I want to restrict this group category to certain users only', 'booking-activities' ); ?></strong>
+						<?php
+						$tip = esc_html__( 'Choose who is allowed to book the groups of this category.', 'booking-activities' )
+							 . ' ' . esc_html__( 'Don\'t pick any role to allow everybody.', 'booking-activities' );
+						bookacti_help_tip( $tip );
+						?>
 					</label>
+					
 					<?php
-					$tip = esc_html__( 'Choose who is allowed to book the groups of this category.', 'booking-activities' )
-						 . '<br/>' . esc_html__( 'Use CTRL+Click to pick or unpick a role.', 'booking-activities' ) 
-						 . ' ' . esc_html__( 'Don\'t pick any role to allow everybody.', 'booking-activities' );
-					bookacti_help_tip( $tip );
-
 					$allowed_roles = array( 
-						'type'      => 'select',
-						'multiple'  => 1,
-						'name'      => 'allowed_roles',
-						'id'        => 'bookacti-group-category-roles',
-						'fullwidth' => 1,
-						'options'   => array_merge( $roles_options, array( 'all' => esc_html__( 'Everybody', 'booking-activities' ) ) )
+						'type'        => 'select',
+						'multiple'    => 1,
+						'name'        => 'allowed_roles',
+						'id'          => 'bookacti-group-category-roles',
+						'class'       => 'bookacti-select2-no-ajax',
+						'placeholder' => esc_html__( 'Search...', 'booking-activities' ),
+						'fullwidth'   => 1,
+						'options'     => array_merge( $roles_options, array( 'all' => esc_html__( 'Everybody', 'booking-activities' ) ) )
 					);
 					bookacti_display_field( $allowed_roles );
-				?>		
+					?>
+					
 					<div class='bookacti-roles-notice bookacti-warning' style='margin-bottom:0;'>
 						<span class='dashicons dashicons-info'></span>
 						<span><?php esc_html_e( 'Don\'t pick any role to allow everybody.', 'booking-activities' ); ?></span>
-					</div>
-					<div class='bookacti-roles-notice bookacti-info'>
-						<span class='dashicons dashicons-info'></span>
-						<span><?php esc_html_e( 'Use CTRL+Click to pick or unpick a role.', 'booking-activities' ); ?></span>
 					</div>
 				</div>
 				<?php

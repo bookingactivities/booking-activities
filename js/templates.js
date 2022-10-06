@@ -118,7 +118,7 @@ $j( document ).ready( function() {
 
 /**
  * Initialize and display the template calendar
- * @version 1.15.2
+ * @version 1.15.4
  */
 function bookacti_load_template_calendar() {
 	var booking_system = $j( '#bookacti-template-calendar' );
@@ -136,6 +136,7 @@ function bookacti_load_template_calendar() {
 	var init_data = {
 		locale:                  bookacti_localized.fullcalendar_locale,
 		timeZone:                bookacti_localized.fullcalendar_timezone,
+		now:                     new Date( bookacti_localized.current_time.substr( 0, 10 ) ),
 		initialView:             'timeGridWeek',
 		eventShortHeight:        0,
 		eventMinHeight:          event_min_height,
@@ -207,6 +208,7 @@ function bookacti_load_template_calendar() {
 		/**
 		 * Add classes to the view
 		 * @since 1.15.0
+		 * @version 1.15.4
 		 * @param {Object} info {
 		 *  @type {FullCalendar.ViewApi} view
 		 *  @type {HTMLElement} el
@@ -215,6 +217,13 @@ function bookacti_load_template_calendar() {
 		 */
 		viewClassNames: function( info ) {
 			var return_object = { 'class_names': [] };
+			
+			// Always enable "Today" button, except on today's view
+			if( booking_system.find( '.fc-today-button' ).length && ! booking_system.find( '.fc-day-today' ).length ) {
+				if( ! moment().isBetween( info.view.currentStart, info.view.currentEnd, 'day', '[)' ) ) {
+					booking_system.find( '.fc-today-button' ).attr( 'disabled', false );
+				}
+			}
 			
 			booking_system.trigger( 'bookacti_calendar_editor_view_class_names', [ return_object, info ] );
 			

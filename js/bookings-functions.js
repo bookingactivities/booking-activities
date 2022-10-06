@@ -237,7 +237,7 @@ function bookacti_reload_booking_system_according_to_filters( booking_system ) {
 
 /**
  * Init booking actions
- * @version 1.8.0
+ * @version 1.15.4
  */
 function bookacti_init_booking_actions() {
 	$j( '.bookacti-user-booking-list-table, .woocommerce-table, #bookacti-booking-list' ).on( 'click', '.bookacti-booking-action, .bookacti-booking-group-action', function ( e ) {
@@ -290,11 +290,6 @@ function bookacti_init_booking_actions() {
 			}
 		}
 	});
-	
-	// Add / remove items in multiple selectbox
-	if( $j( 'body.booking-activities_page_bookacti_bookings' ).length ) {
-		bookacti_init_add_and_remove_items();
-	}
 }
 
 

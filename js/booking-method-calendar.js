@@ -220,7 +220,7 @@ $j( document ).ready( function() {
 
 /**
  * Initialize the calendar
- * @version 1.15.3
+ * @version 1.15.4
  * @param {HTMLElement} booking_system
  * @param {boolean} reload_events
  */
@@ -241,6 +241,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 	var init_data = {
 		locale:                bookacti_localized.fullcalendar_locale,
 		timeZone:              bookacti_localized.fullcalendar_timezone,
+		now:                   new Date( bookacti_localized.current_time.substr( 0, 10 ) ),
 		initialView:           booking_system.find( '.bookacti-calendar:first' ).width() < bookacti_localized.initial_view_threshold ? 'timeGridDay' : 'timeGridWeek',
 		allDaySlot:            false,
 		defaultAllDay:         false,
@@ -291,6 +292,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		/**
 		 * Add classes to the view
 		 * @since 1.15.0
+		 * @version 1.15.4
 		 * @param {Object} info {
 		 *  @type {FullCalendar.ViewApi} view
 		 *  @type {HTMLElement} el
@@ -299,6 +301,13 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		 */
 		viewClassNames: function( info ) {
 			var return_object = { 'class_names': [] };
+			
+			// Always enable "Today" button, except on today's view
+			if( booking_system.find( '.fc-today-button' ).length && ! booking_system.find( '.fc-day-today' ).length ) {
+				if( ! moment().isBetween( info.view.currentStart, info.view.currentEnd, 'day', '[)' ) ) {
+					booking_system.find( '.fc-today-button' ).attr( 'disabled', false );
+				}
+			}
 			
 			booking_system.trigger( 'bookacti_calendar_view_class_names', [ return_object, info ] );
 			
@@ -829,10 +838,11 @@ function bookacti_fc_get_event_size_classes( booking_system, fc_event, view ) {
 
 /**
  * Enter loading state and prevent user from doing anything else
- * @version 1.15.0
+ * @version 1.15.4
  * @param {HTMLElement} calendar
  */
 function bookacti_enter_calendar_loading_state( calendar ) {
+	calendar.find( '.fc-toolbar button:disabled' ).addClass( 'bookacti-was-disabled' );
 	calendar.find( '.fc-toolbar button' ).attr( 'disabled', true );
 	calendar.find( '.fc-view-harness' ).append( '<div class="bookacti-loading-overlay"><div class="bookacti-loading-overlay-content">' + bookacti_get_loading_html() + '</div></div>' );
 }
@@ -840,10 +850,11 @@ function bookacti_enter_calendar_loading_state( calendar ) {
 
 /**
  * Exit loading state and allow user to keep editing templates
- * @version 1.15.0
+ * @version 1.15.4
  * @param {HTMLElement} calendar
  */
 function bookacti_exit_calendar_loading_state( calendar ) {
-	calendar.find( '.fc-toolbar button' ).attr( 'disabled', false );
+	calendar.find( '.fc-toolbar button:not(.bookacti-was-disabled)' ).attr( 'disabled', false );
+	calendar.find( '.fc-toolbar button.bookacti-was-disabled' ).removeClass( 'bookacti-was-disabled' );
 	calendar.find( '.bookacti-loading-overlay' ).remove();
 }

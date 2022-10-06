@@ -225,11 +225,11 @@ function bookacti_wc_get_cart_item_picked_events( $cart_item_key, $one_entry_per
 	foreach( $cart_item_bookings as $cart_item_booking ) {
 		foreach( $cart_item_booking[ 'bookings' ] as $booking ) {
 			$events[] = array(
-				'group_id' => $cart_item_booking[ 'type' ] === 'group' && ! empty( $booking->event_group_id ) ? $booking->event_group_id : 0,
+				'group_id'   => $cart_item_booking[ 'type' ] === 'group' && ! empty( $booking->event_group_id ) ? $booking->event_group_id : 0,
 				'group_date' => $cart_item_booking[ 'type' ] === 'group' && ! empty( $booking->group_date ) ? $booking->group_date : '',
-				'id' => ! empty( $booking->event_id ) ? $booking->event_id : 0,
-				'start' => ! empty( $booking->event_start ) ? $booking->event_start : '',
-				'end' => ! empty( $booking->event_end ) ? $booking->event_end : '',
+				'id'         => ! empty( $booking->event_id ) ? $booking->event_id : 0,
+				'start'      => ! empty( $booking->event_start ) ? $booking->event_start : '',
+				'end'        => ! empty( $booking->event_end ) ? $booking->event_end : '',
 			);
 		}
 	}
@@ -796,10 +796,10 @@ function bookacti_wc_get_item_booking_actions( $item_booking ) {
 	// Build the array of possible actions
 	$actions = array(
 		'edit_booking' => array(
-			'class'			=> 'bookacti-wc-order-item-edit-booking-button',
-			'label'			=> esc_html__( 'Edit the booking', 'booking-activities' ),
-			'description'	=> esc_html__( 'Go to the edit page.', 'booking-activities' ),
-			'link'			=> $link_to_booking,
+			'class'       => 'bookacti-wc-order-item-edit-booking-button',
+			'label'       => esc_html__( 'Edit the booking', 'booking-activities' ),
+			'description' => esc_html__( 'Go to the edit page.', 'booking-activities' ),
+			'link'        => $link_to_booking,
 		)
 	);
 	
@@ -1013,10 +1013,10 @@ function bookacti_wc_update_order_items_bookings( $order_id, $new_data, $where =
 	if( ! $order || ! $new_data ) { return $updated; }
 	
 	// Sanitize where clauses
-	$in__order_item_id		= ! empty( $where[ 'in__order_item_id' ] ) ? array_map( 'intval', $where[ 'in__order_item_id' ] ) : array();
-	$in__booking_id			= ! empty( $where[ 'in__booking_id' ] ) ? array_map( 'intval', $where[ 'in__booking_id' ] ) : array();
-	$in__booking_group_id	= ! empty( $where[ 'in__booking_group_id' ] ) ? array_map( 'intval', $where[ 'in__booking_group_id' ] ) : array();
-	$in__status				= ! empty( $where[ 'in__status' ] ) ? $where[ 'in__status' ] : array();
+	$in__order_item_id    = ! empty( $where[ 'in__order_item_id' ] ) ? array_map( 'intval', $where[ 'in__order_item_id' ] ) : array();
+	$in__booking_id       = ! empty( $where[ 'in__booking_id' ] ) ? array_map( 'intval', $where[ 'in__booking_id' ] ) : array();
+	$in__booking_group_id = ! empty( $where[ 'in__booking_group_id' ] ) ? array_map( 'intval', $where[ 'in__booking_group_id' ] ) : array();
+	$in__status           = ! empty( $where[ 'in__status' ] ) ? $where[ 'in__status' ] : array();
 	
 	// Get bookings
 	$order_items_bookings = bookacti_wc_get_order_items_bookings( $order_id, array( 'in__order_item_id' => $in__order_item_id ) );
@@ -1258,10 +1258,10 @@ function bookacti_wc_get_order_items_by_bookings( $booking_ids = array(), $booki
 function bookacti_wc_save_no_account_user_data_as_booking_meta( $order ) {
 	// Get user data to save
 	$user_data = apply_filters( 'bookacti_wc_no_account_user_data_to_save_as_booking_meta', array(
-		'email'		=> $order->get_billing_email( 'edit' ),
-		'first_name'=> $order->get_billing_first_name( 'edit' ),
-		'last_name'	=> $order->get_billing_last_name( 'edit' ),
-		'phone'		=> $order->get_billing_phone( 'edit' )
+		'email'      => $order->get_billing_email( 'edit' ),
+		'first_name' => $order->get_billing_first_name( 'edit' ),
+		'last_name'  => $order->get_billing_last_name( 'edit' ),
+		'phone'      => $order->get_billing_phone( 'edit' )
 	), $order );
 
 	// Do not save empty values
@@ -1336,8 +1336,8 @@ function bookacti_get_order_item_by_booking_id( $booking_id ) {
 		if( $is_in_item ) {
 			$item = $order_items[ $order_item_id ];
 			if( is_array( $item ) ) {
-				$item[ 'id' ]		= $order_item_id;
-				$item[ 'order_id' ]	= $order_id;
+				$item[ 'id' ]       = $order_item_id;
+				$item[ 'order_id' ] = $order_id;
 			}
 		}
 	}
@@ -1386,8 +1386,8 @@ function bookacti_get_order_item_by_booking_group_id( $booking_group_id ) {
 		if( $is_in_item ) {
 			$item = $order_items[ $order_item_id ];
 			if( is_array( $item ) ) {
-				$item[ 'id' ]		= $order_item_id;
-				$item[ 'order_id' ]	= $order_id;
+				$item[ 'id' ]       = $order_item_id;
+				$item[ 'order_id' ] = $order_id;
 			}
 		}
 	}
@@ -1419,8 +1419,8 @@ function bookacti_wc_booking_actions_per_order_id( $booking_actions, $order_id )
 
 	// Check cancel / reschedule
 	if( ! current_user_can( 'bookacti_edit_bookings' ) && $order->get_status() === 'pending' )	{ 
-		if( isset( $booking_actions[ 'cancel' ] ) )		{ unset( $booking_actions[ 'cancel' ] ); } 
-		if( isset( $booking_actions[ 'reschedule' ] ) )	{ unset( $booking_actions[ 'reschedule' ] ); }
+		if( isset( $booking_actions[ 'cancel' ] ) )     { unset( $booking_actions[ 'cancel' ] ); } 
+		if( isset( $booking_actions[ 'reschedule' ] ) ) { unset( $booking_actions[ 'reschedule' ] ); }
 	}
 
 	return $booking_actions;
@@ -1460,7 +1460,7 @@ function bookacti_get_order_items_rows( $order_items = array() ) {
 /**
  * Display a products selectbox
  * @since 1.7.0
- * @version 1.14.0
+ * @version 1.15.4
  * @param array $raw_args
  * @return string
  */
@@ -1474,7 +1474,9 @@ function bookacti_display_product_selectbox( $raw_args = array() ) {
 		'allow_clear' => 1,
 		'ajax'        => 1,
 		'select2'     => 1, 
-		'echo'        => 1
+		'sortable'    => 0, 
+		'echo'        => 1,
+		'placeholder' => esc_html__( 'Search...', 'booking-activities' )
 	);
 	$args = apply_filters( 'bookacti_product_selectbox_args', wp_parse_args( $raw_args, $defaults ), $raw_args );
 
@@ -1488,8 +1490,9 @@ function bookacti_display_product_selectbox( $raw_args = array() ) {
 		class='bookacti-wc-products-selectbox <?php echo $args[ 'class' ]; ?>'
 		data-tags='<?php echo ! empty( $args[ 'allow_tags' ] ) ? 1 : 0; ?>'
 		data-allow-clear='<?php echo ! empty( $args[ 'allow_clear' ] ) ? 1 : 0; ?>'
-		data-placeholder='<?php esc_html_e( 'Search for a product', 'booking-activities' ); ?>'
-		data-type='products' >
+		data-placeholder='<?php echo ! empty( $args[ 'placeholder' ] ) ? esc_attr( $args[ 'placeholder' ] ) : ''; ?>'
+		data-sortable='<?php echo ! empty( $args[ 'sortable' ] ) ? 1 : 0; ?>'
+		data-type='products'>
 		<option><!-- Used for the placeholder --></option>
 	<?php
 		do_action( 'bookacti_add_product_selectbox_options', $args, $products_titles );
@@ -1665,14 +1668,14 @@ function bookacti_get_product_form_id( $product_id, $is_variation = 'check' ) {
 function bookacti_wc_get_refund_actions() {
 	$wc_refund_actions = array(
 		'coupon' => array(
-			'id'			=> 'coupon',
-			'label'			=> esc_html__( 'Coupon', 'booking-activities' ),
-			'description'	=> esc_html__( 'Create a coupon worth the price paid. The coupon can be used once for any orders at any time. ', 'booking-activities' )
+			'id'          => 'coupon',
+			'label'       => esc_html__( 'Coupon', 'booking-activities' ),
+			'description' => esc_html__( 'Create a coupon worth the price paid. The coupon can be used once for any orders at any time. ', 'booking-activities' )
 		),
 		'auto' => array(
-			'id'			=> 'auto',
-			'label'			=> esc_html__( 'Auto refund', 'booking-activities' ),
-			'description'	=> esc_html__( 'Refund automatically via the gateway used for payment.', 'booking-activities' )
+			'id'          => 'auto',
+			'label'       => esc_html__( 'Auto refund', 'booking-activities' ),
+			'description' => esc_html__( 'Refund automatically via the gateway used for payment.', 'booking-activities' )
 		)
 	);
 	return apply_filters( 'bookacti_wc_refund_actions', $wc_refund_actions );
@@ -1726,7 +1729,7 @@ function bookacti_does_order_support_auto_refund( $order ) {
 /**
  * Update order bookings if a partial refund is perfomed (refund of one or more items)
  * @since 1.2.0 (was part of bookacti_update_booking_when_order_item_is_refunded before)
- * @version 1.12.9
+ * @version 1.15.4
  * @param WC_Order_Refund $refund
  */
 function bookacti_update_order_bookings_on_items_refund( $refund ) {
@@ -1734,19 +1737,19 @@ function bookacti_update_order_bookings_on_items_refund( $refund ) {
 	if( ! $refund_items ) { return; }
 	
 	$utc_timezone_obj = new DateTimeZone( 'UTC' );
-	$price_decimals = wc_get_price_decimals();
+	$price_decimals   = wc_get_price_decimals();
 	
-	$refund_id		= $refund->get_id();
-	$refund_action	= $refund->get_refunded_payment() ? 'auto' : 'manual';
-	$refund_date	= $refund->get_date_created() ? $refund->get_date_created() : new DateTime();
+	$refund_id     = $refund->get_id();
+	$refund_action = $refund->get_refunded_payment() ? 'auto' : 'manual';
+	$refund_date   = $refund->get_date_created() ? $refund->get_date_created() : new DateTime();
 	if( is_a( $refund_date, 'DateTime' ) ) {
 		$refund_date->setTimezone( $utc_timezone_obj );
 		$refund_date = $refund_date->format( 'Y-m-d H:i:s' );
 	}
 	
-	$order_id		= $refund->get_parent_id();
-	$order			= wc_get_order( $refund->get_parent_id() );
-	$order_items	= $order->get_items();
+	$order_id    = $refund->get_parent_id();
+	$order       = wc_get_order( $refund->get_parent_id() );
+	$order_items = $order->get_items();
 	
 	// Get the bookings attached to refunded items
 	$refunded_items = array();
@@ -1756,12 +1759,19 @@ function bookacti_update_order_bookings_on_items_refund( $refund ) {
 		$item_id = intval( $refund_item->get_meta( '_refunded_item_id', true ) );
 		if( ! isset( $order_items[ $item_id ] ) ) { continue; }
 		
-		$refunded_qty = abs( intval( $refund_item->get_quantity() ) );
+		$refunded_qty    = abs( intval( $refund_item->get_quantity() ) );
 		$refunded_amount = abs( round( (float) $refund_item->get_total() + (float) $refund_item->get_total_tax(), $price_decimals ) );
+		
+		// If the refunded quantity was not given, try to compute it from the refunded amount (only if the refunded amount is a multiple of the unit price)
+		if( ! $refunded_qty ) {
+			$item_unit_price = abs( round( ( (float) $order_items[ $item_id ]->get_total() + (float) $order_items[ $item_id ]->get_total_tax() ) / $order_items[ $item_id ]->get_quantity(), $price_decimals ) );
+			if( ( $refunded_amount % $item_unit_price  ) === 0 ) { $refunded_qty = $refunded_amount / $item_unit_price; }
+		}
+		
 		if( ! $refunded_qty || ! $refunded_amount ) { continue; }
 		
-		$refunded_items[ $item_id ] = $order_items[ $item_id ];
-		$items_refunded_qty[ $item_id ]	= $refunded_qty;
+		$refunded_items[ $item_id ]        = $order_items[ $item_id ];
+		$items_refunded_qty[ $item_id ]	   = $refunded_qty;
 		$items_refunded_amount[ $item_id ] = $refunded_amount;
 	}
 	
@@ -1831,16 +1841,16 @@ function bookacti_update_order_bookings_on_items_refund( $refund ) {
  */
 function bookacti_update_order_bookings_on_order_refund( $refund ) {
 	// Double check that the refund is total
-	$order_id			= $refund->get_parent_id();
-	$order				= wc_get_order( $order_id );
-	$is_total_refund	= floatval( $order->get_total() ) == floatval( $order->get_total_refunded() );
+	$order_id        = $refund->get_parent_id();
+	$order           = wc_get_order( $order_id );
+	$is_total_refund = floatval( $order->get_total() ) == floatval( $order->get_total_refunded() );
 	if( ! $is_total_refund ) { return; }
 	
 	$utc_timezone_obj = new DateTimeZone( 'UTC' );
 	
-	$refund_id		= $refund->get_id();
-	$refund_action	= $refund->get_refunded_payment() ? 'auto' : 'manual';
-	$refund_date	= $refund->get_date_created() ? $refund->get_date_created() : new DateTime();
+	$refund_id     = $refund->get_id();
+	$refund_action = $refund->get_refunded_payment() ? 'auto' : 'manual';
+	$refund_date   = $refund->get_date_created() ? $refund->get_date_created() : new DateTime();
 	if( is_a( $refund_date, 'DateTime' ) ) {
 		$refund_date->setTimezone( $utc_timezone_obj );
 		$refund_date = $refund_date->format( 'Y-m-d H:i:s' );
@@ -1919,22 +1929,22 @@ function bookacti_refund_booking_with_coupon( $bookings, $booking_type, $refund_
 
 	// Get variables
 	if( $booking_type === 'single' ) {
-		$user_id	= $bookings[ 0 ]->user_id;
-		$order_id	= $bookings[ 0 ]->order_id;
-		$item		= bookacti_get_order_item_by_booking_id( $bookings[ 0 ] );
+		$user_id  = $bookings[ 0 ]->user_id;
+		$order_id = $bookings[ 0 ]->order_id;
+		$item     = bookacti_get_order_item_by_booking_id( $bookings[ 0 ] );
 	} else if( $booking_type === 'group' ) {
-		$user_id	= ! empty( $bookings[ 0 ]->group_user_id ) ? $bookings[ 0 ]->group_user_id : $bookings[ 0 ]->user_id;
-		$order_id	= ! empty( $bookings[ 0 ]->group_order_id ) ? $bookings[ 0 ]->group_order_id : $bookings[ 0 ]->order_id;
-		$item		= bookacti_get_order_item_by_booking_group_id( $bookings[ 0 ] );
+		$user_id  = ! empty( $bookings[ 0 ]->group_user_id ) ? $bookings[ 0 ]->group_user_id : $bookings[ 0 ]->user_id;
+		$order_id = ! empty( $bookings[ 0 ]->group_order_id ) ? $bookings[ 0 ]->group_order_id : $bookings[ 0 ]->order_id;
+		$item     = bookacti_get_order_item_by_booking_group_id( $bookings[ 0 ] );
 	}
 	
 	$order = wc_get_order( $order_id );
 	
 	if( ! $item || ! $order_id ) { 
 		return array( 
-			'status'	=> 'failed', 
-			'error'		=> 'no_order_item_found',
-			'message'	=> esc_html__( 'The order item bound to the booking was not found.', 'booking-activities' )
+			'status'  => 'failed', 
+			'error'   => 'no_order_item_found',
+			'message' => esc_html__( 'The order item bound to the booking was not found.', 'booking-activities' )
 		);
 	}
 
@@ -2012,20 +2022,20 @@ function bookacti_refund_booking_with_coupon( $bookings, $booking_type, $refund_
 		$existing_coupon = WC()->api->WC_API_Coupons->get_coupon_by_code( $existing_coupon_code );
 
 		return array( 
-			'status' => 'success', 
+			'status'        => 'success', 
 			'coupon_amount' => is_array( $existing_coupon ) && isset( $existing_coupon[ 'coupon' ][ 'amount' ] ) ? wc_price( $existing_coupon[ 'coupon' ][ 'amount' ] ) : '', 
-			'coupon_code' => $existing_coupon_code, 
-			'new_state' => 'refunded' 
+			'coupon_code'   => $existing_coupon_code, 
+			'new_state'     => 'refunded' 
 		);
 	}
 
 
 	// Grant user cap to create coupon
 	$current_user = wp_get_current_user();
-	$user_basically_can_publish_shop_coupons		= current_user_can( 'publish_shop_coupons' );
-	$user_basically_can_read_private_shop_coupons	= current_user_can( 'read_private_shop_coupons' );
-	if( ! $user_basically_can_publish_shop_coupons )		{ $current_user->add_cap( 'publish_shop_coupons' ); }
-	if( ! $user_basically_can_read_private_shop_coupons )	{ $current_user->add_cap( 'read_private_shop_coupons' ); }
+	$user_basically_can_publish_shop_coupons      = current_user_can( 'publish_shop_coupons' );
+	$user_basically_can_read_private_shop_coupons = current_user_can( 'read_private_shop_coupons' );
+	if( ! $user_basically_can_publish_shop_coupons )      { $current_user->add_cap( 'publish_shop_coupons' ); }
+	if( ! $user_basically_can_read_private_shop_coupons ) { $current_user->add_cap( 'read_private_shop_coupons' ); }
 
 	// Generate coupon code and create the coupon
 	$i = 1;
@@ -2061,23 +2071,23 @@ function bookacti_refund_booking_with_coupon( $bookings, $booking_type, $refund_
 		bookacti_update_metadata( $object_type, $object_id, array( 'refunds' => $refunds ) );
 		
 		$return_data = array( 
-			'status' => 'success', 
+			'status'        => 'success', 
 			'coupon_amount' => wc_price( $data[ 'coupon' ][ 'amount' ] ), 
-			'coupon_code' => $coupon[ 'coupon' ][ 'code' ], 
-			'new_state' => 'refunded' 
+			'coupon_code'   => $coupon[ 'coupon' ][ 'code' ], 
+			'new_state'     => 'refunded' 
 		);
 
 	} else if( is_wp_error( $coupon ) ) {
 		$return_data = array( 
-			'status' => 'failed', 
-			'error' => $coupon, 
+			'status'  => 'failed', 
+			'error'   => $coupon, 
 			'message' => $coupon->get_error_message() 
 		);
 	}
 
 	// Remove user cap to create coupon
-	if( ! $user_basically_can_publish_shop_coupons )		{ $current_user->remove_cap( 'publish_shop_coupons' );	}
-	if( ! $user_basically_can_read_private_shop_coupons )	{ $current_user->remove_cap( 'read_private_shop_coupons' );	}
+	if( ! $user_basically_can_publish_shop_coupons )      { $current_user->remove_cap( 'publish_shop_coupons' );	}
+	if( ! $user_basically_can_read_private_shop_coupons ) { $current_user->remove_cap( 'read_private_shop_coupons' );	}
 
 	return $return_data;
 }
@@ -2142,20 +2152,20 @@ add_filter( 'woocommerce_coupon_error', 'bookacti_wc_coupon_error_return_code', 
 function bookacti_auto_refund_booking( $bookings, $booking_type, $refund_message ) {
 	// Get variables
 	if( $booking_type === 'single' ) {
-		$order_id	= $bookings[ 0 ]->order_id;
-		$item		= bookacti_get_order_item_by_booking_id( $bookings[ 0 ] );
+		$order_id = $bookings[ 0 ]->order_id;
+		$item     = bookacti_get_order_item_by_booking_id( $bookings[ 0 ] );
 	} else if( $booking_type === 'group' ) {
-		$order_id	= ! empty( $bookings[ 0 ]->group_order_id ) ? $bookings[ 0 ]->group_order_id : $bookings[ 0 ]->order_id;
-		$item		= bookacti_get_order_item_by_booking_group_id( $bookings[ 0 ] );
+		$order_id = ! empty( $bookings[ 0 ]->group_order_id ) ? $bookings[ 0 ]->group_order_id : $bookings[ 0 ]->order_id;
+		$item     = bookacti_get_order_item_by_booking_group_id( $bookings[ 0 ] );
 	}
 	
 	$order = wc_get_order( $order_id );
 	
 	if( ! $order || ! $item ) {
 		return array( 
-			'status'	=> 'failed', 
-			'error'		=> 'no_order_item_found',
-			'message'	=> esc_html__( 'The order item bound to the booking was not found.', 'booking-activities' )
+			'status'  => 'failed', 
+			'error'   => 'no_order_item_found',
+			'message' => esc_html__( 'The order item bound to the booking was not found.', 'booking-activities' )
 		);
 	}
 	
@@ -2181,17 +2191,17 @@ function bookacti_auto_refund_booking( $bookings, $booking_type, $refund_message
 	
 	$line_items	= array();
 	$line_items[ $order_item_id ] = array(
-		'qty'			=> $item->get_quantity() - abs( intval( $order->get_qty_refunded_for_item( $order_item_id ) ) ),
-		'refund_total'	=> round( $item->get_total(), $price_decimals ) - $refunded_amounts[ 'total' ],
-		'refund_tax'	=> $refund_tax
+		'qty'          => $item->get_quantity() - abs( intval( $order->get_qty_refunded_for_item( $order_item_id ) ) ),
+		'refund_total' => round( $item->get_total(), $price_decimals ) - $refunded_amounts[ 'total' ],
+		'refund_tax'   => $refund_tax
 	);
 
 	$data = array(
-		'amount'			=> bookacti_wc_get_item_remaining_refund_amount( $item ),
-		'reason'			=> $reason,
-		'order_id'			=> $order_id,
-		'line_items'		=> $line_items,
-		'refund_payment'	=> true
+		'amount'         => bookacti_wc_get_item_remaining_refund_amount( $item ),
+		'reason'         => $reason,
+		'order_id'       => $order_id,
+		'line_items'     => $line_items,
+		'refund_payment' => true
 	);
 	
 	$refund = wc_create_refund( $data );
@@ -2291,19 +2301,19 @@ function bookacti_settings_section_wc_products_callback() {}
  */
 function bookacti_settings_wc_product_pages_booking_form_location_callback() {
 	$args = array(
-		'type'		=> 'select',
-		'name'		=> 'bookacti_products_settings[wc_product_pages_booking_form_location]',
-		'id'		=> 'wc_product_pages_booking_form_location',
-		'options'	=> array( 
-							'default' => esc_html__( 'Inline (original layout)', 'booking-activities' ),
-							'form_below' => esc_html__( 'Full width', 'booking-activities' ),
-						),
-		'value'		=> bookacti_get_setting_value( 'bookacti_products_settings', 'wc_product_pages_booking_form_location' ),
-					/* translators: %s is the name of the described option: "Inline (original layout)" */
-		'tip'		=> sprintf( esc_html__( '%s: display the booking form before the add to cart button, without changing your theme layout.', 'booking-activities' ), '<strong>' . esc_html__( 'Inline (original layout)', 'booking-activities' ) . '</strong>' )
-					. '<br/>'
-					/* translators: %s is the name of the described option: "Full width (default)" */
-					. sprintf( esc_html__( '%s: move the add to cart form below the product summary. This option may not work properly with certain themes.', 'booking-activities' ), '<strong>' . esc_html__( 'Full width', 'booking-activities' ) . '</strong>' )
+		'type'    => 'select',
+		'name'    => 'bookacti_products_settings[wc_product_pages_booking_form_location]',
+		'id'      => 'wc_product_pages_booking_form_location',
+		'options' => array( 
+			'default'    => esc_html__( 'Inline (original layout)', 'booking-activities' ),
+			'form_below' => esc_html__( 'Full width', 'booking-activities' ),
+		),
+		'value'   => bookacti_get_setting_value( 'bookacti_products_settings', 'wc_product_pages_booking_form_location' ),
+		          /* translators: %s is the name of the described option: "Inline (original layout)" */
+		'tip'     => sprintf( esc_html__( '%s: display the booking form before the add to cart button, without changing your theme layout.', 'booking-activities' ), '<strong>' . esc_html__( 'Inline (original layout)', 'booking-activities' ) . '</strong>' )
+		          . '<br/>' 
+		          /* translators: %s is the name of the described option: "Full width (default)" */
+		          . sprintf( esc_html__( '%s: move the add to cart form below the product summary. This option may not work properly with certain themes.', 'booking-activities' ), '<strong>' . esc_html__( 'Full width', 'booking-activities' ) . '</strong>' )
 	);
 	bookacti_display_field( $args );
 }
@@ -2328,7 +2338,7 @@ function bookacti_settings_section_wc_account_callback() {}
 function bookacti_settings_wc_my_account_bookings_page_id_callback() {
 	$options = array(
 		'-1' => esc_html__( 'Disabled' ),
-		'0' => esc_html__( 'Default booking list', 'booking-activities' ),
+		'0'  => esc_html__( 'Default booking list', 'booking-activities' ),
 	);
 	$pages = get_pages( array( 'sort_column' => 'menu_order', 'sort_order' => 'ASC' ) );
 	foreach( $pages as $page ) {
@@ -2363,11 +2373,11 @@ function bookacti_settings_section_cart_callback() {}
  */
 function bookacti_settings_field_activate_cart_expiration_callback() {
 	$args = array(
-		'type'	=> 'checkbox',
-		'name'	=> 'bookacti_cart_settings[is_cart_expiration_active]',
-		'id'	=> 'is_cart_expiration_active',
-		'value'	=> bookacti_get_setting_value( 'bookacti_cart_settings', 'is_cart_expiration_active' ),
-		'tip'	=> esc_html__( "If cart expiration is off, the booking is made at the end of the checkout process. It means that an event available at the moment you add it to cart can be no longer available at the moment you wish to complete the order. With cart expiration on, the booking is made when it is added to cart and remains temporary until the end of the checkout process.", 'booking-activities' )
+		'type'  => 'checkbox',
+		'name'  => 'bookacti_cart_settings[is_cart_expiration_active]',
+		'id'    => 'is_cart_expiration_active',
+		'value' => bookacti_get_setting_value( 'bookacti_cart_settings', 'is_cart_expiration_active' ),
+		'tip'   => esc_html__( "If cart expiration is off, the booking is made at the end of the checkout process. It means that an event available at the moment you add it to cart can be no longer available at the moment you wish to complete the order. With cart expiration on, the booking is made when it is added to cart and remains temporary until the end of the checkout process.", 'booking-activities' )
 	);
 	bookacti_display_field( $args );
 }
@@ -2379,11 +2389,11 @@ function bookacti_settings_field_activate_cart_expiration_callback() {
  */
 function bookacti_settings_field_per_product_expiration_callback() {
 	$args = array(
-		'type'	=> 'checkbox',
-		'name'	=> 'bookacti_cart_settings[is_cart_expiration_per_product]',
-		'id'	=> 'is_cart_expiration_per_product',
-		'value'	=> bookacti_get_setting_value( 'bookacti_cart_settings', 'is_cart_expiration_per_product' ),
-		'tip'	=> esc_html__( 'The expiration time will be set for each product independantly, each with their own countdown before being removed from cart.', 'booking-activities' )
+		'type'  => 'checkbox',
+		'name'  => 'bookacti_cart_settings[is_cart_expiration_per_product]',
+		'id'    => 'is_cart_expiration_per_product',
+		'value' => bookacti_get_setting_value( 'bookacti_cart_settings', 'is_cart_expiration_per_product' ),
+		'tip'   => esc_html__( 'The expiration time will be set for each product independantly, each with their own countdown before being removed from cart.', 'booking-activities' )
 	);
 	bookacti_display_field( $args );
 }
@@ -2395,12 +2405,12 @@ function bookacti_settings_field_per_product_expiration_callback() {
  */
 function bookacti_settings_field_cart_timeout_callback() { 
 	$args = array(
-		'type'		=> 'number',
-		'name'		=> 'bookacti_cart_settings[cart_timeout]',
-		'id'		=> 'cart_expiration_time',
-		'options'	=> array( 'min' => 1, 'step' => 1 ),
-		'value'		=> bookacti_get_setting_value( 'bookacti_cart_settings', 'cart_timeout' ),
-		'tip'		=> esc_html__( 'Define the amount of time a user has before his cart gets empty.', 'booking-activities' )
+		'type'    => 'number',
+		'name'    => 'bookacti_cart_settings[cart_timeout]',
+		'id'      => 'cart_expiration_time',
+		'options' => array( 'min' => 1, 'step' => 1 ),
+		'value'   => bookacti_get_setting_value( 'bookacti_cart_settings', 'cart_timeout' ),
+		'tip'     => esc_html__( 'Define the amount of time a user has before his cart gets empty.', 'booking-activities' )
 	);
 	bookacti_display_field( $args );
 }
@@ -2412,11 +2422,11 @@ function bookacti_settings_field_cart_timeout_callback() {
  */
 function bookacti_settings_field_reset_cart_timeout_on_change_callback() {
 	$args = array(
-		'type'	=> 'checkbox',
-		'name'	=> 'bookacti_cart_settings[reset_cart_timeout_on_change]',
-		'id'	=> 'reset_cart_timeout_on_change',
-		'value'	=> bookacti_get_setting_value( 'bookacti_cart_settings', 'reset_cart_timeout_on_change' ),
-		'tip'	=> esc_html__( 'The countdown will be reset each time a product is added, or when a product quantity is changed.', 'booking-activities' )
+		'type'  => 'checkbox',
+		'name'  => 'bookacti_cart_settings[reset_cart_timeout_on_change]',
+		'id'    => 'reset_cart_timeout_on_change',
+		'value' => bookacti_get_setting_value( 'bookacti_cart_settings', 'reset_cart_timeout_on_change' ),
+		'tip'   => esc_html__( 'The countdown will be reset each time a product is added, or when a product quantity is changed.', 'booking-activities' )
 	);
 	bookacti_display_field( $args );
 }

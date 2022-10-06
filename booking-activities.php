@@ -3,13 +3,13 @@
  * Plugin Name: Booking Activities
  * Plugin URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Description: Booking system specialized in activities (sports, cultural, leisure, events...). Works great with WooCommerce.
- * Version: 1.15.3
+ * Version: 1.15.4
  * Author: Booking Activities Team
  * Author URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Text Domain: booking-activities
  * Domain Path: /languages/
  * WC requires at least: 3.0
- * WC tested up to: 6.9
+ * WC tested up to: 7.0
  * License: GPL3
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  * 
@@ -40,9 +40,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 // GLOBALS AND CONSTANTS
-if( ! defined( 'BOOKACTI_VERSION' ) )		{ define( 'BOOKACTI_VERSION', '1.15.3' ); }
-if( ! defined( 'BOOKACTI_PLUGIN_NAME' ) )	{ define( 'BOOKACTI_PLUGIN_NAME', 'booking-activities' ); }
-
+if( ! defined( 'BOOKACTI_VERSION' ) )     { define( 'BOOKACTI_VERSION', '1.15.4' ); }
+if( ! defined( 'BOOKACTI_PLUGIN_NAME' ) ) { define( 'BOOKACTI_PLUGIN_NAME', 'booking-activities' ); }
+if( ! defined( 'BOOKACTI_PATH' ) )        { define( 'BOOKACTI_PATH', __DIR__ ); }
 
 // HEADER STRINGS (For translation)
 esc_html__( 'Booking system specialized in activities (sports, cultural, leisure, events...). Works great with WooCommerce.', 'booking-activities' );
@@ -200,7 +200,7 @@ add_action( 'wp_enqueue_scripts', 'bookacti_enqueue_libraries_scripts', 9 );
 
 /**
  * Enqueue high priority scripts
- * @version 1.15.0
+ * @version 1.15.4
  */
 function bookacti_enqueue_high_priority_global_scripts() {
 	// Chck if we are on a WC page that needs Booking Activities scripts
@@ -214,7 +214,7 @@ function bookacti_enqueue_high_priority_global_scripts() {
 	
 	// Include javascript files
 	wp_enqueue_script( 'bookacti-js-global-var',               plugins_url( 'js/global-var.min.js', __FILE__ ), array( 'jquery' ), BOOKACTI_VERSION, false ); // Load in header
-	wp_enqueue_script( 'bookacti-js-global-functions',         plugins_url( 'js/global-functions.min.js', __FILE__ ), array( 'jquery', 'moment', 'jquery-tiptip', 'bookacti-js-global-var' ), BOOKACTI_VERSION, true );
+	wp_enqueue_script( 'bookacti-js-global-functions',         plugins_url( 'js/global-functions.min.js', __FILE__ ), array( 'jquery', 'moment', 'jquery-tiptip', 'bookacti-js-global-var', 'jquery-ui-sortable' ), BOOKACTI_VERSION, true );
 	wp_enqueue_script( 'bookacti-js-booking-system-functions', plugins_url( 'js/booking-system-functions.min.js', __FILE__ ), array( 'jquery', 'moment', 'jquery-effects-highlight', 'bookacti-js-global-var', 'bookacti-js-global-functions' ), BOOKACTI_VERSION, true );
 }
 add_action( 'admin_enqueue_scripts', 'bookacti_enqueue_high_priority_global_scripts', 10 );
@@ -270,7 +270,7 @@ add_action( 'wp_enqueue_scripts', 'bookacti_enqueue_global_scripts', 20 );
 
 /**
  * Enqueue high priority scripts in backend only
- * @version 1.15.0
+ * @version 1.15.4
  */
 function bookacti_enqueue_high_priority_backend_scripts() {
 	// On backend, only include these scripts on Booking Activities pages
@@ -278,7 +278,7 @@ function bookacti_enqueue_high_priority_backend_scripts() {
 	
 	// INCLUDE LIBRARIES
 	$select2_version = '4.0.13';
-	if( ! wp_script_is( 'select2', 'registered' ) ) { wp_register_script( 'select2', plugins_url( 'lib/select2/select2.min.js', __FILE__ ), array( 'jquery' ), $select2_version, true ); }
+	if( ! wp_script_is( 'select2', 'registered' ) ) { wp_register_script( 'select2', plugins_url( 'lib/select2/select2.full.min.js', __FILE__ ), array( 'jquery' ), $select2_version, true ); }
 	if( ! wp_script_is( 'select2', 'enqueued' ) )   { wp_enqueue_script( 'select2' ); }
 	if( ! wp_style_is( 'select2', 'registered' ) )  { wp_register_style( 'select2', plugins_url( 'lib/select2/select2.min.css', __FILE__ ), array(), $select2_version ); }
 	if( ! wp_style_is( 'select2', 'enqueued' ) )    { wp_enqueue_style( 'select2' ); }
@@ -340,7 +340,7 @@ add_action( 'wp_enqueue_scripts', 'bookacti_enqueue_frontend_scripts', 30 );
 
 /**
  * Activate Booking Activities
- * @version 1.8.0
+ * @version 1.15.4
  */
 function bookacti_activate() {
 	if( ! is_blog_installed() ) { return; }
@@ -363,11 +363,11 @@ function bookacti_activate() {
 	delete_option( 'bookacti_version' );
 	add_option( 'bookacti_version', BOOKACTI_VERSION );
 	
-	delete_transient( 'bookacti_installing' );
-	
 	do_action( 'bookacti_activate' );
 	
 	flush_rewrite_rules();
+	
+	delete_transient( 'bookacti_installing' );
 }
 register_activation_hook( __FILE__, 'bookacti_activate' );
 

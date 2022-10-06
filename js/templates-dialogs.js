@@ -2,7 +2,7 @@
 
 /**
  * Initialize calendar editor dialogs
- * @version 1.15.0
+ * @version 1.15.4
  */
 function bookacti_init_template_dialogs() {
 	// Common param
@@ -47,9 +47,6 @@ function bookacti_init_template_dialogs() {
 		$j( '.bookacti-unbind-action small' ).hide();
 		$j( 'input[type="radio"][name="unbind_action"]:checked' ).closest( '.bookacti-unbind-action' ).find( 'small' ).show();
 	});
-
-	// Add and remove items in managers and templates select boxes
-	bookacti_init_add_and_remove_items();
 
 	// Load activities bound to selected template
 	$j( 'select#template-import-bound-activities' ).on( 'change', function(){
@@ -225,7 +222,7 @@ function bookacti_init_template_dialogs() {
 
 /**
  * Dialog Create Template
- * @version 1.15.0
+ * @version 1.15.4
  */
 function bookacti_dialog_add_new_template() {
 	// Set the dialog title
@@ -268,8 +265,7 @@ function bookacti_dialog_add_new_template() {
 				
 				// Prepare fields
 				$j( '#bookacti-template-data-form-action' ).val( 'bookactiInsertTemplate' );
-				$j( '#bookacti-template-data-form select[multiple].bookacti-items-select-box option' ).prop( 'selected', true );
-
+				
 				// Get the data to save
 				var title = $j( '#bookacti-template-title' ).val();
 				
@@ -363,7 +359,7 @@ function bookacti_dialog_add_new_template() {
 
 /**
  * Dialog Update Template
- * @version 1.15.0
+ * @version 1.15.4
  * @param {int} template_id
  */
 function bookacti_dialog_update_template( template_id ) {
@@ -388,10 +384,8 @@ function bookacti_dialog_update_template( template_id ) {
 	$j( '#bookacti-template-title' ).val( template_data.multilingual_title );
 
 	// Permissions tab
-	if( template_data.admin.length ) {
-		var items_container = $j( '#bookacti-template-managers-container' );
-		bookacti_fill_items_selectbox( items_container, template_data.admin );
-	}
+	var managers_selectbox = $j( '#bookacti-template-managers-selectbox' );
+	bookacti_fill_items_selectbox( managers_selectbox, template_data.admin );
 
 	// Settings tabs
 	$j( '#bookacti-template-data-dialog' ).trigger( 'bookacti_default_template_settings' );
@@ -420,8 +414,7 @@ function bookacti_dialog_update_template( template_id ) {
 				// Prepare fields
 				$j( '#bookacti-template-data-form-template-id' ).val( template_id );
 				$j( '#bookacti-template-data-form-action' ).val( 'bookactiUpdateTemplate' );
-				$j( '#bookacti-template-data-form select[multiple].bookacti-items-select-box option' ).prop( 'selected', true );
-
+				
 				if( typeof tinyMCE !== 'undefined' ) { if( tinyMCE ) { tinyMCE.triggerSave(); } }
 
 				var isFormValid = bookacti_validate_template_form();
@@ -1502,7 +1495,7 @@ function bookacti_dialog_import_activity() {
 
 /**
  * Dialog Create Activity
- * @version 1.15.0
+ * @version 1.15.4
  */
 function bookacti_dialog_create_activity() {
 	if( ! bookacti.selected_template ) { return; }
@@ -1529,9 +1522,6 @@ function bookacti_dialog_create_activity() {
 			click: function() {
 				// Remove old feedback
 				$j( '#bookacti-activity-data-dialog .bookacti-notices' ).remove();
-				
-				// Prepare fields
-				$j( '#bookacti-activity-data-form select[multiple].bookacti-items-select-box option' ).prop( 'selected', true );
 				
 				if( typeof tinyMCE !== 'undefined' ) { if( tinyMCE ) { tinyMCE.triggerSave(); } }
 				
@@ -1598,7 +1588,7 @@ function bookacti_dialog_create_activity() {
 
 /**
  * Open a dialog to update an activity
- * @version 1.15.0
+ * @version 1.15.4
  * @param {Int} activity_id
  */
 function bookacti_dialog_update_activity( activity_id ) {
@@ -1619,7 +1609,6 @@ function bookacti_dialog_update_activity( activity_id ) {
 	$j( '#bookacti-activity-template-id' ).val( bookacti.selected_template );
 	$j( '#bookacti-activity-activity-id' ).val( activity_id );
 	$j( '#bookacti-activity-action' ).val( 'bookactiUpdateActivity' );
-	$j( '#bookacti-activity-data-dialog .bookacti-add-new-items-select-box option' ).show().attr( 'disabled', false );
 
 	// General tab
 	$j( '#bookacti-activity-title' ).val( activity_data.multilingual_title ); 
@@ -1632,10 +1621,8 @@ function bookacti_dialog_update_activity( activity_id ) {
 	$j( '#bookacti-activity-duration-minutes' ).val( activity_duration.substr( 7, 2 ) ).trigger( 'change' );
 	
 	// Permissions tab
-	if( activity_data.admin.length ) {
-		var items_container = $j( '#bookacti-activity-managers-container' );
-		bookacti_fill_items_selectbox( items_container, activity_data.admin );
-	}
+	var managers_selectbox = $j( '#bookacti-activity-managers-selectbox' );
+	bookacti_fill_items_selectbox( managers_selectbox, activity_data.admin );
 
 	// Settings tabs
 	if( activity_data.settings ) {
@@ -1661,9 +1648,6 @@ function bookacti_dialog_update_activity( activity_id ) {
 			click: function() {
 				// Remove old feedback
 				$j( '#bookacti-activity-data-dialog .bookacti-notices' ).remove();
-				
-				// Prepare fields
-				$j( '#bookacti-activity-data-form select[multiple].bookacti-items-select-box option' ).prop( 'selected', true );
 				
 				if( typeof tinyMCE !== 'undefined' ) { if( tinyMCE ) { tinyMCE.triggerSave(); } }
 				
@@ -1839,7 +1823,7 @@ function bookacti_dialog_delete_activity( activity_id ) {
 
 /**
  * Create a group of events
- * @version 1.15.0
+ * @version 1.15.4
  * @param {int} category_id
  */
 function bookacti_dialog_create_group_of_events( category_id ) {
@@ -1886,7 +1870,6 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 
 				// Prepare fields
 				$j( '#bookacti-group-of-events-action' ).val( 'bookactiInsertGroupOfEvents' );
-				$j( '#bookacti-group-of-events-form select[multiple].bookacti-items-select-box option' ).prop( 'selected', true );
 				
 				// Get the data to save
 				var selected_category_id   = $j( '#bookacti-group-of-events-category-selectbox' ).val();
@@ -1971,7 +1954,7 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 
 /**
  * Update a group of events with selected events 
- * @version 1.15.0
+ * @version 1.15.4
  * @param {int} group_id
  */
 function bookacti_dialog_update_group_of_events( group_id ) {
@@ -2037,7 +2020,6 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 
 			// Prepare fields
 			$j( '#bookacti-group-of-events-action' ).val( 'bookactiUpdateGroupOfEvents' );
-			$j( '#bookacti-group-of-events-form select[multiple].bookacti-items-select-box option' ).prop( 'selected', true );
 			
 			// Use the initially selected events
 			bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ] = init_selected_events.slice();
@@ -2500,7 +2482,7 @@ function bookacti_dialog_unbind_group_of_events_occurrences( group_id ) {
 
 /**
  * Update a group category
- * @version 1.15.0
+ * @version 1.15.4
  * @param {int} category_id
  */
 function bookacti_dialog_update_group_category( category_id ) {
@@ -2544,7 +2526,6 @@ function bookacti_dialog_update_group_category( category_id ) {
 				
 				// Prepare fields
 				$j( '#bookacti-group-category-action' ).val( 'bookactiUpdateGroupCategory' );
-				$j( '#bookacti-group-category-form select[multiple].bookacti-items-select-box option' ).prop( 'selected', true );
 				
 				if( typeof tinyMCE !== 'undefined' ) { if( tinyMCE ) { tinyMCE.triggerSave(); } }
 				
