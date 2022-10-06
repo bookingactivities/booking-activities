@@ -269,13 +269,19 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 		
 		/**
 		 * Get form list items. Parameters can be passed in the URL.
-		 * @version 1.14.0
+		 * @version 1.15.4
 		 * @access public
 		 * @return array
 		 */
 		public function get_form_list_items() {
 			$forms = bookacti_get_forms( $this->filters );
 			$can_edit_forms = current_user_can( 'bookacti_edit_forms' );
+			
+			$date_format = get_option( 'date_format' );
+			$utc_timezone_obj = new DateTimeZone( 'UTC' );
+			$timezone = function_exists( 'wp_timezone_string' ) ? wp_timezone_string() : get_option( 'timezone_string' );
+			try { $timezone_obj = new DateTimeZone( $timezone ); }
+			catch ( Exception $ex ) { $timezone_obj = clone $utc_timezone_obj; }
 			
 			// Form list
 			$form_list_items = array();
@@ -299,6 +305,13 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 				$user_object = get_user_by( 'id', $form->user_id );
 				$author = $user_object ? $user_object->display_name : $form->user_id;
 				
+				// Creation date
+				$creation_date_raw = ! empty( $form->creation_date ) ? bookacti_sanitize_datetime( $form->creation_date ) : '';
+				$creation_date_dt = new DateTime( $creation_date_raw, $utc_timezone_obj );
+				$creation_date_dt->setTimezone( $timezone_obj );
+				$creation_date = $creation_date_raw ? bookacti_format_datetime( $creation_date_dt->format( 'Y-m-d H:i:s' ), $date_format ) : '';
+				$creation_date = $creation_date ? '<span title="' . esc_attr( $form->creation_date ) . '">' . $creation_date . '</span>' : '';
+				
 				// Add info on the primary column to make them directly visible in responsive view
 				$primary_data = array( '<span class="bookacti-column-id" >(' . esc_html_x( 'id', 'An id is a unique identification number', 'booking-activities' ) . ': ' . $id . ')</span>' );
 				$primary_data_html = '<div class="bookacti-form-primary-data-container">';
@@ -312,7 +325,7 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 					'title'             => $title,
 					'shortcode'         => $shortcode,
 					'author'            => $author,
-					'date'              => bookacti_format_datetime( $form->creation_date, __( 'F d, Y', 'booking-activities' ) ),
+					'date'              => $creation_date,
 					'status'            => $form->status,
 					'active'            => $active,
 					'active_raw'        => $form->active,

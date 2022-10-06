@@ -1181,7 +1181,7 @@ function bookacti_display_field( $args ) {
 			// Add select multiple values instructions
 			if( $args[ 'tip' ] ) {
 				/* translators: %s is the "+" icon to click on. */
-				$args[ 'tip' ] .= '<br/>' . sprintf( esc_html__( 'To select multiple values, click on %s and use CTRL+Click to pick or unpick a value.', 'booking-activities' ), '<span class="dashicons dashicons-plus"></span>' );
+				$args[ 'tip' ] .= '<br/>' . sprintf( esc_html__( 'To select multiple values, click on %s.', 'booking-activities' ), '<span class="dashicons dashicons-plus"></span>' );
 			}
 		} 
 		if( $args[ 'label' ] ) { ?>

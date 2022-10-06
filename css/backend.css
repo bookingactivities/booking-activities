@@ -36,6 +36,8 @@ ul[id$='-select-box-results'] li[aria-disabled='true'] { display: none; }
 
 .bookacti-add-ons-compatibility-notice li { list-style-type: disc; margin-left: 30px;  }
 
+.column-date span[title] { text-underline-offset: 3px; }
+
 
 /***** CALENDAR *****/
 /** EVENTS **/

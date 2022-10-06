@@ -241,6 +241,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 	var init_data = {
 		locale:                bookacti_localized.fullcalendar_locale,
 		timeZone:              bookacti_localized.fullcalendar_timezone,
+		now:                   new Date( bookacti_localized.current_time.substr( 0, 10 ) ),
 		initialView:           booking_system.find( '.bookacti-calendar:first' ).width() < bookacti_localized.initial_view_threshold ? 'timeGridDay' : 'timeGridWeek',
 		allDaySlot:            false,
 		defaultAllDay:         false,

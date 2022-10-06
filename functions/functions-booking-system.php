@@ -1642,7 +1642,7 @@ function bookacti_picked_group_of_events_exists( $picked_event_group, $occurrenc
 /**
  * Check if an event can be book with the given form
  * @since 1.12.0 (was bookacti_is_event_available_on_form)
- * @version 1.13.0
+ * @version 1.15.4
  * @param array $picked_event
  * @param array $event_data
  * @param int $form_id
@@ -1716,7 +1716,7 @@ function bookacti_is_picked_event_available_on_form( $picked_event, $event_data,
 	$days_off       = ! empty( $calendar_data[ 'days_off' ] ) && is_array( $calendar_data[ 'days_off' ] ) ? $calendar_data[ 'days_off' ] : array();
 	
 	if( $days_off ) {
-		$date_format = esc_html__( 'F d, Y', 'booking-activities' );
+		$date_format = get_option( 'date_format' );
 		foreach( $days_off as $off_period ) {
 			$off_from = new DateTime( $off_period[ 'from' ] . ' 00:00:00', $timezone );
 			$off_to   = new DateTime( $off_period[ 'to' ] . ' 23:59:59', $timezone );
@@ -1778,7 +1778,7 @@ function bookacti_is_picked_event_available_on_form( $picked_event, $event_data,
 /**
  * Check if a group of events can be book with the given form
  * @since 1.12.0 (was bookacti_is_group_of_events_available_on_form)
- * @version 1.13.0
+ * @version 1.15.4
  * @param array $picked_event_group
  * @param array $group_data
  * @param int $form_id
@@ -1841,7 +1841,7 @@ function bookacti_is_picked_group_of_events_available_on_form( $picked_event_gro
 	$days_off = ! empty( $calendar_data[ 'days_off' ] ) && is_array( $calendar_data[ 'days_off' ] ) ? $calendar_data[ 'days_off' ] : array();
 	
 	if( $days_off ) {
-		$date_format = esc_html__( 'F d, Y', 'booking-activities' );
+		$date_format = get_option( 'date_format' );
 		foreach( $picked_event_group[ 'events' ] as $grouped_event ) {
 			$grouped_event_start_dt = new DateTime( $grouped_event[ 'start' ], $timezone );
 			foreach( $days_off as $off_period ) {

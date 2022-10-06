@@ -10,7 +10,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 	
 	/**
 	 * Bookings WP_List_Table
-	 * @version 1.14.0
+	 * @version 1.15.4
 	 */
 	class Bookings_List_Table extends WP_List_Table {
 		
@@ -223,7 +223,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		
 		/**
 		 * Get booking list items. Parameters can be passed in the URL.
-		 * @version 1.14.0
+		 * @version 1.15.4
 		 * @access public
 		 * @return array
 		 */
@@ -276,6 +276,11 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			$can_edit_users = current_user_can( 'edit_users' );
 			
 			// Get datetime format
+			$date_format = get_option( 'date_format' );
+			$utc_timezone_obj = new DateTimeZone( 'UTC' );
+			$timezone = function_exists( 'wp_timezone_string' ) ? wp_timezone_string() : get_option( 'timezone_string' );
+			try { $timezone_obj = new DateTimeZone( $timezone ); }
+			catch ( Exception $ex ) { $timezone_obj = clone $utc_timezone_obj; }
 			$datetime_format    = bookacti_get_message( 'date_format_long' );
 			$quantity_separator = bookacti_get_message( 'quantity_separator' );
 			
@@ -344,9 +349,10 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 				
 				// Format creation date
 				$creation_date_raw = ! empty( $booking->creation_date ) ? bookacti_sanitize_datetime( $booking->creation_date ) : '';
-				/* translators: Datetime format. Must be adapted to each country. Use wp date_i18n documentation to find the appropriated combinaison https://wordpress.org/support/article/formatting-date-and-time/ */
-				$creation_date = $creation_date_raw ? bookacti_format_datetime( $creation_date_raw, __( 'F d, Y', BOOKACTI_PLUGIN_NAME ) ) : '';
-				$creation_date = $creation_date ? '<span title="' . $booking->creation_date . '">' . $creation_date . '</span>' : '';
+				$creation_date_dt = new DateTime( $creation_date_raw, $utc_timezone_obj );
+				$creation_date_dt->setTimezone( $timezone_obj );
+				$creation_date = $creation_date_raw ? bookacti_format_datetime( $creation_date_dt->format( 'Y-m-d H:i:s' ), $date_format ) : '';
+				$creation_date = $creation_date ? '<span title="' . esc_attr( $booking->creation_date ) . '">' . $creation_date . '</span>' : '';
 				
 				// Format customer column
 				// If the customer has an account
