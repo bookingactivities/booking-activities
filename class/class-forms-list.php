@@ -11,7 +11,7 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 	/**
 	 * Forms WP_List_Table
 	 * @since 1.5.0
-	 * @version 1.15.4
+	 * @version 1.15.5
 	 */
 	class Forms_List_Table extends WP_List_Table {
 		
@@ -42,14 +42,14 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 		
 		/**
 		 * Get form list table columns
+		 * @version 1.15.5
 		 * @access public
 		 * @return array
 		 */
 		public function get_columns(){
-
 			// Set the columns
 			$columns = array(
-				'cb'		=> '<input type="checkbox" />',
+//				'cb'		=> '<input type="checkbox" />',
 				'id'		=> _x( 'id', 'An id is a unique identification number', 'booking-activities' ),
 				'title'		=> __( 'Title', 'booking-activities' ),
 				'author'	=> __( 'Author', 'booking-activities' ),
@@ -72,7 +72,7 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 
 			// Sort the columns
 			$columns_order = array(
-				10 => 'cb',
+//				10 => 'cb',
 				20 => 'id',
 				30 => 'title',
 				40 => 'shortcode',
@@ -269,7 +269,7 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 		
 		/**
 		 * Get form list items. Parameters can be passed in the URL.
-		 * @version 1.15.4
+		 * @version 1.15.5
 		 * @access public
 		 * @return array
 		 */
@@ -314,9 +314,9 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 				
 				// Add info on the primary column to make them directly visible in responsive view
 				$primary_data = array( '<span class="bookacti-column-id" >(' . esc_html_x( 'id', 'An id is a unique identification number', 'booking-activities' ) . ': ' . $id . ')</span>' );
-				$primary_data_html = '<div class="bookacti-form-primary-data-container">';
+				$primary_data_html = '<div class="bookacti-primary-data-container">';
 				foreach( $primary_data as $single_primary_data ) {
-					$primary_data_html .= '<span class="bookacti-form-primary-data">' . $single_primary_data . '</span>';
+					$primary_data_html .= '<span class="bookacti-primary-data">' . $single_primary_data . '</span>';
 				}
 				$primary_data_html .= '</div>';
 				
@@ -571,6 +571,18 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 				<?php parent::pagination( $which ); ?>
 			</form>
 			<?php 
+		}
+		
+		
+		/**
+		 * Gets a list of CSS classes for the WP_List_Table table tag.
+		 * @since 1.15.5
+		 * @return string[] Array of CSS classes for the table tag.
+		 */
+		protected function get_table_classes() {
+			$classes = parent::get_table_classes();
+			$classes[] = 'bookacti-list-table';
+			return $classes;
 		}
 	}
 }

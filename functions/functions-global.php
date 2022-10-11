@@ -1217,19 +1217,19 @@ function bookacti_display_field( $args ) {
 /**
  * Format arguments to display a proper field
  * @since 1.2.0
- * @version 1.15.4
- * @param array $args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'attr', 'value', 'multiple', 'tip', 'required']
+ * @version 1.15.5
+ * @param array $raw_args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'attr', 'value', 'multiple', 'tip', 'required']
  * @return array|false
  */
-function bookacti_format_field_args( $args ) {
+function bookacti_format_field_args( $raw_args ) {
 	// If $args is not an array, return
-	if( ! is_array( $args ) ) { return false; }
+	if( ! is_array( $raw_args ) ) { return false; }
 
 	// If fields type or name are not set, return
-	if( ! isset( $args[ 'type' ] ) || ! isset( $args[ 'name' ] ) ) { return false; }
+	if( ! isset( $raw_args[ 'type' ] ) || ! isset( $raw_args[ 'name' ] ) ) { return false; }
 
 	// If field type is not supported, return
-	if( ! in_array( $args[ 'type' ], array( 'text', 'hidden', 'email', 'tel', 'date', 'time', 'password', 'number', 'duration', 'checkbox', 'checkboxes', 'select', 'radio', 'textarea', 'file', 'color', 'editor', 'user_id' ) ) ) { 
+	if( ! in_array( $raw_args[ 'type' ], array( 'text', 'hidden', 'email', 'tel', 'date', 'time', 'password', 'number', 'duration', 'checkbox', 'checkboxes', 'select', 'radio', 'textarea', 'file', 'color', 'editor', 'user_id' ) ) ) { 
 		return false; 
 	}
 
@@ -1248,17 +1248,11 @@ function bookacti_format_field_args( $args ) {
 		'required'     => 0,
 		'autocomplete' => 0
 	);
-
-	// Replace empty value by default
-	foreach( $default_args as $key => $default_value ) {
-		$args[ $key ] = isset( $args[ $key ] ) ? $args[ $key ] : $default_value;
-	}
-
+	
+	$args = wp_parse_args( $raw_args, $default_args );
+	
 	// Sanitize id and name
 	$args[ 'id' ] = sanitize_title_with_dashes( $args[ 'id' ] );
-
-	// If no id, use name instead
-	$args[ 'id' ] = $args[ 'id' ] ? $args[ 'id' ] : sanitize_title_with_dashes( $args[ 'name' ] ) . '-' . rand();
 
 	// Sanitize required
 	$args[ 'required' ] = isset( $args[ 'required' ] ) && $args[ 'required' ] ? 1 : 0;

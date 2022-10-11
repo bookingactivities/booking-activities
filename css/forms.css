@@ -1,25 +1,13 @@
 /***** FORMS PAGE *****/
 
 /** FORM LIST **/
-.bookacti-form-primary-data-container	{ display: none; margin-left: 10px; }
-.bookacti-form-primary-data				{ display: inline-block; margin-right: 10px; }
-.bookacti-form-primary-data:last-child	{ margin-right: 0; }
-
-#bookacti-form-list-container .column-id .sorting-indicator	{ display: inline-block; vertical-align: top; float: none; }
-#bookacti-form-list-container .column-active,
-#bookacti-form-list-container .column-id					{ width: 40px; white-space: nowrap; }
+#bookacti-form-list-container .column-active { width: 40px; white-space: nowrap; text-align: center; }
 #bookacti-form-list-container .column-date,
 #bookacti-form-list-container .column-author,
-#bookacti-form-list-container .column-status				{ width: 10%; }
-
+#bookacti-form-list-container .column-status { width: 10%; }
 #bookacti-form-list-container .column-shortcode input,
-#bookacti-form-editor-page-container #bookacti-form-shortcode { background: inherit; color: inherit; font-size: 12px; border: none; box-shadow: none; padding: 4px 8px; margin: 0; width: 100%; max-width: none; }
 
-@media screen and ( max-width: 782px ) {
-	.bookacti-form-primary-data-container { display: inline-block; }
-	#bookacti-form-list-container .column-id,
-	#bookacti-form-list-container .column-id.hidden ~ .column-primary .bookacti-column-id { display: none !important; }
-}
+
 
 
 /** FORM EDITOR **/
@@ -67,6 +55,8 @@ body.booking-activities_page_bookacti_forms label[for='bookacti_form_publish-hid
 
 #bookacti-availability_period_start-container .bookacti-duration-hint,
 #bookacti-availability_period_end-container .bookacti-duration-hint { display: none !important; }
+
+#bookacti-form-editor-page-container #bookacti-form-shortcode { background: inherit; color: inherit; font-size: 12px; border: none; box-shadow: none; padding: 4px 8px; margin: 0; width: 100%; max-width: none; }
 
 
 /* Dialogs */

@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Create Booking Activities database tables
- * @version 1.15.4
+ * @version 1.15.5
  * @global wpdb $wpdb
  */
 function bookacti_create_tables() {
@@ -50,7 +50,7 @@ function bookacti_create_tables() {
 		repeat_on VARCHAR(32), 
 		repeat_from DATE, 
 		repeat_to DATE,
-		repeat_exceptions LONGTEXT,
+		repeat_exceptions MEDIUMTEXT,
 		active TINYINT(1) NOT NULL DEFAULT 1,
 		PRIMARY KEY ( id ),
 		KEY template_id ( template_id ) ) ' . $collate . ';';
@@ -64,7 +64,7 @@ function bookacti_create_tables() {
 		repeat_on VARCHAR(32), 
 		repeat_from DATE, 
 		repeat_to DATE,
-		repeat_exceptions LONGTEXT,
+		repeat_exceptions MEDIUMTEXT,
 		active TINYINT(1) NOT NULL DEFAULT 1,
 		PRIMARY KEY ( id ),
 		KEY category_id ( category_id ) ) ' . $collate . ';';
@@ -154,7 +154,7 @@ function bookacti_create_tables() {
 		object_type VARCHAR(128), 
 		object_id BIGINT UNSIGNED, 
 		meta_key VARCHAR(255), 
-		meta_value LONGTEXT,
+		meta_value MEDIUMTEXT,
 		PRIMARY KEY ( id ),
 		KEY object_type ( object_type ),
 		KEY object_id ( object_id ) ) ' . $collate . ';';
@@ -182,7 +182,7 @@ function bookacti_create_tables() {
 	if( ! function_exists( 'dbDelta' ) ) {
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 	}
-
+	
 	dbDelta( $table_templates_query 
 			. $table_activities_query 
 			. $table_templates_activities_query 

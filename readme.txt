@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 6.0
 Requires PHP: 5.3
-Stable tag: 1.15.4
+Stable tag: 1.15.5
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -320,6 +320,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.15.5 =
+* Tweak - Remove useless checkbox column in list tables and standardize CSS
+* Dev - No longer generate id in html fields (with random number) if not provided
+* Dev - Change LONGTEXT to MEDIUMTEXT db column definition
 
 = 1.15.4 - 2022/10/06 =
 * Tweak - Enable the "Today" button even if today's view is not accessible
