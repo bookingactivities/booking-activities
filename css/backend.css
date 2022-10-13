@@ -83,8 +83,11 @@ ul[id$='-select-box-results'] li[aria-disabled='true'] { display: none; }
 @media screen and ( max-width: 782px ) {
 	.bookacti-list-table .bookacti-primary-data-container { display: inline-block; }
 	.bookacti-list-table .column-id.hidden ~ .column-primary .bookacti-column-id,
+	.bookacti-list-table .is-expanded td.column-id,
 	.bookacti-list-table .column-id { display: none !important; }
 	.bookacti-list-table .button    { padding: 3px 6px; font-size: 1em; }
+	.bookacti-list-table .is-expanded td      { text-align: left; }
+	.rtl .bookacti-list-table .is-expanded td { text-align: right; }
 }
 
 

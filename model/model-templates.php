@@ -1231,7 +1231,7 @@ function bookacti_delete_templates_x_activities( $template_ids, $activity_ids ) 
 
 /**
  * Get activities by template
- * @version 1.15.0
+ * @version 1.15.5
  * @global wpdb $wpdb
  * @param array $template_ids
  * @param boolean $based_on_events Whether to retrieve activities bound to templates or activities bound to events of templates
@@ -1291,10 +1291,9 @@ function bookacti_get_activities_by_template( $template_ids = array(), $based_on
 		$activity[ 'multilingual_title' ] = $activity[ 'title' ];
 		$activity[ 'title' ]              = $activity[ 'title' ] ? apply_filters( 'bookacti_translate_text', $activity[ 'title' ] ) : '';
 		
+		$activity[ 'settings' ] = isset( $activities_meta[ $activity[ 'id' ] ] ) ? $activities_meta[ $activity[ 'id' ] ] : array();
 		$unit_name_singular = ! empty( $activity[ 'settings' ][ 'unit_name_singular' ] ) ? $activity[ 'settings' ][ 'unit_name_singular' ] : '';
 		$unit_name_plural   = ! empty( $activity[ 'settings' ][ 'unit_name_plural' ] )   ? $activity[ 'settings' ][ 'unit_name_plural' ] : '';
-
-		$activity[ 'settings' ] = isset( $activities_meta[ $activity[ 'id' ] ] ) ? $activities_meta[ $activity[ 'id' ] ] : array();
 		$activity[ 'settings' ][ 'multilingual_unit_name_singular' ] = $unit_name_singular;
 		$activity[ 'settings' ][ 'multilingual_unit_name_plural' ]   = $unit_name_plural;
 		$activity[ 'settings' ][ 'unit_name_singular' ] = $unit_name_singular ? apply_filters( 'bookacti_translate_text', $unit_name_singular ) : '';

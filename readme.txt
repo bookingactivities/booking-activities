@@ -3,7 +3,7 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
-Tested up to: 6.0
+Tested up to: 6.1
 Requires PHP: 5.3
 Stable tag: 1.15.5
 License: GPLv3 or later
@@ -323,6 +323,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 = 1.15.5 =
 * Tweak - Remove useless checkbox column in list tables and standardize CSS
+* Fix - Activity unit name was not displayed
+* Fix - Activity unit name was not displayed in the correct order in RTL languages
+* Fix - Incorrect display of ID column in backend list table on mobile
 * Dev - No longer generate id in html fields (with random number) if not provided
 * Dev - Change LONGTEXT to MEDIUMTEXT db column definition
 

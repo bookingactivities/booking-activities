@@ -1516,7 +1516,7 @@ function bookacti_get_bookings_number_for_a_single_grouped_event( booking_system
 
 /**
  * Get a div with event available places
- * @version 1.15.0
+ * @version 1.15.5
  * @param {HTMLElement} booking_system
  * @param {(FullCalendar.EventApi|Object)} event
  * @returns {String}
@@ -1579,10 +1579,13 @@ function bookacti_get_event_availability_div( booking_system, event ) {
 		hide_availability_class	= 'bookacti-hide-availability';
 	}
 	
+	var unit_name_class = '';
+	if( unit_name ) { unit_name_class = 'bookacti-has-unit-name'; }
+	
 	var avail_div     = $j( '<div></div>',   { 'class': 'bookacti-availability-container ' + hide_availability_class } );
 	var places_span   = $j( '<div></div>',   { 'class': 'bookacti-available-places ' + availability_classes } );
 	var nb_span       = $j( '<span></span>', { 'class': 'bookacti-available-places-number', 'html': available_places } );
-	var unit_span     = $j( '<span></span>', { 'class': 'bookacti-available-places-unit-name', 'html': unit_name } );
+	var unit_span     = $j( '<span></span>', { 'class': 'bookacti-available-places-unit-name ' + unit_name_class, 'html': unit_name } );
 	var particle_span = $j( '<span></span>', { 'class': 'bookacti-available-places-avail-particle', 'html': avail } );
 
 	places_span.append( nb_span );
