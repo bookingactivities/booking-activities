@@ -168,6 +168,7 @@ $j( document ).ready( function() {
 	 * Display the booking list tooltip when an event is hovered
 	 * @since 1.8.0
 	 * @version 1.15.0
+	 * @param {Event} e
 	 * @param {Object} info {
 		* @type {(FullCalendar.EventApi|Object)} event
 		* @type {HTMLElement} el
@@ -306,9 +307,6 @@ $j( document ).ready( function() {
 	
 	// Check if booking systems exist before anything
 	if( $j( '.bookacti-booking-system' ).length ) {
-		// Init the Dialogs
-		bookacti_init_booking_system_dialogs();
-		
 		/**
 		 * Load booking system on page load
 		 * @version 1.15.0

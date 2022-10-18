@@ -238,10 +238,6 @@ tr.bookacti-booking-list-selected-row								{ background-color: rgba( 65, 143, 
 .bookacti-refund-option-description  { display: block; }
 #bookacti-refund-message textarea    { display: block; width: 100%; }
 
-#bookacti-reschedule-booking-dialog label:not(.bookacti-onoffswitch-label),
-.bookacti-backend-dialog.bookacti-bookings-dialog label:not(.bookacti-onoffswitch-label):not(.bookacti-refund-option-label) { display: inline-block; width: 150px; font-family: Arial,Helvetica,sans-serif; font-weight: bold; }
-.bookacti-backend-dialog.bookacti-bookings-dialog label.bookacti-fullwidth-label:not(.bookacti-onoffswitch-label):not(.bookacti-refund-option-label) { width: 100%; }
-	
 
 /***** RESPONSIVE DESIGN *****/
 

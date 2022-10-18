@@ -1,7 +1,4 @@
 $j( document ).ready( function() {
-	// Init the Dialogs
-	bookacti_init_form_dialogs();
-	
 	// Init tooltip on frontend booking forms
 	bookacti_init_tooltip();
 	
@@ -215,46 +212,6 @@ $j( document ).ready( function() {
 		});
 	}
 });
-
-
-/**
- * Initialize form dialogs
- * @version 1.7.0
- */
-function bookacti_init_form_dialogs() {
-	//Common param
-	$j( '.bookacti-form-dialog' ).dialog({ 
-		"modal":       true,
-		"autoOpen":    false,
-		"minHeight":   300,
-		"minWidth":    460,
-		"resize":      'auto',
-		"show":        true,
-		"hide":        true,
-		"dialogClass": 'bookacti-dialog',
-		"closeText":   '&#10006;',
-		"beforeClose": function() { 
-			if( ! bookacti_localized.is_admin ) { return; }
-			var scope = '.bookacti-form-dialog';
-			var dialog_id = $j( this ).attr( 'id' );
-			if( dialog_id ) { scope = '#' + dialog_id; }
-			bookacti_empty_all_dialog_forms( scope ); 
-		}
-	});
-	
-	// Make dialogs close when the user click outside
-	$j( 'body' ).on( 'click', '.ui-widget-overlay', function (){
-		$j( 'div:ui-dialog:visible' ).dialog( 'close' );
-	});
-	
-	// Press ENTER to bring focus on OK button
-	$j( '.bookacti-form-dialog' ).on( 'keydown', function( e ) {
-		if( ! $j( 'textarea' ).is( ':focus' ) && e.keyCode == $j.ui.keyCode.ENTER ) {
-			$j( this ).parent().find( '.ui-dialog-buttonpane button:first' ).focus(); 
-			return false; 
-		}
-	});
-}
 
 
 /**

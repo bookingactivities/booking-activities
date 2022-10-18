@@ -34,7 +34,7 @@ add_action( 'bookacti_display_form_field_calendar', 'bookacti_display_form_field
 /**
  * Display the form field 'login'
  * @since 1.5.0
- * @version 1.14.0
+ * @version 1.15.5
  * @param string $html
  * @param array $field
  * @param string $instance_id
@@ -178,7 +178,7 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 							?>
 							</div>
 							<?php if( ! $forgotten_password_url ) { ?>
-							<div data-field-id='<?php echo $field_id; ?>' class='bookacti-forgotten-password-dialog bookacti-form-dialog' title='<?php esc_html_e( 'Forgotten password', 'booking-activities' ); ?>' style='display:none;' >
+							<div data-field-id='<?php echo $field_id; ?>' class='bookacti-backend-dialog bookacti-forgotten-password-dialog bookacti-form-dialog' title='<?php esc_html_e( 'Forgotten password', 'booking-activities' ); ?>' style='display:none;' >
 								<div class='bookacti-forgotten-password-dialog-description' >
 									<p>
 									<?php

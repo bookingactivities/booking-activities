@@ -235,7 +235,7 @@ function bookacti_get_booking_system_data( $atts ) {
 /**
  * Display booking system dialogs
  * @since 1.5.0
- * @version 1.12.0
+ * @version 1.15.5
  * @param string $booking_system_id
  */
 function bookacti_display_booking_system_dialogs( $booking_system_id ) {
@@ -243,7 +243,7 @@ function bookacti_display_booking_system_dialogs( $booking_system_id ) {
 	<!-- Choose a group of events -->
 	<div id='<?php echo $booking_system_id . '-choose-group-of-events-dialog'; ?>' 
 		 data-booking-system-id='<?php echo $booking_system_id; ?>' 
-		 class='bookacti-choose-group-of-events-dialog bookacti-booking-system-dialog' 
+		 class='bookacti-backend-dialog bookacti-choose-group-of-events-dialog bookacti-booking-system-dialog' 
 		 title='<?php echo bookacti_get_message( 'choose_group_dialog_title' ); ?>' 
 		 style='display:none;' >
 		<?php echo bookacti_get_message( 'choose_group_dialog_content' ); ?>

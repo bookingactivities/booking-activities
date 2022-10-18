@@ -321,7 +321,7 @@ function bookacti_switch_product_variation_form( form_container, variation ) {
 
 /**
  * Replace a old variation form with a new one
- * @version 1.15.0
+ * @version 1.15.5
  * @param {HTMLElement} form_container
  * @param {object} variation
  * @param {HTMLElement} form_html
@@ -344,7 +344,7 @@ function bookacti_fill_product_variation_form( form_container, variation, form_h
 	bookacti_booking_method_set_up( booking_system );
 	
 	// Initialize dialog
-	bookacti_init_booking_system_dialogs();
+	bookacti_init_jquery_ui_dialogs( '.bookacti-booking-system-dialog' );
 	
 	// Initialize tooltip
 	bookacti_init_tooltip();

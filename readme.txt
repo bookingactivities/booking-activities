@@ -326,6 +326,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Activity unit name was not displayed
 * Fix - Activity unit name was not displayed in the correct order in RTL languages
 * Fix - Incorrect display of ID column in backend list table on mobile
+* Fix - WC order status may be Completed unexpectedly in some cases involving non-booking products
+* Fix - Invalid group ID error may appear in groups of events dialog in calendar editor
+* Dev - Standardize dialogs JS and CSS
 * Dev - No longer generate id in html fields (with random number) if not provided
 * Dev - Change LONGTEXT to MEDIUMTEXT db column definition
 

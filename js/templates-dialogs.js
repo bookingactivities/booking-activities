@@ -2,41 +2,9 @@
 
 /**
  * Initialize calendar editor dialogs
- * @version 1.15.4
+ * @version 1.15.5
  */
 function bookacti_init_template_dialogs() {
-	// Common param
-	$j( '.bookacti-template-dialog' ).dialog({ 
-		"modal":       true,
-		"autoOpen":    false,
-		"minHeight":   300,
-		"minWidth":    520,
-		"resize":      'auto',
-		"show":        true,
-		"hide":        true,
-		"dialogClass": 'bookacti-dialog',
-		"closeText":   '&#10006;',
-		"beforeClose": function() { 
-			var scope = '.bookacti-template-dialog';
-			var dialog_id = $j( this ).attr( 'id' );
-			if( dialog_id ) { scope = '#' + dialog_id; }
-			bookacti_empty_all_dialog_forms( scope ); 
-		}
-	});
-
-	// Make dialogs close when the user click outside
-	$j( 'body' ).on( 'click', '.ui-widget-overlay', function (){
-		$j( 'div:ui-dialog:visible' ).dialog( 'close' );
-	});
-
-	// Press ENTER to bring focus on OK button
-	$j( '.bookacti-template-dialog' ).on( 'keydown', function( e ) {
-		if( ! $j( 'textarea' ).is( ':focus' ) && e.keyCode == $j.ui.keyCode.ENTER ) {
-			$j( this ).parent().find( '.ui-dialog-buttonpane button:first' ).focus(); 
-			return false; 
-		}
-	});	
-
 	// Individual param
 	$j( '#bookacti-unbind-event-dialog, #bookacti-unbind-group-of-events-dialog' ).dialog({
 		"beforeClose": function(){}
@@ -48,9 +16,13 @@ function bookacti_init_template_dialogs() {
 		$j( 'input[type="radio"][name="unbind_action"]:checked' ).closest( '.bookacti-unbind-action' ).find( 'small' ).show();
 	});
 
-	// Load activities bound to selected template
-	$j( 'select#template-import-bound-activities' ).on( 'change', function(){
-		bookacti_load_activities_bound_to_template( $j( 'select#template-import-bound-activities' ).val() );
+	/**
+	 * Load activities bound to selected template
+	 * @version 1.15.5
+	 */
+	$j( 'select#template-import-bound-activities' ).on( 'change', function() {
+		var selected_template_id = $j( 'select#template-import-bound-activities' ).val();
+		if( selected_template_id ) { bookacti_load_activities_bound_to_template( selected_template_id ); }
 	});
 
 	// Init new template dialog
@@ -80,11 +52,11 @@ function bookacti_init_template_dialogs() {
 	
 	/**
 	 * Init update activity dialog
-	 * @version 1.11.0
+	 * @version 1.15.5
 	 */
 	$j( '#bookacti-template-activity-list' ).on( 'click', '.bookacti-activity-settings', function() {
 		var activity_id = $j( this ).closest( '.bookacti-activity' ).data( 'activity-id' );
-		bookacti_dialog_update_activity( activity_id ); 
+		if( activity_id ) { bookacti_dialog_update_activity( activity_id ); }
 	});
 
 	// Init create group of events dialog
@@ -105,10 +77,11 @@ function bookacti_init_template_dialogs() {
 
 	/**
 	 * Init update group of events dialog
-	 * @version 1.9.0
+	 * @version 1.15.5
 	 */
 	$j( '#bookacti-template-groups-of-events-container' ).on( 'click', '.bookacti-update-group-of-events', function() {
-		var group_id    = $j( this ).closest( '.bookacti-group-of-events' ).data( 'group-id' );
+		var group_id = $j( this ).closest( '.bookacti-group-of-events' ).data( 'group-id' );
+		if( ! group_id ) { return; }
 		var is_selected = $j( this ).closest( '.bookacti-group-of-events' ).hasClass( 'bookacti-selected-group' );
 		var are_selected = is_selected;
 		if( ! is_selected ) {
@@ -146,25 +119,18 @@ function bookacti_init_template_dialogs() {
 		var group_id = $j( '#bookacti-group-categories' ).find( '.bookacti-group-of-events.bookacti-selected-group' ).data( 'group-id' );
 		if( group_id ) { bookacti_navigate_through_group_occurrences( group_id, 'reset' ); }
 	});
-
+	
 	
 	/**
 	 * Init update group category dialog
-	 * @version 1.9.0
+	 * @version 1.15.5
 	 */
 	$j( '#bookacti-group-categories' ).on( 'click', '.bookacti-update-group-category', function() {
 		var category_id = $j( this ).closest( '.bookacti-group-category' ).data( 'group-category-id' );
-		bookacti_dialog_update_group_category( category_id ); 
+		if( category_id ) { bookacti_dialog_update_group_category( category_id ); }
 	});
-
-	/**
-	 * Prevent sending form
-	 * @param {event} e
-	 */
-	$j( '.bookacti-template-dialog form' ).on( 'submit', function( e ){
-		e.preventDefault();
-	});
-
+	
+	
 	/**
 	 * Display or hide new group category title field
 	 */
@@ -2216,14 +2182,13 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 /**
  * Get the occurrences of group of events
  * @since 1.12.0
- * @version 1.13.0
+ * @version 1.15.5
  * @param {Int} group_id
  */
 function bookacti_get_group_of_events_occurrences( group_id ) {
 	var data = {
 		'action':   'bookactiGetGroupOfEvents',
 		'group_id': group_id,
-		'interval': JSON.stringify( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_interval' ] ),
 		'nonce':    $j( '#nonce_insert_or_update_group_of_events' ).val()
 	};
 	

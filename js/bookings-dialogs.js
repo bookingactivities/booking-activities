@@ -1,17 +1,11 @@
 $j( document ).ready( function() {
 	/**
-	 * Init the Dialogs
-	 */
-	bookacti_init_bookings_dialogs();
-	
-	
-	/**
 	 * Init booking actions
 	 */
 	bookacti_init_booking_actions();
 	
 	
-	if( $j( '.bookacti-bookings-bulk-action' ).length ) {	
+	if( $j( '.bookacti-bookings-bulk-action' ).length ) {
 		/**
 		 * Init booking bulk actions
 		 * @since 1.6.0
@@ -52,40 +46,6 @@ $j( document ).ready( function() {
 		bookacti_change_export_type_according_to_active_tab();
 	});
 });
-
-
-/**
- * Initialize bookings dialogs
- * @version 1.7.0
- */
-function bookacti_init_bookings_dialogs() {
-	// Common param
-	$j( '.bookacti-bookings-dialog' ).dialog({ 
-		"modal":       true,
-		"autoOpen":    false,
-		"minHeight":   300,
-		"minWidth":    460,
-		"resize":      'auto',
-		"show":        true,
-		"hide":        true,
-		"dialogClass": 'bookacti-dialog',
-		"closeText":   '&#10006;',
-		"close":       function() {}
-	});
-	
-	// Make dialogs close when the user click outside
-	$j( 'body' ).on( 'click', '.ui-widget-overlay', function (){
-		$j( 'div:ui-dialog:visible' ).dialog( 'close' );
-	});
-	
-	// Press ENTER to bring focus on OK button
-	$j( '.bookacti-bookings-dialog' ).off( 'keydown' ).on( 'keydown', function( e ) {
-		if( ! $j( 'textarea' ).is( ':focus' ) && e.keyCode == $j.ui.keyCode.ENTER ) {
-			$j( this ).parent().find( '.ui-dialog-buttonpane button:first' ).focus(); 
-			return false; 
-		}
-	});
-}
 
 
 // DIALOGS

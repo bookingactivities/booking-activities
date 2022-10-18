@@ -1,46 +1,4 @@
-$j( document ).ready( function() {
-	/**
-	 * Close dialogs when the user clicks outside
-	 */
-	$j( 'body' ).on( 'click', '.ui-widget-overlay', function (){
-		$j( 'div:ui-dialog:visible' ).dialog( 'close' );
-	});
-	
-	
-	/**
-	 * Press ENTER to bring focus on dialog OK button
-	 * @param {Event} e
-	 */
-	$j( 'body' ).on( 'keydown', '.bookacti-booking-system-dialog', function( e ) {
-		if( ! $j( 'textarea' ).is( ':focus' ) && e.keyCode == $j.ui.keyCode.ENTER ) {
-			$j( this ).parent().find( '.ui-dialog-buttonpane button:first' ).focus(); 
-			return false; 
-		}
-	});
-});
-
-
 // INITIALIZATION
-
-/**
- * Initialize bookings dialogs
- */
-function bookacti_init_booking_system_dialogs() {
-	// Common param
-	$j( '.bookacti-booking-system-dialog' ).dialog({ 
-		"modal":       true,
-		"autoOpen":    false,
-		"minHeight":   300,
-		"minWidth":    400,
-		"resize":      'auto',
-		"show":        true,
-		"hide":        true,
-		"dialogClass": 'bookacti-dialog',
-		"closeText":   '&#10006;',
-		"close":       function() {}
-	});
-}
-
 
 /**
  * Choose a group of events dialog

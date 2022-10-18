@@ -876,7 +876,7 @@ add_action( 'wp_ajax_bookactiUpdateGroupOfEvents', 'bookacti_controller_update_g
 /**
  * AJAX Controller - Get group of events data and occurrences
  * @since 1.12.0
- * @version 1.13.0
+ * @version 1.15.5
  */
 function bookacti_controller_get_group_of_events() {
 	// Check nonce
@@ -884,10 +884,8 @@ function bookacti_controller_get_group_of_events() {
 	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'get_group_of_events' ); }
 	
 	// Check if group exists
-	$group_id = intval( $_POST[ 'group_id' ] );
-	$interval = isset( $_POST[ 'interval' ] ) ? ( is_array( $_POST[ 'interval' ] ) ? $_POST[ 'interval' ] : ( is_string( $_POST[ 'interval' ] ) ? bookacti_maybe_decode_json( stripslashes( $_POST[ 'interval' ] ), true ) : array() ) ) : array();
-	$interval = bookacti_sanitize_events_interval( $interval );
-	$groups = bookacti_get_groups_of_events( array( 'event_groups' => array( $group_id ), 'past_events' => 1, 'interval' => $interval, 'interval_started' => 1 ) );
+	$group_id   = intval( $_POST[ 'group_id' ] );
+	$groups     = $group_id ? bookacti_get_groups_of_events( array( 'event_groups' => array( $group_id ), 'past_events' => 1 ) ) : array();
 	$group_data = isset( $groups[ 'data' ][ $group_id ] ) ? $groups[ 'data' ][ $group_id ] : array();
 	if( ! $group_data ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'group_of_events_not_found', 'message' => esc_html__( 'Invalid group of events ID.', 'booking-activities' ) ), 'get_group_of_events' ); }
 	
@@ -904,7 +902,7 @@ add_action( 'wp_ajax_bookactiGetGroupOfEvents', 'bookacti_controller_get_group_o
 /**
  * AJAX Controller - Check if the group of events is booked before deleting it
  * @since 1.10.0
- * @version 1.13.0
+ * @version 1.15.5
  */
 function bookacti_controller_before_delete_group_of_events() {
 	// Check nonce
@@ -913,8 +911,8 @@ function bookacti_controller_before_delete_group_of_events() {
 	
 	// Check if group exists
 	$group_id = intval( $_POST[ 'group_id' ] );
-	$groups = bookacti_get_groups_of_events( array( 'event_groups' => array( $group_id ), 'nb_events' => array(), 'past_events' => 1, 'data_only' => 1 ) );
-	$group = isset( $groups[ 'data' ][ $group_id ] ) ? $groups[ 'data' ][ $group_id ] : array();
+	$groups   = $group_id ? bookacti_get_groups_of_events( array( 'event_groups' => array( $group_id ), 'nb_events' => array(), 'past_events' => 1, 'data_only' => 1 ) ) : array();
+	$group    = isset( $groups[ 'data' ][ $group_id ] ) ? $groups[ 'data' ][ $group_id ] : array();
 	if( ! $group ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'group_of_events_not_found', 'message' => esc_html__( 'Invalid group of events ID.', 'booking-activities' ) ), 'before_deactivate_group_of_events' ); }
 	
 	// Check capabilities
@@ -954,7 +952,7 @@ add_action( 'wp_ajax_bookactiBeforeDeleteGroupOfEvents', 'bookacti_controller_be
 /**
  * Delete a group of events with AJAX
  * @since 1.1.0
- * @version 1.14.1
+ * @version 1.15.5
  */
 function bookacti_controller_delete_group_of_events() {
 	// Check nonce
@@ -963,8 +961,8 @@ function bookacti_controller_delete_group_of_events() {
 	
 	// Check if group exists
 	$group_id = intval( $_POST[ 'group_id' ] );
-	$groups = bookacti_get_groups_of_events( array( 'event_groups' => array( $group_id ), 'nb_events' => array(), 'past_events' => 1, 'data_only' => 1 ) );
-	$group = isset( $groups[ 'data' ][ $group_id ] ) ? $groups[ 'data' ][ $group_id ] : false;
+	$groups   = $group_id ? bookacti_get_groups_of_events( array( 'event_groups' => array( $group_id ), 'nb_events' => array(), 'past_events' => 1, 'data_only' => 1 ) ) : array();
+	$group    = isset( $groups[ 'data' ][ $group_id ] ) ? $groups[ 'data' ][ $group_id ] : false;
 	if( ! $group ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'group_of_events_not_found', 'message' => esc_html__( 'Invalid group of events ID.', 'booking-activities' ) ), 'deactivate_group_of_events' ); }
 	
 	// Check capabilities

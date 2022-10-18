@@ -228,16 +228,16 @@ add_action( 'woocommerce_refund_deleted', 'bookacti_update_booking_when_refund_i
 // TEMPLATES
 
 /**
- * Add shop managers to templates managers exceptions
- * 
+ * Add shop managers to managers exceptions
+ * @since 1.15.5 (was bookacti_add_shop_manager_to_template_managers_exceptions)
  * @param array $exceptions
  * @return string
  */
-function bookacti_add_shop_manager_to_template_managers_exceptions( $exceptions ) {
+function bookacti_wc_add_managers_roles_exceptions( $exceptions ) {
 	$exceptions[] = 'shop_manager';
 	return $exceptions;
 }
-add_filter( 'bookacti_managers_roles_exceptions', 'bookacti_add_shop_manager_to_template_managers_exceptions', 10, 1 );
+add_filter( 'bookacti_managers_roles_exceptions', 'bookacti_wc_add_managers_roles_exceptions', 10, 1 );
 
 
 /**

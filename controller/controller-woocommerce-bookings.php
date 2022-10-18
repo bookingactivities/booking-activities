@@ -254,6 +254,7 @@ add_action( 'woocommerce_order_status_cancelled', 'bookacti_wc_update_cancelled_
  * - "Processing" if the order has only activities but not virtual
  * And update the bookings of the order to "Pending" if there are at least one activity in the middle of other products
  * @since 1.9.0 (was bookacti_set_order_status_to_completed_after_payment)
+ * @version 1.15.5
  * @param string $order_status
  * @param int $order_id
  * @return string
@@ -282,7 +283,7 @@ function bookacti_wc_payment_complete_order_status( $order_status, $order_id ) {
 		$item_bookings_ids = bookacti_wc_format_order_item_bookings_ids( $item );
 		
 		// Is activity
-		if( $item_bookings_ids ) { $are_activities = false; }
+		if( ! $item_bookings_ids ) { $are_activities = false; }
 
 		// Is virtual
 		$product = $item[ 'variation_id' ] ? wc_get_product( $item[ 'variation_id' ] ) : wc_get_product( $item[ 'product_id' ] );
