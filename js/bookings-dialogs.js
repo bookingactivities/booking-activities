@@ -53,12 +53,9 @@ $j( document ).ready( function() {
 /**
  * Bookings calendar settings
  * @since 1.8.0
- * @version 1.15.0
+ * @version 1.15.5
  */
 function bookacti_dialog_update_bookings_calendar_settings() {	
-	// Reset error notices
-	$j( '#bookacti-bookings-calendar-settings-dialog .bookacti-notices' ).remove();
-	
 	// Add the buttons
     $j( '#bookacti-bookings-calendar-settings-dialog' ).dialog( 'option', 'buttons',
 		// OK button
@@ -145,7 +142,7 @@ function bookacti_dialog_update_bookings_calendar_settings() {
 
 /**
  * Cancel booking dialog
- * @version 1.15.0
+ * @version 1.15.5
  * @param {int} booking_id
  * @param {string} booking_type
  */
@@ -153,9 +150,6 @@ function bookacti_dialog_cancel_booking( booking_id, booking_type ) {
 	// Sanitize booking_type
 	booking_type = booking_type === 'group' ? 'group' : 'single';
 	var action = booking_type === 'group' ? 'bookactiCancelBookingGroup' : 'bookactiCancelBooking';
-	
-	// Reset error notices
-	$j( '#bookacti-cancel-booking-dialog .bookacti-notices' ).remove();
 	
 	// Add the buttons
     $j( '#bookacti-cancel-booking-dialog' ).dialog( 'option', 'buttons',
@@ -259,7 +253,7 @@ function bookacti_dialog_cancel_booking( booking_id, booking_type ) {
 
 /**
  * Refund a cancelled booking
- * @version 1.15.0
+ * @version 1.15.5
  * @param {int} booking_id
  * @param {string} booking_type
  */
@@ -268,9 +262,6 @@ function bookacti_dialog_refund_booking( booking_id, booking_type ) {
 	booking_type      = booking_type === 'group' ? 'group' : 'single';
 	var action_html   = booking_type === 'group' ? 'bookactiGetBookingGroupRefundActionsHTML' : 'bookactiGetBookingRefundActionsHTML';
 	var action_refund = booking_type === 'group' ? 'bookactiRefundBookingGroup' : 'bookactiRefundBooking';
-	
-	// Reset error notices
-	$j( '#bookacti-refund-booking-dialog .bookacti-notices' ).remove();
 	
 	// Empty current refund actions
 	$j( '#bookacti-refund-booking-dialog #bookacti-refund-options' ).empty();
@@ -487,7 +478,7 @@ function bookacti_dialog_refund_confirmation( message ) {
 
 /**
  * Change Booking State
- * @version 1.15.4
+ * @version 1.15.5
  * @param {int} booking_id
  * @param {string} booking_type
  */
@@ -513,9 +504,6 @@ function bookacti_dialog_change_booking_state( booking_id, booking_type ) {
 	if( booking_state )  { $j( 'select#bookacti-select-booking-state' ).val( booking_state ); }
 	if( payment_status ) { $j( 'select#bookacti-select-payment-status' ).val( payment_status ); }
 	$j( '#bookacti-send-notifications-on-state-change' ).prop( 'checked', false );
-	
-	// Reset error notices
-	$j( '#bookacti-change-booking-state-dialog .bookacti-notices' ).remove();
 	
 	// Add the buttons
     $j( '#bookacti-change-booking-state-dialog' ).dialog( 'option', 'buttons',
@@ -645,7 +633,7 @@ function bookacti_dialog_change_booking_state( booking_id, booking_type ) {
 /**
  * Change Booking quantity
  * @since 1.7.10
- * @version 1.15.0
+ * @version 1.15.5
  * @param {int} booking_id
  * @param {string} booking_type
  */
@@ -667,9 +655,6 @@ function bookacti_dialog_change_booking_quantity( booking_id, booking_type ) {
 	// Select the current quantity
 	var current_quantity = parseInt( row.first().find( '.column-quantity' ).text() );
 	$j( '#bookacti-new-quantity' ).val( current_quantity );
-	
-	// Reset error notices
-	$j( '#bookacti-change-booking-quantity-dialog .bookacti-notices' ).remove();
 	
 	row.first().trigger( 'bookacti_booking_action_dialog_opened', [ booking_id, booking_type, 'change_quantity' ] );
 	
@@ -942,7 +927,7 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 /**
  * Delete a booking or a booking group
  * @since 1.5.0
- * @version 1.15.0
+ * @version 1.15.5
  * @param {int} booking_id
  * @param {string} booking_type
  */
@@ -966,9 +951,6 @@ function bookacti_dialog_delete_booking( booking_id, booking_type ) {
 	$j( '#bookacti-delete-booking-dialog input[name="action"]' ).val( action );
 	$j( '#bookacti-delete-booking-dialog input[name="booking_id"]' ).val( booking_id );
 	$j( '#bookacti-delete-booking-dialog input[name="booking_type"]' ).val( booking_type );
-	
-	// Reset error notices
-	$j( '#bookacti-delete-booking-dialog .bookacti-notices' ).remove();
 	
 	// Add the buttons
     $j( '#bookacti-delete-booking-dialog' ).dialog( 'option', 'buttons',
@@ -1055,7 +1037,7 @@ function bookacti_dialog_delete_booking( booking_id, booking_type ) {
 /**
  * Export bookings dialog
  * @since 1.6.0
- * @version 1.8.0
+ * @version 1.15.5
  */
 function bookacti_dialog_export_bookings() {
 	// Change the export type according to the selected tab
@@ -1065,9 +1047,6 @@ function bookacti_dialog_export_bookings() {
 	// Reset URL
 	$j( '#bookacti_export_bookings_url_secret' ).val( '' );
 	$j( '#bookacti-export-bookings-url-container' ).hide();
-	
-	// Reset error notices
-	$j( '#bookacti-export-bookings-dialog .bookacti-notices' ).remove();
 	
 	// Add the buttons
 	$j( '#bookacti-export-bookings-dialog' ).dialog( 'option', 'buttons',

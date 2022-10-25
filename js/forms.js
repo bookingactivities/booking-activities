@@ -662,7 +662,7 @@ function bookacti_perform_form_action( booking_system ) {
 /**
  * Forgotten password dialog
  * @since 1.5.0
- * @version 1.15.0
+ * @version 1.15.5
  * @param {string} field_id
  */
 function bookacti_dialog_forgotten_password( field_id ) {
@@ -681,8 +681,8 @@ function bookacti_dialog_forgotten_password( field_id ) {
 				// Clear feedbacks
 				dialog.find( '.bookacti-notices' ).remove();
 				
-				var email = dialog.find( '.bookacti-forgotten-password-email' ).val();
-				if( ! email ) { return; }
+				var user_login = dialog.find( '.bookacti-forgotten-password-email' ).val();
+				if( ! user_login ) { return; }
 				
 				// Display a loader
 				bookacti_add_loading_html( dialog );
@@ -692,7 +692,7 @@ function bookacti_dialog_forgotten_password( field_id ) {
 					type: 'POST',
 					data: { 
 						'action': 'bookactiForgottenPassword',
-						'email': email
+						'user_login': user_login
 					},
 					dataType: 'json',
 					success: function( response ) {
@@ -701,7 +701,7 @@ function bookacti_dialog_forgotten_password( field_id ) {
 								dialog.append( '<div class="bookacti-notices"><ul class="bookacti-success-list"><li>' + response.message + '</li></ul></div>' );
 							}
 							
-							$j( 'body' ).trigger( 'bookacti_forgotten_password_email_sent', [ email, response ] );
+							$j( 'body' ).trigger( 'bookacti_reset_password_notification_sent', [ user_login, response ] );
 							
 						} else if( response.status === 'failed' ) {
 							var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;

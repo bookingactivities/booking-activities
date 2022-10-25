@@ -469,13 +469,10 @@ function bookacti_dialog_update_form_field( field_id, field_name ) {
 /**
  * Export events
  * @since 1.6.0
- * @version 1.8.0
+ * @version 1.15.5
  * @param {int} form_id
  */
 function bookacti_dialog_export_events( form_id ) {
-	// Reset error notices
-	$j( '#bookacti-export-events-dialog .bookacti-notices' ).remove();
-	
 	// Fill the field
 	$j( '#bookacti_export_events_url_secret' ).val( $j( '#bookacti_export_events_url_secret' ).data( 'value' ) );
 	
@@ -484,8 +481,7 @@ function bookacti_dialog_export_events( form_id ) {
 		// OK button   
 		[{
 			text: bookacti_localized.dialog_button_ok,			
-			click: function() { 
-				
+			click: function() {
 				// Reset error notices
 				$j( '#bookacti-export-events-dialog .bookacti-notices' ).remove();
 				

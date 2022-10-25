@@ -901,7 +901,7 @@ function bookacti_convert_wp_locale_to_fc_locale( $wp_locale = false ) {
 /**
  * Display fields
  * @since 1.5.0
- * @version 1.15.4
+ * @version 1.15.5
  * @param array $args
  */
 function bookacti_display_fields( $fields, $args = array() ) {
@@ -932,7 +932,9 @@ function bookacti_display_fields( $fields, $args = array() ) {
 		// Else, display standard field
 		?>
 		<div class='bookacti-field-container <?php echo $wrap_class; ?>' id='<?php echo $field[ 'id' ] . '-container'; ?>'>
-		<?php 
+		<?php
+			if( ! empty( $field[ 'before' ] ) ) { echo $field[ 'before' ]; }
+		
 			// Display field title
 			if( ! empty( $field[ 'title' ] ) ) { 
 				$fullwidth = ! empty( $field[ 'fullwidth' ] ) || in_array( $field[ 'type' ], array( 'checkboxes', 'editor' ), true );
@@ -944,7 +946,9 @@ function bookacti_display_fields( $fields, $args = array() ) {
 			}
 			
 			// Display field
-			bookacti_display_field( $field ); 
+			bookacti_display_field( $field );
+			
+			if( ! empty( $field[ 'after' ] ) ) { echo $field[ 'after' ]; }
 		?>
 		</div>
 	<?php
@@ -1168,8 +1172,8 @@ function bookacti_display_field( $args ) {
 		<?php } ?>
 		</select>
 	<?php 
-		if( $args[ 'multiple' ] === 'maybe' && count( $args[ 'options' ] ) > 1 ) { ?>
-			<span class='bookacti-multiple-select-container' >
+		if( $args[ 'multiple' ] === 'maybe' ) { ?>
+			<span class='bookacti-multiple-select-container' <?php if( count( $args[ 'options' ] ) <= 1 ) { echo 'style="display:none;"'; } ?>>
 				<label for='bookacti-multiple-select-<?php echo esc_attr( $args[ 'id' ] ); ?>' ><span class='dashicons dashicons-<?php echo $is_multiple ? 'minus' : 'plus';?>' title='<?php esc_attr_e( 'Multiple selection', 'booking-activities' ); ?>'></span></label>
 				<input type='checkbox' 
 					   class='bookacti-multiple-select' 

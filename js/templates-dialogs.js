@@ -188,7 +188,7 @@ function bookacti_init_template_dialogs() {
 
 /**
  * Dialog Create Template
- * @version 1.15.4
+ * @version 1.15.5
  */
 function bookacti_dialog_add_new_template() {
 	// Set the dialog title
@@ -197,9 +197,6 @@ function bookacti_dialog_add_new_template() {
 		"title": dialog_title_raw + ' (' + bookacti_localized.create_new + ')'
 	});
 	
-	// Remove old feedback
-	$j( '#bookacti-template-data-dialog .bookacti-notices' ).remove();
-
 	// Set default values
 	$j( '#bookacti-slotmintime' ).val( '00:00' );
 	$j( '#bookacti-slotmaxtime' ).val( '00:00' );
@@ -325,7 +322,7 @@ function bookacti_dialog_add_new_template() {
 
 /**
  * Dialog Update Template
- * @version 1.15.4
+ * @version 1.15.5
  * @param {int} template_id
  */
 function bookacti_dialog_update_template( template_id ) {
@@ -337,9 +334,6 @@ function bookacti_dialog_update_template( template_id ) {
 		"title": dialog_title_raw + ' (' + bookacti_localized.edit_id + ': ' + template_id + ')'
 	});
 	
-	// Remove old feedback
-	$j( '#bookacti-template-data-dialog .bookacti-notices' ).remove();
-
 	// Hide and deactivate duplicate fields
 	$j( '#bookacti-template-duplicated-template-id-container' ).hide();
 	$j( '#bookacti-template-duplicated-template-id' ).attr( 'disabled', true );
@@ -454,15 +448,12 @@ function bookacti_dialog_update_template( template_id ) {
 
 /**
  * Dialog Deactivate Template
- * @version 1.15.0
+ * @version 1.15.5
  * @param {int} template_id
  */
 function bookacti_dialog_deactivate_template( template_id ) {
 	if( ! template_id ) { return; }
 
-	// Remove old feedback
-	$j( '#bookacti-delete-template-dialog .bookacti-notices' ).remove();
-	
 	// Add the 'OK' button
 	$j( '#bookacti-delete-template-dialog' ).dialog( 'option', 'buttons',
 		[{
@@ -553,7 +544,7 @@ function bookacti_dialog_deactivate_template( template_id ) {
 /**
  * Warning Dialog when trying to update a booked event dates (move or resize an event)
  * @since 1.10.0
- * @version 1.15.0
+ * @version 1.15.5
  * @param {FullCalendar.EventApi} fc_event
  * @param {FullCalendar.EventApi} fc_old_event
  * @param {Callable} revertFunc
@@ -566,7 +557,6 @@ function bookacti_dialog_update_booked_event_dates( fc_event, fc_old_event, reve
 	$j( '#bookacti-update-booked-event-dates-dialog .bookacti-bookings-nb' ).remove();
 	$j( '#bookacti-update-booked-event-dates-send_notifications-container .bookacti-notifications-nb' ).remove();
 	$j( '.bookacti-update-booked-repeated-event-dates-warning' ).hide();
-	$j( '#bookacti-update-booked-event-dates-dialog .bookacti-notices' ).remove();
 	$j( '#bookacti-update-booked-event-dates-send_notifications' ).prop( 'checked', false ).trigger( 'change' );
 	
 	$j( '#bookacti-update-booked-event-dates-dialog' ).trigger( 'bookacti_update_booked_event_dates_dialog', [ fc_event, fc_old_event, revertFunc ] );
@@ -620,13 +610,10 @@ function bookacti_dialog_update_booked_event_dates( fc_event, fc_old_event, reve
 
 /**
  * Dialog Update Event
- * @version 1.15.0
+ * @version 1.15.5
  * @param {FullCalendar.EventApi} fc_event
  */
 function bookacti_dialog_update_event( fc_event ) {
-	// Remove old feedback
-	$j( '#bookacti-event-data-dialog .bookacti-notices' ).remove();
-	
 	// Set the dialog title
 	var dialog_title_raw = $j.trim( $j( '#bookacti-event-data-dialog' ).dialog( 'option', 'title' ).replace( /\(.*?\)/, '' ) );
 	$j( '#bookacti-event-data-dialog' ).dialog({ 
@@ -844,14 +831,13 @@ function bookacti_dialog_update_event( fc_event ) {
 /**
  * Dialog Move Event
  * @since 1.10.0
- * @version 1.15.0
+ * @version 1.15.5
  * @param {FullCalendar.EventApi} fc_event
  */
 function bookacti_dialog_update_event_dates( fc_event ) {
 	// Reset the dialog
 	$j( '#bookacti-update-event-dates-dialog .bookacti-selected-event-start, #bookacti-update-event-dates-dialog .bookacti-selected-event-end' ).empty();
 	$j( '.bookacti-update-repeated-event-dates-warning' ).hide();
-	$j( '#bookacti-update-event-dates-dialog .bookacti-notices' ).remove();
 	
 	// Fill the information about the selected event
 	$j( '#bookacti-update-event-dates-dialog .bookacti-selected-event-start' ).html( moment.utc( fc_event.start ).format( 'LLLL' ) );
@@ -928,7 +914,7 @@ function bookacti_dialog_update_event_dates( fc_event ) {
 
 /**
  * Dialog Delete Event
- * @version 1.15.0
+ * @version 1.15.5
  * @param {FullCalendar.EventApi} fc_event
  */
 function bookacti_dialog_delete_event( fc_event ) {
@@ -936,7 +922,6 @@ function bookacti_dialog_delete_event( fc_event ) {
 	$j( '#bookacti-delete-event-cancel_bookings-container .bookacti-bookings-nb' ).remove();
 	$j( '#bookacti-delete-event-send_notifications-container .bookacti-notifications-nb' ).remove();
 	$j( '.bookacti-delete-booked-repeated-event-warning' ).hide();
-	$j( '#bookacti-delete-event-dialog .bookacti-notices' ).remove();
 	$j( '#bookacti-delete-booked-event-options' ).show();
 	$j( '#bookacti-delete-event-cancel_bookings' ).prop( 'checked', true ).trigger( 'change' );
 	$j( '#bookacti-delete-event-send_notifications' ).prop( 'checked', false ).trigger( 'change' );
@@ -1033,14 +1018,11 @@ function bookacti_dialog_delete_event( fc_event ) {
 /**
  * Dialog Unbind occurrence of a repeated event
  * @since 1.12.0 (was bookacti_dialog_unbind_occurrences)
- * @version 1.15.0
+ * @version 1.15.5
  * @param {FullCalendar.EventApi} fc_event
  */
 function bookacti_dialog_unbind_event_occurrences( fc_event ) {
-	// Remove old feedbacks
-	$j( '#bookacti-unbind-event-dialog .bookacti-notices' ).remove();
-	$j( '#bookacti-unbind-event-dialog .bookacti-form-error' ).remove();
-	$j( '#bookacti-unbind-event-dialog .bookacti-input-warning' ).removeClass( 'bookacti-input-warning' );
+	// Empty selected event
 	$j( '#bookacti-unbind-event-dialog .bookacti-selected-event-start, #bookacti-unbind-event-dialog .bookacti-selected-event-end' ).empty();
 	
 	// Fill the information about the selected event
@@ -1355,13 +1337,10 @@ function bookacti_dialog_choose_activity_creation_type() {
 
 /**
  * Dialog Import Activity
- * @version 1.15.0
+ * @version 1.15.5
  */
 function bookacti_dialog_import_activity() {
 	if( ! bookacti.selected_template ) { return; }
-	
-	// Remove old feedback
-	$j( '#bookacti-activity-import-dialog .bookacti-notices' ).remove();
 	
 	// Deactivate current template in template selector
 	$j( '#template-import-bound-activities option' ).attr( 'disabled', false );
@@ -1461,7 +1440,7 @@ function bookacti_dialog_import_activity() {
 
 /**
  * Dialog Create Activity
- * @version 1.15.4
+ * @version 1.15.5
  */
 function bookacti_dialog_create_activity() {
 	if( ! bookacti.selected_template ) { return; }
@@ -1472,9 +1451,6 @@ function bookacti_dialog_create_activity() {
 		"title": dialog_title_raw + ' (' + bookacti_localized.create_new + ')'
 	});
 	
-	// Remove old feedback
-	$j( '#bookacti-activity-data-dialog .bookacti-notices' ).remove();
-
 	// Set init value
 	$j( '#bookacti-activity-template-id' ).val( bookacti.selected_template );
 	$j( '#bookacti-activity-activity-id' ).val( '' );
@@ -1554,7 +1530,7 @@ function bookacti_dialog_create_activity() {
 
 /**
  * Open a dialog to update an activity
- * @version 1.15.4
+ * @version 1.15.5
  * @param {Int} activity_id
  */
 function bookacti_dialog_update_activity( activity_id ) {
@@ -1567,9 +1543,6 @@ function bookacti_dialog_update_activity( activity_id ) {
 	});
 
 	var activity_data = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'activities_data' ][ activity_id ];
-	
-	// Remove old feedback
-	$j( '#bookacti-activity-data-dialog .bookacti-notices' ).remove();
 	
 	// Set init value
 	$j( '#bookacti-activity-template-id' ).val( bookacti.selected_template );
@@ -1688,14 +1661,11 @@ function bookacti_dialog_update_activity( activity_id ) {
 
 /**
  * Dialog Delete Activity
- * @version 1.15.0
+ * @version 1.15.5
  * @param {int} activity_id
  */
 function bookacti_dialog_delete_activity( activity_id ) {
 	if( ! activity_id ) { return; }
-	
-	// Remove old feedback
-	$j( '#bookacti-delete-activity-dialog .bookacti-notices' ).remove();
 	
 	// Check default option
 	$j( '#bookacti-delete-activity-events' ).prop( 'checked', false );
@@ -1789,7 +1759,7 @@ function bookacti_dialog_delete_activity( activity_id ) {
 
 /**
  * Create a group of events
- * @version 1.15.4
+ * @version 1.15.5
  * @param {int} category_id
  */
 function bookacti_dialog_create_group_of_events( category_id ) {
@@ -1800,9 +1770,6 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 	$j( '#bookacti-group-of-events-dialog' ).dialog({ 
 		"title": dialog_title_raw + ' (' + bookacti_localized.create_new + ')'
 	});
-	
-	// Remove old feedback
-	$j( '#bookacti-group-of-events-dialog .bookacti-notices' ).remove();
 	
 	// Disable the "New category title" field if a category as been chosen
 	if( $j( '#bookacti-group-of-events-category-selectbox option' ).length > 1 ) {
@@ -1920,13 +1887,10 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 
 /**
  * Update a group of events with selected events 
- * @version 1.15.4
+ * @version 1.15.5
  * @param {int} group_id
  */
 function bookacti_dialog_update_group_of_events( group_id ) {
-	// Remove old feedback
-	$j( '#bookacti-group-of-events-dialog .bookacti-notices' ).remove();
-	
 	// Change dialog title
 	var dialog_title_raw = $j.trim( $j( '#bookacti-group-of-events-dialog' ).dialog( 'option', 'title' ).replace( /\(.*?\)/, '' ) );
 	$j( '#bookacti-group-of-events-dialog' ).dialog({ 
@@ -2237,14 +2201,13 @@ function bookacti_get_group_of_events_occurrences( group_id ) {
 
 /**
  * Dialog Delete a group of events
- * @version 1.15.0
+ * @version 1.15.5
  * @param {int} group_id
  */
 function bookacti_dialog_delete_group_of_events( group_id ) {
 	// Reset the dialog
 	$j( '#bookacti-delete-group-of-events-cancel_bookings-container .bookacti-bookings-nb' ).remove();
 	$j( '#bookacti-delete-group-of-events-send_notifications-container .bookacti-notifications-nb' ).remove();
-	$j( '#bookacti-delete-group-of-events-dialog .bookacti-notices' ).remove();
 	$j( '#bookacti-delete-booked-group-of-events-options' ).show();
 	$j( '#bookacti-delete-group-of-events-cancel_bookings' ).prop( 'checked', true ).trigger( 'change' );
 	$j( '#bookacti-delete-group-of-events-send_notifications' ).prop( 'checked', false ).trigger( 'change' );
@@ -2333,15 +2296,10 @@ function bookacti_dialog_delete_group_of_events( group_id ) {
 /**
  * Dialog Unbind occurrence of a repeating group of events
  * @since 1.12.0
- * @version 1.15.0
+ * @version 1.15.5
  * @param {Int} group_id
  */
 function bookacti_dialog_unbind_group_of_events_occurrences( group_id ) {
-	// Remove old feedbacks
-	$j( '#bookacti-unbind-group-of-events-dialog .bookacti-notices' ).remove();
-	$j( '#bookacti-unbind-group-of-events-dialog .bookacti-form-error' ).remove();
-	$j( '#bookacti-unbind-group-of-events-dialog .bookacti-input-warning' ).removeClass( 'bookacti-input-warning' );
-	
 	// Fill the information about the selected event
 	bookacti_fill_selected_events_list();
 	
@@ -2447,7 +2405,7 @@ function bookacti_dialog_unbind_group_of_events_occurrences( group_id ) {
 
 /**
  * Update a group category
- * @version 1.15.4
+ * @version 1.15.5
  * @param {int} category_id
  */
 function bookacti_dialog_update_group_category( category_id ) {
@@ -2456,9 +2414,6 @@ function bookacti_dialog_update_group_category( category_id ) {
 	$j( '#bookacti-group-category-dialog' ).dialog({ 
 		"title": dialog_title_raw + ' (' + bookacti_localized.edit_id + ': ' + category_id + ')'
 	});
-	
-	// Remove old feedbacks
-	$j( '#bookacti-group-category-dialog .bookacti-notices' ).remove();
 	
 	var category_data = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'group_categories_data' ][ category_id ];
 	
@@ -2563,13 +2518,10 @@ function bookacti_dialog_update_group_category( category_id ) {
 
 /**
  * Delete a group category
- * @version 1.15.0
+ * @version 1.15.5
  * @param {int} category_id
  */
 function bookacti_dialog_delete_group_category( category_id ) {
-	// Remove old feedbacks
-	$j( '#bookacti-delete-group-category-dialog .bookacti-notices' ).remove();
-	
 	// Add the 'OK' button
 	$j( '#bookacti-delete-group-category-dialog' ).dialog( 'option', 'buttons',
 		[{

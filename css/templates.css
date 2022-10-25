@@ -13,9 +13,9 @@
 /***** Events *****/
 #bookacti-template-container .bookacti-total-availability::before { content: '/'; }
 
-#bookacti-template-container .fc-helper								{ cursor: move; }
+#bookacti-template-container .fc-helper { cursor: move; }
 #bookacti-template-container .fc-event.bookacti-duplicate-event,
-#bookacti-template-container .fc-helper.bookacti-duplicate-event	{ cursor: copy; }
+#bookacti-template-container .fc-helper.bookacti-duplicate-event { cursor: copy; }
 #bookacti-template-container .fc-event.bookacti-event-dragged.bookacti-duplicate-event { visibility: visible !important; }
 
 #bookacti-template-calendar .fc-event:hover .fc-event-main { background: linear-gradient( to bottom, rgba( 44,62,80,0.15 ) 0%, rgba( 0,0,0,0 ) 100% ); }
@@ -156,6 +156,8 @@
 #bookacti-activity-duration-container .bookacti-duration-hint { display: none !important; }
 .bookacti-roles-notice { display: none; margin-top: 10px; margin-bottom: 20px; }
 #bookacti-activity-roles-container label, #bookacti-group-category-roles-container label { cursor: pointer; }
+#bookacti-activity-repeat-step,
+#bookacti-group-of-events-repeat-step { width: 50px; }
 
 /* Event dialog */
 .bookacti-repeat-freq-start-of-week-notice { display: none; margin-top: 10px; }

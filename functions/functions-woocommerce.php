@@ -2283,6 +2283,27 @@ function bookacti_wc_is_form_field_supported( $field_data ) {
 }
 
 
+/**
+ * Send WC Reset Password notification
+ * @since 1.15.5
+ * @return string|true
+ */
+function bookacti_wc_send_reset_password_notification() {
+	$response = WC_Shortcode_My_Account::retrieve_password();
+	if( ! $response ) {
+		$wc_notices = wc_get_notices( 'error' );
+		if( $wc_notices ) {
+			$response = array();
+			foreach( $wc_notices as $wc_notice ) {
+				$response[] = $wc_notice[ 'notice' ];
+			}
+			wc_clear_notices();
+		}
+	}
+	return $response;
+}
+
+
 
 
 // SETTINGS

@@ -640,26 +640,44 @@ add_action( 'wp_ajax_nopriv_bookactiGetForm', 'bookacti_controller_get_form' );
 /**
  * AJAX Controller - Send the forgotten password email
  * @since 1.5.0
- * @version 1.14.0
+ * @version 1.15.5
  */
 function bookacti_controller_forgotten_password() {
-	$email = isset( $_POST[ 'email' ] ) ? sanitize_email( $_POST[ 'email' ] ) : '';
-	if( ! is_email( $email ) ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'invalid_email', 'message' => esc_html__( 'Invalid email address.', 'booking-activities' ) ), 'forgotten_password' ); }
+	$user_login   = isset( $_POST[ 'user_login' ] ) ? sanitize_user( wp_unslash( $_POST[ 'user_login' ] ) ) : '';
+	$callback     = apply_filters( 'bookacti_reset_password_notification_callback', 'retrieve_password' );
+	$return_array = array(
+		'status'  => 'failed', 
+		'message' => ''
+	);
 	
-	$user = get_user_by( 'email', $email );
-	if( ! $user ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'user_not_found', 'message' => esc_html__( 'This email address doesn\'t match any account.', 'booking-activities' ) ), 'forgotten_password' ); }
-	
-	// WordPress 4.4.0 backward compatibility
-	if( function_exists( 'wp_send_new_user_notifications' ) ) {
-		wp_send_new_user_notifications( $user->ID, apply_filters( 'bookacti_forgotten_password_notify', 'user', $user ) );
-	} else {
-		wp_new_user_notification( $user->ID, null, apply_filters( 'bookacti_forgotten_password_notify', 'user', $user ) );
+	$response = false;
+	if( is_callable( $callback ) ) {
+		$response = call_user_func( $callback, $user_login );
+		
+		if( $response === true ) {
+			$return_array[ 'status' ] = 'success';
+			/* translators: %s is the user email address or the user login */
+			$return_array[ 'message' ] = sprintf( esc_html__( 'An email has been sent to %s, please check your inbox.', 'booking-activities' ), $user_login );
+		} else {
+			$return_array[ 'status' ] = 'failed';
+			if( is_wp_error( $response ) ) {
+				$return_array[ 'messages' ] = $response->get_error_messages();
+			} else if( is_array( $response ) ) {
+				$return_array[ 'messages' ] = array_filter( $response, 'is_string' );
+			} else if( is_string( $response ) ) {
+				$return_array[ 'message' ] = $response;
+			}
+			if( ! empty( $return_array[ 'messages' ] ) ) {
+				$return_array[ 'message' ] = implode( '</li><li>', $return_array[ 'messages' ] );
+			}
+		}
 	}
 	
-	/* translators: %s is the user email address */
-	$message = sprintf( esc_html__( 'An email has been sent to %s, please check your inbox.', 'booking-activities' ), $email );
+	if( $response === true ) {
+		do_action( 'bookacti_reset_password_notification_sent', $user_login );
+	}
 	
-	bookacti_send_json( array( 'status' => 'success', 'message' => $message ), 'forgotten_password' );
+	bookacti_send_json( $return_array, 'reset_password' );
 }
 add_action( 'wp_ajax_bookactiForgottenPassword', 'bookacti_controller_forgotten_password' );
 add_action( 'wp_ajax_nopriv_bookactiForgottenPassword', 'bookacti_controller_forgotten_password' );

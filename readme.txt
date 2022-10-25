@@ -330,7 +330,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Invalid group ID error may appear in groups of events dialog in calendar editor
 * Dev - Standardize dialogs JS and CSS
 * Dev - No longer generate id in html fields (with random number) if not provided
-* Dev - Change LONGTEXT to MEDIUMTEXT db column definition
+* Dev - Change LONGTEXT to TEXT or MEDIUMTEXT db column definition, and remove useless numeric type attributes
+* Dev - Add bookacti_reset_password_notification_callback hook and send WC Reset Password email instead of WP's (#169)
+* Dev - Reset error notices automatically when the dialog is closed (standardize code)
 
 = 1.15.4 - 2022/10/06 =
 * Tweak - Enable the "Today" button even if today's view is not accessible

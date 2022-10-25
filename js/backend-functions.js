@@ -159,13 +159,16 @@ function bookacti_show_hide_advanced_options( button ) {
 
 /**
  * Empty all dialog forms fields
- * @version 1.15.4
+ * @version 1.15.5
  * @param {string} scope
  */
 function bookacti_empty_all_dialog_forms( scope ) {
 	scope = typeof scope === 'undefined' || ! scope ? '.bookacti-backend-dialog ' : scope + ' ';
 
 	$j( scope + '.bookacti-form-error' ).remove();
+	$j( scope + '.bookacti-notices' ).remove();
+	$j( scope + '.bookacti-input-warning' ).removeClass( 'bookacti-input-warning' );
+	$j( scope + '.bookacti-input-error' ).removeClass( 'bookacti-input-error' );
 	$j( scope + 'input[type="hidden"]:not([name="action"]):not([name^="nonce"]):not([name="_wp_http_referer"]):not([name="qtranslate-edit-language"]):not(.bookacti-onoffswitch-hidden-input)' ).val( '' );
 	$j( scope + 'input[type="text"]:not([readonly])' ).val( '' );
 	$j( scope + 'input[type="email"]' ).val( '' );
@@ -337,7 +340,7 @@ function bookacti_fill_fields_from_array( fields, field_prefix, scope ) {
 
 /**
  * Switch a selectbox to multiple
- * @version 1.8.9
+ * @version 1.15.5
  * @param {HTMLElement} checkbox
  */
 function bookacti_switch_select_to_multiple( checkbox ) {
@@ -370,7 +373,7 @@ function bookacti_switch_select_to_multiple( checkbox ) {
 	
 	// Select the first available value
 	if( ! is_checked ) {
-		var first_available_value = $j( 'select#' + select_id + ' option:not(:disabled):first' ).length ? $j( 'select#' + select_id + ' option:not(:disabled):first' ).val() : '';
+		var first_available_value = null;
 		if( values ) {
 			if( ! $j.isArray( values ) ) { values = [ values ]; }
 			$j.each( values, function( i, value ) {
@@ -391,6 +394,8 @@ function bookacti_switch_select_to_multiple( checkbox ) {
 		$j( 'select#' + select_id ).select2( 'destroy' );
 		bookacti_select2_init();
 	}
+	
+	$j( 'select#' + select_id ).trigger( 'bookacti_switched_multiple' );
 }
 
 
