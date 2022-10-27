@@ -1457,6 +1457,8 @@ function bookacti_dialog_create_activity() {
 	$j( '#bookacti-activity-color' ).val( '#3a87ad' );
 	$j( '#bookacti-activity-action' ).val( 'bookactiInsertActivity' );
 	
+	$j( '#bookacti-activity-data-dialog' ).trigger( 'bookacti_activity_insert_dialog' );
+	
 	// Add the 'OK' button
 	$j( '#bookacti-activity-data-dialog' ).dialog( 'option', 'buttons',
 		[{

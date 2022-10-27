@@ -2,7 +2,7 @@
 /**
  * Form editor dialogs
  * @since 1.5.0
- * @version 1.15.0
+ * @version 1.15.5
  */
 
 // Exit if accessed directly
@@ -27,7 +27,7 @@ foreach( $fields_default as $field_name => $field_data ) {
 		<div id='bookacti-insert-form-field-selectbox-container'>
 			<p class='bookacti-dialog-intro'><?php esc_html_e( 'Pick the field to add to your form:', 'booking-activities' ); ?></p>
 			<label for='bookacti-field-to-insert'><?php esc_html_e( 'Field to insert', 'booking-activities' ); ?></label>
-			<select name='field_to_insert' id='bookacti-field-to-insert' >
+			<select name='field_to_insert' id='bookacti-field-to-insert' class='bookacti-select2-no-ajax'>
 			<?php 
 				// Get fields already added
 				$field_already_added = array();

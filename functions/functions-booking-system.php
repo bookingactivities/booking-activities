@@ -2705,7 +2705,7 @@ function bookacti_get_event_first_occurrence_date( $event ) {
 /**
  * Get a new interval of events to load. Computed from the compulsory interval, or now's date
  * @since 1.2.2
- * @version 1.12.2
+ * @version 1.15.5
  * @param array $availability_period array( 'start'=> 'Y-m-d H:i:s', 'end'=> 'Y-m-d H:i:s' ) 
  * @param array $min_interval array( 'start'=> 'Y-m-d', 'end'=> 'Y-m-d' )
  * @param int $interval_duration Number of days of the interval
@@ -2766,7 +2766,7 @@ function bookacti_get_new_interval_of_events( $availability_period, $min_interva
 		'end' => $interval_end->format( 'Y-m-d H:i:s' ) 
 	);
 
-	return $interval;
+	return apply_filters( 'bookacti_events_interval', $interval, $availability_period, $min_interval, $interval_duration, $past_events );
 }
 
 

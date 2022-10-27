@@ -1249,28 +1249,28 @@ function bookacti_get_activities_by_template( $template_ids = array(), $based_on
 
 	if( $based_on_events ) {
 		$query = 'SELECT DISTINCT A.* FROM ' . BOOKACTI_TABLE_EVENTS . ' as E, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A '
-			   . ' WHERE A.id = E.activity_id AND E.template_id IN (';
+			   . ' WHERE A.id = E.activity_id ';
 	} else {
 		$query = 'SELECT DISTINCT A.* FROM ' . BOOKACTI_TABLE_TEMP_ACTI . ' as TA, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A '
-			   . ' WHERE A.id = TA.activity_id AND TA.template_id IN (';
+			   . ' WHERE A.id = TA.activity_id ';
 	}
-
-	$i = 1;
-	foreach( $template_ids as $template_id ){
-		$query .= ' %d';
-		if( $i < count( $template_ids ) ) { $query .= ','; }
-		$i++;
+	
+	if( $template_ids ) {
+		$query .= $based_on_events ? ' AND E.template_id IN ( ' : ' AND TA.template_id IN ( ';
+		for( $i = 0, $len = count( $template_ids ); $i < $len; ++$i ) {
+			if( $i !== 0 ) { $query .= ', '; }
+			$query .= '%d';
+		}
+		$query .= ' )';
 	}
-
-	$query .= ' )';
-
+	
 	$order_by = apply_filters( 'bookacti_activities_list_order_by', array( 'title', 'id' ) );
 	if( $order_by && is_array( $order_by ) ) {
 		$query .= ' ORDER BY ';
-		for( $i=0,$len=count($order_by); $i<$len; ++$i ) {
+		for( $i = 0, $len = count( $order_by ); $i < $len; ++$i ) {
 			if( $order_by[ $i ] === 'id' ) { $order_by[ $i ] = 'A.id'; }
+			if( $i !== 0 ) { $query .= ', '; }
 			$query .= $order_by[ $i ] . ' ASC';
-			if( $i < $len-1 ) { $query .= ', '; }
 		}
 	}
 
@@ -1278,6 +1278,8 @@ function bookacti_get_activities_by_template( $template_ids = array(), $based_on
 		$query = $wpdb->prepare( $query, $template_ids );
 	}
 
+	$query = apply_filters( 'bookacti_get_activities_query', $query, $template_ids, $based_on_events );
+	
 	$activities = $wpdb->get_results( $query, ARRAY_A );
 
 	$activity_ids = array();
@@ -1306,7 +1308,7 @@ function bookacti_get_activities_by_template( $template_ids = array(), $based_on
 		$activities_array[ $activity[ 'id' ] ] = $activity;
 	}
 
-	return $activities_array;
+	return apply_filters( 'bookacti_get_activities', $activities_array, $template_ids, $based_on_events );
 }
 
 

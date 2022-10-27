@@ -136,7 +136,7 @@ function bookacti_dialog_update_form_meta() {
 /**
  * Insert form field
  * @since 1.5.0
- * @version 1.15.0
+ * @version 1.15.5
  */
 function bookacti_dialog_insert_form_field() {
 	// Select the first available field
@@ -185,7 +185,7 @@ function bookacti_dialog_insert_form_field() {
 							
 							// Prevent this field from being inserted again (if unique)
 							$j( '#bookacti-field-to-insert option[value="' + field_name + '"][data-unique="1"]' ).attr( 'disabled', true );
-							$j( '#bookacti-field-to-insert' ).val( $j( '#bookacti-field-to-insert option:not([disabled]):first' ).val() );
+							$j( '#bookacti-field-to-insert' ).val( $j( '#bookacti-field-to-insert option:not([disabled]):first' ).val() ).trigger( 'change' );
 							
 							$j( '#bookacti-form-editor' ).trigger( 'bookacti_field_inserted', [ response.field_id, field_name ] );
 							

@@ -1,7 +1,7 @@
 <?php 
 /**
  * Calendar editor dialogs
- * @version 1.15.4
+ * @version 1.15.5
  */
 
 // Exit if accessed directly
@@ -456,7 +456,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			/**
 			 * Display the fields in the "Availability" tab of the Activity dialog
 			 * @since 1.4.0
-			 * @version 1.15.4
+			 * @version 1.15.5
 			 * @param array $params
 			 */
 			function bookacti_fill_activity_tab_availability( $params = array() ) {
@@ -506,16 +506,23 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 								'name'  => 'booking_changes_deadline',
 								'id'    => 'bookacti-activity-booking-changes-deadline',
 								/* translators: Followed by a field indicating a number of days, hours and minutes from now. E.g.: "Changes are allowed for bookings starting in at least 2 days, 12 hours, 25 minutes". */
-								'title' => esc_html__( 'Changes are allowed for bookings starting in at least', 'booking-activities' ),
-								'label' => bookacti_help_tip( esc_html__( 'Define when a customer can change a booking (cancel, reschedule). E.g.: "2 days 5 hours 30 minutes", your customers will be able to change the bookings starting in 2 days, 5 hours and 30 minutes at least. They won\'t be allowed to cancel a booking starting tomorrow for example.', 'booking-activities' )
-										. '<br/>' . esc_html__( 'This parameter applies to the events of this activity only. A global parameter is available in global settings.', 'booking-activities' )
-										. ' ' . esc_html__( 'Leave it empty to use the global value.', 'booking-activities' ), false )
-										/* translators: %s = [bookingactivities_list] */
-										.  '<br/><small><em>' . sprintf( esc_html__( 'Bookings can be changed from the booking list only (%s)', 'booking-activities' ), '<a href="https://booking-activities.fr/en/docs/user-documentation/get-started-with-booking-activities/display-customers-bookings-list-on-the-frontend/" target="_blank"><code style="font-size: inherit;">[bookingactivities_list]</code></a>' ) . '</em></small>'
+								'title' => esc_html__( 'Changes are allowed for bookings starting in at least', 'booking-activities' )
+								        . bookacti_help_tip( esc_html__( 'Define when a customer can change a booking (cancel, reschedule). E.g.: "2 days 5 hours 30 minutes", your customers will be able to change the bookings starting in 2 days, 5 hours and 30 minutes at least. They won\'t be allowed to cancel a booking starting tomorrow for example.', 'booking-activities' )
+								        . '<br/>' . esc_html__( 'This parameter applies to the events of this activity only. A global parameter is available in global settings.', 'booking-activities' )
+										. ' ' . esc_html__( 'Leave it empty to use the global value.', 'booking-activities' ), false ),
 							)
 						) );
 						bookacti_display_fields( $fields );
 					?>
+					<div class='bookacti-info'>
+						<span class='dashicons dashicons-info'></span>
+						<span>
+						<?php 
+							/* translators: %s = [bookingactivities_list] */
+							echo sprintf( esc_html__( 'Bookings can be changed from the booking list only (%s)', 'booking-activities' ), '<a href="https://booking-activities.fr/en/docs/user-documentation/get-started-with-booking-activities/display-customers-bookings-list-on-the-frontend/" target="_blank"><code style="font-size: inherit;">[bookingactivities_list]</code></a>' );
+						?>
+						</span>
+					</div>
 				</fieldset>
 			<?php
 				do_action( 'bookacti_activity_tab_availability_after', $params );
@@ -1015,7 +1022,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			/**
 			 * Display the fields in the "Availability" tab of the Group Category dialog
 			 * @since 1.4.0
-			 * @version 1.15.4
+			 * @version 1.15.5
 			 * @param array $params
 			 */
 			function bookacti_fill_group_category_tab_availability( $params = array() ) {
@@ -1078,16 +1085,24 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 								'type'  => 'duration',
 								'name'  => 'booking_changes_deadline',
 								'id'    => 'bookacti-group-category-booking-changes-deadline',
-										/* translators: Followed by a field indicating a number of days, hours and minutes from now. E.g.: "Changes are allowed for bookings starting in at least 2 days, 12 hours, 25 minutes". */
-								'title' => esc_html__( 'Changes are allowed for bookings starting in at least', 'booking-activities' ),
-								'label' => bookacti_help_tip( esc_html__( 'Define when a customer can change a booking (cancel, reschedule). E.g.: "2 days 5 hours 30 minutes", your customers will be able to change the bookings starting in 2 days, 5 hours and 30 minutes at least. They won\'t be allowed to cancel a booking starting tomorrow for example.', 'booking-activities' )
-										. '<br/>' . esc_html__( 'This parameter applies to the groups of events of this category only. A global parameter is available in global settings.', 'booking-activities' )
-										. ' ' . esc_html__( 'Leave it empty to use the global value.', 'booking-activities' ), false )
-										. '<br/><small><em>' . sprintf( esc_html__( 'Bookings can be changed from the booking list only (%s)', 'booking-activities' ), '<a href="https://booking-activities.fr/en/docs/user-documentation/get-started-with-booking-activities/display-customers-bookings-list-on-the-frontend/" target="_blank"><code style="font-size: inherit;">[bookingactivities_list]</code></a>' ) . '</em></small>'
+								/* translators: Followed by a field indicating a number of days, hours and minutes from now. E.g.: "Changes are allowed for bookings starting in at least 2 days, 12 hours, 25 minutes". */
+								'title' => esc_html__( 'Changes are allowed for bookings starting in at least', 'booking-activities' )
+								        . bookacti_help_tip( esc_html__( 'Define when a customer can change a booking (cancel, reschedule). E.g.: "2 days 5 hours 30 minutes", your customers will be able to change the bookings starting in 2 days, 5 hours and 30 minutes at least. They won\'t be allowed to cancel a booking starting tomorrow for example.', 'booking-activities' )
+								        . '<br/>' . esc_html__( 'This parameter applies to the events of this activity only. A global parameter is available in global settings.', 'booking-activities' )
+										. ' ' . esc_html__( 'Leave it empty to use the global value.', 'booking-activities' ), false ),
 							)
 						) );
 						bookacti_display_fields( $fields );
 					?>
+					<div class='bookacti-info'>
+						<span class='dashicons dashicons-info'></span>
+						<span>
+						<?php 
+							/* translators: %s = [bookingactivities_list] */
+							echo sprintf( esc_html__( 'Bookings can be changed from the booking list only (%s)', 'booking-activities' ), '<a href="https://booking-activities.fr/en/docs/user-documentation/get-started-with-booking-activities/display-customers-bookings-list-on-the-frontend/" target="_blank"><code style="font-size: inherit;">[bookingactivities_list]</code></a>' );
+						?>
+						</span>
+					</div>
 				</fieldset>
 			<?php
 				do_action( 'bookacti_group_category_tab_availability_after', $params );
