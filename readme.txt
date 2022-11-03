@@ -323,6 +323,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 = 1.15.5 =
 * Tweak - Remove useless checkbox column in list tables and standardize CSS
+* Tweak - Support YITH WooCommerce Quick View (load booking system in popup)
 * Fix - Activity unit name was not displayed
 * Fix - Activity unit name was not displayed in the correct order in RTL languages
 * Fix - Incorrect display of ID column in backend list table on mobile
@@ -333,6 +334,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Dev - Change LONGTEXT to TEXT or MEDIUMTEXT db column definition, and remove useless numeric type attributes
 * Dev - Add bookacti_reset_password_notification_callback hook and send WC Reset Password email instead of WP's (#169)
 * Dev - Reset error notices automatically when the dialog is closed (standardize code)
+* Dev - Functions triggered on WC product pages only can now be triggered on any page having the "woocommerce" class
 
 = 1.15.4 - 2022/10/06 =
 * Tweak - Enable the "Today" button even if today's view is not accessible
