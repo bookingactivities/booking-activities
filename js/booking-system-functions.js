@@ -815,6 +815,7 @@ function bookacti_unpick_all_events( booking_system ) {
 /**
  * Get the picked events list items
  * @since 1.12.4
+ * @version 1.15.5
  * @param {HTMLElement} booking_system
  * @returns {Object}
  */
@@ -858,7 +859,7 @@ function bookacti_get_picked_events_list_items( booking_system ) {
 		
 		booking_system.trigger( 'bookacti_picked_events_list_item_data', [ list_item_data, picked_event ] );
 		
-		var list_item_id = parseInt( list_item_data.group_id ) > 0 ? 'event-group-' + list_item_data.group_id + '-' + list_item_data.group_date : 'event-' + list_item_data.id + '-' + list_item_data.start + '-' + list_item_data.end;
+		var list_item_id = parseInt( list_item_data.group_id ) > 0 ? 'group_' + list_item_data.group_id + '_' + list_item_data.group_date : 'event_' + list_item_data.id + '_' + list_item_data.start + '_' + list_item_data.end;
 		
 		var list_element = $j( '<li></li>', {
 			'html': '<span class="bookacti-booking-event-title" >' + list_item_data.title + '</span>'
