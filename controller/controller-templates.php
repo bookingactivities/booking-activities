@@ -695,7 +695,7 @@ add_action( 'wp_ajax_bookactiUnbindEventOccurrences', 'bookacti_controller_unbin
 /**
  * Create a group of events with AJAX
  * @since 1.1.0
- * @version 1.13.0
+ * @version 1.15.5
  */
 function bookacti_controller_insert_group_of_events() {
 	// Check nonce
@@ -757,13 +757,14 @@ function bookacti_controller_insert_group_of_events() {
 	$meta = array_intersect_key( $group_of_events_data, bookacti_get_group_of_events_default_meta() );
 	if( $meta ) { bookacti_insert_metadata( 'group_of_events', $group_id, $meta ); }
 	
-	$category_data	= bookacti_get_group_category( $category_id );
-	$interval		= isset( $_POST[ 'interval' ] ) ? ( is_array( $_POST[ 'interval' ] ) ? $_POST[ 'interval' ] : ( is_string( $_POST[ 'interval' ] ) ? bookacti_maybe_decode_json( stripslashes( $_POST[ 'interval' ] ), true ) : array() ) ) : array();
-	$interval		= bookacti_sanitize_events_interval( $interval );
-	$groups			= bookacti_get_groups_of_events( array( 'event_groups' => array( $group_id ), 'past_events' => 1, 'interval' => $interval, 'interval_started' => 1 ) );
-	$group_data		= isset( $groups[ 'data' ][ $group_id ] ) ? $groups[ 'data' ][ $group_id ] : array();
-	$group_events	= isset( $groups[ 'groups' ][ $group_id ] ) ? $groups[ 'groups' ][ $group_id ] : array();
-	$group_title_raw= strip_tags( $group_data[ 'title' ] );
+	$categories_data = bookacti_get_group_categories( array( 'group_categories' => array( $category_id ) ) );
+	$category_data   = ! empty( $categories_data[ $category_id ] ) ? $categories_data[ $category_id ] : array();
+	$interval        = isset( $_POST[ 'interval' ] ) ? ( is_array( $_POST[ 'interval' ] ) ? $_POST[ 'interval' ] : ( is_string( $_POST[ 'interval' ] ) ? bookacti_maybe_decode_json( stripslashes( $_POST[ 'interval' ] ), true ) : array() ) ) : array();
+	$interval        = bookacti_sanitize_events_interval( $interval );
+	$groups          = bookacti_get_groups_of_events( array( 'event_groups' => array( $group_id ), 'past_events' => 1, 'interval' => $interval, 'interval_started' => 1 ) );
+	$group_data      = isset( $groups[ 'data' ][ $group_id ] ) ? $groups[ 'data' ][ $group_id ] : array();
+	$group_events    = isset( $groups[ 'groups' ][ $group_id ] ) ? $groups[ 'groups' ][ $group_id ] : array();
+	$group_title_raw = strip_tags( $group_data[ 'title' ] );
 	
 	do_action( 'bookacti_group_of_events_inserted', $group_id, $group_data, $group_events, $category_data );
 
@@ -782,7 +783,7 @@ add_action( 'wp_ajax_bookactiInsertGroupOfEvents', 'bookacti_controller_insert_g
 /**
  * Update group of events data with AJAX
  * @since 1.1.0
- * @version 1.13.0
+ * @version 1.15.5
  */
 function bookacti_controller_update_group_of_events() {
 	// Check nonce
@@ -852,13 +853,14 @@ function bookacti_controller_update_group_of_events() {
 		bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_updated', 'group_data' => $group_of_events_data ), 'update_group_of_events' );
 	}
 
-	$category_data	= bookacti_get_group_category( $category_id );
-	$interval		= isset( $_POST[ 'interval' ] ) ? ( is_array( $_POST[ 'interval' ] ) ? $_POST[ 'interval' ] : ( is_string( $_POST[ 'interval' ] ) ? bookacti_maybe_decode_json( stripslashes( $_POST[ 'interval' ] ), true ) : array() ) ) : array();
-	$interval		= bookacti_sanitize_events_interval( $interval );
-	$groups			= bookacti_get_groups_of_events( array( 'event_groups' => array( $group_id ), 'past_events' => 1, 'interval' => $interval, 'interval_started' => 1 ) );
-	$group_data		= isset( $groups[ 'data' ][ $group_id ] ) ? $groups[ 'data' ][ $group_id ] : array();
-	$group_events	= isset( $groups[ 'groups' ][ $group_id ] ) ? $groups[ 'groups' ][ $group_id ] : array();
-	$group_title_raw= strip_tags( $group_data[ 'title' ] );
+	$categories_data = bookacti_get_group_categories( array( 'group_categories' => array( $category_id ) ) );
+	$category_data   = ! empty( $categories_data[ $category_id ] ) ? $categories_data[ $category_id ] : array();
+	$interval        = isset( $_POST[ 'interval' ] ) ? ( is_array( $_POST[ 'interval' ] ) ? $_POST[ 'interval' ] : ( is_string( $_POST[ 'interval' ] ) ? bookacti_maybe_decode_json( stripslashes( $_POST[ 'interval' ] ), true ) : array() ) ) : array();
+	$interval        = bookacti_sanitize_events_interval( $interval );
+	$groups          = bookacti_get_groups_of_events( array( 'event_groups' => array( $group_id ), 'past_events' => 1, 'interval' => $interval, 'interval_started' => 1 ) );
+	$group_data      = isset( $groups[ 'data' ][ $group_id ] ) ? $groups[ 'data' ][ $group_id ] : array();
+	$group_events    = isset( $groups[ 'groups' ][ $group_id ] ) ? $groups[ 'groups' ][ $group_id ] : array();
+	$group_title_raw = strip_tags( $group_data[ 'title' ] );
 	
 	do_action( 'bookacti_group_of_events_updated', $group_id, $group_data, $group_events, $category_data );
 
@@ -1088,7 +1090,7 @@ add_action( 'wp_ajax_bookactiUnbindGroupOfEventsOccurrences', 'bookacti_controll
 /**
  * Update group category data with AJAX
  * @since 1.1.0
- * @version 1.12.3
+ * @version 1.15.5
  */
 function bookacti_controller_update_group_category() {
 	// Check nonce
@@ -1126,7 +1128,8 @@ function bookacti_controller_update_group_category() {
 		bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_updated', 'category_data' => $category_data ), 'update_group_category' );
 	}
 	
-	$category = bookacti_get_group_category( $category_id );
+	$categories = bookacti_get_group_categories( array( 'group_categories' => array( $category_id ) ) );
+	$category   = ! empty( $categories[ $category_id ] ) ? $categories[ $category_id ] : array();
 
 	do_action( 'bookacti_group_category_updated', $category_id, $category );
 

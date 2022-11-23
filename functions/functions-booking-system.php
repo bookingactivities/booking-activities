@@ -885,7 +885,7 @@ function bookacti_format_booking_system_url_attributes( $atts = array() ) {
 /**
  * Get booking system fields default data
  * @since 1.5.0
- * @version 1.15.4
+ * @version 1.15.5
  * @param array $fields
  * @return array
  */
@@ -945,7 +945,7 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 	if( ! $fields || in_array( 'group_categories', $fields, true ) ) {
 		// Format group category options array
 		$categories = bookacti_get_group_categories();
-		$category_options		= array( 'all' => esc_html__( 'All', 'booking-activities' ), 'none' => esc_html_x( 'None', 'About group category', 'booking-activities' ) );
+		$category_options		= array( 'all' => esc_html__( 'All', 'booking-activities' ), 'none' => esc_html__( 'None', 'booking-activities' ) );
 		$category_options_attr	= array( '<select>' => ' data-allow-clear="0"' );
 		foreach( $categories as $category ) {
 			$category_options[ $category[ 'id' ] ]      = ! empty( $category[ 'title' ] ) ? $category[ 'title' ] : '';

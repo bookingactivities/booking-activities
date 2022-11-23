@@ -2,7 +2,7 @@
 
 /**
  * Choose a group of events dialog
- * @version 1.15.0
+ * @version 1.15.5
  * @param {HTMLElement} booking_system
  * @param {Object} groups
  * @param {(FullCalendar.EventApi|Object)} event
@@ -317,9 +317,13 @@ function bookacti_dialog_choose_group_of_events( booking_system, groups, event )
 
 	// Pick the first group by default and trigger the change
 	groups_of_events_list.find( 'input[name="group_of_events"]:not([disabled]):first' ).prop( 'checked', true ).trigger( 'change' );
-
+	
+	// TEMP FIX: https://github.com/fullcalendar/fullcalendar/issues/5631
+	booking_system.find( '.fc-toolbar button:focus' ).blur();
+	
 	// Make sure picked_events is emptied on close if no option has been selected
 	dialog.dialog({
+		"beforeClose": function(){},
 		"close": function() {
 			var selected_group = groups_of_events_list.find( 'input[type="radio"]:checked' ).val();
 			// Empty the picked events if no group was choosen

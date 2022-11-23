@@ -321,7 +321,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.15.5 =
+= 1.15.5 - 2022/11/23 =
 * Tweak - Remove useless checkbox column in list tables and standardize CSS
 * Tweak - Support YITH WooCommerce Quick View (load booking system in popup)
 * Fix - Activity unit name was not displayed
@@ -329,6 +329,8 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Incorrect display of ID column in backend list table on mobile
 * Fix - WC order status may be Completed unexpectedly in some cases involving non-booking products
 * Fix - Invalid group ID error may appear in groups of events dialog in calendar editor
+* Fix - Group categories "All" option was not selected in form editor calendar settings dialog
+* Fix - Possible undesired scroll when closing group selection dialog after navigating the calendar
 * Dev - Standardize dialogs JS and CSS
 * Dev - No longer generate id in html fields (with random number) if not provided
 * Dev - Change LONGTEXT to TEXT or MEDIUMTEXT db column definition, and remove useless numeric type attributes

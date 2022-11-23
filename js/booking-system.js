@@ -16,7 +16,7 @@ $j( document ).ready( function() {
 	
 	
 	/**
-	 * Init actions to perfoms when the user picks an event
+	 * Init actions to perform when the user picks an event
 	 * @version 1.12.0
 	 * @param {Event} e
 	 * @param {(FullCalendar.EventApi|Object)} picked_event

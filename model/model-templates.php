@@ -840,32 +840,6 @@ function bookacti_deactivate_group_category( $category_id ) {
 
 
 /**
- * Get group category data
- * @since 1.1.0
- * @version 1.14.0
- * @global wpdb $wpdb
- * @param int $category_id
- * @return array
- */
-function bookacti_get_group_category( $category_id ) {
-	global $wpdb;
-
-	$query = 'SELECT * FROM ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' WHERE id = %d ';
-	$query = $wpdb->prepare( $query, $category_id );
-	$category = $wpdb->get_row( $query, ARRAY_A );
-	
-	if( ! $category ) { $category = array(); }
-	
-	// Get template settings and managers
-	$category[ 'multilingual_title' ] = $category[ 'title' ];
-	$category[ 'title' ]              = ! empty( $category[ 'title' ] ) ? apply_filters( 'bookacti_translate_text', $category[ 'title' ] ) : '';
-	$category[ 'settings' ]           = bookacti_get_metadata( 'group_category', $category_id );
-
-	return $category;
-}
-
-
-/**
  * Get the template id of a group category
  * @since 1.1.0
  * @ersion 1.12.0

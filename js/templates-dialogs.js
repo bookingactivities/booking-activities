@@ -2160,6 +2160,7 @@ function bookacti_get_group_of_events_occurrences( group_id ) {
 	
 	$j( '#bookacti-group-of-events-dialog' ).trigger( 'bookacti_get_group_of_events_occurrences_before', [ data, group_id ] );
 	
+	$j( '#bookacti-group-of-events-occurrences-navigation > .button' ).hide();
 	bookacti_add_loading_html( $j( '#bookacti-group-of-events-occurrences-navigation' ) );
 	
 	$j.ajax({
@@ -2196,6 +2197,7 @@ function bookacti_get_group_of_events_occurrences( group_id ) {
 		},
 		complete: function() {
 			bookacti_remove_loading_html( $j( '#bookacti-group-of-events-occurrences-navigation' ) );
+			$j( '#bookacti-group-of-events-occurrences-navigation > .button' ).show();
 		}
 	});
 }

@@ -26,6 +26,13 @@ $j( document ).ready( function() {
 	
 	
 	/**
+	 * Do not empty the export bookings dialog when the dialog is closing
+	 * @since 1.15.5
+	 */
+	$j( '#bookacti-export-bookings-dialog' ).dialog({ "beforeClose": function(){} });
+	
+	
+	/**
 	 * Open export link in a new tab to generate and download the exported file
 	 * @since 1.6.0
 	 * @version 1.8.0
