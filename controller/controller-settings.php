@@ -430,14 +430,14 @@ add_action( 'bookacti_notification_settings_page', 'bookacti_fill_notification_s
 /**
  * Update notifications data
  * @since 1.2.0
- * @version 1.8.6
+ * @version 1.15.5
  */
 function bookacti_controller_update_notification() {
 	// Sanitize current option page ID
 	$option_page = ! empty( $_POST[ 'option_page' ] ) ? sanitize_title_with_dashes( $_POST[ 'option_page' ] ) : '';
 	
 	// Check nonce
-	$is_nonce_valid	= check_ajax_referer( $option_page, '_wpnonce', false );
+	$is_nonce_valid	= check_ajax_referer( $option_page, 'nonce', false );
 	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'update_notification' ); }
 	
 	// Check capabilities

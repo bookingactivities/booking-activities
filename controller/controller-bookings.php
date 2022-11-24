@@ -7,10 +7,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * AJAX Controller - Update bookings page calendar settings
  * @since 1.8.0
+ * @version 1.15.5
  */
 function bookacti_controller_update_bookings_calendar_settings() {
 	// Check nonce
-	$is_nonce_valid = check_ajax_referer( 'bookacti_update_bookings_calendar_settings', 'nonce_update_bookings_calendar_settings', false );
+	$is_nonce_valid = check_ajax_referer( 'bookacti_update_bookings_calendar_settings', 'nonce', false );
 	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'update_bookings_calendar_settings' ); }
 	
 	// Check capabilities
@@ -40,11 +41,11 @@ add_action( 'wp_ajax_bookactiUpdateBookingsCalendarSettings', 'bookacti_controll
 /**
  * AJAX Controller - Update bookings page calendar settings
  * @since 1.8.0
- * @version 1.9.0
+ * @version 1.15.5
  */
 function bookacti_controller_get_booking_list() {
 	// Check nonce
-	$is_nonce_valid = check_ajax_referer( 'bookacti_get_booking_list', 'nonce_get_booking_list', false );
+	$is_nonce_valid = check_ajax_referer( 'bookacti_get_booking_list', 'nonce', false );
 	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'get_booking_list' ); }
 	
 	// Check capabilities
@@ -307,7 +308,7 @@ add_action( 'wp_ajax_bookactiChangeBookingState', 'bookacti_controller_change_bo
 /**
  * AJAX Controller - Change booking quantity
  * @since 1.7.10
- * @version 1.12.3
+ * @version 1.15.5
  */
 function bookacti_controller_change_booking_quantity() {
 	$booking_id		= intval( $_POST[ 'booking_id' ] );
@@ -315,7 +316,7 @@ function bookacti_controller_change_booking_quantity() {
 	$is_admin		= intval( $_POST[ 'is_admin' ] ) === 1 ? true : false;
 
 	// Check nonce
-	$is_nonce_valid = check_ajax_referer( 'bookacti_change_booking_quantity', 'nonce_change_booking_quantity', false );
+	$is_nonce_valid = check_ajax_referer( 'bookacti_change_booking_quantity', 'nonce', false );
 	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'change_booking_quantity' ); }
 	
 	// Check capabilities
@@ -493,13 +494,13 @@ add_action( 'wp_ajax_nopriv_bookactiRescheduleBooking', 'bookacti_controller_res
 /**
  * AJAX Controller - Delete a booking
  * @since 1.5.0
- * @version 1.12.3
+ * @version 1.15.5
  */
 function bookacti_controller_delete_booking() {
 	$booking_id = intval( $_POST[ 'booking_id' ] );
 
 	// Check nonce
-	$is_nonce_valid = check_ajax_referer( 'bookacti_delete_booking', 'nonce_delete_booking', false );
+	$is_nonce_valid = check_ajax_referer( 'bookacti_delete_booking', 'nonce', false );
 	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'delete_booking' ); }
 
 	// Check capabilities
@@ -817,7 +818,7 @@ add_action( 'wp_ajax_bookactiChangeBookingGroupState', 'bookacti_controller_chan
 /**
  * AJAX Controller - Change booking group quantity
  * @since 1.7.10
- * @version 1.12.3
+ * @version 1.15.5
  */
 function bookacti_controller_change_booking_group_quantity() {
 	$booking_group_id	= intval( $_POST[ 'booking_id' ] );
@@ -826,7 +827,7 @@ function bookacti_controller_change_booking_group_quantity() {
 	$reload_grouped_bookings = intval( $_POST[ 'reload_grouped_bookings' ] ) === 1 ? true : false;
 
 	// Check nonce
-	$is_nonce_valid = check_ajax_referer( 'bookacti_change_booking_quantity', 'nonce_change_booking_quantity', false );
+	$is_nonce_valid = check_ajax_referer( 'bookacti_change_booking_quantity', 'nonce', false );
 	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'change_booking_group_quantity' ); }
 	
 	// Check capabilities
@@ -868,13 +869,13 @@ add_action( 'wp_ajax_bookactiChangeBookingGroupQuantity', 'bookacti_controller_c
 /**
  * AJAX Controller - Delete a booking group
  * @since 1.5.0
- * @version 1.12.3
+ * @version 1.15.5
  */
 function bookacti_controller_delete_booking_group() {
 	$booking_group_id = intval( $_POST[ 'booking_id' ] );
 
 	// Check nonce
-	$is_nonce_valid = check_ajax_referer( 'bookacti_delete_booking', 'nonce_delete_booking', false );
+	$is_nonce_valid = check_ajax_referer( 'bookacti_delete_booking', 'nonce', false );
 	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'delete_booking_group' ); }
 
 	// Check capabilities
@@ -965,11 +966,11 @@ add_action( 'bookacti_clean_expired_exports', 'bookacti_clean_expired_exports' )
 /**
  * Generate the export bookings URL according to current filters and export settings
  * @since 1.6.0
- * @version 1.14.3
+ * @version 1.15.5
  */
 function bookacti_controller_generate_export_bookings_url() {
 	// Check nonce
-	if( ! check_ajax_referer( 'bookacti_export_bookings_url', 'nonce_export_bookings_url', false ) ) { bookacti_send_json_invalid_nonce( 'export_bookings_url' ); }
+	if( ! check_ajax_referer( 'bookacti_export_bookings_url', 'nonce', false ) ) { bookacti_send_json_invalid_nonce( 'export_bookings_url' ); }
 
 	// Check capabilities
 	if( ! current_user_can( 'bookacti_manage_bookings' ) ) { bookacti_send_json_not_allowed( 'export_bookings_url' ); }

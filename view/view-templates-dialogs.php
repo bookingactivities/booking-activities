@@ -1,7 +1,7 @@
 <?php 
 /**
  * Calendar editor dialogs
- * @version 1.15.4
+ * @version 1.15.5
  */
 
 // Exit if accessed directly
@@ -16,11 +16,11 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 <!-- Edit event dialog -->
 <div id='bookacti-event-data-dialog' class='bookacti-backend-dialog bookacti-template-dialog' data-event-id='0' title='<?php esc_html_e( 'Event parameters', 'booking-activities' ); ?>' style='display:none;' >
 	<form id='bookacti-event-data-form' >
-		<?php wp_nonce_field( 'bookacti_update_event_data', 'nonce_update_event_data' ); ?>
 		<input type='hidden' name='id' id='bookacti-event-data-form-event-id' value='' />
 		<input type='hidden' name='start' id='bookacti-event-data-form-event-start' value='' />
 		<input type='hidden' name='end' id='bookacti-event-data-form-event-end' value='' />
 		<input type='hidden' name='action' id='bookacti-event-data-form-action' value='bookactiUpdateEvent' />
+		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_update_event_data' ); ?>'/>
 		
 		<div id='bookacti-event-dialog-lang-switcher' class='bookacti-lang-switcher' ></div>
 		
@@ -219,9 +219,9 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 <!-- Template params -->
 <div id='bookacti-template-data-dialog' class='bookacti-backend-dialog bookacti-template-dialog tabs' title='<?php esc_html_e( 'Calendar parameters', 'booking-activities' ); ?>' style='display:none;' >
 	<form id='bookacti-template-data-form' >
-		<?php wp_nonce_field( 'bookacti_insert_or_update_template', 'nonce_insert_or_update_template' ); ?>
-		<input type='hidden' name='template_id' id='bookacti-template-data-form-template-id' value='' />
-		<input type='hidden' name='action' id='bookacti-template-data-form-action' value='' />
+		<input type='hidden' name='template_id' id='bookacti-template-data-form-template-id' value=''/>
+		<input type='hidden' name='action' id='bookacti-template-data-form-action' value=''/>
+		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_insert_or_update_template' ); ?>'/>
 		<div id='bookacti-template-dialog-lang-switcher' class='bookacti-lang-switcher' ></div>
 		
 		<?php 
@@ -368,12 +368,12 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 
 
 <!-- Activity param -->
-<div id='bookacti-activity-data-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Activity parameters', 'booking-activities' ); ?>' style='display:none;' >
-	<form id='bookacti-activity-data-form' >
-		<?php wp_nonce_field( 'bookacti_insert_or_update_activity', 'nonce_insert_or_update_activity' ); ?>
-		<input type='hidden' name='template_id' id='bookacti-activity-template-id' />
-		<input type='hidden' name='activity_id' id='bookacti-activity-activity-id' />
-		<input type='hidden' name='action'		id='bookacti-activity-action' />
+<div id='bookacti-activity-data-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Activity parameters', 'booking-activities' ); ?>' style='display:none;'>
+	<form id='bookacti-activity-data-form'>
+		<input type='hidden' name='template_id' id='bookacti-activity-template-id'/>
+		<input type='hidden' name='activity_id' id='bookacti-activity-activity-id'/>
+		<input type='hidden' name='action' id='bookacti-activity-action'/>
+		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_insert_or_update_activity' ); ?>'/>
 		
 		<div id='bookacti-activity-dialog-lang-switcher' class='bookacti-lang-switcher' ></div>
 			
@@ -456,7 +456,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			/**
 			 * Display the fields in the "Availability" tab of the Activity dialog
 			 * @since 1.4.0
-			 * @version 1.15.4
+			 * @version 1.15.5
 			 * @param array $params
 			 */
 			function bookacti_fill_activity_tab_availability( $params = array() ) {
@@ -506,16 +506,23 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 								'name'  => 'booking_changes_deadline',
 								'id'    => 'bookacti-activity-booking-changes-deadline',
 								/* translators: Followed by a field indicating a number of days, hours and minutes from now. E.g.: "Changes are allowed for bookings starting in at least 2 days, 12 hours, 25 minutes". */
-								'title' => esc_html__( 'Changes are allowed for bookings starting in at least', 'booking-activities' ),
-								'label' => bookacti_help_tip( esc_html__( 'Define when a customer can change a booking (cancel, reschedule). E.g.: "2 days 5 hours 30 minutes", your customers will be able to change the bookings starting in 2 days, 5 hours and 30 minutes at least. They won\'t be allowed to cancel a booking starting tomorrow for example.', 'booking-activities' )
-										. '<br/>' . esc_html__( 'This parameter applies to the events of this activity only. A global parameter is available in global settings.', 'booking-activities' )
-										. ' ' . esc_html__( 'Leave it empty to use the global value.', 'booking-activities' ), false )
-										/* translators: %s = [bookingactivities_list] */
-										.  '<br/><small><em>' . sprintf( esc_html__( 'Bookings can be changed from the booking list only (%s)', 'booking-activities' ), '<a href="https://booking-activities.fr/en/docs/user-documentation/get-started-with-booking-activities/display-customers-bookings-list-on-the-frontend/" target="_blank"><code style="font-size: inherit;">[bookingactivities_list]</code></a>' ) . '</em></small>'
+								'title' => esc_html__( 'Changes are allowed for bookings starting in at least', 'booking-activities' )
+								        . bookacti_help_tip( esc_html__( 'Define when a customer can change a booking (cancel, reschedule). E.g.: "2 days 5 hours 30 minutes", your customers will be able to change the bookings starting in 2 days, 5 hours and 30 minutes at least. They won\'t be allowed to cancel a booking starting tomorrow for example.', 'booking-activities' )
+								        . '<br/>' . esc_html__( 'This parameter applies to the events of this activity only. A global parameter is available in global settings.', 'booking-activities' )
+										. ' ' . esc_html__( 'Leave it empty to use the global value.', 'booking-activities' ), false ),
 							)
 						) );
 						bookacti_display_fields( $fields );
 					?>
+					<div class='bookacti-info'>
+						<span class='dashicons dashicons-info'></span>
+						<span>
+						<?php 
+							/* translators: %s = [bookingactivities_list] */
+							echo sprintf( esc_html__( 'Bookings can be changed from the booking list only (%s)', 'booking-activities' ), '<a href="https://booking-activities.fr/en/docs/user-documentation/get-started-with-booking-activities/display-customers-bookings-list-on-the-frontend/" target="_blank"><code style="font-size: inherit;">[bookingactivities_list]</code></a>' );
+						?>
+						</span>
+					</div>
 				</fieldset>
 			<?php
 				do_action( 'bookacti_activity_tab_availability_after', $params );
@@ -668,14 +675,13 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 
 
 <!-- Import an existing activity -->
-<div id='bookacti-activity-import-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Import existing activity', 'booking-activities' ); ?>' style='display:none;' >
-    <div id='bookacti-activity-import-container' >
+<div id='bookacti-activity-import-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Import existing activity', 'booking-activities' ); ?>' style='display:none;'>
+    <div id='bookacti-activity-import-container'>
+		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_import_activity' ); ?>'/>
 		<div>
 			<?php esc_html_e( 'Import an activity that you have already created on an other calendar:', 'booking-activities' ); ?>
 		</div>
 		<?php 
-			wp_nonce_field( 'bookacti_import_activity', 'nonce_import_activity', false );
-			
 			$fields = array(
 				'template_to_import_activities_from' => array(
 					'type'    => 'select',
@@ -705,10 +711,10 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 
 
 <!-- Group of events -->
-<div id='bookacti-group-of-events-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Group of events parameters', 'booking-activities' ); ?>' style='display:none;' >
-	<form id='bookacti-group-of-events-form' >
-		<input type='hidden' name='action' id='bookacti-group-of-events-action' />
-		<?php wp_nonce_field( 'bookacti_insert_or_update_group_of_events', 'nonce_insert_or_update_group_of_events' ); ?>
+<div id='bookacti-group-of-events-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Group of events parameters', 'booking-activities' ); ?>' style='display:none;'>
+	<form id='bookacti-group-of-events-form'>
+		<input type='hidden' name='action' id='bookacti-group-of-events-action'/>
+		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_insert_or_update_group_of_events' ); ?>'/>
 		
 		<div id='bookacti-group-of-events-dialog-lang-switcher' class='bookacti-lang-switcher' ></div>
 			
@@ -961,12 +967,12 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 
 
 <!-- Group category -->
-<div id='bookacti-group-category-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Group category parameters', 'booking-activities' ); ?>' style='display:none;' >
-	<form id='bookacti-group-category-form' >
+<div id='bookacti-group-category-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Group category parameters', 'booking-activities' ); ?>' style='display:none;'>
+	<form id='bookacti-group-category-form'>
 		<input type='hidden' name='template_id' id='bookacti-group-category-template-id'/>
 		<input type='hidden' name='category_id' id='bookacti-group-category-category-id'/>
-		<input type='hidden' name='action' id='bookacti-group-category-action' />
-		<?php wp_nonce_field( 'bookacti_insert_or_update_group_category', 'nonce_insert_or_update_group_category' ); ?>
+		<input type='hidden' name='action' id='bookacti-group-category-action'/>
+		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_insert_or_update_group_category' ); ?>'/>
 		
 		<div id='bookacti-group-category-dialog-lang-switcher' class='bookacti-lang-switcher' ></div>
 		
@@ -1015,7 +1021,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			/**
 			 * Display the fields in the "Availability" tab of the Group Category dialog
 			 * @since 1.4.0
-			 * @version 1.15.4
+			 * @version 1.15.5
 			 * @param array $params
 			 */
 			function bookacti_fill_group_category_tab_availability( $params = array() ) {
@@ -1078,16 +1084,24 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 								'type'  => 'duration',
 								'name'  => 'booking_changes_deadline',
 								'id'    => 'bookacti-group-category-booking-changes-deadline',
-										/* translators: Followed by a field indicating a number of days, hours and minutes from now. E.g.: "Changes are allowed for bookings starting in at least 2 days, 12 hours, 25 minutes". */
-								'title' => esc_html__( 'Changes are allowed for bookings starting in at least', 'booking-activities' ),
-								'label' => bookacti_help_tip( esc_html__( 'Define when a customer can change a booking (cancel, reschedule). E.g.: "2 days 5 hours 30 minutes", your customers will be able to change the bookings starting in 2 days, 5 hours and 30 minutes at least. They won\'t be allowed to cancel a booking starting tomorrow for example.', 'booking-activities' )
-										. '<br/>' . esc_html__( 'This parameter applies to the groups of events of this category only. A global parameter is available in global settings.', 'booking-activities' )
-										. ' ' . esc_html__( 'Leave it empty to use the global value.', 'booking-activities' ), false )
-										. '<br/><small><em>' . sprintf( esc_html__( 'Bookings can be changed from the booking list only (%s)', 'booking-activities' ), '<a href="https://booking-activities.fr/en/docs/user-documentation/get-started-with-booking-activities/display-customers-bookings-list-on-the-frontend/" target="_blank"><code style="font-size: inherit;">[bookingactivities_list]</code></a>' ) . '</em></small>'
+								/* translators: Followed by a field indicating a number of days, hours and minutes from now. E.g.: "Changes are allowed for bookings starting in at least 2 days, 12 hours, 25 minutes". */
+								'title' => esc_html__( 'Changes are allowed for bookings starting in at least', 'booking-activities' )
+								        . bookacti_help_tip( esc_html__( 'Define when a customer can change a booking (cancel, reschedule). E.g.: "2 days 5 hours 30 minutes", your customers will be able to change the bookings starting in 2 days, 5 hours and 30 minutes at least. They won\'t be allowed to cancel a booking starting tomorrow for example.', 'booking-activities' )
+								        . '<br/>' . esc_html__( 'This parameter applies to the events of this activity only. A global parameter is available in global settings.', 'booking-activities' )
+										. ' ' . esc_html__( 'Leave it empty to use the global value.', 'booking-activities' ), false ),
 							)
 						) );
 						bookacti_display_fields( $fields );
 					?>
+					<div class='bookacti-info'>
+						<span class='dashicons dashicons-info'></span>
+						<span>
+						<?php 
+							/* translators: %s = [bookingactivities_list] */
+							echo sprintf( esc_html__( 'Bookings can be changed from the booking list only (%s)', 'booking-activities' ), '<a href="https://booking-activities.fr/en/docs/user-documentation/get-started-with-booking-activities/display-customers-bookings-list-on-the-frontend/" target="_blank"><code style="font-size: inherit;">[bookingactivities_list]</code></a>' );
+						?>
+						</span>
+					</div>
 				</fieldset>
 			<?php
 				do_action( 'bookacti_group_category_tab_availability_after', $params );
@@ -1157,7 +1171,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 
 <!-- Delete activity -->
 <div id='bookacti-delete-activity-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Delete activity', 'booking-activities' ); ?>' style='display:none;' >
-	<?php wp_nonce_field( 'bookacti_deactivate_activity', 'nonce_deactivate_activity', false ); ?>
+	<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_deactivate_activity' ); ?>'/>
 	<div>
 		<?php esc_html_e( 'Are you sure to delete this activity permanently?', 'booking-activities' ); ?><br/>
 		<em><?php esc_html_e( 'You won\'t be able to place new events from this activity anymore.', 'booking-activities' ); ?></em>
@@ -1194,8 +1208,8 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 <!-- Unbind an occurrence of a repeated event -->
 <div id='bookacti-unbind-event-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Make an occurrence of a repeated event independent', 'booking-activities' ); ?>' style='display:none;'>
 	<form id='bookacti-unbind-event-form'>
-		<?php wp_nonce_field( 'bookacti_unbind_event_occurrences', 'nonce_unbind_event_occurrences', false ); ?>
 		<input type='hidden' name='action' id='bookacti-unbind-event-form-action' value='bookactiUnbindEventOccurrences'/>
+		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_unbind_event_occurrences' ); ?>'/>
 		<input type='hidden' name='unbind_action' value='selected'/>
 		
 		<p><?php esc_html_e( 'In order to edit the occurrences of the event independently, you can:', 'booking-activities' ); ?></p>
@@ -1240,8 +1254,8 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 <!-- Unbind an occurrence of a repeated group of events -->
 <div id='bookacti-unbind-group-of-events-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Make an occurrence of a repeated group of events independent', 'booking-activities' ); ?>' style='display:none;'>
 	<form id='bookacti-unbind-group-of-events-form'>
-		<?php wp_nonce_field( 'bookacti_unbind_group_of_events_occurrences', 'nonce_unbind_group_of_events_occurrences', false ); ?>
 		<input type='hidden' name='action' id='bookacti-unbind-group-of-events-form-action' value='bookactiUnbindGroupOfEventsOccurrences'/>
+		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_unbind_group_of_events_occurrences' ); ?>'/>
 		<input type='hidden' name='unbind_action' value='selected'/>
 		
 		<p><?php esc_html_e( 'In order to edit the occurrences of the group of events independently, you can:', 'booking-activities' ); ?></p>
@@ -1366,8 +1380,8 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 <!-- Delete event -->
 <div id='bookacti-delete-event-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Delete event', 'booking-activities' ); ?>' style='display:none;' >
 	<form id='bookacti-delete-event-form'>
-		<?php wp_nonce_field( 'bookacti_delete_event', 'nonce_delete_event', false ); ?>
 		<input type='hidden' name='action' id='bookacti-delete-event-form-action' value='bookactiDeleteEvent'/>
+		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_delete_event' ); ?>'/>
 		
 		<div><?php esc_html_e( 'Are you sure to delete this event permanently?', 'booking-activities' ); ?></div>
 		<div class='bookacti-error'>
@@ -1419,8 +1433,8 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 <!-- Delete group of events -->
 <div id='bookacti-delete-group-of-events-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Delete a group of events', 'booking-activities' ); ?>' style='display:none;' >
 	<form id='bookacti-delete-group-of-events-form'>
-		<?php wp_nonce_field( 'bookacti_delete_group_of_events', 'nonce_delete_group_of_events', false ); ?>
 		<input type='hidden' name='action' id='bookacti-delete-group-of-events-form-action' value='bookactiDeleteGroupOfEvents'/>
+		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_delete_group_of_events' ); ?>'/>
 		
 		<div><p><?php esc_html_e( 'Are you sure to delete this group of events permanently?', 'booking-activities' ); ?></p></div>
 		<div class='bookacti-info'>
@@ -1468,7 +1482,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 
 <!-- Delete group category -->
 <div id='bookacti-delete-group-category-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Delete a group category', 'booking-activities' ); ?>' style='display:none;' >
-	<?php wp_nonce_field( 'bookacti_delete_group_category', 'nonce_delete_group_category', false ); ?>
+	<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_delete_group_category' ); ?>'/>
 	<div><?php esc_html_e( 'Are you sure to delete this category and all its groups of events permanently?', 'booking-activities' ); ?></div>
 	<div class='bookacti-info'>
 		<span class='dashicons dashicons-info'></span>

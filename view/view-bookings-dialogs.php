@@ -1,7 +1,7 @@
 <?php 
 /**
  * Frontend and Backend booking dialogs
- * @version 1.14.2
+ * @version 1.15.5
  */
 
 // Exit if accessed directly
@@ -12,8 +12,8 @@ $messages = bookacti_get_messages();
 
 <!-- Frontend and backend - Cancel booking -->
 <div id='bookacti-cancel-booking-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' style='display:none;' title='<?php echo $messages[ 'cancel_dialog_title' ][ 'value' ]; ?>' >
+	<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_cancel_booking' ); ?>'/>
 <?php
-	wp_nonce_field( 'bookacti_cancel_booking', 'bookacti_nonce_cancel_booking', false );
 	echo wp_kses_post( wpautop( bookacti_get_message( 'cancel_dialog_content' ) ) );
 ?>
 </div>
@@ -24,9 +24,7 @@ $messages = bookacti_get_messages();
 	 style='display:none;' 
 	 title='<?php echo current_user_can( 'bookacti_edit_bookings' ) ? esc_html_x( 'Refund a booking', 'Dialog title', 'booking-activities' ) : $messages[ 'refund_dialog_title' ][ 'value' ]; ?>'>
 	<form id='bookacti-refund-booking-form'>
-		<?php
-			wp_nonce_field( 'bookacti_refund_booking', 'bookacti_nonce_refund_booking', false );
-		?>
+		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_refund_booking' ); ?>'/>
 		<div id='bookacti-no-refund-option' style='display:none;'>
 			<?php esc_html_e( 'Sorry, no available refund option were found. Please contact the administrator.', 'booking-activities' ); ?>
 		</div>
@@ -56,9 +54,7 @@ $messages = bookacti_get_messages();
 <!-- Frontend and backend - Reschedule booking -->
 <div id='bookacti-reschedule-booking-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' title='<?php echo $messages[ 'reschedule_dialog_title' ][ 'value' ]; ?>'>
 	<form class='bookacti-booking-form bookacti-reschedule-booking-form'>
-		<?php
-			wp_nonce_field( 'bookacti_reschedule_booking', 'bookacti_nonce_reschedule_booking', false );
-		?>
+		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_reschedule_booking' ); ?>'/>
 		<div>
 			<?php
 				$atts = bookacti_format_booking_system_attributes( array( 'id' => 'bookacti-booking-system-reschedule', 'auto_load' => 0 ) );

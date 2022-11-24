@@ -11,7 +11,7 @@ $j( document ).ready( function() {
 	 * @param {String} booking_type
 	 * @param {String} action
 	 */
-	$j( '.woocommerce-table' ).on( 'bookacti_booking_action_data', 'tr.order_item', function( e, data, booking_id, booking_type, action ) {
+	$j( '.woocommerce' ).on( 'bookacti_booking_action_data', '.woocommerce-table tr.order_item', function( e, data, booking_id, booking_type, action ) {
 		var is_FormData = false;
 		if( typeof data.form_data !== 'undefined' ) { if( data.form_data instanceof FormData ) { is_FormData = true; } }
 		if( is_FormData ) {
@@ -48,9 +48,9 @@ $j( document ).ready( function() {
 
 	/**
 	 * Empty the booking form - on reset variation
-	 * @version 1.14.0
+	 * @version 1.15.5
 	 */
-	$j( '.woocommerce form.cart.variations_form' ).on( 'reset_data', function() { 
+	$j( '.woocommerce' ).on( 'reset_data', 'form.cart.variations_form', function() { 
 		if( ! $j( this ).find( '.bookacti-wc-form-fields' ).length ) { return; }
 		var form_container = $j( this ).find( '.bookacti-wc-form-fields' );
 		form_container.data( 'form-id', '' );
@@ -63,11 +63,11 @@ $j( document ).ready( function() {
 
 	/**
 	 * Switch the booking form according to the selected product variation - on switch variation
-	 * @version 1.14.0
+	 * @version 1.15.5
 	 * @param {Event} e
 	 * @param {Object} variation
 	 */
-	$j( '.woocommerce form.cart.variations_form' ).on( 'show_variation', function( e, variation ) { 
+	$j( '.woocommerce' ).on( 'show_variation', 'form.cart.variations_form', function( e, variation ) { 
 		if( ! $j( this ).find( '.bookacti-wc-form-fields' ).length ) { return; }
 
 		var form_container = $j( this ).find( '.bookacti-wc-form-fields' );
@@ -81,9 +81,9 @@ $j( document ).ready( function() {
 
 	/**
 	 * Enable add-to-cart button
-	 * @version 1.15.0
+	 * @version 1.15.5
 	 */
-	$j( '.woocommerce form.cart' ).on( 'bookacti_displayed_info_cleared', '.bookacti-booking-system', function() {
+	$j( '.woocommerce' ).on( 'bookacti_displayed_info_cleared', 'form.cart .bookacti-booking-system', function() {
 		$j( this ).closest( 'form' ).find( 'input[name="quantity"]' ).attr( 'disabled', false );
 		$j( this ).closest( 'form' ).find( 'button[type="submit"]' ).attr( 'disabled', false );
 	});
@@ -91,9 +91,9 @@ $j( document ).ready( function() {
 
 	/**
 	 * Disable add-to-cart button
-	 * @version 1.9.0
+	 * @version 1.15.5
 	 */
-	$j( '.woocommerce form.cart' ).on( 'bookacti_error_displayed', '.bookacti-booking-system', function() {
+	$j( '.woocommerce' ).on( 'bookacti_error_displayed', 'form.cart .bookacti-booking-system', function() {
 		$j( this ).closest( 'form' ).find( 'input[name="quantity"]' ).attr( 'disabled', true );
 		$j( this ).closest( 'form' ).find( 'button[type="submit"]' ).attr( 'disabled', true );
 	});
@@ -151,9 +151,9 @@ $j( document ).ready( function() {
 
 	/**
 	 * Change picked events list, set min and max quantity, and refresh total price field - on WC product page quantity change
-	 * @version 1.12.4
+	 * @version 1.15.5
 	 */
-	$j( '.woocommerce form.cart' ).on( 'keyup mouseup change', 'input.qty', function() {
+	$j( '.woocommerce' ).on( 'keyup mouseup change', 'form.cart input.qty', function() {
 		var form = $j( this ).closest( 'form' ).length ? $j( this ).closest( 'form' ) : $j( this ).closest( '.bookacti-form-fields' );
 		if( ! form.length ) { return; }
 		
@@ -235,6 +235,24 @@ $j( document ).ready( function() {
 	if( $j( '.bookacti-countdown' ).length ) {
 		setInterval( bookacti_countdown, 1000 );
 	}
+	
+	
+	
+	
+	// WC QUICK VIEW PLUGINS SUPPORT
+	
+	/**
+	 * Load booking system in YITH WooCommerce Quick View popup
+	 * https://wordpress.org/plugins/yith-woocommerce-quick-view/
+	 * @since 1.15.5
+	 */
+	$j( document ).on( 'qv_loader_stop', function() {
+		var popup = $j( '#yith-quick-view-modal' );
+		var booking_system = popup.find( ' .bookacti-booking-system' );
+		if( booking_system.length && ! popup.find( ' .variations_form' ).length ) {
+			bookacti_reload_booking_system( booking_system );
+		}
+	});
 });
 
 
@@ -321,7 +339,7 @@ function bookacti_switch_product_variation_form( form_container, variation ) {
 
 /**
  * Replace a old variation form with a new one
- * @version 1.15.0
+ * @version 1.15.5
  * @param {HTMLElement} form_container
  * @param {object} variation
  * @param {HTMLElement} form_html
@@ -344,7 +362,7 @@ function bookacti_fill_product_variation_form( form_container, variation, form_h
 	bookacti_booking_method_set_up( booking_system );
 	
 	// Initialize dialog
-	bookacti_init_booking_system_dialogs();
+	bookacti_init_jquery_ui_dialogs( '.bookacti-booking-system-dialog' );
 	
 	// Initialize tooltip
 	bookacti_init_tooltip();
@@ -485,8 +503,3 @@ function bookacti_refresh_cart_after_expiration( countdown ) {
 		complete: function() {}
 	});
 }
-
-
-
-
-

@@ -136,7 +136,7 @@ function bookacti_dialog_update_form_meta() {
 /**
  * Insert form field
  * @since 1.5.0
- * @version 1.15.0
+ * @version 1.15.5
  */
 function bookacti_dialog_insert_form_field() {
 	// Select the first available field
@@ -151,7 +151,7 @@ function bookacti_dialog_insert_form_field() {
 			click: function() { 
 				var form_id    = $j( '#bookacti-form-id' ).val();
 				var field_name = $j( '#bookacti-field-to-insert' ).val();
-				var nonce      = $j( '#nonce_insert_form_field' ).val();
+				var nonce      = $j( '#bookacti-insert-form-field-form input[name="nonce"]' ).val();
 				if( ! field_name || ! form_id || ! nonce ) { return; }
 				
 				// Clear errors
@@ -185,7 +185,7 @@ function bookacti_dialog_insert_form_field() {
 							
 							// Prevent this field from being inserted again (if unique)
 							$j( '#bookacti-field-to-insert option[value="' + field_name + '"][data-unique="1"]' ).attr( 'disabled', true );
-							$j( '#bookacti-field-to-insert' ).val( $j( '#bookacti-field-to-insert option:not([disabled]):first' ).val() );
+							$j( '#bookacti-field-to-insert' ).val( $j( '#bookacti-field-to-insert option:not([disabled]):first' ).val() ).trigger( 'change' );
 							
 							$j( '#bookacti-form-editor' ).trigger( 'bookacti_field_inserted', [ response.field_id, field_name ] );
 							
@@ -223,7 +223,7 @@ function bookacti_dialog_insert_form_field() {
 /**
  * Remove form field
  * @since 1.5.0
- * @version 1.15.0
+ * @version 1.15.5
  * @param {int} field_id
  * @param {string} field_name
  */
@@ -241,7 +241,7 @@ function bookacti_dialog_remove_form_field( field_id, field_name ) {
 			text: bookacti_localized.dialog_button_ok,			
 			click: function() { 
 				
-				var nonce = $j( '#nonce_remove_form_field' ).val();
+				var nonce = $j( '#bookacti-remove-form-field-form input[name="nonce"]' ).val();
 				if( ! field_id || ! nonce ) { return; }
 				
 				// Display a loader
@@ -469,13 +469,10 @@ function bookacti_dialog_update_form_field( field_id, field_name ) {
 /**
  * Export events
  * @since 1.6.0
- * @version 1.8.0
+ * @version 1.15.5
  * @param {int} form_id
  */
 function bookacti_dialog_export_events( form_id ) {
-	// Reset error notices
-	$j( '#bookacti-export-events-dialog .bookacti-notices' ).remove();
-	
 	// Fill the field
 	$j( '#bookacti_export_events_url_secret' ).val( $j( '#bookacti_export_events_url_secret' ).data( 'value' ) );
 	
@@ -484,8 +481,7 @@ function bookacti_dialog_export_events( form_id ) {
 		// OK button   
 		[{
 			text: bookacti_localized.dialog_button_ok,			
-			click: function() { 
-				
+			click: function() {
 				// Reset error notices
 				$j( '#bookacti-export-events-dialog .bookacti-notices' ).remove();
 				
@@ -499,7 +495,7 @@ function bookacti_dialog_export_events( form_id ) {
 			text: bookacti_localized.dialog_button_reset,
 			'class': 'bookacti-dialog-delete-button bookacti-dialog-left-button',
 			click: function() { 
-				var nonce = $j( '#nonce_reset_export_events_url' ).val();
+				var nonce = $j( '#bookacti-export-events-form input[name="nonce"]' ).val();
 				if( ! form_id || ! nonce ) { return; }
 				
 				// Reset error notices

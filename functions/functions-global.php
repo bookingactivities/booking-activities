@@ -545,7 +545,7 @@ function bookacti_get_active_add_ons( $prefix = '', $exclude = array( 'balau' ) 
 /**
  * Get add-on data by prefix
  * @since 1.7.14
- * @version 1.15.4
+ * @version 1.15.5
  * @param string $prefix
  * @param array $exclude
  * @return array
@@ -590,7 +590,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-order-for-customers', 
 			'end_of_life' => '', 
 			'download_id' => 436,
-			'min_version' => '1.2.26'
+			'min_version' => '1.2.27'
 		),
 		'balau' => array( 
 			'title'       => 'Licenses & Updates', 
@@ -901,7 +901,7 @@ function bookacti_convert_wp_locale_to_fc_locale( $wp_locale = false ) {
 /**
  * Display fields
  * @since 1.5.0
- * @version 1.15.4
+ * @version 1.15.5
  * @param array $args
  */
 function bookacti_display_fields( $fields, $args = array() ) {
@@ -932,7 +932,9 @@ function bookacti_display_fields( $fields, $args = array() ) {
 		// Else, display standard field
 		?>
 		<div class='bookacti-field-container <?php echo $wrap_class; ?>' id='<?php echo $field[ 'id' ] . '-container'; ?>'>
-		<?php 
+		<?php
+			if( ! empty( $field[ 'before' ] ) ) { echo $field[ 'before' ]; }
+		
 			// Display field title
 			if( ! empty( $field[ 'title' ] ) ) { 
 				$fullwidth = ! empty( $field[ 'fullwidth' ] ) || in_array( $field[ 'type' ], array( 'checkboxes', 'editor' ), true );
@@ -944,7 +946,9 @@ function bookacti_display_fields( $fields, $args = array() ) {
 			}
 			
 			// Display field
-			bookacti_display_field( $field ); 
+			bookacti_display_field( $field );
+			
+			if( ! empty( $field[ 'after' ] ) ) { echo $field[ 'after' ]; }
 		?>
 		</div>
 	<?php
@@ -1168,8 +1172,8 @@ function bookacti_display_field( $args ) {
 		<?php } ?>
 		</select>
 	<?php 
-		if( $args[ 'multiple' ] === 'maybe' && count( $args[ 'options' ] ) > 1 ) { ?>
-			<span class='bookacti-multiple-select-container' >
+		if( $args[ 'multiple' ] === 'maybe' ) { ?>
+			<span class='bookacti-multiple-select-container' <?php if( count( $args[ 'options' ] ) <= 1 ) { echo 'style="display:none;"'; } ?>>
 				<label for='bookacti-multiple-select-<?php echo esc_attr( $args[ 'id' ] ); ?>' ><span class='dashicons dashicons-<?php echo $is_multiple ? 'minus' : 'plus';?>' title='<?php esc_attr_e( 'Multiple selection', 'booking-activities' ); ?>'></span></label>
 				<input type='checkbox' 
 					   class='bookacti-multiple-select' 
@@ -1217,19 +1221,19 @@ function bookacti_display_field( $args ) {
 /**
  * Format arguments to display a proper field
  * @since 1.2.0
- * @version 1.15.4
- * @param array $args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'attr', 'value', 'multiple', 'tip', 'required']
+ * @version 1.15.5
+ * @param array $raw_args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'attr', 'value', 'multiple', 'tip', 'required']
  * @return array|false
  */
-function bookacti_format_field_args( $args ) {
+function bookacti_format_field_args( $raw_args ) {
 	// If $args is not an array, return
-	if( ! is_array( $args ) ) { return false; }
+	if( ! is_array( $raw_args ) ) { return false; }
 
 	// If fields type or name are not set, return
-	if( ! isset( $args[ 'type' ] ) || ! isset( $args[ 'name' ] ) ) { return false; }
+	if( ! isset( $raw_args[ 'type' ] ) || ! isset( $raw_args[ 'name' ] ) ) { return false; }
 
 	// If field type is not supported, return
-	if( ! in_array( $args[ 'type' ], array( 'text', 'hidden', 'email', 'tel', 'date', 'time', 'password', 'number', 'duration', 'checkbox', 'checkboxes', 'select', 'radio', 'textarea', 'file', 'color', 'editor', 'user_id' ) ) ) { 
+	if( ! in_array( $raw_args[ 'type' ], array( 'text', 'hidden', 'email', 'tel', 'date', 'time', 'password', 'number', 'duration', 'checkbox', 'checkboxes', 'select', 'radio', 'textarea', 'file', 'color', 'editor', 'user_id' ) ) ) { 
 		return false; 
 	}
 
@@ -1248,17 +1252,11 @@ function bookacti_format_field_args( $args ) {
 		'required'     => 0,
 		'autocomplete' => 0
 	);
-
-	// Replace empty value by default
-	foreach( $default_args as $key => $default_value ) {
-		$args[ $key ] = isset( $args[ $key ] ) ? $args[ $key ] : $default_value;
-	}
-
+	
+	$args = wp_parse_args( $raw_args, $default_args );
+	
 	// Sanitize id and name
 	$args[ 'id' ] = sanitize_title_with_dashes( $args[ 'id' ] );
-
-	// If no id, use name instead
-	$args[ 'id' ] = $args[ 'id' ] ? $args[ 'id' ] : sanitize_title_with_dashes( $args[ 'name' ] ) . '-' . rand();
 
 	// Sanitize required
 	$args[ 'required' ] = isset( $args[ 'required' ] ) && $args[ 'required' ] ? 1 : 0;

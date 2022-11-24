@@ -840,32 +840,6 @@ function bookacti_deactivate_group_category( $category_id ) {
 
 
 /**
- * Get group category data
- * @since 1.1.0
- * @version 1.14.0
- * @global wpdb $wpdb
- * @param int $category_id
- * @return array
- */
-function bookacti_get_group_category( $category_id ) {
-	global $wpdb;
-
-	$query = 'SELECT * FROM ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' WHERE id = %d ';
-	$query = $wpdb->prepare( $query, $category_id );
-	$category = $wpdb->get_row( $query, ARRAY_A );
-	
-	if( ! $category ) { $category = array(); }
-	
-	// Get template settings and managers
-	$category[ 'multilingual_title' ] = $category[ 'title' ];
-	$category[ 'title' ]              = ! empty( $category[ 'title' ] ) ? apply_filters( 'bookacti_translate_text', $category[ 'title' ] ) : '';
-	$category[ 'settings' ]           = bookacti_get_metadata( 'group_category', $category_id );
-
-	return $category;
-}
-
-
-/**
  * Get the template id of a group category
  * @since 1.1.0
  * @ersion 1.12.0
@@ -1231,7 +1205,7 @@ function bookacti_delete_templates_x_activities( $template_ids, $activity_ids ) 
 
 /**
  * Get activities by template
- * @version 1.15.0
+ * @version 1.15.5
  * @global wpdb $wpdb
  * @param array $template_ids
  * @param boolean $based_on_events Whether to retrieve activities bound to templates or activities bound to events of templates
@@ -1249,28 +1223,28 @@ function bookacti_get_activities_by_template( $template_ids = array(), $based_on
 
 	if( $based_on_events ) {
 		$query = 'SELECT DISTINCT A.* FROM ' . BOOKACTI_TABLE_EVENTS . ' as E, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A '
-			   . ' WHERE A.id = E.activity_id AND E.template_id IN (';
+			   . ' WHERE A.id = E.activity_id ';
 	} else {
 		$query = 'SELECT DISTINCT A.* FROM ' . BOOKACTI_TABLE_TEMP_ACTI . ' as TA, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A '
-			   . ' WHERE A.id = TA.activity_id AND TA.template_id IN (';
+			   . ' WHERE A.id = TA.activity_id ';
 	}
-
-	$i = 1;
-	foreach( $template_ids as $template_id ){
-		$query .= ' %d';
-		if( $i < count( $template_ids ) ) { $query .= ','; }
-		$i++;
+	
+	if( $template_ids ) {
+		$query .= $based_on_events ? ' AND E.template_id IN ( ' : ' AND TA.template_id IN ( ';
+		for( $i = 0, $len = count( $template_ids ); $i < $len; ++$i ) {
+			if( $i !== 0 ) { $query .= ', '; }
+			$query .= '%d';
+		}
+		$query .= ' )';
 	}
-
-	$query .= ' )';
-
+	
 	$order_by = apply_filters( 'bookacti_activities_list_order_by', array( 'title', 'id' ) );
 	if( $order_by && is_array( $order_by ) ) {
 		$query .= ' ORDER BY ';
-		for( $i=0,$len=count($order_by); $i<$len; ++$i ) {
+		for( $i = 0, $len = count( $order_by ); $i < $len; ++$i ) {
 			if( $order_by[ $i ] === 'id' ) { $order_by[ $i ] = 'A.id'; }
+			if( $i !== 0 ) { $query .= ', '; }
 			$query .= $order_by[ $i ] . ' ASC';
-			if( $i < $len-1 ) { $query .= ', '; }
 		}
 	}
 
@@ -1278,6 +1252,8 @@ function bookacti_get_activities_by_template( $template_ids = array(), $based_on
 		$query = $wpdb->prepare( $query, $template_ids );
 	}
 
+	$query = apply_filters( 'bookacti_get_activities_query', $query, $template_ids, $based_on_events );
+	
 	$activities = $wpdb->get_results( $query, ARRAY_A );
 
 	$activity_ids = array();
@@ -1291,10 +1267,9 @@ function bookacti_get_activities_by_template( $template_ids = array(), $based_on
 		$activity[ 'multilingual_title' ] = $activity[ 'title' ];
 		$activity[ 'title' ]              = $activity[ 'title' ] ? apply_filters( 'bookacti_translate_text', $activity[ 'title' ] ) : '';
 		
+		$activity[ 'settings' ] = isset( $activities_meta[ $activity[ 'id' ] ] ) ? $activities_meta[ $activity[ 'id' ] ] : array();
 		$unit_name_singular = ! empty( $activity[ 'settings' ][ 'unit_name_singular' ] ) ? $activity[ 'settings' ][ 'unit_name_singular' ] : '';
 		$unit_name_plural   = ! empty( $activity[ 'settings' ][ 'unit_name_plural' ] )   ? $activity[ 'settings' ][ 'unit_name_plural' ] : '';
-
-		$activity[ 'settings' ] = isset( $activities_meta[ $activity[ 'id' ] ] ) ? $activities_meta[ $activity[ 'id' ] ] : array();
 		$activity[ 'settings' ][ 'multilingual_unit_name_singular' ] = $unit_name_singular;
 		$activity[ 'settings' ][ 'multilingual_unit_name_plural' ]   = $unit_name_plural;
 		$activity[ 'settings' ][ 'unit_name_singular' ] = $unit_name_singular ? apply_filters( 'bookacti_translate_text', $unit_name_singular ) : '';
@@ -1307,7 +1282,7 @@ function bookacti_get_activities_by_template( $template_ids = array(), $based_on
 		$activities_array[ $activity[ 'id' ] ] = $activity;
 	}
 
-	return $activities_array;
+	return apply_filters( 'bookacti_get_activities', $activities_array, $template_ids, $based_on_events );
 }
 
 

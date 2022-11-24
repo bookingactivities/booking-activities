@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Create Booking Activities database tables
- * @version 1.15.4
+ * @version 1.15.5
  * @global wpdb $wpdb
  */
 function bookacti_create_tables() {
@@ -26,7 +26,7 @@ function bookacti_create_tables() {
 		title TEXT, 
 		duration VARCHAR(12) NOT NULL DEFAULT "000.01:00:00", 
 		color VARCHAR(9) NOT NULL DEFAULT "#3a87ad", 
-		availability MEDIUMINT(9) UNSIGNED NOT NULL DEFAULT 0, 
+		availability MEDIUMINT UNSIGNED NOT NULL DEFAULT 0, 
 		active TINYINT(1) NOT NULL DEFAULT 1,
 		PRIMARY KEY ( id ) ) ' . $collate . ';';
 
@@ -44,13 +44,13 @@ function bookacti_create_tables() {
 		title TEXT, 
 		start DATETIME, 
 		end DATETIME, 
-		availability MEDIUMINT(9) UNSIGNED NOT NULL DEFAULT 0, 
+		availability MEDIUMINT UNSIGNED NOT NULL DEFAULT 0, 
 		repeat_freq VARCHAR(32) NOT NULL DEFAULT "none", 
-		repeat_step SMALLINT(4) UNSIGNED, 
+		repeat_step SMALLINT UNSIGNED, 
 		repeat_on VARCHAR(32), 
 		repeat_from DATE, 
 		repeat_to DATE,
-		repeat_exceptions LONGTEXT,
+		repeat_exceptions TEXT,
 		active TINYINT(1) NOT NULL DEFAULT 1,
 		PRIMARY KEY ( id ),
 		KEY template_id ( template_id ) ) ' . $collate . ';';
@@ -60,11 +60,11 @@ function bookacti_create_tables() {
 		category_id BIGINT UNSIGNED NOT NULL, 
 		title TEXT, 
 		repeat_freq VARCHAR(32) NOT NULL DEFAULT "none", 
-		repeat_step SMALLINT(4) UNSIGNED, 
+		repeat_step SMALLINT UNSIGNED, 
 		repeat_on VARCHAR(32), 
 		repeat_from DATE, 
 		repeat_to DATE,
-		repeat_exceptions LONGTEXT,
+		repeat_exceptions TEXT,
 		active TINYINT(1) NOT NULL DEFAULT 1,
 		PRIMARY KEY ( id ),
 		KEY category_id ( category_id ) ) ' . $collate . ';';
@@ -129,7 +129,7 @@ function bookacti_create_tables() {
 		payment_status VARCHAR(32) NOT NULL DEFAULT "none", 
 		creation_date DATETIME, 
 		expiration_date DATETIME, 
-		quantity MEDIUMINT(9) UNSIGNED NOT NULL DEFAULT 1, 
+		quantity MEDIUMINT UNSIGNED NOT NULL DEFAULT 1, 
 		active TINYINT(1) UNSIGNED NOT NULL DEFAULT 1,
 		PRIMARY KEY ( id ),
 		KEY group_id ( group_id ),
@@ -154,7 +154,7 @@ function bookacti_create_tables() {
 		object_type VARCHAR(128), 
 		object_id BIGINT UNSIGNED, 
 		meta_key VARCHAR(255), 
-		meta_value LONGTEXT,
+		meta_value MEDIUMTEXT,
 		PRIMARY KEY ( id ),
 		KEY object_type ( object_type ),
 		KEY object_id ( object_id ) ) ' . $collate . ';';
@@ -182,7 +182,7 @@ function bookacti_create_tables() {
 	if( ! function_exists( 'dbDelta' ) ) {
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 	}
-
+	
 	dbDelta( $table_templates_query 
 			. $table_activities_query 
 			. $table_templates_activities_query 

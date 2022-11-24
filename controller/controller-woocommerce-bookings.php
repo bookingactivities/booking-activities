@@ -254,6 +254,7 @@ add_action( 'woocommerce_order_status_cancelled', 'bookacti_wc_update_cancelled_
  * - "Processing" if the order has only activities but not virtual
  * And update the bookings of the order to "Pending" if there are at least one activity in the middle of other products
  * @since 1.9.0 (was bookacti_set_order_status_to_completed_after_payment)
+ * @version 1.15.5
  * @param string $order_status
  * @param int $order_id
  * @return string
@@ -282,7 +283,7 @@ function bookacti_wc_payment_complete_order_status( $order_status, $order_id ) {
 		$item_bookings_ids = bookacti_wc_format_order_item_bookings_ids( $item );
 		
 		// Is activity
-		if( $item_bookings_ids ) { $are_activities = false; }
+		if( ! $item_bookings_ids ) { $are_activities = false; }
 
 		// Is virtual
 		$product = $item[ 'variation_id' ] ? wc_get_product( $item[ 'variation_id' ] ) : wc_get_product( $item[ 'product_id' ] );
@@ -767,7 +768,7 @@ add_filter( 'bookacti_booking_list_items', 'bookacti_add_wc_data_to_booking_list
 /**
  * Fill WC bookings export columns
  * @since 1.6.0
- * @version 1.14.0
+ * @version 1.15.5
  * @param array $booking_items
  * @param array $bookings
  * @param array $booking_groups
@@ -821,7 +822,7 @@ function bookacti_fill_wc_columns_in_bookings_export( $booking_items, $bookings,
 		}
 	}
 
-	if( array_intersect( $args[ 'columns' ], array( 'product_id', 'variation_id', 'order_item_title', 'order_item_price', 'order_item_tax' ) ) ) {
+	if( array_intersect( $args[ 'columns' ], array( 'product_id', 'variation_id', 'order_item_title', 'order_item_price', 'order_item_tax', 'payment_method' ) ) ) {
 		// Order item data
 		$order_items = bookacti_wc_get_order_items_by_bookings( $booking_ids, $booking_group_ids );
 		if( ! $order_items ) { return $booking_items; }
@@ -848,12 +849,17 @@ function bookacti_fill_wc_columns_in_bookings_export( $booking_items, $bookings,
 				if( ! isset( $booking_items[ $booking_id ] ) ) { continue; }
 				
 				$order_id = $order_item->get_order_id();
-				$order_item_title = $order_item->get_name();
+				$order    = wc_get_order( $order_id );
+				$order_item_title     = $order_item->get_name();
+				$payment_method_id    = $order ? $order->get_payment_method() : '';
+				$payment_method_title = $order ? $order->get_payment_method_title() : '';
 				$booking_items[ $booking_id ][ 'product_id' ]       = $order_item->get_product_id();
-				$booking_items[ $booking_id ][ 'variation_id' ]     = $order_item->get_variation_id();
-				$booking_items[ $booking_id ][ 'order_item_title' ] = $order_item_title !== '' ? apply_filters( 'bookacti_translate_text_external', $order_item_title, '', true, array( 'domain' => 'woocommerce', 'object_type' => 'order_item', 'object_id' => $order_item_id, 'field' => 'title', 'order_id' => $order_id ) ) : $order_item_title;
-				$booking_items[ $booking_id ][ 'order_item_price' ] = $args[ 'raw' ] ? $order_item->get_total() : html_entity_decode( wc_price( $order_item->get_total() ) );
-				$booking_items[ $booking_id ][ 'order_item_tax' ]   = $args[ 'raw' ] ? $order_item->get_total_tax() : html_entity_decode( wc_price( $order_item->get_total_tax() ) );
+				$booking_items[ $booking_id ][ 'variation_id' ]      = $order_item->get_variation_id();
+				$booking_items[ $booking_id ][ 'order_item_title' ]  = $order_item_title !== '' ? apply_filters( 'bookacti_translate_text_external', $order_item_title, '', true, array( 'domain' => 'woocommerce', 'object_type' => 'order_item', 'object_id' => $order_item_id, 'field' => 'title', 'order_id' => $order_id ) ) : $order_item_title;
+				$booking_items[ $booking_id ][ 'order_item_price' ]  = $args[ 'raw' ] ? $order_item->get_total() : html_entity_decode( wc_price( $order_item->get_total() ) );
+				$booking_items[ $booking_id ][ 'order_item_tax' ]    = $args[ 'raw' ] ? $order_item->get_total_tax() : html_entity_decode( wc_price( $order_item->get_total_tax() ) );
+				$booking_items[ $booking_id ][ 'payment_method_id' ] = $payment_method_id;
+				$booking_items[ $booking_id ][ 'payment_method' ]    = $payment_method_title !== '' ? apply_filters( 'bookacti_translate_text_external', $payment_method_title, '', true, array( 'domain' => 'woocommerce', 'object_type' => 'payment_method', 'object_id' => $payment_method_id, 'field' => 'title', 'order_id' => $order_id ) ) : $payment_method_title;
 			}
 		}
 	}
@@ -866,16 +872,18 @@ add_filter( 'bookacti_booking_items_to_export', 'bookacti_fill_wc_columns_in_boo
 /**
  * Add WC bookings export columns
  * @since 1.6.0
- * @version 1.12.3
+ * @version 1.15.5
  * @param array $columns_labels
  * @return array
  */
 function bookacti_wc_bookings_export_columns( $columns_labels ) {
-	$columns_labels[ 'product_id' ]			= esc_html__( 'Product ID', 'booking-activities' );
-	$columns_labels[ 'variation_id' ]		= esc_html__( 'Product variation ID', 'booking-activities' );
-	$columns_labels[ 'order_item_title' ]	= esc_html__( 'Product title', 'booking-activities' );
-	$columns_labels[ 'order_item_price' ]	= esc_html__( 'Product price', 'booking-activities' );
-	$columns_labels[ 'order_item_tax' ]		= esc_html__( 'Product tax', 'booking-activities' );
+	$columns_labels[ 'product_id' ]        = esc_html__( 'Product ID', 'booking-activities' );
+	$columns_labels[ 'variation_id' ]      = esc_html__( 'Product variation ID', 'booking-activities' );
+	$columns_labels[ 'order_item_title' ]  = esc_html__( 'Product title', 'booking-activities' );
+	$columns_labels[ 'order_item_price' ]  = esc_html__( 'Product price', 'booking-activities' );
+	$columns_labels[ 'order_item_tax' ]    = esc_html__( 'Product tax', 'booking-activities' );
+	$columns_labels[ 'payment_method_id' ] = esc_html__( 'Payment method ID', 'booking-activities' );
+	$columns_labels[ 'payment_method' ]    = esc_html__( 'Payment method', 'booking-activities' );
 	
 	$pos = array_search( 'customer_roles', array_keys( $columns_labels ), true );
 	if( $pos === false ) { $pos = count( $columns_labels ) - 1; }

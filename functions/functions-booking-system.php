@@ -235,7 +235,7 @@ function bookacti_get_booking_system_data( $atts ) {
 /**
  * Display booking system dialogs
  * @since 1.5.0
- * @version 1.12.0
+ * @version 1.15.5
  * @param string $booking_system_id
  */
 function bookacti_display_booking_system_dialogs( $booking_system_id ) {
@@ -243,7 +243,7 @@ function bookacti_display_booking_system_dialogs( $booking_system_id ) {
 	<!-- Choose a group of events -->
 	<div id='<?php echo $booking_system_id . '-choose-group-of-events-dialog'; ?>' 
 		 data-booking-system-id='<?php echo $booking_system_id; ?>' 
-		 class='bookacti-choose-group-of-events-dialog bookacti-booking-system-dialog' 
+		 class='bookacti-backend-dialog bookacti-choose-group-of-events-dialog bookacti-booking-system-dialog' 
 		 title='<?php echo bookacti_get_message( 'choose_group_dialog_title' ); ?>' 
 		 style='display:none;' >
 		<?php echo bookacti_get_message( 'choose_group_dialog_content' ); ?>
@@ -885,7 +885,7 @@ function bookacti_format_booking_system_url_attributes( $atts = array() ) {
 /**
  * Get booking system fields default data
  * @since 1.5.0
- * @version 1.15.4
+ * @version 1.15.5
  * @param array $fields
  * @return array
  */
@@ -945,7 +945,7 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 	if( ! $fields || in_array( 'group_categories', $fields, true ) ) {
 		// Format group category options array
 		$categories = bookacti_get_group_categories();
-		$category_options		= array( 'all' => esc_html__( 'All', 'booking-activities' ), 'none' => esc_html_x( 'None', 'About group category', 'booking-activities' ) );
+		$category_options		= array( 'all' => esc_html__( 'All', 'booking-activities' ), 'none' => esc_html__( 'None', 'booking-activities' ) );
 		$category_options_attr	= array( '<select>' => ' data-allow-clear="0"' );
 		foreach( $categories as $category ) {
 			$category_options[ $category[ 'id' ] ]      = ! empty( $category[ 'title' ] ) ? $category[ 'title' ] : '';
@@ -2705,7 +2705,7 @@ function bookacti_get_event_first_occurrence_date( $event ) {
 /**
  * Get a new interval of events to load. Computed from the compulsory interval, or now's date
  * @since 1.2.2
- * @version 1.12.2
+ * @version 1.15.5
  * @param array $availability_period array( 'start'=> 'Y-m-d H:i:s', 'end'=> 'Y-m-d H:i:s' ) 
  * @param array $min_interval array( 'start'=> 'Y-m-d', 'end'=> 'Y-m-d' )
  * @param int $interval_duration Number of days of the interval
@@ -2766,7 +2766,7 @@ function bookacti_get_new_interval_of_events( $availability_period, $min_interva
 		'end' => $interval_end->format( 'Y-m-d H:i:s' ) 
 	);
 
-	return $interval;
+	return apply_filters( 'bookacti_events_interval', $interval, $availability_period, $min_interval, $interval_duration, $past_events );
 }
 
 

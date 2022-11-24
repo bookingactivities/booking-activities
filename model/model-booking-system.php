@@ -692,7 +692,7 @@ function bookacti_get_groups_events( $raw_args = array() ) {
 /**
  * Retrieve group categories data by id
  * @since 1.1.0
- * @version 1.14.0
+ * @version 1.15.5
  * @global wpdb $wpdb
  * @param array $raw_args {
  *  @type array $templates
@@ -749,6 +749,9 @@ function bookacti_get_group_categories( $raw_args = array() ) {
 	}
 
 	if( $variables ) { $query = $wpdb->prepare( $query, $variables ); }
+	
+	$query = apply_filters( 'bookacti_get_group_categories_query', $query, $args );
+	
 	$categories = $wpdb->get_results( $query, ARRAY_A );
 	
 	// Get group categories meta
@@ -763,8 +766,8 @@ function bookacti_get_group_categories( $raw_args = array() ) {
 		$category[ 'settings' ]               = ! empty( $categories_meta[ $category[ 'id' ] ] ) ? $categories_meta[ $category[ 'id' ] ] : array();
 		$categories_data[ $category[ 'id' ] ] = $category;
 	}
-
-	return $categories_data;
+	
+	return apply_filters( 'bookacti_get_group_categories', $categories_data, $query, $args );
 }
 
 

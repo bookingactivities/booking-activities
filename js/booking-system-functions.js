@@ -815,6 +815,7 @@ function bookacti_unpick_all_events( booking_system ) {
 /**
  * Get the picked events list items
  * @since 1.12.4
+ * @version 1.15.5
  * @param {HTMLElement} booking_system
  * @returns {Object}
  */
@@ -858,7 +859,7 @@ function bookacti_get_picked_events_list_items( booking_system ) {
 		
 		booking_system.trigger( 'bookacti_picked_events_list_item_data', [ list_item_data, picked_event ] );
 		
-		var list_item_id = parseInt( list_item_data.group_id ) > 0 ? 'event-group-' + list_item_data.group_id + '-' + list_item_data.group_date : 'event-' + list_item_data.id + '-' + list_item_data.start + '-' + list_item_data.end;
+		var list_item_id = parseInt( list_item_data.group_id ) > 0 ? 'group_' + list_item_data.group_id + '_' + list_item_data.group_date : 'event_' + list_item_data.id + '_' + list_item_data.start + '_' + list_item_data.end;
 		
 		var list_element = $j( '<li></li>', {
 			'html': '<span class="bookacti-booking-event-title" >' + list_item_data.title + '</span>'
@@ -1516,7 +1517,7 @@ function bookacti_get_bookings_number_for_a_single_grouped_event( booking_system
 
 /**
  * Get a div with event available places
- * @version 1.15.0
+ * @version 1.15.5
  * @param {HTMLElement} booking_system
  * @param {(FullCalendar.EventApi|Object)} event
  * @returns {String}
@@ -1579,10 +1580,13 @@ function bookacti_get_event_availability_div( booking_system, event ) {
 		hide_availability_class	= 'bookacti-hide-availability';
 	}
 	
+	var unit_name_class = '';
+	if( unit_name ) { unit_name_class = 'bookacti-has-unit-name'; }
+	
 	var avail_div     = $j( '<div></div>',   { 'class': 'bookacti-availability-container ' + hide_availability_class } );
 	var places_span   = $j( '<div></div>',   { 'class': 'bookacti-available-places ' + availability_classes } );
 	var nb_span       = $j( '<span></span>', { 'class': 'bookacti-available-places-number', 'html': available_places } );
-	var unit_span     = $j( '<span></span>', { 'class': 'bookacti-available-places-unit-name', 'html': unit_name } );
+	var unit_span     = $j( '<span></span>', { 'class': 'bookacti-available-places-unit-name ' + unit_name_class, 'html': unit_name } );
 	var particle_span = $j( '<span></span>', { 'class': 'bookacti-available-places-avail-particle', 'html': avail } );
 
 	places_span.append( nb_span );
@@ -1762,12 +1766,14 @@ function bookacti_booking_method_clear_events( booking_system ) {
 
 /**
  * Start a loading (or keep on loading if already loading)
- * @version 1.12.0
+ * @version 1.15.5
  * @param {HTMLElement} booking_system
  */
 function bookacti_start_loading_booking_system( booking_system ) {
 	var booking_system_id = booking_system.attr( 'id' );
-	var booking_method    = bookacti.booking_system[ booking_system_id ][ 'method' ];
+	if( typeof bookacti.booking_system[ booking_system_id ] === 'undefined' ) { return; }
+	
+	var booking_method = bookacti.booking_system[ booking_system_id ][ 'method' ];
 	if( $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) { booking_method = 'calendar'; }
 	
 	if( ! $j.isNumeric( bookacti.booking_system[ booking_system_id ][ 'loading_number' ] ) ) {
@@ -1782,7 +1788,7 @@ function bookacti_start_loading_booking_system( booking_system ) {
 
 /**
  * Stop a loading (but keep on loading if there are other loadings)
- * @version 1.12.0
+ * @version 1.15.5
  * @param {HTMLElement} booking_system
  * @param {Boolean} force_exit 
  */
@@ -1790,7 +1796,9 @@ function bookacti_stop_loading_booking_system( booking_system, force_exit ) {
 	force_exit = force_exit ? force_exit : false;
 	
 	var booking_system_id = booking_system.attr( 'id' );
-	var booking_method    = bookacti.booking_system[ booking_system_id ][ 'method' ];
+	if( typeof bookacti.booking_system[ booking_system_id ] === 'undefined' ) { return; }
+	
+	var booking_method = bookacti.booking_system[ booking_system_id ][ 'method' ];
 	if( $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) { booking_method = 'calendar'; }
 	
 	bookacti.booking_system[ booking_system_id ][ 'loading_number' ]--;

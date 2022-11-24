@@ -53,20 +53,26 @@ $j( document ).ready( function() {
 	
 	
 	/**
-	 * Calendar field settings: Fill days off
+	 * Calendar field settings: Fill days off, and "All" selectboxes option
 	 * @since 1.13.0
-	 * @version 1.14.0
+	 * @version 1.15.5
 	 * @param {Event} e
 	 * @param {Int} field_id
 	 * @param {String} field_name
 	 */
 	$j( '#bookacti-form-editor' ).on( 'bookacti_field_update_dialog', function( e, field_id, field_name ) {
 		if( field_name !== 'calendar' ) { return; }
+		var field_data = bookacti.form_editor.fields[ field_id ];
+		
+		// Fill Activities and Group categories "All" option
+		if( $j.isArray( field_data.activities ) )       { if( ! field_data.activities.length )       { $j( '#bookacti-form-field-dialog-calendar #bookacti-activities' ).val( 'all' ).trigger( 'change' ); } }
+		if( $j.isArray( field_data.group_categories ) ) { if( ! field_data.group_categories.length ) { $j( '#bookacti-form-field-dialog-calendar #bookacti-group_categories' ).val( 'all' ).trigger( 'change' ); } }
+		
+		// Remove days off
 		bookacti_delete_days_off_rows( $j( '#bookacti-form-field-dialog-calendar .bookacti-date-intervals-table-container' ) );
 		$j( '#bookacti-form-field-dialog-calendar input.bookacti-date-interval-from, #bookacti-form-field-dialog-calendar input.bookacti-date-interval-to' ).attr( 'min', '' ).attr( 'max', '' );
 		
 		// Fill Days off option since the bookacti_fill_fields_from_array function won't do it
-		var field_data = bookacti.form_editor.fields[ field_id ];
 		if( field_data.hasOwnProperty( 'days_off' ) ) {
 			if( ! $j.isEmptyObject( field_data.days_off ) ) {
 				bookacti_fill_days_off( $j( '#bookacti-form-field-dialog-calendar .bookacti-date-intervals-table-container' ), field_data.days_off );
@@ -364,7 +370,7 @@ function bookacti_save_form() {
 /**
  * Save field order
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.15.5
  */
 function bookacti_save_form_field_order() {
 	var form_id = $j( '#bookacti-form-id' ).val();
@@ -379,12 +385,11 @@ function bookacti_save_form_field_order() {
 	
 	if( ! field_order.length ) { return; }
 	
-	var nonce = $j( '#bookacti_nonce_form_field_order' ).val();
 	var data = {
 		'action': 'bookactiSaveFormFieldOrder',
 		'form_id': form_id,
 		'field_order': field_order,
-		'nonce': nonce
+		'nonce': $j( '#bookacti-form-editor-page-form input[name="nonce"]' ).val()
 	};
 	
 	bookacti_form_editor_enter_loading_state();

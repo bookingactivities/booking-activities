@@ -2,7 +2,7 @@
 /**
  * Form editor page
  * @since 1.5.0
- * @version 1.15.4
+ * @version 1.15.5
  */
 
 // Exit if accessed directly
@@ -84,12 +84,12 @@ if( ! $form_edit ) { exit; }
 		<form name='post' action='<?php echo $redirect_url; ?>' method='post' id='bookacti-form-editor-page-form' novalidate>
 			<?php
 			/* Used to save closed meta boxes and their order */
-			wp_nonce_field( 'bookacti_update_form', 'nonce_update_form', false );
 			wp_nonce_field( 'meta-box-order', 'meta-box-order-nonce', false );
 			wp_nonce_field( 'closedpostboxes', 'closedpostboxesnonce', false );
 			?>
 			<input type='hidden' name='page' value='bookacti_forms'/>
 			<input type='hidden' name='action' value='bookactiUpdateForm'/>
+			<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_update_form' ); ?>'/>
 			<input type='hidden' name='is_active' value='<?php echo $form_edit[ 'active' ]; ?>'/>
 			<input type='hidden' name='form_id' value='<?php echo $form_id; ?>' id='bookacti-form-id'/>
 			
@@ -132,10 +132,7 @@ if( ! $form_edit ) { exit; }
 							
 							// FORM EDITOR
 							} else {
-								// Display a nonce for form field order
-								wp_nonce_field( 'bookacti_form_field_order', 'bookacti_nonce_form_field_order', false );
-								?>
-								
+							?>
 								<script>
 									// Compatibility with Optimization plugins
 									if( typeof bookacti === 'undefined' ) { var bookacti = { booking_system:[] }; }

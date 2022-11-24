@@ -1,7 +1,7 @@
 <?php 
 /**
  * Backend booking dialogs
- * @version 1.15.4
+ * @version 1.15.5
  */
 
 // Exit if accessed directly
@@ -11,9 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 <div id='bookacti-bookings-calendar-settings-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' style='display:none;' title='<?php esc_html_e( 'Bookings page calendar settings', 'booking-activities' ); ?>'>
 	<form id='bookacti-bookings-calendar-settings-form'>
 		<input type='hidden' name='action' value='bookactiUpdateBookingsCalendarSettings'/>
-		<?php
-			wp_nonce_field( 'bookacti_update_bookings_calendar_settings', 'nonce_update_bookings_calendar_settings', false );
-		?>
+		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_update_bookings_calendar_settings' ); ?>'/>
 		<div class='bookacti-backend-settings-only-notice bookacti-warning'>
 			<span class='dashicons dashicons-warning'></span>
 			<span>
@@ -159,9 +157,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 <div id='bookacti-change-booking-state-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' style='display:none;' title='<?php esc_html_e( 'Change booking state', 'booking-activities' ); ?>'>
 	<form id='bookacti-change-booking-state-form'>
-		<?php
-			wp_nonce_field( 'bookacti_change_booking_state', 'nonce_change_booking_state', false );
-		?>
+		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_change_booking_state' ); ?>'/>
 		<fieldset>
 			<legend><?php esc_html_e( 'Booking state', 'booking-activities' ); ?></legend>
 			<div>
@@ -212,9 +208,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 <div id='bookacti-change-booking-quantity-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' style='display:none;' title='<?php esc_html_e( 'Change booking quantity', 'booking-activities' ); ?>'>
 	<form id='bookacti-change-booking-quantity-form'>
-		<?php
-			wp_nonce_field( 'bookacti_change_booking_quantity', 'nonce_change_booking_quantity', false );
-		?>
+		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_change_booking_quantity' ); ?>'/>
 		<p class='bookacti-dialog-intro' ><?php esc_html_e( 'Input the desired booking quantity:', 'booking-activities' ); ?></p>
 		<?php
 			$booking_qty_fields = apply_filters( 'bookacti_change_booking_quantity_dialog_fields', array(
@@ -240,9 +234,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 <div id='bookacti-delete-booking-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' style='display:none;' title='<?php esc_html_e( 'Delete a booking', 'booking-activities' ); ?>'>
 	<form id='bookacti-delete-booking-dialog-content'>
 		<input type='hidden' name='action' value='bookactiDeleteBooking'/>
+		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_delete_booking' ); ?>'/>
 		<input type='hidden' name='booking_id' value='0'/>
 		<input type='hidden' name='booking_type' value=''/>
-		<?php wp_nonce_field( 'bookacti_delete_booking', 'nonce_delete_booking' ); ?>
 		<p class='bookacti-dialog-intro bookacti-delete-single-booking-description' >
 			<?php esc_html_e( 'Are you sure to delete this booking permanently?', 'booking-activities' ); ?>
 		</p>
@@ -260,7 +254,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 <div id='bookacti-export-bookings-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' style='display:none;' title='<?php esc_html_e( 'Export bookings', 'booking-activities' ); ?>'>
 	<form id='bookacti-export-bookings-form'>
-		<?php wp_nonce_field( 'bookacti_export_bookings_url', 'nonce_export_bookings_url', false ); ?>
+		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_export_bookings_url' ); ?>'/>
 		<input type='hidden' name='export_type' value='csv' id='bookacti-export-type-field'/>
 		<div class='bookacti-info'>
 			<span class='dashicons dashicons-info'></span>

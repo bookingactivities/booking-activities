@@ -51,10 +51,9 @@ $j( document ).ready( function() {
 	/**
 	 * Allow select2 to work in a jquery-ui dialog
 	 * @since 1.7.19
-	 * @version 1.15.0
+	 * @version 1.15.5
 	 */
 	$j( '.bookacti-backend-dialog' ).dialog({
-		"autoOpen": false,
 		"open": function() {
 			if( $j.ui && $j.ui.dialog && ! $j.ui.dialog.prototype._allowInteractionRemapped && $j( this ).closest( '.ui-dialog' ).length ) {
 				if( $j.ui.dialog.prototype._allowInteraction ) {
@@ -78,6 +77,7 @@ $j( document ).ready( function() {
 	/**
 	 * Convert duration from days/hours/minutes to seconds - on change
 	 * @since 1.8.0
+	 * @version 1.15.5
 	 */
 	$j( 'body' ).on( 'keyup mouseup change', '.bookacti-duration-field', function() {
 		var field_value = $j( this ).closest( '.bookacti-duration-field-container' ).siblings( '.bookacti-duration-value' );
@@ -97,7 +97,7 @@ $j( document ).ready( function() {
 		$j( this ).closest( '.bookacti-duration-field-container' ).siblings( '.bookacti-duration-hint' ).remove();
 		if( ! $j.isNumeric( value ) ) { value = 0; }
 		var hint = moment.utc().add( value + bookacti_localized.utc_offset, 's' ).formatPHP( bookacti_localized.date_format_long );
-		$j( this ).closest( '.bookacti-duration-field-container' ).parent().append( '<div class="bookacti-duration-hint">' + hint + '</div>' );
+		$j( this ).closest( '.bookacti-duration-field-container' ).parent().find( '.bookacti-duration-field-container' ).last().after( '<div class="bookacti-duration-hint">' + hint + '</div>' );
 	});
 	
 	
@@ -160,13 +160,16 @@ function bookacti_show_hide_advanced_options( button ) {
 
 /**
  * Empty all dialog forms fields
- * @version 1.15.4
+ * @version 1.15.5
  * @param {string} scope
  */
 function bookacti_empty_all_dialog_forms( scope ) {
 	scope = typeof scope === 'undefined' || ! scope ? '.bookacti-backend-dialog ' : scope + ' ';
 
 	$j( scope + '.bookacti-form-error' ).remove();
+	$j( scope + '.bookacti-notices' ).remove();
+	$j( scope + '.bookacti-input-warning' ).removeClass( 'bookacti-input-warning' );
+	$j( scope + '.bookacti-input-error' ).removeClass( 'bookacti-input-error' );
 	$j( scope + 'input[type="hidden"]:not([name="action"]):not([name^="nonce"]):not([name="_wp_http_referer"]):not([name="qtranslate-edit-language"]):not(.bookacti-onoffswitch-hidden-input)' ).val( '' );
 	$j( scope + 'input[type="text"]:not([readonly])' ).val( '' );
 	$j( scope + 'input[type="email"]' ).val( '' );
@@ -338,7 +341,7 @@ function bookacti_fill_fields_from_array( fields, field_prefix, scope ) {
 
 /**
  * Switch a selectbox to multiple
- * @version 1.8.9
+ * @version 1.15.5
  * @param {HTMLElement} checkbox
  */
 function bookacti_switch_select_to_multiple( checkbox ) {
@@ -371,7 +374,7 @@ function bookacti_switch_select_to_multiple( checkbox ) {
 	
 	// Select the first available value
 	if( ! is_checked ) {
-		var first_available_value = $j( 'select#' + select_id + ' option:not(:disabled):first' ).length ? $j( 'select#' + select_id + ' option:not(:disabled):first' ).val() : '';
+		var first_available_value = null;
 		if( values ) {
 			if( ! $j.isArray( values ) ) { values = [ values ]; }
 			$j.each( values, function( i, value ) {
@@ -392,6 +395,8 @@ function bookacti_switch_select_to_multiple( checkbox ) {
 		$j( 'select#' + select_id ).select2( 'destroy' );
 		bookacti_select2_init();
 	}
+	
+	$j( 'select#' + select_id ).trigger( 'bookacti_switched_multiple' );
 }
 
 

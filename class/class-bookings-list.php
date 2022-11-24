@@ -10,7 +10,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 	
 	/**
 	 * Bookings WP_List_Table
-	 * @version 1.15.4
+	 * @version 1.15.5
 	 */
 	class Bookings_List_Table extends WP_List_Table {
 		
@@ -49,7 +49,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		
 		/**
 		 * Get booking list table columns
-		 * @version 1.8.0
+		 * @version 1.15.5
 		 * @access public
 		 * @return array
 		 */
@@ -63,7 +63,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			 * @param array $columns
 			 */
 			$columns = apply_filters( 'bookacti_booking_list_columns', array(
-				'cb'			=> '<input type="checkbox" />',
+//				'cb'			=> '<input type="checkbox" />',
 				'id'			=> esc_html_x( 'id', 'An id is a unique identification number', 'booking-activities' ),
 				'customer'		=> esc_html__( 'Customer', 'booking-activities' ),
 				'email'			=> esc_html__( 'Email', 'booking-activities' ),
@@ -90,7 +90,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			 * @param array $columns
 			 */
 			$columns_order = apply_filters( 'bookacti_booking_list_columns_order', array(
-				10 => 'cb',
+//				10 => 'cb',
 				20 => 'id',
 				30 => 'state',
 				40 => 'payment_status',
@@ -223,7 +223,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		
 		/**
 		 * Get booking list items. Parameters can be passed in the URL.
-		 * @version 1.15.4
+		 * @version 1.15.5
 		 * @access public
 		 * @return array
 		 */
@@ -396,9 +396,9 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 				);
 				$primary_data_html = '';
 				if( $primary_data ) {
-					$primary_data_html = '<div class="bookacti-booking-primary-data-container">';
+					$primary_data_html = '<div class="bookacti-primary-data-container">';
 					foreach( $primary_data as $single_primary_data ) {
-						$primary_data_html .= '<span class="bookacti-booking-primary-data">' . $single_primary_data . '</span>';
+						$primary_data_html .= '<span class="bookacti-primary-data">' . $single_primary_data . '</span>';
 					}
 					$primary_data_html .= '</div>';
 				}
@@ -773,6 +773,18 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			if( empty( $this->url ) ) { return $url; }
 			
 			return $this->url;
+		}
+		
+		
+		/**
+		 * Gets a list of CSS classes for the WP_List_Table table tag.
+		 * @since 1.15.5
+		 * @return string[] Array of CSS classes for the table tag.
+		 */
+		protected function get_table_classes() {
+			$classes = parent::get_table_classes();
+			$classes[] = 'bookacti-list-table';
+			return $classes;
 		}
 	}
 }

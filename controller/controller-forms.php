@@ -34,7 +34,7 @@ add_action( 'bookacti_display_form_field_calendar', 'bookacti_display_form_field
 /**
  * Display the form field 'login'
  * @since 1.5.0
- * @version 1.14.0
+ * @version 1.15.5
  * @param string $html
  * @param array $field
  * @param string $instance_id
@@ -178,7 +178,7 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 							?>
 							</div>
 							<?php if( ! $forgotten_password_url ) { ?>
-							<div data-field-id='<?php echo $field_id; ?>' class='bookacti-forgotten-password-dialog bookacti-form-dialog' title='<?php esc_html_e( 'Forgotten password', 'booking-activities' ); ?>' style='display:none;' >
+							<div data-field-id='<?php echo $field_id; ?>' class='bookacti-backend-dialog bookacti-forgotten-password-dialog bookacti-form-dialog' title='<?php esc_html_e( 'Forgotten password', 'booking-activities' ); ?>' style='display:none;' >
 								<div class='bookacti-forgotten-password-dialog-description' >
 									<p>
 									<?php
@@ -640,26 +640,44 @@ add_action( 'wp_ajax_nopriv_bookactiGetForm', 'bookacti_controller_get_form' );
 /**
  * AJAX Controller - Send the forgotten password email
  * @since 1.5.0
- * @version 1.14.0
+ * @version 1.15.5
  */
 function bookacti_controller_forgotten_password() {
-	$email = isset( $_POST[ 'email' ] ) ? sanitize_email( $_POST[ 'email' ] ) : '';
-	if( ! is_email( $email ) ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'invalid_email', 'message' => esc_html__( 'Invalid email address.', 'booking-activities' ) ), 'forgotten_password' ); }
+	$user_login   = isset( $_POST[ 'user_login' ] ) ? sanitize_user( wp_unslash( $_POST[ 'user_login' ] ) ) : '';
+	$callback     = apply_filters( 'bookacti_reset_password_notification_callback', 'retrieve_password' );
+	$return_array = array(
+		'status'  => 'failed', 
+		'message' => ''
+	);
 	
-	$user = get_user_by( 'email', $email );
-	if( ! $user ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'user_not_found', 'message' => esc_html__( 'This email address doesn\'t match any account.', 'booking-activities' ) ), 'forgotten_password' ); }
-	
-	// WordPress 4.4.0 backward compatibility
-	if( function_exists( 'wp_send_new_user_notifications' ) ) {
-		wp_send_new_user_notifications( $user->ID, apply_filters( 'bookacti_forgotten_password_notify', 'user', $user ) );
-	} else {
-		wp_new_user_notification( $user->ID, null, apply_filters( 'bookacti_forgotten_password_notify', 'user', $user ) );
+	$response = false;
+	if( is_callable( $callback ) ) {
+		$response = call_user_func( $callback, $user_login );
+		
+		if( $response === true ) {
+			$return_array[ 'status' ] = 'success';
+			/* translators: %s is the user email address or the user login */
+			$return_array[ 'message' ] = sprintf( esc_html__( 'An email has been sent to %s, please check your inbox.', 'booking-activities' ), $user_login );
+		} else {
+			$return_array[ 'status' ] = 'failed';
+			if( is_wp_error( $response ) ) {
+				$return_array[ 'messages' ] = $response->get_error_messages();
+			} else if( is_array( $response ) ) {
+				$return_array[ 'messages' ] = array_filter( $response, 'is_string' );
+			} else if( is_string( $response ) ) {
+				$return_array[ 'message' ] = $response;
+			}
+			if( ! empty( $return_array[ 'messages' ] ) ) {
+				$return_array[ 'message' ] = implode( '</li><li>', $return_array[ 'messages' ] );
+			}
+		}
 	}
 	
-	/* translators: %s is the user email address */
-	$message = sprintf( esc_html__( 'An email has been sent to %s, please check your inbox.', 'booking-activities' ), $email );
+	if( $response === true ) {
+		do_action( 'bookacti_reset_password_notification_sent', $user_login );
+	}
 	
-	bookacti_send_json( array( 'status' => 'success', 'message' => $message ), 'forgotten_password' );
+	bookacti_send_json( $return_array, 'reset_password' );
 }
 add_action( 'wp_ajax_bookactiForgottenPassword', 'bookacti_controller_forgotten_password' );
 add_action( 'wp_ajax_nopriv_bookactiForgottenPassword', 'bookacti_controller_forgotten_password' );
@@ -1237,13 +1255,13 @@ add_action( 'load-booking-activities_page_bookacti_forms', 'bookacti_controller_
 /**
  * AJAX Controller - Update a booking form
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.15.5
  */
 function bookacti_controller_update_form() {
 	$form_id = intval( $_REQUEST[ 'form_id' ] );
 	
 	// Check nonce and capabilities
-	$is_nonce_valid = check_ajax_referer( 'bookacti_update_form', 'nonce_update_form', false );
+	$is_nonce_valid = check_ajax_referer( 'bookacti_update_form', 'nonce', false );
 	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'update_form' ); }
 	
 	$is_allowed = current_user_can( 'bookacti_edit_forms' ) && bookacti_user_can_manage_form( $form_id );
@@ -1615,13 +1633,13 @@ add_action( 'wp_ajax_bookactiRemoveFormField', 'bookacti_controller_remove_form_
 /**
  * AJAX Controller - Save form field order
  * @since 1.5.0
- * @version 1.14.0
+ * @version 1.15.5
  */
 function bookacti_controller_save_form_field_order() {
 	$form_id = intval( $_POST[ 'form_id' ] );
 	
 	// Check nonce and capabilities
-	$is_nonce_valid = check_ajax_referer( 'bookacti_form_field_order', 'nonce', false );
+	$is_nonce_valid = check_ajax_referer( 'bookacti_update_form', 'nonce', false );
 	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'save_form_field_order' ); }
 	
 	$is_allowed = current_user_can( 'bookacti_edit_forms' ) && bookacti_user_can_manage_form( $form_id );
@@ -1881,14 +1899,14 @@ add_action( 'bookacti_form_editor_field_actions_after', 'bookacti_add_login_fiel
 /**
  * AJAX Controller - Reset form export events URL
  * @since 1.6.0
+ * @version 1.15.5
  */
 function bookacti_controller_reset_form_export_events_url() {
-	
 	$form_id = $_POST[ 'form_id' ];
 	
 	// Check nonce and capabilities
-	$is_nonce_valid	= check_ajax_referer( 'bookacti_reset_export_events_url', 'nonce', false );
-	$is_allowed		= current_user_can( 'bookacti_edit_forms' ) && bookacti_user_can_manage_form( $form_id );
+	$is_nonce_valid = check_ajax_referer( 'bookacti_export_events_url', 'nonce', false );
+	$is_allowed     = current_user_can( 'bookacti_edit_forms' ) && bookacti_user_can_manage_form( $form_id );
 	
 	if( ! $is_nonce_valid || ! $is_allowed || ! $form_id ) {
 		bookacti_send_json_not_allowed( 'reset_export_events_url' );
@@ -1897,7 +1915,7 @@ function bookacti_controller_reset_form_export_events_url() {
 	// Update form secret key
 	$new_secret_key = md5( microtime().rand() );
 	$old_secret_key = bookacti_get_metadata( 'form', $form_id, 'secret_key', true );
-	$updated		= bookacti_update_metadata( 'form', $form_id, array( 'secret_key' => $new_secret_key ) );
+	$updated        = bookacti_update_metadata( 'form', $form_id, array( 'secret_key' => $new_secret_key ) );
 	
 	if( $updated === false ) {
 		bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_updated' ), 'reset_export_events_url' );
@@ -1905,14 +1923,12 @@ function bookacti_controller_reset_form_export_events_url() {
 	
 	do_action( 'bookacti_export_events_url_reset', $form_id, $new_secret_key, $old_secret_key );
 	
-	bookacti_send_json( 
-		array( 
-			'status' => 'success', 
-			'new_secret_key' => $new_secret_key, 
-			'old_secret_key' => $old_secret_key,
-			'message' => esc_html__( 'The secret key has been changed. The old link won\'t work anymore. Use the new link above to export your events.', 'booking-activities' ) 
-		), 
-		'reset_export_events_url' );
+	bookacti_send_json( array( 
+		'status' => 'success', 
+		'new_secret_key' => $new_secret_key, 
+		'old_secret_key' => $old_secret_key,
+		'message' => esc_html__( 'The secret key has been changed. The old link won\'t work anymore. Use the new link above to export your events.', 'booking-activities' ) 
+	), 'reset_export_events_url' );
 }
 add_action( 'wp_ajax_bookactiResetExportEventsUrl', 'bookacti_controller_reset_form_export_events_url', 10 );
 

@@ -21,6 +21,22 @@ $j( document ).ready( function() {
 		$j( this ).trigger( 'change' );
 	});
 	
+	// Initialize jQueryUI dialogs
+	bookacti_init_jquery_ui_dialogs();
+	
+	// Make dialogs close when the user click outside
+	$j( 'body' ).on( 'click', '.ui-widget-overlay', function (){
+		$j( '.bookacti-backend-dialog:ui-dialog:visible' ).dialog( 'close' );
+	});
+	
+	// Press ENTER to bring focus on first button
+	$j( 'body' ).on( 'keydown', '.bookacti-backend-dialog', function( e ) {
+		if( ! $j( 'textarea' ).is( ':focus' ) && e.keyCode == $j.ui.keyCode.ENTER ) {
+			$j( this ).parent().find( '.ui-dialog-buttonpane button:first' ).focus(); 
+			return false; 
+		}
+	});
+	
 	// Localize moment JS
 	moment.locale( bookacti_localized.fullcalendar_locale );
 	
@@ -62,6 +78,33 @@ function bookacti_init_tooltip() {
 		'delay': 200,
 		'maxWidth': '300px',
 		'keepAlive': true
+	});
+}
+
+
+/**
+ * Initialize jQuery UI dialogs
+ * @since 1.15.5
+ * @param {String} scope
+ */
+function bookacti_init_jquery_ui_dialogs( scope ) {
+	if( typeof scope === 'undefined' ) { scope = '.bookacti-backend-dialog'; }
+	$j( scope ).dialog({ 
+		"modal":       true,
+		"autoOpen":    false,
+		"minHeight":   300,
+		"minWidth":    460,
+		"resize":      'auto',
+		"show":        true,
+		"hide":        true,
+		"dialogClass": 'bookacti-dialog',
+		"beforeClose": function() { 
+			if( ! bookacti_localized.is_admin 
+			||  typeof bookacti_empty_all_dialog_forms === 'undefined' ) { return; }
+			var dialog_id = $j( this ).attr( 'id' );
+			if( dialog_id ) { scope = '#' + dialog_id; }
+			bookacti_empty_all_dialog_forms( scope ); 
+		}
 	});
 }
 
@@ -294,6 +337,7 @@ function bookacti_select2_init() {
 /**
  * Make select2 multiple select sortable
  * @since 1.15.4
+ * @param {String} selectbox_selector
  */
 function bookacti_select2_sortable_init( selectbox_selector ) {
 	if( typeof selectbox_selector === 'undefined' ) {

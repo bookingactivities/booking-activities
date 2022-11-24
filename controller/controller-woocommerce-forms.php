@@ -683,3 +683,15 @@ function bookacti_clear_products_titles_cache( $product_id ) {
 	wp_cache_delete( 'products_titles', 'bookacti_wc' );
 }
 add_action( 'woocommerce_delete_product_transients', 'bookacti_clear_products_titles_cache', 10, 1 );
+
+
+/**
+ * Callback to send WC Reset Password notification
+ * @since 1.15.5
+ * @param string|array $callback
+ * @return string|array
+ */
+function bookacti_wc_reset_password_notification_callback( $callback ) {
+	return 'bookacti_wc_send_reset_password_notification';
+}
+add_filter( 'bookacti_reset_password_notification_callback', 'bookacti_wc_reset_password_notification_callback', 10, 1 );

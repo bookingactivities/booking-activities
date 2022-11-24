@@ -3,9 +3,9 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
-Tested up to: 6.0
+Tested up to: 6.1
 Requires PHP: 5.3
-Stable tag: 1.15.4
+Stable tag: 1.15.5
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -320,6 +320,25 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.15.5 - 2022/11/24 =
+* Tweak - Remove useless checkbox column in list tables and standardize CSS
+* Tweak - Support YITH WooCommerce Quick View (load booking system in popup)
+* Fix - Activity unit name was not displayed
+* Fix - Activity unit name was not displayed in the correct order in RTL languages
+* Fix - Incorrect display of ID column in backend list table on mobile
+* Fix - WC order status may be Completed unexpectedly in some cases involving non-booking products
+* Fix - Invalid group ID error may appear in groups of events dialog in calendar editor
+* Fix - Group categories "All" option was not selected in form editor calendar settings dialog
+* Fix - Possible undesired scroll when closing group selection dialog after navigating the calendar
+* Fix - JS error when deleting a group of events with no events, a group category with no groups, and the last calendar
+* Dev - Standardize dialogs JS and CSS
+* Dev - No longer generate id in html fields (with random number) if not provided
+* Dev - Change LONGTEXT to TEXT or MEDIUMTEXT db column definition, and remove useless numeric type attributes
+* Dev - Add bookacti_reset_password_notification_callback hook and send WC Reset Password email instead of WP's (#169)
+* Dev - Reset error notices automatically when the dialog is closed (standardize code)
+* Dev - Functions triggered on WC product pages only can now be triggered on any page having the "woocommerce" class
+* Dev - Standardize the use of nonces (input name = nonce)
 
 = 1.15.4 - 2022/10/06 =
 * Tweak - Enable the "Today" button even if today's view is not accessible

@@ -2,7 +2,7 @@
 
 /**
  * Change default template on change in the select box
- * @version 1.15.0
+ * @version 1.15.5
  * @param {int} selected_template_id
  */
 function bookacti_switch_template( selected_template_id ) {
@@ -49,7 +49,7 @@ function bookacti_switch_template( selected_template_id ) {
 			'action': 'bookactiSwitchTemplate', 
 			'template_id': selected_template_id,
 			'attributes': JSON.stringify( attributes ),
-			'nonce': $j( '#nonce_edit_template' ).val()
+			'nonce': $j( '#bookacti-edit-template-nonce' ).val()
 		},
 		type: 'POST',
 		dataType: 'json',
@@ -273,6 +273,7 @@ function bookacti_make_activities_sortable() {
 /**
  * Save activities / group categories / groups of events order
  * @since 1.11.0
+ * @version 1.15.5
  * @param {String} item_type 'activities', 'groups_of_events' or 'group_categories'
  * @param {Int} item_id
  */
@@ -316,7 +317,7 @@ function bookacti_save_template_items_order( item_type, item_id ) {
 		'item_type': item_type,
 		'item_id': item_id,
 		'items_order': items_order,
-		'nonce': $j( '#nonce_edit_template' ).val()
+		'nonce': $j( '#bookacti-edit-template-nonce' ).val()
 	};
 	
 	$j( '#bookacti-template-container' ).trigger( 'bookacti_update_template_items_order_data', [ data, item_type, item_id ] );
@@ -742,7 +743,7 @@ function bookacti_update_create_form_link_url() {
 /**
  * Get calendar editor data by interval (events and bookings) 
  * @since 1.12.0 (was bookacti_fetch_events_on_calendar_editor)
- * @version 1.15.0
+ * @version 1.15.5
  * @param {object} interval
  */
 function bookacti_get_calendar_editor_data_by_interval( interval ) {
@@ -773,7 +774,7 @@ function bookacti_get_calendar_editor_data_by_interval( interval ) {
 			'template_id': bookacti.selected_template,
 			'interval': JSON.stringify( interval ),
 			'group_ids': JSON.stringify( group_ids ),
-			'nonce': $j( '#nonce_get_calendar_editor_data' ).val()
+			'nonce': $j( '#bookacti-edit-template-nonce' ).val()
 		},
         dataType: 'json',
         success: function( response ){
@@ -869,7 +870,7 @@ function bookacti_clear_events_on_calendar_editor() {
 /**
  * Update event dates (move or resize an event)
  * @since 1.10.0
- * @version 1.15.0
+ * @version 1.15.5
  * @param {(FullCalendar.EventApi|Object)} new_event
  * @param {(FullCalendar.EventApi|Object)} old_event
  * @param {callable} revertFunc
@@ -911,7 +912,7 @@ function bookacti_update_event_dates( new_event, old_event, revertFunc, is_dialo
 		'old_event_start': old_start, 
 		'old_event_end': old_end,
 		'interval': interval,
-		'nonce': $j( '#nonce_edit_template' ).val()
+		'nonce': $j( '#bookacti-edit-template-nonce' ).val()
 	}, form_data );
 	
 	$j( '#bookacti-template-calendar' ).trigger( 'bookacti_update_event_dates_before', [ new_event, data, old_event, revertFunc ] );
@@ -1031,7 +1032,7 @@ function bookacti_update_event_dates( new_event, old_event, revertFunc, is_dialo
 /**
  * Duplicate an event
  * @since 1.10.0
- * @version 1.15.1
+ * @version 1.15.5
  * @param {(FullCalendar.EventApi|Object)} new_event
  * @param {(FullCalendar.EventApi|Object)} old_event
  */
@@ -1050,7 +1051,7 @@ function bookacti_duplicate_event( new_event, old_event ) {
 		'old_event_start': old_start, 
 		'old_event_end': old_end,
 		'interval': interval,
-		'nonce': $j( '#nonce_edit_template' ).val()
+		'nonce': $j( '#bookacti-edit-template-nonce' ).val()
 	};
 
 	$j( '#bookacti-template-calendar' ).trigger( 'bookacti_duplicate_event_before', [ new_event, old_event, data ] );
@@ -1277,7 +1278,7 @@ function bookacti_expand_collapse_all_groups_of_events( action, except_category_
 
 /**
  * Load activities bound to selected template
- * @version 1.15.0
+ * @version 1.15.5
  * @param {int} selected_template_id
  */
 function bookacti_load_activities_bound_to_template( selected_template_id ) {
@@ -1294,7 +1295,7 @@ function bookacti_load_activities_bound_to_template( selected_template_id ) {
 			'action': 'bookactiGetActivitiesByTemplate', 
 			'selected_template_id': selected_template_id,
 			'current_template_id': bookacti.selected_template,
-			'nonce': $j( '#nonce_edit_template' ).val()
+			'nonce': $j( '#bookacti-edit-template-nonce' ).val()
 		},
 		type: 'POST',
 		dataType: 'json',

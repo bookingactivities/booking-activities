@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking list page
- * @version 1.15.4
+ * @version 1.15.5
  */
 
 // Exit if accessed directly
@@ -56,6 +56,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		<div id='bookacti-bookings-filters-container' >
 			<form id='bookacti-booking-list-filters-form' action=''>
 				<input type='hidden' name='page' value='bookacti_bookings'/>
+				<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_get_booking_list' ); ?>'/>
 				<?php
 					// Display sorting data
 					if( ! empty( $_GET[ 'orderby' ] ) || ! empty( $_GET[ 'order_by' ] ) ) {
@@ -78,9 +79,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					if( ! empty( $_GET[ 'group_by' ] ) ) {
 						echo '<input type="hidden" name="group_by" value="' . esc_attr( $_GET[ 'group_by' ] ) . '" />';
 					}
-
-					// Display nonce field
-					wp_nonce_field( 'bookacti_get_booking_list', 'nonce_get_booking_list', false );
 
 					do_action( 'bookacti_before_booking_filters' );
 				?>
