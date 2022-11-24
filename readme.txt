@@ -321,7 +321,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.15.5 - 2022/11/23 =
+= 1.15.5 - 2022/11/24 =
 * Tweak - Remove useless checkbox column in list tables and standardize CSS
 * Tweak - Support YITH WooCommerce Quick View (load booking system in popup)
 * Fix - Activity unit name was not displayed
@@ -331,12 +331,14 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Invalid group ID error may appear in groups of events dialog in calendar editor
 * Fix - Group categories "All" option was not selected in form editor calendar settings dialog
 * Fix - Possible undesired scroll when closing group selection dialog after navigating the calendar
+* Fix - JS error when deleting a group of events with no events, a group category with no groups, and the last calendar
 * Dev - Standardize dialogs JS and CSS
 * Dev - No longer generate id in html fields (with random number) if not provided
 * Dev - Change LONGTEXT to TEXT or MEDIUMTEXT db column definition, and remove useless numeric type attributes
 * Dev - Add bookacti_reset_password_notification_callback hook and send WC Reset Password email instead of WP's (#169)
 * Dev - Reset error notices automatically when the dialog is closed (standardize code)
 * Dev - Functions triggered on WC product pages only can now be triggered on any page having the "woocommerce" class
+* Dev - Standardize the use of nonces (input name = nonce)
 
 = 1.15.4 - 2022/10/06 =
 * Tweak - Enable the "Today" button even if today's view is not accessible

@@ -370,7 +370,7 @@ function bookacti_save_form() {
 /**
  * Save field order
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.15.5
  */
 function bookacti_save_form_field_order() {
 	var form_id = $j( '#bookacti-form-id' ).val();
@@ -385,12 +385,11 @@ function bookacti_save_form_field_order() {
 	
 	if( ! field_order.length ) { return; }
 	
-	var nonce = $j( '#bookacti_nonce_form_field_order' ).val();
 	var data = {
 		'action': 'bookactiSaveFormFieldOrder',
 		'form_id': form_id,
 		'field_order': field_order,
-		'nonce': nonce
+		'nonce': $j( '#bookacti-form-editor-page-form input[name="nonce"]' ).val()
 	};
 	
 	bookacti_form_editor_enter_loading_state();

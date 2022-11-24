@@ -1255,13 +1255,13 @@ add_action( 'load-booking-activities_page_bookacti_forms', 'bookacti_controller_
 /**
  * AJAX Controller - Update a booking form
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.15.5
  */
 function bookacti_controller_update_form() {
 	$form_id = intval( $_REQUEST[ 'form_id' ] );
 	
 	// Check nonce and capabilities
-	$is_nonce_valid = check_ajax_referer( 'bookacti_update_form', 'nonce_update_form', false );
+	$is_nonce_valid = check_ajax_referer( 'bookacti_update_form', 'nonce', false );
 	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'update_form' ); }
 	
 	$is_allowed = current_user_can( 'bookacti_edit_forms' ) && bookacti_user_can_manage_form( $form_id );
@@ -1633,13 +1633,13 @@ add_action( 'wp_ajax_bookactiRemoveFormField', 'bookacti_controller_remove_form_
 /**
  * AJAX Controller - Save form field order
  * @since 1.5.0
- * @version 1.14.0
+ * @version 1.15.5
  */
 function bookacti_controller_save_form_field_order() {
 	$form_id = intval( $_POST[ 'form_id' ] );
 	
 	// Check nonce and capabilities
-	$is_nonce_valid = check_ajax_referer( 'bookacti_form_field_order', 'nonce', false );
+	$is_nonce_valid = check_ajax_referer( 'bookacti_update_form', 'nonce', false );
 	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'save_form_field_order' ); }
 	
 	$is_allowed = current_user_can( 'bookacti_edit_forms' ) && bookacti_user_can_manage_form( $form_id );
@@ -1899,14 +1899,14 @@ add_action( 'bookacti_form_editor_field_actions_after', 'bookacti_add_login_fiel
 /**
  * AJAX Controller - Reset form export events URL
  * @since 1.6.0
+ * @version 1.15.5
  */
 function bookacti_controller_reset_form_export_events_url() {
-	
 	$form_id = $_POST[ 'form_id' ];
 	
 	// Check nonce and capabilities
-	$is_nonce_valid	= check_ajax_referer( 'bookacti_reset_export_events_url', 'nonce', false );
-	$is_allowed		= current_user_can( 'bookacti_edit_forms' ) && bookacti_user_can_manage_form( $form_id );
+	$is_nonce_valid = check_ajax_referer( 'bookacti_export_events_url', 'nonce', false );
+	$is_allowed     = current_user_can( 'bookacti_edit_forms' ) && bookacti_user_can_manage_form( $form_id );
 	
 	if( ! $is_nonce_valid || ! $is_allowed || ! $form_id ) {
 		bookacti_send_json_not_allowed( 'reset_export_events_url' );
@@ -1915,7 +1915,7 @@ function bookacti_controller_reset_form_export_events_url() {
 	// Update form secret key
 	$new_secret_key = md5( microtime().rand() );
 	$old_secret_key = bookacti_get_metadata( 'form', $form_id, 'secret_key', true );
-	$updated		= bookacti_update_metadata( 'form', $form_id, array( 'secret_key' => $new_secret_key ) );
+	$updated        = bookacti_update_metadata( 'form', $form_id, array( 'secret_key' => $new_secret_key ) );
 	
 	if( $updated === false ) {
 		bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_updated' ), 'reset_export_events_url' );
@@ -1923,14 +1923,12 @@ function bookacti_controller_reset_form_export_events_url() {
 	
 	do_action( 'bookacti_export_events_url_reset', $form_id, $new_secret_key, $old_secret_key );
 	
-	bookacti_send_json( 
-		array( 
-			'status' => 'success', 
-			'new_secret_key' => $new_secret_key, 
-			'old_secret_key' => $old_secret_key,
-			'message' => esc_html__( 'The secret key has been changed. The old link won\'t work anymore. Use the new link above to export your events.', 'booking-activities' ) 
-		), 
-		'reset_export_events_url' );
+	bookacti_send_json( array( 
+		'status' => 'success', 
+		'new_secret_key' => $new_secret_key, 
+		'old_secret_key' => $old_secret_key,
+		'message' => esc_html__( 'The secret key has been changed. The old link won\'t work anymore. Use the new link above to export your events.', 'booking-activities' ) 
+	), 'reset_export_events_url' );
 }
 add_action( 'wp_ajax_bookactiResetExportEventsUrl', 'bookacti_controller_reset_form_export_events_url', 10 );
 

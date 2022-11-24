@@ -143,7 +143,7 @@
 /* General */
 .bookacti-tabs .bookacti-tab-content .bookacti-promo-events-examples     { margin: 10px 0 0 0; }
 .bookacti-tabs .bookacti-tab-content .bookacti-promo-events-examples div { margin-bottom: 0; }
-.bookacti-promo-events-examples a.fc-event                               { position: relative; display: inline-block; width: 120px; height: 84px; text-align: left; cursor: auto; }
+.bookacti-promo-events-examples a.fc-event                               { position: relative; display: inline-block; width: 115px; height: 84px; text-align: left; cursor: auto; }
 .rtl .bookacti-promo-events-examples a.fc-event                          { text-align: right; }
 .bookacti-promo-events-examples	a.fc-event .fc-event-main                { background: rgba(255,255,255,0.15); height: 100%; }
 .bookacti-promo-events-examples	a.fc-event .bookacti-price-container     { display: block; width: fit-content; white-space: nowrap; margin: 4px auto; padding: 5px; font-weight: bolder; font-size: 1.2em; border-radius: 3px; background-color: rgba(0,0,0,0.3); color: #fff; }
@@ -156,8 +156,7 @@
 #bookacti-activity-duration-container .bookacti-duration-hint { display: none !important; }
 .bookacti-roles-notice { display: none; margin-top: 10px; margin-bottom: 20px; }
 #bookacti-activity-roles-container label, #bookacti-group-category-roles-container label { cursor: pointer; }
-#bookacti-activity-repeat-step,
-#bookacti-group-of-events-repeat-step { width: 50px; }
+#bookacti-event-repeat-step, #bookacti-group-of-events-repeat-step { width: 50px; }
 
 /* Event dialog */
 .bookacti-repeat-freq-start-of-week-notice { display: none; margin-top: 10px; }

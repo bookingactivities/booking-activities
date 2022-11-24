@@ -466,7 +466,7 @@ function bookacti_dialog_deactivate_template( template_id ) {
 				var data = { 
 					'action': 'bookactiDeactivateTemplate', 
 					'template_id': template_id,
-					'nonce': $j( '#nonce_edit_template' ).val()
+					'nonce': $j( '#bookacti-edit-template-nonce' ).val()
 				};
 
 				$j( '#bookacti-delete-template-dialog' ).trigger( 'bookacti_deactivate_template_before', [ data, template_id ] );
@@ -741,7 +741,7 @@ function bookacti_dialog_update_event( fc_event ) {
 			var data = {
 				'action': 'bookactiBeforeDeleteEvent',
 				'event_id': fc_event.groupId,
-				'nonce': $j( '#nonce_delete_event' ).val()
+				'nonce': $j( '#bookacti-delete-event-form input[name="nonce"]' ).val()
 			};
 			
 			$j( '#bookacti-event-data-dialog' ).trigger( 'bookacti_before_deactivate_event', [ data, fc_event ] );
@@ -1369,7 +1369,7 @@ function bookacti_dialog_import_activity() {
 					'action': 'bookactiImportActivities', 
 					'activity_ids': activity_ids,
 					'template_id': bookacti.selected_template,
-					'nonce': $j( '#nonce_import_activity' ).val()
+					'nonce': $j( '#bookacti-activity-import-dialog input[name="nonce"]' ).val()
 				};
 
 				$j( '#bookacti-activity-import-dialog' ).trigger( 'bookacti_import_activities_before', [ data ] );
@@ -1690,7 +1690,7 @@ function bookacti_dialog_delete_activity( activity_id ) {
 					'activity_id': activity_id,
 					'template_id': bookacti.selected_template,
 					'delete_events': $j( '#bookacti-delete-activity-events' ).is( ':checked' ) ? 1 : 0,
-					'nonce': $j( '#nonce_deactivate_activity' ).val()
+					'nonce': $j( '#bookacti-delete-activity-dialog input[name="nonce"]' ).val()
 				};
 				
 				$j( '#bookacti-delete-activity-dialog' ).trigger( 'bookacti_deactivate_activity_before', [ data, activity_id ] );
@@ -1908,6 +1908,12 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 	var init_selected_events = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ].slice();
 	bookacti_fill_selected_events_list();
 	
+	// If the group has no data, remove the item
+	if( typeof bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_data' ][ group_id ] === 'undefined' ) {
+		$j( '.bookacti-group-of-events[data-group-id="' + group_id + '"]' ).remove();
+		return;
+	}
+	
 	var group_data = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_data' ][ group_id ];
 	var group_events = [];
 	if( typeof bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ][ group_id ] !== 'undefined' ) {
@@ -2060,7 +2066,7 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 			var data = {
 				'action': 'bookactiBeforeDeleteGroupOfEvents',
 				'group_id': group_id,
-				'nonce': $j( '#nonce_delete_group_of_events' ).val()
+				'nonce': $j( '#bookacti-delete-group-of-events-form input[name="nonce"]' ).val()
 			};
 
 			$j( '#bookacti-group-of-events-dialog' ).trigger( 'bookacti_before_deactivate_group_of_events', [ data, group_id ] );
@@ -2155,7 +2161,7 @@ function bookacti_get_group_of_events_occurrences( group_id ) {
 	var data = {
 		'action':   'bookactiGetGroupOfEvents',
 		'group_id': group_id,
-		'nonce':    $j( '#nonce_insert_or_update_group_of_events' ).val()
+		'nonce':    $j( '#bookacti-group-of-events-form input[name="nonce"]' ).val()
 	};
 	
 	$j( '#bookacti-group-of-events-dialog' ).trigger( 'bookacti_get_group_of_events_occurrences_before', [ data, group_id ] );
@@ -2539,7 +2545,7 @@ function bookacti_dialog_delete_group_category( category_id ) {
 				var data = { 
 					'action': 'bookactiDeleteGroupCategory', 
 					'category_id': category_id,
-					'nonce': $j( '#nonce_delete_group_category' ).val()
+					'nonce': $j( '#bookacti-delete-group-category-dialog input[name="nonce"]' ).val()
 				};
 				
 				$j( '#bookacti-delete-group-category-dialog' ).trigger( 'bookacti_deactivate_group_category_before', [ data, category_id ] );
@@ -2560,6 +2566,7 @@ function bookacti_dialog_delete_group_category( category_id ) {
 							
 							// Delete groups
 							$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_data' ], function( i, group_data ) {
+								if( typeof group_data === 'undefined' ) { return true; } // continue
 								if( group_data.category_id == category_id ) {
 									delete bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ][ group_data.id ];
 									delete bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_data' ][ group_data.id ];

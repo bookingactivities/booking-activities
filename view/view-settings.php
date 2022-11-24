@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking Activities settings page
- * @version 1.12.0
+ * @version 1.15.5
  */
 
 // Exit if accessed directly
@@ -70,7 +70,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				echo '<input type="hidden" name="option_page" value="' . esc_attr( 'bookacti_notifications_settings_' . $notification_id ) . '" />';
 				echo '<input type="hidden" name="notification_id" value="' . $notification_id . '" />';
 				echo '<input type="hidden" name="action" value="bookactiUpdateNotification" />';
-				wp_nonce_field( 'bookacti_notifications_settings_' . $notification_id );
+				echo '<input type="hidden" name="nonce" value="' . wp_create_nonce( 'bookacti_notifications_settings_' . $notification_id ) . '" />';
 				
 				do_action( 'bookacti_notification_settings_page', $notification_id );
 				

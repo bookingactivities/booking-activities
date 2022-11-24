@@ -1,16 +1,17 @@
 <?php
 /**
  * Calendar editor page
- * @version 1.15.0
+ * @version 1.15.5
  */
 
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-$current_user_can_create_template	= current_user_can( 'bookacti_create_templates' );
-$current_user_can_edit_template		= current_user_can( 'bookacti_edit_templates' );
-$current_user_can_create_activities	= current_user_can( 'bookacti_create_activities' );
+$current_user_can_create_template   = current_user_can( 'bookacti_create_templates' );
+$current_user_can_edit_template     = current_user_can( 'bookacti_edit_templates' );
+$current_user_can_create_activities = current_user_can( 'bookacti_create_activities' );
 $default_template = false;
+$templates = bookacti_get_templates_data();
 ?>
 
 <div class='wrap'>
@@ -32,11 +33,7 @@ $default_template = false;
 </div>
 
 <div id='bookacti-template-container'>
-<?php 
-	$templates = bookacti_get_templates_data();
-	wp_nonce_field( 'bookacti_get_calendar_editor_data', 'nonce_get_calendar_editor_data', false );
-	wp_nonce_field( 'bookacti_edit_template', 'nonce_edit_template', false );
-?>
+	<input type='hidden' id='bookacti-edit-template-nonce' value='<?php echo wp_create_nonce( 'bookacti_edit_template' ); ?>'/>
     <div id='bookacti-template-sidebar' class='<?php if( ! $templates ) { echo 'bookacti-no-template'; } ?>'>
         
         <div id='bookacti-template-templates-container' class='bookacti-templates-box'>

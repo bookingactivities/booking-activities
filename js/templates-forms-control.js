@@ -63,11 +63,11 @@ $j( document ).ready( function() {
 	
 	
 	/**
-	 * Toggle activity user roles - on open
+	 * Toggle activity user roles - on bookacti_activity_insert_dialog bookacti_activity_update_dialog
 	 * @since 1.13.0
-	 * @version 1.15.4
+	 * @version 1.15.5
 	 */
-	$j( '#bookacti-activity-data-dialog' ).on( 'bookacti_activity_update_dialog', function() {
+	$j( '#bookacti-activity-data-dialog' ).on( 'bookacti_activity_insert_dialog bookacti_activity_update_dialog', function() {
 		$j( '#bookacti-display-activity-user-roles' ).prop( 'checked', $j( '#bookacti-activity-roles option:selected' ).length ).trigger( 'change' );
 	});
 	

@@ -522,7 +522,7 @@ function bookacti_dialog_change_booking_state( booking_id, booking_type ) {
 				var new_booking_state  = $j( 'select#bookacti-select-booking-state' ).val(); 
 				var new_payment_status = $j( 'select#bookacti-select-payment-status' ).val(); 
 				var send_notifications = $j( '#bookacti-send-notifications-on-state-change' ).prop( 'checked' ) ? 1 : 0; 
-				var nonce = $j( '#bookacti-change-booking-state-dialog #nonce_change_booking_state' ).val(); 
+				var nonce = $j( '#bookacti-change-booking-state-dialog input[name="nonce"]' ).val(); 
 				
 				if( ( new_booking_state || new_payment_status ) 
 				&&  ( new_booking_state !== booking_state || new_payment_status !== payment_status ) ) {

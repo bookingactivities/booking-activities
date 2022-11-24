@@ -151,7 +151,7 @@ function bookacti_dialog_insert_form_field() {
 			click: function() { 
 				var form_id    = $j( '#bookacti-form-id' ).val();
 				var field_name = $j( '#bookacti-field-to-insert' ).val();
-				var nonce      = $j( '#nonce_insert_form_field' ).val();
+				var nonce      = $j( '#bookacti-insert-form-field-form input[name="nonce"]' ).val();
 				if( ! field_name || ! form_id || ! nonce ) { return; }
 				
 				// Clear errors
@@ -223,7 +223,7 @@ function bookacti_dialog_insert_form_field() {
 /**
  * Remove form field
  * @since 1.5.0
- * @version 1.15.0
+ * @version 1.15.5
  * @param {int} field_id
  * @param {string} field_name
  */
@@ -241,7 +241,7 @@ function bookacti_dialog_remove_form_field( field_id, field_name ) {
 			text: bookacti_localized.dialog_button_ok,			
 			click: function() { 
 				
-				var nonce = $j( '#nonce_remove_form_field' ).val();
+				var nonce = $j( '#bookacti-remove-form-field-form input[name="nonce"]' ).val();
 				if( ! field_id || ! nonce ) { return; }
 				
 				// Display a loader
@@ -495,7 +495,7 @@ function bookacti_dialog_export_events( form_id ) {
 			text: bookacti_localized.dialog_button_reset,
 			'class': 'bookacti-dialog-delete-button bookacti-dialog-left-button',
 			click: function() { 
-				var nonce = $j( '#nonce_reset_export_events_url' ).val();
+				var nonce = $j( '#bookacti-export-events-form input[name="nonce"]' ).val();
 				if( ! form_id || ! nonce ) { return; }
 				
 				// Reset error notices

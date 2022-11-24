@@ -19,9 +19,9 @@ foreach( $fields_default as $field_name => $field_data ) {
 <!-- Add a new field dialog -->
 <div id='bookacti-insert-form-field-dialog' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php esc_html_e( 'Add a field to the form', 'booking-activities' ); ?>' >
 	<form id='bookacti-insert-form-field-form' >
-		<input type='hidden' name='action' value='bookactiInsertFormField' />
+		<input type='hidden' name='action' value='bookactiInsertFormField'/>
+		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_insert_form_field' ); ?>'/>
 		<?php 
-			wp_nonce_field( 'bookacti_insert_form_field', 'nonce_insert_form_field', false ); 
 			do_action( 'bookacti_insert_form_field_dialog_before', $form_edit, $form_fields_edit );
 		?>
 		<div id='bookacti-insert-form-field-selectbox-container'>
@@ -55,8 +55,8 @@ foreach( $fields_default as $field_name => $field_data ) {
 <!-- Remove field dialog -->
 <div id='bookacti-remove-form-field-dialog' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php esc_html_e( 'Remove this field from the form', 'booking-activities' ); ?>' >
 	<form id='bookacti-remove-form-field-form' >
-		<?php wp_nonce_field( 'bookacti_remove_form_field', 'nonce_remove_form_field', false ); ?>
 		<input type='hidden' name='action' value='bookactiRemoveFormField' />
+		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_remove_form_field' ); ?>'/>
 		<div><?php esc_html_e( 'Are you sure to delete this field permanently?', 'booking-activities' ); ?></div>
 	</form>
 </div>
@@ -1217,8 +1217,8 @@ foreach( $fields_default as $field_name => $field_data ) {
 <!-- Export events dialog -->
 <div id='bookacti-export-events-dialog' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php esc_html_e( 'Export events from this calendar', 'booking-activities' ); ?>'>
 	<form id='bookacti-export-events-form'>
-		<?php wp_nonce_field( 'bookacti_reset_export_events_url', 'nonce_reset_export_events_url', false ); ?>
 		<input type='hidden' name='action' value=''/>
+		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_export_events_url' ); ?>'/>
 		<?php
 			$lang = bookacti_get_current_lang_code();
 			$secret_key = bookacti_get_metadata( 'form', $form_id, 'secret_key', true );

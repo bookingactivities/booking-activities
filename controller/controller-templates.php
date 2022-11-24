@@ -40,11 +40,11 @@ add_action( 'wp_ajax_bookactiSwitchTemplate', 'bookacti_controller_switch_templa
 
 /**
  * AJAX Controller - Create a new template
- * @version	1.13.0
+ * @version	1.15.5
  */
 function bookacti_controller_insert_template() {
 	// Check nonce
-	$is_nonce_valid	= check_ajax_referer( 'bookacti_insert_or_update_template', 'nonce_insert_or_update_template', false );
+	$is_nonce_valid	= check_ajax_referer( 'bookacti_insert_or_update_template', 'nonce', false );
 	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'insert_template' ); }
 	
 	// Check capabilities
@@ -84,11 +84,11 @@ add_action( 'wp_ajax_bookactiInsertTemplate', 'bookacti_controller_insert_templa
 
 /**
  * AJAX Controller - Update template
- * @version	1.15.0
+ * @version	1.15.5
  */
 function bookacti_controller_update_template() {
 	// Check nonce and capabilities
-	$is_nonce_valid = check_ajax_referer( 'bookacti_insert_or_update_template', 'nonce_insert_or_update_template', false );
+	$is_nonce_valid = check_ajax_referer( 'bookacti_insert_or_update_template', 'nonce', false );
 	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'update_template' ); }
 
 	// Sanitize template data
@@ -162,11 +162,11 @@ add_action( 'wp_ajax_bookactiDeactivateTemplate', 'bookacti_controller_deactivat
 
 /**
  * AJAX Controller - Get calendar editor data by interval (events and bookings) 
- * @version 1.12.0
+ * @version 1.15.5
  */
 function bookacti_controller_get_calendar_editor_data_by_interval() {
 	// Check nonce
-	$is_nonce_valid	= check_ajax_referer( 'bookacti_get_calendar_editor_data', 'nonce', false );
+	$is_nonce_valid	= check_ajax_referer( 'bookacti_edit_template', 'nonce', false );
 	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'get_calendar_editor_data_by_interval' ); }
 	
 	$template_id = intval( $_POST[ 'template_id' ] );
@@ -451,11 +451,11 @@ add_action( 'wp_ajax_bookactiDuplicateEvent', 'bookacti_controller_duplicate_eve
 /**
  * AJAX Controller - Update event
  * @since 1.2.2 (was bookacti_controller_update_event_data)
- * @version 1.13.0
+ * @version 1.15.5
  */
 function bookacti_controller_update_event() {
 	// Check nonce
-	$is_nonce_valid = check_ajax_referer( 'bookacti_update_event_data', 'nonce_update_event_data', false );
+	$is_nonce_valid = check_ajax_referer( 'bookacti_update_event_data', 'nonce', false );
 	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'update_event' ); }
 
 	$event_id = intval( $_POST[ 'id' ] );
@@ -571,11 +571,11 @@ add_action( 'wp_ajax_bookactiBeforeDeleteEvent', 'bookacti_controller_before_del
 
 /**
  * AJAX Controller - Delete an event if it doesn't have bookings
- * @version 1.14.0
+ * @version 1.15.5
  */
 function bookacti_controller_delete_event() {
 	// Check nonce
-	$is_nonce_valid = check_ajax_referer( 'bookacti_delete_event', 'nonce_delete_event', false );
+	$is_nonce_valid = check_ajax_referer( 'bookacti_delete_event', 'nonce', false );
 	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'deactivate_event' ); }
 	
 	// Check if event exists
@@ -621,11 +621,11 @@ add_action( 'wp_ajax_bookactiDeleteEvent', 'bookacti_controller_delete_event' );
 
 /**
  * AJAX Controller - Unbind occurrences of an event
- * @version 1.14.2
+ * @version 1.15.5
  */
 function bookacti_controller_unbind_event_occurrences() {
 	// Check nonce
-	$is_nonce_valid = check_ajax_referer( 'bookacti_unbind_event_occurrences', 'nonce_unbind_event_occurrences', false );
+	$is_nonce_valid = check_ajax_referer( 'bookacti_unbind_event_occurrences', 'nonce', false );
 	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'unbind_event_occurrences' ); }
 	
 	// Check if event exists
@@ -699,7 +699,7 @@ add_action( 'wp_ajax_bookactiUnbindEventOccurrences', 'bookacti_controller_unbin
  */
 function bookacti_controller_insert_group_of_events() {
 	// Check nonce
-	$is_nonce_valid = check_ajax_referer( 'bookacti_insert_or_update_group_of_events', 'nonce_insert_or_update_group_of_events', false );
+	$is_nonce_valid = check_ajax_referer( 'bookacti_insert_or_update_group_of_events', 'nonce', false );
 	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'insert_group_of_events' ); }
 	
 	$template_id = intval( $_POST[ 'template_id' ] );
@@ -787,7 +787,7 @@ add_action( 'wp_ajax_bookactiInsertGroupOfEvents', 'bookacti_controller_insert_g
  */
 function bookacti_controller_update_group_of_events() {
 	// Check nonce
-	$is_nonce_valid = check_ajax_referer( 'bookacti_insert_or_update_group_of_events', 'nonce_insert_or_update_group_of_events', false );
+	$is_nonce_valid = check_ajax_referer( 'bookacti_insert_or_update_group_of_events', 'nonce', false );
 	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'update_group_of_events' ); }
 
 	$group_id = intval( $_POST[ 'group_id' ] );
@@ -958,7 +958,7 @@ add_action( 'wp_ajax_bookactiBeforeDeleteGroupOfEvents', 'bookacti_controller_be
  */
 function bookacti_controller_delete_group_of_events() {
 	// Check nonce
-	$is_nonce_valid = check_ajax_referer( 'bookacti_delete_group_of_events', 'nonce_delete_group_of_events', false );
+	$is_nonce_valid = check_ajax_referer( 'bookacti_delete_group_of_events', 'nonce', false );
 	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'deactivate_group_of_events' ); }
 	
 	// Check if group exists
@@ -1013,11 +1013,11 @@ add_action( 'wp_ajax_bookactiDeleteGroupOfEvents', 'bookacti_controller_delete_g
 /**
  * AJAX Controller - Unbind occurrences of a group of events
  * @since 1.12.0
- * @version 1.14.2
+ * @version 1.15.5
  */
 function bookacti_controller_unbind_group_of_events_occurrences() {
 	// Check nonce
-	$is_nonce_valid = check_ajax_referer( 'bookacti_unbind_group_of_events_occurrences', 'nonce_unbind_group_of_events_occurrences', false );
+	$is_nonce_valid = check_ajax_referer( 'bookacti_unbind_group_of_events_occurrences', 'nonce', false );
 	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'unbind_group_of_events_occurrences' ); }
 	
 	// Check if the group exists and if the desired occurrence exists
@@ -1094,7 +1094,7 @@ add_action( 'wp_ajax_bookactiUnbindGroupOfEventsOccurrences', 'bookacti_controll
  */
 function bookacti_controller_update_group_category() {
 	// Check nonce
-	$is_nonce_valid = check_ajax_referer( 'bookacti_insert_or_update_group_category', 'nonce_insert_or_update_group_category', false );
+	$is_nonce_valid = check_ajax_referer( 'bookacti_insert_or_update_group_category', 'nonce', false );
 	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'update_group_category' ); }
 	
 	$category_data = bookacti_sanitize_group_category_data( $_POST );
@@ -1196,11 +1196,11 @@ add_action( 'wp_ajax_bookactiDeleteGroupCategory', 'bookacti_controller_delete_g
 
 /**
  * AJAX Controller - Create a new activity
- * @version 1.12.0
+ * @version 1.15.5
  */
 function bookacti_controller_insert_activity() {
 	// Check nonce
-	$is_nonce_valid	= check_ajax_referer( 'bookacti_insert_or_update_activity', 'nonce_insert_or_update_activity', false );
+	$is_nonce_valid	= check_ajax_referer( 'bookacti_insert_or_update_activity', 'nonce', false );
 	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'insert_activity' ); }
 	
 	$template_id = intval( $_POST[ 'template_id' ] );
@@ -1245,11 +1245,11 @@ add_action( 'wp_ajax_bookactiInsertActivity', 'bookacti_controller_insert_activi
 
 /**
  * AJAX Controller - Update an activity
- * @version 1.12.3
+ * @version 1.15.5
  */
 function bookacti_controller_update_activity() {
 	// Check nonce
-	$is_nonce_valid	= check_ajax_referer( 'bookacti_insert_or_update_activity', 'nonce_insert_or_update_activity', false );
+	$is_nonce_valid	= check_ajax_referer( 'bookacti_insert_or_update_activity', 'nonce', false );
 	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'update_activity' ); }
 	
 	$activity_data = bookacti_sanitize_activity_data( $_POST );

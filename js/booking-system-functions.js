@@ -1766,12 +1766,14 @@ function bookacti_booking_method_clear_events( booking_system ) {
 
 /**
  * Start a loading (or keep on loading if already loading)
- * @version 1.12.0
+ * @version 1.15.5
  * @param {HTMLElement} booking_system
  */
 function bookacti_start_loading_booking_system( booking_system ) {
 	var booking_system_id = booking_system.attr( 'id' );
-	var booking_method    = bookacti.booking_system[ booking_system_id ][ 'method' ];
+	if( typeof bookacti.booking_system[ booking_system_id ] === 'undefined' ) { return; }
+	
+	var booking_method = bookacti.booking_system[ booking_system_id ][ 'method' ];
 	if( $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) { booking_method = 'calendar'; }
 	
 	if( ! $j.isNumeric( bookacti.booking_system[ booking_system_id ][ 'loading_number' ] ) ) {
@@ -1786,7 +1788,7 @@ function bookacti_start_loading_booking_system( booking_system ) {
 
 /**
  * Stop a loading (but keep on loading if there are other loadings)
- * @version 1.12.0
+ * @version 1.15.5
  * @param {HTMLElement} booking_system
  * @param {Boolean} force_exit 
  */
@@ -1794,7 +1796,9 @@ function bookacti_stop_loading_booking_system( booking_system, force_exit ) {
 	force_exit = force_exit ? force_exit : false;
 	
 	var booking_system_id = booking_system.attr( 'id' );
-	var booking_method    = bookacti.booking_system[ booking_system_id ][ 'method' ];
+	if( typeof bookacti.booking_system[ booking_system_id ] === 'undefined' ) { return; }
+	
+	var booking_method = bookacti.booking_system[ booking_system_id ][ 'method' ];
 	if( $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) { booking_method = 'calendar'; }
 	
 	bookacti.booking_system[ booking_system_id ][ 'loading_number' ]--;
