@@ -1131,7 +1131,7 @@ function bookacti_dialog_unbind_event_occurrences( fc_event ) {
 /**
  * Fill the repetition fields of the (group of) events dialog
  * @since 1.12.0
- * @version 1.13.0
+ * @version 1.15.6
  * @param {Int} object_id
  * @param {String} object_type 'event' or 'group'
  */
@@ -1147,7 +1147,7 @@ function bookacti_fill_repetition_fields( object_id, object_type ) {
 	
 	var event_28_days = event_start.clone().add( 28, 'd' ).locale( 'en' ); // The default repeat period duration is 28 days
 	var repeat_from   = event_start.clone().locale( 'en' ).format( 'YYYY-MM-DD' );
-	var repeat_to     = event_28_days.isBefore( moment.utc( '2037-12-31' ) ) ? event_28_days.format( 'YYYY-MM-DD' ) : '2037-12-31';
+	var repeat_to     = event_28_days.format( 'YYYY-MM-DD' );
 
 	if( repeat_data.repeat_from && repeat_data.repeat_from !== '0000-00-00' ) { repeat_from = repeat_data.repeat_from; };
 	if( repeat_data.repeat_to   && repeat_data.repeat_to   !== '0000-00-00' ) { repeat_to = repeat_data.repeat_to; };

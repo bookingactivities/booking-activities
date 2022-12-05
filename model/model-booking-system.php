@@ -50,26 +50,32 @@ function bookacti_fetch_events( $raw_args = array() ) {
 	       . ' AND T.active = 1 ';
 
 	// Do not fetch events totally out of the desired interval
-	if( $args[ 'interval' ] ) {
-		$query .= ' 
-		AND (
-				( NULLIF( E.repeat_freq, "none" ) IS NULL 
-				  AND E.start >= %s 
-				  AND E.start <= %s
-				) 
-				OR
-				( E.repeat_freq IS NOT NULL
-				  AND NOT ( CONCAT( E.repeat_from, " 00:00:00" ) < %s AND CONCAT( E.repeat_to, " 23:59:59" ) < %s )
-				  AND NOT ( CONCAT( E.repeat_from, " 00:00:00" ) > %s AND CONCAT( E.repeat_to, " 23:59:59" ) > %s )
-				) 
-			)';
-
-		$variables[] = $args[ 'interval' ][ 'start' ];
-		$variables[] = $args[ 'interval' ][ 'end' ];
-		$variables[] = $args[ 'interval' ][ 'start' ];
-		$variables[] = $args[ 'interval' ][ 'start' ];
-		$variables[] = $args[ 'interval' ][ 'end' ];
-		$variables[] = $args[ 'interval' ][ 'end' ];
+	if( ! empty( $args[ 'interval' ][ 'start' ] ) || ! empty( $args[ 'interval' ][ 'end' ] ) ) {
+		$query .= ' AND ( ';
+			// Non-repeated events
+			$query .= '( NULLIF( E.repeat_freq, "none" ) IS NULL ';
+			if( ! empty( $args[ 'interval' ][ 'start' ] ) ) {
+				$query .= ' AND E.start >= %s ';
+				$variables[] = $args[ 'interval' ][ 'start' ];
+			}
+			if( ! empty( $args[ 'interval' ][ 'end' ] ) ) {
+				$query .= ' AND E.start <= %s ';
+				$variables[] = $args[ 'interval' ][ 'end' ];
+			}
+			// Repeated events
+			$query .= ' ) OR ( NULLIF( E.repeat_freq, "none" ) IS NOT NULL ';
+			if( ! empty( $args[ 'interval' ][ 'start' ] ) ) {
+				$query .= ' AND NOT ( CONCAT( E.repeat_from, " 00:00:00" ) < %s AND CONCAT( E.repeat_to, " 23:59:59" ) < %s ) ';
+				$variables[] = $args[ 'interval' ][ 'start' ];
+				$variables[] = $args[ 'interval' ][ 'start' ];
+			}
+			if( ! empty( $args[ 'interval' ][ 'end' ] ) ) {
+				$query .= ' AND NOT ( CONCAT( E.repeat_from, " 00:00:00" ) > %s AND CONCAT( E.repeat_to, " 23:59:59" ) > %s ) ';
+				$variables[] = $args[ 'interval' ][ 'end' ];
+				$variables[] = $args[ 'interval' ][ 'end' ];
+			}
+			$query .= ' ) ';
+		$query .= ' ) ';
 	}
 
 	// Whether to fetch past events
@@ -250,16 +256,19 @@ function bookacti_fetch_booked_events( $raw_args = array() ) {
 	}
 
 	// Do not fetch events out of the desired interval
-	if( $args[ 'interval' ] ) {
-		$query .= ' AND B.event_start >= %s '
-		       .  ' AND B.event_start <= %s ';
+	if( ! empty( $args[ 'interval' ][ 'start' ] ) ) {
+		$query .= ' AND B.event_start >= %s ';
 		$variables[] = $args[ 'interval' ][ 'start' ];
+	}
+	
+	if( ! empty( $args[ 'interval' ][ 'end' ] ) ) {
+		$query .= ' AND B.event_start <= %s ';
 		$variables[] = $args[ 'interval' ][ 'end' ];
 	}
 
 	// Whether to fetch past events
 	if( ! $args[ 'past_events' ] ) {
-		$query .= ' AND  B.event_start >= %s';
+		$query .= ' AND B.event_start >= %s';
 		$variables[] = $now;
 	}
 
@@ -413,29 +422,35 @@ function bookacti_get_groups_of_events( $raw_args = array() ) {
 	       . ' AND C.active = 1 '
 	       . ' AND T.active = 1 ';
 	
-	// Do not fetch events totally out of the desired interval
-	if( $args[ 'interval' ] ) {
+	// Do not fetch groups totally out of the desired interval
+	if( ! empty( $args[ 'interval' ][ 'start' ] ) || ! empty( $args[ 'interval' ][ 'end' ] ) ) {
 		$interval_start = $args[ 'interval_started' ] ? 'DATE_SUB( %s, INTERVAL GE.delta_days DAY )' : '%s';
 		
-		$query .= ' 
-		AND (
-				( NULLIF( G.repeat_freq, "none" ) IS NULL 
-				  AND GE.start >= ' . $interval_start . '
-				  AND GE.start <= %s
-				) 
-				OR
-				( G.repeat_freq IS NOT NULL
-				  AND NOT ( CONCAT( G.repeat_from, " 00:00:00" ) < ' . $interval_start . ' AND CONCAT( G.repeat_to, " 23:59:59" ) < ' . $interval_start . ' )
-				  AND NOT ( CONCAT( G.repeat_from, " 00:00:00" ) > %s AND CONCAT( G.repeat_to, " 23:59:59" ) > %s )
-				) 
-			)';
-		
-		$variables[] = $args[ 'interval' ][ 'start' ];
-		$variables[] = $args[ 'interval' ][ 'end' ];
-		$variables[] = $args[ 'interval' ][ 'start' ];
-		$variables[] = $args[ 'interval' ][ 'start' ];
-		$variables[] = $args[ 'interval' ][ 'end' ];
-		$variables[] = $args[ 'interval' ][ 'end' ];
+		$query .= ' AND ( ';
+			// Non-repeated groups
+			$query .= '( NULLIF( G.repeat_freq, "none" ) IS NULL ';
+			if( ! empty( $args[ 'interval' ][ 'start' ] ) ) {
+				$query .= ' AND GE.start >= ' . $interval_start;
+				$variables[] = $args[ 'interval' ][ 'start' ];
+			}
+			if( ! empty( $args[ 'interval' ][ 'end' ] ) ) {
+				$query .= ' AND GE.start <= %s ';
+				$variables[] = $args[ 'interval' ][ 'end' ];
+			}
+			// Repeated groups
+			$query .= ' ) OR ( NULLIF( G.repeat_freq, "none" ) IS NOT NULL ';
+			if( ! empty( $args[ 'interval' ][ 'start' ] ) ) {
+				$query .= ' AND NOT ( CONCAT( G.repeat_from, " 00:00:00" ) < ' . $interval_start . ' AND CONCAT( G.repeat_to, " 23:59:59" ) < ' . $interval_start . ' ) ';
+				$variables[] = $args[ 'interval' ][ 'start' ];
+				$variables[] = $args[ 'interval' ][ 'start' ];
+			}
+			if( ! empty( $args[ 'interval' ][ 'end' ] ) ) {
+				$query .= ' AND NOT ( CONCAT( G.repeat_from, " 00:00:00" ) > %s AND CONCAT( G.repeat_to, " 23:59:59" ) > %s ) ';
+				$variables[] = $args[ 'interval' ][ 'end' ];
+				$variables[] = $args[ 'interval' ][ 'end' ];
+			}
+			$query .= ' ) ';
+		$query .= ' ) ';
 	}
 
 	// Whether to fetch past or started groups of events

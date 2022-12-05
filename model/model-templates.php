@@ -66,25 +66,32 @@ function bookacti_fetch_events_for_calendar_editor( $raw_args = array() ) {
 	}
 
 	// Do not fetch events out of the desired interval
-	if( $args[ 'interval' ] ) {
-		$query .= ' 
-		AND (
-				( NULLIF( E.repeat_freq, "none" ) IS NULL 
-				  AND E.start >= %s 
-				  AND E.start <= %s
-				) 
-				OR
-				( E.repeat_freq IS NOT NULL
-				  AND NOT ( E.repeat_from < %s AND E.repeat_to < %s )
-				  AND NOT ( E.repeat_from > %s AND E.repeat_to > %s )
-				) 
-			)';
-		$variables[] = $args[ 'interval' ][ 'start' ];
-		$variables[] = $args[ 'interval' ][ 'end' ];
-		$variables[] = $args[ 'interval' ][ 'start' ];
-		$variables[] = $args[ 'interval' ][ 'start' ];
-		$variables[] = $args[ 'interval' ][ 'end' ];
-		$variables[] = $args[ 'interval' ][ 'end' ];
+	if( ! empty( $args[ 'interval' ][ 'start' ] ) || ! empty( $args[ 'interval' ][ 'end' ] ) ) {
+		$query .= ' AND ( ';
+			// Non-repeated events
+			$query .= '( NULLIF( E.repeat_freq, "none" ) IS NULL ';
+			if( ! empty( $args[ 'interval' ][ 'start' ] ) ) {
+				$query .= ' AND E.start >= %s ';
+				$variables[] = $args[ 'interval' ][ 'start' ];
+			}
+			if( ! empty( $args[ 'interval' ][ 'end' ] ) ) {
+				$query .= ' AND E.start <= %s ';
+				$variables[] = $args[ 'interval' ][ 'end' ];
+			}
+			// Repeated events
+			$query .= ' ) OR ( NULLIF( E.repeat_freq, "none" ) IS NOT NULL ';
+			if( ! empty( $args[ 'interval' ][ 'start' ] ) ) {
+				$query .= ' AND NOT ( CONCAT( E.repeat_from, " 00:00:00" ) < %s AND CONCAT( E.repeat_to, " 23:59:59" ) < %s ) ';
+				$variables[] = $args[ 'interval' ][ 'start' ];
+				$variables[] = $args[ 'interval' ][ 'start' ];
+			}
+			if( ! empty( $args[ 'interval' ][ 'end' ] ) ) {
+				$query .= ' AND NOT ( CONCAT( E.repeat_from, " 00:00:00" ) > %s AND CONCAT( E.repeat_to, " 23:59:59" ) > %s ) ';
+				$variables[] = $args[ 'interval' ][ 'end' ];
+				$variables[] = $args[ 'interval' ][ 'end' ];
+			}
+			$query .= ' ) ';
+		$query .= ' ) ';
 	}
 
 	// Safely apply variables to the query
@@ -102,8 +109,8 @@ function bookacti_fetch_events_for_calendar_editor( $raw_args = array() ) {
 	
 	// Remove events on days off
 	if( $args[ 'skip_days_off' ] && ! empty( $events_array[ 'data' ] ) && ! empty( $events_array[ 'events' ] ) ) {
-		$events_from_dt = ! empty( $args[ 'interval' ][ 'start' ] ) ? new DateTime( $args[ 'interval' ][ 'start' ] ) : new DateTime( '1970-02-01' );
-		$events_to_dt   = ! empty( $args[ 'interval' ][ 'end' ] ) ? new DateTime( $args[ 'interval' ][ 'end' ] ) : new DateTime( '2038-01-01' );
+		$events_from_dt = ! empty( $args[ 'interval' ][ 'start' ] ) ? new DateTime( $args[ 'interval' ][ 'start' ] ) : false;
+		$events_to_dt   = ! empty( $args[ 'interval' ][ 'end' ] ) ? new DateTime( $args[ 'interval' ][ 'end' ] ) : false;
 		
 		$first_event_data = reset( $events_array[ 'data' ] );
 		$template_ids     = $args[ 'templates' ] ? $args[ 'templates' ] : array( $first_event_data[ 'template_id' ] );
@@ -116,7 +123,8 @@ function bookacti_fetch_events_for_calendar_editor( $raw_args = array() ) {
 			foreach( $template_data[ 'settings' ][ 'days_off' ] as $off_period ) {
 				$off_from_dt = new DateTime( $off_period[ 'from' ] . ' 00:00:00' );
 				$off_to_dt   = new DateTime( $off_period[ 'to' ] . ' 23:59:59' );
-				if( $off_from_dt > $events_to_dt || $off_to_dt < $events_from_dt ) { continue; }
+				if( $events_to_dt   && $off_from_dt > $events_to_dt ) { continue; }
+				if( $events_from_dt && $off_to_dt < $events_from_dt ) { continue; }
 
 				foreach( $events_array[ 'events' ] as $i => $event ) {
 					$event_start_dt = new DateTime( $event[ 'start' ] );

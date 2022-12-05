@@ -166,7 +166,7 @@ function bookacti_get_bookings( $filters ) {
 	
 	// Do not fetch events out of the desired interval
 	if( $filters[ 'from' ] ) {
-		$query .= ' AND ( B.event_start >= %s ';
+		$query .= ' AND B.event_start >= %s ';
 		$variables[] = $filters[ 'from' ];
 	}
 	
@@ -1748,8 +1748,8 @@ function bookacti_shift_bookings_dates( $booking_ids, $delta_seconds_start = 0, 
 	}
 	$query .= ' ) ';
 	
-	$query	= $wpdb->prepare( $query, $variables );
-	$updated= $wpdb->query( $query );
+	$query = $wpdb->prepare( $query, $variables );
+	$updated = $wpdb->query( $query );
 
 	return $updated;   
 }

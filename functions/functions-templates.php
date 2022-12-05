@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Get booking system data
  * @since 1.7.4
- * @version 1.15.0
+ * @version 1.15.6
  * @param array $atts (see bookacti_format_booking_system_attributes())
  * @param int $template_id
  * @return array
@@ -17,19 +17,19 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 	$groups = bookacti_get_groups_of_events( array( 'templates' => array( $template_id ), 'nb_events' => array(), 'past_events' => 1, 'data_only' => 1 ) );
 	$template_data = bookacti_get_template_data( $template_id );
 	
-	$booking_system_data[ 'calendars' ]				= array( $template_id );
-	$booking_system_data[ 'events' ]				= array();
-	$booking_system_data[ 'events_data' ]			= array();
-	$booking_system_data[ 'events_interval' ]		= array();
-	$booking_system_data[ 'bookings' ]				= array(); // Retrieved when navigating on the calendar
-	$booking_system_data[ 'activities_data' ]		= bookacti_get_activities_by_template( $template_id, false, true );
-	$booking_system_data[ 'groups_data' ]			= $groups[ 'data' ];
-	$booking_system_data[ 'groups_events' ]			= array(); // Retrieved when a group is updated
-	$booking_system_data[ 'group_categories_data' ]	= bookacti_get_group_categories( array( 'templates' => array( $template_id ) ) );
-	$booking_system_data[ 'start' ]					= '1970-02-01 00:00:00';
-	$booking_system_data[ 'end' ]					= '2037-12-31 23:59:59';
-	$booking_system_data[ 'display_data' ]			= $template_data[ 'settings' ];
-	$booking_system_data[ 'template_data' ]			= $template_data;
+	$booking_system_data[ 'calendars' ]             = array( $template_id );
+	$booking_system_data[ 'events' ]                = array();
+	$booking_system_data[ 'events_data' ]           = array();
+	$booking_system_data[ 'events_interval' ]       = array();
+	$booking_system_data[ 'bookings' ]              = array(); // Retrieved when navigating on the calendar
+	$booking_system_data[ 'activities_data' ]       = bookacti_get_activities_by_template( $template_id, false, true );
+	$booking_system_data[ 'groups_data' ]           = $groups[ 'data' ];
+	$booking_system_data[ 'groups_events' ]         = array(); // Retrieved when a group is updated
+	$booking_system_data[ 'group_categories_data' ] = bookacti_get_group_categories( array( 'templates' => array( $template_id ) ) );
+	$booking_system_data[ 'start' ]                 = '';
+	$booking_system_data[ 'end' ]                   = '';
+	$booking_system_data[ 'display_data' ]          = $template_data[ 'settings' ];
+	$booking_system_data[ 'template_data' ]         = $template_data;
 	
 	return apply_filters( 'bookacti_editor_booking_system_data', $booking_system_data, $atts );
 }

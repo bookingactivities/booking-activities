@@ -323,6 +323,8 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 = 1.15.6 =
 * Dev - Compare datetimes directly instead of using mySQL UNIX_TIMESTAMP and CONVERT_TZ functions
+* Dev - Calendar dates are no longer restricted between 1970-01-01 and 2037-12-31 
+* Dev - Allow half-bounded intervals when retrieving events and groups
 
 = 1.15.5 - 2022/11/24 =
 * Tweak - Remove useless checkbox column in list tables and standardize CSS
