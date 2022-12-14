@@ -1412,6 +1412,23 @@ function bookacti_validate_form_fields( $form_id, $fields_data = array() ) {
 }
 
 
+/**
+ * Validate reschedule form fields according to values received with $_POST
+ * @since 1.15.6
+ * @param int $form_id
+ * @param array $fields_data
+ * @return array
+ */
+function bookacti_validate_reschedule_form_fields( $booking = array() ) {
+	$validated = array( 
+		'status'   => 'success',
+		'messages' => array()
+	);
+	return apply_filters( 'bookacti_validate_reschedule_form_fields', $validated, $booking );
+}
+
+
+
 
 /* FIELD ORDER */
 

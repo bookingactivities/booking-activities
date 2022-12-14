@@ -425,7 +425,7 @@ add_filter( 'woocommerce_quantity_input_args', 'bookacti_set_wc_quantity_via_url
 
 /**
  * Validate add to cart form and temporarily book the event
- * @version 1.12.0
+ * @version 1.15.6
  * @global WooCommerce $woocommerce
  * @global array $global_bookacti_wc
  * @param boolean $true
@@ -449,10 +449,10 @@ function bookacti_validate_add_to_cart_and_book_temporarily( $true, $product_id,
 		wc_add_notice( esc_html__( 'You haven\'t picked any event. Please pick an event first.', 'booking-activities' ), 'error' );
 		return false;
 	}
-
+	
 	global $woocommerce;
 	$user_id = is_user_logged_in() ? get_current_user_id() : $woocommerce->session->get_customer_id();
-
+	
 	// Get product form ID
 	$form_id = $variation_id ? bookacti_get_product_form_id( $variation_id, true ) : bookacti_get_product_form_id( $product_id, false );
 	
@@ -462,14 +462,14 @@ function bookacti_validate_add_to_cart_and_book_temporarily( $true, $product_id,
 		wc_add_notice( implode( '</li><li>', $form_fields_validated[ 'messages' ] ), 'error' );
 		return false;
 	}
-		
+	
 	// Gether the product booking form variables
 	$product_bookings_data = apply_filters( 'bookacti_wc_product_booking_form_values', array(
 		'product_id'      => $product_id,
 		'variation_id'    => $variation_id,
 		'user_id'         => $user_id,
 		'picked_events'   => $picked_events,
-		'quantity'        => $quantity,
+		'quantity'        => intval( $quantity ),
 		'form_id'         => $form_id,
 		'status'          => 'in_cart',
 		'payment_status'  => 'owed',
@@ -477,7 +477,7 @@ function bookacti_validate_add_to_cart_and_book_temporarily( $true, $product_id,
 	), $product_id, $variation_id, $form_id );
 	
 	// Check if data are correct before booking
-	$response = bookacti_validate_booking_form( $product_bookings_data[ 'picked_events' ], $product_bookings_data[ 'quantity' ], $product_bookings_data[ 'form_id' ] );
+	$response = bookacti_validate_picked_events( $product_bookings_data[ 'picked_events' ], $product_bookings_data );
 	
 	// Display error message
 	if( $response[ 'status' ] !== 'success' ) {
@@ -520,7 +520,7 @@ function bookacti_validate_add_to_cart_and_book_temporarily( $true, $product_id,
 			$validated = true;
 			$global_bookacti_wc[ 'bookings' ] = $response[ 'bookings' ];
 			$global_bookacti_wc[ 'merged_cart_item_key' ] = ! empty( $response[ 'merged_cart_item_key' ] ) ? $response[ 'merged_cart_item_key' ] : '';
-
+			
 			do_action( 'bookacti_wc_add_to_cart_validated', $response, $product_id, $variation_id, $form_id, $product_bookings_data );
 			
 			// Add a cart item for each picked events except the last one

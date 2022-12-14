@@ -672,7 +672,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 	// Go to the first picked events
 	var picked_events = bookacti.booking_system[ booking_system_id ][ 'picked_events' ];
 	if( ! $j.isEmptyObject( bookacti.booking_system[ booking_system_id ][ 'picked_events' ] ) ) {
-		bookacti.fc_calendar[ booking_system_id ].gotoDate( moment.utc( picked_events[ 0 ][ 'start' ] ) );
+		bookacti.fc_calendar[ booking_system_id ].gotoDate( picked_events[ 0 ][ 'start' ] );
 	}
 	
 	// Add a class to the calendar according to its width

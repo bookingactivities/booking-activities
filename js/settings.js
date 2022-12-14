@@ -1,7 +1,7 @@
 $j( document ).ready( function() {
 	/**
 	 * Intercept settings form submission
-	 * @version 1.8.0
+	 * @version 1.15.6
 	 * @param {Event} e
 	 */
 	$j( 'form#bookacti-settings.bookacti_save_settings_with_ajax' ).on( 'submit', function( e ) {
@@ -26,7 +26,7 @@ $j( document ).ready( function() {
 					if( form.attr( 'action' ) ) {
 						window.location.replace( form.attr( 'action' ) );
 					} else {
-						window.location.reload( true ); 
+						window.location.reload(); 
 					}
 				} else {
 					console.log( bookacti_localized.error );
