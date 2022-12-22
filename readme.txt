@@ -148,7 +148,7 @@ Then feel free to tell us if you miss a feature, if you find a bug or anything t
 
 * **WordPress**: 3.6 or later
 * **PHP**: 5.3 or later
-* **MySQL**: 5.6 or later
+* **MySQL**: 5.7.22 or later
 * **WooCommerce**: 3.x or later
 * *Booking Activities can be used without WooCommerce*
 
@@ -324,7 +324,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 = 1.15.6 =
 * Fix - Error when switching booking group status to refunded from the backend
 * Fix - Calendar navigated to incorrect date when loaded with a picked events
-* Lib - Update FullCalendar to 6.0.0 (Support for IE 11 has been dropped)
+* Lib - Update FullCalendar to 6.0.1 (Support for IE 11 has been dropped)
 * Lib - Remove Moment JS files and use the files included in WP instead
 * Dev - Compare datetimes directly instead of using mySQL UNIX_TIMESTAMP and CONVERT_TZ functions
 * Dev - Calendar dates are no longer restricted between 1970-01-01 and 2037-12-31 

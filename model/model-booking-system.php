@@ -802,7 +802,7 @@ function bookacti_get_group_category_ids_by_template( $template_ids = array(), $
 	$categories = $wpdb->get_results( $query, OBJECT );
 
 	$category_ids = array();
-	foreach( $categories as $category ) { $category_ids[] = $category->id; }
+	foreach( $categories as $category ) { $category_ids[] = intval( $category->id ); }
 
 	return $category_ids;
 }
