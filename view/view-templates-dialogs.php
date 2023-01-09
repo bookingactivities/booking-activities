@@ -323,7 +323,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			
 			/**
 			 * Display the 'Permission' tab content of calendar settings
-			 * @version 1.15.4
+			 * @version 1.15.6
 			 * @param array $params
 			 */
 			function bookacti_fill_template_tab_permissions( $params = array() ) {
@@ -340,7 +340,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 					'fullwidth' => 1, 
 					'options'   => array(
 						'option_label' => array( 'display_name', ' (', 'user_login', ')' ),
-						'role__in'     => $role_in,
+						'role__in'     => $role_in ? $role_in : array( 'none' ),
 						'role__not_in' => $role_not_in,
 						'meta'         => false,
 						'multiple'     => 1,
@@ -585,7 +585,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			
 			/**
 			 * Display the fields in the "Permissions" tab of the Activity dialog
-			 * @version 1.15.4
+			 * @version 1.15.6
 			 * @param array $params
 			 */
 			function bookacti_fill_activity_tab_permissions( $params = array() ) {
@@ -639,7 +639,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 					'fullwidth' => 1, 
 					'options'   => array(
 						'option_label' => array( 'display_name', ' (', 'user_login', ')' ),
-						'role__in'     => $role_in,
+						'role__in'     => $role_in ? $role_in : array( 'none' ),
 						'role__not_in' => $role_not_in,
 						'meta'         => false,
 						'multiple'     => 1,

@@ -276,8 +276,6 @@ function bookacti_controller_change_booking_state() {
 		$active     = in_array( $new_booking_state, bookacti_get_active_booking_states(), true ) ? 1 : 0;
 		if( $active !== $was_active ) { $active_changed = true; }
 		
-		bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_allowed_to_update_booking_status', 'message' => 'TEST' ), 'change_booking_status' );
-		
 		$updated = bookacti_update_booking_state( $booking_id, $new_booking_state, $active );
 		if( $updated === false ) { 
 			bookacti_send_json( array( 'status' => 'failed', 'error' => 'error_update_booking_status', 'message' => esc_html__( 'An error occurred while trying to change the booking status.', 'booking-activities' ) ), 'change_booking_status' );

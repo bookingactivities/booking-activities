@@ -322,31 +322,31 @@ function bookacti_add_wc_columns_to_activity_redirect_url_table( $url_array, $pa
 	
 	// Get the product selectbox
 	$args = array(
-		'field_name'		=> 'product_by_activity[0]',
-		'allow_tags'		=> 0,
-		'allow_clear'		=> 1,
-		'echo'				=> 0
+		'field_name'  => 'product_by_activity[0]',
+		'allow_tags'  => 0,
+		'allow_clear' => 1,
+		'echo'        => 0
 	);
-	$default_product_selectbox	= bookacti_display_product_selectbox( $args );
+	$default_product_selectbox = bookacti_display_product_selectbox( $args );
 	
-	$redirect_url_activity_ids	= ! empty( $params[ 'calendar_data' ][ 'redirect_url_by_activity' ] ) && is_array( $params[ 'calendar_data' ][ 'redirect_url_by_activity' ] ) ? array_keys( $params[ 'calendar_data' ][ 'redirect_url_by_activity' ] ) : array();
-	$product_activity_ids		= ! empty( $params[ 'calendar_data' ][ 'product_by_activity' ] ) && is_array( $params[ 'calendar_data' ][ 'product_by_activity' ] ) ? array_keys( $params[ 'calendar_data' ][ 'product_by_activity' ] ) : array();
-	$missing_activities			= array_diff( $product_activity_ids, $redirect_url_activity_ids );
-	$product_by_activity		= ! empty( $params[ 'calendar_data' ][ 'product_by_activity' ] ) && is_array( $params[ 'calendar_data' ][ 'product_by_activity' ] ) ? $params[ 'calendar_data' ][ 'product_by_activity' ] : array();
+	$redirect_url_activity_ids = ! empty( $params[ 'calendar_data' ][ 'redirect_url_by_activity' ] ) && is_array( $params[ 'calendar_data' ][ 'redirect_url_by_activity' ] ) ? array_keys( $params[ 'calendar_data' ][ 'redirect_url_by_activity' ] ) : array();
+	$product_activity_ids      = ! empty( $params[ 'calendar_data' ][ 'product_by_activity' ] ) && is_array( $params[ 'calendar_data' ][ 'product_by_activity' ] ) ? array_keys( $params[ 'calendar_data' ][ 'product_by_activity' ] ) : array();
+	$missing_activities        = array_diff( $product_activity_ids, $redirect_url_activity_ids );
+	$product_by_activity       = ! empty( $params[ 'calendar_data' ][ 'product_by_activity' ] ) && is_array( $params[ 'calendar_data' ][ 'product_by_activity' ] ) ? $params[ 'calendar_data' ][ 'product_by_activity' ] : array();
 	
 	// Add missing rows, those having a product bound but no redirect URL
 	foreach( $product_by_activity as $activity_id => $product_id ) {
 		if( ! in_array( $activity_id, $missing_activities, true ) ) { continue; }
 		$url_array[ 'body' ][] = array( 
-			'activity' => intval( $activity_id ),
+			'activity'     => intval( $activity_id ),
 			'redirect_url' => '<input type="text" name="redirect_url_by_activity[ ' . intval( $activity_id ) . ' ]" value="" />'
 		);
 	}
 	
 	// Add the product column content
 	foreach( $url_array[ 'body' ] as $i => $row ) {
-		$activity_id	= ! empty( $row[ 'activity' ] ) ? intval( $row[ 'activity' ] ) : 0;
-		$selected		= ! empty( $product_by_activity[ $activity_id ] ) ? intval( $product_by_activity[ $activity_id ] ) : 0;
+		$activity_id = ! empty( $row[ 'activity' ] ) ? intval( $row[ 'activity' ] ) : 0;
+		$selected    = ! empty( $product_by_activity[ $activity_id ] ) ? intval( $product_by_activity[ $activity_id ] ) : 0;
 		$url_array[ 'body' ][ $i ][ 'product' ] = $activity_id ? bookacti_display_product_selectbox( array_merge( $args, array( 'field_name' => 'product_by_activity[' . $activity_id . ']', 'selected' => $selected ) ) ) : $default_product_selectbox;
 	}
 	

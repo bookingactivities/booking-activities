@@ -32,7 +32,7 @@
  * @category Core
  * @author Booking Activities Team
  * 
- * Copyright 2022 Yoan Cutillas
+ * Copyright 2023 Yoan Cutillas
 */
 
 // Exit if accessed directly
@@ -170,7 +170,7 @@ function bookacti_enqueue_libraries_scripts() {
 	if( did_action( 'init' ) ) { bookacti_wp_moment_updateLocale_temp_fix(); }
 	
 	// FullCalendar
-	$fullcalendar_version  = '6.0.1';
+	$fullcalendar_version  = '6.0.2';
 	$registered_fc         = wp_scripts()->query( 'fullcalendar', 'registered' );
 	$registered_fc_version = $registered_fc && ! empty( $registered_fc->ver ) ? $registered_fc->ver : '';
 	if( ! $registered_fc || ( $registered_fc_version && version_compare( $registered_fc_version, $fullcalendar_version, '<' ) ) ) { 

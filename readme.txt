@@ -321,10 +321,14 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.15.6 =
+= 1.15.6 - 2023/01/09 =
 * Fix - Error when switching booking group status to refunded from the backend
 * Fix - Calendar navigated to incorrect date when loaded with a picked events
-* Lib - Update FullCalendar to 6.0.1 (Support for IE 11 has been dropped)
+* Fix - Bound products were not correctly displayed in calendar settings in form editor
+* Fix - Booking calendar settings dialog was emptied after closed
+* Fix - Needed to refresh page to take into account the columns to display in the booking calendar tooltip
+* Fix - Activities were not filtered according to selected calendars in bookings filters
+* Lib - Update FullCalendar to 6.0.2 (Support for IE 11 has been dropped)
 * Lib - Remove Moment JS files and use the files included in WP instead
 * Dev - Compare datetimes directly instead of using mySQL UNIX_TIMESTAMP and CONVERT_TZ functions
 * Dev - Calendar dates are no longer restricted between 1970-01-01 and 2037-12-31 

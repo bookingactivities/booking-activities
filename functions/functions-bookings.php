@@ -1967,7 +1967,7 @@ function bookacti_get_bookings_export_events_tags_values( $booking_items, $args 
 /**
  * Get an array of bookings data formatted to be exported
  * @since 1.6.0
- * @version 1.15.4
+ * @version 1.15.6
  * @param array $args_raw
  * @return array
  */
@@ -2029,7 +2029,7 @@ function bookacti_get_bookings_for_export( $args_raw = array() ) {
 	$users = array();
 	$roles_names = array();
 	if( $get_user_data ) {
-		$users = bookacti_get_users_data( array( 'include' => $user_ids ) );
+		$users = $user_ids ? bookacti_get_users_data( array( 'include' => $user_ids ) ) : array();
 		$roles_names = bookacti_get_roles();
 	}
 	$unknown_user_id = esc_attr( apply_filters( 'bookacti_unknown_user_id', 'unknown_user' ) );
@@ -2618,7 +2618,7 @@ function bookacti_get_user_booking_list_private_columns() {
 /**
  * Get booking list items
  * @since 1.7.4
- * @version 1.15.4
+ * @version 1.15.6
  * @param array $filters
  * @param array $columns
  * @return string
@@ -2686,7 +2686,7 @@ function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
 	$users = array();
 	$roles_names = array();
 	if( $get_user_data ) {
-		$users = bookacti_get_users_data( array( 'include' => $user_ids ) );
+		$users = $user_ids ? bookacti_get_users_data( array( 'include' => $user_ids ) ) : array();
 		$roles_names = bookacti_get_roles();
 	}
 	$unknown_user_id = esc_attr( apply_filters( 'bookacti_unknown_user_id', 'unknown_user' ) );
