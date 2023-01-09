@@ -1460,7 +1460,7 @@ function bookacti_get_order_items_rows( $order_items = array() ) {
 /**
  * Display a products selectbox
  * @since 1.7.0
- * @version 1.15.4
+ * @version 1.15.6
  * @param array $raw_args
  * @return string
  */
@@ -1502,7 +1502,7 @@ function bookacti_display_product_selectbox( $raw_args = array() ) {
 			foreach( $products_titles as $product_id => $product ) {
 				// Display simple products options
 				if( empty( $product[ 'variations' ] ) ) {
-					$_selected = selected( $product_id, $args[ 'selected' ] );
+					$_selected = selected( $product_id, $args[ 'selected' ], false );
 					if( $_selected ) { $is_selected = true; }
 					?><option class='bookacti-wc-product-option' value='<?php echo esc_attr( $product_id ); ?>' <?php echo $_selected; ?>><?php echo $product[ 'title' ] ? esc_html( apply_filters( 'bookacti_translate_text_external', $product[ 'title' ], false, true, array( 'domain' => 'woocommerce', 'object_type' => 'product', 'object_id' => $product_id, 'field' => 'post_title' ) ) ) : $product[ 'title' ]; ?></option><?php
 

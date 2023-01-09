@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Fetch events by templates and / or activities
- * @version 1.13.0
+ * @version 1.15.6
  * @param array $raw_args {
  *  @type array $templates Array of template IDs
  *  @type array $activities Array of activity IDs
@@ -21,138 +21,113 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  */
 function bookacti_fetch_events( $raw_args = array() ) {
 	$default_args = array(
-		'templates' => array(),
-		'activities' => array(),
-		'events' => array(),
-		'interval' => array(),
+		'templates'       => array(),
+		'activities'      => array(),
+		'events'          => array(),
+		'interval'        => array(),
 		'skip_exceptions' => 1,
-		'past_events' => 0,
-		'bounding_only' => 0,
-		'data_only' => 0
+		'past_events'     => 0,
+		'bounding_only'   => 0,
+		'data_only'       => 0
 	);
 	$args = wp_parse_args( $raw_args, $default_args );
 
 	global $wpdb;
 
-	// Set current datetime
-	$timezone					= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
-	$current_datetime_object	= new DateTime( 'now', $timezone );
-	$user_timestamp				= $current_datetime_object->format( 'U' );
-	$user_timestamp_offset		= $current_datetime_object->format( 'P' );
-	$variables					= array();
-
+	$variables = array();
+	
+	// Get current datetime
+	$timezone = new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
+	$now_dt   = new DateTime( 'now', $timezone );
+	$now      = $now_dt->format( 'Y-m-d H:i:s' );
+	
 	// Prepare the query
-	$query  = 'SELECT DISTINCT E.id as event_id, E.template_id, E.activity_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_step, E.repeat_on, E.repeat_from, E.repeat_to, E.repeat_exceptions, E.availability, A.color '
-			. ' FROM ' . BOOKACTI_TABLE_EVENTS . ' as E '
-			. ' LEFT JOIN ' . BOOKACTI_TABLE_ACTIVITIES . ' as A ON E.activity_id = A.id '
-			. ' LEFT JOIN ' . BOOKACTI_TABLE_TEMPLATES . ' as T ON E.template_id = T.id '
-			. ' WHERE E.active = 1 '
-			. ' AND T.active = 1 ';
+	$query = 'SELECT DISTINCT E.id as event_id, E.template_id, E.activity_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_step, E.repeat_on, E.repeat_from, E.repeat_to, E.repeat_exceptions, E.availability, A.color '
+	       . ' FROM ' . BOOKACTI_TABLE_EVENTS . ' as E '
+	       . ' LEFT JOIN ' . BOOKACTI_TABLE_ACTIVITIES . ' as A ON E.activity_id = A.id '
+	       . ' LEFT JOIN ' . BOOKACTI_TABLE_TEMPLATES . ' as T ON E.template_id = T.id '
+	       . ' WHERE E.active = 1 '
+	       . ' AND T.active = 1 ';
 
 	// Do not fetch events totally out of the desired interval
-	if( $args[ 'interval' ] ) {
-		$query  .= ' 
-		AND (
-				( 	NULLIF( E.repeat_freq, "none" ) IS NULL 
-					AND (	UNIX_TIMESTAMP( CONVERT_TZ( E.start, %s, @@global.time_zone ) ) >= 
-							UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
-						AND
-							UNIX_TIMESTAMP( CONVERT_TZ( E.start, %s, @@global.time_zone ) ) <= 
-							UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
-						) 
-				) 
-				OR
-				( 	E.repeat_freq IS NOT NULL
-					AND NOT (	UNIX_TIMESTAMP( CONVERT_TZ( CONCAT( E.repeat_from, " 00:00:00" ), %s, @@global.time_zone ) ) < 
-								UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
-							AND 
-								UNIX_TIMESTAMP( CONVERT_TZ( CONCAT( E.repeat_to, " 23:59:59" ), %s, @@global.time_zone ) ) < 
-								UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
-							)
-					AND NOT (	UNIX_TIMESTAMP( CONVERT_TZ( CONCAT( E.repeat_from, " 00:00:00" ), %s, @@global.time_zone ) ) > 
-								UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
-							AND 
-								UNIX_TIMESTAMP( CONVERT_TZ( CONCAT( E.repeat_to, " 23:59:59" ), %s, @@global.time_zone ) ) > 
-								UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
-							)
-				) 
-			)';
-
-		$variables[] = $user_timestamp_offset;
-		$variables[] = $args[ 'interval' ][ 'start' ];
-		$variables[] = $user_timestamp_offset;
-		$variables[] = $user_timestamp_offset;
-		$variables[] = $args[ 'interval' ][ 'end' ];
-		$variables[] = $user_timestamp_offset;
-		$variables[] = $user_timestamp_offset;
-		$variables[] = $args[ 'interval' ][ 'start' ];
-		$variables[] = $user_timestamp_offset;
-		$variables[] = $user_timestamp_offset;
-		$variables[] = $args[ 'interval' ][ 'start' ];
-		$variables[] = $user_timestamp_offset;
-		$variables[] = $user_timestamp_offset;
-		$variables[] = $args[ 'interval' ][ 'end' ];
-		$variables[] = $user_timestamp_offset;
-		$variables[] = $user_timestamp_offset;
-		$variables[] = $args[ 'interval' ][ 'end' ];
-		$variables[] = $user_timestamp_offset;
+	if( ! empty( $args[ 'interval' ][ 'start' ] ) || ! empty( $args[ 'interval' ][ 'end' ] ) ) {
+		$query .= ' AND ( ';
+			// Non-repeated events
+			$query .= '( NULLIF( E.repeat_freq, "none" ) IS NULL ';
+			if( ! empty( $args[ 'interval' ][ 'start' ] ) ) {
+				$query .= ' AND E.start >= %s ';
+				$variables[] = $args[ 'interval' ][ 'start' ];
+			}
+			if( ! empty( $args[ 'interval' ][ 'end' ] ) ) {
+				$query .= ' AND E.start <= %s ';
+				$variables[] = $args[ 'interval' ][ 'end' ];
+			}
+			// Repeated events
+			$query .= ' ) OR ( NULLIF( E.repeat_freq, "none" ) IS NOT NULL ';
+			if( ! empty( $args[ 'interval' ][ 'start' ] ) ) {
+				$query .= ' AND NOT ( CONCAT( E.repeat_from, " 00:00:00" ) < %s AND CONCAT( E.repeat_to, " 23:59:59" ) < %s ) ';
+				$variables[] = $args[ 'interval' ][ 'start' ];
+				$variables[] = $args[ 'interval' ][ 'start' ];
+			}
+			if( ! empty( $args[ 'interval' ][ 'end' ] ) ) {
+				$query .= ' AND NOT ( CONCAT( E.repeat_from, " 00:00:00" ) > %s AND CONCAT( E.repeat_to, " 23:59:59" ) > %s ) ';
+				$variables[] = $args[ 'interval' ][ 'end' ];
+				$variables[] = $args[ 'interval' ][ 'end' ];
+			}
+			$query .= ' ) ';
+		$query .= ' ) ';
 	}
 
 	// Whether to fetch past events
 	if( ! $args[ 'past_events' ] ) {
-		$query .= ' AND (	UNIX_TIMESTAMP( CONVERT_TZ( E.start, %s, @@global.time_zone ) ) >= %d 
-						OR	UNIX_TIMESTAMP( CONVERT_TZ( ( E.repeat_to + INTERVAL 24 HOUR ), %s, @@global.time_zone ) ) >= %d ';
-
-		$variables[] = $user_timestamp_offset;
-		$variables[] = $user_timestamp;
-		$variables[] = $user_timestamp_offset;
-		$variables[] = $user_timestamp;
+		$query .= ' AND ( E.start >= %s OR ( E.repeat_to + INTERVAL 24 HOUR ) >= %s ';
+		$variables[] = $now;
+		$variables[] = $now;
 
 		$started_events_bookable = bookacti_get_setting_value( 'bookacti_general_settings', 'started_events_bookable' );
 		if( $started_events_bookable ) {
 			// Fetch events already started but not finished
-			$query .= ' OR	(	UNIX_TIMESTAMP( CONVERT_TZ( E.start, %s, @@global.time_zone ) ) <= %d 
-							AND UNIX_TIMESTAMP( CONVERT_TZ( E.end, %s, @@global.time_zone ) ) >= %d 
-							)';
-			$variables[] = $user_timestamp_offset;
-			$variables[] = $user_timestamp;
-			$variables[] = $user_timestamp_offset;
-			$variables[] = $user_timestamp;
+			$query .= ' OR ( E.start <= %s AND E.end >= %s )';
+			$variables[] = $now;
+			$variables[] = $now;
 		}
 		$query .= ') ';
 	}
 
 	// Get events from desired templates only
 	if( $args[ 'templates' ] ) {
-		$query  .= ' AND E.template_id IN ( %d';
-		for( $i=1,$len=count( $args[ 'templates' ] ); $i < $len; ++$i ) {
-			$query  .= ', %d';
+		$query .= ' AND E.template_id IN ( %d';
+		$len = count( $args[ 'templates' ] );
+		for( $i=1; $i < $len; ++$i ) {
+			$query .= ', %d';
 		}
-		$query  .= ' ) ';
+		$query .= ' ) ';
 		$variables = array_merge( $variables, $args[ 'templates' ] );
 	}
 
 	// Get events from desired activities only
 	if( $args[ 'activities' ] ) {
-		$query  .= ' AND A.id IN ( %d';
-		for( $i=1,$len=count( $args[ 'activities' ] ); $i < $len; ++$i ) {
-			$query  .= ', %d';
+		$query .= ' AND A.id IN ( %d';
+		$len = count( $args[ 'activities' ] );
+		for( $i=1; $i < $len; ++$i ) {
+			$query .= ', %d';
 		}
-		$query  .= ' ) ';
+		$query .= ' ) ';
 		$variables = array_merge( $variables, $args[ 'activities' ] );
 	}
 
 	// Get events from desired event IDs only
 	if( $args[ 'events' ] ) {
-		$query  .= ' AND E.id IN ( %d';
-		for( $i=1,$len=count( $args[ 'events' ] ); $i < $len; ++$i ) {
-			$query  .= ', %d';
+		$query .= ' AND E.id IN ( %d';
+		$len = count( $args[ 'events' ] );
+		for( $i=1; $i < $len; ++$i ) {
+			$query .= ', %d';
 		}
-		$query  .= ' ) ';
+		$query .= ' ) ';
 		$variables = array_merge( $variables, $args[ 'events' ] );
 	}
 
-	$query  .= ' ORDER BY E.start ASC ';
+	$query .= ' ORDER BY E.start ASC ';
 
 	// Allow plugins to change the query
 	$query = apply_filters( 'bookacti_get_events_query', $wpdb->prepare( $query, $variables ), $args );
@@ -170,7 +145,7 @@ function bookacti_fetch_events( $raw_args = array() ) {
 /**
  * Fetch booked events only
  * @since 1.2.2
- * @version 1.13.0
+ * @version 1.15.6
  * @global wpdb $wpdb
  * @param array $raw_args {
  *  @type array $templates Array of template IDs
@@ -189,71 +164,74 @@ function bookacti_fetch_events( $raw_args = array() ) {
  */
 function bookacti_fetch_booked_events( $raw_args = array() ) {
 	$default_args = array(
-		'templates' => array(),
-		'activities' => array(),
-		'events' => array(),
-		'status' => array(),
-		'active' => false,
-		'users' => array(),
-		'interval' => array(),
-		'past_events' => 0,
+		'templates'       => array(),
+		'activities'      => array(),
+		'events'          => array(),
+		'status'          => array(),
+		'active'          => false,
+		'users'           => array(),
+		'interval'        => array(),
+		'past_events'     => 0,
 		'skip_exceptions' => 0,
-		'bounding_only' => 0,
-		'data_only' => 0
+		'bounding_only'   => 0,
+		'data_only'       => 0
 	);
 	$args = wp_parse_args( $raw_args, $default_args );
 
 	global $wpdb;
 
-	// Set current datetime
-	$timezone					= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
-	$current_datetime_object	= new DateTime( 'now', $timezone );
-	$user_timestamp				= $current_datetime_object->format( 'U' );
-	$user_timestamp_offset		= $current_datetime_object->format( 'P' );
-
-	$variables					= array();
-
+	$variables = array();
+	
+	// Get current datetime
+	$timezone = new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
+	$now_dt   = new DateTime( 'now', $timezone );
+	$now      = $now_dt->format( 'Y-m-d H:i:s' );
+	
 	// Prepare the query
-	$query  = 'SELECT DISTINCT B.event_id, E.template_id, E.activity_id, E.title, B.event_start as start, B.event_end as end, "none" as repeat_freq, E.repeat_step, E.repeat_on, E.repeat_from, E.repeat_to, E.repeat_exceptions, E.availability, A.color '
-			. ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B '
-			. ' LEFT JOIN ' . BOOKACTI_TABLE_EVENTS . ' as E ON B.event_id = E.id '
-			. ' LEFT JOIN ' . BOOKACTI_TABLE_ACTIVITIES . ' as A ON E.activity_id = A.id '
-			. ' WHERE TRUE ';
+	$query = 'SELECT DISTINCT B.event_id, E.template_id, E.activity_id, E.title, B.event_start as start, B.event_end as end, "none" as repeat_freq, E.repeat_step, E.repeat_on, E.repeat_from, E.repeat_to, E.repeat_exceptions, E.availability, A.color '
+	       . ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B '
+	       . ' LEFT JOIN ' . BOOKACTI_TABLE_EVENTS . ' as E ON B.event_id = E.id '
+	       . ' LEFT JOIN ' . BOOKACTI_TABLE_ACTIVITIES . ' as A ON E.activity_id = A.id '
+	       . ' WHERE TRUE ';
 
 	// Get events from desired templates only
 	if( $args[ 'templates' ] ) {
-		$query  .= ' AND E.template_id IN ( %d';
-		for( $i=1,$len=count( $args[ 'templates' ] ); $i < $len; ++$i ) {
-			$query  .= ', %d';
+		$query .= ' AND E.template_id IN ( %d';
+		$len = count( $args[ 'templates' ] );
+		for( $i=1; $i < $len; ++$i ) {
+			$query .= ', %d';
 		}
-		$query  .= ' ) ';
+		$query .= ' ) ';
 		$variables = array_merge( $variables, $args[ 'templates' ] );
 	}
 
 	// Get events from desired activities only
 	if( $args[ 'activities' ] ) {
-		$query  .= ' AND A.id IN ( %d';
-		for( $i=1,$len=count( $args[ 'activities' ] ); $i < $len; ++$i ) {
-			$query  .= ', %d';
+		$query .= ' AND A.id IN ( %d';
+		$len = count( $args[ 'activities' ] );
+		for( $i=1; $i < $len; ++$i ) {
+			$query .= ', %d';
 		}
-		$query  .= ' ) ';
+		$query .= ' ) ';
 		$variables = array_merge( $variables, $args[ 'activities' ] );
 	}
 
 	// Get events (occurrences) from desired events only
 	if( $args[ 'events' ] ) {
-		$query  .= ' AND B.event_id IN ( %d';
-		for( $i=1,$len=count( $args[ 'events' ] ); $i < $len; ++$i ) {
-			$query  .= ', %d';
+		$query .= ' AND B.event_id IN ( %d';
+		$len = count( $args[ 'events' ] );
+		for( $i=1; $i < $len; ++$i ) {
+			$query .= ', %d';
 		}
-		$query  .= ' ) ';
+		$query .= ' ) ';
 		$variables = array_merge( $variables, $args[ 'events' ] );
 	}
 
 	// Fetch events from desired booking status only
 	if( $args[ 'status' ] ) {
 		$query .= ' AND B.state IN ( %s';
-		for( $i=1, $len=count( $args[ 'status' ] ); $i < $len; ++$i ) {
+		$len = count( $args[ 'status' ] );
+		for( $i=1; $i < $len; ++$i ) {
 			$query .= ', %s';
 		}
 		$query .= ' ) ';
@@ -269,7 +247,8 @@ function bookacti_fetch_booked_events( $raw_args = array() ) {
 	// Filter bookings by user
 	if( $args[ 'users' ] ) {
 		$query .= ' AND B.user_id IN ( %s';
-		for( $i=1, $len=count( $args[ 'users' ] ); $i < $len; ++$i ) {
+		$len = count( $args[ 'users' ] );
+		for( $i=1; $i < $len; ++$i ) {
 			$query .= ', %s';
 		}
 		$query .= ' ) ';
@@ -277,31 +256,23 @@ function bookacti_fetch_booked_events( $raw_args = array() ) {
 	}
 
 	// Do not fetch events out of the desired interval
-	if( $args[ 'interval' ] ) {
-		$query .= ' AND (	UNIX_TIMESTAMP( CONVERT_TZ( B.event_start, %s, @@global.time_zone ) ) >= 
-							UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
-							AND 
-							UNIX_TIMESTAMP( CONVERT_TZ( B.event_start, %s, @@global.time_zone ) ) <= 
-							UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
-						)';
-
-		$variables[] = $user_timestamp_offset;
+	if( ! empty( $args[ 'interval' ][ 'start' ] ) ) {
+		$query .= ' AND B.event_start >= %s ';
 		$variables[] = $args[ 'interval' ][ 'start' ];
-		$variables[] = $user_timestamp_offset;
-		$variables[] = $user_timestamp_offset;
+	}
+	
+	if( ! empty( $args[ 'interval' ][ 'end' ] ) ) {
+		$query .= ' AND B.event_start <= %s ';
 		$variables[] = $args[ 'interval' ][ 'end' ];
-		$variables[] = $user_timestamp_offset;
 	}
 
 	// Whether to fetch past events
 	if( ! $args[ 'past_events' ] ) {
-		$query .= ' AND ( UNIX_TIMESTAMP( CONVERT_TZ( B.event_start, %s, @@global.time_zone ) ) >= %d ) ';
-
-		$variables[] = $user_timestamp_offset;
-		$variables[] = $user_timestamp;
+		$query .= ' AND B.event_start >= %s';
+		$variables[] = $now;
 	}
 
-	$query  .= ' ORDER BY B.event_start ASC ';
+	$query .= ' ORDER BY B.event_start ASC ';
 
 	// Safely apply variables to the query
 	if( $variables ) {
@@ -329,11 +300,11 @@ function bookacti_fetch_booked_events( $raw_args = array() ) {
 function bookacti_get_event_by_id( $event_id ) {
 	global $wpdb;
 
-	$query	= 'SELECT E.id as event_id, E.template_id, E.activity_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_step, E.repeat_on, E.repeat_from, E.repeat_to, E.repeat_exceptions, E.availability, E.active as event_active, A.color, A.active as activity_active, T.active as template_active ' 
-			. ' FROM ' . BOOKACTI_TABLE_EVENTS . ' as E '
-			. ' LEFT JOIN ' . BOOKACTI_TABLE_ACTIVITIES . ' as A ON E.activity_id = A.id '
-			. ' LEFT JOIN ' . BOOKACTI_TABLE_TEMPLATES . ' as T ON E.template_id = T.id '
-			. ' WHERE E.id = %d';
+	$query = 'SELECT E.id as event_id, E.template_id, E.activity_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_step, E.repeat_on, E.repeat_from, E.repeat_to, E.repeat_exceptions, E.availability, E.active as event_active, A.color, A.active as activity_active, T.active as template_active ' 
+	       . ' FROM ' . BOOKACTI_TABLE_EVENTS . ' as E '
+	       . ' LEFT JOIN ' . BOOKACTI_TABLE_ACTIVITIES . ' as A ON E.activity_id = A.id '
+	       . ' LEFT JOIN ' . BOOKACTI_TABLE_TEMPLATES . ' as T ON E.template_id = T.id '
+	       . ' WHERE E.id = %d';
 	$query = $wpdb->prepare( $query, $event_id );
 	$event = $wpdb->get_row( $query, OBJECT );
 	
@@ -359,17 +330,17 @@ function bookacti_get_event_by_id( $event_id ) {
 function bookacti_get_event_availability( $event_id, $event_start, $event_end ) {
 	global $wpdb;
 
-	$query  = 'SELECT ( E.availability - IFNULL( B.quantity_booked, 0 ) ) as availability '
-			. ' FROM ' . BOOKACTI_TABLE_EVENTS . ' as E '
-			. ' LEFT JOIN ( '
-				. ' SELECT event_id, SUM( quantity ) as quantity_booked FROM ' . BOOKACTI_TABLE_BOOKINGS 
-				. ' WHERE active = 1 '
-				. ' AND event_id = %d '
-				. ' AND event_start = %s '
-				. ' AND event_end = %s '
-			. ' ) as B ON B.event_id = E.id '
-			. ' WHERE E.id = %d'
-			. ' LIMIT 1 ';
+	$query = 'SELECT ( E.availability - IFNULL( B.quantity_booked, 0 ) ) as availability '
+	       . ' FROM ' . BOOKACTI_TABLE_EVENTS . ' as E '
+	       . ' LEFT JOIN ( '
+	            . ' SELECT event_id, SUM( quantity ) as quantity_booked FROM ' . BOOKACTI_TABLE_BOOKINGS 
+	            . ' WHERE active = 1 '
+	            . ' AND event_id = %d '
+	            . ' AND event_start = %s '
+	            . ' AND event_end = %s '
+	       . ' ) as B ON B.event_id = E.id '
+	       . ' WHERE E.id = %d'
+	       . ' LIMIT 1 ';
 	$query	= $wpdb->prepare( $query, $event_id, $event_start, $event_end, $event_id );
 	$availability = $wpdb->get_var( $query );
 
@@ -384,7 +355,7 @@ function bookacti_get_event_availability( $event_id, $event_start, $event_end ) 
 /**
  * Get groups of events data by template ids
  * @since 1.4.0 (was bookacti_get_groups_of_events_by_template and bookacti_get_groups_of_events_by_category)
- * @version 1.13.0
+ * @version 1.15.6
  * @global wpdb $wpdb
  * @param array $raw_args {
  *  @type array $templates
@@ -401,31 +372,31 @@ function bookacti_get_event_availability( $event_id, $event_start, $event_end ) 
  */
 function bookacti_get_groups_of_events( $raw_args = array() ) {
 	$default_args = array(
-		'templates' => array(),
+		'templates'        => array(),
 		'group_categories' => array(),
-		'event_groups' => array(),
-		'nb_events' => array( 'min' => 2, 'max' => 0 ),
-		'interval' => array(),
+		'event_groups'     => array(),
+		'nb_events'        => array( 'min' => 2, 'max' => 0 ),
+		'interval'         => array(),
 		'interval_started' => 0,
-		'skip_exceptions' => 1,
-		'past_events' => 0,
-		'data_only' => 0
+		'skip_exceptions'  => 1,
+		'past_events'      => 0,
+		'data_only'        => 0
 	);
 	$args = wp_parse_args( $raw_args, $default_args );
 	
 	global $wpdb;
 	
-	// Set current datetime
-	$timezone					= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
-	$current_datetime_object	= new DateTime( 'now', $timezone );
-	$user_timestamp				= $current_datetime_object->format( 'U' );
-	$user_timestamp_offset		= $current_datetime_object->format( 'P' );
-	$variables					= array();
+	$variables = array();
 
-	$query	= 'SELECT DISTINCT G.id, G.category_id, G.title, G.repeat_freq, G.repeat_step, G.repeat_on, G.repeat_from, G.repeat_to, G.repeat_exceptions, GE.start, GE.end, GE.delta_days, C.template_id, M.started_groups_bookable '
-			. ' FROM ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as G ' 
-			. ' LEFT JOIN ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' as C ON C.id = G.category_id '
-			. ' LEFT JOIN ' . BOOKACTI_TABLE_TEMPLATES . ' as T ON T.id = C.template_id ';
+	// Get current datetime
+	$timezone = new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
+	$now_dt   = new DateTime( 'now', $timezone );
+	$now      = $now_dt->format( 'Y-m-d H:i:s' );
+	
+	$query = 'SELECT DISTINCT G.id, G.category_id, G.title, G.repeat_freq, G.repeat_step, G.repeat_on, G.repeat_from, G.repeat_to, G.repeat_exceptions, GE.start, GE.end, GE.delta_days, C.template_id, M.started_groups_bookable '
+	       . ' FROM ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as G ' 
+	       . ' LEFT JOIN ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' as C ON C.id = G.category_id '
+	       . ' LEFT JOIN ' . BOOKACTI_TABLE_TEMPLATES . ' as T ON T.id = C.template_id ';
 
 	// Join the meta table to filter groups already started
 	$query .= ' LEFT JOIN ( 
@@ -446,83 +417,53 @@ function bookacti_get_groups_of_events( $raw_args = array() ) {
 				) as GE ON GE.group_id = G.id ';
 
 	$query .= ' WHERE GE.start IS NOT NULL '
-			. ' AND GE.end IS NOT NULL '
-			. ' AND G.active = 1 '
-			. ' AND C.active = 1 '
-			. ' AND T.active = 1 ';
+	       . ' AND GE.end IS NOT NULL '
+	       . ' AND G.active = 1 '
+	       . ' AND C.active = 1 '
+	       . ' AND T.active = 1 ';
 	
-	// Do not fetch events totally out of the desired interval
-	if( $args[ 'interval' ] ) {
+	// Do not fetch groups totally out of the desired interval
+	if( ! empty( $args[ 'interval' ][ 'start' ] ) || ! empty( $args[ 'interval' ][ 'end' ] ) ) {
 		$interval_start = $args[ 'interval_started' ] ? 'DATE_SUB( %s, INTERVAL GE.delta_days DAY )' : '%s';
 		
-		$query  .= ' 
-		AND (
-				( 	NULLIF( G.repeat_freq, "none" ) IS NULL 
-					AND (	UNIX_TIMESTAMP( CONVERT_TZ( GE.start, %s, @@global.time_zone ) ) >= 
-							UNIX_TIMESTAMP( CONVERT_TZ( ' . $interval_start . ', %s, @@global.time_zone ) ) 
-						AND
-							UNIX_TIMESTAMP( CONVERT_TZ( GE.start, %s, @@global.time_zone ) ) <= 
-							UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
-						) 
-				) 
-				OR
-				( 	G.repeat_freq IS NOT NULL
-					AND NOT (	UNIX_TIMESTAMP( CONVERT_TZ( CONCAT( G.repeat_from, " 00:00:00" ), %s, @@global.time_zone ) ) < 
-								UNIX_TIMESTAMP( CONVERT_TZ( ' . $interval_start . ', %s, @@global.time_zone ) ) 
-							AND 
-								UNIX_TIMESTAMP( CONVERT_TZ( CONCAT( G.repeat_to, " 23:59:59" ), %s, @@global.time_zone ) ) < 
-								UNIX_TIMESTAMP( CONVERT_TZ( ' . $interval_start . ', %s, @@global.time_zone ) ) 
-							)
-					AND NOT (	UNIX_TIMESTAMP( CONVERT_TZ( CONCAT( G.repeat_from, " 00:00:00" ), %s, @@global.time_zone ) ) > 
-								UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
-							AND 
-								UNIX_TIMESTAMP( CONVERT_TZ( CONCAT( G.repeat_to, " 23:59:59" ), %s, @@global.time_zone ) ) > 
-								UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
-							)
-				) 
-			)';
-		
-		$variables[] = $user_timestamp_offset;
-		$variables[] = $args[ 'interval' ][ 'start' ];
-		$variables[] = $user_timestamp_offset;
-		$variables[] = $user_timestamp_offset;
-		$variables[] = $args[ 'interval' ][ 'end' ];
-		$variables[] = $user_timestamp_offset;
-		$variables[] = $user_timestamp_offset;
-		$variables[] = $args[ 'interval' ][ 'start' ];
-		$variables[] = $user_timestamp_offset;
-		$variables[] = $user_timestamp_offset;
-		$variables[] = $args[ 'interval' ][ 'start' ];
-		$variables[] = $user_timestamp_offset;
-		$variables[] = $user_timestamp_offset;
-		$variables[] = $args[ 'interval' ][ 'end' ];
-		$variables[] = $user_timestamp_offset;
-		$variables[] = $user_timestamp_offset;
-		$variables[] = $args[ 'interval' ][ 'end' ];
-		$variables[] = $user_timestamp_offset;
+		$query .= ' AND ( ';
+			// Non-repeated groups
+			$query .= '( NULLIF( G.repeat_freq, "none" ) IS NULL ';
+			if( ! empty( $args[ 'interval' ][ 'start' ] ) ) {
+				$query .= ' AND GE.start >= ' . $interval_start;
+				$variables[] = $args[ 'interval' ][ 'start' ];
+			}
+			if( ! empty( $args[ 'interval' ][ 'end' ] ) ) {
+				$query .= ' AND GE.start <= %s ';
+				$variables[] = $args[ 'interval' ][ 'end' ];
+			}
+			// Repeated groups
+			$query .= ' ) OR ( NULLIF( G.repeat_freq, "none" ) IS NOT NULL ';
+			if( ! empty( $args[ 'interval' ][ 'start' ] ) ) {
+				$query .= ' AND NOT ( CONCAT( G.repeat_from, " 00:00:00" ) < ' . $interval_start . ' AND CONCAT( G.repeat_to, " 23:59:59" ) < ' . $interval_start . ' ) ';
+				$variables[] = $args[ 'interval' ][ 'start' ];
+				$variables[] = $args[ 'interval' ][ 'start' ];
+			}
+			if( ! empty( $args[ 'interval' ][ 'end' ] ) ) {
+				$query .= ' AND NOT ( CONCAT( G.repeat_from, " 00:00:00" ) > %s AND CONCAT( G.repeat_to, " 23:59:59" ) > %s ) ';
+				$variables[] = $args[ 'interval' ][ 'end' ];
+				$variables[] = $args[ 'interval' ][ 'end' ];
+			}
+			$query .= ' ) ';
+		$query .= ' ) ';
 	}
 
 	// Whether to fetch past or started groups of events
 	if( ! $args[ 'past_events' ] ) {
-		$query .= ' AND (	UNIX_TIMESTAMP( CONVERT_TZ( GE.start, %s, @@global.time_zone ) ) >= %d 
-						OR	UNIX_TIMESTAMP( CONVERT_TZ( ( G.repeat_to + INTERVAL 24 HOUR ), %s, @@global.time_zone ) ) >= %d ';
-
-		$variables[] = $user_timestamp_offset;
-		$variables[] = $user_timestamp;
-		$variables[] = $user_timestamp_offset;
-		$variables[] = $user_timestamp;
-
-		// Fetch group of events already started but not finished
-		$query .= ' OR	(	M.started_groups_bookable = 1
-						AND UNIX_TIMESTAMP( CONVERT_TZ( GE.start, %s, @@global.time_zone ) ) <= %d 
-						AND UNIX_TIMESTAMP( CONVERT_TZ( GE.end, %s, @@global.time_zone ) ) >= %d 
-						)';
-		$variables[] = $user_timestamp_offset;
-		$variables[] = $user_timestamp;
-		$variables[] = $user_timestamp_offset;
-		$variables[] = $user_timestamp;
-			
-		$query .= ') ';
+		$query .= ' AND ( 
+		    GE.start >= %s 
+		    OR ( G.repeat_to + INTERVAL 24 HOUR ) >= %s
+		    OR ( M.started_groups_bookable = 1 AND GE.start <= %s AND GE.end >= %s )
+		) ';
+		$variables[] = $now;
+		$variables[] = $now;
+		$variables[] = $now;
+		$variables[] = $now;
 	}
 	
 	// Get events from desired templates only
@@ -577,7 +518,8 @@ function bookacti_get_groups_of_events( $raw_args = array() ) {
 	$order_by = apply_filters( 'bookacti_groups_of_events_list_order_by', array( 'category_id', 'title', 'id' ) );
 	if( $order_by && is_array( $order_by ) ) {
 		$query .= ' ORDER BY ';
-		for( $i=0,$len=count($order_by); $i<$len; ++$i ) {
+		$len = count( $order_by );
+		for( $i=0; $i<$len; ++$i ) {
 			if( $order_by[ $i ] === 'id' ) { $order_by[ $i ] = 'G.id'; }
 			if( $order_by[ $i ] === 'title' ) { $order_by[ $i ] = 'G.title'; }
 			$query .= $order_by[ $i ] . ' ASC';
@@ -587,7 +529,7 @@ function bookacti_get_groups_of_events( $raw_args = array() ) {
 
 	$query = apply_filters( 'bookacti_get_groups_of_events_query', $wpdb->prepare( $query, $variables ), $args );
 	
-	$groups	= $wpdb->get_results( $query, OBJECT );
+	$groups = $wpdb->get_results( $query, OBJECT );
 	
 	// Transform raw groups from database to array of individual group
 	$groups_array = bookacti_get_groups_of_events_array_from_db_groups_of_events( $groups, $args );
@@ -692,7 +634,7 @@ function bookacti_get_groups_events( $raw_args = array() ) {
 /**
  * Retrieve group categories data by id
  * @since 1.1.0
- * @version 1.15.5
+ * @version 1.15.6
  * @global wpdb $wpdb
  * @param array $raw_args {
  *  @type array $templates
@@ -742,7 +684,8 @@ function bookacti_get_group_categories( $raw_args = array() ) {
 	$order_by = apply_filters( 'bookacti_group_categories_list_order_by', array( 'template_id', 'title', 'id' ) );
 	if( $order_by && is_array( $order_by ) ) {
 		$query .= ' ORDER BY ';
-		for( $i=0,$len=count($order_by); $i<$len; ++$i ) {
+		$len = count( $order_by );
+		for( $i=0; $i<$len; ++$i ) {
 			$query .= $order_by[ $i ] . ' ASC';
 			if( $i < $len-1 ) { $query .= ', '; }
 		}
@@ -774,7 +717,7 @@ function bookacti_get_group_categories( $raw_args = array() ) {
 /**
  * Retrieve group category ids by template ids
  * @since 1.1.0
- * @version 1.12.0
+ * @version 1.15.6
  * @global wpdb $wpdb
  * @param array $template_ids
  * @param boolean $check_roles
@@ -785,8 +728,8 @@ function bookacti_get_group_category_ids_by_template( $template_ids = array(), $
 	
 	$variables = array();
 
-	$query	= 'SELECT DISTINCT C.id FROM ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' as C '
-			. 'LEFT JOIN ' . BOOKACTI_TABLE_TEMPLATES . ' as T ON C.template_id = T.id ';
+	$query = 'SELECT DISTINCT C.id FROM ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' as C '
+	       . 'LEFT JOIN ' . BOOKACTI_TABLE_TEMPLATES . ' as T ON C.template_id = T.id ';
 
 	// Join the meta table to filter by roles
 	if( $check_roles && ! is_super_admin() ) {
@@ -846,7 +789,8 @@ function bookacti_get_group_category_ids_by_template( $template_ids = array(), $
 	$order_by = apply_filters( 'bookacti_group_categories_list_order_by', array( 'template_id', 'title', 'id' ) );
 	if( $order_by && is_array( $order_by ) ) {
 		$query .= ' ORDER BY ';
-		for( $i=0,$len=count($order_by); $i<$len; ++$i ) {
+		$len = count( $order_by );
+		for( $i=0; $i<$len; ++$i ) {
 			if( $order_by[ $i ] === 'id' ) { $order_by[ $i ] = 'C.id'; }
 			if( $order_by[ $i ] === 'title' ) { $order_by[ $i ] = 'C.title'; }
 			$query .= $order_by[ $i ] . ' ASC';
@@ -858,7 +802,7 @@ function bookacti_get_group_category_ids_by_template( $template_ids = array(), $
 	$categories = $wpdb->get_results( $query, OBJECT );
 
 	$category_ids = array();
-	foreach( $categories as $category ) { $category_ids[] = $category->id; }
+	foreach( $categories as $category ) { $category_ids[] = intval( $category->id ); }
 
 	return $category_ids;
 }
@@ -889,8 +833,8 @@ function bookacti_get_managers( $object_type, $object_id ) {
 
 	if( ! $object_id ) { return array(); }
 
-	$query	= 'SELECT object_id, user_id FROM ' . BOOKACTI_TABLE_PERMISSIONS
-			. ' WHERE object_type = %s';
+	$query = 'SELECT object_id, user_id FROM ' . BOOKACTI_TABLE_PERMISSIONS
+	       . ' WHERE object_type = %s';
 
 	$variables = array( $object_type );
 
@@ -910,8 +854,8 @@ function bookacti_get_managers( $object_type, $object_id ) {
 		$variables = array_merge( $variables, $object_id );
 	}
 
-	$query		= $wpdb->prepare( $query, $variables );
-	$managers	= $wpdb->get_results( $query, OBJECT );
+	$query = $wpdb->prepare( $query, $variables );
+	$managers = $wpdb->get_results( $query, OBJECT );
 
 	if( is_null( $managers ) ) { return array(); }
 

@@ -821,7 +821,7 @@ add_action( 'wp_ajax_nopriv_bookactiSubmitLoginForm', 'bookacti_controller_valid
 /**
  * Check if booking form is correct and then book the event, or send the error message
  * @since 1.5.0
- * @version 1.14.0
+ * @version 1.15.6
  */
 function bookacti_controller_validate_booking_form() {
 	$return_array = array(
@@ -987,16 +987,16 @@ function bookacti_controller_validate_booking_form() {
 	
 	// Gether the form variables
 	$booking_form_values = apply_filters( 'bookacti_booking_form_values', array(
-		'user_id'        => $return_array[ 'user_id' ],
 		'picked_events'  => ! empty( $_POST[ 'selected_events' ] ) ? bookacti_format_picked_events( $_POST[ 'selected_events' ] ) : array(),
 		'quantity'       => intval( $_POST[ 'quantity' ] ),
+		'form_id'        => $form_id,
+		'user_id'        => $return_array[ 'user_id' ],
 		'status'         => bookacti_get_setting_value( 'bookacti_general_settings', 'default_booking_state' ), 
-		'payment_status' => bookacti_get_setting_value( 'bookacti_general_settings', 'default_payment_status' ),
-		'form_id'        => $form_id
+		'payment_status' => bookacti_get_setting_value( 'bookacti_general_settings', 'default_payment_status' )
 	), $form_id, $return_array );
 
 	// Check if the booking is correct
-	$response = bookacti_validate_booking_form( $booking_form_values[ 'picked_events' ], $booking_form_values[ 'quantity' ], $booking_form_values[ 'form_id' ] );
+	$response = bookacti_validate_picked_events( $booking_form_values[ 'picked_events' ], $booking_form_values );
 	if( $response[ 'status' ] !== 'success' ) {
 		$messages = ! empty( $response[ 'message' ] ) ? array( $response[ 'message' ] ) : array();
 		$return_array[ 'error' ] = $response[ 'error' ];

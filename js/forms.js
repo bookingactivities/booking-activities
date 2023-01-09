@@ -97,12 +97,12 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Display booking system fields and submit button if the user want to make a new booking
-	 * @version 1.8.0
+	 * @version 1.15.6
 	 */
 	$j( 'body' ).on( 'click', '.bookacti-booking-form .bookacti-new-booking-button', function() {
 		// Reload page if necessary
 		if( $j( this ).hasClass( 'bookacti-reload-page' ) ) { 
-			window.location.reload( true ); 
+			window.location.reload();
 			$j( this ).prop( 'disabled', true ); 
 			return; 
 		}
@@ -327,7 +327,7 @@ function bookacti_check_password_strength( password_field, password_confirm_fiel
 /**
  * Submit login form
  * @since 1.8.0
- * @version 1.15.0
+ * @version 1.15.6
  * @param {HTMLElement} submit_button
  */
 function bookacti_submit_login_form( submit_button ) {
@@ -340,7 +340,8 @@ function bookacti_submit_login_form( submit_button ) {
 	submit_button.prop( 'disabled', true );
 	
 	// Find the closest form or create a temporary form
-	if( ! submit_button.closest( 'form' ).length ) {
+	var has_form = submit_button.closest( 'form' ).length;
+	if( ! has_form ) {
 		if( field_container.closest( '.bookacti-form-fields' ).length ) {
 			field_container.closest( '.bookacti-form-fields' ).wrap( '<form class="bookacti-temporary-form"></form>' );
 		} else {
@@ -411,18 +412,21 @@ function bookacti_submit_login_form( submit_button ) {
 			}
 			
 			if( response.status === 'success' ) {
+				var form_redirect_url = typeof form.attr( 'action' ) !== 'undefined' && old_form_action === 'bookactiSubmitLoginForm' ? form.attr( 'action' ) : window.location.href;
+				data.redirect_url = response.redirect_url ? response.redirect_url : form_redirect_url;
+				
 				// Trigger action after sending form
 				form.trigger( 'bookacti_login_form_submitted', [ response, data ] );
-
+				
 				// Redirect
-				// Do not serialize user data
-				form.find( '.bookacti-form-field-name-login :input' ).prop( 'disabled', true );
-				var url_params = form.serialize();
-				form.find( '.bookacti-form-field-name-login :input' ).prop( 'disabled', false );
-				var form_redirect_url = typeof form.attr( 'action' ) !== 'undefined' && old_form_action === 'bookactiSubmitLoginForm' ? form.attr( 'action' ) : '';
-				var redirect_url = response.redirect_url ? response.redirect_url : form_redirect_url;
-				redirect_url += redirect_url.indexOf( '?' ) >= 0 ? '&' + url_params : '?' + url_params;
-				window.location.replace( redirect_url );
+				if( data.redirect_url ) {
+					var booking_system = form.find( '.bookacti-booking-system' );
+					if( booking_system.length ) {
+						bookacti_redirect_booking_system_to_url( booking_system, data.redirect_url );
+					} else {
+						window.location.replace( data.redirect_url );
+					}
+				}
 			}
 		},
 		error: function( e ){
@@ -438,6 +442,8 @@ function bookacti_submit_login_form( submit_button ) {
 		complete: function() {
 			bookacti_remove_loading_html( submit_button.parent() );
 			submit_button.prop( 'disabled', false );
+			// Remove temporary form
+			if( ! has_form ) { field_container.unwrap( 'form.bookacti-temporary-form' ); }
 		}
 	});
 }

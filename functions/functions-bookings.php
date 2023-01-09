@@ -313,7 +313,7 @@ function bookacti_get_default_booking_filters() {
 /**
  * Format booking filters
  * @since 1.3.0
- * @version 1.12.3
+ * @version 1.15.6
  * @param array $filters 
  * @return array
  */
@@ -329,12 +329,8 @@ function bookacti_format_booking_filters( $filters = array() ) {
 		// Specific pre-format
 		if( in_array( $filter, array( 'from' ), true ) ) {
 			if( bookacti_sanitize_date( $current_value ) ) { $current_value = bookacti_sanitize_date( $current_value ) . ' 00:00:00'; }
-			else if( bookacti_sanitize_datetime( $current_value ) ) { $current_value = bookacti_sanitize_datetime( $current_value ); }
-			else { $current_value = $default_value; }
 		} else if( in_array( $filter, array( 'to' ), true ) ) {
 			if( bookacti_sanitize_date( $current_value ) ) { $current_value = bookacti_sanitize_date( $current_value ) . ' 23:59:59'; }
-			else if( bookacti_sanitize_datetime( $current_value ) ) { $current_value = bookacti_sanitize_datetime( $current_value ); }
-			else { $current_value = $default_value; }
 		}
 		
 		// Else, check if its value is correct, or use default
@@ -727,7 +723,7 @@ function bookacti_booking_can_be_rescheduled_to( $booking, $event_id, $event_sta
 
 /**
  * Check if a booking can be refunded
- * @version 1.12.7
+ * @version 1.15.6
  * @param object|int $booking
  * @param string $context
  * @param string $refund_action
@@ -751,9 +747,9 @@ function bookacti_booking_can_be_refunded( $booking, $context = '', $refund_acti
 		// -> If the booking is part of a group
 		||  ! empty( $booking->group_id )
 		// -> If there are no refund action available
-		||  empty( $refund_actions )
+		|| ( ! $refund_actions && $context === 'front' )
 		// -> If the refund action is set but doesn't exist in available refund actions list
-		|| ( ! empty( $refund_action ) && ! array_key_exists( $refund_action, $refund_actions ) ) 
+		|| ( $refund_action && ! array_key_exists( $refund_action, $refund_actions ) ) 
 		// -> If the user is not an admin, the booking state has to be 'cancelled' in the first place
 		|| ( ( ! current_user_can( 'bookacti_edit_bookings' ) || $context === 'front' ) && ! ( $is_own && $booking->state === 'cancelled' ) ) ) { 
 
@@ -1032,7 +1028,7 @@ function bookacti_booking_group_can_be_cancelled( $bookings, $context = '' ) {
 /**
  * Check if a booking group can be refunded
  * @since 1.1.0
- * @version 1.14.2
+ * @version 1.15.6
  * @param array|int $bookings
  * @param string $refund_action
  * @param string $context
@@ -1057,7 +1053,7 @@ function bookacti_booking_group_can_be_refunded( $bookings, $refund_action = '',
 		// -> If the booking group is already marked as refunded, 
 		if( $bookings[ $first_key ]->group_state === 'refunded' 
 		// -> If there are no refund action available
-		||  ! $refund_actions
+		|| ( ! $refund_actions && $context === 'front' )
 		// -> If the refund action is set but doesn't exist in available refund actions list
 		|| ( $refund_action && ! array_key_exists( $refund_action, $refund_actions ) ) 
 		// -> If the user is not an admin, the booking group state has to be 'cancelled' in the first place
@@ -1074,35 +1070,32 @@ function bookacti_booking_group_can_be_refunded( $bookings, $refund_action = '',
 /**
  * Check if a booking group state can be changed to another
  * @since 1.1.0
- * @version 1.12.0
+ * @version 1.15.6
  * @param array|int $bookings
  * @param string $new_state
  * @param string $context
  * @return boolean
  */
 function bookacti_booking_group_state_can_be_changed_to( $bookings, $new_state, $context = 'admin' ) {
-	// Get grouped bookings
-	if( is_numeric( $bookings ) ) { $bookings = bookacti_get_booking_group_bookings_by_id( $bookings, true ); }
-	
 	$true = true;
-	if( ! $bookings ) { $true = false; }
-	else {
-		$can_edit_bookings = current_user_can( 'bookacti_edit_bookings' );
-		switch ( $new_state ) {
-			case 'delivered':
-				$true = $can_edit_bookings;
-				break;
-			case 'cancelled':
-				$true = bookacti_booking_group_can_be_cancelled( $bookings, $context );
-				break;
-			case 'refund_requested':
-				if( ! $can_edit_bookings || $context === 'front' ) {
+	if( ! current_user_can( 'bookacti_edit_bookings' ) || $context === 'front' ) {
+		// Get grouped bookings
+		if( is_numeric( $bookings ) ) { $bookings = bookacti_get_booking_group_bookings_by_id( $bookings, true ); }
+
+		if( ! $bookings ) { $true = false; }
+		else {
+			switch ( $new_state ) {
+				case 'delivered':
+					$true = false;
+					break;
+				case 'cancelled':
+					$true = bookacti_booking_group_can_be_cancelled( $bookings, $context );
+					break;
+				case 'refund_requested':
+				case 'refunded':
 					$true = bookacti_booking_group_can_be_refunded( $bookings, false, $context );
-				}
-				break;
-			case 'refunded':
-				$true = bookacti_booking_group_can_be_refunded( $bookings, false, $context );
-				break;
+					break;
+			}
 		}
 	}
 	
@@ -1113,7 +1106,7 @@ function bookacti_booking_group_state_can_be_changed_to( $bookings, $new_state, 
 /**
  * Check if a booking group quantity can be changed
  * @since 1.9.0
- * @version 1.14.0
+ * @version 1.15.6
  * @param array $bookings
  * @param int $new_quantity
  * @param string $context
@@ -1127,7 +1120,7 @@ function bookacti_booking_group_quantity_can_be_changed( $bookings, $new_quantit
 		$group_end_dt = new DateTime( $group_end );
 		$event_start_dt = new DateTime( $booking->event_start );
 		$event_end_dt = new DateTime( $booking->event_end );
-		$events[] = array( 'group_id' => 1, 'group_date' => '1970-02-01', 'id' => $booking->event_id, 'start' => $booking->event_start, 'end' => $booking->event_end );
+		$events[] = array( 'group_id' => 1, 'group_date' => '0000-00-00', 'id' => $booking->event_id, 'start' => $booking->event_start, 'end' => $booking->event_end );
 		if( ! $group_start || $event_start_dt < $group_start_dt ) { $group_start = $booking->event_start; }
 		if( ! $group_end || $event_end_dt < $group_end_dt )       { $group_end   = $booking->event_end; }
 		if( ! $group_id && ! empty( $booking->group_id ) )        { $group_id    = $booking->group_id; }
@@ -1141,7 +1134,7 @@ function bookacti_booking_group_quantity_can_be_changed( $bookings, $new_quantit
 	if( ! $title ) { $title = sprintf( esc_html__( 'Booking group #%d', 'booking-activities' ), $group_id ); }
 	$dates = bookacti_get_formatted_event_dates( $group_start, $group_end, false );
 	
-	$picked_events = bookacti_get_picked_events_availability( array( array( 'group_id' => 1, 'group_date' => '1970-02-01', 'events' => $events ) ) );
+	$picked_events = bookacti_get_picked_events_availability( array( array( 'group_id' => 1, 'group_date' => '0000-00-00', 'events' => $events ) ) );
 	$picked_event  = $picked_events[ 0 ];
 	$category_data = bookacti_get_metadata( 'group_category', $category_id );
 
@@ -1974,7 +1967,7 @@ function bookacti_get_bookings_export_events_tags_values( $booking_items, $args 
 /**
  * Get an array of bookings data formatted to be exported
  * @since 1.6.0
- * @version 1.15.4
+ * @version 1.15.6
  * @param array $args_raw
  * @return array
  */
@@ -2036,7 +2029,7 @@ function bookacti_get_bookings_for_export( $args_raw = array() ) {
 	$users = array();
 	$roles_names = array();
 	if( $get_user_data ) {
-		$users = bookacti_get_users_data( array( 'include' => $user_ids ) );
+		$users = $user_ids ? bookacti_get_users_data( array( 'include' => $user_ids ) ) : array();
 		$roles_names = bookacti_get_roles();
 	}
 	$unknown_user_id = esc_attr( apply_filters( 'bookacti_unknown_user_id', 'unknown_user' ) );
@@ -2289,7 +2282,7 @@ function bookacti_get_booking_refund_actions( $bookings, $booking_type = 'single
 		// Email action is useless, remove it
 		if( isset( $possible_actions[ 'email' ] ) ) { unset( $possible_actions[ 'email' ] ); }
 	}
-
+	
 	if( $booking_type === 'single' ) {
 		$possible_actions = apply_filters( 'bookacti_refund_actions_by_booking', $possible_actions, $bookings, $context );
 	} else if( $booking_type === 'group' ) {
@@ -2625,7 +2618,7 @@ function bookacti_get_user_booking_list_private_columns() {
 /**
  * Get booking list items
  * @since 1.7.4
- * @version 1.15.4
+ * @version 1.15.6
  * @param array $filters
  * @param array $columns
  * @return string
@@ -2693,7 +2686,7 @@ function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
 	$users = array();
 	$roles_names = array();
 	if( $get_user_data ) {
-		$users = bookacti_get_users_data( array( 'include' => $user_ids ) );
+		$users = $user_ids ? bookacti_get_users_data( array( 'include' => $user_ids ) ) : array();
 		$roles_names = bookacti_get_roles();
 	}
 	$unknown_user_id = esc_attr( apply_filters( 'bookacti_unknown_user_id', 'unknown_user' ) );

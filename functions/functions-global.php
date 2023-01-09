@@ -545,7 +545,7 @@ function bookacti_get_active_add_ons( $prefix = '', $exclude = array( 'balau' ) 
 /**
  * Get add-on data by prefix
  * @since 1.7.14
- * @version 1.15.5
+ * @version 1.15.6
  * @param string $prefix
  * @param array $exclude
  * @return array
@@ -558,7 +558,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-display-pack', 
 			'end_of_life' => '', 
 			'download_id' => 482,
-			'min_version' => '1.4.27'
+			'min_version' => '1.4.29'
 		),
 		'banp' => array( 
 			'title'       => 'Notification Pack', 
@@ -574,7 +574,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-prices-and-credits', 
 			'end_of_life' => '', 
 			'download_id' => 438,
-			'min_version' => '1.7.10'
+			'min_version' => '1.7.12'
 		),
 		'baaf' => array( 
 			'title'       => 'Advanced Forms', 
@@ -590,7 +590,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-order-for-customers', 
 			'end_of_life' => '', 
 			'download_id' => 436,
-			'min_version' => '1.2.27'
+			'min_version' => '1.2.28'
 		),
 		'balau' => array( 
 			'title'       => 'Licenses & Updates', 
@@ -1846,7 +1846,7 @@ function bookacti_format_datetime( $datetime, $format = '' ) {
 
 /**
  * Check if a string is in a correct datetime format
- * @version 1.12.0
+ * @version 1.15.6
  * @param string $datetime Date format "Y-m-d H:i:s" is expected
  * @return string
  */
@@ -1854,13 +1854,6 @@ function bookacti_sanitize_datetime( $datetime ) {
 	if( preg_match( '/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])T([01]\d|2[0-3]):[0-5]\d:[0-5]\d$/', $datetime ) 
 	||  preg_match( '/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]) ([01]\d|2[0-3]):[0-5]\d:[0-5]\d$/', $datetime ) ) {
 		$datetime_object = new DateTime( $datetime );
-
-		// Do not allow to set a date after 2037 because of the year 2038 problem
-		$datetime_2038 = new DateTime( '2038-01-01' );
-		if( $datetime_object > $datetime_2038 ) {
-			return '2037-12-31 ' . $datetime_object->format( 'H:i:s' );
-		}
-
 		return $datetime;
 	}
 	return '';
@@ -1884,20 +1877,13 @@ if( ! function_exists( 'wp_date' ) ) {
 
 /**
  * Check if a string is in a correct date format
- * @version 1.12.0
+ * @version 1.15.6
  * @param string $date Date format Y-m-d is expected
  * @return string 
  */
 function bookacti_sanitize_date( $date ) {
 	if( preg_match( '/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/', $date ) ) {
 		$datetime_object = new DateTime( $date );
-
-		// Do not allow to set a date after 2037 because of the year 2038 problem
-		$datetime_2038 = new DateTime( '2038-01-01' );
-		if( $datetime_object > $datetime_2038 ) {
-			return '2037-12-31';
-		}
-
 		return $datetime_object->format( 'Y-m-d' );
 	}
 	return '';
@@ -1994,7 +1980,7 @@ function bookacti_is_json( $string ) {
 /**
  * Decode JSON if it is valid else return self
  * @since 1.6.0
- * @version 1.9.0
+ * @version 1.15.6
  * @param string $string
  * @param boolean $assoc
  * @return array|$string

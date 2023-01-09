@@ -1,7 +1,7 @@
 <?php 
 /**
  * Calendar editor dialogs
- * @version 1.15.5
+ * @version 1.15.6
  */
 
 // Exit if accessed directly
@@ -83,7 +83,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 		
 		/**
 		 * Display the 'Repetition' tab content of event settings
-		 * @version 1.14.0
+		 * @version 1.15.6
 		 * @param array $params
 		 */
 		function bookacti_fill_event_tab_repetition( $params ) {
@@ -185,7 +185,6 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 					'id'      => 'bookacti-event-repeat-from',
 					'class'   => 'bookacti-repeat-from',
 					'title'   => esc_html__( 'Repeat from', 'booking-activities' ),
-					'options' => array( 'max' => '2037-12-31' ),
 					'tip'     => esc_html__( 'Set the starting date of the repetition. The occurrences of the event will be added from this date.', 'booking-activities' )
 				),
 				'repeat_to' => array(
@@ -194,7 +193,6 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 					'id'      => 'bookacti-event-repeat-to',
 					'class'   => 'bookacti-repeat-to',
 					'title'   => esc_html__( 'Repeat to', 'booking-activities' ),
-					'options' => array( 'max' => '2037-12-31' ),
 					'tip'     => esc_html__( 'Set the ending date of the repetition. The occurrences of the event will be added until this date.', 'booking-activities' )
 				),
 				'repeat_exceptions' => array(
@@ -325,7 +323,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			
 			/**
 			 * Display the 'Permission' tab content of calendar settings
-			 * @version 1.15.4
+			 * @version 1.15.6
 			 * @param array $params
 			 */
 			function bookacti_fill_template_tab_permissions( $params = array() ) {
@@ -342,7 +340,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 					'fullwidth' => 1, 
 					'options'   => array(
 						'option_label' => array( 'display_name', ' (', 'user_login', ')' ),
-						'role__in'     => $role_in,
+						'role__in'     => $role_in ? $role_in : array( 'none' ),
 						'role__not_in' => $role_not_in,
 						'meta'         => false,
 						'multiple'     => 1,
@@ -587,7 +585,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			
 			/**
 			 * Display the fields in the "Permissions" tab of the Activity dialog
-			 * @version 1.15.4
+			 * @version 1.15.6
 			 * @param array $params
 			 */
 			function bookacti_fill_activity_tab_permissions( $params = array() ) {
@@ -641,7 +639,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 					'fullwidth' => 1, 
 					'options'   => array(
 						'option_label' => array( 'display_name', ' (', 'user_login', ')' ),
-						'role__in'     => $role_in,
+						'role__in'     => $role_in ? $role_in : array( 'none' ),
 						'role__not_in' => $role_not_in,
 						'meta'         => false,
 						'multiple'     => 1,
@@ -822,7 +820,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 		/**
 		 * Display the 'Repetition' tab content of group of events settings
 		 * @since 1.12.0
-		 * @version 1.14.0
+		 * @version 1.15.6
 		 * @param array $params
 		 */
 		function bookacti_fill_group_of_events_tab_repetition( $params ) {
@@ -919,22 +917,20 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 						'tip'     => esc_html__( 'Select the day of the month on which the group of events will be repeated.', 'booking-activities' )
 					),
 					'repeat_from' => array(
-						'type'    => 'date',
-						'name'    => 'repeat_from',
-						'id'      => 'bookacti-group-of-events-repeat-from',
-						'class'   => 'bookacti-repeat-from',
-						'title'   => esc_html__( 'Repeat from', 'booking-activities' ),
-						'options' => array( 'max' => '2037-12-31' ),
-						'tip'     => esc_html__( 'Set the starting date of the repetition. The occurrences of the group of events starting after that date will be generated.', 'booking-activities' )
+						'type'  => 'date',
+						'name'  => 'repeat_from',
+						'id'    => 'bookacti-group-of-events-repeat-from',
+						'class' => 'bookacti-repeat-from',
+						'title' => esc_html__( 'Repeat from', 'booking-activities' ),
+						'tip'   => esc_html__( 'Set the starting date of the repetition. The occurrences of the group of events starting after that date will be generated.', 'booking-activities' )
 					),
 					'repeat_to' => array(
-						'type'    => 'date',
-						'name'    => 'repeat_to',
-						'id'      => 'bookacti-group-of-events-repeat-to',
-						'class'   => 'bookacti-repeat-to',
-						'title'   => esc_html__( 'Repeat to', 'booking-activities' ),
-						'options' => array( 'max' => '2037-12-31' ),
-						'tip'     => esc_html__( 'Set the ending date of the repetition. The occurrences of the group of events starting after that date won\'t be generated.', 'booking-activities' )
+						'type'  => 'date',
+						'name'  => 'repeat_to',
+						'id'    => 'bookacti-group-of-events-repeat-to',
+						'class' => 'bookacti-repeat-to',
+						'title' => esc_html__( 'Repeat to', 'booking-activities' ),
+						'tip'   => esc_html__( 'Set the ending date of the repetition. The occurrences of the group of events starting after that date won\'t be generated.', 'booking-activities' )
 					),
 					'repeat_exceptions' => array(
 						'type'  => 'custom_date_intervals',

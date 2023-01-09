@@ -136,13 +136,12 @@ $j( document ).ready( function() {
 	/**
 	 * Go to a specific date in calendar
 	 * @since 1.12.0
-	 * @version 1.15.0
+	 * @version 1.15.6
 	 */
 	$j( 'body' ).on( 'change', '.bookacti-go-to-datepicker', function() {
 		var date = $j( this ).val();
 		var booking_system_id = $j( this ).closest( '.bookacti-booking-system' ).length ? $j( this ).closest( '.bookacti-booking-system' ).attr( 'id' ) : 'bookacti-template-calendar';
 		if( ! date || typeof bookacti.fc_calendar[ booking_system_id ] === 'undefined' ) { return; }
-		if( parseInt( date.substr( 0, 4 ) ) < 1970 ) { return; }
 		bookacti.fc_calendar[ booking_system_id ].gotoDate( date );
 	});
 	
@@ -220,7 +219,7 @@ $j( document ).ready( function() {
 
 /**
  * Initialize the calendar
- * @version 1.15.4
+ * @version 1.15.6
  * @param {HTMLElement} booking_system
  * @param {boolean} reload_events
  */
@@ -235,7 +234,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 	var event_min_height    = typeof bookacti_localized.event_tiny_height !== 'undefined' ? parseInt( bookacti_localized.event_tiny_height ) : 32;
 	var slot_min_time       = typeof display_data.slotMinTime !== 'undefined' ? display_data.slotMinTime : '00:00';
 	var slot_max_time       = typeof display_data.slotMaxTime !== 'undefined' ? display_data.slotMaxTime : '24:00';
-	var next_day_threshold  = moment.utc( '1970-02-01 ' + slot_min_time ).add( 1, 'minutes' ).format( 'HH:mm' ); // One minute after slot_min_time
+	var next_day_threshold  = moment.utc( '1992-12-26 ' + slot_min_time ).add( 1, 'minutes' ).format( 'HH:mm' ); // One minute after slot_min_time
 	
 	// See https://fullcalendar.io/docs/
 	var init_data = {
@@ -265,8 +264,8 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		slotMaxTime:            slot_max_time,
 		
 		validRange: {
-            start: availability_period.start ? moment.utc( availability_period.start.substr( 0, 10 ) ).format( 'YYYY-MM-DD' ) : '',
-            end: availability_period.end ? moment.utc( availability_period.end.substr( 0, 10 ) ).add( 1, 'days' ).format( 'YYYY-MM-DD' ) : ''
+            start: availability_period.start ? moment.utc( availability_period.start.substr( 0, 10 ) ).format( 'YYYY-MM-DD' ) : null,
+            end: availability_period.end ? moment.utc( availability_period.end.substr( 0, 10 ) ).add( 1, 'days' ).format( 'YYYY-MM-DD' ) : null
         },
 		
 		headerToolbar: {
@@ -673,7 +672,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 	// Go to the first picked events
 	var picked_events = bookacti.booking_system[ booking_system_id ][ 'picked_events' ];
 	if( ! $j.isEmptyObject( bookacti.booking_system[ booking_system_id ][ 'picked_events' ] ) ) {
-		bookacti.fc_calendar[ booking_system_id ].gotoDate( moment.utc( picked_events[ 0 ][ 'start' ] ) );
+		bookacti.fc_calendar[ booking_system_id ].gotoDate( picked_events[ 0 ][ 'start' ] );
 	}
 	
 	// Add a class to the calendar according to its width

@@ -33,6 +33,13 @@ $j( document ).ready( function() {
 	
 	
 	/**
+	 * Do not empty the booking calendar dialog when the dialog is closing
+	 * @since 1.15.6
+	 */
+	$j( '#bookacti-bookings-calendar-settings-dialog' ).dialog({ "beforeClose": function(){} });
+	
+	
+	/**
 	 * Open export link in a new tab to generate and download the exported file
 	 * @since 1.6.0
 	 * @version 1.8.0
@@ -60,7 +67,7 @@ $j( document ).ready( function() {
 /**
  * Bookings calendar settings
  * @since 1.8.0
- * @version 1.15.5
+ * @version 1.15.6
  */
 function bookacti_dialog_update_bookings_calendar_settings() {	
 	// Add the buttons
@@ -90,7 +97,7 @@ function bookacti_dialog_update_bookings_calendar_settings() {
 							var booking_system_id = 'bookacti-booking-system-bookings-page';
 							bookacti.booking_system[ booking_system_id ][ 'display_data' ]                 = response.display_data;
 							bookacti.booking_system[ booking_system_id ][ 'tooltip_booking_list' ]         = response.calendar_settings.tooltip_booking_list;
-							bookacti.booking_system[ booking_system_id ][ 'tooltip_booking_list_columns' ] = response.calendar_settings.booking_list_columns;
+							bookacti.booking_system[ booking_system_id ][ 'tooltip_booking_list_columns' ] = response.calendar_settings.tooltip_booking_list_columns;
 							
 							$j( 'body' ).trigger( 'bookacti_bookings_calendar_settings_updated', [ data, response ] );
 							

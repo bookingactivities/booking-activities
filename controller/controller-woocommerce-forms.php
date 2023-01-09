@@ -322,31 +322,31 @@ function bookacti_add_wc_columns_to_activity_redirect_url_table( $url_array, $pa
 	
 	// Get the product selectbox
 	$args = array(
-		'field_name'		=> 'product_by_activity[0]',
-		'allow_tags'		=> 0,
-		'allow_clear'		=> 1,
-		'echo'				=> 0
+		'field_name'  => 'product_by_activity[0]',
+		'allow_tags'  => 0,
+		'allow_clear' => 1,
+		'echo'        => 0
 	);
-	$default_product_selectbox	= bookacti_display_product_selectbox( $args );
+	$default_product_selectbox = bookacti_display_product_selectbox( $args );
 	
-	$redirect_url_activity_ids	= ! empty( $params[ 'calendar_data' ][ 'redirect_url_by_activity' ] ) && is_array( $params[ 'calendar_data' ][ 'redirect_url_by_activity' ] ) ? array_keys( $params[ 'calendar_data' ][ 'redirect_url_by_activity' ] ) : array();
-	$product_activity_ids		= ! empty( $params[ 'calendar_data' ][ 'product_by_activity' ] ) && is_array( $params[ 'calendar_data' ][ 'product_by_activity' ] ) ? array_keys( $params[ 'calendar_data' ][ 'product_by_activity' ] ) : array();
-	$missing_activities			= array_diff( $product_activity_ids, $redirect_url_activity_ids );
-	$product_by_activity		= ! empty( $params[ 'calendar_data' ][ 'product_by_activity' ] ) && is_array( $params[ 'calendar_data' ][ 'product_by_activity' ] ) ? $params[ 'calendar_data' ][ 'product_by_activity' ] : array();
+	$redirect_url_activity_ids = ! empty( $params[ 'calendar_data' ][ 'redirect_url_by_activity' ] ) && is_array( $params[ 'calendar_data' ][ 'redirect_url_by_activity' ] ) ? array_keys( $params[ 'calendar_data' ][ 'redirect_url_by_activity' ] ) : array();
+	$product_activity_ids      = ! empty( $params[ 'calendar_data' ][ 'product_by_activity' ] ) && is_array( $params[ 'calendar_data' ][ 'product_by_activity' ] ) ? array_keys( $params[ 'calendar_data' ][ 'product_by_activity' ] ) : array();
+	$missing_activities        = array_diff( $product_activity_ids, $redirect_url_activity_ids );
+	$product_by_activity       = ! empty( $params[ 'calendar_data' ][ 'product_by_activity' ] ) && is_array( $params[ 'calendar_data' ][ 'product_by_activity' ] ) ? $params[ 'calendar_data' ][ 'product_by_activity' ] : array();
 	
 	// Add missing rows, those having a product bound but no redirect URL
 	foreach( $product_by_activity as $activity_id => $product_id ) {
 		if( ! in_array( $activity_id, $missing_activities, true ) ) { continue; }
 		$url_array[ 'body' ][] = array( 
-			'activity' => intval( $activity_id ),
+			'activity'     => intval( $activity_id ),
 			'redirect_url' => '<input type="text" name="redirect_url_by_activity[ ' . intval( $activity_id ) . ' ]" value="" />'
 		);
 	}
 	
 	// Add the product column content
 	foreach( $url_array[ 'body' ] as $i => $row ) {
-		$activity_id	= ! empty( $row[ 'activity' ] ) ? intval( $row[ 'activity' ] ) : 0;
-		$selected		= ! empty( $product_by_activity[ $activity_id ] ) ? intval( $product_by_activity[ $activity_id ] ) : 0;
+		$activity_id = ! empty( $row[ 'activity' ] ) ? intval( $row[ 'activity' ] ) : 0;
+		$selected    = ! empty( $product_by_activity[ $activity_id ] ) ? intval( $product_by_activity[ $activity_id ] ) : 0;
 		$url_array[ 'body' ][ $i ][ 'product' ] = $activity_id ? bookacti_display_product_selectbox( array_merge( $args, array( 'field_name' => 'product_by_activity[' . $activity_id . ']', 'selected' => $selected ) ) ) : $default_product_selectbox;
 	}
 	
@@ -454,53 +454,67 @@ add_action( 'wp_ajax_bookactiSelect2Query_products', 'bookacti_controller_search
 /**
  * Add products bound to the selected events to cart
  * @since 1.7.0
- * @version 1.14.0
+ * @version 1.15.6
  */
 function bookacti_controller_add_bound_product_to_cart() {
 	$form_id       = intval( $_POST[ 'form_id' ] );
 	$quantity      = empty( $_REQUEST[ 'quantity' ] ) ? 1 : wc_stock_amount( wp_unslash( $_REQUEST[ 'quantity' ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-	$picked_events = ! empty( $_POST[ 'selected_events' ] ) ? bookacti_format_picked_events( $_POST[ 'selected_events' ] ) : array();
+	$picked_events = ! empty( $_POST[ 'selected_events' ] ) ? bookacti_format_picked_events( $_POST[ 'selected_events' ], true ) : array();
 	$return_array  = array( 'status' => 'failed', 'error' => '', 'messages' => array(), 'products' => array() );
 	
-	// Get the form; field data
+	// Get the form field data
 	$field = bookacti_get_form_field_data_by_name( $form_id, 'calendar' );
 	if( ! $field ) {
-		$return_array[ 'error' ] = 'unknown_field'; 
+		$return_array[ 'error' ]    = 'unknown_field'; 
 		$return_array[ 'messages' ] = esc_html__( 'The calendar field data couldn\'t be retrieved.', 'booking-activities' );
 		bookacti_send_json( $return_array, 'add_bound_product_to_cart' );
 	}
 	
 	// Check if the form action is "add_product_to_cart"
 	if( $field[ 'form_action' ] !== 'add_product_to_cart' ) {
-		$return_array[ 'error' ] = 'incorrect_form_action'; 
+		$return_array[ 'error' ]    = 'incorrect_form_action'; 
 		$return_array[ 'messages' ] = esc_html__( 'You cannot add a product to cart with this form.', 'booking-activities' );
 		bookacti_send_json( $return_array, 'add_bound_product_to_cart' );
 	}
 	
-	// Check if the booking form is valid
-	$response = bookacti_validate_booking_form( $picked_events, $quantity, $form_id );
-	if( $response[ 'status' ] !== 'success' ) {
-		$messages = ! empty( $response[ 'message' ] ) ? array( $response[ 'message' ] ) : array();
-		$return_array[ 'error' ] = $response[ 'error' ];
-		foreach( $response[ 'messages' ] as $error => $error_messages ) {
-			if( ! is_array( $error_messages ) ) { $error_messages = array( $error_messages ); }
-			$messages = array_merge( $messages, $error_messages );
-		}
-		$return_array[ 'messages' ]	= implode( '</li><li>', array_merge( $return_array[ 'messages' ], $messages ) );
-		bookacti_send_json( $return_array, 'add_bound_product_to_cart' );
+	// Validate the booking form fields
+	$form_fields_validated = bookacti_validate_form_fields( $form_id );
+	if( $form_fields_validated[ 'status' ] !== 'success' ) {
+		$return_array[ 'error' ]    = 'invalid_form_fields';
+		$return_array[ 'messages' ] = $form_fields_validated[ 'messages' ];
+		$return_array[ 'message' ]  = implode( '</li><li>', $form_fields_validated[ 'messages' ] );
+		bookacti_send_json( $return_array, 'submit_booking_form' );
 	}
+	
+	// Get events and groups of events data
+	$event_ids = $group_ids = $events_interval_dt = $groups_interval_dt = array();
+	foreach( $picked_events as $i => $picked_event ) {
+		$start_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $picked_event[ 'events' ][ 0 ][ 'start' ] );
+		if( $picked_event[ 'group_id' ] ) { 
+			$group_ids[] = $picked_event[ 'group_id' ];
+			if( ! isset( $groups_interval_dt[ 'start' ] ) || ( isset( $groups_interval_dt[ 'start' ] ) && $groups_interval_dt[ 'start' ] > $start_dt ) ) { $groups_interval_dt[ 'start' ] = clone $start_dt; }
+			if( ! isset( $groups_interval_dt[ 'end' ] ) || ( isset( $groups_interval_dt[ 'end' ] ) && $groups_interval_dt[ 'end' ] < $start_dt ) ) { $groups_interval_dt[ 'end' ] = clone $start_dt; }
+		} else { 
+			$event_ids[] = $picked_event[ 'events' ][ 0 ][ 'id' ];
+			if( ! isset( $events_interval_dt[ 'start' ] ) || ( isset( $events_interval_dt[ 'start' ] ) && $events_interval_dt[ 'start' ] > $start_dt ) ) { $events_interval_dt[ 'start' ] = clone $start_dt; }
+			if( ! isset( $events_interval_dt[ 'end' ] ) || ( isset( $events_interval_dt[ 'end' ] ) && $events_interval_dt[ 'end' ] < $start_dt ) ) { $events_interval_dt[ 'end' ] = clone $start_dt; }
+		}
+	}
+	$event_ids = bookacti_ids_to_array( $event_ids );
+	$group_ids = bookacti_ids_to_array( $group_ids );
+	$events_interval = $events_interval_dt ? array( 'start' => $events_interval_dt[ 'start' ]->format( 'Y-m-d H:i:s' ), 'end' => $events_interval_dt[ 'end' ]->format( 'Y-m-d H:i:s' ) ) : array();
+	$groups_interval = $groups_interval_dt ? array( 'start' => $groups_interval_dt[ 'start' ]->format( 'Y-m-d H:i:s' ), 'end' => $groups_interval_dt[ 'end' ]->format( 'Y-m-d H:i:s' ) ) : array();
+	$events = $event_ids ? bookacti_fetch_events( array( 'events' => $event_ids, 'interval' => $events_interval, 'past_events' => 1 ) ) : array();
+	$groups = $group_ids ? bookacti_get_groups_of_events( array( 'event_groups' => $group_ids, 'interval' => $groups_interval, 'past_events' => 1 ) ) : array();
 	
 	$wc_notices_all = array();
 	$init_post = $_POST;
 	$init_request = $_REQUEST;
 	unset( $_POST[ 'selected_events' ] );
 	
-	// Keep one entry per group
-	$picked_events = $response[ 'picked_events' ];
-	
 	// Check if the products can be added to cart
 	foreach( $picked_events as $i => $picked_event ) {
-		$last_picked_event = end( $picked_event[ 'events' ] );
+		$last_picked_event  = end( $picked_event[ 'events' ] );
 		$first_picked_event = reset( $picked_event[ 'events' ] );
 
 		$group_id = $picked_event[ 'group_id' ];
@@ -508,18 +522,20 @@ function bookacti_controller_add_bound_product_to_cart() {
 		$event_start = isset( $first_picked_event[ 'start' ] ) ? $first_picked_event[ 'start' ] : '';
 		$event_end   = isset( $last_picked_event[ 'end' ] ) ? $last_picked_event[ 'end' ] : '';
 
-		$group = $group_id && ! empty( $picked_event[ 'args' ][ 'event' ] ) ? $picked_event[ 'args' ][ 'event' ] : array();
-		$event = ! $group_id && ! empty( $picked_event[ 'args' ][ 'event' ] ) ? $picked_event[ 'args' ][ 'event' ] : array();
+		$group = ! empty( $groups[ 'data' ][ $group_id ] ) ? $groups[ 'data' ][ $group_id ] : array();
+		$event = ! empty( $events[ 'data' ][ $event_id ] ) ? $events[ 'data' ][ $event_id ] : array();
 		
 		$title = $group ? $group[ 'title' ] : ( $event ? $event[ 'title' ] : '' );
 		$dates = bookacti_get_formatted_event_dates( $event_start, $event_end, false );
 		
 		if( $group_id ) {
 			// Find the product bound to the group category
-			$product_id = ! empty( $field[ 'product_by_group_category' ][ $group[ 'category_id' ] ] ) ? intval( $field[ 'product_by_group_category' ][ $group[ 'category_id' ] ] ) : 0;
+			$category_id = ! empty( $group[ 'category_id' ] ) ? intval( $group[ 'category_id' ] ) : 0;
+			$product_id = ! empty( $field[ 'product_by_group_category' ][ $category_id ] ) ? intval( $field[ 'product_by_group_category' ][ $category_id ] ) : 0;
 		} else {
 			// Find the product bound to the activity
-			$product_id = ! empty( $field[ 'product_by_activity' ][ $event[ 'activity_id' ] ] ) ? intval( $field[ 'product_by_activity' ][ $event[ 'activity_id' ] ] ) : 0;
+			$activity_id = ! empty( $event[ 'activity_id' ] ) ? intval( $event[ 'activity_id' ] ) : 0;
+			$product_id = ! empty( $field[ 'product_by_activity' ][ $activity_id ] ) ? intval( $field[ 'product_by_activity' ][ $activity_id ] ) : 0;
 		}
 		
 		// Check if the event is bound to a product

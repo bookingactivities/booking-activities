@@ -1412,6 +1412,23 @@ function bookacti_validate_form_fields( $form_id, $fields_data = array() ) {
 }
 
 
+/**
+ * Validate reschedule form fields according to values received with $_POST
+ * @since 1.15.6
+ * @param int $form_id
+ * @param array $fields_data
+ * @return array
+ */
+function bookacti_validate_reschedule_form_fields( $booking = array() ) {
+	$validated = array( 
+		'status'   => 'success',
+		'messages' => array()
+	);
+	return apply_filters( 'bookacti_validate_reschedule_form_fields', $validated, $booking );
+}
+
+
+
 
 /* FIELD ORDER */
 
@@ -1749,7 +1766,7 @@ function bookacti_format_form_filters( $filters = array() ) {
 /**
  * Display 'managers' metabox content for forms
  * @since 1.5.0
- * @version 1.15.4
+ * @version 1.15.6
  * @param array $form_raw
  */
 function bookacti_display_form_managers_meta_box( $form_raw ) {
@@ -1766,7 +1783,7 @@ function bookacti_display_form_managers_meta_box( $form_raw ) {
 		'options'   => array(
 			'option_label' => array( 'display_name', ' (', 'user_login', ')' ),
 			'selected'     => $manager_ids,
-			'role__in'     => $role_in,
+			'role__in'     => $role_in ? $role_in : array( 'none' ),
 			'role__not_in' => $role_not_in,
 			'meta'         => false,
 			'multiple'     => 1,

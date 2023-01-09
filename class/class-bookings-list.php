@@ -223,7 +223,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		
 		/**
 		 * Get booking list items. Parameters can be passed in the URL.
-		 * @version 1.15.5
+		 * @version 1.15.6
 		 * @access public
 		 * @return array
 		 */
@@ -271,7 +271,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			}
 			
 			// Retrieve information about users and stock them into an array sorted by user id
-			$users = bookacti_get_users_data( array( 'include' => $this->user_ids ) );
+			$users = $this->user_ids ? bookacti_get_users_data( array( 'include' => $this->user_ids ) ) : array();
 			$roles_names = bookacti_get_roles();
 			$can_edit_users = current_user_can( 'edit_users' );
 			

@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 6.1
 Requires PHP: 5.3
-Stable tag: 1.15.5
+Stable tag: 1.15.6
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -148,7 +148,7 @@ Then feel free to tell us if you miss a feature, if you find a bug or anything t
 
 * **WordPress**: 3.6 or later
 * **PHP**: 5.3 or later
-* **MySQL**: 5.6 or later
+* **MySQL**: 5.7.22 or later
 * **WooCommerce**: 3.x or later
 * *Booking Activities can be used without WooCommerce*
 
@@ -320,6 +320,25 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.15.6 - 2023/01/09 =
+* Fix - Error when switching booking group status to refunded from the backend
+* Fix - Calendar navigated to incorrect date when loaded with a picked events
+* Fix - Bound products were not correctly displayed in calendar settings in form editor
+* Fix - Booking calendar settings dialog was emptied after closed
+* Fix - Needed to refresh page to take into account the columns to display in the booking calendar tooltip
+* Fix - Activities were not filtered according to selected calendars in bookings filters
+* Lib - Update FullCalendar to 6.0.2 (Support for IE 11 has been dropped)
+* Lib - Remove Moment JS files and use the files included in WP instead
+* Dev - Compare datetimes directly instead of using mySQL UNIX_TIMESTAMP and CONVERT_TZ functions
+* Dev - Calendar dates are no longer restricted between 1970-01-01 and 2037-12-31 
+* Dev - Allow half-bounded intervals when retrieving events and groups
+* Dev - Refactor bookacti_validate_booking_form function and hook (rename to bookacti_validate_picked_events and new parameters)
+* Dev - Refactor bookacti_validate_booking_form_picked_event hook (rename to bookacti_validate_picked_event and new parameters)
+* Dev - bookacti_allow_multiple_bookings hook parameters have changed
+* Dev - Add form fields checks and hooks before and after rescheduling a booking (standardize process, like booking form and WC add to cart)
+* Dev - Add form fields checks, and do not process bookacti_validate_picked_events twice while adding a WC product to cart from a calendar
+* Dev - Standardize the status change functions code between groups and single bookings
 
 = 1.15.5 - 2022/11/24 =
 * Tweak - Remove useless checkbox column in list tables and standardize CSS

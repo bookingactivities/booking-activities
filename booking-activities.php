@@ -3,7 +3,7 @@
  * Plugin Name: Booking Activities
  * Plugin URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Description: Booking system specialized in activities (sports, cultural, leisure, events...). Works great with WooCommerce.
- * Version: 1.15.5
+ * Version: 1.15.6
  * Author: Booking Activities Team
  * Author URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Text Domain: booking-activities
@@ -32,7 +32,7 @@
  * @category Core
  * @author Booking Activities Team
  * 
- * Copyright 2022 Yoan Cutillas
+ * Copyright 2023 Yoan Cutillas
 */
 
 // Exit if accessed directly
@@ -40,7 +40,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 // GLOBALS AND CONSTANTS
-if( ! defined( 'BOOKACTI_VERSION' ) )     { define( 'BOOKACTI_VERSION', '1.15.5' ); }
+if( ! defined( 'BOOKACTI_VERSION' ) )     { define( 'BOOKACTI_VERSION', '1.15.6' ); }
 if( ! defined( 'BOOKACTI_PLUGIN_NAME' ) ) { define( 'BOOKACTI_PLUGIN_NAME', 'booking-activities' ); }
 if( ! defined( 'BOOKACTI_PATH' ) )        { define( 'BOOKACTI_PATH', __DIR__ ); }
 
@@ -155,29 +155,29 @@ add_action( 'wp_enqueue_scripts', 'bookacti_enqueue_js_variables', 5 );
 /**
  * Enqueue librairies (as high priority scripts)
  * @since 1.11.3 (was part of bookacti_enqueue_high_priority_global_scripts)
- * @version 1.15.1
+ * @version 1.15.6
  */
 function bookacti_enqueue_libraries_scripts() {
 	// On backend, only include these scripts on Booking Activities pages
 	if( is_admin() && ! bookacti_is_booking_activities_screen() ) { return; }
 	
 	// Moment
-	$moment_version = '2.29.3';
-	if( wp_script_is( 'moment', 'registered' ) ) { wp_deregister_script( 'moment' ); } // We must unregister WP's moment - TEMP BUG FIX #52695 https://core.trac.wordpress.org/ticket/52695
-	wp_register_script( 'moment', plugins_url( 'lib/moment/moment.min.js', __FILE__ ), $moment_version, true );
-	
-	// TEMP BUG FIX #52695 https://core.trac.wordpress.org/ticket/52695
+	$registered_moment         = wp_scripts()->query( 'moment', 'registered' );
+	$registered_moment_version = $registered_moment && ! empty( $registered_moment->ver ) ? $registered_moment->ver : '';
+	// We must unregister WP's moment and register it again to properly update locale - TEMP BUG FIX #52695 https://core.trac.wordpress.org/ticket/52695
+	if( $registered_moment ) { wp_deregister_script( 'moment' ); }
+	wp_register_script( 'moment', includes_url( 'js/dist/vendor/moment.min.js' ), array(), $registered_moment_version, true );
 	if( did_action( 'init' ) ) { bookacti_wp_moment_updateLocale_temp_fix(); }
 	
 	// FullCalendar
-	$fullcalendar_version  = '5.11.3';
+	$fullcalendar_version  = '6.0.2';
 	$registered_fc         = wp_scripts()->query( 'fullcalendar', 'registered' );
 	$registered_fc_version = $registered_fc && ! empty( $registered_fc->ver ) ? $registered_fc->ver : '';
 	if( ! $registered_fc || ( $registered_fc_version && version_compare( $registered_fc_version, $fullcalendar_version, '<' ) ) ) { 
-		wp_register_script( 'fullcalendar', plugins_url( 'lib/fullcalendar/main.js', __FILE__ ), array(), $fullcalendar_version, true );
+		wp_register_script( 'fullcalendar', plugins_url( 'lib/fullcalendar/index.global.min.js', __FILE__ ), array(), $fullcalendar_version, true );
 	}
 	if( ! wp_script_is( 'fullcalendar', 'enqueued' ) ) { wp_enqueue_script( 'fullcalendar' ); }
-	wp_enqueue_script( 'fullcalendar-locale-all', plugins_url( 'lib/fullcalendar/locales-all.min.js', __FILE__ ), array( 'fullcalendar' ), $fullcalendar_version, true );
+	wp_enqueue_script( 'fullcalendar-locale-all', plugins_url( 'lib/fullcalendar/locales-all.global.min.js', __FILE__ ), array( 'fullcalendar' ), $fullcalendar_version, true );
 	
 	// tipTip (alternative to jquery-ui-tooltip to avoid conflict with bootstrap tooltip)
 	$tiptip_version            = '1.3';
@@ -189,7 +189,6 @@ function bookacti_enqueue_libraries_scripts() {
 	if( ! wp_script_is( 'jquery-tiptip', 'enqueued' ) ) { wp_enqueue_script( 'jquery-tiptip' ); }
 	
 	// Include stylesheets
-	wp_enqueue_style( 'fullcalendar', plugins_url( 'lib/fullcalendar/main.min.css', __FILE__ ), array(), $fullcalendar_version );
 	wp_enqueue_style( 'jquery-tiptip', plugins_url( 'lib/jquery-tiptip/tipTip.min.css', __FILE__ ), array(), $tiptip_version );
 	wp_style_add_data( 'jquery-tiptip', 'rtl', 'replace' );
 	wp_style_add_data( 'jquery-tiptip', 'suffix', '.min' );

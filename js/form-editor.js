@@ -92,7 +92,6 @@ $j( document ).ready( function() {
 		bookacti_refresh_redirect_url_by_activity_table();
 		bookacti_refresh_redirect_url_by_group_category_table();
 	});
-	if( $j( '#bookacti-calendars' ).length ) { $j( '#bookacti-calendars' ).trigger( 'change' ); }
 	
 	
 	/**
@@ -482,8 +481,8 @@ function bookacti_refresh_redirect_url_by_activity_table() {
 			tbody.find( 'tr:first' ).clone().appendTo( tbody );
 			tbody.find( 'tr:last .select2' ).remove();
 			tbody.find( 'tr:last :input' ).each( function() {
-				var field_name_raw	= $j( this ).attr( 'name' );
-				var field_name		= field_name_raw.substring( 0, field_name_raw.lastIndexOf( '[' ) );
+				var field_name_raw = $j( this ).attr( 'name' );
+				var field_name     = field_name_raw.substring( 0, field_name_raw.lastIndexOf( '[' ) );
 				$j( this ).attr( 'name', field_name + '[' + activity_id + ']' );
 				$j( this ).removeClass( 'select2-hidden-accessible' );
 			});
@@ -563,8 +562,8 @@ function bookacti_refresh_redirect_url_by_group_category_table() {
 			tbody.find( 'tr:first' ).clone().appendTo( tbody );
 			tbody.find( 'tr:last .select2' ).remove();
 			tbody.find( 'tr:last :input' ).each( function() {
-				var field_name_raw	= $j( this ).attr( 'name' );
-				var field_name		= field_name_raw.substring( 0, field_name_raw.lastIndexOf( '[' ) );
+				var field_name_raw = $j( this ).attr( 'name' );
+				var field_name     = field_name_raw.substring( 0, field_name_raw.lastIndexOf( '[' ) );
 				$j( this ).attr( 'name', field_name + '[' + category_id + ']' );
 				$j( this ).removeClass( 'select2-hidden-accessible' );
 			});
