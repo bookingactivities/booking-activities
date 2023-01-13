@@ -1744,6 +1744,46 @@ function bookacti_sort_array_by_order( $a, $b ) {
 
 
 /**
+ * Sort an array of events by dates
+ * @since 1.15.7
+ * @param array array
+ * @param boolean sort_by_end
+ * @param boolean desc
+ * @param object labels
+ * @returns array
+ */
+function bookacti_sort_events_array_by_dates( $array, $sort_by_end = false, $desc = false, $labels = array() ) {
+	$default_labels = array( 'start' => 'start', 'end' => 'end' );
+	$labels = wp_parse_args( $labels, $default_labels );
+	
+	$sorted_array = $array;
+	usort( $sorted_array, function( $a, $b ) use ( $sort_by_end, $desc, $labels ) {
+		$a = (array) $a; $b = (array) $b;
+		
+		// If start date is the same, then $sort by end date ASC
+		if( $sort_by_end || $a[ $labels[ 'start' ] ] === $b[ $labels[ 'start' ] ] ) {
+			$a_dt = new DateTime( $a[ $labels[ 'end' ] ] );
+			$b_dt = new DateTime( $b[ $labels[ 'end' ] ] );
+		} 
+		// Sort by start date ASC by default
+		else {
+			$a_dt = new DateTime( $a[ $labels[ 'start' ] ] );
+			$b_dt = new DateTime( $b[ $labels[ 'start' ] ] );
+		}
+		
+		$sort = 0;
+		if( $a_dt > $b_dt )  { $sort = 1; }
+		if( $a_dt < $b_dt )  { $sort = -1; }
+		if( $desc === true ) { $sort = $sort * -1; }
+		
+		return $sort;
+	});
+	
+	return $sorted_array;
+}
+
+
+/**
  * Sanitize int ids to array
  * @version 1.15.4
  * @param array|int $ids

@@ -167,7 +167,7 @@ $j( document ).ready( function() {
 	/**
 	 * Display the booking list tooltip when an event is hovered
 	 * @since 1.8.0
-	 * @version 1.15.0
+	 * @version 1.15.7
 	 * @param {Event} e
 	 * @param {Object} info {
 		* @type {(FullCalendar.EventApi|Object)} event
@@ -209,10 +209,12 @@ $j( document ).ready( function() {
 
 			// Display the tooltip above the event
 			var tooltip_container = booking_system.siblings( '.bookacti-tooltips-container' ).find( '.bookacti-booking-list-tooltip.bookacti-tooltip-mouseover' );
-			bookacti_set_tooltip_position( $j( info.el ), tooltip_container, 'above' );
-			
-			// Hook for plugins
-			$j( 'body' ).trigger( 'bookacti_event_booking_list_displayed', [ tooltip_container, booking_system, info.event, $j( info.el ) ] );
+			if( tooltip_container.length ) {
+				bookacti_set_tooltip_position( $j( info.el ), tooltip_container, 'above' );
+
+				// Hook for plugins
+				$j( 'body' ).trigger( 'bookacti_event_booking_list_displayed', [ tooltip_container, booking_system, info.event, $j( info.el ) ] );
+			}
 		}, tooltip_mouseover_timeout );
 	});
 	
@@ -246,14 +248,16 @@ $j( document ).ready( function() {
 	
 	
 	/**
-	 * Remove the tooltips on click anywhere else than the tooltip
-	 * @since 1.8.0
+	 * Clear tooltip timeout on touch release
+	 * @since 1.15.7
 	 * @param {Event} e
+	 * @param {Object} info {
+		* @type {(FullCalendar.EventApi|Object)} event
+		* @type {HTMLElement} el
+		* @type {Event} jsEvent
+	 * }
 	 */
-	$j( document ).on( 'click', function( e ) {
-		// Do nothing if the click hit the tooltip
-		if( $j( e.target ).closest( '.bookacti-booking-list-tooltip.bookacti-tooltip-mouseover' ).length ) { return; }
-		
+	$j( 'body' ).on( 'bookacti_calendar_event_touch_end', '.bookacti-booking-system', function( e, info ) {
 		// Clear the timeout
 		if( typeof bookacti_display_bookings_tooltip_monitor !== 'undefined' ) { 
 			if( bookacti_display_bookings_tooltip_monitor ) { clearTimeout( bookacti_display_bookings_tooltip_monitor ); }

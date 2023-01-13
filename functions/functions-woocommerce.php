@@ -606,7 +606,7 @@ function bookacti_wc_get_displayed_product_price( $product, $price = '', $qty = 
 /**
  * Build a user-friendly events list based on item bookings
  * @since 1.9.0
- * @version 1.14.0
+ * @version 1.15.7
  * @param array $item_bookings
  * @param boolean $show_quantity
  * @return string
@@ -616,7 +616,8 @@ function bookacti_wc_get_item_bookings_events_list_html( $item_bookings, $show_q
 	
 	$list = '';
 	foreach( $item_bookings as $item_booking ) {
-		$list .= ! empty( $item_booking[ 'bookings' ] ) ? bookacti_get_formatted_booking_events_list( $item_booking[ 'bookings' ], $show_quantity, false ) : '';
+		$sorted_bookings = bookacti_sort_events_array_by_dates( $item_booking[ 'bookings' ], false, false, array( 'start' => 'event_start', 'end' => 'event_end' ) );
+		$list .= ! empty( $item_booking[ 'bookings' ] ) ? bookacti_get_formatted_booking_events_list( $sorted_bookings, $show_quantity, false ) : '';
 	}
 	
 	// Wrap the list only if it is not empty
