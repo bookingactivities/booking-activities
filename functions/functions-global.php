@@ -343,7 +343,7 @@ function bookacti_generate_ical( $vevents, $vcalendar = array() ) {
 /**
  * Get the variables used with javascript
  * @since 1.8.0
- * @version 1.15.4
+ * @version 1.15.7
  * @return array
  */
 function bookacti_get_js_variables() {
@@ -410,7 +410,7 @@ function bookacti_get_js_variables() {
 		'started_groups_bookable'            => bookacti_get_setting_value( 'bookacti_general_settings', 'started_groups_bookable' ) ? 1 : 0,
 		'event_load_interval'                => bookacti_get_setting_value( 'bookacti_general_settings', 'event_load_interval' ),
 		'initial_view_threshold'             => $fc_init_view_threshold,
-		'bookings_tooltip_mouseover_timeout' => 250,
+		'event_touch_press_delay'            => 350,
 
 		'date_format'                        => $messages[ 'date_format_short' ][ 'value' ],
 		'date_format_long'                   => $messages[ 'date_format_long' ][ 'value' ],

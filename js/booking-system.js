@@ -192,8 +192,8 @@ $j( document ).ready( function() {
 		var booking_list = attributes[ 'booking_lists' ][ event_id ][ event_start ];
 		if( ! booking_list ) { return; }
 		
-		var tooltip_mouseover_timeout = parseInt( bookacti_localized.bookings_tooltip_mouseover_timeout );
-		if( tooltip_mouseover_timeout < 0 ) { return; }
+		var event_touch_press_delay = parseInt( bookacti_localized.event_touch_press_delay );
+		if( event_touch_press_delay < 0 ) { return; }
 		
 		// Clear the timeout to remove the old pop up (it will be removed by bookacti_display_bookings_tooltip_monitor)
 		if( typeof bookacti_remove_mouseover_tooltip_monitor !== 'undefined' ) { 
@@ -215,14 +215,14 @@ $j( document ).ready( function() {
 				// Hook for plugins
 				$j( 'body' ).trigger( 'bookacti_event_booking_list_displayed', [ tooltip_container, booking_system, info.event, $j( info.el ) ] );
 			}
-		}, tooltip_mouseover_timeout );
+		}, event_touch_press_delay );
 	});
 	
 	
 	/**
 	 * Remove the tooltips on mouse out
 	 * @since 1.8.0
-	 * @version 1.15.0
+	 * @version 1.15.7
 	 * @param {Event} e
 	 * @param {Object} info {
 		* @type {(FullCalendar.EventApi|Object)} event
@@ -239,16 +239,16 @@ $j( document ).ready( function() {
 		// Remove mouseover tooltip
 		var tooltip = $j( this ).siblings( '.bookacti-tooltips-container' ).find( '.bookacti-tooltip-mouseover' );
 		if( tooltip.length ) {
-			var tooltip_mouseover_timeout = Math.min( Math.max( parseInt( bookacti_localized.bookings_tooltip_mouseover_timeout ), 0 ), 200 );
+			var event_touch_press_delay = Math.min( Math.max( parseInt( bookacti_localized.event_touch_press_delay ), 0 ), 200 );
 			bookacti_remove_mouseover_tooltip_monitor = setTimeout( function() {
 				tooltip.remove();
-			}, tooltip_mouseover_timeout );
+			}, event_touch_press_delay );
 		}
 	});
 	
 	
 	/**
-	 * Clear tooltip timeout on touch release
+	 * Clear tooltip timeout on touch release, cancel or swip
 	 * @since 1.15.7
 	 * @param {Event} e
 	 * @param {Object} info {
@@ -257,7 +257,7 @@ $j( document ).ready( function() {
 		* @type {Event} jsEvent
 	 * }
 	 */
-	$j( 'body' ).on( 'bookacti_calendar_event_touch_end', '.bookacti-booking-system', function( e, info ) {
+	$j( 'body' ).on( 'bookacti_calendar_event_touch_move bookacti_calendar_event_touch_end bookacti_calendar_event_touch_cancel', '.bookacti-booking-system', function( e, info ) {
 		// Clear the timeout
 		if( typeof bookacti_display_bookings_tooltip_monitor !== 'undefined' ) { 
 			if( bookacti_display_bookings_tooltip_monitor ) { clearTimeout( bookacti_display_bookings_tooltip_monitor ); }
@@ -295,14 +295,15 @@ $j( document ).ready( function() {
 	/**
 	 * Remove the tooltips displayed on mouseover - on mouseout
 	 * @since 1.8.0
+	 * @version 1.15.7
 	 */
 	$j( 'body' ).on( 'mouseout', '.bookacti-tooltip-mouseover', function() {
 		var tooltip = $j( this ).closest( '.bookacti-tooltips-container' ).find( '.bookacti-tooltip-mouseover' );
 		if( tooltip.length ) {
-			var tooltip_mouseover_timeout = Math.min( Math.max( parseInt( bookacti_localized.bookings_tooltip_mouseover_timeout ), 0 ), 200 );
+			var event_touch_press_delay = Math.min( Math.max( parseInt( bookacti_localized.event_touch_press_delay ), 0 ), 200 );
 			bookacti_remove_mouseover_tooltip_monitor = setTimeout( function() {
 				tooltip.remove();
-			}, tooltip_mouseover_timeout );
+			}, event_touch_press_delay );
 		}
 	});
 	
