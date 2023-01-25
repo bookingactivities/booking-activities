@@ -1221,7 +1221,7 @@ function bookacti_display_field( $args ) {
 /**
  * Format arguments to display a proper field
  * @since 1.2.0
- * @version 1.15.5
+ * @version 1.15.7
  * @param array $raw_args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'attr', 'value', 'multiple', 'tip', 'required']
  * @return array|false
  */
@@ -1257,6 +1257,9 @@ function bookacti_format_field_args( $raw_args ) {
 	
 	// Sanitize id and name
 	$args[ 'id' ] = sanitize_title_with_dashes( $args[ 'id' ] );
+	
+	// Generate a random id
+	if( ! esc_attr( $args[ 'id' ] ) ) { $args[ 'id' ] = md5( microtime().rand() ); }
 
 	// Sanitize required
 	$args[ 'required' ] = isset( $args[ 'required' ] ) && $args[ 'required' ] ? 1 : 0;

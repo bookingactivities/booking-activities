@@ -1,23 +1,7 @@
 $j( document ).ready( function() {
 	/**
-	 * Remove error messages after pciking new events
-	 * @since 1.7.19
-	 * @version 1.12.0
-	 * @param {Event} e
-	 * @param {(FullCalendar.EventApi|Object)} picked_event
-	 * @param {Int} group_id
-	 * @param {String} group_date
-	 */
-	$j( 'body' ).on( 'bookacti_events_picked', '.bookacti-booking-system', function( e, picked_event, group_id, group_date ) {
-		if( $j( this ).siblings( '.bookacti-notices' ).length ) {
-			$j( this ).siblings( '.bookacti-notices' ).empty();
-		}
-	});
-	
-	
-	/**
 	 * Init actions to perform when the user picks an event
-	 * @version 1.12.0
+	 * @version 1.15.7
 	 * @param {Event} e
 	 * @param {(FullCalendar.EventApi|Object)} picked_event
 	 * @param {Int} group_id
@@ -28,6 +12,11 @@ $j( document ).ready( function() {
 		var booking_system    = $j( this );
 		var booking_system_id = booking_system.attr( 'id' );
 		var attributes        = bookacti.booking_system[ booking_system_id ];
+		
+		// Remove error messages after picking new events
+		if( booking_system.siblings( '.bookacti-notices' ).length ) {
+			booking_system.siblings( '.bookacti-notices' ).empty();
+		}
 		
 		bookacti_set_min_and_max_quantity( booking_system );
 		bookacti_fill_booking_system_fields( booking_system );

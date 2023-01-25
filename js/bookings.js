@@ -87,29 +87,20 @@ $j( document ).ready( function() {
 	
 	
 	/**
-	 * Display the "unpick events" button
-	 * @version 1.12.0
+	 * Filter the booking list when an event is picked
+	 * @version 1.15.7
 	 * @param {Event} e
 	 * @param {(FullCalendar.EventApi|Object)} event
 	 * @param {Object} groups
 	 * @param {Boolean} open_dialog
 	 */
 	$j( '#bookacti-booking-system-bookings-page' ).on( 'bookacti_event_click', function( e, event, groups, open_dialog ) { 
+		// Display the "unpick events" button
 		$j( '#bookacti-pick-event-filter-instruction' ).hide( 200 );
 		$j( '#bookacti-unpick-events-filter' ).show( 200 );
 		$j( '#bookacti-picked-events-actions-container' ).show( 200 );
-	});
-	
-	
-	/**
-	 * Filter the booking list when an event is picked
-	 * @version 1.12.0
-	 * @param {Event} e
-	 * @param {(FullCalendar.EventApi|Object)} event
-	 * @param {Object} groups
-	 * @param {Boolean} open_dialog
-	 */
-	$j( '#bookacti-booking-system-bookings-page' ).on( 'bookacti_event_click', function( e, event, groups, open_dialog ) {
+		
+		// Filter the booking list when an event is picked
 		if( $j.isEmptyObject( groups ) || ! open_dialog ) {
 			if( $j( '#bookacti-submit-filter-button' ).data( 'ajax' ) ) { bookacti_filter_booking_list(); }
 		}

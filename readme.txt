@@ -325,6 +325,8 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Tweak - Grouped bookings are now listed in asc order in WC order items and notifications
 * Tweak - Add margins to event bookings tooltip on small screens
 * Fix - Improve tooltip triggering on touch devices
+* Fix - Booking forms shortcode not displayed in booking forms table
+* Dev - Generate a random id on displayed fields without id
 
 = 1.15.6 - 2023/01/09 =
 * Fix - Error when switching booking group status to refunded from the backend
