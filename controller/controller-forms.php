@@ -821,7 +821,7 @@ add_action( 'wp_ajax_nopriv_bookactiSubmitLoginForm', 'bookacti_controller_valid
 /**
  * Check if booking form is correct and then book the event, or send the error message
  * @since 1.5.0
- * @version 1.15.6
+ * @version 1.15.7
  */
 function bookacti_controller_validate_booking_form() {
 	$return_array = array(
@@ -941,7 +941,7 @@ function bookacti_controller_validate_booking_form() {
 					$return_array[ 'error' ] = 'user_already_exists';
 					$return_array[ 'messages' ][ 'user_already_exists' ] = sprintf(
 						/* translators: %s = "Log in" link. */
-						esc_html__( 'This email address is associated with an account (%s). In order to make a booking without account, you need to choose an email address that is not associated with any account.' ),
+						esc_html__( 'This email address is associated with an account (%s). In order to make a booking without account, you need to choose an email address that is not associated with any account.', 'booking-activities' ),
 						'<a href="' . wp_login_url( home_url( $_SERVER[ 'REQUEST_URI' ] ) ) . '">' . esc_html__( 'Log in', 'booking-activities' ) . '</a>'
 					);
 					$return_array[ 'message' ] = implode( '</li><li>', $return_array[ 'messages' ] );

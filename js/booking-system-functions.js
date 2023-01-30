@@ -968,17 +968,24 @@ function bookacti_fill_picked_events_list( booking_system ) {
 /**
  * Place the tooltip div below or above the element
  * @since 1.8.0
+ * @version 1.15.7
  * @param {HTMLElement} element
  * @param {HTMLElement} tooltip_container
  * @param {string} position "below" or "above"
  */
 function bookacti_set_tooltip_position( element, tooltip_container, position ) {
+	if( ! tooltip_container.length ) { return; }
+	
 	position = $j.inArray( position, [ 'below', 'above' ] ) >= 0 ? position : 'below';
 	tooltip_container.css( 'position', 'absolute' );
-
+	
 	// Resize if larger than the viewport
+	var margin = 20;
 	var viewport_width = $j( window ).width();
-	if( tooltip_container.outerWidth() > viewport_width ) { tooltip_container.outerWidth( viewport_width ); }
+	if( tooltip_container.outerWidth() > ( viewport_width - ( margin * 2 ) ) ) {
+		tooltip_container.css( 'min-width', viewport_width - ( margin * 2 ) + 'px' );
+		tooltip_container.outerWidth( viewport_width - ( margin * 2 ) );
+	}
 
 	// Place the tooltip in the center of the event
 	var new_offset = element.offset();
@@ -989,11 +996,11 @@ function bookacti_set_tooltip_position( element, tooltip_container, position ) {
 
 	// Add an offset if the tooltip is offscreen
 	// Offscreen from the left
-	if( new_offset.left < 0 ) { new_offset.left = 0; }
+	if( new_offset.left < 0 ) { new_offset.left = margin; }
 
 	// Offscreen from the right
 	var tooltip_container_right = new_offset.left + tooltip_container.outerWidth();
-	if( tooltip_container_right > viewport_width ) { new_offset.left -= ( tooltip_container_right - viewport_width ); }
+	if( tooltip_container_right > ( viewport_width - margin ) ) { new_offset.left -= ( tooltip_container_right - ( viewport_width - margin ) ); }
 	
 	tooltip_container.offset( new_offset );
 	

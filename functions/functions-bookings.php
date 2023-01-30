@@ -1106,7 +1106,7 @@ function bookacti_booking_group_state_can_be_changed_to( $bookings, $new_state, 
 /**
  * Check if a booking group quantity can be changed
  * @since 1.9.0
- * @version 1.15.6
+ * @version 1.15.7
  * @param array $bookings
  * @param int $new_quantity
  * @param string $context
@@ -1120,7 +1120,7 @@ function bookacti_booking_group_quantity_can_be_changed( $bookings, $new_quantit
 		$group_end_dt = new DateTime( $group_end );
 		$event_start_dt = new DateTime( $booking->event_start );
 		$event_end_dt = new DateTime( $booking->event_end );
-		$events[] = array( 'group_id' => 1, 'group_date' => '0000-00-00', 'id' => $booking->event_id, 'start' => $booking->event_start, 'end' => $booking->event_end );
+		$events[] = array( 'group_id' => 1, 'group_date' => '1992-12-26', 'id' => $booking->event_id, 'start' => $booking->event_start, 'end' => $booking->event_end );
 		if( ! $group_start || $event_start_dt < $group_start_dt ) { $group_start = $booking->event_start; }
 		if( ! $group_end || $event_end_dt < $group_end_dt )       { $group_end   = $booking->event_end; }
 		if( ! $group_id && ! empty( $booking->group_id ) )        { $group_id    = $booking->group_id; }
@@ -1134,7 +1134,7 @@ function bookacti_booking_group_quantity_can_be_changed( $bookings, $new_quantit
 	if( ! $title ) { $title = sprintf( esc_html__( 'Booking group #%d', 'booking-activities' ), $group_id ); }
 	$dates = bookacti_get_formatted_event_dates( $group_start, $group_end, false );
 	
-	$picked_events = bookacti_get_picked_events_availability( array( array( 'group_id' => 1, 'group_date' => '0000-00-00', 'events' => $events ) ) );
+	$picked_events = bookacti_get_picked_events_availability( array( array( 'group_id' => 1, 'group_date' => '1992-12-26', 'events' => $events ) ) );
 	$picked_event  = $picked_events[ 0 ];
 	$category_data = bookacti_get_metadata( 'group_category', $category_id );
 

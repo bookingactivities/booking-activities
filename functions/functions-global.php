@@ -343,7 +343,7 @@ function bookacti_generate_ical( $vevents, $vcalendar = array() ) {
 /**
  * Get the variables used with javascript
  * @since 1.8.0
- * @version 1.15.4
+ * @version 1.15.7
  * @return array
  */
 function bookacti_get_js_variables() {
@@ -410,7 +410,7 @@ function bookacti_get_js_variables() {
 		'started_groups_bookable'            => bookacti_get_setting_value( 'bookacti_general_settings', 'started_groups_bookable' ) ? 1 : 0,
 		'event_load_interval'                => bookacti_get_setting_value( 'bookacti_general_settings', 'event_load_interval' ),
 		'initial_view_threshold'             => $fc_init_view_threshold,
-		'bookings_tooltip_mouseover_timeout' => 250,
+		'event_touch_press_delay'            => 350,
 
 		'date_format'                        => $messages[ 'date_format_short' ][ 'value' ],
 		'date_format_long'                   => $messages[ 'date_format_long' ][ 'value' ],
@@ -1221,7 +1221,7 @@ function bookacti_display_field( $args ) {
 /**
  * Format arguments to display a proper field
  * @since 1.2.0
- * @version 1.15.5
+ * @version 1.15.7
  * @param array $raw_args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'attr', 'value', 'multiple', 'tip', 'required']
  * @return array|false
  */
@@ -1257,6 +1257,9 @@ function bookacti_format_field_args( $raw_args ) {
 	
 	// Sanitize id and name
 	$args[ 'id' ] = sanitize_title_with_dashes( $args[ 'id' ] );
+	
+	// Generate a random id
+	if( ! esc_attr( $args[ 'id' ] ) ) { $args[ 'id' ] = md5( microtime().rand() ); }
 
 	// Sanitize required
 	$args[ 'required' ] = isset( $args[ 'required' ] ) && $args[ 'required' ] ? 1 : 0;
@@ -1740,6 +1743,46 @@ function bookacti_substr( $string, $offset = 0, $length = null ) {
  */
 function bookacti_sort_array_by_order( $a, $b ) {
 	return $a['order'] - $b['order'];
+}
+
+
+/**
+ * Sort an array of events by dates
+ * @since 1.15.7
+ * @param array array
+ * @param boolean sort_by_end
+ * @param boolean desc
+ * @param object labels
+ * @returns array
+ */
+function bookacti_sort_events_array_by_dates( $array, $sort_by_end = false, $desc = false, $labels = array() ) {
+	$default_labels = array( 'start' => 'start', 'end' => 'end' );
+	$labels = wp_parse_args( $labels, $default_labels );
+	
+	$sorted_array = $array;
+	usort( $sorted_array, function( $a, $b ) use ( $sort_by_end, $desc, $labels ) {
+		$a = (array) $a; $b = (array) $b;
+		
+		// If start date is the same, then $sort by end date ASC
+		if( $sort_by_end || $a[ $labels[ 'start' ] ] === $b[ $labels[ 'start' ] ] ) {
+			$a_dt = new DateTime( $a[ $labels[ 'end' ] ] );
+			$b_dt = new DateTime( $b[ $labels[ 'end' ] ] );
+		} 
+		// Sort by start date ASC by default
+		else {
+			$a_dt = new DateTime( $a[ $labels[ 'start' ] ] );
+			$b_dt = new DateTime( $b[ $labels[ 'start' ] ] );
+		}
+		
+		$sort = 0;
+		if( $a_dt > $b_dt )  { $sort = 1; }
+		if( $a_dt < $b_dt )  { $sort = -1; }
+		if( $desc === true ) { $sort = $sort * -1; }
+		
+		return $sort;
+	});
+	
+	return $sorted_array;
 }
 
 

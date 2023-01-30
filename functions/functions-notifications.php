@@ -396,7 +396,7 @@ function bookacti_get_notifications_tags( $notification_id = '' ) {
 /**
  * Get notifications tags and values corresponding to given booking
  * @since 1.2.0
- * @version 1.15.0
+ * @version 1.15.7
  * @param object $booking
  * @param string $booking_type 'group' or 'single'
  * @param array $notification
@@ -455,12 +455,14 @@ function bookacti_get_notifications_tags_values( $booking, $booking_type, $notif
 			$event_booking_list_atts[ 'event_start' ] = $booking->event_start;
 			$event_booking_list_atts[ 'event_end' ]   = $booking->event_end;
 		}
-
+		
+		$sorted_bookings = bookacti_sort_events_array_by_dates( $bookings, false, false, array( 'start' => 'event_start', 'end' => 'event_end' ) );
+		
 		$booking_data[ '{booking_id}' ]       = $booking->id;
 		$booking_data[ '{booking_status}' ]   = bookacti_format_booking_state( $booking->state );
 		$booking_data[ '{booking_quantity}' ] = $booking->quantity;
-		$booking_data[ '{booking_list}' ]     = bookacti_get_formatted_booking_events_list( $bookings );
-		$booking_data[ '{booking_list_raw}' ] = bookacti_get_formatted_booking_events_list_raw( $bookings );
+		$booking_data[ '{booking_list}' ]     = bookacti_get_formatted_booking_events_list( $sorted_bookings );
+		$booking_data[ '{booking_list_raw}' ] = bookacti_get_formatted_booking_events_list_raw( $sorted_bookings );
 		$booking_data[ '{calendar_id}' ]      = $booking->template_id;
 		$booking_data[ '{refund_message}' ]   = ! empty( $booking->refund_message ) ? $booking->refund_message : '';
 		

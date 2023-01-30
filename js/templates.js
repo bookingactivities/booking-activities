@@ -118,7 +118,7 @@ $j( document ).ready( function() {
 
 /**
  * Initialize and display the template calendar
- * @version 1.15.6
+ * @version 1.15.7
  */
 function bookacti_load_template_calendar() {
 	var booking_system = $j( '#bookacti-template-calendar' );
@@ -883,7 +883,7 @@ function bookacti_load_template_calendar() {
 		
 		/**
 		 * Triggered when the user mouses over an event. Similar to the native mouseenter.
-		 * @version 1.15.0
+		 * @version 1.15.7
 		 * @param {Object} info {
 		 *  @type {FullCalendar.EventApi} event The associated Event Object.
 		 *  @type {HTMLElement} el              The HTML element for this event.
@@ -892,13 +892,14 @@ function bookacti_load_template_calendar() {
 		 * }
 		 */
 		eventMouseEnter: function( info ) {
+			if( bookacti.is_touch_device ) { return; }
 			booking_system.trigger( 'bookacti_calendar_editor_event_mouse_enter', [ info ] );
 		},
 		
 		
 		/**
 		 * Triggered when the user mouses out of an event. Similar to the native mouseleave.
-		 * @version 1.15.0
+		 * @version 1.15.7
 		 * @param {Object} info {
 		 *  @type {FullCalendar.EventApi} event The associated Event Object.
 		 *  @type {HTMLElement} el              The HTML element for this event.
@@ -907,6 +908,7 @@ function bookacti_load_template_calendar() {
 		 * }
 		 */
 		eventMouseLeave: function( info ) {
+			if( bookacti.is_touch_device ) { return; }
 			booking_system.trigger( 'bookacti_calendar_editor_event_mouse_leave', [ info ] );
 		},
 		

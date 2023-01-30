@@ -156,38 +156,28 @@ $j( document ).ready( function() {
 	
 	
 	/**
-	 * Trigger an event when the user start touching an event
+	 * Trigger a js event when the user starts touching an event, swips, releases touch and when the touch is interrupted
 	 * @since 1.12.0
-	 * @version 1.15.0
+	 * @version 1.15.7
 	 * @param {Event} e
 	 */
-	$j( 'body' ).on( 'touchstart', '.bookacti-booking-system .bookacti-calendar .fc-event, .bookacti-booking-system .bookacti-calendar .fc-list-event', function( e ){
+	$j( 'body' ).on( 'touchstart touchmove touchend touchcancel', '.bookacti-booking-system .bookacti-calendar .fc-event', function( e ) {
+		var hooks_name = {
+			'touchstart':  'bookacti_calendar_event_touch_start',
+			'touchmove':   'bookacti_calendar_event_touch_move',
+			'touchend':    'bookacti_calendar_event_touch_end',
+			'touchcancel': 'bookacti_calendar_event_touch_cancel'
+		};
+		if( typeof hooks_name[ e.type ] === 'undefined' ) { return; }
+		
 		var booking_system = $j( this ).closest( '.bookacti-booking-system' );
 		var element = $j( this );
 		var event = {
-			'id': parseInt( element.data( 'event-id' ) ),
+			'id':    parseInt( element.data( 'event-id' ) ),
 			'start': moment.utc( element.data( 'event-start' ) ),
-			'end': moment.utc( element.data( 'event-end' ) )
+			'end':   moment.utc( element.data( 'event-end' ) )
 		};
-		booking_system.trigger( 'bookacti_calendar_event_touch_start', [ { 'event': event, 'el': element, 'jsEvent': e } ] );
-	});
-	
-	
-	/**
-	 * Trigger an event when the user stop touching an event
-	 * @since 1.12.0
-	 * @version 1.15.0
-	 * @param {Event} e
-	 */
-	$j( 'body' ).on( 'touchend', '.bookacti-booking-system .bookacti-calendar .fc-event, .bookacti-booking-system .bookacti-calendar .fc-list-event', function( e ){
-		var booking_system = $j( this ).closest( '.bookacti-booking-system' );
-		var element = $j( this );
-		var event = {
-			'id': parseInt( element.data( 'event-id' ) ),
-			'start': moment.utc( element.data( 'event-start' ) ),
-			'end': moment.utc( element.data( 'event-end' ) )
-		};
-		booking_system.trigger( 'bookacti_calendar_event_touch_end', [ { 'event': event, 'el': element, 'jsEvent': e } ] );
+		booking_system.trigger( hooks_name[ e.type ], [ { 'event': event, 'el': element, 'jsEvent': e } ] );
 	});
 	
 	
@@ -219,7 +209,7 @@ $j( document ).ready( function() {
 
 /**
  * Initialize the calendar
- * @version 1.15.6
+ * @version 1.15.7
  * @param {HTMLElement} booking_system
  * @param {boolean} reload_events
  */
@@ -599,7 +589,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		
 		/**
 		 * Triggered when the user mouses over an event. Similar to the native mouseenter.
-		 * @version 1.15.0
+		 * @version 1.15.7
 		 * @param {Object} info {
 		 *  @type {FullCalendar.EventApi} event The associated Event Object.
 		 *  @type {HTMLElement} el              The HTML element for this event.
@@ -608,13 +598,14 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		 * }
 		 */
 		eventMouseEnter: function( info ) {
+			if( bookacti.is_touch_device ) { return; }
 			booking_system.trigger( 'bookacti_calendar_event_mouse_enter', [ info ] );
 		},
 		
 		
 		/**
 		 * Triggered when the user mouses out of an event. Similar to the native mouseleave.
-		 * @version 1.15.0
+		 * @version 1.15.7
 		 * @param {Object} info {
 		 *  @type {FullCalendar.EventApi} event The associated Event Object.
 		 *  @type {HTMLElement} el              The HTML element for this event.
@@ -623,6 +614,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		 * }
 		 */
 		eventMouseLeave: function( info ) {
+			if( bookacti.is_touch_device ) { return; }
 			booking_system.trigger( 'bookacti_calendar_event_mouse_leave', [ info ] );
 		}
 	};
