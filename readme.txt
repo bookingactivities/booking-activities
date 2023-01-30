@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 6.1
 Requires PHP: 5.3
-Stable tag: 1.15.6
+Stable tag: 1.15.7
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -321,7 +321,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.15.7 =
+= 1.15.7 - 2023/01/30 =
 * Tweak - Grouped bookings are now listed in asc order in WC order items and notifications
 * Tweak - Add margins to event bookings tooltip on small screens
 * Fix - Improve tooltip triggering on touch devices

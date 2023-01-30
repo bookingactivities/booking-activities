@@ -1154,9 +1154,6 @@ function bookacti_booking_group_quantity_can_be_changed( $bookings, $new_quantit
 	
 	$qty_already_booked_with_other_bookings = $is_active ? $params[ 'quantity_already_booked' ] - $quantity : $params[ 'quantity_already_booked' ];
 	
-	bookacti_log( '$params' );
-	bookacti_log( $params );
-	
 	// Make the tests
 	$is_qty_inf_to_avail = $params[ 'delta_quantity' ] <= $params[ 'availability' ];
 	$is_qty_sup_to_min   = $min_quantity === 0 || ( $params[ 'quantity_already_booked' ] + $params[ 'delta_quantity' ] ) >= $min_quantity;
