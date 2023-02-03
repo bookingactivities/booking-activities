@@ -321,6 +321,14 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.15.8 =
+* Fix - "No events" message not displayed if no availability dates were set
+* Fix - Notifications text area was not full width
+* Fix - The hook bookacti_booking_deleted may not be triggered after booking group deletion
+* Dev - Move the onkeypress attributes from the HTML elements to a js file
+* Dev - Rename data-unit attributes to data-duration-unit
+* Lib - Update FullCalendar to 6.1.1
+
 = 1.15.7 - 2023/01/30 =
 * Tweak - Grouped bookings are now listed in asc order in WC order items and notifications
 * Tweak - Add margins to event bookings tooltip on small screens

@@ -77,19 +77,19 @@ $j( document ).ready( function() {
 	/**
 	 * Convert duration from days/hours/minutes to seconds - on change
 	 * @since 1.8.0
-	 * @version 1.15.5
+	 * @version 1.15.8
 	 */
 	$j( 'body' ).on( 'keyup mouseup change', '.bookacti-duration-field', function() {
 		var field_value = $j( this ).closest( '.bookacti-duration-field-container' ).siblings( '.bookacti-duration-value' );
-		var days		= field_value.siblings( '.bookacti-duration-field-container' ).find( '.bookacti-duration-field[data-unit="day"]' ).val();
-		var hours		= field_value.siblings( '.bookacti-duration-field-container' ).find( '.bookacti-duration-field[data-unit="hour"]' ).val();
-		var minutes		= field_value.siblings( '.bookacti-duration-field-container' ).find( '.bookacti-duration-field[data-unit="minute"]' ).val();
-		var value		= '';
+		var days        = field_value.siblings( '.bookacti-duration-field-container' ).find( '.bookacti-duration-field[data-duration-unit="day"]' ).val();
+		var hours       = field_value.siblings( '.bookacti-duration-field-container' ).find( '.bookacti-duration-field[data-duration-unit="hour"]' ).val();
+		var minutes     = field_value.siblings( '.bookacti-duration-field-container' ).find( '.bookacti-duration-field[data-duration-unit="minute"]' ).val();
+		var value       = '';
 		if( $j.isNumeric( days ) || $j.isNumeric( hours ) || $j.isNumeric( minutes ) ) {
 			value = 0;
-			if( $j.isNumeric( minutes ) )	{ value += parseInt( minutes ) * 60; }
-			if( $j.isNumeric( hours ) )		{ value += parseInt( hours ) * 3600; }
-			if( $j.isNumeric( days ) )		{ value += parseInt( days ) * 86400; }
+			if( $j.isNumeric( minutes ) ) { value += parseInt( minutes ) * 60; }
+			if( $j.isNumeric( hours ) )   { value += parseInt( hours ) * 3600; }
+			if( $j.isNumeric( days ) )    { value += parseInt( days ) * 86400; }
 		}
 		field_value.val( value ).trigger( 'change' );
 		
@@ -217,7 +217,7 @@ function bookacti_empty_all_dialog_forms( scope ) {
 
 /**
  * Fill custom settings fields in a form
- * @version 1.15.4
+ * @version 1.15.8
  * @param {array} fields
  * @param {string} field_prefix
  * @param {qtring} scope
@@ -330,9 +330,9 @@ function bookacti_fill_fields_from_array( fields, field_prefix, scope ) {
 						minutes = Math.floor( total / 60 );
 					}
 				}
-				$j( scope + 'input[name="' + field_name + '"].bookacti-duration-value' ).siblings( '.bookacti-duration-field-container' ).find( '.bookacti-duration-field[data-unit="day"]' ).val( days ).trigger( 'change' );
-				$j( scope + 'input[name="' + field_name + '"].bookacti-duration-value' ).siblings( '.bookacti-duration-field-container' ).find( '.bookacti-duration-field[data-unit="hour"]' ).val( hours ).trigger( 'change' );
-				$j( scope + 'input[name="' + field_name + '"].bookacti-duration-value' ).siblings( '.bookacti-duration-field-container' ).find( '.bookacti-duration-field[data-unit="minute"]' ).val( minutes ).trigger( 'change' );
+				$j( scope + 'input[name="' + field_name + '"].bookacti-duration-value' ).siblings( '.bookacti-duration-field-container' ).find( '.bookacti-duration-field[data-duration-unit="day"]' ).val( days ).trigger( 'change' );
+				$j( scope + 'input[name="' + field_name + '"].bookacti-duration-value' ).siblings( '.bookacti-duration-field-container' ).find( '.bookacti-duration-field[data-duration-unit="hour"]' ).val( hours ).trigger( 'change' );
+				$j( scope + 'input[name="' + field_name + '"].bookacti-duration-value' ).siblings( '.bookacti-duration-field-container' ).find( '.bookacti-duration-field[data-duration-unit="minute"]' ).val( minutes ).trigger( 'change' );
 			}
 		}
 	});

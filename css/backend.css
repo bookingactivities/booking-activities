@@ -111,7 +111,7 @@ ul[id$='-select-box-results'] li[aria-disabled='true'] { display: none; }
 /***** SETTINGS *****/
 #bookacti-settings input:not([type='submit']):not([type='checkbox']):not([type='radio']):not([type='button']):not([type='search']):not(.button):not(.bookacti-duration-field),
 #bookacti-settings select   { min-width: 300px; width: 300px; max-width: 300px; display: inline-block; }
-#bookacti-settings textarea { min-width: 300px; width: 300px; }
+#bookacti-settings textarea:not(.wp-editor-area) { min-width: 300px; width: 300px; }
 
 #bookacti-settings textarea { min-height: 100px; }
 #bookacti-settings .bookacti-message-setting textarea { min-height: 0; resize: both; }
