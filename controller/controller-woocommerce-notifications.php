@@ -5,13 +5,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Send a new status notification for a booking attached to an order item
  * @since 1.9.0
- * @version 1.15.2
+ * @version 1.15.8
  * @param array $order_item_booking
  * @param string $new_status
  * @param WC_Order $order
  * @param boolean $forced True to ignore the checks and send the notifications in any cases
+ * @param boolean $is_new_order 
  */
-function bookacti_wc_send_order_item_booking_status_notification( $order_item_booking, $new_status, $order, $forced = false ) {
+function bookacti_wc_send_order_item_booking_status_notification( $order_item_booking, $new_status, $order, $forced = false, $is_new_order = false ) {
 	// Get order current status
 	if( is_numeric( $order ) ) { $order = wc_get_order( $order ); }
 	$order_status = $order ? $order->get_status() : '';
@@ -35,7 +36,7 @@ function bookacti_wc_send_order_item_booking_status_notification( $order_item_bo
 	// If the booking status is pending or booked, notify administrator, unless if the administrator made this change
 	$action = isset( $_REQUEST[ 'action' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'action' ] ) : '';
 	$notify_admin = 0;
-	if(	 in_array( $new_status, array( 'booked', 'pending' ) )
+	if(  in_array( $new_status, bookacti_get_active_booking_states(), true )
 	&& ! in_array( $action, array( 'woocommerce_mark_order_status', 'editpost' ) ) ) {
 		$admin_notification = bookacti_get_notification_settings( 'admin_new_booking' );
 		$notify_admin = ! empty( $admin_notification[ 'active_with_wc' ] ) ? 1 : 0;
@@ -53,17 +54,18 @@ function bookacti_wc_send_order_item_booking_status_notification( $order_item_bo
 	}
 
 	// Notify administrators that a new booking has been made
-	if( $notify_admin ) {
+	if( $notify_admin && $is_new_order ) {
 		bookacti_send_notification( 'admin_new_booking', $order_item_booking[ 'id' ], $order_item_booking[ 'type' ], $notification_args );
 	}
 	
-	do_action( 'bookacti_wc_send_order_item_booking_status_notification', $order_item_booking, $new_status, $order, $forced, $notification_args );
+	do_action( 'bookacti_wc_send_order_item_booking_status_notification', $order_item_booking, $new_status, $order, $forced, $is_new_order, $notification_args );
 }
 
 
 /**
  * Send one notification per booking to admin and customer when an order contining bookings is made or when its status changes
  * @since 1.9.0 (was bookacti_send_notification_when_order_status_changes)
+ * @version 1.15.8
  * @param array $order_item_booking
  * @param array $sanitized_data
  * @param WC_Order $order
@@ -72,8 +74,9 @@ function bookacti_wc_send_order_item_booking_status_notification( $order_item_bo
  */
 function bookacti_wc_send_notification_when_order_item_booking_status_changes( $order_item_booking, $sanitized_data, $order, $new_data, $where ) {
 	if( empty( $sanitized_data[ 'status' ] ) ) { return; }
-	$new_status = $sanitized_data[ 'status' ];
-	bookacti_wc_send_order_item_booking_status_notification( $order_item_booking, $new_status, $order );
+	$new_status   = $sanitized_data[ 'status' ];
+	$is_new_order = ! empty( $new_data[ 'is_new_order' ] );
+	bookacti_wc_send_order_item_booking_status_notification( $order_item_booking, $new_status, $order, false, $is_new_order );
 }
 add_action( 'bookacti_wc_order_item_booking_updated', 'bookacti_wc_send_notification_when_order_item_booking_status_changes', 10, 5 );
 

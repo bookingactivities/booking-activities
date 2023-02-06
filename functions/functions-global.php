@@ -545,7 +545,7 @@ function bookacti_get_active_add_ons( $prefix = '', $exclude = array( 'balau' ) 
 /**
  * Get add-on data by prefix
  * @since 1.7.14
- * @version 1.15.6
+ * @version 1.15.8
  * @param string $prefix
  * @param array $exclude
  * @return array
@@ -566,7 +566,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-notification-pack', 
 			'end_of_life' => '', 
 			'download_id' => 1393,
-			'min_version' => '1.2.16'
+			'min_version' => '1.2.19'
 		),
 		'bapap' => array( 
 			'title'       => 'Prices and Credits', 

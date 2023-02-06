@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 6.1
 Requires PHP: 5.3
-Stable tag: 1.15.7
+Stable tag: 1.15.8
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -325,6 +325,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - "No events" message not displayed if no availability dates were set
 * Fix - Notifications text area was not full width
 * Fix - The hook bookacti_booking_deleted may not be triggered after booking group deletion
+* Dev - Flag when the WC order is new to avoid sending the same notifications twice
 * Dev - Move the onkeypress attributes from the HTML elements to a js file
 * Dev - Rename data-unit attributes to data-duration-unit
 * Lib - Update FullCalendar to 6.1.1
