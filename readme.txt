@@ -322,13 +322,15 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 == Changelog ==
 
 = 1.15.8 =
+* Breaking change - Requires MySQL 5.7.22 or later
 * Fix - "No events" message not displayed if no availability dates were set
 * Fix - Notifications text area was not full width
 * Fix - The hook bookacti_booking_deleted may not be triggered after booking group deletion
 * Dev - Flag when the WC order is new to avoid sending the same notifications twice
 * Dev - Move the onkeypress attributes from the HTML elements to a js file
 * Dev - Rename data-unit attributes to data-duration-unit
-* Lib - Update FullCalendar to 6.1.1
+* Dev - bookacti_get_booking_groups now retrieves the grouped booking ids
+* Lib - Update FullCalendar to 6.1.4
 
 = 1.15.7 - 2023/01/30 =
 * Tweak - Grouped bookings are now listed in asc order in WC order items and notifications
@@ -1453,6 +1455,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Upgrade Notice ==
+
+= 1.15.8 =
+Requires MySQL 5.7.22 or later
 
 = 1.15.0 =
 Major changes in code:
