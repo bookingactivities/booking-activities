@@ -454,26 +454,28 @@ add_action( 'wp_ajax_bookactiSelect2Query_products', 'bookacti_controller_search
 /**
  * Add products bound to the selected events to cart
  * @since 1.7.0
- * @version 1.15.6
+ * @version 1.15.8
  */
 function bookacti_controller_add_bound_product_to_cart() {
 	$form_id       = intval( $_POST[ 'form_id' ] );
 	$quantity      = empty( $_REQUEST[ 'quantity' ] ) ? 1 : wc_stock_amount( wp_unslash( $_REQUEST[ 'quantity' ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	$picked_events = ! empty( $_POST[ 'selected_events' ] ) ? bookacti_format_picked_events( $_POST[ 'selected_events' ], true ) : array();
-	$return_array  = array( 'status' => 'failed', 'error' => '', 'messages' => array(), 'products' => array() );
+	$return_array  = array( 'status' => 'failed', 'error' => '', 'messages' => array(), 'message' => '', 'products' => array() );
 	
 	// Get the form field data
 	$field = bookacti_get_form_field_data_by_name( $form_id, 'calendar' );
 	if( ! $field ) {
-		$return_array[ 'error' ]    = 'unknown_field'; 
-		$return_array[ 'messages' ] = esc_html__( 'The calendar field data couldn\'t be retrieved.', 'booking-activities' );
+		$return_array[ 'error' ]      = 'unknown_field'; 
+		$return_array[ 'messages' ][] = esc_html__( 'The calendar field data couldn\'t be retrieved.', 'booking-activities' );
+		$return_array[ 'message' ]    = implode( '</li><li>', $return_array[ 'messages' ] );
 		bookacti_send_json( $return_array, 'add_bound_product_to_cart' );
 	}
 	
 	// Check if the form action is "add_product_to_cart"
 	if( $field[ 'form_action' ] !== 'add_product_to_cart' ) {
-		$return_array[ 'error' ]    = 'incorrect_form_action'; 
-		$return_array[ 'messages' ] = esc_html__( 'You cannot add a product to cart with this form.', 'booking-activities' );
+		$return_array[ 'error' ]      = 'incorrect_form_action'; 
+		$return_array[ 'messages' ][] = esc_html__( 'You cannot add a product to cart with this form.', 'booking-activities' );
+		$return_array[ 'message' ]    = implode( '</li><li>', $return_array[ 'messages' ] );
 		bookacti_send_json( $return_array, 'add_bound_product_to_cart' );
 	}
 	
@@ -482,7 +484,7 @@ function bookacti_controller_add_bound_product_to_cart() {
 	if( $form_fields_validated[ 'status' ] !== 'success' ) {
 		$return_array[ 'error' ]    = 'invalid_form_fields';
 		$return_array[ 'messages' ] = $form_fields_validated[ 'messages' ];
-		$return_array[ 'message' ]  = implode( '</li><li>', $form_fields_validated[ 'messages' ] );
+		$return_array[ 'message' ]  = implode( '</li><li>', $return_array[ 'messages' ] );
 		bookacti_send_json( $return_array, 'submit_booking_form' );
 	}
 	
@@ -620,7 +622,7 @@ function bookacti_controller_add_bound_product_to_cart() {
 	wc_clear_notices();
 	wc_set_notices( $wc_notices_all );
 	
-	$return_array[ 'messages' ]	= implode( '</li><li>', $return_array[ 'messages' ] );
+	$return_array[ 'message' ] = implode( '</li><li>', $return_array[ 'messages' ] );
 	
 	// Feedback errors
 	if( $return_array[ 'error' ] ) {

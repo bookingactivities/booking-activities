@@ -545,7 +545,7 @@ function bookacti_get_active_add_ons( $prefix = '', $exclude = array( 'balau' ) 
 /**
  * Get add-on data by prefix
  * @since 1.7.14
- * @version 1.15.6
+ * @version 1.15.8
  * @param string $prefix
  * @param array $exclude
  * @return array
@@ -566,7 +566,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-notification-pack', 
 			'end_of_life' => '', 
 			'download_id' => 1393,
-			'min_version' => '1.2.16'
+			'min_version' => '1.2.19'
 		),
 		'bapap' => array( 
 			'title'       => 'Prices and Credits', 
@@ -841,7 +841,7 @@ add_filter( 'plugin_locale', 'bookacti_set_plugin_locale', 100, 1 );
 /**
  * Get FullCalendar supported locale
  * @since 1.5.2
- * @version 1.15.0
+ * @version 1.15.8
  * @return array
  */
 function bookacti_get_fullcalendar_supported_locales() {
@@ -855,7 +855,7 @@ function bookacti_get_fullcalendar_supported_locales() {
 		'mk', 'ms', 'nb', 'ne', 'nl', 'nn', 
 		'pl', 'pt-br', 'pt', 'ro', 'ru', 
 		'si-lk', 'sk', 'sl', 'sm', 'sq', 'sr-cyrl', 'sr', 'sv', 
-		'ta-in', 'th', 'tr', 'ug', 'uk', 'uz', 'vi', 
+		'ta-in', 'th', 'tr', 'ug', 'uk', 'uz', 'uz-cy', 'vi', 
 		'zh-cn', 'zh-tw' 
 	));
 }
@@ -959,7 +959,7 @@ function bookacti_display_fields( $fields, $args = array() ) {
 /**
  * Display various fields
  * @since 1.2.0
- * @version 1.15.4
+ * @version 1.15.8
  * @param array $args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'attr', 'value', 'tip', 'required']
  */
 function bookacti_display_field( $args ) {
@@ -984,9 +984,6 @@ function bookacti_display_field( $args ) {
 				min='<?php echo esc_attr( $args[ 'options' ][ 'min' ] ); ?>' 
 				max='<?php echo esc_attr( $args[ 'options' ][ 'max' ] ); ?>'
 				step='<?php echo esc_attr( $args[ 'options' ][ 'step' ] ); ?>'
-			<?php }
-			if( $args[ 'type' ] === 'number' && is_int( $args[ 'options' ][ 'step' ] ) ) { ?>
-				onkeypress='return event.charCode >= 48 && event.charCode <= 57'
 			<?php }
 			if( ! empty( $args[ 'attr' ] ) ) { echo $args[ 'attr' ]; }
 			if( $args[ 'type' ] === 'file' && $args[ 'multiple' ] ) { echo ' multiple'; }
@@ -1015,7 +1012,7 @@ function bookacti_display_field( $args ) {
 					min='<?php echo ! empty( $min[ 'days' ] ) ? max( 0, $min[ 'days' ] ) : 0; ?>' 
 					max='<?php echo ! empty( $max[ 'days' ] ) ? min( 99999, $max[ 'days' ] ) : 99999; ?>' 
 					step='<?php echo ! empty( $step[ 'days' ] ) ? max( 1, $step[ 'days' ] ) : 1; ?>'
-					placeholder='365' data-unit='day' onkeypress='return event.charCode >= 48 && event.charCode <= 57'/>
+					placeholder='365' data-duration-unit='day'/>
 			<label for='<?php echo esc_attr( $args[ 'id' ] ) . '-days'; ?>' class='bookacti-duration-field-label'><?php echo esc_html( _n( 'day', 'days', 2, 'booking-activities' ) ); ?></label>
 		</div>
 		<div class='bookacti-duration-field-container'>
@@ -1024,7 +1021,7 @@ function bookacti_display_field( $args ) {
 					min='<?php echo empty( $min[ 'days' ] ) && ! empty( $min[ 'hours' ] ) ? max( 0, $min[ 'hours' ] ) : 0; ?>' 
 					max='<?php echo empty( $max[ 'days' ] ) && ! empty( $max[ 'hours' ] ) ? min( 23, $max[ 'hours' ] ) : 23; ?>' 
 					step='<?php echo empty( $step[ 'days' ] ) && ! empty( $step[ 'hours' ] ) ? max( 1, $step[ 'hours' ] ) : 1; ?>'
-					placeholder='23' data-unit='hour' onkeypress='return event.charCode >= 48 && event.charCode <= 57'/>
+					placeholder='23' data-duration-unit='hour'/>
 			<label for='<?php echo esc_attr( $args[ 'id' ] ) . '-hours'; ?>' class='bookacti-duration-field-label'><?php echo esc_html( _n( 'hour', 'hours', 2, 'booking-activities' ) ); ?></label>
 		</div>
 		<div class='bookacti-duration-field-container'>
@@ -1033,7 +1030,7 @@ function bookacti_display_field( $args ) {
 					min='<?php echo empty( $min[ 'days' ] ) && empty( $min[ 'hours' ] ) && ! empty( $min[ 'minutes' ] ) ? max( 0, $min[ 'minutes' ] ) : 0; ?>' 
 					max='<?php echo empty( $max[ 'days' ] ) && empty( $max[ 'hours' ] ) && ! empty( $max[ 'minutes' ] ) ? min( 59, $max[ 'minutes' ] ) : 59; ?>' 
 					step='<?php echo empty( $step[ 'days' ] ) && empty( $step[ 'hours' ] ) && ! empty( $step[ 'minutes' ] ) ? max( 1, $step[ 'minutes' ] ) : 1; ?>'
-					placeholder='59' data-unit='minute' onkeypress='return event.charCode >= 48 && event.charCode <= 57'/>
+					placeholder='59' data-duration-unit='minute'/>
 			<label for='<?php echo esc_attr( $args[ 'id' ] ) . '-minutes'; ?>' class='bookacti-duration-field-label'><?php echo esc_html( _n( 'minute', 'minutes', 2, 'booking-activities' ) ); ?></label>
 		</div>
 		<?php if( $args[ 'label' ] ) { ?>

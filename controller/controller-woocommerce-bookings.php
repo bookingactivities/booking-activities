@@ -163,21 +163,23 @@ add_action( 'woocommerce_system_status_tool_executed', 'bookacti_wc_controller_r
 /**
  * Update the bookings of an order to "Booked" when it turns "Completed"
  * @since 1.9.0 (was bookacti_turn_temporary_booking_to_permanent)
+ * @version 1.15.8
  * @param int $order_id
+ * @param string $old_status
+ * @param string $new_status
  * @param WC_Order $order
- * @param string $booking_status
- * @param string $payment_status
- * @param boolean $force_status_notification
  */
-function bookacti_wc_update_completed_order_bookings( $order_id, $order = null ) {
+function bookacti_wc_update_completed_order_bookings( $order_id, $old_status, $new_status, $order = null ) {
+	if( $new_status !== 'completed' ) { return; }
 	if( ! $order ) { $order = wc_get_order( $order_id ); }
-
+	
 	// Change state of all bookings of the order from 'pending' to 'booked'
 	$new_data = array(
-		'order_id' => $order_id,
-		'status' => 'booked',
+		'order_id'       => $order_id,
+		'status'         => 'booked',
 		'payment_status' => 'paid',
-		'active' => 'auto'
+		'active'         => 'auto',
+		'is_new_order'   => ! $old_status || in_array( $old_status, array( 'pending', 'failed', 'checkout-draft' ), true )
 	);
 	
 	bookacti_wc_update_order_items_bookings( $order, $new_data, array( 'in__status' => array( 'pending', 'in_cart' ) ) );
@@ -187,13 +189,13 @@ function bookacti_wc_update_completed_order_bookings( $order_id, $order = null )
 	// Then we just turn 'pending' booking bound to this order to 'cancelled'
 	bookacti_cancel_order_remaining_bookings( $order_id );
 }
-add_action( 'woocommerce_order_status_completed', 'bookacti_wc_update_completed_order_bookings', 5, 2 );
+add_action( 'woocommerce_order_status_changed', 'bookacti_wc_update_completed_order_bookings', 5, 4 );
 
 
 /**
  * Update the bookings of a failed order to "Booked" or "Pending" when it turns to an active status
  * @since 1.9.0 (was bookacti_turn_failed_order_bookings_status_to_complete)
- * @version 1.11.0
+ * @version 1.15.8
  * @param int $order_id
  * @param string $old_status
  * @param string $new_status
@@ -210,13 +212,14 @@ function bookacti_wc_update_failed_order_bookings_to_complete( $order_id, $old_s
 		$booking_status = 'pending';
 		$payment_status = 'owed';
 	}
-
+	
 	// Change state of all bookings of the order from 'pending' to 'booked'
 	$new_data = array(
-		'order_id' => $order_id,
-		'status' => $booking_status,
+		'order_id'       => $order_id,
+		'status'         => $booking_status,
 		'payment_status' => $payment_status,
-		'active' => 'auto'
+		'active'         => 'auto',
+		'is_new_order'   => $new_status !== 'pending'
 	);
 	bookacti_wc_update_order_items_bookings( $order, $new_data, array( 'in__status' => array( 'pending', 'cancelled', 'in_cart', 'removed', 'expired' ) ) );
 }
@@ -303,7 +306,7 @@ function bookacti_wc_payment_complete_order_status( $order_status, $order_id ) {
 	// If there are at least one activity in the middle of other products, 
 	// we won't mark the order as 'completed', but we still need to mark the bookings as 'pending' and 'owed'
 	// until the order changes state. At that time the bookings state will be redefined by other hooks
-	// such as "woocommerce_order_status_pending_to_processing" and "woocommerce_order_status_completed"
+	// such as "woocommerce_order_status_pending_to_processing" and "woocommerce_order_status_changed"
 	} else if( $has_activities ) {
 		$new_data = array(
 			'order_id' => $order_id,
@@ -326,6 +329,7 @@ add_filter( 'woocommerce_payment_complete_order_status', 'bookacti_wc_payment_co
  * Update the bookings of a "Pending" order to "Booked" when it turns "Processing" or "On Hold" if the order has been Paid
  * If the order was not paid, send the "Pending" bookings notifications
  * @since 1.9.0 (was bookacti_turn_paid_order_item_bookings_to_permanent)
+ * @version 1.15.8
  * @param int $order_id
  * @param WC_Order $order
  */
@@ -340,7 +344,7 @@ function bookacti_wc_update_paid_order_bookings( $order_id, $order = null ) {
 	if( ! $order->get_date_paid( 'edit' ) ) { 
 		foreach( $order_items_bookings as $item_id => $order_item_bookings ) {
 			foreach( $order_item_bookings as $order_item_booking ) {
-				bookacti_wc_send_order_item_booking_status_notification( $order_item_booking, 'pending', $order, true );
+				bookacti_wc_send_order_item_booking_status_notification( $order_item_booking, 'pending', $order, true, true );
 			}
 		}
 		return;
@@ -383,10 +387,11 @@ function bookacti_wc_update_paid_order_bookings( $order_id, $order = null ) {
 	// Turn all bookings to booked
 	if( $non_virtual_booking_status === 'booked' ) {
 		$new_data = array(
-			'order_id' => $order_id,
-			'status' => 'booked',
+			'order_id'       => $order_id,
+			'status'         => 'booked',
 			'payment_status' => 'paid',
-			'active' => 'auto'
+			'active'         => 'auto',
+			'is_new_order'   => true
 		);
 
 		$where = array( 
@@ -401,10 +406,11 @@ function bookacti_wc_update_paid_order_bookings( $order_id, $order = null ) {
 		// Turn non virtual activities to their permanent booking status
 		if( $non_virtual_item_booking_ids || $non_virtual_item_booking_group_ids ) {
 			$new_data = array(
-				'order_id' => $order_id,
-				'status' => $non_virtual_booking_status,
+				'order_id'       => $order_id,
+				'status'         => $non_virtual_booking_status,
 				'payment_status' => 'paid',
-				'active' => 'auto'
+				'active'         => 'auto',
+				'is_new_order'   => true
 			);
 
 			$where = array(
@@ -423,7 +429,7 @@ function bookacti_wc_update_paid_order_bookings( $order_id, $order = null ) {
 					if( $old_status !== $new_data[ 'status' ] ) { continue; }
 					if( $order_item_booking[ 'type' ] === 'single' && ! in_array( $order_item_booking[ 'id' ], $updated[ 'booking_ids' ], true ) ) { continue; }
 					if( $order_item_booking[ 'type' ] === 'group' && ! in_array( $order_item_booking[ 'id' ], $updated[ 'booking_group_ids' ], true ) ) { continue; }
-					bookacti_wc_send_order_item_booking_status_notification( $order_item_booking, $new_data[ 'status' ], $order, true );
+					bookacti_wc_send_order_item_booking_status_notification( $order_item_booking, $new_data[ 'status' ], $order, true, true );
 				}
 			}
 		}
@@ -431,10 +437,11 @@ function bookacti_wc_update_paid_order_bookings( $order_id, $order = null ) {
 		// Turn virtual activities to booked in any case 
 		if( $virtual_item_booking_ids || $virtual_item_booking_group_ids ) {
 			$new_data = array(
-				'order_id' => $order_id,
-				'status' => 'booked',
+				'order_id'       => $order_id,
+				'status'         => 'booked',
 				'payment_status' => 'paid',
-				'active' => 'auto'
+				'active'         => 'auto',
+				'is_new_order'   => true
 			);
 
 			$where = array(

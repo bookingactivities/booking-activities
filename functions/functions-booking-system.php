@@ -96,7 +96,7 @@ function bookacti_get_booking_system( $atts ) {
 /**
  * Get booking system data
  * @since 1.7.4
- * @version 1.15.6
+ * @version 1.15.8
  * @param array $atts (see bookacti_format_booking_system_attributes())
  * @return array
  */
@@ -125,15 +125,16 @@ function bookacti_get_booking_system_data( $atts ) {
 		$availability_period            = bookacti_get_booking_system_availability_period( $booking_system_data );
 		$booking_system_data[ 'start' ] = $availability_period[ 'start' ];
 		$booking_system_data[ 'end' ]   = $availability_period[ 'end_last' ];
-
+		
 		// Check if the availability period starts before it ends
 		$start_dt = $booking_system_data[ 'start' ] ? new DateTime( $booking_system_data[ 'start' ] ) : '';
 		$end_dt   = $booking_system_data[ 'end' ] ? new DateTime( $booking_system_data[ 'end' ] ) : '';
-		if( $start_dt && $end_dt && $start_dt >= $end_dt ) { 
+		if( ( $start_dt && $end_dt && $start_dt >= $end_dt )
+		||  ( $booking_system_data[ 'trim' ] && $booking_system_data[ 'start' ] === $booking_system_data[ 'end' ] ) ) { 
 			$booking_system_data[ 'no_events' ] = 1;
 			$booking_system_data[ 'start' ] = $booking_system_data[ 'end' ] = $now;
 		}
-	
+		
 		// Events related data
 		if( ! $booking_system_data[ 'no_events' ] ) {
 			$user_ids        = array();

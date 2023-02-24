@@ -42,6 +42,19 @@ $j( document ).ready( function() {
 	
 	// Add formatPHP function to moment JS
 	bookacti_init_moment_format_from_php_date_format();
+	
+	
+	/**
+	 * Format number input - on input keypress change blur
+	 * @since 1.15.8
+	 * @param {Object} e
+	 */
+	$j( 'body' ).on( 'keypress', '.bookacti-input[type="number"]:not([step=""]), .bookacti-input.bookacti-duration-field', function( e ) {
+	var step = $j( this ).attr( 'step' );
+		if( typeof e.charCode === 'undefined' ) { return; }
+		if( $j.isNumeric( step ) ) { if( Math.floor( step ) != step ) { return; } }
+		if( ! ( e.charCode >= 48 && e.charCode <= 57 ) && e.charCode != 13 ) { e.preventDefault(); }
+	});
 });
 
 

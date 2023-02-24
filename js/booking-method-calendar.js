@@ -209,7 +209,7 @@ $j( document ).ready( function() {
 
 /**
  * Initialize the calendar
- * @version 1.15.7
+ * @version 1.15.8
  * @param {HTMLElement} booking_system
  * @param {boolean} reload_events
  */
@@ -644,7 +644,10 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 	if( typeof bookacti.booking_system[ booking_system_id ][ 'events_interval' ] !== 'undefined' ) {
 		var event_interval_start = moment.utc( bookacti.booking_system[ booking_system_id ][ 'events_interval' ][ 'start' ] );
 		var event_interval_end   = moment.utc( bookacti.booking_system[ booking_system_id ][ 'events_interval' ][ 'end' ] );
-		if( event_interval_start.isAfter( interval.start ) || event_interval_end.isBefore( interval.end ) ) {
+		var past_events          = bookacti.booking_system[ booking_system_id ][ 'past_events' ];
+		var current_date         = moment.utc( bookacti_localized.current_time.substr( 0, 10 ) );
+		var check_events_before  = past_events || event_interval_start.isAfter( current_date );
+		if( ( check_events_before && event_interval_start.isAfter( interval.start ) ) || event_interval_end.isBefore( interval.end ) ) {
 			is_view_larger_than_interval = true;
 		}
 	}

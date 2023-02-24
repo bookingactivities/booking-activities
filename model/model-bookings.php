@@ -2171,7 +2171,7 @@ function bookacti_force_update_booking_group_bookings_quantity( $booking_group_i
 /**
  * Get booking groups according to filters
  * @since 1.3.0 (was bookacti_get_booking_groups_by_group_of_events)
- * @version 1.12.0
+ * @version 1.15.8
  * @global wpdb $wpdb
  * @param array $filters Use bookacti_format_booking_filters() before
  * @return array
@@ -2190,7 +2190,7 @@ function bookacti_get_booking_groups( $filters ) {
 	$query = 'SELECT BG.id, BG.group_date, BG.event_group_id, BG.user_id, BG.order_id, BG.form_id, BG.state, BG.payment_status, BG.active, IFNULL( NULLIF( BG.category_id, 0 ), EG.category_id ) as category_id,'
 	       . ' EG.title as group_title, EG.active as event_group_active,'
 	       . ' C.title as category_title, C.template_id, C.active as category_active,'
-	       . ' B.start, B.end, B.last_start, B.quantity, B.bookings_nb ';
+	       . ' B.start, B.end, B.last_start, B.quantity, B.bookings_nb, B.booking_ids ';
 
 	$query .= ' FROM ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' as BG ' 
 	       . ' LEFT JOIN ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as EG ON BG.event_group_id = EG.id '
@@ -2199,7 +2199,7 @@ function bookacti_get_booking_groups( $filters ) {
 	// Get the first and the last event of the booking group and keep respectively their start and end datetime
 	// Get the max booking quantity
 	$query .= ' LEFT JOIN ( '
-	           . ' SELECT group_id as booking_group_id, COUNT( id ) as bookings_nb, MAX( quantity ) as quantity, MIN( event_start ) as start, MAX( event_end ) as end, MAX( event_start ) as last_start '
+	           . ' SELECT group_id as booking_group_id, JSON_ARRAYAGG( id ) as booking_ids, COUNT( id ) as bookings_nb, MAX( quantity ) as quantity, MIN( event_start ) as start, MAX( event_end ) as end, MAX( event_start ) as last_start '
 	           . ' FROM ' . BOOKACTI_TABLE_BOOKINGS 
 	           . ' GROUP BY group_id'
 	       . ' ) as B ON BG.id = B.booking_group_id ';
@@ -2408,6 +2408,8 @@ function bookacti_get_booking_groups( $filters ) {
 	$booking_groups_array = array();
 	$booking_group_ids = array();
 	foreach( $booking_groups as $booking_group ) {
+		$booking_group->booking_ids = bookacti_ids_to_array( bookacti_maybe_decode_json( $booking_group->booking_ids, true ) );
+		sort( $booking_group->booking_ids );
 		$booking_groups_array[ $booking_group->id ] = $booking_group;
 		$booking_group_ids[] = $booking_group->id;
 	}
@@ -2481,7 +2483,7 @@ function bookacti_delete_booking_group( $booking_group_id ) {
 /**
  * Delete the bookings of a booking group 
  * @since 1.5.0
- * @version 1.5.8
+ * @version 1.15.8
  * @global wpdb $wpdb
  * @param int $booking_group_id
  * @return int|false
@@ -2496,7 +2498,7 @@ function bookacti_delete_booking_group_bookings( $booking_group_id ) {
 	$query = 'DELETE FROM ' . BOOKACTI_TABLE_BOOKINGS . ' WHERE group_id = %d ';
 	$query = $wpdb->prepare( $query, $booking_group_id );
 	$deleted = $wpdb->query( $query );
-
+	
 	if( $deleted && $booking_ids ) {
 		$query = 'DELETE FROM ' . BOOKACTI_TABLE_META . ' WHERE object_type = "booking" AND object_id IN( %d';
 		for( $i=1,$len=count($booking_ids); $i < $len; ++$i ) {
@@ -2504,7 +2506,7 @@ function bookacti_delete_booking_group_bookings( $booking_group_id ) {
 		}
 		$query .= ' ) ';
 		$query	= $wpdb->prepare( $query, $booking_ids );
-		$deleted= $wpdb->query( $query );
+		$wpdb->query( $query );
 	}
 
 	return $deleted;

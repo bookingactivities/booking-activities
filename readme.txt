@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 6.1
 Requires PHP: 5.3
-Stable tag: 1.15.7
+Stable tag: 1.15.8
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -148,7 +148,7 @@ Then feel free to tell us if you miss a feature, if you find a bug or anything t
 
 * **WordPress**: 3.6 or later
 * **PHP**: 5.3 or later
-* **MySQL**: 5.7.22 or later
+* **MySQL**: 5.7.22 or later (or MariaDB 10.5.4 or later)
 * **WooCommerce**: 3.x or later
 * *Booking Activities can be used without WooCommerce*
 
@@ -167,14 +167,14 @@ Or read the full [features description](https://booking-activities.fr/en/documen
 
 1. Go to Booking Activities / Calendar Editor page
 2. Click on the big '+' button
-3. Set a title, an opening date and a closing date
-4. In the "Editor" tab, you can also set your working hours
+3. Set a title
+4. In the "Editor" tab, you can set your working hours
 5. Click on the dialog OK button, the calendar is loading!
 
 **Create your first activity**
 
 1. Click on the '+' button in the 'Activities' area
-2. Set a title, an availability amount, a color and a duration
+2. Set a title, an availability, a color and a duration
 3. Click on the dialog OK button, the activity is added to the list!
 
 **Create your first event**
@@ -320,6 +320,20 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.15.8 - 2023/02/24 =
+* Breaking change - Requires MySQL 5.7.22 or later, or MariaDB 10.5.4 or later
+* Fix - "No events" message not displayed if no availability dates were set
+* Fix - Notifications text area was not full width
+* Fix - The hook bookacti_booking_deleted may not be triggered after booking group deletion
+* Fix - When moving an event backward from calendar editor, its bookings and grouped events were moved at an incorrect date
+* Fix - Events may appear twice on variable WC products pages if the booking form "Opening" date is past
+* Fix - When adding a product to cart from a booking form shortcode, field validation error messages were incorrectly displayed
+* Dev - Flag when the WC order is new to avoid sending the same notifications twice
+* Dev - Move the onkeypress attributes from the HTML elements to a js file
+* Dev - Rename data-unit attributes to data-duration-unit
+* Dev - bookacti_get_booking_groups now retrieves the grouped booking ids
+* Lib - Update FullCalendar to 6.1.4
 
 = 1.15.7 - 2023/01/30 =
 * Tweak - Grouped bookings are now listed in asc order in WC order items and notifications
@@ -1444,6 +1458,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Upgrade Notice ==
+
+= 1.15.8 =
+Requires MySQL 5.7.22 or later, or MariaDB 10.5.4 or later
 
 = 1.15.0 =
 Major changes in code:

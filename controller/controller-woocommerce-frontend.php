@@ -1510,7 +1510,7 @@ add_action( 'woocommerce_before_pay_action', 'bookacti_availability_check_before
 /**
  * Change order bookings states after the customer validates checkout
  * @since 1.2.2
- * @version 1.12.2
+ * @version 1.15.8
  * @param int $order_id
  * @param array $posted_data
  * @param WC_Order $order
@@ -1575,7 +1575,7 @@ function bookacti_change_booking_state_after_checkout( $order_id, $posted_data, 
 			if( $old_status !== $new_data[ 'status' ] ) { continue; }
 			if( $order_item_booking[ 'type' ] === 'single' && in_array( $order_item_booking[ 'id' ], $updated[ 'booking_ids' ], true ) ) { continue; }
 			if( $order_item_booking[ 'type' ] === 'group' && in_array( $order_item_booking[ 'id' ], $updated[ 'booking_group_ids' ], true ) ) { continue; }
-			bookacti_wc_send_order_item_booking_status_notification( $order_item_booking, $new_data[ 'status' ], $order, true );
+			bookacti_wc_send_order_item_booking_status_notification( $order_item_booking, $new_data[ 'status' ], $order, true, true );
 		}
 	}
 }
