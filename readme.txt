@@ -321,6 +321,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.15.9 =
+* Fix - Translatable strings may not be registered in the default WPML language
+
 = 1.15.8 - 2023/02/24 =
 * Breaking change - Requires MySQL 5.7.22 or later, or MariaDB 10.5.4 or later
 * Fix - "No events" message not displayed if no availability dates were set

@@ -187,6 +187,7 @@ function bookacti_get_translatable_texts() {
 /**
  * Translate a Booking Activities string into the desired language (default to current site language) with WPML
  * @since 1.14.0
+ * @version 1.15.9
  * @param string $text
  * @param string $lang Optional. Two letter lang id (e.g. fr or en) or locale id (e.g. fr_FR or en_US).
  * @param boolean $fallback Optional. Not implemented (see bookacti_wpml_fallback_text filter). False to display empty string if the text doesn't exist in the desired language. True to display the text of another existing language.
@@ -206,10 +207,11 @@ function bookacti_translate_text_with_wpml( $text, $lang = '', $fallback = true,
 	// WPML returns the original text if the translation is not found, 
 	// but we don't know if that string is actually not registered, or if the translation is actually the same as the original
 	if( $text === $translated_text ) {
-		// Register the string (it's ok if it's already registered)
-		do_action( 'wpml_register_single_string', 'Booking Activities', $string_name, $text );
-		
 		$default_lang_code = bookacti_get_site_default_locale( false );
+		
+		// Register the string (it's ok if it's already registered)
+		do_action( 'wpml_register_single_string', 'Booking Activities', $string_name, $text, false, $default_lang_code );
+		
 		if( $lang !== $default_lang_code && ! $fallback ) {
 			// You may want to return an empty string here instead of the original text
 			$translated_text = apply_filters( 'bookacti_wpml_fallback_text', $translated_text, $lang, $args );
