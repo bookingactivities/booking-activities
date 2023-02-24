@@ -237,7 +237,7 @@ add_action( 'wp_ajax_bookactiInsertEvent', 'bookacti_controller_insert_event' );
 /**
  * AJAX Controller - Update event dates (move or resize an event in the editor)
  * @since 1.10.0 (was bookacti_controller_move_or_resize_event)
- * @version 1.15.6
+ * @version 1.15.8
  */
 function bookacti_controller_update_event_dates() {
 	// Check nonce
@@ -275,9 +275,11 @@ function bookacti_controller_update_event_dates() {
 	
 	$delta_start_interval = $old_event_start_dt->diff( $new_event_start_dt );
 	$delta_end_interval   = $old_event_end_dt->diff( $new_event_end_dt );
-	$delta_seconds_start  = ( $delta_start_interval->format( '%r%a' ) * 24 * 60 * 60 ) + ( $delta_start_interval->h * 60 * 60 ) + ( $delta_start_interval->i * 60 ) + $delta_start_interval->s;
-	$delta_seconds_end    = ( $delta_end_interval->format( '%r%a' ) * 24 * 60 * 60 ) + ( $delta_end_interval->h * 60 * 60 ) + ( $delta_end_interval->i * 60 ) + $delta_end_interval->s;
-
+	$delta_seconds_start  = ( $delta_start_interval->format( '%a' ) * 24 * 60 * 60 ) + ( $delta_start_interval->h * 60 * 60 ) + ( $delta_start_interval->i * 60 ) + $delta_start_interval->s;
+	$delta_seconds_end    = ( $delta_end_interval->format( '%a' ) * 24 * 60 * 60 ) + ( $delta_end_interval->h * 60 * 60 ) + ( $delta_end_interval->i * 60 ) + $delta_end_interval->s;
+	if( $delta_start_interval->invert ) { $delta_seconds_start *= -1; }
+	if( $delta_end_interval->invert )   { $delta_seconds_end *= -1; }
+	
 	$delta_start_di      = date_diff( new DateTime( $old_event_start_dt->format( 'Y-m-d' ) ), new DateTime( $new_event_start_dt->format( 'Y-m-d' ) ) );
 	$delta_days_start    = intval( $delta_start_di->format( '%r%a' ) );
 	$delta_days_start_di = new DateInterval( 'P' . abs( $delta_days_start ). 'D' );

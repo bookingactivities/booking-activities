@@ -124,7 +124,7 @@ function bookacti_redirect_to_group_category_product_page( booking_system, group
 /**
  * Add a product to cart from a booking form
  * @since 1.7.0
- * @version 1.15.0
+ * @version 1.15.8
  * @param {HTMLElement} booking_system
  */
 function bookacti_add_product_to_cart_via_booking_system( booking_system ) {
@@ -203,9 +203,9 @@ function bookacti_add_product_to_cart_via_booking_system( booking_system ) {
 			}
 			
 			// Display feedback message
-			if( response.messages ) {
+			if( response.message ) {
 				var feedback_class = response.status === 'success' ? 'bookacti-success-list woocommerce' : 'bookacti-error-list';
-				var message = '<ul class="' + feedback_class + '"><li>' + response.messages + '</li></ul>';
+				var message = '<ul class="' + feedback_class + '"><li>' + response.message + '</li></ul>';
 				// Fill error message
 				error_div.empty().append( message ).show();
 				// Scroll to error message

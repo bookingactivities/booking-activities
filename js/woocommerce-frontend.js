@@ -339,7 +339,7 @@ function bookacti_switch_product_variation_form( form_container, variation ) {
 
 /**
  * Replace a old variation form with a new one
- * @version 1.15.5
+ * @version 1.15.8
  * @param {HTMLElement} form_container
  * @param {object} variation
  * @param {HTMLElement} form_html
@@ -359,7 +359,7 @@ function bookacti_fill_product_variation_form( form_container, variation, form_h
 	
 	// Load the booking system
 	var booking_system = form_container.find( '.bookacti-booking-system' );
-	bookacti_booking_method_set_up( booking_system );
+	bookacti_booking_method_set_up( booking_system, false );
 	
 	// Initialize dialog
 	bookacti_init_jquery_ui_dialogs( '.bookacti-booking-system-dialog' );
