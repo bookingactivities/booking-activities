@@ -25,20 +25,22 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Display or hide activities filter according to selected templates - on change
-	 * @version 1.8.0
+	 * @version 1.15.9
 	 */
 	$j( '#bookacti-booking-filter-templates, #bookacti-booking-filter-status, #bookacti-booking-filter-customer' ).on( 'change', function() {
 		// Show / Hide activities filter
 		bookacti_update_template_related_filters();
+		
+		if( ! $j( '#bookacti-submit-filter-button' ).data( 'ajax' ) ) { return; }
 		
 		// Reload events according to filters
 		if( $j( '#bookacti-booking-system-filter-container' ).is( ':visible' ) ) {
 			var booking_system = $j( '#bookacti-booking-system-bookings-page' );
 			bookacti_reload_booking_system_according_to_filters( booking_system );
 		}
-		
+
 		// Filter the booking list according to filters
-		if( $j( '#bookacti-submit-filter-button' ).data( 'ajax' ) ) { bookacti_filter_booking_list(); }
+		bookacti_filter_booking_list();
 	});
 	
 	
@@ -244,13 +246,13 @@ $j( document ).ready( function() {
 	/**
 	 * Filter the booking list according to filters
 	 * @since 1.8.0
+	 * @version 1.15.9
 	 * @param {Event} e
 	 */
 	$j( '#bookacti-booking-list-filters-form' ).on( 'submit', function( e ) {
-		if( $j( '#bookacti-submit-filter-button' ).data( 'ajax' ) ) { 
-			e.preventDefault();
-			bookacti_filter_booking_list();
-		}
+		if( ! $j( '#bookacti-submit-filter-button' ).data( 'ajax' ) ) { return; }
+		e.preventDefault();
+		bookacti_filter_booking_list();
 	});
 
 
