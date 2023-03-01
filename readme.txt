@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 6.1
 Requires PHP: 5.3
-Stable tag: 1.15.8
+Stable tag: 1.15.9
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -320,6 +320,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.15.9 - 2023/03/01 =
+* Fix - Translatable strings may not be registered in the default WPML language
+* Dev - Add backward compatibility with MariaDB 10.3
 
 = 1.15.8 - 2023/02/24 =
 * Breaking change - Requires MySQL 5.7.22 or later, or MariaDB 10.5.4 or later

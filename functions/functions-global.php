@@ -338,6 +338,55 @@ function bookacti_generate_ical( $vevents, $vcalendar = array() ) {
 
 
 
+// DATABASE
+
+/**
+ * Get mySQL or MariaDB version
+ * @since 1.15.9
+ */
+function bookacti_get_db_min_versions() {
+	$min_versions = array(
+		'mysql'   => '5.7.22',
+		'mariadb' => '10.5.4'
+	);
+	return apply_filters( 'bookacti_db_min_versions', $min_versions );
+}
+
+
+/**
+ * Get mySQL or MariaDB version
+ * @global wpdb $wpdb
+ * @since 1.15.9
+ */
+function bookacti_get_db_info() {
+	global $wpdb;
+	$db_server_info = $wpdb->db_server_info();
+	$is_mariadb     = str_contains( $db_server_info, 'MariaDB' );
+	$db_version     = $is_mariadb ? str_replace( '5.5.5-', '', $db_server_info ) : $db_server_info;
+	$db_version     = preg_replace( '/[^0-9.].*/', '', $db_version );
+	$db_info        = array(
+		'type'    => $is_mariadb ? 'mariadb' : 'mysql',
+		'version' => $db_version
+	);
+	return apply_filters( 'bookacti_db_info', $db_info, $db_server_info );
+}
+
+
+/**
+ * Check if database version is outdated
+ * @since 1.15.9
+ */
+function bookacti_is_db_version_outdated() {
+	$min_versions  = bookacti_get_db_min_versions();
+	$db_info       = bookacti_get_db_info();
+	$min_version   = isset( $min_versions[ $db_info[ 'type' ] ] ) ? $min_versions[ $db_info[ 'type' ] ] : '';
+	$is_up_to_date = $min_version && $db_info[ 'version' ] && version_compare( $db_info[ 'version' ], $min_version, '>=' );
+	return ! $is_up_to_date;
+}
+
+
+
+
 // JS variables
 
 /**

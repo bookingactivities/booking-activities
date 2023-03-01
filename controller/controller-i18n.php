@@ -204,6 +204,7 @@ add_action( 'bookacti_add_settings', 'bookacti_add_wpml_settings_section' );
 /**
  * Register all translatable texts - on WPML String Translation page
  * @since 1.14.0
+ * @version 1.15.9
  */
 function bookacti_wpml_controller_register_all_translatable_texts() {
 	// Make sure we are on WPML String Translation page, "Booking Activities" domain, and register_all parameter is set to "1"
@@ -214,12 +215,13 @@ function bookacti_wpml_controller_register_all_translatable_texts() {
 	$texts = bookacti_get_translatable_texts();
 	
 	if( $texts ) {
+		$default_lang_code = bookacti_get_site_default_locale( false );
 		foreach( $texts as $text ) {
 			$string_value  = ! empty( $text[ 'value' ] ) ? $text[ 'value' ] : '';
 			$string_domain = ! empty( $text[ 'domain' ] ) ? $text[ 'domain' ] : 'Booking Activities';
 			$string_name   = ! empty( $text[ 'string_name' ] ) ? $text[ 'string_name' ] : $string_value;
 			if( $string_value && is_string( $string_value ) ) {
-				do_action( 'wpml_register_single_string', $string_domain, $string_name, $string_value );
+				do_action( 'wpml_register_single_string', $string_domain, $string_name, $string_value, false, $default_lang_code );
 			}
 		}
 	}

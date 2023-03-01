@@ -2171,7 +2171,7 @@ function bookacti_force_update_booking_group_bookings_quantity( $booking_group_i
 /**
  * Get booking groups according to filters
  * @since 1.3.0 (was bookacti_get_booking_groups_by_group_of_events)
- * @version 1.15.8
+ * @version 1.15.9
  * @global wpdb $wpdb
  * @param array $filters Use bookacti_format_booking_filters() before
  * @return array
@@ -2187,6 +2187,9 @@ function bookacti_get_booking_groups( $filters ) {
 	if( is_numeric( $filters[ 'form_id' ] ) && $filters[ 'form_id' ] )						{ $filters[ 'in__form_id' ][] = $filters[ 'form_id' ]; }
 	if( $filters[ 'user_id' ] )																{ $filters[ 'in__user_id' ][] = $filters[ 'user_id' ]; }
 	
+	// Used for backward compatibility with mySQL 5.7 and MariaDB 10.3
+	$bw_compat_query = bookacti_is_db_version_outdated() ? 'CONCAT( "[", GROUP_CONCAT( id SEPARATOR ", " ), "]" )' : 'JSON_ARRAYAGG( id )';
+	
 	$query = 'SELECT BG.id, BG.group_date, BG.event_group_id, BG.user_id, BG.order_id, BG.form_id, BG.state, BG.payment_status, BG.active, IFNULL( NULLIF( BG.category_id, 0 ), EG.category_id ) as category_id,'
 	       . ' EG.title as group_title, EG.active as event_group_active,'
 	       . ' C.title as category_title, C.template_id, C.active as category_active,'
@@ -2199,12 +2202,12 @@ function bookacti_get_booking_groups( $filters ) {
 	// Get the first and the last event of the booking group and keep respectively their start and end datetime
 	// Get the max booking quantity
 	$query .= ' LEFT JOIN ( '
-	           . ' SELECT group_id as booking_group_id, JSON_ARRAYAGG( id ) as booking_ids, COUNT( id ) as bookings_nb, MAX( quantity ) as quantity, MIN( event_start ) as start, MAX( event_end ) as end, MAX( event_start ) as last_start '
+	           . ' SELECT group_id as booking_group_id, ' . $bw_compat_query . ' as booking_ids, COUNT( id ) as bookings_nb, MAX( quantity ) as quantity, MIN( event_start ) as start, MAX( event_end ) as end, MAX( event_start ) as last_start '
 	           . ' FROM ' . BOOKACTI_TABLE_BOOKINGS 
 	           . ' GROUP BY group_id'
 	       . ' ) as B ON BG.id = B.booking_group_id ';
 
-	$query .= ' WHERE true ';
+	$query .= ' WHERE TRUE ';
 
 	$variables = array();
 
