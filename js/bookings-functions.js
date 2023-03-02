@@ -203,13 +203,13 @@ function bookacti_unpick_all_events_filter() {
  * @param {HTMLElement} booking_system
  */
 function bookacti_reload_booking_system_according_to_filters( booking_system ) {
-	var booking_system_id	= booking_system.attr( 'id' );
+	var booking_system_id = booking_system.attr( 'id' );
 	
-	var selected_templates	= $j( '#bookacti-booking-filter-templates' ).val();
-	var selected_status		= $j( '#bookacti-booking-filter-status' ).val();
-	var selected_user		= $j( '#bookacti-booking-filter-customer' ).val();
-	var selected_from		= $j( '#bookacti-booking-filter-dates-from' ).val();
-	var selected_end		= $j( '#bookacti-booking-filter-dates-end' ).val();
+	var selected_templates = $j( '#bookacti-booking-filter-templates' ).val();
+	var selected_status    = $j( '#bookacti-booking-filter-status' ).val();
+	var selected_user      = $j( '#bookacti-booking-filter-customer' ).val();
+	var selected_from      = $j( '#bookacti-booking-filter-dates-from' ).val();
+	var selected_end       = $j( '#bookacti-booking-filter-dates-end' ).val();
 	
 	// Select only available templates
 	if( ! selected_templates ) {
@@ -219,13 +219,13 @@ function bookacti_reload_booking_system_according_to_filters( booking_system ) {
 		});
 	}
 	
-	bookacti.booking_system[ booking_system_id ][ 'calendars' ]			= selected_templates;
-	bookacti.booking_system[ booking_system_id ][ 'activities' ]		= [];
-	bookacti.booking_system[ booking_system_id ][ 'group_categories' ]	= [];
-	bookacti.booking_system[ booking_system_id ][ 'status' ]			= selected_status ? selected_status : [];
-	bookacti.booking_system[ booking_system_id ][ 'user_id' ]			= selected_user ? selected_user : 0;
-	bookacti.booking_system[ booking_system_id ][ 'start' ]				= selected_from ? selected_from + ' 00:00:00' : '';
-	bookacti.booking_system[ booking_system_id ][ 'end' ]				= selected_end ? selected_end + ' 23:59:59' : '';
+	bookacti.booking_system[ booking_system_id ][ 'calendars' ]        = selected_templates;
+	bookacti.booking_system[ booking_system_id ][ 'activities' ]       = [];
+	bookacti.booking_system[ booking_system_id ][ 'group_categories' ] = [];
+	bookacti.booking_system[ booking_system_id ][ 'status' ]           = selected_status ? selected_status : [];
+	bookacti.booking_system[ booking_system_id ][ 'user_id' ]          = selected_user ? selected_user : 0;
+	bookacti.booking_system[ booking_system_id ][ 'start' ]            = selected_from ? selected_from + ' 00:00:00' : '';
+	bookacti.booking_system[ booking_system_id ][ 'end' ]              = selected_end ? selected_end + ' 23:59:59' : '';
 	
 	// Unpick selected event
 	bookacti_unpick_all_events_filter();

@@ -9,24 +9,24 @@ function bookacti_get_booking_system_data_by_interval( booking_system, interval 
 	var booking_system_id   = booking_system.attr( 'id' );
 	var original_attributes = $j.extend( true, {}, bookacti.booking_system[ booking_system_id ] );
 	var attributes          = bookacti_get_booking_system_attributes_without_data( booking_system );
-	
+
 	interval = interval ? interval : $j.extend( true, {}, original_attributes[ 'events_interval' ] );
-	
+
 	// Update events interval before success to prevent to fetch the same interval twice
 	bookacti.booking_system[ booking_system_id ][ 'events_interval' ] = bookacti_get_extended_events_interval( booking_system, interval );
-	
+
 	bookacti_start_loading_booking_system( booking_system );
-	
-    $j.ajax({
-        url: bookacti_localized.ajaxurl,
-        type: 'POST',
-        data: { 
-			'action': 'bookactiGetBookingSystemDataByInterval', 
+
+	$j.ajax({
+		url: bookacti_localized.ajaxurl,
+		type: 'POST',
+        data: {
+			'action': 'bookactiGetBookingSystemDataByInterval',
 			'attributes': JSON.stringify( attributes ),
 			'interval': JSON.stringify( interval )
 		},
-        dataType: 'json',
-        success: function( response ) {
+		dataType: 'json',
+		success: function( response ) {
 			if( response.status === 'success' ) {
 				// Extend or replace the events array if it was empty
 				if( $j.isEmptyObject( bookacti.booking_system[ booking_system_id ][ 'events' ] ) ) {
@@ -34,70 +34,70 @@ function bookacti_get_booking_system_data_by_interval( booking_system, interval 
 				} else {
 					$j.extend( bookacti.booking_system[ booking_system_id ][ 'events' ], response.booking_system_data.events );
 				}
-				
+
 				// Extend or replace the events data array if it was empty
 				if( $j.isEmptyObject( bookacti.booking_system[ booking_system_id ][ 'events_data' ] ) ) {
 					bookacti.booking_system[ booking_system_id ][ 'events_data' ] = response.booking_system_data.events_data;
 				} else {
 					$j.extend( bookacti.booking_system[ booking_system_id ][ 'events_data' ], response.booking_system_data.events_data );
 				}
-				
+
 				// Extend or replace the groups array if it was empty
 				if( $j.isEmptyObject( bookacti.booking_system[ booking_system_id ][ 'groups_events' ] ) ) {
 					bookacti.booking_system[ booking_system_id ][ 'groups_events' ] = response.booking_system_data.groups_events;
 				} else {
 					$j.extend( true, bookacti.booking_system[ booking_system_id ][ 'groups_events' ], response.booking_system_data.groups_events );
 				}
-				
+
 				// Extend or replace the groups data array if it was empty
 				if( $j.isEmptyObject( bookacti.booking_system[ booking_system_id ][ 'groups_data' ] ) ) {
 					bookacti.booking_system[ booking_system_id ][ 'groups_data' ] = response.booking_system_data.groups_data;
 				} else {
 					$j.extend( bookacti.booking_system[ booking_system_id ][ 'groups_data' ], response.booking_system_data.groups_data );
 				}
-				
+
 				// Extend or replace the bookings array if it was empty
 				if( $j.isEmptyObject( bookacti.booking_system[ booking_system_id ][ 'bookings' ] ) ) {
 					bookacti.booking_system[ booking_system_id ][ 'bookings' ] = response.booking_system_data.bookings;
 				} else {
 					$j.extend( true, bookacti.booking_system[ booking_system_id ][ 'bookings' ], response.booking_system_data.bookings );
 				}
-				
+
 				// Extend or replace the bookings of groups array if it was empty
 				if( $j.isEmptyObject( bookacti.booking_system[ booking_system_id ][ 'groups_bookings' ] ) ) {
 					bookacti.booking_system[ booking_system_id ][ 'groups_bookings' ] = response.booking_system_data.groups_bookings;
 				} else {
 					$j.extend( true, bookacti.booking_system[ booking_system_id ][ 'groups_bookings' ], response.booking_system_data.groups_bookings );
 				}
-				
+
 				// Extend or replace the booking lists array if it was empty
 				if( $j.isEmptyObject( bookacti.booking_system[ booking_system_id ][ 'booking_lists' ] ) ) {
 					bookacti.booking_system[ booking_system_id ][ 'booking_lists' ] = response.booking_system_data.booking_lists;
 				} else {
 					$j.extend( true, bookacti.booking_system[ booking_system_id ][ 'booking_lists' ], response.booking_system_data.booking_lists );
 				}
-				
+
 				// Display new events
 				if( response.booking_system_data.events.length ) {
 					bookacti_booking_method_display_events( booking_system, response.booking_system_data.events );
 				}
-				
+
 				booking_system.trigger( 'bookacti_booking_system_interval_data_loaded', [ response, original_attributes, attributes, interval ] );
-				
+
 			} else {
 				var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
 				console.log( error_message );
 				console.log( response );
 			}
-        },
-        error: function( e ){
-            console.log( 'AJAX ' + bookacti_localized.error );
-            console.log( e );
-        },
-        complete: function() { 
+		},
+		error: function( e ){
+			console.log( 'AJAX ' + bookacti_localized.error );
+			console.log( e );
+		},
+		complete: function() { 
 			bookacti_stop_loading_booking_system( booking_system );
 		}
-    });
+	});
 }
 
 
@@ -121,8 +121,8 @@ function bookacti_reload_booking_system( booking_system, keep_picked_events ) {
 	$j.ajax({
         url: bookacti_localized.ajaxurl,
         type: 'POST',
-        data: {	
-			'action': 'bookactiReloadBookingSystem', 
+		data: {
+			'action': 'bookactiReloadBookingSystem',
 			'attributes': JSON.stringify( attributes )
 		},
         dataType: 'json',

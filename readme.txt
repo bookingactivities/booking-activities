@@ -321,6 +321,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.15.10 =
+* Dev - Add hooks to change the filters used to retrieve events and their number of bookings in a booking system
+* Dev - Wrap SUM sql queries that can be modified by plugins to ensure that joining additional tables will not skew the result
+
 = 1.15.9 - 2023/03/01 =
 * Fix - Translatable strings may not be registered in the default WPML language
 * Dev - Add backward compatibility with MariaDB 10.3

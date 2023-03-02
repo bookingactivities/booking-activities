@@ -8,15 +8,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  * @version 1.14.0
  */
 function bookacti_controller_get_booking_system_data_by_interval() {
-	$atts = isset( $_POST[ 'attributes' ] ) ? ( is_array( $_POST[ 'attributes' ] ) ? $_POST[ 'attributes' ] : ( is_string( $_POST[ 'attributes' ] ) ? bookacti_maybe_decode_json( stripslashes( $_POST[ 'attributes' ] ), true ) : array() ) ) : array();
-	$atts = bookacti_format_booking_system_attributes( $atts );
+	$atts     = isset( $_POST[ 'attributes' ] ) ? ( is_array( $_POST[ 'attributes' ] ) ? $_POST[ 'attributes' ] : ( is_string( $_POST[ 'attributes' ] ) ? bookacti_maybe_decode_json( stripslashes( $_POST[ 'attributes' ] ), true ) : array() ) ) : array();
+	$atts     = bookacti_format_booking_system_attributes( $atts );
 	$interval = isset( $_POST[ 'interval' ] ) ? ( is_array( $_POST[ 'interval' ] ) ? $_POST[ 'interval' ] : ( is_string( $_POST[ 'interval' ] ) ? bookacti_maybe_decode_json( stripslashes( $_POST[ 'interval' ] ), true ) : array() ) ) : array();
 	$interval = $interval ? bookacti_sanitize_events_interval( $interval ) : array();
 	
-	$atts[ 'start' ] = ! empty( $interval[ 'start' ] ) ? $interval[ 'start' ] : '';
-	$atts[ 'end' ] = ! empty( $interval[ 'end' ] ) ? $interval[ 'end' ] : '';
+	$atts[ 'start' ]               = ! empty( $interval[ 'start' ] ) ? $interval[ 'start' ] : '';
+	$atts[ 'end' ]                 = ! empty( $interval[ 'end' ] ) ? $interval[ 'end' ] : '';
 	$atts[ 'events_min_interval' ] = $atts[ 'start' ] || $atts[ 'end' ] ? array( 'start' => $atts[ 'start' ], 'end' => $atts[ 'end' ] ) : array();
-	$atts[ 'auto_load' ] = 1;
+	$atts[ 'auto_load' ]           = 1;
 	
 	$booking_system_data = bookacti_get_booking_system_data( $atts );
 	
@@ -28,7 +28,7 @@ function bookacti_controller_get_booking_system_data_by_interval() {
 	$public_booking_system_data = apply_filters( 'bookacti_public_booking_system_data', array_merge( $booking_system_data, array( 'user_id' => $public_user_id ) ), $atts );
 	
 	bookacti_send_json( array( 
-		'status' => 'success', 
+		'status'              => 'success', 
 		'booking_system_data' => $public_booking_system_data,
 	), 'get_booking_system_data_by_interval' );
 }
@@ -59,9 +59,9 @@ function bookacti_controller_reload_booking_system() {
 	$public_booking_system_data = apply_filters( 'bookacti_public_booking_system_data', array_merge( $booking_system_data, array( 'user_id' => $public_user_id ) ), $atts );
 	
 	bookacti_send_json( array( 
-		'status'				=> 'success', 
-		'html_elements'			=> $html_elements, 
-		'booking_system_data'	=> $public_booking_system_data
+		'status'              => 'success', 
+		'html_elements'       => $html_elements, 
+		'booking_system_data' => $public_booking_system_data
 	), 'reload_booking_system' );
 }
 add_action( 'wp_ajax_bookactiReloadBookingSystem', 'bookacti_controller_reload_booking_system' );
@@ -73,10 +73,10 @@ add_action( 'wp_ajax_nopriv_bookactiReloadBookingSystem', 'bookacti_controller_r
  * @version 1.12.0
  */
 function bookacti_controller_get_booking_numbers() {
-	$template_ids	= isset( $_POST[ 'template_ids' ] ) ? bookacti_ids_to_array( $_POST[ 'template_ids' ] ) : array();
-	$groups_data	= isset( $_POST[ 'groups_data' ] ) && is_array( $_POST[ 'groups_data' ] ) ? $_POST[ 'groups_data' ] : array();
-	$groups_events	= isset( $_POST[ 'groups_events' ] ) && is_array( $_POST[ 'groups_events' ] ) ? $_POST[ 'groups_events' ] : array();
-	$groups			= array( 'data' => $groups_data, 'groups' => $groups_events );
+	$template_ids  = isset( $_POST[ 'template_ids' ] ) ? bookacti_ids_to_array( $_POST[ 'template_ids' ] ) : array();
+	$groups_data   = isset( $_POST[ 'groups_data' ] ) && is_array( $_POST[ 'groups_data' ] ) ? $_POST[ 'groups_data' ] : array();
+	$groups_events = isset( $_POST[ 'groups_events' ] ) && is_array( $_POST[ 'groups_events' ] ) ? $_POST[ 'groups_events' ] : array();
+	$groups        = array( 'data' => $groups_data, 'groups' => $groups_events );
 	
 	$bookings_nb_per_event = bookacti_get_number_of_bookings_per_event( array( 'templates' => $template_ids ) );
 	if( ! $bookings_nb_per_event ) { bookacti_send_json( array( 'status' => 'no_bookings' ), 'get_booking_numbers' ); }
