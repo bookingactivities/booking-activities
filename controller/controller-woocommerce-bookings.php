@@ -163,23 +163,23 @@ add_action( 'woocommerce_system_status_tool_executed', 'bookacti_wc_controller_r
 /**
  * Update the bookings of an order to "Booked" when it turns "Completed"
  * @since 1.9.0 (was bookacti_turn_temporary_booking_to_permanent)
- * @version 1.15.8
+ * @version 1.15.10
  * @param int $order_id
- * @param string $old_status
- * @param string $new_status
  * @param WC_Order $order
+ * @param string $booking_status
+ * @param string $payment_status
+ * @param boolean $force_status_notification
  */
-function bookacti_wc_update_completed_order_bookings( $order_id, $old_status, $new_status, $order = null ) {
-	if( $new_status !== 'completed' ) { return; }
+function bookacti_wc_update_completed_order_bookings( $order_id, $order = null ) {
 	if( ! $order ) { $order = wc_get_order( $order_id ); }
 	
 	// Change state of all bookings of the order from 'pending' to 'booked'
 	$new_data = array(
-		'order_id'       => $order_id,
-		'status'         => 'booked',
-		'payment_status' => 'paid',
-		'active'         => 'auto',
-		'is_new_order'   => ! $old_status || in_array( $old_status, array( 'pending', 'failed', 'checkout-draft' ), true )
+		'order_id'           => $order_id,
+		'status'             => 'booked',
+		'payment_status'     => 'paid',
+		'active'             => 'auto',
+		'is_order_completed' => true // Used for deferring notifications to woocommerce_order_status_changed
 	);
 	
 	bookacti_wc_update_order_items_bookings( $order, $new_data, array( 'in__status' => array( 'pending', 'in_cart' ) ) );
@@ -189,7 +189,7 @@ function bookacti_wc_update_completed_order_bookings( $order_id, $old_status, $n
 	// Then we just turn 'pending' booking bound to this order to 'cancelled'
 	bookacti_cancel_order_remaining_bookings( $order_id );
 }
-add_action( 'woocommerce_order_status_changed', 'bookacti_wc_update_completed_order_bookings', 5, 4 );
+add_action( 'woocommerce_order_status_completed', 'bookacti_wc_update_completed_order_bookings', 5, 2 );
 
 
 /**

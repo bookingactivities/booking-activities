@@ -322,6 +322,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 == Changelog ==
 
 = 1.15.10 =
+* Fix - Booking status was displayed as Pending in paid and complete WC order notification (#186)
 * Dev - Add hooks to change the filters used to retrieve events and their number of bookings in a booking system
 * Dev - Wrap SUM sql queries that can be modified by plugins to ensure that joining additional tables will not skew the result
 

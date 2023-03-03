@@ -65,7 +65,7 @@ function bookacti_wc_send_order_item_booking_status_notification( $order_item_bo
 /**
  * Send one notification per booking to admin and customer when an order contining bookings is made or when its status changes
  * @since 1.9.0 (was bookacti_send_notification_when_order_status_changes)
- * @version 1.15.8
+ * @version 1.15.10
  * @param array $order_item_booking
  * @param array $sanitized_data
  * @param WC_Order $order
@@ -73,10 +73,33 @@ function bookacti_wc_send_order_item_booking_status_notification( $order_item_bo
  * @param array $where
  */
 function bookacti_wc_send_notification_when_order_item_booking_status_changes( $order_item_booking, $sanitized_data, $order, $new_data, $where ) {
-	if( empty( $sanitized_data[ 'status' ] ) ) { return; }
-	$new_status   = $sanitized_data[ 'status' ];
-	$is_new_order = ! empty( $new_data[ 'is_new_order' ] );
-	bookacti_wc_send_order_item_booking_status_notification( $order_item_booking, $new_status, $order, false, $is_new_order );
+	if( empty( $sanitized_data[ 'status' ] ) || ( isset( $new_data[ 'send_notifications' ] ) && ! $new_data[ 'send_notifications' ] ) ) { return; }
+	$new_booking_status = $sanitized_data[ 'status' ];
+	
+	if( empty( $new_data[ 'is_order_completed' ] ) ) {
+		$is_new_order = ! empty( $new_data[ 'is_new_order' ] );
+		bookacti_wc_send_order_item_booking_status_notification( $order_item_booking, $new_booking_status, $order, false, $is_new_order );
+	} 
+	
+	// If the order is completed, differ the notifications to a hook that let us know what was the old order status (woocommerce_order_status_changed)
+	else {
+		$order_id_check = intval( $order->get_id() );
+		
+		/**
+		 * Send booking notifications when an order is completed
+		 * @since 1.15.10
+		 * @param int $order_id
+		 * @param string $old_status
+		 * @param string $new_status
+		 * @param WC_Order $order
+		 */
+		add_action( 'woocommerce_order_status_changed', function( $order_id, $old_order_status, $new_order_status, $order = null ) use ( $order_item_booking, $new_booking_status, $order_id_check ) {
+			if( $new_order_status !== 'completed' || $order_id_check !== intval( $order_id ) ) { return; }
+			if( ! $order ) { $order = wc_get_order( $order_id ); }
+			$is_new_order = ! $old_order_status || in_array( $old_order_status, array( 'pending', 'failed', 'checkout-draft' ), true );
+			bookacti_wc_send_order_item_booking_status_notification( $order_item_booking, $new_booking_status, $order, false, $is_new_order );
+		}, 5, 4 );
+	}
 }
 add_action( 'bookacti_wc_order_item_booking_updated', 'bookacti_wc_send_notification_when_order_item_booking_status_changes', 10, 5 );
 
