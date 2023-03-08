@@ -96,7 +96,7 @@ function bookacti_get_booking_system( $atts ) {
 /**
  * Get booking system data
  * @since 1.7.4
- * @version 1.15.8
+ * @version 1.15.10
  * @param array $atts (see bookacti_format_booking_system_attributes())
  * @return array
  */
@@ -159,13 +159,16 @@ function bookacti_get_booking_system_data( $atts ) {
 
 			// Get events
 			if( $atts[ 'groups_only' ] ) {
-				$events = bookacti_fetch_events_of_group_of_events_occurrences( $groups[ 'groups' ], array( 'templates' => $atts[ 'calendars' ], 'activities' => $atts[ 'activities' ], 'past_events' => $atts[ 'past_events' ], 'interval' => $events_interval ) );
+				$event_filters = apply_filters( 'bookacti_booking_system_grouped_events_filters', array( 'templates' => $atts[ 'calendars' ], 'activities' => $atts[ 'activities' ], 'past_events' => $atts[ 'past_events' ], 'interval' => $events_interval ), $atts, $groups );
+				$events = bookacti_fetch_events_of_group_of_events_occurrences( $groups[ 'groups' ], $event_filters );
 			} else if( $atts[ 'bookings_only' ] ) {
 				$user_ids = $atts[ 'user_id' ] ? array( $atts[ 'user_id' ] ) : array();
 				$status = $atts[ 'status' ];
-				$events = bookacti_fetch_booked_events( array( 'templates' => $atts[ 'calendars' ], 'activities' => $atts[ 'activities' ], 'status' => $atts[ 'status' ], 'users' => $user_ids, 'past_events' => $atts[ 'past_events' ], 'interval' => $events_interval ) );
+				$event_filters = apply_filters( 'bookacti_booking_system_booked_events_filters', array( 'templates' => $atts[ 'calendars' ], 'activities' => $atts[ 'activities' ], 'status' => $atts[ 'status' ], 'users' => $user_ids, 'past_events' => $atts[ 'past_events' ], 'interval' => $events_interval ), $atts );
+				$events = bookacti_fetch_booked_events( $event_filters );
 			} else {
-				$events	= bookacti_fetch_events( array( 'templates' => $atts[ 'calendars' ], 'activities' => $atts[ 'activities' ], 'past_events' => $atts[ 'past_events' ], 'interval' => $events_interval ) );	
+				$event_filters = apply_filters( 'bookacti_booking_system_events_filters', array( 'templates' => $atts[ 'calendars' ], 'activities' => $atts[ 'activities' ], 'past_events' => $atts[ 'past_events' ], 'interval' => $events_interval ), $atts );
+				$events	= bookacti_fetch_events( $event_filters );
 			}
 
 			// Remove events on days off
@@ -206,12 +209,14 @@ function bookacti_get_booking_system_data( $atts ) {
 				}
 				$booking_lists = bookacti_get_events_booking_lists( $booking_filters, $atts[ 'tooltip_booking_list_columns' ], $atts );
 			}
-
+			
+			$bookings_nb_filters = apply_filters( 'bookacti_booking_system_number_of_bookings_filters', array( 'status' => $status, 'users' => $user_ids ), $atts );
+			
 			$booking_system_data[ 'events' ]                = $events[ 'events' ] ? $events[ 'events' ] : array();
 			$booking_system_data[ 'events_data' ]           = $events[ 'data' ] ? $events[ 'data' ] : array();
 			$booking_system_data[ 'events_interval' ]       = $events_interval;
-			$booking_system_data[ 'bookings' ]              = bookacti_get_number_of_bookings_per_event( array( 'templates' => $atts[ 'calendars' ], 'events' => array_keys( $events[ 'data' ] ), 'interval' => $events_interval, 'users' => $user_ids, 'status' => $status ) );
-			$booking_system_data[ 'groups_bookings' ]       = bookacti_get_number_of_bookings_per_group_of_events( $groups, array( 'users' => $user_ids, 'status' => $status ) );
+			$booking_system_data[ 'bookings' ]              = bookacti_get_number_of_bookings_per_event( array_merge( $bookings_nb_filters, array( 'templates' => $atts[ 'calendars' ], 'events' => array_keys( $events[ 'data' ] ), 'interval' => $events_interval ) ) );
+			$booking_system_data[ 'groups_bookings' ]       = bookacti_get_number_of_bookings_per_group_of_events( $groups, $bookings_nb_filters );
 			$booking_system_data[ 'booking_lists' ]         = $booking_lists;
 			$booking_system_data[ 'activities_data' ]       = bookacti_get_activities_by_template( $atts[ 'calendars' ], true );
 			$booking_system_data[ 'groups_events' ]         = $groups[ 'groups' ];
@@ -361,7 +366,7 @@ function bookacti_get_booking_system_default_attributes() {
 
 /**
  * Check booking system attributes and format them to be correct
- * @version 1.15.6
+ * @version 1.15.10
  * @param array $raw_atts 
  * @return array
  */
@@ -375,7 +380,7 @@ function bookacti_format_booking_system_attributes( $raw_atts = array() ) {
 		$atts[ $name ] = isset( $raw_atts[ $name ] ) ? $raw_atts[ $name ] : $default;
 	}
 	
-	$formatted_atts = array();
+	$formatted_atts = $defaults;
 	
 	// Sanitize booleans
 	$booleans_to_check = array( 'multiple_bookings', 'bookings_only', 'tooltip_booking_list', 'groups_only', 'groups_single_events', 'auto_load', 'trim', 'past_events', 'past_events_bookable', 'check_roles' );
@@ -384,50 +389,26 @@ function bookacti_format_booking_system_attributes( $raw_atts = array() ) {
 	}
 	
 	// Calendars
-	$calendars = $atts[ 'calendars' ];
-	if( is_numeric( $atts[ 'calendars' ] ) ) {
-		$calendars = array_map( 'intval', explode( ',', preg_replace( array(
-			'/[^\d,]/',    // Matches anything that's not a comma or number.
-			'/(?<=,),+/',  // Matches consecutive commas.
-			'/^,+/',       // Matches leading commas.
-			'/,+$/'        // Matches trailing commas.
-		), '', 	$atts[ 'calendars' ] ) ) );
-	}
+	$calendars = is_numeric( $atts[ 'calendars' ] ) ? array( $atts[ 'calendars' ] ) : $atts[ 'calendars' ];
 	
 	// Activities
-	$activities = $atts[ 'activities' ];
+	$activities = is_numeric( $atts[ 'activities' ] ) ? array( $atts[ 'activities' ] ) : $atts[ 'activities' ];
 	if( in_array( $atts[ 'activities' ], array( true, 'all', 'true', 'yes', 'ok' ), true ) ) {
 		$activities = array();
-		
-	} else if( is_numeric( $atts[ 'activities' ] ) ) {
-		$activities = array_map( 'intval', explode( ',', preg_replace( array(
-			'/[^\d,]/',    // Matches anything that's not a comma or number.
-			'/(?<=,),+/',  // Matches consecutive commas.
-			'/^,+/',       // Matches leading commas.
-			'/,+$/'        // Matches trailing commas.
-		), '', 	$atts[ 'activities' ] ) ) );
 	}
 	
 	// Group categories
-	$group_categories = $atts[ 'group_categories' ];
+	$group_categories = is_numeric( $atts[ 'group_categories' ] ) ? array( $atts[ 'group_categories' ] ) : $atts[ 'group_categories' ];
 	if( in_array( $atts[ 'group_categories' ], array( true, 'all', 'true', 'yes', 'ok' ), true ) ) {
 		$group_categories = array();
-		
-	} else if( is_numeric( $atts[ 'group_categories' ] ) ) {
-		$group_categories = array_map( 'intval', explode( ',', preg_replace( array(
-			'/[^\d,]/',    // Matches anything that's not a comma or number.
-			'/(?<=,),+/',  // Matches consecutive commas.
-			'/^,+/',       // Matches leading commas.
-			'/,+$/'        // Matches trailing commas.
-		), '', 	$atts[ 'group_categories' ] ) ) );
 	}
-	if( ! is_array( $atts[ 'group_categories' ] ) || in_array( $atts[ 'group_categories' ], array( false, 'none', 'false', 'no' ), true ) ) { 
+	else if( ! is_array( $atts[ 'group_categories' ] ) || in_array( $atts[ 'group_categories' ], array( false, 'none', 'false', 'no' ), true ) ) { 
 		$group_categories = array( 'none' );
 	}
 	
 	// Remove duplicated values
-	$calendars	= is_array( $calendars ) ? array_values( array_unique( $calendars ) ) : $defaults[ 'calendars' ];
-	$activities	= is_array( $activities ) ? array_values( array_unique( $activities ) ) : $defaults[ 'activities' ];
+	$calendars	= is_array( $calendars ) ? array_values( array_unique( array_map( 'intval', array_filter( $calendars, 'is_numeric' ) ) ) ) : $defaults[ 'calendars' ];
+	$activities	= is_array( $activities ) ? array_values( array_unique( array_map( 'intval', array_filter( $activities, 'is_numeric' ) ) ) ) : $defaults[ 'activities' ];
 	
 	// Check if the desired templates are active and allowed
 	$available_template_ids = array_keys( bookacti_fetch_templates( array(), 0 ) );
@@ -447,7 +428,7 @@ function bookacti_format_booking_system_attributes( $raw_atts = array() ) {
 	// Check if desired group categories exist and are allowed according to current user role
 	$available_category_ids = bookacti_get_group_category_ids_by_template( $formatted_atts[ 'calendars' ], $formatted_atts[ 'check_roles' ] );
 	if( ! in_array( 'none', $group_categories, true ) ) { 
-		$group_categories = array_values( array_unique( $group_categories ) );
+		$group_categories = array_values( array_unique( array_map( 'intval', array_filter( $group_categories, 'is_numeric' ) ) ) );
 		// Remove unauthorized group categories
 		$had_group_categories = ! empty( $group_categories );
 		$allowed_group_categories = array_values( array_intersect( $group_categories, array_map( 'intval', $available_category_ids ) ) );
@@ -485,14 +466,7 @@ function bookacti_format_booking_system_attributes( $raw_atts = array() ) {
 	
 	
 	// Sanitize booking status
-	$status = $atts[ 'status' ];
-	if( is_string( $status ) ) {
-		$status = array_map( 'sanitize_title_with_dashes', explode( ',', preg_replace( array(
-			'/(?<=,),+/',  // Matches consecutive commas.
-			'/^,+/',       // Matches leading commas.
-			'/,+$/'        // Matches trailing commas.
-		), '', 	$status ) ) );
-	}
+	$status = is_string( $atts[ 'status' ] ) ? array( sanitize_title_with_dashes( $status ) ) : $atts[ 'status' ];
 	
 	// Check if desired status are registered
 	$formatted_atts[ 'status' ] = is_array( $status ) && $status ? array_intersect( $status, array_keys( bookacti_get_booking_state_labels() ) ) : array();
@@ -540,7 +514,7 @@ function bookacti_format_booking_system_attributes( $raw_atts = array() ) {
 	}
 	$formatted_atts[ 'redirect_url_by_group_category' ] = $redirect_url_by_group_category ? $redirect_url_by_group_category : $defaults[ 'redirect_url_by_group_category' ];
 	
-	return apply_filters( 'bookacti_formatted_booking_system_attributes', $formatted_atts, $raw_atts );
+	return apply_filters( 'bookacti_formatted_booking_system_attributes', $formatted_atts, $raw_atts, $defaults );
 }
 
 
@@ -3923,6 +3897,7 @@ function bookacti_get_group_events( $group_id ) {
 /**
  * Get number of bookings per group of events
  * @since 1.12.0
+ * @version 1.15.10
  * @param array $groups Groups of events (see bookacti_get_groups_of_events)
  * @param array $raw_bookings_args {
  *  @type array $users Array of users IDs
@@ -3932,11 +3907,12 @@ function bookacti_get_group_events( $group_id ) {
  */
 function bookacti_get_number_of_bookings_per_group_of_events( $groups, $raw_bookings_args = array() ) {
 	$default_args = array(
-		'users' => array(),
+		'users'  => array(),
 		'status' => array()
 	);
 	$bookings_args = wp_parse_args( $raw_bookings_args, $default_args );
-		
+	if( $bookings_args[ 'users' ] ) { $bookings_args[ 'in__user_id' ] = $bookings_args[ 'users' ]; }
+	
 	// Get the grouped event IDs and the min interval containing all the grouped events in order to retrieve only the necessary events / bookings
 	$events_ids = array();
 	$interval_dt = array();
@@ -3964,14 +3940,14 @@ function bookacti_get_number_of_bookings_per_group_of_events( $groups, $raw_book
 	$events = $events_ids ? bookacti_fetch_events( $events_filters ) : array();
 	
 	// Get the grouped events bookings to compute their quantity booked, the number of distinct users and the number of bookings of the current user
-	$bookings_filters = bookacti_format_booking_filters( array(
-		'in__event_id' => $events_ids,
-		'from' => ! empty( $interval[ 'start' ] ) ? $interval[ 'start' ] : '',
-		'to' => ! empty( $interval[ 'end' ] ) ? $interval[ 'end' ] : '',
-		'in__user_id' => $bookings_args[ 'users' ],
-		'status' => $bookings_args[ 'status' ],
-		'active' => 1,
-		'fecth_meta' => 0
+	$bookings_filters = bookacti_format_booking_filters( 
+		array_merge( $bookings_args, array(
+			'in__event_id' => $events_ids,
+			'from'         => ! empty( $interval[ 'start' ] ) ? $interval[ 'start' ] : '',
+			'to'           => ! empty( $interval[ 'end' ] ) ? $interval[ 'end' ] : '',
+			'active'       => 1,
+			'fecth_meta'   => 0
+		) 
 	) );
 	$bookings = $events_ids ? bookacti_get_bookings( $bookings_filters ) : array();
 	

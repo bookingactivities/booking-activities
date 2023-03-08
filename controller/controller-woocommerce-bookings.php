@@ -163,23 +163,23 @@ add_action( 'woocommerce_system_status_tool_executed', 'bookacti_wc_controller_r
 /**
  * Update the bookings of an order to "Booked" when it turns "Completed"
  * @since 1.9.0 (was bookacti_turn_temporary_booking_to_permanent)
- * @version 1.15.8
+ * @version 1.15.10
  * @param int $order_id
- * @param string $old_status
- * @param string $new_status
  * @param WC_Order $order
+ * @param string $booking_status
+ * @param string $payment_status
+ * @param boolean $force_status_notification
  */
-function bookacti_wc_update_completed_order_bookings( $order_id, $old_status, $new_status, $order = null ) {
-	if( $new_status !== 'completed' ) { return; }
+function bookacti_wc_update_completed_order_bookings( $order_id, $order = null ) {
 	if( ! $order ) { $order = wc_get_order( $order_id ); }
 	
 	// Change state of all bookings of the order from 'pending' to 'booked'
 	$new_data = array(
-		'order_id'       => $order_id,
-		'status'         => 'booked',
-		'payment_status' => 'paid',
-		'active'         => 'auto',
-		'is_new_order'   => ! $old_status || in_array( $old_status, array( 'pending', 'failed', 'checkout-draft' ), true )
+		'order_id'           => $order_id,
+		'status'             => 'booked',
+		'payment_status'     => 'paid',
+		'active'             => 'auto',
+		'is_order_completed' => true // Used for deferring notifications to woocommerce_order_status_changed
 	);
 	
 	bookacti_wc_update_order_items_bookings( $order, $new_data, array( 'in__status' => array( 'pending', 'in_cart' ) ) );
@@ -189,7 +189,7 @@ function bookacti_wc_update_completed_order_bookings( $order_id, $old_status, $n
 	// Then we just turn 'pending' booking bound to this order to 'cancelled'
 	bookacti_cancel_order_remaining_bookings( $order_id );
 }
-add_action( 'woocommerce_order_status_changed', 'bookacti_wc_update_completed_order_bookings', 5, 4 );
+add_action( 'woocommerce_order_status_completed', 'bookacti_wc_update_completed_order_bookings', 5, 2 );
 
 
 /**
@@ -229,19 +229,19 @@ add_action( 'woocommerce_order_status_changed', 'bookacti_wc_update_failed_order
 /**
  * Update the bookings of an order to "Cancelled" when it turns "Cancelled"
  * @since 1.9.0 (was bookacti_cancelled_order)
+ * @version 1.15.10
  * @param int $order_id
  * @param WC_Order $order
  */
 function bookacti_wc_update_cancelled_order_bookings( $order_id, $order = null ) {
 	if( ! $order ) { $order = wc_get_order( $order_id ); }
 
-	// Change state of all bookings of the order from 'pending' to 'booked'
+	// Change state of all bookings of the order
 	$new_data = array(
-		'order_id' => $order_id,
 		'status' => 'cancelled',
-		'active' => 'auto'
+		'active' => 0
 	);
-	bookacti_wc_update_order_items_bookings( $order, $new_data, array( 'in__status' => array( 'booked', 'pending', 'in_cart' ) ) );
+	bookacti_wc_update_order_items_bookings( $order, $new_data, array( 'in__status' => array( 'booked', 'pending', 'in_cart' ), 'in__order_id' => array( $order_id ) ) );
 	
 	// It is possible that pending bookings remain bound to the order if the user change his mind after he placed the order, but before he paid it.
 	// He then changed his cart, placed a new order, paid it, and only part of the old order is booked (or even nothing), the rest is still 'pending'
@@ -464,7 +464,7 @@ add_action( 'woocommerce_order_status_pending_to_on-hold', 'bookacti_wc_update_p
 /**
  * Update the bookings of an order to "In cart" when it turns from "Pending" to "Failed" and its bookings are still in cart
  * @since 1.12.0
- * @version 1.12.6
+ * @version 1.15.10
  * @param int $order_id
  * @param WC_Order $order
  */
@@ -517,7 +517,7 @@ function bookacti_wc_update_failed_order_in_cart_bookings( $order_id, $order = n
 			'status' => 'cancelled',
 			'active' => 0
 		);
-		bookacti_wc_update_order_items_bookings( $order, $new_data, array_merge( array( 'in__status' => array( 'booked', 'pending', 'in_cart' ) ), $not_in_cart_filters ) );
+		bookacti_wc_update_order_items_bookings( $order, $new_data, array_merge( array( 'in__status' => array( 'booked', 'pending', 'in_cart' ), 'in__order_id' => array( $order_id ) ), $not_in_cart_filters ) );
 	}
 	
 	// It is possible that pending bookings remain bound to the order if the user change his mind after he placed the order, but before he paid it.
@@ -545,7 +545,7 @@ add_action( 'bookacti_booking_state_changed', 'bookacti_wc_update_booking_order_
 /**
  * Update order bookings user_id when the order customer_id changes
  * @since 1.14.2
- * @version 1.14.3
+ * @version 1.15.10
  * @param WC_Order $order
  * @param array $updated_props
  */
@@ -555,7 +555,7 @@ function bookacti_wc_update_customer_id_order_bookings( $order, $updated_props =
 	if( in_array( 'customer_id', $updated_props, true ) || ( ! $user_id && in_array( 'billing_email', $updated_props, true ) ) ) {
 		if( ! $user_id ) { $user_id = $order->get_billing_email( 'edit' ); }
 		if( $user_id && ( is_numeric( $user_id ) || is_email( $user_id ) ) ) { 
-			bookacti_wc_update_order_items_bookings( $order, array( 'user_id' => $user_id ) );
+			bookacti_wc_update_order_items_bookings( $order, array( 'user_id' => $user_id ), array( 'in__order_id' => array( $order->get_id() ) ) );
 		}
 	}
 }

@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 6.1
 Requires PHP: 5.3
-Stable tag: 1.15.9
+Stable tag: 1.15.10
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -320,6 +320,13 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.15.10 - 2023/03/08 =
+* Fix - Booking status was displayed as Pending in paid and complete WC order notification (#186)
+* Fix - Do not cancel booking of a "Pending payment" order if they were already paid in another order
+* Fix - Error messages no longer displayed after closing the reschedule dialog once
+* Dev - Add hooks to change the filters used to retrieve events and their number of bookings in a booking system
+* Dev - Wrap SUM sql queries that can be modified by plugins to ensure that joining additional tables will not skew the result
 
 = 1.15.9 - 2023/03/01 =
 * Fix - Translatable strings may not be registered in the default WPML language
