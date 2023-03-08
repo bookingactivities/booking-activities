@@ -872,7 +872,7 @@ function bookacti_get_number_of_bookings( $filters ) {
 		$query = ' SELECT SUM( quantity ) FROM ( '
 		           . ' SELECT MAX( B.quantity ) as quantity, IF( B.group_id IS NULL, B.id, CONCAT( "G", B.group_id ) ) as unique_group_id ';
 	} else {
-		// Since the query can be amended with joined table, we need to apply CEIL( SUM(...) * COUNT( DISTINCT B.id ) / COUNT( * ) ) to sums 
+		// Since the query can be amended with joined table, we need to apply CEIL( SUM( B.quantity ) * COUNT( DISTINCT B.id ) / COUNT( * ) ) to sums 
 		// See https://stackoverflow.com/questions/2436284/mysql-sum-for-distinct-rows#2440065
 		$query = ' SELECT SUM( quantity ) FROM ( '
 		           . ' SELECT CEIL( SUM( B.quantity ) * COUNT( DISTINCT B.id ) / COUNT( * ) ) as quantity ';
@@ -1216,9 +1216,9 @@ function bookacti_get_number_of_bookings_per_event( $raw_args = array() ) {
 	
 	global $wpdb;
 	
-	// Since the query can be amended with joined table, we need to apply CEIL( SUM(...) * COUNT( DISTINCT B.id ) / COUNT( * ) ) to sums 
+	// Since the query can be amended with joined table, we need to apply CEIL( SUM( B.quantity ) * COUNT( DISTINCT B.id ) / COUNT( * ) ) to sums 
 	// See https://stackoverflow.com/questions/2436284/mysql-sum-for-distinct-rows#2440065
-	$query = 'SELECT DISTINCT B.id as booking_id, B.event_id, B.event_start, B.event_end, E.availability as total_availability, CEIL( SUM( B.quantity ) * COUNT( DISTINCT B.id ) / COUNT( * ) ) as quantity, COUNT( DISTINCT B.user_id ) as distinct_users, CEIL( SUM( IF( B.user_id = %s, B.quantity, 0 ) ) * COUNT( DISTINCT B.id ) / COUNT( * ) ) as current_user_bookings '
+	$query = 'SELECT B.event_id, B.event_start, B.event_end, E.availability as total_availability, CEIL( SUM( B.quantity ) * COUNT( DISTINCT B.id ) / COUNT( * ) ) as quantity, COUNT( DISTINCT B.user_id ) as distinct_users, CEIL( SUM( IF( B.user_id = %s, B.quantity, 0 ) ) * COUNT( DISTINCT B.id ) / COUNT( * ) ) as current_user_bookings '
 	       . ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B '
 	       . ' LEFT JOIN ' . BOOKACTI_TABLE_EVENTS . ' as E ON B.event_id = E.id '
 	       . ' WHERE B.active = 1 ';
@@ -1349,7 +1349,7 @@ function bookacti_get_number_of_bookings_per_event_per_user( $events ) {
 	$variables = array_merge( $variables, $event_ids );
 	
 	// Retrieve the quantity booked per event, per user
-	// Since the query can be amended with joined table, we need to apply CEIL( SUM(...) * COUNT( DISTINCT B.id ) / COUNT( * ) ) to sums 
+	// Since the query can be amended with joined table, we need to apply CEIL( SUM( B.quantity ) * COUNT( DISTINCT B.id ) / COUNT( * ) ) to sums 
 	// See https://stackoverflow.com/questions/2436284/mysql-sum-for-distinct-rows#2440065
 	$query = 'SELECT E.id as event_id, B.event_start, B.event_end, B.user_id, E.availability as total_availability, CEIL( SUM( B.quantity ) * COUNT( DISTINCT B.id ) / COUNT( * ) ) as quantity '
 	       . ' FROM ' . BOOKACTI_TABLE_EVENTS . ' as E '

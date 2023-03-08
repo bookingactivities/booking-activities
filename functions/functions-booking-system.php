@@ -210,7 +210,7 @@ function bookacti_get_booking_system_data( $atts ) {
 				$booking_lists = bookacti_get_events_booking_lists( $booking_filters, $atts[ 'tooltip_booking_list_columns' ], $atts );
 			}
 			
-			$bookings_nb_filters = apply_filters( 'bookacti_booking_system_number_of_bookings_filters', array( 'status' => $atts[ 'status' ], 'users' => $user_ids ), $atts );
+			$bookings_nb_filters = apply_filters( 'bookacti_booking_system_number_of_bookings_filters', array( 'status' => $status, 'users' => $user_ids ), $atts );
 			
 			$booking_system_data[ 'events' ]                = $events[ 'events' ] ? $events[ 'events' ] : array();
 			$booking_system_data[ 'events_data' ]           = $events[ 'data' ] ? $events[ 'data' ] : array();
