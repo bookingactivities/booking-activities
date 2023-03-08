@@ -892,7 +892,7 @@ function bookacti_wc_format_order_item_bookings_ids( $order_item ) {
 
 
 /**
- * Get in order bookings per order item
+ * Get order bookings per order item
  * @since 1.9.0
  * @version 1.12.4
  * @global woocommerce $woocommerce
@@ -1002,6 +1002,7 @@ function bookacti_wc_validate_order_item_bookings_new_quantity( $order_item_book
 /**
  * Update bookings attached to all order items
  * @since 1.9.0
+ * @version 1.15.10
  * @param int|WC_Order $order_id
  * @param array $new_data
  * @param array $where
@@ -1018,9 +1019,10 @@ function bookacti_wc_update_order_items_bookings( $order_id, $new_data, $where =
 	$in__booking_id       = ! empty( $where[ 'in__booking_id' ] ) ? array_map( 'intval', $where[ 'in__booking_id' ] ) : array();
 	$in__booking_group_id = ! empty( $where[ 'in__booking_group_id' ] ) ? array_map( 'intval', $where[ 'in__booking_group_id' ] ) : array();
 	$in__status           = ! empty( $where[ 'in__status' ] ) ? $where[ 'in__status' ] : array();
+	$in__order_id         = ! empty( $where[ 'in__order_id' ] ) ? $where[ 'in__order_id' ] : array();
 	
 	// Get bookings
-	$order_items_bookings = bookacti_wc_get_order_items_bookings( $order_id, array( 'in__order_item_id' => $in__order_item_id ) );
+	$order_items_bookings = bookacti_wc_get_order_items_bookings( $order_id, array( 'in__order_item_id' => $in__order_item_id, 'in__order_id' => $in__order_id ) );
 	if( ! $order_items_bookings ) { return $updated; }
 	
 	foreach( $order_items_bookings as $order_item_id => $order_item_bookings ) {

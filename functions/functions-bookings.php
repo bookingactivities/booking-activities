@@ -679,7 +679,7 @@ function bookacti_booking_can_be_rescheduled( $booking, $context = '' ) {
 /**
  * Check if a booking can be rescheduled to another event
  * @since 1.1.0
- * @version 1.14.0
+ * @version 1.15.10
  * @param object|int $booking
  * @param int $event_id
  * @param string $event_start
@@ -692,26 +692,24 @@ function bookacti_booking_can_be_rescheduled_to( $booking, $event_id, $event_sta
 	if( is_numeric( $booking ) ) { $booking = bookacti_get_booking_by_id( $booking, true ); }
 	
 	if( ! $booking ) { 
-		$return_array[ 'status' ] = 'failed';
-		$return_array[ 'error' ] = 'booking_not_found';
+		$return_array[ 'status' ]  = 'failed';
+		$return_array[ 'error' ]   = 'booking_not_found';
 		$return_array[ 'message' ] = esc_html__( 'You are not allowed to reschedule this event.', 'booking-activities' );
 
 	} else {
 		$return_array = array( 'status' => 'success' );
-		$is_allowed = bookacti_booking_can_be_rescheduled( $booking, $context );
+		$is_allowed   = bookacti_booking_can_be_rescheduled( $booking, $context );
 		
 		if( ! $is_allowed ) {
-			$return_array[ 'status' ] = 'failed';
-			$return_array[ 'error' ] = 'reschedule_not_allowed';
+			$return_array[ 'status' ]  = 'failed';
+			$return_array[ 'error' ]   = 'reschedule_not_allowed';
 			$return_array[ 'message' ] = esc_html__( 'You are not allowed to reschedule this event.', 'booking-activities' );
 
 		} else {
-			$from_event	= bookacti_get_event_by_id( $booking->event_id );
-			$to_event	= bookacti_get_event_by_id( $event_id );
-
-			if( ! $from_event || ! $to_event || ( $from_event && $to_event && $from_event->activity_id !== $to_event->activity_id ) ) {
-				$return_array[ 'status' ] = 'failed';
-				$return_array[ 'error' ] = 'reschedule_to_different_activity';
+			$event = bookacti_get_event_by_id( $event_id );
+			if( ! $event || ( $event && intval( $booking->activity_id ) !== intval( $event->activity_id ) ) ) {
+				$return_array[ 'status' ]  = 'failed';
+				$return_array[ 'error' ]   = 'reschedule_to_different_activity';
 				$return_array[ 'message' ] = esc_html__( 'The desired event haven\'t the same activity as the booked event.', 'booking-activities' );
 			}
 		}

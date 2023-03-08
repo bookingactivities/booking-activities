@@ -160,14 +160,15 @@ function bookacti_show_hide_advanced_options( button ) {
 
 /**
  * Empty all dialog forms fields
- * @version 1.15.5
+ * @version 1.15.10
  * @param {string} scope
  */
 function bookacti_empty_all_dialog_forms( scope ) {
 	scope = typeof scope === 'undefined' || ! scope ? '.bookacti-backend-dialog ' : scope + ' ';
 
 	$j( scope + '.bookacti-form-error' ).remove();
-	$j( scope + '.bookacti-notices' ).remove();
+	$j( scope + '.bookacti-notices' ).not( scope + '.bookacti-booking-system-container .bookacti-notices' ).remove();
+	$j( scope + '.bookacti-booking-system-container .bookacti-notices' ).empty().hide();
 	$j( scope + '.bookacti-input-warning' ).removeClass( 'bookacti-input-warning' );
 	$j( scope + '.bookacti-input-error' ).removeClass( 'bookacti-input-error' );
 	$j( scope + 'input[type="hidden"]:not([name="action"]):not([name^="nonce"]):not([name="_wp_http_referer"]):not([name="qtranslate-edit-language"]):not(.bookacti-onoffswitch-hidden-input)' ).val( '' );
