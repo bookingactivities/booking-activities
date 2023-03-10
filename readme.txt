@@ -321,6 +321,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.15.11 =
+* Fix - All activities were displayed if the booking form was configured to display only activities that are restricted to a user role, and if the user was not logged in or doesn't have this role
+* Fix - Cells that should be empty in iCal booking lists may be filled with the column name
+
 = 1.15.10 - 2023/03/08 =
 * Fix - Booking status was displayed as Pending in paid and complete WC order notification (#186)
 * Fix - Do not cancel booking of a "Pending payment" order if they were already paid in another order

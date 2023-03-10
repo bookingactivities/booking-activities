@@ -366,7 +366,7 @@ function bookacti_get_booking_system_default_attributes() {
 
 /**
  * Check booking system attributes and format them to be correct
- * @version 1.15.10
+ * @version 1.15.11
  * @param array $raw_atts 
  * @return array
  */
@@ -390,49 +390,58 @@ function bookacti_format_booking_system_attributes( $raw_atts = array() ) {
 	
 	// Calendars
 	$calendars = is_numeric( $atts[ 'calendars' ] ) ? array( $atts[ 'calendars' ] ) : $atts[ 'calendars' ];
+	if( ! is_array( $atts[ 'calendars' ] ) || in_array( $atts[ 'calendars' ], array( false, 'none', 'false', 'no' ), true ) ) { 
+		$calendars = array( 'none' );
+	}
 	
 	// Activities
 	$activities = is_numeric( $atts[ 'activities' ] ) ? array( $atts[ 'activities' ] ) : $atts[ 'activities' ];
 	if( in_array( $atts[ 'activities' ], array( true, 'all', 'true', 'yes', 'ok' ), true ) ) {
 		$activities = array();
+	} else if( ! is_array( $atts[ 'activities' ] ) || in_array( $atts[ 'activities' ], array( false, 'none', 'false', 'no' ), true ) ) { 
+		$activities = array( 'none' );
 	}
 	
 	// Group categories
 	$group_categories = is_numeric( $atts[ 'group_categories' ] ) ? array( $atts[ 'group_categories' ] ) : $atts[ 'group_categories' ];
 	if( in_array( $atts[ 'group_categories' ], array( true, 'all', 'true', 'yes', 'ok' ), true ) ) {
 		$group_categories = array();
-	}
-	else if( ! is_array( $atts[ 'group_categories' ] ) || in_array( $atts[ 'group_categories' ], array( false, 'none', 'false', 'no' ), true ) ) { 
+	} else if( ! is_array( $atts[ 'group_categories' ] ) || in_array( $atts[ 'group_categories' ], array( false, 'none', 'false', 'no' ), true ) ) { 
 		$group_categories = array( 'none' );
 	}
 	
-	// Remove duplicated values
-	$calendars	= is_array( $calendars ) ? array_values( array_unique( array_map( 'intval', array_filter( $calendars, 'is_numeric' ) ) ) ) : $defaults[ 'calendars' ];
-	$activities	= is_array( $activities ) ? array_values( array_unique( array_map( 'intval', array_filter( $activities, 'is_numeric' ) ) ) ) : $defaults[ 'activities' ];
-	
 	// Check if the desired templates are active and allowed
-	$available_template_ids = array_keys( bookacti_fetch_templates( array(), 0 ) );
-	// Remove unauthorized templates
-	$had_templates = ! empty( $calendars );
-	$bypass_template_managers_check = apply_filters( 'bookacti_bypass_template_managers_check', false );
-	$allowed_templates = ! $bypass_template_managers_check && ! is_super_admin() ? array_values( array_intersect( $calendars, $available_template_ids ) ) : $calendars;
-	$formatted_atts[ 'calendars' ] = ! empty( $allowed_templates ) ? $allowed_templates : ( ! $had_templates && $available_template_ids ? $available_template_ids : array( 'none' ) );
+	if( ! in_array( 'none', $calendars, true ) ) {
+		$calendars              = array_values( array_unique( array_map( 'intval', array_filter( $calendars, 'is_numeric' ) ) ) );
+		$available_template_ids = array_keys( bookacti_fetch_templates( array(), 0 ) );
+		$had_templates          = ! empty( $calendars );
+		$allowed_templates      = ! apply_filters( 'bookacti_bypass_template_managers_check', false ) && ! is_super_admin() ? array_values( array_intersect( $calendars, $available_template_ids ) ) : $calendars;
+		$calendars              = ! empty( $allowed_templates ) ? $allowed_templates : ( ! $had_templates && $available_template_ids ? $available_template_ids : array( 'none' ) );
+	} 
+	$formatted_atts[ 'calendars' ] = $calendars;
+	
+	// If there are no calendars, disable activities and group categories too
+	if( in_array( 'none', $formatted_atts[ 'calendars' ], true ) ) {
+		$activities = $group_categories = array( 'none' );
+	}
 	
 	// Check if desired activities are active and allowed according to current user role
-	$available_activity_ids = bookacti_get_activity_ids_by_template( $formatted_atts[ 'calendars' ], false, $formatted_atts[ 'check_roles' ] );
-	// Remove unauthorized activities
-	$had_activities = ! empty( $activities );
-	$allowed_activities = array_values( array_intersect( $activities, array_map( 'intval', $available_activity_ids ) ) );
-	$formatted_atts[ 'activities' ] = ! empty( $allowed_activities ) ? $allowed_activities : ( ! $had_activities && $available_activity_ids ? $available_activity_ids : array( 'none' ) );
+	if( ! in_array( 'none', $activities, true ) ) { 
+		$activities             = array_values( array_unique( array_map( 'intval', array_filter( $activities, 'is_numeric' ) ) ) );
+		$available_activity_ids = bookacti_get_activity_ids_by_template( $formatted_atts[ 'calendars' ], false, $formatted_atts[ 'check_roles' ] );
+		$had_activities         = ! empty( $activities );
+		$allowed_activities     = array_values( array_intersect( $activities, array_map( 'intval', $available_activity_ids ) ) );
+		$activities             = ! empty( $allowed_activities ) ? $allowed_activities : ( ! $had_activities && $available_activity_ids ? $available_activity_ids : array( 'none' ) );
+	}
+	$formatted_atts[ 'activities' ] = $activities;
 	
 	// Check if desired group categories exist and are allowed according to current user role
-	$available_category_ids = bookacti_get_group_category_ids_by_template( $formatted_atts[ 'calendars' ], $formatted_atts[ 'check_roles' ] );
 	if( ! in_array( 'none', $group_categories, true ) ) { 
-		$group_categories = array_values( array_unique( array_map( 'intval', array_filter( $group_categories, 'is_numeric' ) ) ) );
-		// Remove unauthorized group categories
-		$had_group_categories = ! empty( $group_categories );
+		$available_category_ids   = bookacti_get_group_category_ids_by_template( $formatted_atts[ 'calendars' ], $formatted_atts[ 'check_roles' ] );
+		$group_categories         = array_values( array_unique( array_map( 'intval', array_filter( $group_categories, 'is_numeric' ) ) ) );
+		$had_group_categories     = ! empty( $group_categories );
 		$allowed_group_categories = array_values( array_intersect( $group_categories, array_map( 'intval', $available_category_ids ) ) );
-		$group_categories = ! empty( $allowed_group_categories ) ? $allowed_group_categories : ( ! $had_group_categories && $available_category_ids ? $available_category_ids : array( 'none' ) );
+		$group_categories         = ! empty( $allowed_group_categories ) ? $allowed_group_categories : ( ! $had_group_categories && $available_category_ids ? $available_category_ids : array( 'none' ) );
 	}
 	$formatted_atts[ 'group_categories' ] = $group_categories;
 	
