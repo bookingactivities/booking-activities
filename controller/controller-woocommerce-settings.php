@@ -156,37 +156,32 @@ add_action( 'bookacti_delete_settings', 'bookacti_delete_woocommerce_settings' )
 /**
  * Add notification global settings
  * @since 1.2.2
- * @version 1.8.6
+ * @version 1.15.11
  * @param array $notification_settings
  * @param string $notification_id
  */
 function bookacti_display_wc_notification_global_settings( $notification_settings, $notification_id ) {
-	$active_with_wc_settings = array( 
-		'admin_new'			=> array( 
-			'label'			=>  esc_html__( 'Send when an order is made', 'booking-activities' ), 
-			'description'	=>  esc_html__( 'Wether to send this automatic notification when a new WooCommerce order is made, for each booking (group) of the order.', 'booking-activities' ) ), 
-		'admin_cancelled'	=> array( 
-			'label'			=>  esc_html__( 'Send when an order is cancelled', 'booking-activities' ), 
-			'description'	=>  esc_html__( 'Wether to send this automatic notification when a WooCommerce order is "Cancelled", for each booking (group) affected in the order. It will not be sent for "Failed" orders (when a pending payment fails), because the booking is still considered as temporary.', 'booking-activities' ) ),
-		'customer_new'		=> array( 
-			'label'			=>  esc_html__( 'Send when an order is made', 'booking-activities' ), 
-			'description'	=>  esc_html__( 'Wether to send this automatic notification when a new WooCommerce order is made, for each booking (group) of the order.', 'booking-activities' ) ), 
-		'customer_pending'	=> array( 
-			'label'			=>  esc_html__( 'Send when an order is processing', 'booking-activities' ), 
-			'description'	=>  esc_html__( 'Wether to send this automatic notification when a WooCommerce order is "Processing", for each booking (group) affected in the order. It will not be sent for "Pending" orders (when an order is pending payment), because the booking is still considered as temporary. It may be sent along the WooCommerce confirmation email.', 'booking-activities' ) ), 
-		'customer_booked'	=> array( 
-			'label'			=>  esc_html__( 'Send when an order is completed', 'booking-activities' ), 
-			'description'	=>  esc_html__( 'Wether to send this automatic notification when a WooCommerce order is "Completed", for each booking (group) affected in the order. It may be sent along the WooCommerce confirmation email.', 'booking-activities' ) ), 
-		'customer_cancelled'=> array( 
-			'label'			=>  esc_html__( 'Send when an order is cancelled', 'booking-activities' ), 
-			'description'	=>  esc_html__( 'Wether to send this automatic notification when a WooCommerce order is "Cancelled", for each booking (group) affected in the order. It will not be sent for "Failed" orders (when a pending payment fails), because the booking is still considered as temporary.', 'booking-activities' ) ),
-		'customer_refunded'	=> array( 
-			'label'			=>  esc_html__( 'Send when an order is refunded', 'booking-activities' ), 
-			'description'	=>  esc_html__( 'Wether to send this automatic notification when a WooCommerce order is "Refunded", for each booking (group) affected in the order. It may be sent along the WooCommerce refund email.', 'booking-activities' ) )
-	);
+	$active_with_wc_settings = apply_filters( 'bookacti_notifications_active_with_wc', array( 
+		'new' => array( 
+			'label'       =>  esc_html__( 'Send when an order is made', 'booking-activities' ), 
+			'description' =>  esc_html__( 'Wether to send this automatic notification when a new WooCommerce order is made, for each booking (group) of the order.', 'booking-activities' ) ), 
+		'cancelled' => array( 
+			'label'       =>  esc_html__( 'Send when an order is cancelled', 'booking-activities' ), 
+			'description' =>  esc_html__( 'Wether to send this automatic notification when a WooCommerce order is "Cancelled", for each booking (group) affected in the order. It will not be sent for "Failed" orders (when a pending payment fails), because the booking is still considered as temporary.', 'booking-activities' ) ),
+		'pending' => array( 
+			'label'       =>  esc_html__( 'Send when an order is processing', 'booking-activities' ), 
+			'description' =>  esc_html__( 'Wether to send this automatic notification when a WooCommerce order is "Processing", for each booking (group) affected in the order. It will not be sent for "Pending" orders (when an order is pending payment), because the booking is still considered as temporary. It may be sent along the WooCommerce confirmation email.', 'booking-activities' ) ), 
+		'booked' => array( 
+			'label'       =>  esc_html__( 'Send when an order is completed', 'booking-activities' ), 
+			'description' =>  esc_html__( 'Wether to send this automatic notification when a WooCommerce order is "Completed", for each booking (group) affected in the order. It may be sent along the WooCommerce confirmation email.', 'booking-activities' ) ), 
+		'refunded'  => array( 
+			'label'       =>  esc_html__( 'Send when an order is refunded', 'booking-activities' ), 
+			'description' =>  esc_html__( 'Wether to send this automatic notification when a WooCommerce order is "Refunded", for each booking (group) affected in the order. It may be sent along the WooCommerce refund email.', 'booking-activities' ) )
+	), $notification_settings, $notification_id );
 	
 	foreach( $active_with_wc_settings as $notification_id_starts_with => $active_with_wc_setting ) {
-		if( strpos( $notification_id, $notification_id_starts_with ) === false ) { continue; }
+		if( strpos( $notification_id, 'admin_' . $notification_id_starts_with ) === false 
+	    &&  strpos( $notification_id, 'customer_' . $notification_id_starts_with ) === false ) { continue; }
 	?>
 		<tr>
 			<th scope='row' ><?php echo $active_with_wc_setting[ 'label' ]; ?></th>
@@ -195,8 +190,8 @@ function bookacti_display_wc_notification_global_settings( $notification_setting
 				$args = array(
 					'type'	=> 'checkbox',
 					'name'	=> 'bookacti_notification[active_with_wc]',
-					'id'	=> 'bookacti_notification_' . $notification_id . 'active_with_wc',
-					'value'	=> $notification_settings[ 'active_with_wc' ] ? $notification_settings[ 'active_with_wc' ] : 0,
+					'id'	=> 'bookacti_notification_' . $notification_id . '_active_with_wc',
+					'value'	=> ! empty( $notification_settings[ 'active_with_wc' ] ) ? 1 : 0,
 					'tip'	=> $active_with_wc_setting[ 'description' ]
 				);
 				bookacti_display_field( $args );

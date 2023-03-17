@@ -3,7 +3,7 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
-Tested up to: 6.1
+Tested up to: 6.2
 Requires PHP: 5.3
 Stable tag: 1.15.10
 License: GPLv3 or later
@@ -324,6 +324,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 = 1.15.11 =
 * Fix - All activities were displayed if the booking form was configured to display only activities that are restricted to a user role, and if the user was not logged in or doesn't have this role
 * Fix - Cells that should be empty in iCal booking lists may be filled with the column name
+* Fix - Display the "Send when order is..." option in all admin status changes notifications settings
+* Fix - Temp fix to a WooCommerce issue - Display WC notices after failing to restore a cart item (on cart page up to 10 seconds after the error occured)
+* Dev - Add hooks to validate a change of cart item quantity
 
 = 1.15.10 - 2023/03/08 =
 * Fix - Booking status was displayed as Pending in paid and complete WC order notification (#186)

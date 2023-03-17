@@ -629,7 +629,7 @@ function bookacti_merge_cart_items_with_same_booking_data( $cart_item_data, $car
 	$merge = apply_filters( 'bookacti_merge_cart_items', true, $cart_item_data, $old_cart_item, $cart_item_key, $old_cart_item_key );
 	if( ! $merge ) { return $cart_item_data; }
 
-	// Remove the old cart item (the booking won't be removed as long as it as the merged_cart_item_key parameter)
+	// Remove the old cart item (the booking won't be removed as long as it has the merged_cart_item_key parameter)
 	$woocommerce->cart->remove_cart_item( $old_cart_item_key );
 	
 	// Remove the merged key
@@ -820,7 +820,7 @@ function bookacti_add_timeout_to_cart() {
 		bookacti_wc_set_cart_expiration_date( null );
 	}
 }
-add_action( 'woocommerce_before_cart', 'bookacti_add_timeout_to_cart', 10 );
+add_action( 'woocommerce_before_cart', 'bookacti_add_timeout_to_cart', 20 );
 add_action( 'woocommerce_checkout_order_review', 'bookacti_add_timeout_to_cart', 5 );
 
 
@@ -1077,7 +1077,7 @@ function bookacti_remove_cart_item_bookings( $cart_item_key ) {
 
 /**
  * Restore the booking if user change his mind after deleting one
- * @version 1.14.0
+ * @version 1.15.11
  * @global WooCommerce $woocommerce
  * @param string $cart_item_key
  */
@@ -1085,7 +1085,7 @@ function bookacti_restore_bookings_of_removed_cart_item( $cart_item_key ) {
 	global $woocommerce;
 	$item = $woocommerce->cart->get_cart_item( $cart_item_key );
 	if( empty( $item[ '_bookacti_options' ] ) ) { return; }
-
+	
 	$quantity = $item[ 'quantity' ];
 	$init_quantity = $quantity;
 	$status_updated = false;
@@ -1111,7 +1111,7 @@ function bookacti_restore_bookings_of_removed_cart_item( $cart_item_key ) {
 	}
 	
 	$restore_bookings = $response[ 'status' ] === 'success';
-
+	
 	// Update the cart item bookings quantity
 	if( $restore_bookings && $quantity !== $init_quantity ) { 
 		$updated = true;
@@ -1153,12 +1153,31 @@ function bookacti_restore_bookings_of_removed_cart_item( $cart_item_key ) {
 		if( $removed ) {
 			do_action( 'bookacti_cart_item_not_restored_removed', $cart_item_key, $quantity, $item );
 		}
+		
+		// TEMP FIX - Allow WC notices to be displayed after failing to restore a cart item
+		if( ! empty( $_REQUEST[ 'undo_item' ] ) && wc_notice_count() ) {
+			$notices = wc_get_notices();
+			set_transient( 'bookacti_cart_item_not_restored_notices', $notices, 10 );
+		}
+		
 	} else {
 		if( $quantity !== $init_quantity ) { $woocommerce->cart->set_quantity( $cart_item_key, $quantity, true ); }
 		do_action( 'bookacti_cart_item_restored', $cart_item_key, $quantity );
 	}
 }
 add_action( 'woocommerce_cart_item_restored', 'bookacti_restore_bookings_of_removed_cart_item', 10, 1 );
+
+
+/**
+ * Display WC notices after failing to restore a cart item (on cart page up to 10 seconds after the error occured)
+ * @since 1.15.11
+ */
+function bookacti_wc_temp_fix_display_wc_notices_when_undoing_item_with_empty_cart() {
+	$notices = get_transient( 'bookacti_cart_item_not_restored_notices' );
+	if( ! $notices ) { return; }
+	wc_set_notices( $notices );
+}
+add_action( 'woocommerce_before_cart', 'bookacti_wc_temp_fix_display_wc_notices_when_undoing_item_with_empty_cart', 5 );
 
 
 /**
@@ -1451,7 +1470,7 @@ add_action( 'woocommerce_checkout_create_order', 'bookacti_wc_checkout_create_on
 /**
  * Check availability before paying for a failed order
  * @since 1.7.13
- * @version 1.12.0
+ * @version 1.15.11
  * @param WC_Order $order
  */
 function bookacti_availability_check_before_pay_action( $order ) {
@@ -1485,7 +1504,7 @@ function bookacti_availability_check_before_pay_action( $order ) {
 		// Check if the order item bookings quantity can be "changed" to its own quantity
 		// is the same as checking if an inactive order item can be turned to active
 		$quantity = $order_item_bookings[ 0 ][ 'bookings' ][ 0 ]->quantity;
-		$response = bookacti_wc_validate_cart_item_bookings_new_quantity( $order_item_bookings, $quantity );
+		$response = bookacti_wc_validate_order_item_bookings_new_quantity( $order_item_bookings, $quantity );
 		
 		// Display the error and stop checkout processing
 		if( $response[ 'status' ] !== 'success' ) {
