@@ -33,6 +33,16 @@ label[for="bookacti-booking-filter-dates-to"] + input#bookacti-booking-filter-da
 #bookacti-booking-filter-customer + .select2 .select2-selection__rendered,
 #bookacti-booking-filter-customer + .select2 .select2-selection__arrow { min-height: 32px; line-height: 32px; }
 
+.bookacti-filter-container:nth-of-type(1) .select2.select2-container { z-index: 100; }
+.bookacti-filter-container:nth-of-type(2) .select2.select2-container { z-index: 95; }
+.bookacti-filter-container:nth-of-type(3) .select2.select2-container { z-index: 90; }
+.bookacti-filter-container:nth-of-type(4) .select2.select2-container { z-index: 85; }
+.bookacti-filter-container:nth-of-type(5) .select2.select2-container { z-index: 80; }
+.bookacti-filter-container:nth-of-type(6) .select2.select2-container { z-index: 75; }
+.bookacti-filter-container:nth-of-type(7) .select2.select2-container { z-index: 70; }
+.bookacti-filter-container:nth-of-type(8) .select2.select2-container { z-index: 65; }
+.bookacti-filter-container:nth-of-type(9) .select2.select2-container { z-index: 60; }
+
 
 
 

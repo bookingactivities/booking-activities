@@ -326,7 +326,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Cells that should be empty in iCal booking lists may be filled with the column name
 * Fix - Display the "Send when order is..." option in all admin status changes notifications settings
 * Fix - Temp fix to a WooCommerce issue - Display WC notices after failing to restore a cart item (on cart page up to 10 seconds after the error occured)
+* Fix - In bookings filters, when the selectbox is resized, the input goes below the others
+* Dev - Add js hook to change the select2 data when initialized
 * Dev - Add hooks to validate a change of cart item quantity
+* Dev - Add parameters in booking system data to allow plugins to flag the events and groups of events as unavailable
+* Lib - Update FullCalendar to 6.1.5
 
 = 1.15.10 - 2023/03/08 =
 * Fix - Booking status was displayed as Pending in paid and complete WC order notification (#186)

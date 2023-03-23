@@ -1907,7 +1907,7 @@ function bookacti_is_picked_group_of_events_available_on_form( $picked_event_gro
 /**
  * Get array of events from raw events from database
  * @since 1.2.2
- * @version 1.14.0
+ * @version 1.15.11
  * @param array $events Array of objects events from database
  * @param array $raw_args {
  *  @type boolean $skip_exceptions Whether to retrieve occurrence on exceptions
@@ -1980,7 +1980,7 @@ function bookacti_get_events_array_from_db_events( $events, $raw_args = array() 
 		// Build events array
 		if( ! $args[ 'data_only' ] ) {
 			if( $event->repeat_freq === 'none' ) {
-				$events_array[ 'events' ][] = $event_fc_data;
+				$events_array[ 'events' ][] = array_merge( $event_fc_data, array( 'activity_id' => intval( $event->activity_id ), 'is_available' => true ) );
 			} else {
 				$new_occurrences          = bookacti_get_occurrences_of_repeated_event( $event, $args );
 				$events_array[ 'events' ] = array_merge( $events_array[ 'events' ], $new_occurrences );
@@ -2079,7 +2079,7 @@ function bookacti_get_bounding_events_from_db_events( $events, $raw_args = array
 /**
  * Get occurrences of repeated events
  * @since 1.8.4 (was bookacti_get_occurences_of_repeated_event)
- * @version 1.15.6
+ * @version 1.15.11
  * @param object $event Event data 
  * @param array $raw_args {
  *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
@@ -2107,10 +2107,11 @@ function bookacti_get_occurrences_of_repeated_event( $event, $raw_args = array()
 	
 	// Common properties
 	$shared_properties = array(
-		'id'          => ! empty( $event->event_id ) ? intval( $event->event_id ) : ( ! empty( $event->id ) ? intval( $event->id ) : 0 ),
-		'title'       => ! empty( $event->title ) ? apply_filters( 'bookacti_translate_text', $event->title ) : '',
-		'color'       => ! empty( $event->color ) ? $event->color : '',
-		'activity_id' => ! empty( $event->activity_id ) ? intval( $event->activity_id ) : 0
+		'id'           => ! empty( $event->event_id ) ? intval( $event->event_id ) : ( ! empty( $event->id ) ? intval( $event->id ) : 0 ),
+		'title'        => ! empty( $event->title ) ? apply_filters( 'bookacti_translate_text', $event->title ) : '',
+		'color'        => ! empty( $event->color ) ? $event->color : '',
+		'activity_id'  => ! empty( $event->activity_id ) ? intval( $event->activity_id ) : 0,
+		'is_available' => true
 	);
 	
 	// Init variables to compute occurrences
@@ -4023,6 +4024,7 @@ function bookacti_get_number_of_bookings_per_group_of_events( $groups, $raw_book
 					'quantity' => 0,
 					'distinct_users' => 0,
 					'current_user_bookings' => 0,
+					'is_available' => true
 				);
 			}
 			

@@ -2,7 +2,7 @@
 
 /**
  * Choose a group of events dialog
- * @version 1.15.5
+ * @version 1.15.11
  * @param {HTMLElement} booking_system
  * @param {Object} groups
  * @param {(FullCalendar.EventApi|Object)} event
@@ -24,7 +24,7 @@ function bookacti_dialog_choose_group_of_events( booking_system, groups, event )
 	groups_of_events_list.empty();
 
 	// Fill the dialog with the different choices
-
+	
 	// Add single event option if allowed
 	if( attributes[ 'groups_single_events' ] ) {
 		// Show availability or bookings
@@ -38,10 +38,12 @@ function bookacti_dialog_choose_group_of_events( booking_system, groups, event )
 			var avail        = availability === 1 ? bookacti_localized.avail : bookacti_localized.avails;
 			avail_html       = availability + ' ' + avail;
 		}
-
+		
 		// Check event availability
 		var is_available = true;
-
+		if( typeof event.is_available !== 'undefined' )               { if( ! event.is_available ) { is_available = false; } }
+		if( typeof event.extendedProps.is_available !== 'undefined' ) { if( ! event.extendedProps.is_available ) { is_available = false; } }
+		
 		// Check if the event is past
 		if( past_events ) {
 			var event_start = moment.utc( event.start ).clone();
@@ -165,18 +167,19 @@ function bookacti_dialog_choose_group_of_events( booking_system, groups, event )
 		
 		$j.each( groups_per_date, function( group_date, group_events ) {
 			// Get group bookings data
-			var group_availability, group_bookings, current_user_bookings, distinct_users;
-			group_availability = group_bookings = current_user_bookings = distinct_users = 0;
+			var is_group_available, group_availability, group_bookings, current_user_bookings, distinct_users;
+			is_group_available = group_availability = group_bookings = current_user_bookings = distinct_users = 0;
 			if( typeof attributes[ 'groups_bookings' ][ group_id ] !== 'undefined' ) {
 				if( typeof attributes[ 'groups_bookings' ][ group_id ][ group_date ] !== 'undefined' ) {
+					is_group_available    = attributes[ 'groups_bookings' ][ group_id ][ group_date ][ 'is_available' ];
 					group_availability    = attributes[ 'groups_bookings' ][ group_id ][ group_date ][ 'availability' ];
 					group_bookings        = attributes[ 'groups_bookings' ][ group_id ][ group_date ][ 'quantity' ];
 					current_user_bookings = attributes[ 'groups_bookings' ][ group_id ][ group_date ][ 'current_user_bookings' ];
 					distinct_users        = attributes[ 'groups_bookings' ][ group_id ][ group_date ][ 'distinct_users' ];
 				}
 			}
-
-			var is_available = parseInt( group_availability ) > 0;
+			
+			var is_available = is_group_available && group_availability > 0;
 
 			// Check if the group is past
 			var group_start = moment.utc( group_events[ 0 ].start ).clone();
