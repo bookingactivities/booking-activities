@@ -819,7 +819,7 @@ function bookacti_unpick_all_events( booking_system ) {
 /**
  * Get the picked events list items
  * @since 1.12.4
- * @version 1.15.5
+ * @version 1.15.11
  * @param {HTMLElement} booking_system
  * @returns {Object}
  */
@@ -829,7 +829,7 @@ function bookacti_get_picked_events_list_items( booking_system ) {
 	
 	// Get quantity
 	var form = booking_system.closest( 'form' ).length ? booking_system.closest( 'form' ) : booking_system.closest( '.bookacti-form-fields' );
-	qty_field = form.find( 'input[name="quantity"]' );
+	qty_field = form.find( 'input[name="quantity"], input.bookacti-quantity' );
 	var quantity = qty_field.length ? parseInt( qty_field.val() ) : 1;
 	
 	$j.each( bookacti.booking_system[ booking_system_id ][ 'picked_events' ], function( i, picked_event ) {
@@ -1339,8 +1339,8 @@ function bookacti_is_event_available( booking_system, event ) {
 	var availability_period = bookacti_get_availability_period( booking_system );
 	var is_available        = false;
 	var is_event_available  = true;
-	if( typeof event.is_available !== 'undefined' )               { if( ! event.is_available ) { is_event_available = false; } }
-	if( typeof event.extendedProps.is_available !== 'undefined' ) { if( ! event.extendedProps.is_available ) { is_event_available = false; } }
+	if( typeof event.is_available !== 'undefined' )  { if( ! event.is_available ) { is_event_available = false; } }
+	if( typeof event.extendedProps !== 'undefined' ) { if( typeof event.extendedProps.is_available !== 'undefined' ) { if( ! event.extendedProps.is_available ) { is_event_available = false; } } }
 	
 	if( availability <= 0 ) { return false; }
 	

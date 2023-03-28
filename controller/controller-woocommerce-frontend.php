@@ -1487,12 +1487,12 @@ function bookacti_availability_check_before_pay_action( $order ) {
 				if( $booking_order ) {
 					if( $booking_order->get_status() !== 'failed' ) {
 						$error_occurred = true;
-						$title = $order_item_booking[ 'type' ] === 'group' && ! empty( $order_item_booking[ 'bookings' ][ 0 ]->group_title ) ? $order_item_booking[ 'bookings' ][ 0 ]->group_title : ( ! empty( $order_item_booking[ 'bookings' ][ 0 ]->event_title ) ? $order_item_booking[ 'bookings' ][ 0 ]->event_title : '' );
-						$last_booking = end( $order_item_booking[ 'bookings' ] );
-						$first_booking = reset( $order_item_booking[ 'bookings' ] );
-						$dates = bookacti_get_formatted_event_dates( $first_booking->event_start, $last_booking->event_end, false );
+						$title          = $order_item_booking[ 'type' ] === 'group' && ! empty( $order_item_booking[ 'bookings' ][ 0 ]->group_title ) ? $order_item_booking[ 'bookings' ][ 0 ]->group_title : ( ! empty( $order_item_booking[ 'bookings' ][ 0 ]->event_title ) ? $order_item_booking[ 'bookings' ][ 0 ]->event_title : '' );
+						$last_booking   = end( $order_item_booking[ 'bookings' ] );
+						$first_booking  = reset( $order_item_booking[ 'bookings' ] );
+						$dates          = bookacti_get_formatted_event_dates( $first_booking->event_start, $last_booking->event_end, false );
 						/* translators: %1$s = the booking ID. %2$s = the event title and dates. %3$s = the order ID. */
-						wc_add_notice( sprintf( esc_html__( 'You have already purchased the booking #%1$s "%2$s" in the order #%3$s.', 'booking-activities' ), $order_item_booking[ 'id' ], $title ? $title . ' (' . $dates . ')' : $dates, $booking_order_id ), 'error' );
+						wc_add_notice( sprintf( esc_html__( 'You have already purchased the booking #%1$s "%2$s" in the order #%3$s.', 'booking-activities' ), $order_item_booking[ 'id' ], $title ? apply_filters( 'bookacti_translate_text', $title ) . ' (' . $dates . ')' : $dates, $booking_order_id ), 'error' );
 					}
 				}
 			}
@@ -1529,7 +1529,7 @@ add_action( 'woocommerce_before_pay_action', 'bookacti_availability_check_before
 /**
  * Change order bookings states after the customer validates checkout
  * @since 1.2.2
- * @version 1.15.8
+ * @version 1.15.11
  * @param int $order_id
  * @param array $posted_data
  * @param WC_Order $order
@@ -1541,7 +1541,7 @@ function bookacti_change_booking_state_after_checkout( $order_id, $posted_data, 
 	// Get bookings before change
 	$order_items_bookings = bookacti_wc_get_order_items_bookings( $order );
 	
-	// If the booking is already attached to another non "failed" order, prevent to purchase it again
+	// If the booking is already attached to another finalized order (not "failed" or "pending"), prevent to purchase it again
 	$error_messages = array();
 	foreach( $order_items_bookings as $item_id => $order_item_bookings ) {
 		foreach( $order_item_bookings as $order_item_booking ) {
@@ -1549,12 +1549,12 @@ function bookacti_change_booking_state_after_checkout( $order_id, $posted_data, 
 			if( $booking_order_id && intval( $booking_order_id ) !== intval( $order_id ) ) {
 				$booking_order = wc_get_order( $booking_order_id );
 				if( $booking_order ) {
-					if( $booking_order->get_status() !== 'failed' ) {
-						$title = $order_item_booking[ 'type' ] === 'group' && ! empty( $order_item_booking[ 'bookings' ][ 0 ]->group_title ) ? $order_item_booking[ 'bookings' ][ 0 ]->group_title : ( ! empty( $order_item_booking[ 'bookings' ][ 0 ]->event_title ) ? $order_item_booking[ 'bookings' ][ 0 ]->event_title : '' );
-						$last_booking = end( $order_item_booking[ 'bookings' ] );
-						$first_booking = reset( $order_item_booking[ 'bookings' ] );
-						$dates = bookacti_get_formatted_event_dates( $first_booking->event_start, $last_booking->event_end, false );
-						$error_messages[] = sprintf( esc_html__( 'You have already purchased the booking #%1$s "%2$s" in the order #%3$s.', 'booking-activities' ), $order_item_booking[ 'id' ], $title ? $title . ' (' . $dates . ')' : $dates, $booking_order_id );
+					if( ! in_array( $booking_order->get_status(), array( 'failed', 'pending' ), true ) ) {
+						$title            = $order_item_booking[ 'type' ] === 'group' && ! empty( $order_item_booking[ 'bookings' ][ 0 ]->group_title ) ? $order_item_booking[ 'bookings' ][ 0 ]->group_title : ( ! empty( $order_item_booking[ 'bookings' ][ 0 ]->event_title ) ? $order_item_booking[ 'bookings' ][ 0 ]->event_title : '' );
+						$last_booking     = end( $order_item_booking[ 'bookings' ] );
+						$first_booking    = reset( $order_item_booking[ 'bookings' ] );
+						$dates            = bookacti_get_formatted_event_dates( $first_booking->event_start, $last_booking->event_end, false );
+						$error_messages[] = sprintf( esc_html__( 'You have already purchased the booking #%1$s "%2$s" in the order #%3$s.', 'booking-activities' ), $order_item_booking[ 'id' ], $title ? apply_filters( 'bookacti_translate_text', $title ) . ' (' . $dates . ')' : $dates, $booking_order_id );
 						wc_delete_order_item( $item_id );
 					}
 				}
@@ -1566,16 +1566,16 @@ function bookacti_change_booking_state_after_checkout( $order_id, $posted_data, 
 	if( $order->get_status() === 'failed' ) { return; }
 	
 	$needs_payment = WC()->cart->needs_payment();
-	$customer_id= $order->get_user_id( 'edit' );
-	$user_email	= $order->get_billing_email( 'edit' );
-	$user_id	= is_numeric( $customer_id ) && $customer_id ? intval( $customer_id ) : ( $user_email ? $user_email : apply_filters( 'bookacti_unknown_user_id', 'unknown_user' ) );
+	$customer_id   = $order->get_user_id( 'edit' );
+	$user_email    = $order->get_billing_email( 'edit' );
+	$user_id       = is_numeric( $customer_id ) && $customer_id ? intval( $customer_id ) : ( $user_email ? $user_email : apply_filters( 'bookacti_unknown_user_id', 'unknown_user' ) );
 	
 	$new_data = array(
-		'user_id' => $user_id,
-		'order_id' => $order_id,
-		'status' => $needs_payment ? 'pending' : 'booked',
+		'user_id'        => $user_id,
+		'order_id'       => $order_id,
+		'status'         => $needs_payment ? 'pending' : 'booked',
 		'payment_status' => $needs_payment ? 'owed' : 'paid',
-		'active' => 'auto'
+		'active'         => 'auto'
 	);
 	
 	// Update the booking
