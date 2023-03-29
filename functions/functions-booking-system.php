@@ -95,6 +95,10 @@ function bookacti_get_booking_system( $atts ) {
 }
 
 
+function bookacti_get_new_branch() {
+	
+}
+
 /**
  * Get booking system data
  * @since 1.7.4
