@@ -6,6 +6,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Get a booking system based on given parameters
+ * You can get the system usint this function
+ * 
  * @version 1.15.0
  * @param array $atts (see bookacti_format_booking_system_attributes())
  * @return string
