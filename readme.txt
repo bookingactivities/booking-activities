@@ -326,6 +326,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - All activities were displayed if the booking form was configured to display only activities that are restricted to a user role, and if the user was not logged in or doesn't have this role
 * Fix - Cells that should be empty in iCal booking lists may be filled with the column name
 * Fix - Display the "Send when order is..." option in all admin status changes notifications settings
+* Fix - New booking notifications not sent with WC if the order doesn't need any payment
 * Fix - Temp fix to a WooCommerce issue - Display WC notices after failing to restore a cart item (on cart page up to 10 seconds after the error occured)
 * Fix - In bookings filters, when the selectbox is resized, the input goes below the others
 * Fix - In the reschedule dialog, the quantity displayed in the event list is always 1

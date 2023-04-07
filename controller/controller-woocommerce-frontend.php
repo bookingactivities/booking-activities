@@ -1575,7 +1575,8 @@ function bookacti_change_booking_state_after_checkout( $order_id, $posted_data, 
 		'order_id'       => $order_id,
 		'status'         => $needs_payment ? 'pending' : 'booked',
 		'payment_status' => $needs_payment ? 'owed' : 'paid',
-		'active'         => 'auto'
+		'active'         => 'auto',
+		'is_new_order'   => 1
 	);
 	
 	// Update the booking
