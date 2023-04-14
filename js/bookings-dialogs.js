@@ -794,7 +794,7 @@ function bookacti_dialog_change_booking_quantity( booking_id, booking_type ) {
 
 /**
  * Reschedule booking dialog
- * @version 1.15.7
+ * @version 1.15.11
  * @param {int} booking_id
  */
 function bookacti_dialog_reschedule_booking( booking_id ) {
@@ -948,7 +948,12 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 	
 	// Reset error messages on close
 	if( ! bookacti_localized.is_admin || typeof bookacti_empty_all_dialog_forms === 'undefined' ) {
-		$j( '#bookacti-reschedule-booking-dialog' ).dialog({ "beforeClose": function(){ $j( '#bookacti-reschedule-booking-dialog .bookacti-notices' ).remove(); } });
+		$j( '#bookacti-reschedule-booking-dialog' ).dialog({ 
+			"beforeClose": function() { 
+				$j( '#bookacti-reschedule-booking-dialog .bookacti-notices' ).not( '#bookacti-reschedule-booking-dialog .bookacti-booking-system-container .bookacti-notices' ).remove();
+				$j( '#bookacti-reschedule-booking-dialog .bookacti-booking-system-container .bookacti-notices' ).empty().hide();
+			}
+		});
 	}
 }
 

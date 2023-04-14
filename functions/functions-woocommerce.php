@@ -7,13 +7,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Add bookings to cart item or merge the bookings to an existing cart item
  * @since 1.9.0
- * @version 1.12.0
+ * @version 1.15.11
  * @global woocommerce $woocommerce
  * @param array $product_bookings_data
  * @return array
  */
 function bookacti_wc_add_bookings_to_cart( $product_bookings_data ) {
-	$return_array = array( 'status' => 'failed', 'bookings' => array() );
+	$return_array = array( 'status' => 'failed', 'bookings' => array(), 'booking_ids' => array(), 'booking_group_ids' => array() );
 	
 	// Check if one of the cart items is identical
 	global $woocommerce;
@@ -39,6 +39,15 @@ function bookacti_wc_add_bookings_to_cart( $product_bookings_data ) {
 			$return_array[ 'status' ] = 'success';
 			$return_array[ 'bookings' ] = bookacti_maybe_decode_json( $cart_item[ '_bookacti_options' ][ 'bookings' ], true );
 			$return_array[ 'merged_cart_item_key' ] = $cart_item_key;
+			
+			foreach( $return_array[ 'bookings' ] as $cart_item_booking ) {
+				if( empty( $cart_item_booking[ 'id' ] ) ) { continue; }
+				if( $cart_item_booking[ 'type' ] === 'group' ) {
+					$return_array[ 'booking_group_ids' ][] = intval( $cart_item_booking[ 'id' ] );
+				} else {
+					$return_array[ 'booking_ids' ][] = intval( $cart_item_booking[ 'id' ] );
+				}
+			}
 		}
 		
 		break;

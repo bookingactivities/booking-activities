@@ -425,7 +425,7 @@ add_filter( 'woocommerce_quantity_input_args', 'bookacti_set_wc_quantity_via_url
 
 /**
  * Validate add to cart form and temporarily book the event
- * @version 1.15.6
+ * @version 1.15.11
  * @global WooCommerce $woocommerce
  * @global array $global_bookacti_wc
  * @param boolean $true
@@ -505,6 +505,7 @@ function bookacti_validate_add_to_cart_and_book_temporarily( $true, $product_id,
 	$validated = false;
 	$i = 0;
 	$last_i = count( $picked_events ) - 1;
+	$all_bookings_array = array( 'status' => 'failed', 'bookings' => array(), 'booking_ids' => array(), 'booking_group_ids' => array(), 'merged_bookings' => array() );
 	foreach( $picked_events as $picked_event ) {
 		// Reset global
 		$global_bookacti_wc = array();
@@ -518,8 +519,18 @@ function bookacti_validate_add_to_cart_and_book_temporarily( $true, $product_id,
 		// If the event is booked, add the booking ID to the corresponding hidden field
 		if( $response[ 'status' ] === 'success' ) {
 			$validated = true;
-			$global_bookacti_wc[ 'bookings' ] = $response[ 'bookings' ];
+			$global_bookacti_wc[ 'bookings' ]             = $response[ 'bookings' ];
 			$global_bookacti_wc[ 'merged_cart_item_key' ] = ! empty( $response[ 'merged_cart_item_key' ] ) ? $response[ 'merged_cart_item_key' ] : '';
+			
+			$all_bookings_array[ 'status' ]            = 'success';
+			$all_bookings_array[ 'bookings' ]          = array_merge( $all_bookings_array[ 'bookings' ], $response[ 'bookings' ] );
+			$all_bookings_array[ 'booking_ids' ]       = array_merge( $all_bookings_array[ 'booking_ids' ], $response[ 'booking_ids' ] );
+			$all_bookings_array[ 'booking_group_ids' ] = array_merge( $all_bookings_array[ 'booking_group_ids' ], $response[ 'booking_group_ids' ] );
+			
+			if( ! empty( $response[ 'merged_cart_item_key' ] ) ) {
+				if( ! isset( $all_bookings_array[ 'merged_bookings' ][ $response[ 'merged_cart_item_key' ] ] ) ) { $all_bookings_array[ 'merged_bookings' ][ $response[ 'merged_cart_item_key' ] ] = array(); }
+				$all_bookings_array[ 'merged_bookings' ][ $response[ 'merged_cart_item_key' ] ] = array_merge( $all_bookings_array[ 'merged_bookings' ][ $response[ 'merged_cart_item_key' ] ], $response[ 'bookings' ] );
+			}
 			
 			do_action( 'bookacti_wc_add_to_cart_validated', $response, $product_id, $variation_id, $form_id, $product_bookings_data );
 			
@@ -535,6 +546,8 @@ function bookacti_validate_add_to_cart_and_book_temporarily( $true, $product_id,
 		
 		++$i;
 	}
+	
+	do_action( 'bookacti_wc_after_add_to_cart_validation', $all_bookings_array, $product_bookings_data, $product_id, $variation_id, $form_id );
 	
 	return $validated;
 }

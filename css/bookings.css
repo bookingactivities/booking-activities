@@ -283,7 +283,6 @@ tr.bookacti-booking-list-selected-row                             { background-c
 	#bookacti-booking-list-container .bookacti-gouped-booking:not(.hidden) td													{ border-right: 2px solid #3689b1; }
 	
 	/* Frontend booking list */
-	.bookacti-user-booking-list-table,
 	.bookacti-user-booking-list-table tr td:not(:first-child)       { border: none; }
 	.bookacti-user-booking-list-table thead                         { display: none; }
 	.bookacti-user-booking-list-table td                            { display: block; text-align: right; padding: 4px 8px; border: none; }

@@ -1,7 +1,7 @@
 <?php 
 /**
  * Calendar editor dialogs
- * @version 1.15.6
+ * @version 1.15.11
  */
 
 // Exit if accessed directly
@@ -454,10 +454,12 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			/**
 			 * Display the fields in the "Availability" tab of the Activity dialog
 			 * @since 1.4.0
-			 * @version 1.15.5
+			 * @version 1.15.11
 			 * @param array $params
 			 */
 			function bookacti_fill_activity_tab_availability( $params = array() ) {
+				bookacti_display_bara_promo( 'activity' );
+				
 				do_action( 'bookacti_activity_tab_availability_before', $params );
 			?>
 				<fieldset>
@@ -1017,10 +1019,12 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			/**
 			 * Display the fields in the "Availability" tab of the Group Category dialog
 			 * @since 1.4.0
-			 * @version 1.15.5
+			 * @version 1.15.11
 			 * @param array $params
 			 */
 			function bookacti_fill_group_category_tab_availability( $params = array() ) {
+				bookacti_display_bara_promo( 'group-category' );
+				
 				do_action( 'bookacti_group_category_tab_availability_before', $params );
 			?>
 				<fieldset>

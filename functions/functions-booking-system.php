@@ -3026,6 +3026,7 @@ function bookacti_sanitize_days_off( $days_off_raw ) {
 /**
  * Check if a date is in days off
  * @since 1.13.0
+ * @version 1.15.11
  * @param string $date YYYY-mm-dd
  * @param array $days_off (see bookacti_sanitize_days_off)
  * @return boolean
@@ -3037,7 +3038,7 @@ function bookacti_is_date_in_days_off( $date, $days_off ) {
 	$in_days_off = false;
 	foreach( $days_off as $off_period ) {
 		$from_dt = new DateTime( $off_period[ 'from' ] );
-		$to_dt = new DateTime( $off_period[ 'to' ] );
+		$to_dt = new DateTime( $off_period[ 'to' ] . ' 23:59:59' );
 		if( $date_dt >= $from_dt && $date_dt <= $to_dt ) { $in_days_off = true; break; }
 	}
 	
