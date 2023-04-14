@@ -7,13 +7,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Add bookings to cart item or merge the bookings to an existing cart item
  * @since 1.9.0
- * @version 1.12.0
+ * @version 1.15.11
  * @global woocommerce $woocommerce
  * @param array $product_bookings_data
  * @return array
  */
 function bookacti_wc_add_bookings_to_cart( $product_bookings_data ) {
-	$return_array = array( 'status' => 'failed', 'bookings' => array() );
+	$return_array = array( 'status' => 'failed', 'bookings' => array(), 'booking_ids' => array(), 'booking_group_ids' => array() );
 	
 	// Check if one of the cart items is identical
 	global $woocommerce;
@@ -39,6 +39,15 @@ function bookacti_wc_add_bookings_to_cart( $product_bookings_data ) {
 			$return_array[ 'status' ] = 'success';
 			$return_array[ 'bookings' ] = bookacti_maybe_decode_json( $cart_item[ '_bookacti_options' ][ 'bookings' ], true );
 			$return_array[ 'merged_cart_item_key' ] = $cart_item_key;
+			
+			foreach( $return_array[ 'bookings' ] as $cart_item_booking ) {
+				if( empty( $cart_item_booking[ 'id' ] ) ) { continue; }
+				if( $cart_item_booking[ 'type' ] === 'group' ) {
+					$return_array[ 'booking_group_ids' ][] = intval( $cart_item_booking[ 'id' ] );
+				} else {
+					$return_array[ 'booking_ids' ][] = intval( $cart_item_booking[ 'id' ] );
+				}
+			}
 		}
 		
 		break;
@@ -113,7 +122,7 @@ function bookacti_wc_add_bookings_to_cart( $product_bookings_data ) {
 /**
  * Get in cart bookings per cart item
  * @since 1.9.0
- * @version 1.15.0
+ * @version 1.15.11
  * @global woocommerce $woocommerce
  * @param array $cart_items
  * @param array $filters
@@ -131,8 +140,8 @@ function bookacti_wc_get_cart_items_bookings( $cart_items = array(), $filters = 
 			if( $in__cart_item_key && ! in_array( $cart_item_key, $in__cart_item_key, true ) ) { continue; }
 			$cart_item_bookings_ids = bookacti_maybe_decode_json( $cart_item[ '_bookacti_options' ][ 'bookings' ], true );
 			foreach( $cart_item_bookings_ids as $cart_item_booking_id ) {
-				if( $cart_item_booking_id[ 'type' ] === 'single' )		{ $cart_item_keys_by_booking_id[ $cart_item_booking_id[ 'id' ] ] = $cart_item_key; }
-				else if( $cart_item_booking_id[ 'type' ] === 'group' )	{ $cart_item_keys_by_booking_group_id[ $cart_item_booking_id[ 'id' ] ] = $cart_item_key; }
+				if( $cart_item_booking_id[ 'type' ] === 'single' )     { $cart_item_keys_by_booking_id[ $cart_item_booking_id[ 'id' ] ] = $cart_item_key; }
+				else if( $cart_item_booking_id[ 'type' ] === 'group' ) { $cart_item_keys_by_booking_group_id[ $cart_item_booking_id[ 'id' ] ] = $cart_item_key; }
 			}
 		}
 	}
@@ -140,11 +149,12 @@ function bookacti_wc_get_cart_items_bookings( $cart_items = array(), $filters = 
 	$bookings = array();
 	if( $cart_item_keys_by_booking_id || $cart_item_keys_by_booking_group_id ) {
 		$filters = apply_filters( 'bookacti_wc_cart_items_bookings_filters', bookacti_format_booking_filters( array_merge( $filters, array( 
-			'in__booking_id' => array_keys( $cart_item_keys_by_booking_id ), 
-			'in__booking_group_id' => array_keys( $cart_item_keys_by_booking_group_id ), 
+			'in__booking_id'            => array_keys( $cart_item_keys_by_booking_id ), 
+			'in__booking_group_id'      => array_keys( $cart_item_keys_by_booking_group_id ), 
 			'booking_group_id_operator' => 'OR',
-			'order_by' => array( 'event_start' ),
-			'order' => 'asc' ) ) ) );
+			'order_by'                  => array( 'event_start' ),
+			'order'                     => 'asc' 
+		) ) ) );
 		$bookings = bookacti_get_bookings( $filters );
 	}
 	
@@ -155,13 +165,13 @@ function bookacti_wc_get_cart_items_bookings( $cart_items = array(), $filters = 
 			$group_id = intval( $booking->group_id );
 			
 			$cart_item_key = '';
-			$booking_type = '';
+			$booking_type  = '';
 			if( $group_id && ! empty( $cart_item_keys_by_booking_group_id[ $group_id ] ) ) { 
 				$cart_item_key = $cart_item_keys_by_booking_group_id[ $group_id ];
-				$booking_type = 'group';
+				$booking_type  = 'group';
 			} else if( ! $group_id && ! empty( $cart_item_keys_by_booking_id[ $booking_id ] ) ) { 
 				$cart_item_key = $cart_item_keys_by_booking_id[ $booking_id ];
-				$booking_type = 'single';
+				$booking_type  = 'single';
 			}
 			
 			if( $cart_item_key ) {
@@ -183,7 +193,7 @@ function bookacti_wc_get_cart_items_bookings( $cart_items = array(), $filters = 
 		}
 	}
 	
-	return $cart_items_bookings;
+	return apply_filters( 'bookacti_wc_cart_items_bookings', $cart_items_bookings, $cart_items, $filters );
 }
 
 
@@ -241,6 +251,7 @@ function bookacti_wc_get_cart_item_picked_events( $cart_item_key, $one_entry_per
 /**
  * Check if we can update the quantity of a cart item bookings
  * @since 1.9.0
+ * @version 1.15.11
  * @param array $cart_item_bookings
  * @param int $new_quantity
  * @return array
@@ -256,13 +267,14 @@ function bookacti_wc_validate_cart_item_bookings_new_quantity( $cart_item_bookin
 		}
 		if( $response[ 'status' ] === 'failed' ) { break; }
 	}
-	return $response;
+	return apply_filters( 'bookacti_wc_validate_cart_item_bookings_new_quantity', $response, $cart_item_bookings, $new_quantity );
 }
 
 
 /**
  * Check if we can update the user of a cart item bookings
  * @since 1.9.0
+ * @version 1.15.11
  * @param array $cart_item_bookings
  * @param string|int $new_user_id
  * @return array
@@ -278,7 +290,7 @@ function bookacti_wc_validate_cart_item_bookings_new_user( $cart_item_bookings, 
 		}
 		if( $response[ 'status' ] === 'failed' ) { break; }
 	}
-	return $response;
+	return apply_filters( 'bookacti_wc_validate_cart_item_bookings_new_user', $response, $cart_item_bookings, $new_user_id );
 }
 
 
@@ -894,7 +906,7 @@ function bookacti_wc_format_order_item_bookings_ids( $order_item ) {
 /**
  * Get order bookings per order item
  * @since 1.9.0
- * @version 1.12.4
+ * @version 1.15.11
  * @global woocommerce $woocommerce
  * @param int|WC_Order|WC_Order_Item_Product[] $order_id
  * @param array $filters
@@ -924,17 +936,18 @@ function bookacti_wc_get_order_items_bookings( $order_id, $filters = array() ) {
 		if( ! $order_item_bookings_ids ) { continue; }
 		
 		foreach( $order_item_bookings_ids as $order_item_booking_id ) {
-			if( $order_item_booking_id[ 'type' ] === 'single' )		{ $order_item_ids_by_booking_id[ $order_item_booking_id[ 'id' ] ] = $order_item_id; }
-			else if( $order_item_booking_id[ 'type' ] === 'group' )	{ $order_item_ids_by_booking_group_id[ $order_item_booking_id[ 'id' ] ] = $order_item_id; }
+			if( $order_item_booking_id[ 'type' ] === 'single' )     { $order_item_ids_by_booking_id[ $order_item_booking_id[ 'id' ] ] = $order_item_id; }
+			else if( $order_item_booking_id[ 'type' ] === 'group' ) { $order_item_ids_by_booking_group_id[ $order_item_booking_id[ 'id' ] ] = $order_item_id; }
 		}
 	}
 	
 	$bookings = array();
 	if( $order_item_ids_by_booking_id || $order_item_ids_by_booking_group_id ) {
 		$filters = apply_filters( 'bookacti_wc_order_items_bookings_filters', bookacti_format_booking_filters( array_merge( $filters, array( 
-			'in__booking_id' => array_keys( $order_item_ids_by_booking_id ), 
-			'in__booking_group_id' => array_keys( $order_item_ids_by_booking_group_id ), 
-			'booking_group_id_operator' => 'OR' ) ) ) );
+			'in__booking_id'            => array_keys( $order_item_ids_by_booking_id ), 
+			'in__booking_group_id'      => array_keys( $order_item_ids_by_booking_group_id ), 
+			'booking_group_id_operator' => 'OR' 
+		) ) ) );
 		$bookings = bookacti_get_bookings( $filters );
 	}
 	if( ! $bookings ) { return array(); }
@@ -943,16 +956,16 @@ function bookacti_wc_get_order_items_bookings( $order_id, $filters = array() ) {
 	
 	foreach( $bookings as $booking ) {
 		$booking_id = intval( $booking->id );
-		$group_id = intval( $booking->group_id );
+		$group_id   = intval( $booking->group_id );
 
 		$order_item_id = 0;
-		$booking_type = '';
+		$booking_type  = '';
 		if( $group_id && ! empty( $order_item_ids_by_booking_group_id[ $group_id ] ) ) { 
 			$order_item_id = $order_item_ids_by_booking_group_id[ $group_id ];
-			$booking_type = 'group';
+			$booking_type  = 'group';
 		} else if( ! $group_id && ! empty( $order_item_ids_by_booking_id[ $booking_id ] ) ) { 
 			$order_item_id = $order_item_ids_by_booking_id[ $booking_id ];
-			$booking_type = 'single';
+			$booking_type  = 'single';
 		}
 
 		if( $order_item_id ) {
@@ -973,13 +986,14 @@ function bookacti_wc_get_order_items_bookings( $order_id, $filters = array() ) {
 		}
 	}
 	
-	return $order_items_bookings;
+	return apply_filters( 'bookacti_wc_order_items_bookings', $order_items_bookings, $order_items, $filters );
 }
 
 
 /**
  * Check if we can update the quantity of an order item bookings
  * @since 1.9.0
+ * @version 1.15.11
  * @param array $order_item_bookings
  * @param int $new_quantity
  * @return array
@@ -995,7 +1009,7 @@ function bookacti_wc_validate_order_item_bookings_new_quantity( $order_item_book
 		}
 		if( $response[ 'status' ] === 'failed' ) { break; }
 	}
-	return $response;
+	return apply_filters( 'bookacti_wc_validate_order_item_bookings_new_quantity', $response, $order_item_bookings, $new_quantity );
 }
 
 

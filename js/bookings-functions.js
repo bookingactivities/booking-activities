@@ -51,7 +51,7 @@ $j( document ).ready( function() {
 /**
  * Filter the booking list with current filters values
  * @since 1.8.0
- * @version 1.15.0
+ * @version 1.15.11
  * @param {Int} paged
  */
 function bookacti_filter_booking_list( paged ) {
@@ -78,11 +78,17 @@ function bookacti_filter_booking_list( paged ) {
 	var column_nb = $j( '#bookacti-booking-list thead .manage-column:not(.hidden)' ).length ? $j( '#bookacti-booking-list thead .manage-column:not(.hidden)' ).length : 1;
 	$j( '#bookacti-booking-list #the-list' ).html( '<tr class="no-items" ><td class="colspanchange" colspan="' + column_nb + '" >' + bookacti_get_loading_html() + '</td></tr>' );
 	
-	$j.ajax({
+	bookacti.current_filter_request = $j.ajax({
 		url: bookacti_localized.ajaxurl,
 		type: 'POST',
 		data: data,
 		dataType: 'json',
+		beforeSend: function() {
+			if( bookacti.current_filter_request != null ) {
+				console.log( 'abort previous' );
+				bookacti.current_filter_request.abort();
+			}
+		},
 		success: function( response ) {
 			if( response.status === 'success' ) {
 				// Update the booking list
@@ -104,6 +110,7 @@ function bookacti_filter_booking_list( paged ) {
 			}
 		},
 		error: function( e ) {
+			if( e.statusText == 'abort' ) { return; }
 			console.log( 'AJAX ' + bookacti_localized.error );
 			console.log( e );
 		},

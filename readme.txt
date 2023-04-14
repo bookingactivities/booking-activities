@@ -3,9 +3,9 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
-Tested up to: 6.1
+Tested up to: 6.2
 Requires PHP: 5.3
-Stable tag: 1.15.10
+Stable tag: 1.15.11
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -103,6 +103,7 @@ See the whole [features list here](https://booking-activities.fr/en/documentatio
 
 = Extend these features with add-ons: =
 
+* **[Resource Availability](https://booking-activities.fr/en/downloads/resource-availability/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=resource-availability&utm_content=readme)**: Manage your resource availability and assignment
 * **[Advanced Forms](https://booking-activities.fr/en/downloads/advanced-forms/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=advanced-forms&utm_content=readme)**: Add any (paid) custom fields to your booking forms
 * **[Display Pack](https://booking-activities.fr/en/downloads/display-pack/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=display-pack&utm_content=readme)**: Customize your calendars or set alternative display (datepicker)
 * **[Prices and Credits](https://booking-activities.fr/en/downloads/prices-and-credits/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=prices-and-credits&utm_content=readme)**: Set per event prices, decreasing prices, price categories (adults, children, etc.), pay with credits
@@ -320,6 +321,25 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.15.11 - 2023/04/14 =
+* Feature - Compatible with the new [Resource Availability](https://booking-activities.fr/en/downloads/resource-availability/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme) add-on!
+* Tweak - Allow to purchase a booking from checkout page after an order failed if the cart item is not removed
+* Fix - All activities were displayed if the booking form was configured to display only activities that are restricted to a user role, and if the user was not logged in or doesn't have this role
+* Fix - Cells that should be empty in iCal booking lists may be filled with the column name
+* Fix - Display the "Send when order is..." option in all admin status changes notifications settings
+* Fix - New booking notifications not sent with WC if the order doesn't need any payment
+* Fix - Temp fix to a WooCommerce issue - Display WC notices after failing to restore a cart item (on cart page up to 10 seconds after the error occured)
+* Fix - In bookings filters, when the selectbox is resized, the input goes below the others
+* Fix - In the reschedule dialog, the quantity displayed in the event list is always 1
+* Fix - Event title not translated in a WC notice (booking already purchased notice)
+* Fix - Error message not displayed after closing reschedule dialog once on frontend
+* Fix - When filtering bookings in the backend, abort the running AJAX request before starting a new one
+* Dev - Add js hook to change the select2 data when initialized
+* Dev - Add hooks to validate a change of cart item quantity
+* Dev - Add bookacti_wc_after_add_to_cart_validation hook
+* Dev - Add parameters in booking system data to allow plugins to flag the events and groups of events as unavailable
+* Lib - Update FullCalendar to 6.1.5
 
 = 1.15.10 - 2023/03/08 =
 * Fix - Booking status was displayed as Pending in paid and complete WC order notification (#186)

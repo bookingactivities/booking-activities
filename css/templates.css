@@ -234,6 +234,11 @@
 	.rtl #bookacti-template-container .fc-toolbar-chunk:nth-child(3) { text-align: center; margin-bottom: 0; }
 }
 
+@media screen and ( max-width: 782px ) {
+	input[type=checkbox].bookacti-event-action-select-checkbox:checked:before      { width: 20px; height: 20px; margin: -3px 0 0 -4px !important; }
+	.rtl input[type=checkbox].bookacti-event-action-select-checkbox:checked:before { margin: -3px -2px 0 0 !important; }
+}
+
 /* Smartphone and small tablets */
 @media screen and ( max-width: 564px ) {
 	/* Put template sidebar under calendar */

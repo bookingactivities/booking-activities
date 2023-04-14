@@ -1306,6 +1306,69 @@ function bookacti_display_baaf_promo() {
 }
 
 
+/**
+ * Display a promotional area for Resource Availability add-on
+ * @since 1.15.11
+ * @param string $type "activity" or "group-category"
+ */
+function bookacti_display_bara_promo( $type ) {
+	$is_plugin_active = bookacti_is_plugin_active( 'ba-resource-availability/ba-resource-availability.php' );
+	$license_status   = get_option( 'bara_license_status' );
+
+	// If the plugin is activated but the license is not active yet
+	if( $is_plugin_active && ( empty( $license_status ) || $license_status !== 'valid' ) ) {
+	?>
+		<div class='bookacti-addon-promo'>
+			<p>
+			<?php 
+				/* translators: %s = add-on name */
+				echo sprintf( esc_html__( 'Thank you for purchasing %s add-on!', 'booking-activities' ), '<strong>Resource&nbsp;Availability</strong>' ); 
+			?>
+			</p>
+			<p>
+				<?php esc_html_e( 'It seems you didn\'t activate your license yet. Please follow these instructions to activate your license:', 'booking-activities' ); ?>
+			</p>
+			<p>
+				<strong>
+					<a href='https://booking-activities.fr/en/docs/user-documentation/get-started-with-resource-availability-add-on/prerequisite-installation-license-activation-of-resource-availability-add-on/?utm_source=plugin&utm_medium=plugin&utm_content=encart-promo-<?php echo $type; ?>' target='_blank'>
+						<?php 
+							/* translators: %s = add-on name */
+							echo sprintf( esc_html__( 'How to activate %s license?', 'booking-activities' ), 'Resource&nbsp;Availability' ); 
+						?>
+					</a>
+				</strong>
+			</p>
+		</div>
+		<?php
+	} else if( empty( $license_status ) || $license_status !== 'valid' ) {
+	?>
+		<fieldset>
+			<legend><?php esc_html_e( 'Resources', 'booking-activities' ); ?></legend>
+			<div class='bookacti-addon-promo'>
+				<?php
+					if( $type === 'group-category' ) {
+						/* translators: %s is the placeholder for Prices and Credits add-on link */
+						$message = esc_html__( 'Create your resources, set their availability, and allocate them to your groups with %s add-on !', 'booking-activities' );
+					} else {
+						/* translators: %s is the placeholder for Prices and Credits add-on link */
+						$message = esc_html__( 'Create your resources, set their availability, and allocate them to your activities with %s add-on !', 'booking-activities' );
+					}
+					
+					$addon_link = '<strong><a href="https://booking-activities.fr/en/downloads/resource-availability/?utm_source=plugin&utm_medium=plugin&utm_medium=plugin&utm_campaign=resource-availability&utm_content=encart-promo-' . $type . '" target="_blank">Resource&nbsp;Availability</a></strong>';
+					echo sprintf( $message, $addon_link );
+				?>
+				<div>
+					<a href='https://booking-activities.fr/en/downloads/resource-availability/?utm_source=plugin&utm_medium=plugin&utm_medium=plugin&utm_campaign=resource-availability&utm_content=encart-promo-<?php echo $type; ?>' class='button' target='_blank'>
+						<?php esc_html_e( 'Learn more', 'booking-activities' ); ?>
+					</a>
+				</div>
+			</div>
+		</fieldset>
+	<?php
+	}
+}
+
+
 
 
 // PRIVACY OPTIONS

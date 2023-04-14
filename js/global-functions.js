@@ -281,35 +281,33 @@ $j.fn.serializeObject = function() {
 /**
  * Init selectbox with AJAX search
  * @since 1.7.19
- * @version 1.15.4
+ * @version 1.15.11
  */
 function bookacti_select2_init() {
 	if( ! $j.fn.select2 ) { return; }
-		
-	// Without AJAX search
-	$j( '.bookacti-select2-no-ajax:not(.select2-hidden-accessible)' ).select2({
+	
+	var select2_data = {
 		language: bookacti_localized.fullcalendar_locale,
 		containerCssClass: 'bookacti-select2-selection', // Temp fix https://github.com/select2/select2/issues/5843
 		selectionCssClass: 'bookacti-select2-selection',
 		dropdownCssClass: 'bookacti-select2-dropdown',
 		minimumResultsForSearch: 1,
+		minimumInputLength: 0,
 		width: 'element',
 		dropdownAutoWidth: true,
 		dropdownParent: $j( this ).closest( '.bookacti-backend-dialog' ).length ? $j( this ).closest( '.bookacti-backend-dialog' ) : $j( 'body' ),
 		escapeMarkup: function( text ) { return text; }
-	});
+	};
+	
+	$j( 'body' ).trigger( 'bookacti_select2_init_data', [ select2_data ] );
+	
+	// Without AJAX search
+	$j( '.bookacti-select2-no-ajax:not(.select2-hidden-accessible)' ).select2( select2_data );
 	
 	// With AJAX search
-	$j( '.bookacti-select2-ajax:not(.select2-hidden-accessible)' ).select2({
-		language: bookacti_localized.fullcalendar_locale,
-		containerCssClass: 'bookacti-select2-selection', // Temp fix https://github.com/select2/select2/issues/5843
-		selectionCssClass: 'bookacti-select2-selection',
-		dropdownCssClass: 'bookacti-select2-dropdown',
-		minimumInputLength: 3,
-		width: 'element',
-		dropdownAutoWidth: true,
-		dropdownParent: $j( this ).closest( '.bookacti-backend-dialog' ).length ? $j( this ).closest( '.bookacti-backend-dialog' ) : $j( 'body' ),
-  		escapeMarkup: function( text ) { return text; },
+	$j( '.bookacti-select2-ajax:not(.select2-hidden-accessible)' ).select2( $j.extend( true, select2_data, {
+		minimumResultsForSearch: 0,
+		minimumInputLength: Math.max( select2_data.minimumInputLength, 3 ),
 		ajax: {
 			url: bookacti_localized.ajaxurl,
 			dataType: 'json',
@@ -343,7 +341,7 @@ function bookacti_select2_init() {
 			},
 			cache: true
 		}
-	});
+	} ));
 }
 
 
