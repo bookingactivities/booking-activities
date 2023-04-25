@@ -118,7 +118,7 @@ $j( document ).ready( function() {
 
 /**
  * Initialize and display the template calendar
- * @version 1.15.7
+ * @version 1.15.12
  */
 function bookacti_load_template_calendar() {
 	var booking_system = $j( '#bookacti-template-calendar' );
@@ -175,12 +175,17 @@ function bookacti_load_template_calendar() {
 		customButtons: {
 			goTo: {
 				text: bookacti_localized.go_to_button,
+				/**
+				 * Toggle "Go to" date input - on click on "Go to" button
+				 * @version 1.15.12
+				 */
 				click: function() {
 					if( ! $j( '.bookacti-go-to-datepicker' ).length ) {
 						$j( '.fc-goTo-button' ).after( '<input type="date" class="bookacti-go-to-datepicker"/>' );
 						$j( '.bookacti-go-to-datepicker' ).hide();
 					}
 					$j( '.bookacti-go-to-datepicker' ).toggle( 200 );
+					$j( '.fc-goTo-button .bookacti-spinner' ).remove();
 				}
 			}
 		},

@@ -323,6 +323,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 == Changelog ==
 
 = 1.15.11 - 2023/04/14 =
+* Fix - JS error when setting invalid date format in "Go to" date input
+* Fix - Remove max height limitation to group categories and groups of events in calendar editor
+* Fix - Add a delay when sorting activities, groups and cetegories to avoid undesired drags in calendar editor
+
+= 1.15.11 - 2023/04/14 =
 * Feature - Compatible with the new [Resource Availability](https://booking-activities.fr/en/downloads/resource-availability/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme) add-on!
 * Tweak - Allow to purchase a booking from checkout page after an order failed if the cart item is not removed
 * Fix - All activities were displayed if the booking form was configured to display only activities that are restricted to a user role, and if the user was not logged in or doesn't have this role

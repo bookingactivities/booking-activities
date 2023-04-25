@@ -136,13 +136,26 @@ $j( document ).ready( function() {
 	/**
 	 * Go to a specific date in calendar
 	 * @since 1.12.0
-	 * @version 1.15.6
+	 * @version 1.15.12
 	 */
 	$j( 'body' ).on( 'change', '.bookacti-go-to-datepicker', function() {
+		var go_to_button = $j( this ).prev( '.fc-goTo-button' );
+		if( ! go_to_button.find( '.bookacti-spinner' ).length ) { go_to_button.append( '<span class="bookacti-spinner"></span>' ); }
+		
+		// Clear the timeout
+		if( typeof bookacti_go_to_date !== 'undefined' ) { 
+			if( bookacti_go_to_date ) { clearTimeout( bookacti_go_to_date ); }
+		}
+		
 		var date = $j( this ).val();
 		var booking_system_id = $j( this ).closest( '.bookacti-booking-system' ).length ? $j( this ).closest( '.bookacti-booking-system' ).attr( 'id' ) : 'bookacti-template-calendar';
 		if( ! date || typeof bookacti.fc_calendar[ booking_system_id ] === 'undefined' ) { return; }
-		bookacti.fc_calendar[ booking_system_id ].gotoDate( date );
+		if( date.length !== 10 || ! /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test( date ) ) { return; }
+		
+		bookacti_go_to_date = setTimeout( function() {
+			bookacti.fc_calendar[ booking_system_id ].gotoDate( date );
+			go_to_button.find( '.bookacti-spinner' ).remove();
+		}, 750 );
 	});
 	
 	

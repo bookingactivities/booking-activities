@@ -258,12 +258,14 @@ function bookacti_make_activities_draggable() {
 /**
  * Make activities sortable in editor by drag n' drop
  * @since 1.11.0
+ * @version 1.15.12
  */
 function bookacti_make_activities_sortable() {
 	$j( '#bookacti-template-activity-list' ).sortable( { 
 		items: '.bookacti-activity',
 		handle: '.bookacti-activity-visibility',
 		placeholder: 'bookacti-calendar-editor-sortable-placeholder',
+		delay: 300,
 		update: function( e, ui ) { bookacti_save_template_items_order( 'activities' ); }
 	});
 	$j( '#bookacti-template-activity-list' ).disableSelection();
@@ -399,12 +401,14 @@ function bookacti_init_groups_of_events() {
 /**
  * Sort group categories in editor by drag n' drop
  * @since 1.11.0
+ * @version 1.15.12
  */
 function bookacti_make_group_categories_sortable() {
 	$j( '#bookacti-group-categories' ).sortable( { 
 		items: '.bookacti-group-category',
 		handle: '.bookacti-group-category-title',
 		placeholder: 'bookacti-calendar-editor-sortable-placeholder',
+		delay: 300,
 		update: function( e, ui ) { bookacti_save_template_items_order( 'group_categories' ); }
 	});
 	$j( '#bookacti-group-categories' ).disableSelection();
@@ -414,12 +418,14 @@ function bookacti_make_group_categories_sortable() {
 /**
  * Sort group categories in editor by drag n' drop
  * @since 1.11.0
+ * @version 1.15.12
  */
 function bookacti_make_groups_of_events_sortable() {
 	$j( '.bookacti-groups-of-events-editor-list' ).sortable( { 
 		items: '.bookacti-group-of-events',
 		handle: '.bookacti-group-of-events-title',
 		placeholder: 'bookacti-calendar-editor-sortable-placeholder',
+		delay: 300,
 		update: function( e, ui ) { 
 			var category_id = $j( ui.item ).closest( '.bookacti-group-category' ).data( 'group-category-id' );
 			bookacti_save_template_items_order( 'groups_of_events', category_id );
@@ -1198,7 +1204,7 @@ function bookacti_maybe_display_add_group_of_events_button() {
 
 /**
  * Expand or Collapse groups of events
- * @version 1.7.14
+ * @version 1.15.12
  * @param {int} category_id
  * @param {string} force_to
  * @param {boolean} one_by_one
@@ -1211,41 +1217,13 @@ function bookacti_expand_collapse_groups_of_events( category_id, force_to, one_b
 	if( ( is_shown || force_to === 'collapse' ) && force_to !== 'expand' ) {
 		$j( '.bookacti-group-category[data-group-category-id="' + category_id + '"]' ).attr( 'data-show-groups', 0 );
 		$j( '.bookacti-group-category[data-group-category-id="' + category_id + '"]' ).data( 'show-groups', 0 );
-		$j( '.bookacti-group-category[data-group-category-id="' + category_id + '"] .bookacti-groups-of-events-editor-list' ).slideUp( 200, function() {
-			bookacti_set_editor_group_of_events_max_height( category_id );
-		});
+		$j( '.bookacti-group-category[data-group-category-id="' + category_id + '"] .bookacti-groups-of-events-editor-list' ).slideUp( 200 );
 	} else if( ( ! is_shown || force_to === 'expand' ) && force_to !== 'collapse' ) {
-		
 		// Collapse the others if one_by_one is set to true
 		if( one_by_one ) { bookacti_expand_collapse_all_groups_of_events( 'collapse', category_id ); }
-		
 		$j( '.bookacti-group-category[data-group-category-id="' + category_id + '"]' ).attr( 'data-show-groups', 1 );
 		$j( '.bookacti-group-category[data-group-category-id="' + category_id + '"]' ).data( 'show-groups', 1 );
-		$j( '.bookacti-group-category[data-group-category-id="' + category_id + '"] .bookacti-groups-of-events-editor-list' ).slideDown( 200, function() {
-			bookacti_set_editor_group_of_events_max_height( category_id );
-		});
-	}
-}
-
-
-/**
- * Set the category list max height and the events groups max height dynamically
- * @since 1.7.14
- * @param {int} category_id
- */
-function bookacti_set_editor_group_of_events_max_height( category_id ) {
-	// Set a max height to the group list
-	if( $j( '.bookacti-group-category[data-group-category-id="' + category_id + '"] .bookacti-groups-of-events-editor-list' ).outerHeight() >= 150 ) {
-		$j( '.bookacti-group-category[data-group-category-id="' + category_id + '"] .bookacti-groups-of-events-editor-list' ).css( 'height', 150 );
-	} else {
-		$j( '.bookacti-group-category[data-group-category-id="' + category_id + '"] .bookacti-groups-of-events-editor-list' ).css( 'height', 'auto' );
-	}
-	
-	// Set a max height to the category list
-	if( $j( '#bookacti-group-categories' ).outerHeight() > 200 ) {
-		$j( '#bookacti-group-categories' ).css( 'height', 200 );
-	} else {
-		$j( '#bookacti-group-categories' ).css( 'height', 'auto' );
+		$j( '.bookacti-group-category[data-group-category-id="' + category_id + '"] .bookacti-groups-of-events-editor-list' ).slideDown( 200 );
 	}
 }
 
