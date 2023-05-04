@@ -15,7 +15,7 @@
 .bookacti-select2-selection.select2-selection--multiple .select2-selection__clear      { position: absolute; right: 2px; top: 0; margin: 0 !important; line-height: 1em; z-index: 15; }
 .rtl .bookacti-select2-selection.select2-selection--multiple .select2-selection__clear { right: auto; left: 2px; }
 .bookacti-form-field-container .select2-container--default .select2-selection--single  { border-radius: 0; }
-.bookacti-select2-dropdown .select2-results__option[aria-disabled="true"] { display: none; }
+.bookacti-select2-dropdown .select2-results__option[aria-disabled="true"]:not(.loading-results) { display: none; }
 .select2-hidden-accessible[data-sortable="1"] + .select2-container .bookacti-select2-selection.select2-selection--multiple .select2-selection__choice { cursor: move; }
 
 /* Radio box */

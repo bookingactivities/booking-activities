@@ -262,7 +262,7 @@ function bookacti_get_activities_html_for_booking_page( $template_ids, $activity
 /**
  * Get Default booking filters
  * @since 1.6.0
- * @version 1.15.11
+ * @version 1.15.12
  * @return array
  */
 function bookacti_get_default_booking_filters() {
@@ -307,6 +307,8 @@ function bookacti_get_default_booking_filters() {
 		'not_in__user_id'            => array(),
 		'not_in__form_id'            => array(),
 		'not_in__order_id'           => array(),
+		'not_in__status'             => array(),
+		'not_in__payment_status'     => array(),
 		'fetch_meta'                 => false
 	));
 }
@@ -315,7 +317,7 @@ function bookacti_get_default_booking_filters() {
 /**
  * Format booking filters
  * @since 1.3.0
- * @version 1.15.11
+ * @version 1.15.12
  * @param array $filters 
  * @return array
  */
@@ -372,7 +374,7 @@ function bookacti_format_booking_filters( $filters = array() ) {
 			if( ! is_array( $current_value ) ) { $current_value = $default_value; }
 			else { $current_value = array_filter( array_map( 'bookacti_sanitize_date', array_filter( $current_value, 'is_string' ) ) ); }
 		
-		} else if( in_array( $filter, array( 'status', 'payment_status' ), true ) ) {
+		} else if( in_array( $filter, array( 'status', 'payment_status', 'not_in__status', 'not_in__payment_status' ), true ) ) {
 			if( is_string( $current_value ) )  { $current_value = array( $current_value ); }
 			if( ! is_array( $current_value ) ) { $current_value = $default_value; }
 			else if( ( $i = array_search( 'all', $current_value, true ) ) !== false ) { unset( $current_value[ $i ] ); }

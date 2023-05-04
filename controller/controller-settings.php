@@ -769,7 +769,7 @@ add_filter( 'editable_extensions', 'bookacti_add_editable_extensions', 10, 2 );
 /**
  * Search users for AJAX selectbox
  * @since 1.7.19
- * @version 1.8.3
+ * @version 1.15.12
  */
 function bookacti_controller_search_select2_users() {
 	// Check nonce
@@ -796,7 +796,6 @@ function bookacti_controller_search_select2_users() {
 		'search' => $term !== '' ? '*' . esc_attr( $term ) . '*' : '',
 		'search_columns' => array( 'user_login', 'user_url', 'user_email', 'user_nicename', 'display_name' ),
 		'option_label' => array( 'first_name', ' ', 'last_name', ' (', 'user_login', ' / ', 'user_email', ')' ),
-		'allow_current' => 0,
 		'include' => $id__in, 'exclude' => $id__not_in,
 		'role' => $role, 'role__in' => $role__in, 'role__not_in' => $role__not_in,
 		'meta' => true, 'meta_single' => true,
@@ -806,11 +805,6 @@ function bookacti_controller_search_select2_users() {
 	
 	$users = bookacti_get_users_data( $args );
 	$options = array();
-	
-	// Add "Current user" option
-	if( ! empty( $_REQUEST[ 'allow_current' ] ) ) {
-		$options[] = array( 'id' => 'current', 'text' => esc_html__( 'Current user', 'booking-activities' ) );
-	}
 	
 	// Add user options
 	foreach( $users as $user ) {

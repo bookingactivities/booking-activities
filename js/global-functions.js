@@ -1,7 +1,6 @@
 $j( document ).ready( function() {
 	// Initialize select2
 	bookacti_select2_init();
-	bookacti_select2_sortable_init();
 	
 	/**
 	 * Move option to the bottom of the sortable selectbox when it is selected - on select2:select
@@ -281,7 +280,7 @@ $j.fn.serializeObject = function() {
 /**
  * Init selectbox with AJAX search
  * @since 1.7.19
- * @version 1.15.11
+ * @version 1.15.12
  */
 function bookacti_select2_init() {
 	if( ! $j.fn.select2 ) { return; }
@@ -307,19 +306,25 @@ function bookacti_select2_init() {
 	// With AJAX search
 	$j( '.bookacti-select2-ajax:not(.select2-hidden-accessible)' ).select2( $j.extend( true, select2_data, {
 		minimumResultsForSearch: 0,
-		minimumInputLength: Math.max( select2_data.minimumInputLength, 3 ),
 		ajax: {
 			url: bookacti_localized.ajaxurl,
 			dataType: 'json',
 			delay: 1000,
 			data: function( params ) {
 				var data_type = $j( this ).data( 'type' ) ? $j( this ).data( 'type' ).trim() : '';
+				var current_options = [];
+				$j( this ).find( 'option' ).each( function() {
+					if( $j( this ).val() !== '' ) {
+						current_options.push( { "id": $j( this ).val(), "text": $j( this ).text() } );
+					}
+				});
+				
 				var data = {
-					term: params.term,
 					action: data_type ? 'bookactiSelect2Query_' + data_type : 'bookactiSelect2Query',
+					term: typeof params.term == 'string' ? params.term : '',
+					options: current_options,
 					name: $j( this ).attr( 'name' ) ? $j( this ).attr( 'name' ) : '',
 					id: $j( this ).attr( 'id' ) ? $j( this ).attr( 'id' ) : '',
-					allow_current: $j( this ).find( 'option[value="current"]' ).length ? 1 : 0,
 					nonce: bookacti_localized.nonce_query_select2_options
 				};
 				
@@ -328,32 +333,48 @@ function bookacti_select2_init() {
 				return data;
 			},
 			processResults: function( data ) {
-				var options = [];
-				if( typeof data.options !== 'undefined' ) {
-					options = data.options;
-				}
-				
-				var results = { results: options };
+				var results = { "results": typeof data.options !== 'undefined' ? data.options : [] };
 				
 				$j( this ).trigger( 'bookacti_select2_query_results', [ results, data ] );
 				
 				return results;
 			},
+			transport: function( params, success, failure ) {
+				var search_length = params.data.term.length;
+				if( search_length >= Math.max( select2_data.minimumInputLength, 3 ) ) {
+					var request = $j.ajax( params );
+					request.then( success );
+					request.fail( failure );
+				} else {
+					var request = { "abort": function(){} };
+					success( { "options": params.data.options } );
+				}
+				return request;
+			},
 			cache: true
 		}
 	} ));
+	
+	$j( 'body' ).on( 'select2:open', '.bookacti-select2-ajax', function() { 
+		$j( 'input.select2-search__field' ).attr( 'placeholder', bookacti_localized.select2_search_placeholder.replace( '{nb}', Math.max( select2_data.minimumInputLength, 3 ) ) );
+	});
+	
+	// Make options sortable
+	bookacti_select2_sortable_init();
 }
 
 
 /**
  * Make select2 multiple select sortable
  * @since 1.15.4
+ * @version 1.15.12
  * @param {String} selectbox_selector
  */
 function bookacti_select2_sortable_init( selectbox_selector ) {
 	if( typeof selectbox_selector === 'undefined' ) {
 		selectbox_selector = '.select2-hidden-accessible[data-sortable="1"] + .select2-container .bookacti-select2-selection.select2-selection--multiple .select2-selection__rendered';
 	}
+	if( ! $j( selectbox_selector ).length ) { return; }
 	
 	$j( selectbox_selector ).sortable({
 		containment: 'parent',

@@ -392,7 +392,7 @@ function bookacti_is_db_version_outdated() {
 /**
  * Get the variables used with javascript
  * @since 1.8.0
- * @version 1.15.7
+ * @version 1.15.12
  * @return array
  */
 function bookacti_get_js_variables() {
@@ -421,6 +421,7 @@ function bookacti_get_js_variables() {
 		'error_not_allowed'                  => esc_html__( 'You are not allowed to do that.', 'booking-activities' ),
 		'error_user_not_logged_in'           => esc_html__( 'You are not logged in. Please create an account and log in first.', 'booking-activities' ),
 		'error_password_not_strong_enough'   => esc_html__( 'Your password is not strong enough.', 'booking-activities' ),
+		'select2_search_placeholder'         => esc_html__( 'Please enter {nb} or more characters.', 'booking-activities' ),
 
 		// OTHERS
 		'loading'                            => esc_html__( 'Loading', 'booking-activities' ),
