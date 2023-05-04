@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 6.2
 Requires PHP: 5.3
-Stable tag: 1.15.11
+Stable tag: 1.15.12
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -321,6 +321,17 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.15.12 - 2023/05/04 =
+* Tweak - Add french translation for select2, more translation files can be added in wp-content/languages/select2
+* Tweak - Display existing options immediatly in select2 using AJAX 
+* Fix - Display select2 loading during AJAX search
+* Fix - JS error when setting invalid date format in "Go to" date input
+* Fix - Remove max height limitation to group categories and groups of events in calendar editor
+* Fix - Add a delay when sorting activities, groups and cetegories to avoid undesired drags in calendar editor
+* Fix - Hide WC Payments Google Pay / Apple Pay buttons on "Activity" product pages (it is too early for Booking Activities)
+* Dev - Add not_in__status and not_in__payment_status filters to bookacti_get_bookings()
+* Lib - Update FullCalendar to 6.1.6
 
 = 1.15.11 - 2023/04/14 =
 * Feature - Compatible with the new [Resource Availability](https://booking-activities.fr/en/downloads/resource-availability/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme) add-on!

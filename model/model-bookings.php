@@ -126,7 +126,7 @@ function bookacti_update_booking( $booking_data, $where = array() ) {
 
 /**
  * Get bookings according to filters
- * @version 1.15.11
+ * @version 1.15.12
  * @global wpdb $wpdb
  * @param array $filters Use bookacti_format_booking_filters() before
  * @return array
@@ -187,6 +187,18 @@ function bookacti_get_bookings( $filters ) {
 		$variables = array_merge( $variables, $filters[ 'status' ] );
 	}
 	
+	if( $filters[ 'not_in__status' ] ) {
+		$query .= ' AND B.state NOT IN ( %s ';
+		$array_count = count( $filters[ 'not_in__status' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %s ';
+			}
+		}
+		$query .= ') ';
+		$variables = array_merge( $variables, $filters[ 'not_in__status' ] );
+	}
+	
 	if( $filters[ 'payment_status' ] ) {
 		$query .= ' AND B.payment_status IN ( %s ';
 		$array_count = count( $filters[ 'payment_status' ] );
@@ -197,6 +209,18 @@ function bookacti_get_bookings( $filters ) {
 		}
 		$query .= ') ';
 		$variables = array_merge( $variables, $filters[ 'payment_status' ] );
+	}
+	
+	if( $filters[ 'not_in__payment_status' ] ) {
+		$query .= ' AND B.payment_status NOT IN ( %s ';
+		$array_count = count( $filters[ 'not_in__payment_status' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %s ';
+			}
+		}
+		$query .= ') ';
+		$variables = array_merge( $variables, $filters[ 'not_in__payment_status' ] );
 	}
 	
 	if( $filters[ 'templates' ] ) {
@@ -536,7 +560,7 @@ function bookacti_get_bookings( $filters ) {
 /**
  * Get the total amount of booking rows according to filters
  * @since 1.3.1
- * @version 1.15.11
+ * @version 1.15.12
  * @global wpdb $wpdb
  * @param array $filters Use bookacti_format_booking_filters() before
  * @return int
@@ -598,6 +622,18 @@ function bookacti_get_number_of_booking_rows( $filters ) {
 		$variables = array_merge( $variables, $filters[ 'status' ] );
 	}
 	
+	if( $filters[ 'not_in__status' ] ) {
+		$query .= ' AND B.state NOT IN ( %s ';
+		$array_count = count( $filters[ 'not_in__status' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %s ';
+			}
+		}
+		$query .= ') ';
+		$variables = array_merge( $variables, $filters[ 'not_in__status' ] );
+	}
+	
 	if( $filters[ 'payment_status' ] ) {
 		$query .= ' AND B.payment_status IN ( %s ';
 		$array_count = count( $filters[ 'payment_status' ] );
@@ -608,6 +644,18 @@ function bookacti_get_number_of_booking_rows( $filters ) {
 		}
 		$query .= ') ';
 		$variables = array_merge( $variables, $filters[ 'payment_status' ] );
+	}
+	
+	if( $filters[ 'not_in__payment_status' ] ) {
+		$query .= ' AND B.payment_status NOT IN ( %s ';
+		$array_count = count( $filters[ 'not_in__payment_status' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %s ';
+			}
+		}
+		$query .= ') ';
+		$variables = array_merge( $variables, $filters[ 'not_in__payment_status' ] );
 	}
 	
 	if( $filters[ 'templates' ] ) {
@@ -898,7 +946,7 @@ function bookacti_get_number_of_booking_rows( $filters ) {
 
 /**
  * Get number of bookings of a specific event or a specific occurrence
- * @version 1.15.11
+ * @version 1.15.12
  * @global wpdb $wpdb
  * @param array $filters Use bookacti_format_booking_filters() before
  * @return int
@@ -969,6 +1017,18 @@ function bookacti_get_number_of_bookings( $filters ) {
 		$variables = array_merge( $variables, $filters[ 'status' ] );
 	}
 	
+	if( $filters[ 'not_in__status' ] ) {
+		$query .= ' AND B.state NOT IN ( %s ';
+		$array_count = count( $filters[ 'not_in__status' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %s ';
+			}
+		}
+		$query .= ') ';
+		$variables = array_merge( $variables, $filters[ 'not_in__status' ] );
+	}
+	
 	if( $filters[ 'payment_status' ] ) {
 		$query .= ' AND B.payment_status IN ( %s ';
 		$array_count = count( $filters[ 'payment_status' ] );
@@ -979,6 +1039,18 @@ function bookacti_get_number_of_bookings( $filters ) {
 		}
 		$query .= ') ';
 		$variables = array_merge( $variables, $filters[ 'payment_status' ] );
+	}
+	
+	if( $filters[ 'not_in__payment_status' ] ) {
+		$query .= ' AND B.payment_status NOT IN ( %s ';
+		$array_count = count( $filters[ 'not_in__payment_status' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %s ';
+			}
+		}
+		$query .= ') ';
+		$variables = array_merge( $variables, $filters[ 'not_in__payment_status' ] );
 	}
 	
 	if( $filters[ 'templates' ] ) {

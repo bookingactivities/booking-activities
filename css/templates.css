@@ -9,6 +9,10 @@
 
 #bookacti-template-container .fc-toolbar-chunk { position: relative; }
 .bookacti-go-to-datepicker { position: absolute; z-index: 10; height: 34px; }
+.fc-goTo-button .bookacti-spinner       { zoom: .5; display: inline-block; vertical-align: middle; margin-left: 15px; }
+.rtl .fc-goTo-button .bookacti-spinner  { margin-left: 0; margin-right: 15px; }
+.fc-goTo-button .bookacti-spinner:after { background-color: #F5F5F5; }
+
 
 /***** Events *****/
 #bookacti-template-container .bookacti-total-availability::before { content: '/'; }

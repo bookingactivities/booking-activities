@@ -50,6 +50,10 @@ table.woocommerce_order_items ul.bookacti-booking-events-list { margin: 0; }
 	/* WC Stripe support */
 	.woocommerce div.product.bookacti-activity #wc-stripe-payment-request-wrapper,
 	.woocommerce div.product.bookacti-activity #wc-stripe-payment-request-button-separator { display: none !important; }
+	
+	/* WC Payment support */
+	.woocommerce div.product.bookacti-activity #wcpay-payment-request-wrapper,
+	.woocommerce div.product.bookacti-activity #wcpay-payment-request-button-separator { display: none !important; }
 
 	
 /* Cart, Checkout */
