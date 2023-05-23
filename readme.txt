@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 6.2
 Requires PHP: 5.3
-Stable tag: 1.15.12
+Stable tag: 1.15.13
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -321,6 +321,12 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.15.13 - 2023/05/23 =
+* Breaking change - If you have made javascript custom code using Booking Activities' $.fn.serializeObject function, you must replace it with bookacti_serialize_object( your_form )
+* Tweak - Allow to change notifications title
+* Dev - Replace homemade $.fn.serializeObject with bookacti_serialize_object() to improve compatibility (especially with the "jquery-serialize-object" script provided in WP)
+* Lib - Update FullCalendar to 6.1.7
 
 = 1.15.12 - 2023/05/04 =
 * Tweak - Add french translation for select2, more translation files can be added in wp-content/languages/select2

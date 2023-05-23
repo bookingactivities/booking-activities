@@ -188,7 +188,7 @@ function bookacti_init_template_dialogs() {
 
 /**
  * Dialog Create Template
- * @version 1.15.5
+ * @version 1.15.13
  */
 function bookacti_dialog_add_new_template() {
 	// Set the dialog title
@@ -237,7 +237,7 @@ function bookacti_dialog_add_new_template() {
 				var isFormValid = bookacti_validate_template_form();
 
 				if( isFormValid ) {
-					var data = $j( '#bookacti-template-data-form' ).serializeObject();
+					var data = bookacti_serialize_object( $j( '#bookacti-template-data-form' ) );
 					
 					$j( '#bookacti-template-data-dialog' ).trigger( 'bookacti_insert_template_before', [ data ] );
 					
@@ -322,7 +322,7 @@ function bookacti_dialog_add_new_template() {
 
 /**
  * Dialog Update Template
- * @version 1.15.5
+ * @version 1.15.13
  * @param {int} template_id
  */
 function bookacti_dialog_update_template( template_id ) {
@@ -380,7 +380,7 @@ function bookacti_dialog_update_template( template_id ) {
 				var isFormValid = bookacti_validate_template_form();
 				if( ! isFormValid ) { return; }
 				
-				var data = $j( '#bookacti-template-data-form' ).serializeObject();
+				var data = bookacti_serialize_object( $j( '#bookacti-template-data-form' ) );
 
 				$j( '#bookacti-template-data-dialog' ).trigger( 'bookacti_update_template_before', [ data, template_id ] );
 				
@@ -610,7 +610,7 @@ function bookacti_dialog_update_booked_event_dates( fc_event, fc_old_event, reve
 
 /**
  * Dialog Update Event
- * @version 1.15.5
+ * @version 1.15.13
  * @param {FullCalendar.EventApi} fc_event
  */
 function bookacti_dialog_update_event( fc_event ) {
@@ -670,7 +670,7 @@ function bookacti_dialog_update_event( fc_event ) {
 			var isFormValid = bookacti_validate_event_form();
 			if( ! isFormValid ) { return; }
 			
-			var data = $j( '#bookacti-event-data-form' ).serializeObject();
+			var data = bookacti_serialize_object( $j( '#bookacti-event-data-form' ) );
 			data.interval = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_interval' ];
 
 			$j( '#bookacti-event-data-dialog' ).trigger( 'bookacti_update_event_before', [ data, fc_event ] );
@@ -914,7 +914,7 @@ function bookacti_dialog_update_event_dates( fc_event ) {
 
 /**
  * Dialog Delete Event
- * @version 1.15.5
+ * @version 1.15.13
  * @param {FullCalendar.EventApi} fc_event
  */
 function bookacti_dialog_delete_event( fc_event ) {
@@ -936,7 +936,7 @@ function bookacti_dialog_delete_event( fc_event ) {
 				// Remove old feedbacks
 				$j( '#bookacti-delete-event-dialog .bookacti-notices' ).remove();
 				
-				var data = $j( '#bookacti-delete-event-form' ).serializeObject();
+				var data = bookacti_serialize_object( $j( '#bookacti-delete-event-form' ) );
 				data.event_id = fc_event.groupId;
 				
 				$j( '#bookacti-delete-event-dialog' ).trigger( 'bookacti_deactivate_event_before', [ data, fc_event ] );
@@ -1018,7 +1018,7 @@ function bookacti_dialog_delete_event( fc_event ) {
 /**
  * Dialog Unbind occurrence of a repeated event
  * @since 1.12.0 (was bookacti_dialog_unbind_occurrences)
- * @version 1.15.5
+ * @version 1.15.13
  * @param {FullCalendar.EventApi} fc_event
  */
 function bookacti_dialog_unbind_event_occurrences( fc_event ) {
@@ -1043,7 +1043,7 @@ function bookacti_dialog_unbind_event_occurrences( fc_event ) {
 				$j( '#bookacti-unbind-event-dialog .bookacti-form-error' ).remove();
 				$j( '#bookacti-unbind-event-dialog .bookacti-input-warning' ).removeClass( 'bookacti-input-warning' );
 				
-				var form_data = $j( '#bookacti-unbind-event-form' ).serializeObject();
+				var form_data = bookacti_serialize_object( $j( '#bookacti-unbind-event-form' ) );
 				
 				var event_start = moment.utc( fc_event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
 				var data = $j.extend({
@@ -1440,7 +1440,7 @@ function bookacti_dialog_import_activity() {
 
 /**
  * Dialog Create Activity
- * @version 1.15.5
+ * @version 1.15.13
  */
 function bookacti_dialog_create_activity() {
 	if( ! bookacti.selected_template ) { return; }
@@ -1472,7 +1472,7 @@ function bookacti_dialog_create_activity() {
 				var is_form_valid = bookacti_validate_activity_form();
 				if( ! is_form_valid ) { return; }
 				
-				var data = $j( '#bookacti-activity-data-form' ).serializeObject();
+				var data = bookacti_serialize_object( $j( '#bookacti-activity-data-form' ) );
 
 				$j( '#bookacti-activity-data-dialog' ).trigger( 'bookacti_insert_activity_before', [ data ] );
 
@@ -1532,7 +1532,7 @@ function bookacti_dialog_create_activity() {
 
 /**
  * Open a dialog to update an activity
- * @version 1.15.5
+ * @version 1.15.13
  * @param {Int} activity_id
  */
 function bookacti_dialog_update_activity( activity_id ) {
@@ -1595,7 +1595,7 @@ function bookacti_dialog_update_activity( activity_id ) {
 				var is_form_valid = bookacti_validate_activity_form();
 				if( ! is_form_valid ) { return; }
 				
-				var data = $j( '#bookacti-activity-data-form' ).serializeObject();
+				var data = bookacti_serialize_object( $j( '#bookacti-activity-data-form' ) );
 
 				$j( '#bookacti-activity-data-dialog' ).trigger( 'bookacti_update_activity_before', [ data, activity_id ] );
 
@@ -1761,7 +1761,7 @@ function bookacti_dialog_delete_activity( activity_id ) {
 
 /**
  * Create a group of events
- * @version 1.15.5
+ * @version 1.15.13
  * @param {int} category_id
  */
 function bookacti_dialog_create_group_of_events( category_id ) {
@@ -1815,7 +1815,7 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 				var is_form_valid = bookacti_validate_group_of_events_form();
 				
 				if( is_form_valid ) {
-					var data         = $j( '#bookacti-group-of-events-form' ).serializeObject();
+					var data         = bookacti_serialize_object( $j( '#bookacti-group-of-events-form' ) );
 					data.action      = 'bookactiInsertGroupOfEvents';
 					data.template_id = bookacti.selected_template;
 					data.interval    = JSON.stringify( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_interval' ] );
@@ -1889,7 +1889,7 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 
 /**
  * Update a group of events with selected events 
- * @version 1.15.5
+ * @version 1.15.13
  * @param {int} group_id
  */
 function bookacti_dialog_update_group_of_events( group_id ) {
@@ -1973,7 +1973,7 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 			var is_form_valid = bookacti_validate_group_of_events_form();
 
 			if( is_form_valid ) {
-				var data = $j( '#bookacti-group-of-events-form' ).serializeObject();
+				var data      = bookacti_serialize_object( $j( '#bookacti-group-of-events-form' ) );
 				data.action   = 'bookactiUpdateGroupOfEvents';
 				data.group_id = group_id;
 				data.interval = JSON.stringify( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_interval' ] );
@@ -2211,7 +2211,7 @@ function bookacti_get_group_of_events_occurrences( group_id ) {
 
 /**
  * Dialog Delete a group of events
- * @version 1.15.5
+ * @version 1.15.13
  * @param {int} group_id
  */
 function bookacti_dialog_delete_group_of_events( group_id ) {
@@ -2233,7 +2233,7 @@ function bookacti_dialog_delete_group_of_events( group_id ) {
 				// Remove old feedbacks
 				$j( '#bookacti-delete-group-of-events-dialog .bookacti-notices' ).remove();
 				
-				var data = $j( '#bookacti-delete-group-of-events-form' ).serializeObject();
+				var data = bookacti_serialize_object( $j( '#bookacti-delete-group-of-events-form' ) );
 				data.cancel_bookings = $j( '#bookacti-delete-group-of-events-cancel_bookings' ).is( ':checked' ) ? 1 : 0; // Sanitize as int (important to be used later in ajax success)
 				data.group_id = group_id;
 				
@@ -2306,7 +2306,7 @@ function bookacti_dialog_delete_group_of_events( group_id ) {
 /**
  * Dialog Unbind occurrence of a repeating group of events
  * @since 1.12.0
- * @version 1.15.5
+ * @version 1.15.13
  * @param {Int} group_id
  */
 function bookacti_dialog_unbind_group_of_events_occurrences( group_id ) {
@@ -2333,7 +2333,7 @@ function bookacti_dialog_unbind_group_of_events_occurrences( group_id ) {
 			$j( '#bookacti-unbind-group-of-events-dialog .bookacti-form-error' ).remove();
 			$j( '#bookacti-unbind-group-of-events-dialog .bookacti-input-warning' ).removeClass( 'bookacti-input-warning' );
 
-			var form_data = $j( '#bookacti-unbind-group-of-events-form' ).serializeObject();
+			var form_data = bookacti_serialize_object( $j( '#bookacti-unbind-group-of-events-form' ) );
 
 			var data = $j.extend({
 				'group_id':   group_id,
@@ -2415,7 +2415,7 @@ function bookacti_dialog_unbind_group_of_events_occurrences( group_id ) {
 
 /**
  * Update a group category
- * @version 1.15.5
+ * @version 1.15.13
  * @param {int} category_id
  */
 function bookacti_dialog_update_group_category( category_id ) {
@@ -2462,7 +2462,7 @@ function bookacti_dialog_update_group_category( category_id ) {
 				var is_form_valid = bookacti_validate_group_category_form();
 
 				if( is_form_valid ) {
-					var data = $j( '#bookacti-group-category-form' ).serializeObject();
+					var data = bookacti_serialize_object( $j( '#bookacti-group-category-form' ) );
 					
 					$j( '#bookacti-group-category-dialog' ).trigger( 'bookacti_update_group_category_before', [ data, category_id ] );
 					

@@ -342,7 +342,7 @@ function bookacti_fill_fields_from_array( fields, field_prefix, scope ) {
 
 /**
  * Switch a selectbox to multiple
- * @version 1.15.5
+ * @version 1.15.13
  * @param {HTMLElement} checkbox
  */
 function bookacti_switch_select_to_multiple( checkbox ) {
@@ -362,6 +362,7 @@ function bookacti_switch_select_to_multiple( checkbox ) {
 	$j( 'select#' + select_id + ' option[value="none"]' ).prop( 'disabled', is_checked );
 	$j( 'select#' + select_id + ' option[value="parent"]' ).prop( 'disabled', is_checked );
 	$j( 'select#' + select_id + ' option[value="site"]' ).prop( 'disabled', is_checked );
+	$j( 'select#' + select_id + ' option[data-not-multiple="1"]' ).prop( 'disabled', is_checked );
 	$j( 'select#' + select_id + ' option:disabled:selected' ).prop( 'selected', false );
 	
 	// Add the [] at the end of the select name

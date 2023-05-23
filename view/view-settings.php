@@ -23,11 +23,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	// Define the ordered tabs here: 'tab slug' => 'tab title'
 	$tabs = apply_filters( 'bookacti_settings_tabs', array ( 
 		/* translators: Used for a category of parameters */
-		'general'		=> esc_html__( 'General', 'booking-activities' ),
-		'cancellation'	=> esc_html__( 'Cancellation', 'booking-activities' ),
-		'notifications'	=> esc_html__( 'Notifications', 'booking-activities' ),
-		'messages'		=> esc_html__( 'Messages', 'booking-activities' ),
-		'licenses'		=> esc_html__( 'Licenses', 'booking-activities' )
+		'general'       => esc_html__( 'General', 'booking-activities' ),
+		'cancellation'  => esc_html__( 'Cancellation', 'booking-activities' ),
+		'notifications' => esc_html__( 'Notifications', 'booking-activities' ),
+		'messages'      => esc_html__( 'Messages', 'booking-activities' ),
+		'licenses'      => esc_html__( 'Licenses', 'booking-activities' )
 	) );
 	
 	// Display the tabs
@@ -44,8 +44,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	</h2>
 	
 	<?php
-	$save_with_ajax	= isset( $_GET[ 'notification_id' ] ) ? 'bookacti_save_settings_with_ajax' : '';
-	$action			= $save_with_ajax ? '' : 'options.php';
+	$save_with_ajax = isset( $_GET[ 'notification_id' ] ) ? 'bookacti_save_settings_with_ajax' : '';
+	$action = $save_with_ajax ? '' : 'options.php';
 	?>
 	<form method='post' action='<?php echo $action; ?>' id='bookacti-settings' class='bookacti-settings-tab-<?php echo $active_tab . ' ' . $save_with_ajax; ?>' >
 		<?php

@@ -249,8 +249,8 @@ $j( document ).ready( function() {
 	 */
 	$j( '#bookacti-form-editor' ).on( 'bookacti_field_updated bookacti_field_reset', function( e, field_id, field_name, response ){
 		if( field_name === 'calendar' ) {
-			var booking_system		= $j( '#bookacti-form-editor-field-' + field_id + ' .bookacti-booking-system' );
-			var booking_system_id	= booking_system.attr( 'id' );
+			var booking_system    = $j( '#bookacti-form-editor-field-' + field_id + ' .bookacti-booking-system' );
+			var booking_system_id = booking_system.attr( 'id' );
 			
 			// Clear booking system
 			booking_system.empty();
@@ -311,9 +311,9 @@ function bookacti_save_form() {
 	$j( '#bookacti-form-editor-container' ).appendTo( '#bookacti-form-editor-page-container' );
 	
 	// Serialize form values
-	var form		= $j( 'form#bookacti-form-editor-page-form' );
-	var is_active	= form.find( 'input[name="is_active"]' ).val();
-	var data		= form.serialize();
+	var form      = $j( 'form#bookacti-form-editor-page-form' );
+	var is_active = form.find( 'input[name="is_active"]' ).val();
+	var data      = form.serialize();
 	
 	// Move form editor back inside the <form> after serialize
 	$j( '#bookacti-form-editor-container' ).appendTo( '#postdivrich' );

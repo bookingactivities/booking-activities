@@ -595,7 +595,7 @@ function bookacti_get_active_add_ons( $prefix = '', $exclude = array( 'balau' ) 
 /**
  * Get add-on data by prefix
  * @since 1.7.14
- * @version 1.15.11
+ * @version 1.15.13
  * @param string $prefix
  * @param array $exclude
  * @return array
@@ -616,7 +616,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-notification-pack', 
 			'end_of_life' => '', 
 			'download_id' => 1393,
-			'min_version' => '1.2.19'
+			'min_version' => '1.2.22'
 		),
 		'bapap' => array( 
 			'title'       => 'Prices and Credits', 
@@ -624,7 +624,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-prices-and-credits', 
 			'end_of_life' => '', 
 			'download_id' => 438,
-			'min_version' => '1.7.12'
+			'min_version' => '1.8.0'
 		),
 		'baaf' => array( 
 			'title'       => 'Advanced Forms', 
@@ -632,7 +632,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-advanced-forms', 
 			'end_of_life' => '', 
 			'download_id' => 2705,
-			'min_version' => '1.2.26'
+			'min_version' => '1.3.0'
 		),
 		'baofc' => array( 
 			'title'	      => 'Order for Customers', 
@@ -640,7 +640,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-order-for-customers', 
 			'end_of_life' => '', 
 			'download_id' => 436,
-			'min_version' => '1.2.28'
+			'min_version' => '1.2.32'
 		),
 		'bara' => array( 
 			'title'       => 'Resource Availability', 
@@ -648,7 +648,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-resource-availability', 
 			'end_of_life' => '', 
 			'download_id' => 29249,
-			'min_version' => '1.0.0'
+			'min_version' => '1.0.2'
 		),
 		'balau' => array( 
 			'title'       => 'Licenses & Updates', 
@@ -959,7 +959,7 @@ function bookacti_convert_wp_locale_to_fc_locale( $wp_locale = false ) {
 /**
  * Display fields
  * @since 1.5.0
- * @version 1.15.5
+ * @version 1.15.13
  * @param array $args
  */
 function bookacti_display_fields( $fields, $args = array() ) {
@@ -998,7 +998,7 @@ function bookacti_display_fields( $fields, $args = array() ) {
 				$fullwidth = ! empty( $field[ 'fullwidth' ] ) || in_array( $field[ 'type' ], array( 'checkboxes', 'editor' ), true );
 			?>
 				<label for='<?php echo esc_attr( sanitize_title_with_dashes( $field[ 'id' ] ) ); ?>' class='<?php if( $fullwidth ) { echo 'bookacti-fullwidth-label'; } ?>'>
-					<?php echo $field[ 'title' ]; if( $fullwidth ) { bookacti_help_tip( $field[ 'tip' ] ); unset( $field[ 'tip' ] ); } ?>
+					<?php echo $field[ 'title' ]; if( $fullwidth && ! empty( $field[ 'tip' ] ) ) { bookacti_help_tip( $field[ 'tip' ] ); unset( $field[ 'tip' ] ); } ?>
 				</label>
 			<?php
 			}
@@ -1219,8 +1219,8 @@ function bookacti_display_field( $args ) {
 					title='<?php echo esc_html( $option_value ); ?>' 
 					<?php } ?>
 					<?php if( ! empty( $args[ 'attr' ][ $option_id ] ) ) { echo $args[ 'attr' ][ $option_id ]; } ?>
-					<?php	if( $is_multiple ) { selected( true, in_array( $option_id, $args[ 'value' ], true ) ); }
-							else { selected( $args[ 'value' ], $option_id ); }?>
+					<?php if( $is_multiple ) { selected( true, in_array( $option_id, $args[ 'value' ], true ) ); } else { selected( $args[ 'value' ], $option_id ); }?>
+					<?php if( $is_multiple && ( in_array( $option_id, array( 'all', 'none', 'parent', 'site' ), true ) || ( ! empty( $args[ 'attr' ][ $option_id ] ) && strpos( 'data-not-multiple="1"', $args[ 'attr' ][ $option_id ] ) !== false ) ) ) { echo 'disabled="disabled"'; } ?>
 			>
 					<?php echo esc_html( $option_value ); ?>
 			</option>

@@ -209,7 +209,7 @@ function bookacti_get_notification_default_settings( $notification_id ) {
 /**
  * Get notification settings
  * @since 1.2.1 (was bookacti_get_email_settings in 1.2.0)
- * @version 1.14.0
+ * @version 1.15.13
  * @param string $notification_id
  * @param boolean $raw
  * @return array
@@ -249,6 +249,11 @@ function bookacti_get_notification_settings( $notification_id, $raw = true ) {
 		}
 	}
 	
+	// Use default title if empty
+	if( empty( $notification_settings[ 'title' ] ) && ! empty( $default_settings[ 'title' ] ) ) { 
+		$notification_settings[ 'title' ] = $default_settings[ 'title' ];
+	}
+	
 	// Make sure all values are set for emails
 	if( ! empty( $default_settings[ 'email' ] ) ) {
 		foreach( $default_settings[ 'email' ] as $key => $value ) {
@@ -265,7 +270,7 @@ function bookacti_get_notification_settings( $notification_id, $raw = true ) {
 /**
  * Sanitize notification settings
  * @since 1.2.1 (was bookacti_sanitize_email_settings in 1.2.0)
- * @version 1.8.6
+ * @version 1.15.13
  * @param array $args
  * @param string $notification_id Optionnal notification id. If set, default value will be picked from the corresponding notification.
  * @return array
@@ -289,11 +294,15 @@ function bookacti_sanitize_notification_settings( $args, $notification_id = '' )
 	$notification = array();
 	foreach( $defaults as $key => $default_value ) {
 		// Do not save constant data
-		if( in_array( $key, array( 'id', 'title', 'description' ), true ) ) { continue; }
+		if( in_array( $key, array( 'id', 'description' ), true ) ) { continue; }
 		
 		$notification[ $key ] = isset( $args[ $key ] ) ? $args[ $key ] : $default_value;
 
-		if( $key === 'active' ) {
+		if( $key === 'title' ) {
+			$notification[ $key ] = sanitize_text_field( stripslashes( $notification[ $key ] ) );
+			if( $notification[ $key ] === $default_value ) { $notification[ $key ] = ''; }
+			
+		} else if( $key === 'active' ) {
 			$notification[ $key ] = intval( $notification[ $key ] ) ? 1 : 0;
 
 		} else if( $key === 'email' ) {

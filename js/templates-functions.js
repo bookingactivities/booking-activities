@@ -876,7 +876,7 @@ function bookacti_clear_events_on_calendar_editor() {
 /**
  * Update event dates (move or resize an event)
  * @since 1.10.0
- * @version 1.15.5
+ * @version 1.15.13
  * @param {(FullCalendar.EventApi|Object)} new_event
  * @param {(FullCalendar.EventApi|Object)} old_event
  * @param {callable} revertFunc
@@ -895,7 +895,7 @@ function bookacti_update_event_dates( new_event, old_event, revertFunc, is_dialo
 	if( is_dialog === 'normal' ) { dialog_id = 'bookacti-update-event-dates-dialog'; }
 	if( is_dialog === 'booked' ) { 
 		dialog_id = 'bookacti-update-booked-event-dates-dialog';
-		form_data = $j( '#bookacti-update-booked-event-dates-form' ).serializeObject();
+		form_data = bookacti_serialize_object( $j( '#bookacti-update-booked-event-dates-form' ) );
 		form_data.forced_update = 1;
 	}
 	

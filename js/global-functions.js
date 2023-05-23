@@ -210,41 +210,43 @@ function bookacti_compare_arrays( array1, array2 ) {
 
 /**
  * Serialize a form into a single object (works with multidimentionnal inputs of any depth)
+ * @since 1.15.13
+ * @params {HTMLElement} form
  * @returns {object}
  */
-$j.fn.serializeObject = function() {
+function bookacti_serialize_object( form ) {
 	var data = {};
 
-	function buildInputObject(arr, val) {
-		if (arr.length < 1) {
+	function buildInputObject( arr, val ) {
+		if( arr.length < 1 ) {
 			return val;  
 		}
-		var objkey = arr[0];
-		if (objkey.slice(-1) == "]") {
-			objkey = objkey.slice(0,-1);
+		var objkey = arr[ 0 ];
+		if( objkey.slice( -1 ) == ']' ) {
+			objkey = objkey.slice( 0, -1 );
 		}  
 		var result = {};
-		if (arr.length == 1){
-			result[objkey] = val;
+		if( arr.length == 1 ) {
+			result[ objkey ] = val;
 		} else {
 			arr.shift();
-			var nestedVal = buildInputObject(arr,val);
-			result[objkey] = nestedVal;
+			var nestedVal = buildInputObject( arr, val );
+			result[ objkey ] = nestedVal;
 		}
 		return result;
 	}
 	
-	function gatherMultipleValues( that ) {
+	function gatherMultipleValues( the_form ) {
 		var final_array = [];
-		$j.each(that.serializeArray(), function( key, field ) {
+		$j.each( the_form.serializeArray(), function( key, field ) {
 			// Copy normal fields to final array without changes
-			if( field.name.indexOf('[]') < 0 ){
+			if( field.name.indexOf( '[]' ) < 0 ){
 				final_array.push( field );
 				return true; // That's it, jump to next iteration
 			}
 			
 			// Remove "[]" from the field name
-			var field_name = field.name.split('[]')[0];
+			var field_name = field.name.split( '[]' )[ 0 ];
 
 			// Add the field value in its array of values
 			var has_value = false;
@@ -256,25 +258,25 @@ $j.fn.serializeObject = function() {
 			});
 			// If it doesn't exist yet, create the field's array of values
 			if( ! has_value ) {
-				final_array.push( { 'name': field_name, 'value': [ field.value ] } );
+				final_array.push( { "name": field_name, "value": [ field.value ] } );
 			}
 		});
 		return final_array;
 	}
 	
-	// Manage fields allowing multiple values first (they contain "[]" in their name)
-	var final_array = gatherMultipleValues( this );
+	// Handle fields allowing multiple values first (they contain "[]" in their name)
+	var final_array = gatherMultipleValues( form );
 	
 	// Then, create the object
-	$j.each(final_array, function() {
+	$j.each( final_array, function() {
 		var val = this.value;
-		var c = this.name.split('[');
-		var a = buildInputObject(c, val);
-		$j.extend(true, data, a);
+		var c = this.name.split( '[' );
+		var a = buildInputObject( c, val );
+		$j.extend( true, data, a );
 	});
 
 	return data;
-};
+}
 
 
 /**

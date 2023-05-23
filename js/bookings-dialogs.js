@@ -67,7 +67,7 @@ $j( document ).ready( function() {
 /**
  * Bookings calendar settings
  * @since 1.8.0
- * @version 1.15.6
+ * @version 1.15.13
  */
 function bookacti_dialog_update_bookings_calendar_settings() {	
 	// Add the buttons
@@ -79,7 +79,7 @@ function bookacti_dialog_update_bookings_calendar_settings() {
 				// Reset error notices
 				$j( '#bookacti-bookings-calendar-settings-dialog .bookacti-notices' ).remove();
 				
-				var data = $j( '#bookacti-bookings-calendar-settings-form' ).serializeObject();
+				var data = bookacti_serialize_object( $j( '#bookacti-bookings-calendar-settings-form' ) );
 				
 				$j( 'body' ).trigger( 'bookacti_bookings_calendar_settings_data', [ data ] );
 				
@@ -657,7 +657,7 @@ function bookacti_dialog_change_booking_state( booking_id, booking_type ) {
 /**
  * Change Booking quantity
  * @since 1.7.10
- * @version 1.15.5
+ * @version 1.15.13
  * @param {int} booking_id
  * @param {string} booking_type
  */
@@ -702,7 +702,7 @@ function bookacti_dialog_change_booking_quantity( booking_id, booking_type ) {
 						if( column_id ) { columns.push( column_id ); }
 					});
 					
-					var data = $j( '#bookacti-change-booking-quantity-form' ).serializeObject();
+					var data = bookacti_serialize_object( $j( '#bookacti-change-booking-quantity-form' ) );
 					data.action = booking_type === 'group' ? 'bookactiChangeBookingGroupQuantity' : 'bookactiChangeBookingQuantity';
 					data.booking_id = booking_id;
 					data.is_bookings_page = is_bookings_page;
@@ -961,7 +961,7 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 /**
  * Delete a booking or a booking group
  * @since 1.5.0
- * @version 1.15.5
+ * @version 1.15.13
  * @param {int} booking_id
  * @param {string} booking_type
  */
@@ -999,7 +999,7 @@ function bookacti_dialog_delete_booking( booking_id, booking_type ) {
 				$j( '#bookacti-delete-booking-dialog .bookacti-notices' ).remove();
 				
 				// Get form values
-				var data = $j( '#bookacti-delete-booking-dialog form' ).serializeObject();
+				var data = bookacti_serialize_object( $j( '#bookacti-delete-booking-dialog form' ) );
 				data.is_admin = bookacti_localized.is_admin ? 1 : 0;
 				data.context = bookacti_localized.is_admin ? 'admin_booking_list' : 'user_booking_list';
 				row.first().trigger( 'bookacti_booking_action_data', [ data, booking_id, booking_type, 'delete' ] );
@@ -1109,7 +1109,7 @@ function bookacti_dialog_export_bookings() {
 /**
  * Generate the URL to export bookings
  * @since 1.6.0
- * @version 1.15.4
+ * @version 1.15.13
  * @param {string} reset_key
  */
 function bookacti_generate_export_bookings_url( reset_key ) {
@@ -1122,10 +1122,10 @@ function bookacti_generate_export_bookings_url( reset_key ) {
 	bookacti_add_loading_html( $j( '#bookacti-export-bookings-dialog' ) );
 	
 	// Get current filters and export settings
-	var data = $j( '#bookacti-export-bookings-form' ).serializeObject();
+	var data = bookacti_serialize_object( $j( '#bookacti-export-bookings-form' ) );
 	data.action = 'bookactiExportBookingsUrl';
 	data.reset_key = reset_key ? 1 : 0;
-	data.booking_filters = $j( '#bookacti-booking-list-filters-form' ).serializeObject();
+	data.booking_filters = bookacti_serialize_object( $j( '#bookacti-booking-list-filters-form' ) );
 	
 	$j( '#bookacti-export-bookings-form' ).trigger( 'bookacti_export_bookings_url_data', [ data, reset_key ] );
 	
