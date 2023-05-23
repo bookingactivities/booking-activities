@@ -364,20 +364,20 @@ add_filter( 'bookacti_html_form_field_login', 'bookacti_display_form_field_login
 /**
  * Display the form field 'quantity'
  * @since 1.5.0
- * @version 1.14.0
+ * @version 1.15.13
  * @param array $field
  * @param string $instance_id
  * @param string $context
  */
 function bookacti_display_form_field_quantity( $field, $instance_id, $context ) {
-	$args = array(
-		'type'			=> 'number',
-		'name'			=> 'quantity',
-		'class'			=> 'bookacti-form-field bookacti-quantity',
-		'placeholder'	=> esc_attr( $field[ 'placeholder' ] ),
-		'options'		=> array( 'min' => 1 ),
-		'value'			=> ! empty( $_REQUEST[ 'quantity' ] ) && is_numeric( $_REQUEST[ 'quantity' ] ) ? intval( $_REQUEST[ 'quantity' ] ) : 1
-	);
+	$args = apply_filters( 'bookacti_form_field_quantity_args', array(
+		'type'        => 'number',
+		'name'        => 'quantity',
+		'class'       => 'bookacti-form-field bookacti-quantity',
+		'placeholder' => esc_attr( $field[ 'placeholder' ] ),
+		'options'     => array( 'min' => 1 ),
+		'value'       => ! empty( $_REQUEST[ 'quantity' ] ) && is_numeric( $_REQUEST[ 'quantity' ] ) ? intval( $_REQUEST[ 'quantity' ] ) : 1
+	), $field, $instance_id, $context );
 	bookacti_display_field( $args );
 }
 add_action( 'bookacti_display_form_field_quantity', 'bookacti_display_form_field_quantity', 10, 3 );

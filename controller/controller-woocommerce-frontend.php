@@ -404,15 +404,19 @@ add_filter( 'bookacti_form_field_calendar_attributes', 'bookacti_form_field_cale
 /**
  * Set the WC quantity input value with the URL parameter 'quantity' 
  * @since 1.7.0
+ * @version 1.5.13
  * @param array $args
  * @param WC_Product $product
  * @return array
  */
 function bookacti_set_wc_quantity_via_url( $args, $product ) {
-	if( empty( $_GET[ 'quantity' ] ) || ! is_numeric( $_GET[ 'quantity' ] ) ) { return $args; }
 	if( ! bookacti_product_is_activity( $product ) ) { return $args; }
-
-	$args[ 'input_value' ] = intval( $_GET[ 'quantity' ] );
+	
+	if( isset( $_REQUEST[ 'quantity' ] ) && is_numeric( $_REQUEST[ 'quantity' ] ) ) {
+		$args[ 'input_value' ] = intval( $_REQUEST[ 'quantity' ] );
+	}
+	
+	$args = apply_filters( 'bookacti_wc_quantity_input_args', $args, $product );
 
 	return $args;
 }

@@ -51,15 +51,15 @@ $j( document ).ready( function() {
 /**
  * Filter the booking list with current filters values
  * @since 1.8.0
- * @version 1.15.11
+ * @version 1.15.13
  * @param {Int} paged
  */
 function bookacti_filter_booking_list( paged ) {
 	paged = paged ? paged : 1;
 	var booking_system = $j( '#bookacti-booking-system-bookings-page' );
 	
-	var data = $j( '#bookacti-booking-list-filters-form' ).serializeObject();
-	data.paged = paged;
+	var data    = bookacti_serialize_object( $j( '#bookacti-booking-list-filters-form' ) );
+	data.paged  = paged;
 	data.action = 'bookactiGetBookingList';
 	
 	// Select only available templates
@@ -479,7 +479,7 @@ function bookacti_refresh_booking_group_frame() {
 
 /**
  * Check if sent data correspond to displayed data
- * @version 1.12.0
+ * @version 1.15.13
  * @param {HTMLElement} booking_system
  * @param {int} quantity
  * @returns {boolean}
@@ -503,12 +503,12 @@ function bookacti_validate_picked_events( booking_system, quantity ) {
 	var form_values = { 'selected_events': {} };
 	
 	if( form.length ) {
-		form_values = form.serializeObject();
+		form_values = bookacti_serialize_object( form );
 	} else {
 		var inputs = booking_system.siblings( '.bookacti-booking-system-inputs' );
 		if( inputs.length ) { 
 			inputs.wrap( '<form class="bookacti-temporary-form"></form>' );
-			form_values = inputs.closest( 'form.bookacti-temporary-form' ).serializeObject();
+			form_values = bookacti_serialize_object( inputs.closest( 'form.bookacti-temporary-form' ) );
 			inputs.unwrap( 'form.bookacti-temporary-form' );
 		}
 	}

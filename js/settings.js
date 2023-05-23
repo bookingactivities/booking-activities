@@ -1,7 +1,7 @@
 $j( document ).ready( function() {
 	/**
 	 * Intercept settings form submission
-	 * @version 1.15.6
+	 * @version 1.15.13
 	 * @param {Event} e
 	 */
 	$j( 'form#bookacti-settings.bookacti_save_settings_with_ajax' ).on( 'submit', function( e ) {
@@ -13,15 +13,17 @@ $j( document ).ready( function() {
 			if( tinyMCE ) { tinyMCE.triggerSave(); }
 		}
 	
-		var form		= $j( this );
-		var form_data	= form.serializeObject(); // Need to use the homemade serializeObject to support multidimentionnal array
+		var form = $j( this );
+		var form_data = bookacti_serialize_object( form );
+		
+		bookacti_add_loading_html( form );
 		
 		$j.ajax({
 			url: bookacti_localized.ajaxurl,
 			type: 'POST',
 			data: form_data,
 			dataType: 'json',
-			success: function( response ){
+			success: function( response ) {
 				if( response.status === 'success' ) {
 					if( form.attr( 'action' ) ) {
 						window.location.replace( form.attr( 'action' ) );
@@ -29,11 +31,13 @@ $j( document ).ready( function() {
 						window.location.reload(); 
 					}
 				} else {
+					bookacti_remove_loading_html( form );
 					console.log( bookacti_localized.error );
 					console.log( response );
 				}
 			},
-			error: function( e ){
+			error: function( e ) {
+				bookacti_remove_loading_html( form );
 				console.log( 'AJAX ' + bookacti_localized.error );
 				console.log( e );
 			},

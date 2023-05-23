@@ -452,7 +452,7 @@ function bookacti_submit_login_form( submit_button ) {
 /**
  * Submit booking form
  * @since 1.7.6 (was bookacti_sumbit_booking_form)
- * @version 1.15.0
+ * @version 1.15.13
  * @param {HTMLElement} form
  */
 function bookacti_submit_booking_form( form ) {
@@ -577,7 +577,7 @@ function bookacti_submit_booking_form( form ) {
 			}
 			
 			// Make form data readable
-			var form_data_object = form.serializeObject();
+			var form_data_object = bookacti_serialize_object( form );
 			
 			// Trigger action after sending form
 			form.trigger( 'bookacti_booking_form_submitted', [ response, form_data_object ] );

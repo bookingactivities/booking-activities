@@ -126,7 +126,7 @@ function bookacti_update_booking( $booking_data, $where = array() ) {
 
 /**
  * Get bookings according to filters
- * @version 1.15.12
+ * @version 1.15.13
  * @global wpdb $wpdb
  * @param array $filters Use bookacti_format_booking_filters() before
  * @return array
@@ -173,6 +173,16 @@ function bookacti_get_bookings( $filters ) {
 	if( $filters[ 'to' ] ) {
 		$query .= ' AND B.event_start <= %s ';
 		$variables[] = $filters[ 'to' ];
+	}
+	
+	if( $filters[ 'end_from' ] ) {
+		$query .= ' AND B.event_end >= %s ';
+		$variables[] = $filters[ 'end_from' ];
+	}
+	
+	if( $filters[ 'end_to' ] ) {
+		$query .= ' AND B.event_end <= %s ';
+		$variables[] = $filters[ 'end_to' ];
 	}
 	
 	if( $filters[ 'status' ] ) {
@@ -560,7 +570,7 @@ function bookacti_get_bookings( $filters ) {
 /**
  * Get the total amount of booking rows according to filters
  * @since 1.3.1
- * @version 1.15.12
+ * @version 1.15.13
  * @global wpdb $wpdb
  * @param array $filters Use bookacti_format_booking_filters() before
  * @return int
@@ -608,6 +618,16 @@ function bookacti_get_number_of_booking_rows( $filters ) {
 	if( $filters[ 'to' ] ) {
 		$query .= ' AND B.event_start <= %s ';
 		$variables[] = $filters[ 'to' ];
+	}
+	
+	if( $filters[ 'end_from' ] ) {
+		$query .= ' AND B.event_end >= %s ';
+		$variables[] = $filters[ 'end_from' ];
+	}
+	
+	if( $filters[ 'end_to' ] ) {
+		$query .= ' AND B.event_end <= %s ';
+		$variables[] = $filters[ 'end_to' ];
 	}
 	
 	if( $filters[ 'status' ] ) {
@@ -946,7 +966,7 @@ function bookacti_get_number_of_booking_rows( $filters ) {
 
 /**
  * Get number of bookings of a specific event or a specific occurrence
- * @version 1.15.12
+ * @version 1.15.13
  * @global wpdb $wpdb
  * @param array $filters Use bookacti_format_booking_filters() before
  * @return int
@@ -1003,6 +1023,16 @@ function bookacti_get_number_of_bookings( $filters ) {
 	if( $filters[ 'to' ] ) {
 		$query .= ' AND B.event_start <= %s ';
 		$variables[] = $filters[ 'to' ];
+	}
+	
+	if( $filters[ 'end_from' ] ) {
+		$query .= ' AND B.event_end >= %s ';
+		$variables[] = $filters[ 'end_from' ];
+	}
+	
+	if( $filters[ 'end_to' ] ) {
+		$query .= ' AND B.event_end <= %s ';
+		$variables[] = $filters[ 'end_to' ];
 	}
 	
 	if( $filters[ 'status' ] ) {

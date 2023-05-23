@@ -48,8 +48,6 @@ body.booking-activities_page_bookacti_forms label[for='bookacti_form_publish-hid
 .bookacti-form-action-wc-notice			{ color: #f89b2f; }
 .bookacti-form-action-wc-notice:before	{ content: '\26A0  '; }
 
-#bookacti-insert-form-field			{ padding-left: 6px; }
-#bookacti-insert-form-field:before	{ content: '\f132'; font: 400 20px dashicons; margin-right: 4px; vertical-align: middle; }
 .bookacti-form-field-name-calendar .bookacti-edit-form-field:before	{ content: '\f111'; font: 400 20px dashicons; margin-right: 4px; vertical-align: sub; }
 
 #bookacti-availability_period_start-container .bookacti-duration-hint,

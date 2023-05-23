@@ -2,7 +2,7 @@
 /**
  * Form editor dialogs
  * @since 1.5.0
- * @version 1.15.5
+ * @version 1.15.13
  */
 
 // Exit if accessed directly
@@ -1190,7 +1190,6 @@ foreach( $fields_default as $field_name => $field_data ) {
 					'type'  => 'checkbox',
 					'name'  => 'value',
 					'id'    => 'bookacti-terms-value',
-					'class' => 'bookacti-translatable',
 					'tip'   => esc_html__( 'Whether the checkbox should be checked by default.', 'booking-activities' )
 				);
 				bookacti_display_field( $args );

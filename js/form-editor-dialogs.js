@@ -52,7 +52,7 @@ function bookacti_init_form_editor_actions() {
 /**
  * Update Form Meta
  * @since 1.5.0
- * @version 1.15.0
+ * @version 1.15.13
  */
 function bookacti_dialog_update_form_meta() {
 	var form_id	= $j( '#bookacti-form-id' ).val();
@@ -91,7 +91,7 @@ function bookacti_dialog_update_form_meta() {
 					if( tinyMCE ) { tinyMCE.triggerSave(); }
 				}
 				
-				var data = $j( 'form#bookacti-update-form-meta-form' ).serializeObject();
+				var data = bookacti_serialize_object( $j( 'form#bookacti-update-form-meta-form' ) );
 				
 				// Display a loader
 				bookacti_form_editor_enter_loading_state();
@@ -299,7 +299,7 @@ function bookacti_dialog_remove_form_field( field_id, field_name ) {
 /**
  * Update Form Field
  * @since 1.5.0
- * @version 1.15.4
+ * @version 1.15.13
  * @param {int} field_id
  * @param {string} field_name
  */
@@ -345,7 +345,7 @@ function bookacti_dialog_update_form_field( field_id, field_name ) {
 					if( tinyMCE ) { tinyMCE.triggerSave(); }
 				}
 				
-				var data = $j( 'form#bookacti-form-field-form-' + field_name ).serializeObject();
+				var data = bookacti_serialize_object( $j( 'form#bookacti-form-field-form-' + field_name ) );
 				var is_visible = $j( '#bookacti-form-editor-field-' + field_id + ' .bookacti-form-editor-field-body' ).is( ':visible' );
 				
 				// Display a loader
@@ -410,7 +410,7 @@ function bookacti_dialog_update_form_field( field_id, field_name ) {
 				}
 				
 				$j( 'form#bookacti-form-field-form-' + field_name + ' input[name="action"]' ).val( 'bookactiResetFormField' );
-				var data = $j( 'form#bookacti-form-field-form-' + field_name ).serializeObject();
+				var data = bookacti_serialize_object( $j( 'form#bookacti-form-field-form-' + field_name ) );
 				var is_visible = $j( '#bookacti-form-editor-field-' + field_id + ' .bookacti-form-editor-field-body' ).is( ':visible' );
 				
 				// Display a loader
