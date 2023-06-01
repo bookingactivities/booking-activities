@@ -322,6 +322,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.15.14 =
+* Fix - Bookings from not allowed calendars may be displayed in backend Bookings calendar after changing the filters
+* Lib - Update FullCalendar to 6.1.8
+
 = 1.15.13 - 2023/05/23 =
 * Breaking change - If you have made javascript custom code using Booking Activities' $.fn.serializeObject function, you must replace it with bookacti_serialize_object( your_form )
 * Tweak - Allow to change notifications title
