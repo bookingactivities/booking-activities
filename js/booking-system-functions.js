@@ -1880,9 +1880,9 @@ function bookacti_redirect_to_group_category_url( booking_system, group_id ) {
 /**
  * Redirect to url with the booking form values as parameters
  * @since 1.7.10
- * @version 1.15.0
+ * @version 1.15.14
  * @param {HTMLElement} booking_system
- * @param {string} redirect_url
+ * @param {String} redirect_url
  */
 function bookacti_redirect_booking_system_to_url( booking_system, redirect_url ) {
 	if( ! redirect_url ) { return; }
@@ -1898,23 +1898,45 @@ function bookacti_redirect_booking_system_to_url( booking_system, redirect_url )
 	// Display a loader after the submit button too
 	if( submit_button.length ) { bookacti_add_loading_html( submit_button, 'after' ); }
 	
-	var redirect_form_attr = { 'method': 'post', 'action': redirect_url, 'class': 'bookacti-temporary-form', 'id': '', 'data-redirect-timeout': 15000 };
+	var is_external = bookacti_is_url_external( redirect_url ) ? 1 : 0;
+	var method      = bookacti_get_url_parameter( 'method', redirect_url ).toUpperCase();
+	var js_redirect = method === 'JS' || ( is_external && ! method ) ? 1 : 0;
+	
+	if( $j.inArray( method, [ 'POST', 'GET' ] ) < 0 ) {
+		method = is_external ? 'GET' : 'POST';
+	}
+	
+	var redirect_form_attr = { 
+		'method': method, 
+		'action': redirect_url,
+		'id': '', 
+		'class': 'bookacti-temporary-form', 
+		'data-redirect-timeout': 15000,
+		'data-redirect-with-js': js_redirect
+	};
 	
 	booking_system.trigger( 'bookacti_before_redirect', [ redirect_form_attr ] );
 	
-	// Redirect via POST method
-	if( booking_system.closest( 'form' ).length ) {
-		var form_attr = {};
-		$j.each( redirect_form_attr, function( attr_name, attr_value ) { form_attr[ attr_name ] = form.attr( attr_name ); });
-		
-		form.attr( redirect_form_attr );
-		form.submit();
-		form.attr( form_attr );
-		
-	} else {
-		booking_system.closest( '.bookacti-form-fields' ).wrap( '<form></form>' );
-		booking_system.closest( 'form' ).attr( redirect_form_attr ).submit();
-		booking_system.closest( '.bookacti-form-fields' ).unwrap( 'form.bookacti-temporary-form' );
+	// Use window.location.assign to redirect to external sites (to avoid errors 405 or 414)
+	if( redirect_form_attr[ 'data-redirect-with-js' ] === 1 ) {
+		window.location.assign( redirect_url );
+	} 
+	
+	// Submit the form with POST method for internal redirects (to keep the form values)
+	else {
+		if( booking_system.closest( 'form' ).length ) {
+			var form_attr = {};
+			$j.each( redirect_form_attr, function( attr_name, attr_value ) { form_attr[ attr_name ] = form.attr( attr_name ); });
+
+			form.attr( redirect_form_attr );
+			form.submit();
+			form.attr( form_attr );
+
+		} else {
+			booking_system.closest( '.bookacti-form-fields' ).wrap( '<form></form>' );
+			booking_system.closest( 'form' ).attr( redirect_form_attr ).submit();
+			booking_system.closest( '.bookacti-form-fields' ).unwrap( 'form' );
+		}
 	}
 	
 	booking_system.trigger( 'bookacti_after_redirect', [ redirect_form_attr ] );

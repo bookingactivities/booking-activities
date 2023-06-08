@@ -51,7 +51,7 @@ $j( document ).ready( function() {
 /**
  * Filter the booking list with current filters values
  * @since 1.8.0
- * @version 1.15.13
+ * @version 1.15.14
  * @param {Int} paged
  */
 function bookacti_filter_booking_list( paged ) {
@@ -85,7 +85,6 @@ function bookacti_filter_booking_list( paged ) {
 		dataType: 'json',
 		beforeSend: function() {
 			if( bookacti.current_filter_request != null ) {
-				console.log( 'abort previous' );
 				bookacti.current_filter_request.abort();
 			}
 		},
@@ -206,7 +205,7 @@ function bookacti_unpick_all_events_filter() {
 
 /**
  * Reload bookings booking system according to filters
- * @version 1.8.0
+ * @version 1.15.14
  * @param {HTMLElement} booking_system
  */
 function bookacti_reload_booking_system_according_to_filters( booking_system ) {
@@ -219,7 +218,7 @@ function bookacti_reload_booking_system_according_to_filters( booking_system ) {
 	var selected_end       = $j( '#bookacti-booking-filter-dates-end' ).val();
 	
 	// Select only available templates
-	if( ! selected_templates ) {
+	if( ! selected_templates || $j.isEmptyObject( selected_templates ) ) {
 		selected_templates = [];
 		$j( '#bookacti-booking-filter-templates option' ).each( function() {
 			selected_templates.push( $j( this ).val() );

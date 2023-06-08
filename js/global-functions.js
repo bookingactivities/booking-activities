@@ -211,7 +211,7 @@ function bookacti_compare_arrays( array1, array2 ) {
 /**
  * Serialize a form into a single object (works with multidimentionnal inputs of any depth)
  * @since 1.15.13
- * @params {HTMLElement} form
+ * @param {HTMLElement} form
  * @returns {object}
  */
 function bookacti_serialize_object( form ) {
@@ -616,13 +616,23 @@ function bookacti_convert_php_datetime_format_to_fc_date_formatting_object( php_
 /**
  * Get URL parameter value
  * @since 1.7.4
- * @version 1.15.0
- * @param {string} desired_param
+ * @version 1.15.14
+ * @param {String} desired_param
+ * @param {String} url
  * @returns {String}
  */
-function bookacti_get_url_parameter( desired_param ) {
-	var url = window.location.search.substring( 1 );
-	var url_variables = url.split( '&' );
+function bookacti_get_url_parameter( desired_param, url ) {
+	var url_search = '';
+	
+	if( typeof url === 'undefined' ) { 
+		url_search = window.location.search.substring( 1 );
+	} else {
+		var tmp = document.createElement( 'a' );
+		tmp.href = url;
+		url_search = tmp.search.substring( 1 );
+	}
+	
+	var url_variables = url_search.split( '&' );
 	
 	for( var i = 0; i < url_variables.length; i++ ) {
 		var param_name = url_variables[ i ].split( '=' );
@@ -630,7 +640,21 @@ function bookacti_get_url_parameter( desired_param ) {
 			return decodeURIComponent( param_name[ 1 ].replace( /\+/g, '%20' ) );
 		}
 	}
+	
 	return '';
+}
+
+
+/**
+ * Check if a URL is external
+ * @since 1.15.14
+ * @param {String} url
+ * @returns {Boolean}
+ */
+function bookacti_is_url_external( url ) {
+    var tmp = document.createElement( 'a' );
+    tmp.href = url;
+    return tmp.host !== window.location.host;
 }
 
 

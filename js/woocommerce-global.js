@@ -124,7 +124,7 @@ function bookacti_redirect_to_group_category_product_page( booking_system, group
 /**
  * Add a product to cart from a booking form
  * @since 1.7.0
- * @version 1.15.8
+ * @version 1.15.14
  * @param {HTMLElement} booking_system
  */
 function bookacti_add_product_to_cart_via_booking_system( booking_system ) {
@@ -194,7 +194,7 @@ function bookacti_add_product_to_cart_via_booking_system( booking_system ) {
 				// Redirect to the desired page or to cart
 				if( redirect_url ) {
 					bookacti_start_loading_booking_system( booking_system );
-					window.location.replace( redirect_url );
+					window.location.assign( redirect_url );
 					bookacti_stop_loading_booking_system( booking_system );
 				}
 				

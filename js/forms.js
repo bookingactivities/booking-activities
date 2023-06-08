@@ -327,7 +327,7 @@ function bookacti_check_password_strength( password_field, password_confirm_fiel
 /**
  * Submit login form
  * @since 1.8.0
- * @version 1.15.6
+ * @version 1.15.14
  * @param {HTMLElement} submit_button
  */
 function bookacti_submit_login_form( submit_button ) {
@@ -424,7 +424,7 @@ function bookacti_submit_login_form( submit_button ) {
 					if( booking_system.length ) {
 						bookacti_redirect_booking_system_to_url( booking_system, data.redirect_url );
 					} else {
-						window.location.replace( data.redirect_url );
+						window.location.assign( data.redirect_url );
 					}
 				}
 			}
@@ -452,7 +452,7 @@ function bookacti_submit_login_form( submit_button ) {
 /**
  * Submit booking form
  * @since 1.7.6 (was bookacti_sumbit_booking_form)
- * @version 1.15.13
+ * @version 1.15.14
  * @param {HTMLElement} form
  */
 function bookacti_submit_booking_form( form ) {
@@ -585,7 +585,7 @@ function bookacti_submit_booking_form( form ) {
 			// Redirect
 			if( response.status === 'success' && redirect_url ) {
 				bookacti_start_loading_booking_system( booking_system );
-				window.location.replace( redirect_url );
+				window.location.assign( redirect_url );
 				bookacti_stop_loading_booking_system( booking_system );
 			}
 			
