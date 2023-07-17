@@ -45,6 +45,7 @@ table.woocommerce_order_items ul.bookacti-booking-events-list { margin: 0; }
 	.woocommerce div.product.bookacti-activity.elementor form.cart:not(.grouped_form):not(.variations_form) { display: block; }
 	
 	/* WC PayPal Payments support */
+	.woocommerce div.product.bookacti-activity #cpsw-payment-request-wrapper,
 	.woocommerce div.product.bookacti-activity .paypal-buttons { display: none !important; }
 	
 	/* WC Stripe support */

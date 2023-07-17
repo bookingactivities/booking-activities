@@ -322,6 +322,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.15.15 =
+* Fix - JS error when opening the grouped event dialog with the Display Pack's "Waterfall" booking method
+
 = 1.15.14 - 2023/06/08 =
 * Fix - Bookings from not allowed calendars may be displayed in backend Bookings calendar after changing the filters
 * Fix - Booking forms now use window.location.assign for external redirects, without parameters, to avoid error 405 and error 414
@@ -335,12 +338,12 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Lib - Update FullCalendar to 6.1.7
 
 = 1.15.12 - 2023/05/04 =
-* Tweak - Add french translation for select2, more translation files can be added in wp-content/languages/select2
+* Tweak - Add French translation for select2, more translation files can be added in wp-content/languages/select2
 * Tweak - Display existing options immediatly in select2 using AJAX 
 * Fix - Display select2 loading during AJAX search
 * Fix - JS error when setting invalid date format in "Go to" date input
 * Fix - Remove max height limitation to group categories and groups of events in calendar editor
-* Fix - Add a delay when sorting activities, groups and cetegories to avoid undesired drags in calendar editor
+* Fix - Add a delay when sorting activities, groups and categories to avoid undesired drags in calendar editor
 * Fix - Hide WC Payments Google Pay / Apple Pay buttons on "Activity" product pages (it is too early for Booking Activities)
 * Dev - Add not_in__status and not_in__payment_status filters to bookacti_get_bookings()
 * Lib - Update FullCalendar to 6.1.6

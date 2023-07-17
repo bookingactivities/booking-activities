@@ -242,7 +242,8 @@ fieldset legend .bookacti-show-hide-advanced-options { cursor: pointer; color: #
 .bookacti-calendar .fc-event.bookacti-picked-event { border-width: 2px; transition: border 0.2s; }
 .bookacti-calendar .fc-event.bookacti-picked-event .fc-event-main { background: rgba( 255, 255, 255, 0.5 ); }
 .bookacti-calendar .fc-timegrid-event.bookacti-event-hidden { display: none; }
-.bookacti-calendar .fc-daygrid-event.bookacti-event-hidden { visibility: hidden; }
+.bookacti-calendar .fc-daygrid-event.bookacti-event-hidden  { visibility: hidden; }
+.bookacti-calendar .fc-daygrid-event .bookacti-availability-container { position: relative; width: fit-content; margin-left: auto; }
 
 .bookacti-calendar .fc-view.fc-daygrid .fc-event .fc-event-title-container,
 .bookacti-calendar .fc-view.fc-daygrid .fc-event .fc-event-title-container,
