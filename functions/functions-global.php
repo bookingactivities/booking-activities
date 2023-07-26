@@ -392,7 +392,7 @@ function bookacti_is_db_version_outdated() {
 /**
  * Get the variables used with javascript
  * @since 1.8.0
- * @version 1.15.12
+ * @version 1.15.15
  * @return array
  */
 function bookacti_get_js_variables() {
@@ -491,10 +491,10 @@ function bookacti_get_js_variables() {
 		'wp_time_format'                     => get_option( 'time_format' ),
 		'wp_start_of_week'                   => get_option( 'start_of_week' ),
 		
-		'price_format'                       => '{price}',
-		'price_thousand_separator'           => '',
-		'price_decimal_separator'            => ',',
-		'price_decimal_number'               => 2
+		'price_format'                       => str_replace( array( '%1$s', '%2$s' ), array( bookacti_get_setting_value( 'bookacti_general_settings', 'price_currency_symbol' ), '{price}' ), bookacti_get_price_format() ),
+		'price_thousand_separator'           => bookacti_get_setting_value( 'bookacti_general_settings', 'price_thousand_separator' ),
+		'price_decimal_separator'            => bookacti_get_setting_value( 'bookacti_general_settings', 'price_decimal_separator' ),
+		'price_decimal_number'               => bookacti_get_setting_value( 'bookacti_general_settings', 'price_decimals_number' )
 	);
 	
 	// Strings for backend only
@@ -2244,6 +2244,93 @@ function bookacti_sanitize_ical_property( $value, $property_name = '' ) {
 		$lines[] = $value;
 	}
 	return implode( PHP_EOL . ' ', $lines ); // Line break + leading space
+}
+
+
+/**
+ * Get the price format depending on the currency position.
+ * @since 1.15.15
+ * @return string %1$s = currency symbol, %2$s = price amount
+ */
+function bookacti_get_price_format() {
+	$currency_pos = bookacti_get_setting_value( 'bookacti_general_settings', 'price_currency_position' );
+	$format       = '%1$s%2$s';
+
+	switch( $currency_pos ) {
+		case 'left':
+			$format = '%1$s%2$s';
+			break;
+		case 'right':
+			$format = '%2$s%1$s';
+			break;
+		case 'left_space':
+			$format = '%1$s&nbsp;%2$s';
+			break;
+		case 'right_space':
+			$format = '%2$s&nbsp;%1$s';
+			break;
+	}
+
+	return apply_filters( 'bookacti_price_format', $format, $currency_pos );
+}
+
+
+/**
+ * Format a price with currency symbol
+ * @since 1.15.15
+ * @param int|float $price_raw
+ * @param array $args_raw Arguments to format a price (default to price settings values) {
+ *     @type string $currency_symbol    Currency symbol.
+ *     @type string $decimal_separator  Decimal separator.
+ *     @type string $thousand_separator Thousand separator.
+ *     @type string $decimals           Number of decimals.
+ *     @type string $price_format       Price format depending on the currency position.
+ * }
+ * @return string
+ */
+function bookacti_format_price( $price_raw, $args_raw = array() ) {
+	if( ! is_numeric( $price_raw ) ) { return ''; }
+	
+	$args = apply_filters(
+		'bookacti_price_args',
+		wp_parse_args(
+			$args_raw,
+			array(
+				'currency_symbol'    => bookacti_get_setting_value( 'bookacti_general_settings', 'price_currency_symbol' ),
+				'decimal_separator'  => bookacti_get_setting_value( 'bookacti_general_settings', 'price_decimal_separator' ),
+				'thousand_separator' => bookacti_get_setting_value( 'bookacti_general_settings', 'price_thousand_separator' ),
+				'decimals'           => bookacti_get_setting_value( 'bookacti_general_settings', 'price_decimals_number' ),
+				'price_format'       => bookacti_get_price_format()
+			)
+		), $args_raw, $price_raw
+	);
+
+	// Convert to float to avoid issues on PHP 8.
+	$price  = (float) $price_raw;
+	$amount = number_format( abs( $price ), $args[ 'decimals' ], $args[ 'decimal_separator' ], $args[ 'thousand_separator' ] );
+
+	if( apply_filters( 'bookacti_price_trim_zeros', false ) && $args[ 'decimals' ] > 0 ) {
+		$amount = preg_replace( '/' . preg_quote( $args[ 'decimal_separator' ], '/' ) . '0++$/', '', $amount );
+	}
+
+	ob_start();
+	?>
+	<span class='bookacti-price'>
+		<bdi>
+		<?php if( $price < 0 ) { ?>
+			<span class='bookacti-price-sign'>-</span>
+		<?php } 
+			echo sprintf( 
+				$args[ 'price_format' ], 
+				'<span class="bookacti-price-currency-symbol">' . trim( $args[ 'currency_symbol' ] ) . '</span>',
+				'<span class="bookacti-price-amount">' . $amount . '</span>'
+			);
+		?>
+		</bdi>
+	</span>
+	<?php
+
+	return apply_filters( 'bookacti_formatted_price', ob_get_clean(), $amount, $price_raw, $args_raw );
 }
 
 

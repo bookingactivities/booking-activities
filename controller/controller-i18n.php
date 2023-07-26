@@ -184,6 +184,7 @@ add_filter( 'bookacti_site_default_locale', 'bookacti_site_default_locale_with_p
 /**
  * Add WPML settings section
  * @since 1.14.0
+ * @version 1.15.15
  */
 function bookacti_add_wpml_settings_section() {
 	if( bookacti_get_translation_plugin() !== 'wpml' ) { return; }
@@ -192,7 +193,12 @@ function bookacti_add_wpml_settings_section() {
 		'bookacti_settings_section_wpml_general',
 		'WPML',
 		'bookacti_settings_section_wpml_general_callback',
-		'bookacti_general_settings'
+		'bookacti_general_settings',
+		array(
+			'before_section' => '<div class="%s">',
+			'after_section'  => '</div>',
+			'section_class'  => 'bookacti-settings-section-wpml-general'
+		)
 	);
 	
 	add_settings_field( 

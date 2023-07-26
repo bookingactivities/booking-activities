@@ -39,6 +39,34 @@ add_filter( 'bookacti_translation_array', 'bookacti_woocommerce_translation_arra
 
 
 /**
+ * Format price with WC settings
+ * @since 1.15.15
+ * @param string $formatted_price
+ * @param int|float $amount
+ * @param int|float $price_raw
+ * @param array $args_raw
+ * @return string
+ */
+function bookacti_wc_formatted_price( $formatted_price, $amount, $price_raw, $args_raw ) {
+	return '<span class="bookacti-price">' . wc_price( $price_raw, $args_raw ) . '</span>';
+}
+add_filter( 'bookacti_formatted_price', 'bookacti_wc_formatted_price', 100, 4 );
+
+
+/**
+ * Use WC price format instead
+ * @since 1.15.15
+ * @param string $format
+ * @param string $currency_pos
+ * @return string
+ */
+function bookacti_wc_price_format( $format, $currency_pos ) {
+	return get_woocommerce_price_format();
+}
+add_filter( 'bookacti_price_format', 'bookacti_wc_price_format', 100, 2 );
+
+
+/**
  * Change 'user_id' of bookings from customer id to user id when he logs in
  * @version 1.15.0
  * @global WooCommerce $woocommerce

@@ -4,15 +4,20 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Init Booking Activities settings
- * @version 1.14.0
+ * @version 1.15.15
  */
 function bookacti_init_settings() { 
-	/* General settings Section */
+	/* General settings Section - 1 - Misc */
 	add_settings_section( 
 		'bookacti_settings_section_general',
 		esc_html__( 'General settings', 'booking-activities' ),
 		'bookacti_settings_section_general_callback',
-		'bookacti_general_settings'
+		'bookacti_general_settings',
+		array(
+			'before_section' => '<div class="%s">',
+			'after_section'  => '</div>',
+			'section_class'  => 'bookacti-settings-section-general'
+		)
 	);
 	
 	add_settings_field(  
@@ -104,13 +109,72 @@ function bookacti_init_settings() {
 	);
 	
 	
+	/* General settings Section - 2 - Price */
+	add_settings_section( 
+		'bookacti_settings_section_general_price',
+		esc_html__( 'Price format', 'booking-activities' ),
+		'bookacti_settings_section_general_price_callback',
+		'bookacti_general_settings',
+		array(
+			'before_section' => '<div class="%s">',
+			'after_section'  => '</div>',
+			'section_class'  => 'bookacti-settings-section-price'
+		)
+	);
+	
+	add_settings_field(  
+		'price_currency_symbol', 
+		esc_html__( 'Currency', 'booking-activities' ), 
+		'bookacti_settings_field_price_currency_symbol_callback', 
+		'bookacti_general_settings', 
+		'bookacti_settings_section_general_price'
+	);
+	
+	
+	add_settings_field(  
+		'price_currency_position', 
+		esc_html__( 'Currency position', 'booking-activities' ), 
+		'bookacti_settings_field_price_currency_position_callback', 
+		'bookacti_general_settings', 
+		'bookacti_settings_section_general_price'
+	);
+	
+	add_settings_field(  
+		'price_thousand_separator', 
+		esc_html__( 'Thousand separator', 'booking-activities' ), 
+		'bookacti_settings_field_price_thousand_separator_callback', 
+		'bookacti_general_settings', 
+		'bookacti_settings_section_general_price'
+	);
+	
+	add_settings_field(  
+		'price_decimal_separator', 
+		esc_html__( 'Decimal separator', 'booking-activities' ), 
+		'bookacti_settings_field_price_decimal_separator_callback', 
+		'bookacti_general_settings', 
+		'bookacti_settings_section_general_price'
+	);
+	
+	add_settings_field(  
+		'price_decimals_number', 
+		esc_html__( 'Number of decimals', 'booking-activities' ), 
+		'bookacti_settings_field_price_decimals_number_callback', 
+		'bookacti_general_settings', 
+		'bookacti_settings_section_general_price'
+	);
+	
 	
 	/* Cancellation settings Section */
 	add_settings_section( 
 		'bookacti_settings_section_cancellation',
 		esc_html__( 'Cancellation settings', 'booking-activities' ),
 		'bookacti_settings_section_cancellation_callback',
-		'bookacti_cancellation_settings'
+		'bookacti_cancellation_settings',
+		array(
+			'before_section' => '<div class="%s">',
+			'after_section'  => '</div>',
+			'section_class'  => 'bookacti-settings-section-cancellation'
+		)
 	);
 	
 	add_settings_field(  
@@ -153,7 +217,12 @@ function bookacti_init_settings() {
 		'bookacti_settings_section_notifications_general',
 		esc_html__( 'Notifications', 'booking-activities' ),
 		'bookacti_settings_section_notifications_general_callback',
-		'bookacti_notifications_settings'
+		'bookacti_notifications_settings',
+		array(
+			'before_section' => '<div class="%s">',
+			'after_section'  => '</div>',
+			'section_class'  => 'bookacti-settings-section-notifications-general'
+		)
 	);
 	
 	add_settings_field( 
@@ -170,7 +239,12 @@ function bookacti_init_settings() {
 		'bookacti_settings_section_notifications_email',
 		esc_html__( 'Email notifications settings', 'booking-activities' ),
 		'bookacti_settings_section_notifications_email_callback',
-		'bookacti_notifications_settings'
+		'bookacti_notifications_settings',
+		array(
+			'before_section' => '<div class="%s">',
+			'after_section'  => '</div>',
+			'section_class'  => 'bookacti-settings-section-notifications-email'
+		)
 	);
 		
 	add_settings_field( 
@@ -196,7 +270,12 @@ function bookacti_init_settings() {
 		'bookacti_settings_section_messages',
 		esc_html__( 'Messages', 'booking-activities' ),
 		'bookacti_settings_section_messages_callback',
-		'bookacti_messages_settings'
+		'bookacti_messages_settings',
+		array(
+			'before_section' => '<div class="%s">',
+			'after_section'  => '</div>',
+			'section_class'  => 'bookacti-settings-section-messages'
+		)
 	);
 	
 	
@@ -206,7 +285,12 @@ function bookacti_init_settings() {
 		'bookacti_settings_section_licenses',
 		esc_html__( 'Licenses settings', 'booking-activities' ),
 		'bookacti_settings_section_licenses_callback',
-		'bookacti_licenses_settings'
+		'bookacti_licenses_settings',
+		array(
+			'before_section' => '<div class="%s">',
+			'after_section'  => '</div>',
+			'section_class'  => 'bookacti-settings-section-licenses'
+		)
 	);
 	
 	register_setting( 'bookacti_general_settings', 'bookacti_general_settings' );
@@ -219,6 +303,7 @@ function bookacti_init_settings() {
 	do_action( 'bookacti_add_settings' );
 }
 add_action( 'admin_init', 'bookacti_init_settings' );
+
 
 
 

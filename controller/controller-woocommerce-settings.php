@@ -3,6 +3,35 @@
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
+ * Hide Price settings section if WC is active
+ * @since 1.15.15
+ */
+function bookacti_wc_hide_price_settings_fields() {
+?>
+	<p class='bookacti-settings-section-price-description'>
+		<style>
+			.bookacti-settings-section-price { display: block !important; }
+			.bookacti-settings-section-price table { display: none; }
+		</style>
+		<span>
+		<?php
+			// Display a message to redirect the user to WC options
+			echo sprintf( 
+					/* translators: %s = link to "WooCommerce currency options" */
+					esc_html__( 'Please configure the price format in %s', 'booking-activities' ), 
+					'<a href="' . esc_url( admin_url( 'admin.php?page=wc-settings&tab=general#pricing_options-description' ) ) . '">' 
+						. esc_html__( 'WooCommerce currency options', 'booking-activities' ) 
+					. '</a>' 
+				);
+		?>
+		</span>
+	</p>	
+<?php
+}
+add_action( 'bookacti_settings_price_section', 'bookacti_wc_hide_price_settings_fields', 100 );
+
+
+/**
  * Add WooCommerce settings tab
  * @since 1.8.0 (was bookacti_add_cart_settings_tab)
  * @version 1.12.3
@@ -36,7 +65,7 @@ add_action( 'bookacti_settings_tab_content', 'bookacti_add_cart_tab_content' );
 /**
  * Add WC settings section
  * @since 1.7.16
- * @version 1.9.0
+ * @version 1.15.15
  */
 function bookacti_add_woocommerce_settings_section() {
 	/* WC products settings Section */
@@ -44,7 +73,12 @@ function bookacti_add_woocommerce_settings_section() {
 		'bookacti_settings_section_wc_products',
 		esc_html__( 'Products settings', 'booking-activities' ),
 		'bookacti_settings_section_wc_products_callback',
-		'bookacti_woocommerce_settings'
+		'bookacti_woocommerce_settings',
+		array(
+			'before_section' => '<div class="%s">',
+			'after_section'  => '</div>',
+			'section_class'  => 'bookacti-settings-section-wc-products'
+		)
 	);
 	
 	add_settings_field( 
@@ -61,7 +95,12 @@ function bookacti_add_woocommerce_settings_section() {
 		'bookacti_settings_section_wc_account',
 		esc_html__( 'Account settings', 'booking-activities' ),
 		'bookacti_settings_section_wc_account_callback',
-		'bookacti_woocommerce_settings'
+		'bookacti_woocommerce_settings',
+		array(
+			'before_section' => '<div class="%s">',
+			'after_section'  => '</div>',
+			'section_class'  => 'bookacti-settings-section-wc-account'
+		)
 	);
 	
 	add_settings_field( 
@@ -78,7 +117,12 @@ function bookacti_add_woocommerce_settings_section() {
 		'bookacti_settings_section_cart',
 		esc_html__( 'Cart settings', 'booking-activities' ),
 		'bookacti_settings_section_cart_callback',
-		'bookacti_woocommerce_settings'
+		'bookacti_woocommerce_settings',
+		array(
+			'before_section' => '<div class="%s">',
+			'after_section'  => '</div>',
+			'section_class'  => 'bookacti-settings-section-wc-cart'
+		)
 	);
 	
 	add_settings_field( 

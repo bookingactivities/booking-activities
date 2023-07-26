@@ -3,9 +3,9 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
-Tested up to: 6.2
+Tested up to: 6.3
 Requires PHP: 5.3
-Stable tag: 1.15.14
+Stable tag: 1.15.15
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -21,7 +21,7 @@ It is very easy to use:
 2. Copy / Paste a **shortcode** to display a booking form. Or **integrate it with WooCommerce** products.
 3. **Pick** an event on this calendar and book it. 
 
-Try this reservation tool live on the [demo website](https://demo.booking-activities.fr/en/), or [generate a temporary site](https://tastewp.com/template/bookingactivities/?redirect=admin.php%3Fpage%3Dbookacti_calendars&ni=true) to test the backend!
+Try this reservation tool live on the [demo website](https://demo.booking-activities.fr/en/), or [generate a temporary site](https://tastewp.com/new/?pre-installed-plugin-slug=booking-activities&pre-installed-plugin-slug=woocommerce&pre-installed-theme-slug=twentytwentythree&redirect=admin.php%3Fpage%3Dbookacti_calendars&ni=true) to test the backend!
 
 [youtube https://www.youtube.com/watch?v=Q7gbK5i4DPU]
 
@@ -324,6 +324,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 = 1.15.15 =
 * Fix - JS error when opening the grouped event dialog with the Display Pack's "Waterfall" booking method
+* Dev - Add options and an API to handle price formatting (overriden by WooCommerce)
 
 = 1.15.14 - 2023/06/08 =
 * Fix - Bookings from not allowed calendars may be displayed in backend Bookings calendar after changing the filters

@@ -590,14 +590,14 @@ function bookacti_wc_get_displayed_product_price( $product, $price = '', $qty = 
 	
 	if( $product->is_taxable() ) {
 		if( $woocommerce->cart->display_prices_including_tax() ) {
-			$price_inc_tax		= wc_get_price_including_tax( $product, array( 'price' => $price, 'qty' => $qty ) );
-			$formatted_price	= wc_price( $price_inc_tax );
+			$price_inc_tax   = wc_get_price_including_tax( $product, array( 'price' => $price, 'qty' => $qty ) );
+			$formatted_price = wc_price( $price_inc_tax );
 			if( ! wc_prices_include_tax() && $woocommerce->cart->get_subtotal_tax() > 0 ) {
 				$formatted_price .= ' <small class="tax_label">' . $woocommerce->countries->inc_tax_or_vat() . '</small>';
 			}
 		} else {
-			$price_exc_tax		= wc_get_price_excluding_tax( $product, array( 'price' => $price, 'qty' => $qty ) );
-			$formatted_price	= wc_price( $price_exc_tax );
+			$price_exc_tax   = wc_get_price_excluding_tax( $product, array( 'price' => $price, 'qty' => $qty ) );
+			$formatted_price = wc_price( $price_exc_tax );
 			if( wc_prices_include_tax() && $woocommerce->cart->get_subtotal_tax() > 0 ) {
 				$formatted_price .= ' <small class="tax_label">' . $woocommerce->countries->ex_tax_or_vat() . '</small>';
 			}
