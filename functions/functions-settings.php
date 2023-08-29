@@ -514,7 +514,7 @@ function bookacti_settings_field_price_currency_symbol_callback() {
 		'name'  => 'bookacti_general_settings[price_currency_symbol]',
 		'id'    => 'price_currency_symbol',
 		'value' => bookacti_get_setting_value( 'bookacti_general_settings', 'price_currency_symbol' ),
-		'tip'   => esc_html__( 'The currency symbol displayed with on prices (e.g.: $; €; £; ¥; etc.).', 'booking-activities' )
+		'tip'   => esc_html__( 'The currency symbol used for displaying prices (for example: $; €; £; ¥; etc.).', 'booking-activities' )
 	);
 	bookacti_display_field( $args );
 }

@@ -325,6 +325,8 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 = 1.15.15 =
 * Fix - JS error when opening the grouped event dialog with the Display Pack's "Waterfall" booking method
 * Dev - Add options and an API to handle price formatting (overriden by WooCommerce)
+* Dev - Remove bookacti_onoffswitch function, use bookacti_display_field instead
+* Dev - Add js hooks when opening booking dialogs
 
 = 1.15.14 - 2023/06/08 =
 * Fix - Bookings from not allowed calendars may be displayed in backend Bookings calendar after changing the filters

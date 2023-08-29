@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Array of configurable notifications
  * @since 1.2.1 (was bookacti_get_emails_default_settings in 1.2.0)
- * @version 1.14.0
+ * @version 1.15.15
  * @return array
  */
 function bookacti_get_notifications_default_settings() {
@@ -102,6 +102,7 @@ function bookacti_get_notifications_default_settings() {
 				              . ' ' . sprintf( esc_html__( 'If you set the "Default booking status" option to "%s", this notification will be sent right after the booking is made.', 'booking-activities' ), esc_html__( 'Pending', 'booking-activities' ) ),
 				'email'       => array(
 					'active'  => 1,
+					'to'      => array(),
 					'subject' => esc_html__( 'Your booking is pending', 'booking-activities' ) . ' - ' . $blog_name,
 					'message' => /* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receives when a booking is made, but is still Pending */
 								__( '<p>Thank you for your booking request {user_firstname}!</p><p>{booking_list}</p><p>Your reservation is <strong>pending</strong>.</p><p>We will process your request and contact you as soon as possible.</p>', 'booking-activities' )
@@ -116,6 +117,7 @@ function bookacti_get_notifications_default_settings() {
 				              . ' ' . sprintf( esc_html__( 'If you set the "Default booking status" option to "%s", this notification will be sent right after the booking is made.', 'booking-activities' ), esc_html__( 'Booked', 'booking-activities' ) ),
 				'email'       => array(
 					'active'  => 1,
+					'to'      => array(),
 					'subject' => esc_html__( 'Your booking is complete! Thank you', 'booking-activities' ) . ' - ' . $blog_name,
 					'message' => /* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receives when a booking is made and Complete */
 								__( '<p>Thank you for your booking {user_firstname}!</p><p>{booking_list}</p><p>We confirm that your reservation is now <strong>complete</strong>.</p>', 'booking-activities' )
@@ -129,6 +131,7 @@ function bookacti_get_notifications_default_settings() {
 				'description' => sprintf( esc_html__( 'This notification is sent to the customer when one of his bookings becomes "%s".', 'booking-activities' ), esc_html__( 'Delivered', 'booking-activities' ) ),
 				'email'       => array(
 					'active'  => 1,
+					'to'      => array(),
 					'subject' => esc_html__( 'Thank you!', 'booking-activities' ) . ' - ' . $blog_name,
 					'message' => /* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receives when a booking status becomes "Delivered" */
 								__( '<p>Thank you {user_firstname}!</p><p>Your booking is now <strong>complete</strong>.</p><p>{booking_list}</p><p>We hope to see you soon!</p>', 'booking-activities' )
@@ -142,6 +145,7 @@ function bookacti_get_notifications_default_settings() {
 				'description' => sprintf( esc_html__( 'This notification is sent to the customer when one of his bookings becomes "%s".', 'booking-activities' ), esc_html__( 'Cancelled', 'booking-activities' ) ),
 				'email'       => array(
 					'active'  => 1,
+					'to'      => array(),
 					'subject' => esc_html__( 'Your booking has been cancelled', 'booking-activities' ) . ' - ' . $blog_name,
 					'message' => /* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receives when a booking is cancelled */
 								__( '<p>Hello {user_firstname},</p><p>Your booking has been <strong>cancelled</strong>.</p><p>{booking_list}</p><p>If you haven\'t cancelled this reservation or if you think this is an error, please contact us.</p>', 'booking-activities' )
@@ -155,6 +159,7 @@ function bookacti_get_notifications_default_settings() {
 				'description' => sprintf( esc_html__( 'This notification is sent to the customer when one of his bookings becomes "%s".', 'booking-activities' ), esc_html__( 'Refund requested', 'booking-activities' ) ),
 				'email'       => array(
 					'active'  => 1,
+					'to'      => array(),
 					'subject' => esc_html__( 'A refund has been requested for your booking', 'booking-activities' ) . ' - ' . $blog_name,
 					'message' => /* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receives when he is reimbursed for a booking */
 								__( '<p>Hello {user_firstname},</p><p>We have received your <strong>refund request</strong> for your booking.</p><p>{booking_list}</p><blockquote><strong>Your message:</strong> <q>{refund_message}</q></blockquote><p>We will get back to you as soon as possible.</p><p>If you haven\'t requested a refund for this reservation or if you think this is an error, please contact us.</p>', 'booking-activities' )
@@ -168,6 +173,7 @@ function bookacti_get_notifications_default_settings() {
 				'description' => sprintf( esc_html__( 'This notification is sent to the customer when one of his bookings becomes "%s".', 'booking-activities' ), esc_html__( 'Refunded', 'booking-activities' ) ),
 				'email'       => array(
 					'active'  => 1,
+					'to'      => array(),
 					'subject' => esc_html__( 'Your booking has been refunded', 'booking-activities' ) . ' - ' . $blog_name,
 					'message' => /* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receives when he is reimbursed for a booking */
 								__( '<p>Hello {user_firstname},</p><p>Your booking has been <strong>refunded</strong>.</p><p>{booking_list}</p><p>We are sorry for the inconvenience and hope to see you soon.</p>', 'booking-activities' )
@@ -181,6 +187,7 @@ function bookacti_get_notifications_default_settings() {
 				'description' => esc_html__( 'This notification is sent to the customer when one of his bookings is rescheduled.', 'booking-activities' ),
 				'email'       => array(
 					'active'  => 1,
+					'to'      => array(),
 					'subject' => esc_html__( 'Your booking has been rescheduled', 'booking-activities' ) . ' - ' . $blog_name,
 					'message' => /* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receives when a booking is rescheduled */
 								__( '<p>Hello {user_firstname},</p><p>Your booking has been <strong>rescheduled</strong> from {booking_old_start} to:</p><p>{booking_list}</p><p>If you haven\'t rescheduled this reservation or if you think this is an error, please contact us.</p>', 'booking-activities' )

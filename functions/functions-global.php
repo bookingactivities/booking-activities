@@ -1119,7 +1119,37 @@ function bookacti_display_field( $args ) {
 
 	// SINGLE CHECKBOX (boolean)
 	else if( $args[ 'type' ] === 'checkbox' ) {
-		bookacti_onoffswitch( esc_attr( $args[ 'name' ] ), esc_attr( $args[ 'value' ] ), esc_attr( $args[ 'id' ] ) );
+		$disabled = strpos( $args[ 'attr' ], 'disabled="disabled"' ) !== false;
+		?>
+		<div class='bookacti-onoffswitch' <?php if( $disabled ) { echo 'bookacti-disabled'; } ?>>
+			<?php if( ! $disabled ) { ?>
+			<input type='hidden' name='<?php echo esc_attr( $args[ 'name' ] ); ?>' value='0' class='bookacti-onoffswitch-hidden-input'/>
+			<?php } ?>
+			<input type='checkbox' 
+				   name='<?php echo esc_attr( $args[ 'name' ] ); ?>'
+				   id='<?php echo esc_attr( $args[ 'id' ] ); ?>'
+				   class='bookacti-input bookacti-onoffswitch-checkbox<?php echo esc_attr( $args[ 'class' ] ); ?>' 
+				   autocomplete='<?php echo $args[ 'autocomplete' ] ? esc_attr( $args[ 'autocomplete' ] ) : 'off'; ?>'
+				   value='1' 
+				<?php 
+					checked( '1', $args[ 'value' ] );
+					if( ! empty( $args[ 'attr' ] ) ) { echo ' ' . $args[ 'attr' ]; }
+					if( $args[ 'required' ] && ! $disabled ) { echo ' required'; }
+				?>
+			/>
+			<?php if( $disabled ) { ?>
+			<input type='hidden' name='<?php echo esc_attr( $args[ 'name' ] ); ?>' value='<?php echo esc_attr( $args[ 'value' ] ); ?>'/>
+			<?php } ?>
+			<div class='bookacti-onoffswitch-knobs'></div>
+			<div class='bookacti-onoffswitch-layer'></div>
+		</div>
+		<?php 
+		if( $args[ 'label' ] ) { ?>
+		<label for='<?php echo esc_attr( $args[ 'id' ] ); ?>' >
+			<?php echo $args[ 'label' ]; ?>
+		</label>
+		<?php 
+		}
 	}
 
 	// MULTIPLE CHECKBOX
@@ -1432,41 +1462,6 @@ function bookacti_help_tip( $tip, $echo = true ){
 	$tip = "<span class='bookacti-tip-icon bookacti-tip' data-tip='" . esc_attr( $tip ) . "'></span>";
 	if( $echo ) { echo $tip; }
 	return $tip;
-}
-
-
-/**
- * Create ON / OFF switch
- * @version 1.12.6
- * @param string $name
- * @param string $current_value
- * @param string $id
- * @param boolean $disabled
- */
-function bookacti_onoffswitch( $name, $current_value, $id = NULL, $disabled = false ) {
-
-	// Format current value
-	$current_value = in_array( $current_value, array( true, 'true', 1, '1', 'on' ), true ) ? '1' : '0';
-
-	$checked = checked( '1', $current_value, false );
-	if( is_null ( $id ) || $id === '' || ! $id ) { $id = $name; }
-
-	?>
-	<div class='bookacti-onoffswitch' <?php if( $disabled ) { echo 'bookacti-disabled'; } ?>>
-		<input type='hidden' name='<?php echo esc_attr( $name ); ?>' value='0' class='bookacti-onoffswitch-hidden-input'/>
-		<input type='checkbox' 
-			   name='<?php echo esc_attr( $name ); ?>' 
-			   class='bookacti-onoffswitch-checkbox' 
-			   id='<?php echo esc_attr( $id ); ?>' 
-			   value='1' 
-				<?php echo $checked; ?> 
-				<?php if( $disabled ) { echo 'disabled'; } ?> 
-		/>
-		<div class='bookacti-onoffswitch-knobs'></div>
-		<div class='bookacti-onoffswitch-layer'></div>
-	</div>
-	<?php
-	if( $disabled ) { echo '<input type="hidden" name="' . esc_attr( $name ) . '" value="' . esc_attr( $current_value ) . '" />'; }
 }
 
 
