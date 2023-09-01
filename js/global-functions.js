@@ -661,36 +661,77 @@ function bookacti_is_url_external( url ) {
 /**
  * Format price with the correct format (currency, separators, decimals)
  * @since 1.12.4
- * @param {Float} price
+ * @version 1.15.15
+ * @param {Int|Float} price_raw
+ * @param {Float} args_raw
  * @returns {string}
  */
-function bookacti_format_price( price ) {
-	var formatted_price = '';
-	if( ! $j.isNumeric( price ) ) { return formatted_price; }
+function bookacti_format_price( price_raw, args_raw ) {
+	if( ! $j.isNumeric( price_raw ) ) { return ''; }
 	
-	price = parseFloat( price );
-	var negative = price < 0;
-	if( negative ) { price = price * -1; }
+	var price = parseFloat( price_raw );
 	
+	args_raw = typeof args_raw !== 'undefined' ? args_raw : {};
+	if( ! $j.isPlainObject( args_raw ) ) { args_raw = {}; } 
+	
+	var args = $j.extend({
+		'currency_symbol':    bookacti_localized.price_currency_symbol,
+		'decimal_separator':  bookacti_localized.price_decimal_separator,
+		'thousand_separator': bookacti_localized.price_thousand_separator,
+		'decimals':           bookacti_localized.price_decimal_number,
+		'price_format':       bookacti_localized.price_format,
+		'plain_text':         true
+	}, args_raw );
+	
+	$j( 'body' ).trigger( 'bookacti_formatted_price_args', { args, args_raw, price_raw } );
+	
+	args.formatted_amount = bookacti_number_format( Math.abs( price ), args.decimals, args.decimal_separator, args.thousand_separator );
+	
+	args.formatted_price = '';
+	if( ! args.plain_text ) {
+		args.formatted_price += `<span class='bookacti-price'><bdi>`;
+		if( price < 0 ) {
+			args.formatted_price += `<span class='bookacti-price-sign'>-</span>`;
+		} 
+		args.formatted_price += args.price_format.replace( '%2$s', '<span class="bookacti-price-amount">' + args.formatted_amount + '</span>' ).replace( '%1$s', '<span class="bookacti-price-currency-symbol">' + args.currency_symbol + '</span>' );
+		args.formatted_price += `</bdi></span>`;
+	} else {
+		if( price < 0 ) { args.formatted_price += '-'; }
+		args.formatted_price += args.price_format.replace( '%2$s', args.formatted_amount ).replace( '%1$s', args.currency_symbol );
+	}
+	
+	$j( 'body' ).trigger( 'bookacti_formatted_price', { args, price_raw, args_raw } );
+	
+	return args.formatted_price;
+}
+
+
+/**
+ * Format a number with desired number of decimals, decimal separator and thousand separator
+ * @since 1.15.15
+ * @param {int|float} number
+ * @param {int} decimals
+ * @param {string} decimal_separator
+ * @param {string} thousand_separator
+ * @returns {string}
+ */
+function bookacti_number_format( number, decimals, decimal_separator, thousand_separator ) {
+	number = parseFloat( number );
+
 	// Keep n decimals
-	formatted_price = price.toFixed( parseInt( bookacti_localized.price_decimal_number ) );
-	
-	// Do not display decimals if = 0
-	if( parseFloat( formatted_price ).toString().indexOf( '.' ) === -1 ) { formatted_price = parseFloat( formatted_price ); }
-	
+	formatted_number = number.toFixed( parseInt( decimals ) );
+
+	// Do not display decimals for round numbers
+	if( parseFloat( formatted_number ).toString().indexOf( '.' ) === -1 ) { formatted_number = parseFloat( formatted_number ); }
+
 	// Split int and decimal parts
-	var num_parts = formatted_price.toString().split( '.' );
-	
+	var num_parts = formatted_number.toString().split( '.' );
+
 	// Add thousand separators to the int part
-    num_parts[ 0 ] = num_parts[ 0 ].replace( /\B(?=(\d{3})+(?!\d))/g, bookacti_localized.price_thousand_separator );
-	
+	num_parts[ 0 ] = num_parts[ 0 ].replace( /\B(?=(\d{3})+(?!\d))/g, thousand_separator );
+
 	// Join int and decimal parts again with decimal separators
-    formatted_price = num_parts.join( bookacti_localized.price_decimal_separator );
-	
-	// Add the price in its container (with currency)
-	formatted_price = bookacti_localized.price_format.replace( '{price}', formatted_price );
-	
-	if( negative ) { formatted_price = '-' + formatted_price; }
-	
-	return formatted_price;
+	formatted_number = num_parts.join( decimal_separator );
+
+	return formatted_number;
 }

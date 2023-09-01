@@ -491,7 +491,8 @@ function bookacti_get_js_variables() {
 		'wp_time_format'                     => get_option( 'time_format' ),
 		'wp_start_of_week'                   => get_option( 'start_of_week' ),
 		
-		'price_format'                       => str_replace( array( '%1$s', '%2$s' ), array( bookacti_get_setting_value( 'bookacti_general_settings', 'price_currency_symbol' ), '{price}' ), bookacti_get_price_format() ),
+		'price_format'                       => bookacti_get_price_format(),
+		'price_currency_symbol'              => bookacti_get_setting_value( 'bookacti_general_settings', 'price_currency_symbol' ),
 		'price_thousand_separator'           => bookacti_get_setting_value( 'bookacti_general_settings', 'price_thousand_separator' ),
 		'price_decimal_separator'            => bookacti_get_setting_value( 'bookacti_general_settings', 'price_decimal_separator' ),
 		'price_decimal_number'               => bookacti_get_setting_value( 'bookacti_general_settings', 'price_decimals_number' )
@@ -2280,6 +2281,7 @@ function bookacti_get_price_format() {
  *     @type string $thousand_separator Thousand separator.
  *     @type string $decimals           Number of decimals.
  *     @type string $price_format       Price format depending on the currency position.
+ *     @type boolean $plain_text        Return plain text instead of HTML.
  * }
  * @return string
  */
@@ -2295,7 +2297,8 @@ function bookacti_format_price( $price_raw, $args_raw = array() ) {
 				'decimal_separator'  => bookacti_get_setting_value( 'bookacti_general_settings', 'price_decimal_separator' ),
 				'thousand_separator' => bookacti_get_setting_value( 'bookacti_general_settings', 'price_thousand_separator' ),
 				'decimals'           => bookacti_get_setting_value( 'bookacti_general_settings', 'price_decimals_number' ),
-				'price_format'       => bookacti_get_price_format()
+				'price_format'       => bookacti_get_price_format(),
+				'plain_text'         => false
 			)
 		), $args_raw, $price_raw
 	);
@@ -2309,6 +2312,7 @@ function bookacti_format_price( $price_raw, $args_raw = array() ) {
 	}
 
 	ob_start();
+	if( empty( $args[ 'plain_text' ] ) ) {
 	?>
 	<span class='bookacti-price'>
 		<bdi>
@@ -2324,6 +2328,10 @@ function bookacti_format_price( $price_raw, $args_raw = array() ) {
 		</bdi>
 	</span>
 	<?php
+	} else {
+		if( $price < 0 ) { echo '-'; }
+		echo sprintf( $args[ 'price_format' ], $amount, trim( $args[ 'currency_symbol' ] ) );
+	}
 
 	return apply_filters( 'bookacti_formatted_price', ob_get_clean(), $amount, $price_raw, $args_raw );
 }
