@@ -553,7 +553,7 @@ function bookacti_get_event_groups_nb( groups ) {
 
 /**
  * Fill form fields
- * @version 1.12.0
+ * @version 1.15.15
  * @param {HTMLElement} booking_system
  */
 function bookacti_fill_booking_system_fields( booking_system ) {
@@ -574,12 +574,6 @@ function bookacti_fill_booking_system_fields( booking_system ) {
 		inputs_container.append( '<input type="hidden" name="selected_events[' + i + '][start]" value="' + picked_event.start + '"/>' );
 		inputs_container.append( '<input type="hidden" name="selected_events[' + i + '][end]" value="' + picked_event.end + '"/>' );
 		++i;
-		
-		// Backward compatibility
-		booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_group_id"]' ).val( picked_event.group_id ? picked_event.group_id : 0 );
-		booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_id"]' ).val( picked_event.id );
-		booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_start"]' ).val( picked_event.start );
-		booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_end"]' ).val( picked_event.end );
 	});
 	
 	booking_system.trigger( 'bookacti_fill_booking_system_fields' );
@@ -819,7 +813,7 @@ function bookacti_unpick_all_events( booking_system ) {
 /**
  * Get the picked events list items
  * @since 1.12.4
- * @version 1.15.11
+ * @version 1.15.15
  * @param {HTMLElement} booking_system
  * @returns {Object}
  */
@@ -847,18 +841,15 @@ function bookacti_get_picked_events_list_items( booking_system ) {
 		}
 		
 		var list_item_data = {
-			'id':               picked_event.id,
-			'title':            picked_event.title,
-			'group_id':         picked_event.group_id,
-			'group_date':       picked_event.group_date,
-			'start':            moment.utc( picked_event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' ),
-			'end':              moment.utc( picked_event.end ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' ),
-			'activity_id':      parseInt( activity_id ),
-			'category_id':      parseInt( category_id ),
-			'quantity':         quantity,
-			'price':            0.00,
-			'price_to_display': '',
-			'has_price':        false
+			'id':          picked_event.id,
+			'title':       picked_event.title,
+			'group_id':    picked_event.group_id,
+			'group_date':  picked_event.group_date,
+			'start':       moment.utc( picked_event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' ),
+			'end':         moment.utc( picked_event.end ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' ),
+			'activity_id': parseInt( activity_id ),
+			'category_id': parseInt( category_id ),
+			'quantity':    quantity
 		};
 		
 		booking_system.trigger( 'bookacti_picked_events_list_item_data', [ list_item_data, picked_event ] );

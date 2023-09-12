@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Get a booking system based on given parameters
- * @version 1.15.0
+ * @version 1.15.15
  * @param array $atts (see bookacti_format_booking_system_attributes())
  * @return string
  */
@@ -34,11 +34,6 @@ function bookacti_get_booking_system( $atts ) {
 		</script>
 				
 		<div class='bookacti-booking-system-inputs'>
-			<!-- Backward compatibility -->
-			<input type='hidden' name='bookacti_group_id' value='<?php echo $booking_system_data[ 'picked_events' ] ? $booking_system_data[ 'picked_events' ][ 0 ][ 'group_id' ] : 0; ?>' />
-			<input type='hidden' name='bookacti_event_id' value='<?php echo $booking_system_data[ 'picked_events' ] ? $booking_system_data[ 'picked_events' ][ 0 ][ 'id' ] : ''; ?>' />
-			<input type='hidden' name='bookacti_event_start' value='<?php echo $booking_system_data[ 'picked_events' ] ? $booking_system_data[ 'picked_events' ][ 0 ][ 'start' ] : ''; ?>' />
-			<input type='hidden' name='bookacti_event_end' value='<?php echo $booking_system_data[ 'picked_events' ] ? $booking_system_data[ 'picked_events' ][ 0 ][ 'end' ] : ''; ?>' />
 			<?php 
 				$i = 0;
 				foreach( $booking_system_data[ 'picked_events' ] as $picked_event ) {
@@ -96,7 +91,7 @@ function bookacti_get_booking_system( $atts ) {
 /**
  * Get booking system data
  * @since 1.7.4
- * @version 1.15.10
+ * @version 1.15.15
  * @param array $atts (see bookacti_format_booking_system_attributes())
  * @return array
  */
@@ -225,14 +220,32 @@ function bookacti_get_booking_system_data( $atts ) {
 		}
 	}
 	
-	// Fill picked events titles
+	// Sanitize picked events
 	if( $booking_system_data[ 'picked_events' ] ) {
+		$default_picked_event = array(
+			'group_id'    => 0,
+			'group_date'  => '',
+			'id'          => 0,
+			'start'       => '',
+			'end'         => '',
+			'title'       => '',
+			'activity_id' => 0
+		);
+		
 		foreach( $booking_system_data[ 'picked_events' ] as $i => $picked_event ) {
+			// Title
 			if( $picked_event[ 'group_id' ] ) {
-				$booking_system_data[ 'picked_events' ][ $i ][ 'title' ] = isset( $booking_system_data[ 'groups_data' ][ $picked_event[ 'group_id' ] ] ) ? $booking_system_data[ 'groups_data' ][ $picked_event[ 'group_id' ] ][ 'title' ] : esc_html__( 'Group of events', 'booking-activities' );
+				$picked_event[ 'title' ] = ! empty( $booking_system_data[ 'groups_data' ][ $picked_event[ 'group_id' ] ][ 'title' ] ) ? $booking_system_data[ 'groups_data' ][ $picked_event[ 'group_id' ] ][ 'title' ] : esc_html__( 'Group of events', 'booking-activities' );
 			} else if( $picked_event[ 'id' ] ) {
-				$booking_system_data[ 'picked_events' ][ $i ][ 'title' ] = isset( $booking_system_data[ 'events_data' ][ $picked_event[ 'id' ] ] ) ? $booking_system_data[ 'events_data' ][ $picked_event[ 'id' ] ][ 'title' ] : esc_html__( 'Event', 'booking-activities' );
+				$picked_event[ 'title' ] = ! empty( $booking_system_data[ 'events_data' ][ $picked_event[ 'id' ] ][ 'title' ] ) ? $booking_system_data[ 'events_data' ][ $picked_event[ 'id' ] ][ 'title' ] : esc_html__( 'Event', 'booking-activities' );
 			}
+			
+			// Activity id
+			if( $picked_event[ 'id' ] ) {
+				$picked_event[ 'activity_id' ] = ! empty( $booking_system_data[ 'events_data' ][ $picked_event[ 'id' ] ][ 'activity_id' ] ) ? intval( $booking_system_data[ 'events_data' ][ $picked_event[ 'id' ] ][ 'activity_id' ] ) : 0;
+			}
+			
+			$booking_system_data[ 'picked_events' ][ $i ] = wp_parse_args( $picked_event, $default_picked_event );
 		}
 	}
 	

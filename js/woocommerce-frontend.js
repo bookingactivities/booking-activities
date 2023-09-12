@@ -168,47 +168,6 @@ $j( document ).ready( function() {
 	
 	
 	/**
-	 * Add price data to selected events
-	 * @since 1.12.4
-	 * @param {Event} e
-	 * @param {Object} list_item_data
-	 * @param {Object} picked_event
-	 */
-	$j( 'body' ).on( 'bookacti_picked_events_list_item_data', '.bookacti-booking-system', function( e, list_item_data, picked_event ) {
-		if( parseInt( list_item_data.price ) !== 0 || list_item_data.quantity <= 0 || list_item_data.has_price ) { return; }
-		
-		var booking_system = $j( this );
-		var booking_system_id = $j( this ).attr( 'id' );
-		var attributes = bookacti.booking_system[ booking_system_id ];
-		var form = booking_system.closest( 'form' ).length ? booking_system.closest( 'form' ) : booking_system.closest( '.bookacti-form-fields' );
-		
-		if( form.find( 'input[data-name="price"]' ).length ) {
-			list_item_data.price = parseFloat( form.find( 'input[data-name="price"]' ).val() ) * parseInt( list_item_data.quantity );
-		}
-		
-		if( $j.inArray( attributes[ 'form_action' ], [ 'add_product_to_cart', 'redirect_to_product_page' ] ) >= 0 ) {
-			if( parseInt( list_item_data.group_id ) > 0 ) {
-				if( typeof attributes[ 'product_price_by_group_category' ] !== 'undefined' ) {
-					if( typeof attributes[ 'product_price_by_group_category' ][ list_item_data.category_id ] !== 'undefined' ) {
-						list_item_data.price = parseFloat( attributes[ 'product_price_by_group_category' ][ list_item_data.category_id ] ) * parseInt( list_item_data.quantity );
-						list_item_data.has_price = true;
-					}
-				}
-			} else {
-				if( typeof attributes[ 'product_price_by_activity' ] !== 'undefined' ) {
-					if( typeof attributes[ 'product_price_by_activity' ][ list_item_data.activity_id ] !== 'undefined' ) {
-						list_item_data.price = parseFloat( attributes[ 'product_price_by_activity' ][ list_item_data.activity_id ] ) * parseInt( list_item_data.quantity );
-						list_item_data.has_price = true;
-					}
-				}
-			}
-		}
-		
-		if( list_item_data.price > 0 && ! list_item_data.price_to_display ) { list_item_data.price_to_display = bookacti_format_price( list_item_data.price ); }
-	});
-	
-	
-	/**
 	 * Empty the form fields after adding a booking to cart - on page load
 	 * @since 1.15.0
 	 */
@@ -222,6 +181,25 @@ $j( document ).ready( function() {
 		// Clear form feedback messages
 		var error_div = $j( this ).find( '> .bookacti-notices' ).length ? $j( this ).find( '> .bookacti-notices' ) : booking_system.siblings( '.bookacti-notices' );
 		error_div.empty();
+	});
+	
+	
+	/**
+	 * Add data to refresh Total Price Field request  - on bookacti_before_refresh_total_price_field
+	 * @since 1.15.15
+	 * @param {Event} e
+	 * @param {Object} data
+	 */
+	$j( '.woocommerce' ).on( 'bookacti_before_refresh_total_price_field', 'form.cart', function( e, data ) {
+		if( ! ( data.form_data instanceof FormData ) ) { return; }
+		
+		// For simple product, add the product ID to the form data
+		if( ! $j( this ).find( '[name="product_id"]' ).length && $j( this ).find( '[name="add-to-cart"]' ).length ) {
+			data.form_data.set( 'product_id', $j( this ).find( '[name="add-to-cart"]' ).val() );
+		}
+		
+		// Unset add-to-cart, otherwise, the product will be added to cart during the AJAX request
+		data.form_data.delete( 'add-to-cart' );
 	});
 
 
