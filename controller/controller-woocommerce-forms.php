@@ -166,6 +166,7 @@ add_filter( 'bookacti_is_total_price_field_used', '__return_true' );
 /**
  * Fill total price field data according to the form values and WC product prices
  * @since 1.8.1
+ * @version 1.15.15
  * @param array $event_items
  * @param array $form
  * @param array $fields
@@ -174,6 +175,8 @@ add_filter( 'bookacti_is_total_price_field_used', '__return_true' );
  */
 function bookacti_wc_total_price_field_picked_events_items( $event_items, $form, $fields, $booking_system_data ) {
 	if( ! $event_items ) { return $event_items; }
+	
+	$quantity = ! empty( $_POST[ 'quantity' ] ) ? intval( $_POST[ 'quantity' ] ) : 1;
 	
 	foreach( $event_items as $event_uid => $event_item ) {
 		$product_id   = 0;
@@ -211,8 +214,7 @@ function bookacti_wc_total_price_field_picked_events_items( $event_items, $form,
 		if( ! $product_id ) { continue; }
 
 		global $woocommerce;
-		$product  = wc_get_product( $product_id );
-		$quantity = ! empty( $_POST[ 'quantity' ] ) ? intval( $_POST[ 'quantity' ] ) : 1;
+		$product = wc_get_product( $product_id );
 		if( $product->is_taxable() ) {
 			$event_items[ $event_uid ][ 'product_price' ] = $woocommerce->cart->display_prices_including_tax() ? wc_get_price_including_tax( $product ) : wc_get_price_excluding_tax( $product );
 		} else {

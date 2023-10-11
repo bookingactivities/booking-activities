@@ -323,11 +323,18 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 == Changelog ==
 
 = 1.15.15 =
+* Tweak - Do not empty booking form if add to cart failed with WooCommerce
+* Tweak - Change booking status icons to one specific icon per status
+* Fix - Display error messages on WC cart page after changing quantity
 * Fix - JS error when opening the grouped event dialog with the Display Pack's "Waterfall" booking method
 * Dev - Add options and an API to handle price formatting (overriden by WooCommerce)
 * Dev - Remove bookacti_onoffswitch function, use bookacti_display_field instead
 * Dev - Add js hooks when opening booking dialogs
+* Dev - Allow bdi HTML tag in wp_kses_post
+* Dev - Refactor notification {price} tag and add {price_raw} tag
 * Dev - Refactor Total Price field: it is now refreshed via AJAX (PHP) instead of JS to improve compatibility and accuracy
+* Dev - Refactor WC cart item subtotal display
+* Lib - Update FullCalendar to 6.1.9
 
 = 1.15.14 - 2023/06/08 =
 * Fix - Bookings from not allowed calendars may be displayed in backend Bookings calendar after changing the filters

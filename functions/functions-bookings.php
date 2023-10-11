@@ -1977,7 +1977,7 @@ function bookacti_get_bookings_export_events_tags_values( $booking_items, $args 
 /**
  * Get an array of bookings data formatted to be exported
  * @since 1.6.0
- * @version 1.15.6
+ * @version 1.15.15
  * @param array $args_raw
  * @return array
  */
@@ -2026,12 +2026,7 @@ function bookacti_get_bookings_for_export( $args_raw = array() ) {
 	$displayed_groups = array();
 	if( ( $may_have_groups || $single_only ) && $group_ids ) {
 		// Get only the groups that will be displayed
-		$group_filters = bookacti_format_booking_filters( array( 'in__booking_group_id' => $group_ids ) );
-
-		// If the bookings are grouped by booking groups, 
-		// booking group meta will already be attached to the booking representing its group 
-		$group_filters[ 'fetch_meta' ] = $args[ 'filters' ][ 'group_by' ] !== 'booking_group';
-
+		$group_filters  = bookacti_format_booking_filters( array( 'in__booking_group_id' => $group_ids, 'fetch_meta' => true ) );
 		$booking_groups = bookacti_get_booking_groups( $group_filters );
 	}
 

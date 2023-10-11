@@ -247,7 +247,7 @@ add_action( 'woocommerce_before_single_product_summary', 'bookacti_move_add_to_c
 
 /**
  * Add booking forms to single product page (front-end)
- * @version 1.15.0
+ * @version 1.15.15
  * @global WC_Product $product
  */
 function bookacti_add_booking_system_in_single_product_page() {
@@ -309,8 +309,8 @@ function bookacti_add_booking_system_in_single_product_page() {
 
 	// Add compulsory class
 	$form_atts[ 'class' ] .= ' bookacti-wc-form-fields';
-	if( ! empty( $_REQUEST[ 'add-to-cart' ] ) ) { $form_atts[ 'class' ] .= ' bookacti-wc-form-fields-reset'; }
-
+	if( ! empty( $_REQUEST[ 'add-to-cart' ] ) && did_action( 'woocommerce_add_to_cart' ) ) { $form_atts[ 'class' ] .= ' bookacti-wc-form-fields-reset'; }
+	
 	// Convert $form_atts array to inline attributes
 	$form_attributes_str = '';
 	foreach( $form_atts as $form_attribute_key => $form_attribute_value ) {
@@ -464,7 +464,7 @@ add_filter( 'woocommerce_quantity_input_args', 'bookacti_set_wc_quantity_via_url
 
 /**
  * Validate add to cart form and temporarily book the event
- * @version 1.15.11
+ * @version 1.15.15
  * @global WooCommerce $woocommerce
  * @global array $global_bookacti_wc
  * @param boolean $true
@@ -512,7 +512,8 @@ function bookacti_validate_add_to_cart_and_book_temporarily( $true, $product_id,
 		'form_id'         => $form_id,
 		'status'          => 'in_cart',
 		'payment_status'  => 'owed',
-		'expiration_date' => bookacti_wc_get_new_cart_item_expiration_date()
+		'expiration_date' => bookacti_wc_get_new_cart_item_expiration_date(),
+		'context'         => 'add_to_cart', 
 	), $product_id, $variation_id, $form_id );
 	
 	// Check if data are correct before booking
@@ -987,7 +988,7 @@ add_action( 'wp_loaded', 'bookacti_remove_expired_product_from_cart', 100, 0 );
 
 /**
  * If quantity changes in cart, temporarily book the extra quantity if possible
- * @version 1.12.0
+ * @version 1.15.15
  * @param int $new_quantity
  * @param string $cart_item_key
  */
@@ -1014,7 +1015,7 @@ function bookacti_update_quantity_in_cart( $new_quantity, $cart_item_key ) {
 		$response = bookacti_wc_validate_cart_item_bookings_new_quantity( $cart_item_bookings, $new_quantity );
 		
 		// Feedback the errors
-		if( $response[ 'status' ] !== 'success' ) {
+		if( $response[ 'status' ] !== 'success' && ! empty( $response[ 'messages' ] ) ) {
 			foreach( $response[ 'messages' ] as $message ) {
 				wc_add_notice( $message, 'error' );
 			}
@@ -1024,10 +1025,18 @@ function bookacti_update_quantity_in_cart( $new_quantity, $cart_item_key ) {
 		if( $response[ 'status' ] === 'failed' && ! empty( $response[ 'messages' ][ 'qty_sup_to_avail' ] ) && ! empty( $response[ 'availability' ] ) ) {
 			$new_quantity = $response[ 'availability' ] + $old_quantity;
 			$response = bookacti_wc_validate_cart_item_bookings_new_quantity( $cart_item_bookings, $new_quantity );
+			
+			if( $response[ 'status' ] !== 'success' && ! empty( $response[ 'messages' ] ) ) {
+				foreach( $response[ 'messages' ] as $message ) {
+					wc_add_notice( $message, 'error' );
+				}
+			}
 		}
 		
 		// If the event is unavailable, restore to old quantity
-		if( $response[ 'status' ] !== 'success' ) { $restore_qty = true; }
+		if( $response[ 'status' ] !== 'success' ) { 
+			$restore_qty = true;
+		}
 		
 		// Update the cart item bookings quantity
 		if( $response[ 'status' ] === 'success' && $new_quantity !== $old_quantity ) {
@@ -1051,7 +1060,9 @@ function bookacti_update_quantity_in_cart( $new_quantity, $cart_item_key ) {
 			
 			if( ! $updated ) {
 				$restore_qty = true;
-				wc_add_notice( esc_html__( 'An error occurred while trying to change the quantity of the bookings attached to the item.', 'booking-activities' ), 'error' );
+				if( ! wc_notice_count( 'error' ) ) {
+					wc_add_notice( esc_html__( 'An error occurred while trying to change the quantity of the bookings attached to the item.', 'booking-activities' ), 'error' );
+				}
 			}
 		}
 	}
@@ -1065,6 +1076,23 @@ function bookacti_update_quantity_in_cart( $new_quantity, $cart_item_key ) {
 	return $restore_qty ? $old_quantity : $new_quantity;
 }
 add_filter( 'woocommerce_stock_amount_cart_item', 'bookacti_update_quantity_in_cart', 40, 2 ); 
+
+
+/**
+ * TEMP FIX - Refresh cart page after updating cart if an error message is displayed
+ * @since 1.15.15
+ * @param boolean $cart_updated
+ * @return boolean
+ */
+function bookacti_wc_refresh_page_after_updating_cart_quantity( $cart_updated ) {
+	if( ! $cart_updated && wc_notice_count( 'error' ) ) {
+		$referer = remove_query_arg( array( 'remove_coupon', 'add-to-cart' ), ( wp_get_referer() ? wp_get_referer() : wc_get_cart_url() ) );
+		wp_safe_redirect( $referer );
+		exit;
+	}
+	return $cart_updated;
+}
+add_filter( 'woocommerce_update_cart_action_cart_updated', 'bookacti_wc_refresh_page_after_updating_cart_quantity', 100, 1 );
 
 
 /**
@@ -1129,7 +1157,7 @@ function bookacti_remove_cart_item_bookings( $cart_item_key ) {
 
 /**
  * Restore the booking if user change his mind after deleting one
- * @version 1.15.11
+ * @version 1.15.15
  * @global WooCommerce $woocommerce
  * @param string $cart_item_key
  */
@@ -1186,7 +1214,9 @@ function bookacti_restore_bookings_of_removed_cart_item( $cart_item_key ) {
 			
 		if( ! $updated ) { 
 			$restore_bookings = false;
-			wc_add_notice( esc_html__( 'An error occurred while trying to change the quantity of the bookings attached to the item.', 'booking-activities' ), 'error' );
+			if( ! wc_notice_count( 'error' ) ) {
+				wc_add_notice( esc_html__( 'An error occurred while trying to change the quantity of the bookings attached to the item.', 'booking-activities' ), 'error' );
+			}
 		}
 	}
 	
@@ -1389,6 +1419,59 @@ function bookacti_add_timeout_to_cart_item_in_checkout_review( $cart_item_name, 
 	return $cart_item_name;
 }
 add_filter( 'woocommerce_cart_item_name', 'bookacti_add_timeout_to_cart_item_in_checkout_review', 10, 3 );
+
+
+/**
+ * Cart item total price displayed in cart
+ * @since 1.15.15
+ * @global WooCommerce $woocommerce
+ * @param string $default_subtotal
+ * @param array $cart_item
+ * @param string $cart_item_key
+ * @return string
+ */
+function bookacti_wc_cart_item_displayed_subtotals( $default_subtotal, $cart_item, $cart_item_key ) {
+	$cart_item_bookings = bookacti_wc_get_cart_item_bookings( $cart_item_key, array( 'fetch_meta' => true ) );
+	if( ! $cart_item_bookings ) { return $default_subtotal; }
+	
+	// Get product and quantity
+	global $woocommerce;
+	$_product = apply_filters( 'woocommerce_cart_item_product', $cart_item[ 'data' ], $cart_item, $cart_item_key );
+	$quantity = ! empty( $cart_item[ 'quantity' ] ) ? intval( $cart_item[ 'quantity' ] ) : 1;
+	
+	// Retrieve product price
+	$price = 0;
+	if( is_a( $_product, 'WC_Product' ) ) {
+		if( $_product->is_taxable() ) {
+			if( $woocommerce->cart->display_prices_including_tax() ) {
+				$price = wc_get_price_including_tax( $_product, array( 'price' => $price, 'qty' => $quantity ) );
+			} else {
+				$price = wc_get_price_excluding_tax( $_product, array( 'price' => $price, 'qty' => $quantity ) );
+			}
+		} else {
+			$price  = $price !== '' ? max( 0.0, (float) $price ) : $_product->get_price();
+			$price *= $quantity;
+		}
+	}
+	
+	// Allow plugins to change the displayed price and display additionals subtotals
+	$subtotals = apply_filters( 'bookacti_wc_cart_item_displayed_subtotals', array(
+		'main' => array( 'value' => $price, 'display_value' => $default_subtotal )
+	), $cart_item_bookings, $cart_item, $cart_item_key, $_product );
+	
+	// Move main entry to top
+	$temp = array( 'main' => $subtotals[ 'main' ] );
+    unset( $subtotals[ 'main' ] );
+    $subtotals = $temp + $subtotals;
+	
+	ob_start();
+	foreach( $subtotals as $key => $subtotal ) {
+		echo '<div class="bookacti-cart-item-subtotal bookacti-cart-item-subtotal-' . $key . '">' . $subtotal[ 'display_value' ] . '</div>';
+	}
+	
+	return ob_get_clean();
+}
+add_filter( 'woocommerce_cart_item_subtotal', 'bookacti_wc_cart_item_displayed_subtotals', 10, 3 );
 
 
 /**

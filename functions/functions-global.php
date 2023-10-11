@@ -1734,7 +1734,23 @@ function bookacti_get_loading_html() {
 }
 
 
+
+
 // FORMATING AND SANITIZING
+
+/**
+ * Add HTML allowed tags through kses
+ * @since 1.15.15
+ * @param array $tags
+ * @param string $context
+ * @return array
+ */
+function bookacti_kses_allowed_html( $tags, $context ) {
+	if( ! isset( $tags[ 'bdi' ] ) && $context = 'post' ) { $tags[ 'bdi' ] = array(); }
+	return $tags;
+}
+add_filter( 'wp_kses_allowed_html', 'bookacti_kses_allowed_html', 10, 2 );
+
 
 /**
  * Check if a string is valid for UTF-8 use
@@ -2333,7 +2349,7 @@ function bookacti_format_price( $price_raw, $args_raw = array() ) {
 		echo sprintf( $args[ 'price_format' ], $amount, trim( $args[ 'currency_symbol' ] ) );
 	}
 
-	return apply_filters( 'bookacti_formatted_price', ob_get_clean(), $amount, $price_raw, $args_raw );
+	return apply_filters( 'bookacti_formatted_price', str_replace( array( "\t", "\r", "\n" ), '', trim( ob_get_clean() ) ), $amount, $price_raw, $args_raw );
 }
 
 

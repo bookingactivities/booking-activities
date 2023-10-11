@@ -868,7 +868,7 @@ add_action( 'wp_ajax_nopriv_bookactiSubmitLoginForm', 'bookacti_controller_valid
 /**
  * AJAX Controller - Check if booking form is correct and then book the event, or send the error message
  * @since 1.5.0
- * @version 1.15.7
+ * @version 1.15.15
  */
 function bookacti_controller_validate_booking_form() {
 	$return_array = array(
@@ -1039,7 +1039,8 @@ function bookacti_controller_validate_booking_form() {
 		'form_id'        => $form_id,
 		'user_id'        => $return_array[ 'user_id' ],
 		'status'         => bookacti_get_setting_value( 'bookacti_general_settings', 'default_booking_state' ), 
-		'payment_status' => bookacti_get_setting_value( 'bookacti_general_settings', 'default_payment_status' )
+		'payment_status' => bookacti_get_setting_value( 'bookacti_general_settings', 'default_payment_status' ),
+		'context'        => 'submit_booking_form', 
 	), $form_id, $return_array );
 
 	// Check if the booking is correct
@@ -1799,7 +1800,7 @@ add_action( 'wp_ajax_bookactiSaveFormFieldOrder', 'bookacti_controller_save_form
 /**
  * AJAX Controller - Update a field
  * @since 1.5.0
- * @version 1.14.0
+ * @version 1.15.15
  */
 function bookacti_controller_update_form_field() {
 	// Check nonce
@@ -1846,7 +1847,11 @@ function bookacti_controller_update_form_field() {
 	
 	// Update form field
 	$saved_data = array_map( 'maybe_serialize', $sanitized_data );
-	foreach( $null_keys as $key ) { if( ! isset( $saved_data[ $key ] ) ) { $saved_data[ $key ] = 'null'; } }
+	foreach( $null_keys as $key ) { 
+		if( ! isset( $saved_data[ $key ] ) || ! empty( $null_data[ $key ] ) ) { 
+			$saved_data[ $key ] = 'null';
+		}
+	}
 	$updated = bookacti_update_form_field( $saved_data );
 	
 	if( $updated === false ) {
