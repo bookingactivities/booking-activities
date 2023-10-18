@@ -2353,6 +2353,16 @@ function bookacti_format_price( $price_raw, $args_raw = array() ) {
 }
 
 
+/**
+ * Get the inline CSS for the price container
+ * @since 1.15.15
+ * @return string
+ */
+function bookacti_get_inline_price_container_css() {
+	return apply_filters( 'bookacti_inline_price_container_css', 'display:inline-block;vertical-align:middle;margin-left:10px;padding:5px;font-weight:bolder;border-radius:3px;border:1px solid #fff;background-color:rgba(0,0,0,0.3);color:#fff;' );
+}
+
+
 
 
 // USERS

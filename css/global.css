@@ -321,7 +321,7 @@ fieldset legend .bookacti-show-hide-advanced-options { cursor: pointer; color: #
 
 
 /** PRICE **/
-.bookacti-price-container { box-sizing: border-box; display: block; width: fit-content; margin: 4px auto 0; padding: 5px; font-weight: bolder; font-size: 1.2em; line-height: 1.2em; border-radius: 3px; background-color: rgba(0,0,0,0.3); color: #fff; }
+.bookacti-price-container { box-sizing: border-box; display: block; width: fit-content; padding: 5px; font-weight: bolder; font-size: 1.2em; line-height: 1.2em; border-radius: 3px; background-color: rgba(0,0,0,0.3); color: #fff; }
 .bookacti-price-container:not(.bookacti-has-price) .bookacti-price { display: none !important; }
 
 #bookacti-booking-list .bookacti-price-container,

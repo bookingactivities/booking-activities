@@ -3,7 +3,7 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
-Tested up to: 6.3
+Tested up to: 6.4
 Requires PHP: 5.3
 Stable tag: 1.15.15
 License: GPLv3 or later
@@ -322,7 +322,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.15.15 =
+= 1.15.15 - 2023/10/18 =
 * Tweak - Do not empty booking form if add to cart failed with WooCommerce
 * Tweak - Change booking status icons to one specific icon per status
 * Fix - Display error messages on WC cart page after changing quantity

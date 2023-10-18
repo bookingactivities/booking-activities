@@ -180,7 +180,7 @@ label[for="bookacti-booking-filter-dates-to"] + input#bookacti-booking-filter-da
 .bookacti-booking-state[data-booking-state="refund_requested"]::before { content: '\0042  '; font-family: 'booking_activities_icons'; }
 .bookacti-booking-state[data-booking-state="in_cart"]::before          { content: '\0045  '; font-family: 'booking_activities_icons'; }
 .bookacti-booking-state[data-booking-state="expired"]::before          { content: '\0046  '; font-family: 'booking_activities_icons'; }
-.bookacti-booking-state[data-booking-state="removed"]::before          { content: '\004b  '; font-family: 'booking_activities_icons'; }
+.bookacti-booking-state[data-booking-state="removed"]::before          { content: '\0044  '; font-family: 'booking_activities_icons'; }
 #bookacti-booking-list .bookacti-refund-coupon-code { display: block; font-size: 0.8em; font-style: italic; white-space: nowrap; overflow-x: auto; }
 .bookacti-refund-coupon-not-valid                   { text-decoration: line-through; }
 #bookacti-booking-list-container .column-state .bookacti-loading-container { padding: 0; }

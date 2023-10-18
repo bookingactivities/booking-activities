@@ -1166,8 +1166,8 @@ function bookacti_restore_bookings_of_removed_cart_item( $cart_item_key ) {
 	$item = $woocommerce->cart->get_cart_item( $cart_item_key );
 	if( empty( $item[ '_bookacti_options' ] ) ) { return; }
 	
-	$quantity = $item[ 'quantity' ];
-	$init_quantity = $quantity;
+	$quantity       = $item[ 'quantity' ];
+	$init_quantity  = $quantity;
 	$status_updated = false;
 	
 	$cart_item_bookings = bookacti_wc_get_cart_item_bookings( $cart_item_key );
@@ -1244,7 +1244,7 @@ function bookacti_restore_bookings_of_removed_cart_item( $cart_item_key ) {
 		
 	} else {
 		if( $quantity !== $init_quantity ) { $woocommerce->cart->set_quantity( $cart_item_key, $quantity, true ); }
-		do_action( 'bookacti_cart_item_restored', $cart_item_key, $quantity );
+		do_action( 'bookacti_cart_item_restored', $cart_item_key, $quantity, $init_quantity );
 	}
 }
 add_action( 'woocommerce_cart_item_restored', 'bookacti_restore_bookings_of_removed_cart_item', 10, 1 );
@@ -1422,6 +1422,56 @@ add_filter( 'woocommerce_cart_item_name', 'bookacti_add_timeout_to_cart_item_in_
 
 
 /**
+ * Cart item price display
+ * @since 1.15.15
+ * @param string $default_unit_price
+ * @param array $cart_item
+ * @param string $cart_item_key
+ * @return string
+ */
+function bookacti_wc_cart_item_price( $default_unit_price, $cart_item, $cart_item_key ) { 
+	$cart_item_bookings = bookacti_wc_get_cart_item_bookings( $cart_item_key, array( 'fetch_meta' => true ) );
+	if( ! $cart_item_bookings ) { return $default_unit_price; }
+	
+	// Get cart item product
+	global $woocommerce;
+	$product_id = ! empty( $cart_item[ 'variation_id' ] ) ? $cart_item[ 'variation_id' ] : $cart_item[ 'product_id' ];
+	$product    = wc_get_product( $product_id );
+	$_product   = apply_filters( 'woocommerce_cart_item_product', $cart_item[ 'data' ], $cart_item, $cart_item_key );
+	
+	// Retrieve product price
+	$price      = 0;
+	$unit_price = $default_unit_price;
+	if( is_a( $product, 'WC_Product' ) ) {
+		$price      = bookacti_wc_get_displayed_product_price( $product, '', 1, false );
+		$unit_price = bookacti_format_price( $price );
+	} else if( is_a( $_product, 'WC_Product' ) ) {
+		$price      = bookacti_wc_get_displayed_product_price( $_product, '', 1, false );
+		$unit_price = bookacti_format_price( $price );
+	}
+	
+	// Allow plugins to change the displayed price and display additionals subtotals
+	$subtotals = apply_filters( 'bookacti_wc_cart_item_displayed_price', array(
+		'main' => array( 'value' => $price, 'display_value' => $unit_price )
+	), $cart_item_bookings, $cart_item, $cart_item_key, $_product );
+	
+	// Move main entry to top
+	$temp = array( 'main' => $subtotals[ 'main' ] );
+    unset( $subtotals[ 'main' ] );
+    $subtotals = $temp + $subtotals;
+	
+	ob_start();
+	foreach( $subtotals as $key => $subtotal ) {
+		if( empty( $subtotal[ 'display_value' ] ) ) { continue; }
+		echo '<div class="bookacti-cart-item-price bookacti-cart-item-price-' . $key . '">' . $subtotal[ 'display_value' ] . '</div>';
+	}
+	
+	return ob_get_clean();
+}
+add_filter( 'woocommerce_cart_item_price', 'bookacti_wc_cart_item_price', 100, 3 );
+
+
+/**
  * Cart item total price displayed in cart
  * @since 1.15.15
  * @global WooCommerce $woocommerce
@@ -1449,8 +1499,7 @@ function bookacti_wc_cart_item_displayed_subtotals( $default_subtotal, $cart_ite
 				$price = wc_get_price_excluding_tax( $_product, array( 'price' => $price, 'qty' => $quantity ) );
 			}
 		} else {
-			$price  = $price !== '' ? max( 0.0, (float) $price ) : $_product->get_price();
-			$price *= $quantity;
+			$price = $_product->get_price() * $quantity;
 		}
 	}
 	
@@ -1466,6 +1515,7 @@ function bookacti_wc_cart_item_displayed_subtotals( $default_subtotal, $cart_ite
 	
 	ob_start();
 	foreach( $subtotals as $key => $subtotal ) {
+		if( empty( $subtotal[ 'display_value' ] ) ) { continue; }
 		echo '<div class="bookacti-cart-item-subtotal bookacti-cart-item-subtotal-' . $key . '">' . $subtotal[ 'display_value' ] . '</div>';
 	}
 	
@@ -1803,6 +1853,22 @@ function bookacti_add_class_to_activity_order_item( $classes, $item, $order ) {
 	return $classes;
 }
 add_filter( 'woocommerce_order_item_class', 'bookacti_add_class_to_activity_order_item', 10, 3 );
+
+
+/**
+ * Add CSS for a proper display of additional prices in WooCommerce emails
+ * @since 1.15.15
+ * @param string $css
+ * @param WC_Email $email
+ * @return string
+ */
+function bookacti_wc_emails_additional_css( $css, $email = null ) {
+	ob_start(); ?>
+		.bookacti-price-container { <?php echo bookacti_get_inline_price_container_css(); ?> }
+	<?php
+	return $css . ob_get_clean();
+}
+add_filter( 'woocommerce_email_styles', 'bookacti_wc_emails_additional_css', 10, 2 );
 
 
 
