@@ -5,31 +5,36 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Get default settings values
  * @since 1.3.0 (was bookacti_define_default_settings_constants)
- * @version 1.14.3
+ * @version 1.15.15
  */
 function bookacti_get_default_settings() {
 	$date = new DateTime(); 
 	$tz = $date->getTimezone()->getName();
 	
 	$default = array(
-		'when_events_load'						=> 'after_page_load',
-		'event_load_interval'					=> 92,
-		'started_events_bookable'				=> false,
-		'started_groups_bookable'				=> false,
-		'default_booking_state'					=> 'pending',
-		'default_payment_status'				=> 'none',
-		'timezone'								=> $tz,
-		'default_calendar_view_threshold'		=> 640,
-		'display_private_columns'				=> 0,
-		'delete_data_on_uninstall'				=> 0,
-		'allow_customers_to_cancel'				=> true,
-		'allow_customers_to_reschedule'			=> true,
-		'booking_changes_deadline'				=> 604800, // 7 days
-		'refund_actions_after_cancellation'		=> array(),
-		'notifications_from_name'				=> wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ),
-		'notifications_from_email'				=> '', // Use the default sender email address (wordpress@...)
-		'notifications_async'					=> true,
-		'calendar_localization'					=> 'default'
+		'when_events_load'                  => 'after_page_load',
+		'event_load_interval'               => 92,
+		'started_events_bookable'           => false,
+		'started_groups_bookable'           => false,
+		'default_booking_state'             => 'pending',
+		'default_payment_status'            => 'none',
+		'timezone'                          => $tz,
+		'default_calendar_view_threshold'   => 640,
+		'display_private_columns'           => 0,
+		'delete_data_on_uninstall'          => 0,
+		'price_currency_symbol'             => '$',
+		'price_currency_position'           => 'left',
+		'price_thousand_separator'          => '.',
+		'price_decimal_separator'           => ',',
+		'price_decimals_number'             => 2,
+		'allow_customers_to_cancel'         => true,
+		'allow_customers_to_reschedule'     => true,
+		'booking_changes_deadline'          => 604800, // 7 days
+		'refund_actions_after_cancellation' => array(),
+		'notifications_from_name'           => wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ),
+		'notifications_from_email'          => '', // Use the default sender email address (wordpress@...)
+		'notifications_async'               => true,
+		'calendar_localization'             => 'default'
 	);
 	
 	return apply_filters( 'bookacti_default_settings', $default );
@@ -488,12 +493,111 @@ function bookacti_settings_field_delete_data_on_uninstall_callback() {
 
 
 
+// PRICE SETTINGS
+
+/**
+ * Display price settings section
+ * @since 1.15.15
+ */
+function bookacti_settings_section_general_price_callback() {
+	do_action( 'bookacti_settings_price_section' );
+}
+
+
+/**
+ * Display currency symbol field
+ * @since 1.15.15
+ */
+function bookacti_settings_field_price_currency_symbol_callback() {
+	$args = array(
+		'type'  => 'text',
+		'name'  => 'bookacti_general_settings[price_currency_symbol]',
+		'id'    => 'price_currency_symbol',
+		'value' => bookacti_get_setting_value( 'bookacti_general_settings', 'price_currency_symbol' ),
+		'tip'   => esc_html__( 'The currency symbol used for displaying prices (for example: $; €; £; ¥; etc.).', 'booking-activities' )
+	);
+	bookacti_display_field( $args );
+}
+
+
+/**
+ * Display currency position field
+ * @since 1.15.15
+ */
+function bookacti_settings_field_price_currency_position_callback() {
+	$args = array(
+		'type'    => 'select',
+		'name'    => 'bookacti_general_settings[price_currency_position]',
+		'id'      => 'price_currency_position',
+		'options' => array(
+			'left'        => esc_html__( 'Left', 'booking-activities' ),
+			'right'       => esc_html__( 'Right', 'booking-activities' ),
+			'left_space'  => esc_html__( 'Left with space', 'booking-activities' ),
+			'right_space' => esc_html__( 'Right with space', 'booking-activities' )
+		),
+		'value'   => bookacti_get_setting_value( 'bookacti_general_settings', 'price_currency_position' ),
+		'tip'     => esc_html__( 'Position of the currency symbol in prices (e.g.: $50; 50€).', 'booking-activities' )
+	);
+	bookacti_display_field( $args );
+}
+
+
+/**
+ * Display price thousand separator field
+ * @since 1.15.15
+ */
+function bookacti_settings_field_price_thousand_separator_callback() {
+	$args = array(
+		'type'  => 'text',
+		'name'  => 'bookacti_general_settings[price_thousand_separator]',
+		'id'    => 'price_thousand_separator',
+		'value' => bookacti_get_setting_value( 'bookacti_general_settings', 'price_thousand_separator' ),
+		'tip'   => esc_html__( 'Thousand separator used for displaying prices (e.g.: $9,999; 9 999€).', 'booking-activities' )
+	);
+	bookacti_display_field( $args );
+}
+
+
+/**
+ * Display price decimal separator field
+ * @since 1.15.15
+ */
+function bookacti_settings_field_price_decimal_separator_callback() {
+	$args = array(
+		'type'  => 'text',
+		'name'  => 'bookacti_general_settings[price_decimal_separator]',
+		'id'    => 'price_decimal_separator',
+		'value' => bookacti_get_setting_value( 'bookacti_general_settings', 'price_decimal_separator' ),
+		'tip'   => esc_html__( 'Decimal separator used for displaying prices (e.g.: $9.99; 9,99€).', 'booking-activities' )
+	);
+	bookacti_display_field( $args );
+}
+
+
+/**
+ * Display price number of decimals field
+ * @since 1.15.15
+ */
+function bookacti_settings_field_price_decimals_number_callback() {
+	$args = array(
+		'type'    => 'number',
+		'name'    => 'bookacti_general_settings[price_decimals_number]',
+		'id'      => 'price_decimals_number',
+		'value'   => bookacti_get_setting_value( 'bookacti_general_settings', 'price_decimals_number' ),
+		'options' => array( 'min' => 0, 'step' => 1 ),
+		'tip'     => esc_html__( 'Number of decimals in prices (e.g.: 9,999KD; $9.99; ¥9).', 'booking-activities' )
+	);
+	bookacti_display_field( $args );
+}
+
+
+
+
 
 // CANCELLATION SETTINGS 
 
 /**
  * Activate cancellation for customers
- * 
  * @version 1.2.0
  */
 function bookacti_settings_field_activate_cancel_callback() {
@@ -511,7 +615,6 @@ function bookacti_settings_field_activate_cancel_callback() {
 
 /**
  * Activate reschedule for customers
- * 
  * @version 1.4.0
  */
 function bookacti_settings_field_activate_reschedule_callback() {
@@ -728,7 +831,6 @@ function bookacti_settings_section_notifications_email_callback() {
 
 /**
  * Notification from name setting field
- * 
  * @version 1.2.0
  */
 function bookacti_settings_field_notifications_from_name_callback() {

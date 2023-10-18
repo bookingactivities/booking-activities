@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Array of configurable notifications
  * @since 1.2.1 (was bookacti_get_emails_default_settings in 1.2.0)
- * @version 1.14.0
+ * @version 1.15.15
  * @return array
  */
 function bookacti_get_notifications_default_settings() {
@@ -102,6 +102,7 @@ function bookacti_get_notifications_default_settings() {
 				              . ' ' . sprintf( esc_html__( 'If you set the "Default booking status" option to "%s", this notification will be sent right after the booking is made.', 'booking-activities' ), esc_html__( 'Pending', 'booking-activities' ) ),
 				'email'       => array(
 					'active'  => 1,
+					'to'      => array(),
 					'subject' => esc_html__( 'Your booking is pending', 'booking-activities' ) . ' - ' . $blog_name,
 					'message' => /* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receives when a booking is made, but is still Pending */
 								__( '<p>Thank you for your booking request {user_firstname}!</p><p>{booking_list}</p><p>Your reservation is <strong>pending</strong>.</p><p>We will process your request and contact you as soon as possible.</p>', 'booking-activities' )
@@ -116,6 +117,7 @@ function bookacti_get_notifications_default_settings() {
 				              . ' ' . sprintf( esc_html__( 'If you set the "Default booking status" option to "%s", this notification will be sent right after the booking is made.', 'booking-activities' ), esc_html__( 'Booked', 'booking-activities' ) ),
 				'email'       => array(
 					'active'  => 1,
+					'to'      => array(),
 					'subject' => esc_html__( 'Your booking is complete! Thank you', 'booking-activities' ) . ' - ' . $blog_name,
 					'message' => /* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receives when a booking is made and Complete */
 								__( '<p>Thank you for your booking {user_firstname}!</p><p>{booking_list}</p><p>We confirm that your reservation is now <strong>complete</strong>.</p>', 'booking-activities' )
@@ -129,6 +131,7 @@ function bookacti_get_notifications_default_settings() {
 				'description' => sprintf( esc_html__( 'This notification is sent to the customer when one of his bookings becomes "%s".', 'booking-activities' ), esc_html__( 'Delivered', 'booking-activities' ) ),
 				'email'       => array(
 					'active'  => 1,
+					'to'      => array(),
 					'subject' => esc_html__( 'Thank you!', 'booking-activities' ) . ' - ' . $blog_name,
 					'message' => /* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receives when a booking status becomes "Delivered" */
 								__( '<p>Thank you {user_firstname}!</p><p>Your booking is now <strong>complete</strong>.</p><p>{booking_list}</p><p>We hope to see you soon!</p>', 'booking-activities' )
@@ -142,6 +145,7 @@ function bookacti_get_notifications_default_settings() {
 				'description' => sprintf( esc_html__( 'This notification is sent to the customer when one of his bookings becomes "%s".', 'booking-activities' ), esc_html__( 'Cancelled', 'booking-activities' ) ),
 				'email'       => array(
 					'active'  => 1,
+					'to'      => array(),
 					'subject' => esc_html__( 'Your booking has been cancelled', 'booking-activities' ) . ' - ' . $blog_name,
 					'message' => /* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receives when a booking is cancelled */
 								__( '<p>Hello {user_firstname},</p><p>Your booking has been <strong>cancelled</strong>.</p><p>{booking_list}</p><p>If you haven\'t cancelled this reservation or if you think this is an error, please contact us.</p>', 'booking-activities' )
@@ -155,6 +159,7 @@ function bookacti_get_notifications_default_settings() {
 				'description' => sprintf( esc_html__( 'This notification is sent to the customer when one of his bookings becomes "%s".', 'booking-activities' ), esc_html__( 'Refund requested', 'booking-activities' ) ),
 				'email'       => array(
 					'active'  => 1,
+					'to'      => array(),
 					'subject' => esc_html__( 'A refund has been requested for your booking', 'booking-activities' ) . ' - ' . $blog_name,
 					'message' => /* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receives when he is reimbursed for a booking */
 								__( '<p>Hello {user_firstname},</p><p>We have received your <strong>refund request</strong> for your booking.</p><p>{booking_list}</p><blockquote><strong>Your message:</strong> <q>{refund_message}</q></blockquote><p>We will get back to you as soon as possible.</p><p>If you haven\'t requested a refund for this reservation or if you think this is an error, please contact us.</p>', 'booking-activities' )
@@ -168,6 +173,7 @@ function bookacti_get_notifications_default_settings() {
 				'description' => sprintf( esc_html__( 'This notification is sent to the customer when one of his bookings becomes "%s".', 'booking-activities' ), esc_html__( 'Refunded', 'booking-activities' ) ),
 				'email'       => array(
 					'active'  => 1,
+					'to'      => array(),
 					'subject' => esc_html__( 'Your booking has been refunded', 'booking-activities' ) . ' - ' . $blog_name,
 					'message' => /* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receives when he is reimbursed for a booking */
 								__( '<p>Hello {user_firstname},</p><p>Your booking has been <strong>refunded</strong>.</p><p>{booking_list}</p><p>We are sorry for the inconvenience and hope to see you soon.</p>', 'booking-activities' )
@@ -181,6 +187,7 @@ function bookacti_get_notifications_default_settings() {
 				'description' => esc_html__( 'This notification is sent to the customer when one of his bookings is rescheduled.', 'booking-activities' ),
 				'email'       => array(
 					'active'  => 1,
+					'to'      => array(),
 					'subject' => esc_html__( 'Your booking has been rescheduled', 'booking-activities' ) . ' - ' . $blog_name,
 					'message' => /* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receives when a booking is rescheduled */
 								__( '<p>Hello {user_firstname},</p><p>Your booking has been <strong>rescheduled</strong> from {booking_old_start} to:</p><p>{booking_list}</p><p>If you haven\'t rescheduled this reservation or if you think this is an error, please contact us.</p>', 'booking-activities' )
@@ -346,52 +353,54 @@ function bookacti_sanitize_notification_settings( $args, $notification_id = '' )
 /**
  * Get notifications tags
  * @since 1.2.0
- * @version 1.12.0
+ * @version 1.15.15
  * @param string $notification_id Optional.
  * @return array
  */
 function bookacti_get_notifications_tags( $notification_id = '' ) {
 	$tags = array( 
-		'{booking_id}'			=> esc_html__( 'Booking unique ID (integer). Bookings and booking groups have different set of IDs.', 'booking-activities' ),
-		'{booking_title}'		=> esc_html__( 'The event / group of events title.', 'booking-activities' ),
-		'{booking_quantity}'	=> esc_html__( 'Booking quantity. If bookings of a same group happen to have different quantities, the higher is displayed.', 'booking-activities' ),
-		'{booking_total_qty}'	=> esc_html__( 'For booking groups, this is the bookings sum. For single bookings, this is the same as {booking_quantity}.', 'booking-activities' ),
-		'{booking_status}'		=> esc_html__( 'Current booking status.', 'booking-activities' ),
-		'{booking_event_id}'	=> esc_html__( 'Booking event ID. For booking groups, the group of events ID is used.', 'booking-activities' ),
-		'{booking_start}'		=> esc_html__( 'Booking start date and time displayed in a user-friendly format. For booking groups, the first event start date and time is used.', 'booking-activities' ),
-		'{booking_start_raw}'	=> esc_html__( 'Booking start date and time displayed in the ISO format. For booking groups, the first event start date and time is used.', 'booking-activities' ),
-		'{booking_end}'			=> esc_html__( 'Booking end date and time displayed in a user-friendly format. For booking groups, the last event end date and time is used.', 'booking-activities' ),
-		'{booking_end_raw}'		=> esc_html__( 'Booking end date and time displayed in the ISO format. For booking groups, the last event end date and time is used.', 'booking-activities' ),
-		'{booking_list}'		=> esc_html__( 'Booking summary displayed as a booking list. You should use this tag once in every notification to know what booking (group) it is about.', 'booking-activities' ),
-		'{booking_list_raw}'	=> esc_html__( 'Booking summary displayed as a comma separated booking list, without HTML formatting.', 'booking-activities' ),
-		'{activity_id}'			=> esc_html__( 'Activity or Group Category ID', 'booking-activities' ),
-		'{activity_title}'		=> esc_html__( 'Activity or Group Category title', 'booking-activities' ),
-		'{calendar_id}'			=> esc_html__( 'Calendar ID', 'booking-activities' ),
-		'{user_firstname}'		=> esc_html__( 'The user first name', 'booking-activities' ),
-		'{user_lastname}'		=> esc_html__( 'The user last name', 'booking-activities' ),
-		'{user_email}'			=> esc_html__( 'The user email address', 'booking-activities' ),
-		'{user_phone}'			=> esc_html__( 'The user phone number', 'booking-activities' ),
-		'{user_id}'				=> esc_html__( 'The user ID. If the user has booked without account, this will display his email address.', 'booking-activities' ),
-		'{user_locale}'			=> esc_html__( 'The user locale code. If the user has booked without account, the site locale will be used.', 'booking-activities' ),
-		'{user_ical_url}'		=> esc_html__( 'URL to export the user list of bookings in ical format. You can append the "start" and "end" parameters with relative time format to this URL (e.g.: {user_ical_url}&start=today&end=next+year). If the user has booked without account, only the current booking is exported.', 'booking-activities' ),
-		'{booking_ical_url}'	=> esc_html__( 'URL to export the current booking in ical format.', 'booking-activities' ),
-		'{shortcode}{/shortcode}'	=> esc_html__( 'Use any shortcode between these tags.', 'booking-activities' )
+		'{booking_id}'            => esc_html__( 'Booking unique ID (integer). Bookings and booking groups have different set of IDs.', 'booking-activities' ),
+		'{booking_title}'         => esc_html__( 'The event / group of events title.', 'booking-activities' ),
+		'{booking_quantity}'      => esc_html__( 'Booking quantity. If bookings of a same group happen to have different quantities, the higher is displayed.', 'booking-activities' ),
+		'{booking_total_qty}'     => esc_html__( 'For booking groups, this is the bookings sum. For single bookings, this is the same as {booking_quantity}.', 'booking-activities' ),
+		'{booking_status}'        => esc_html__( 'Current booking status.', 'booking-activities' ),
+		'{booking_event_id}'      => esc_html__( 'Booking event ID. For booking groups, the group of events ID is used.', 'booking-activities' ),
+		'{booking_start}'         => esc_html__( 'Booking start date and time displayed in a user-friendly format. For booking groups, the first event start date and time is used.', 'booking-activities' ),
+		'{booking_start_raw}'     => esc_html__( 'Booking start date and time displayed in the ISO format. For booking groups, the first event start date and time is used.', 'booking-activities' ),
+		'{booking_end}'           => esc_html__( 'Booking end date and time displayed in a user-friendly format. For booking groups, the last event end date and time is used.', 'booking-activities' ),
+		'{booking_end_raw}'       => esc_html__( 'Booking end date and time displayed in the ISO format. For booking groups, the last event end date and time is used.', 'booking-activities' ),
+		'{booking_list}'          => esc_html__( 'Booking summary displayed as a booking list. You should use this tag once in every notification to know what booking (group) it is about.', 'booking-activities' ),
+		'{booking_list_raw}'      => esc_html__( 'Booking summary displayed as a comma separated booking list, without HTML formatting.', 'booking-activities' ),
+		'{activity_id}'           => esc_html__( 'Activity or Group Category ID', 'booking-activities' ),
+		'{activity_title}'        => esc_html__( 'Activity or Group Category title', 'booking-activities' ),
+		'{calendar_id}'           => esc_html__( 'Calendar ID', 'booking-activities' ),
+		'{user_firstname}'        => esc_html__( 'The user first name', 'booking-activities' ),
+		'{user_lastname}'         => esc_html__( 'The user last name', 'booking-activities' ),
+		'{user_email}'            => esc_html__( 'The user email address', 'booking-activities' ),
+		'{user_phone}'            => esc_html__( 'The user phone number', 'booking-activities' ),
+		'{user_id}'               => esc_html__( 'The user ID. If the user has booked without account, this will display his email address.', 'booking-activities' ),
+		'{user_locale}'           => esc_html__( 'The user locale code. If the user has booked without account, the site locale will be used.', 'booking-activities' ),
+		'{user_ical_url}'         => esc_html__( 'URL to export the user list of bookings in ical format. You can append the "start" and "end" parameters with relative time format to this URL (e.g.: {user_ical_url}&start=today&end=next+year). If the user has booked without account, only the current booking is exported.', 'booking-activities' ),
+		'{booking_ical_url}'      => esc_html__( 'URL to export the current booking in ical format.', 'booking-activities' ),
+		'{price}'                 => esc_html__( 'Booking price, with currency.', 'booking-activities' ),
+		'{price_raw}'             => esc_html__( 'Booking price, without currency.', 'booking-activities' ),
+		'{shortcode}{/shortcode}' => esc_html__( 'Use any shortcode between these tags.', 'booking-activities' )
 	);
 	
 	if( substr( $notification_id, 0, 6 ) === 'admin_' ) {
 		$booking_list_shortcode_docs = '<a href="https://booking-activities.fr/en/docs/user-documentation/get-started-with-booking-activities/display-customers-bookings-list-on-the-frontend/" target="_blank">' . esc_html__( '[bookingactivities_list] shortcode parameters', 'booking-activities' ) . '</a>';
-		$tags[ '{booking_admin_url}' ]	= esc_html__( 'URL to the booking admin panel.', 'booking-activities' ) . ' ' . esc_html__( 'View only the current booking.', 'booking-activities' );
-		$tags[ '{event_admin_url}' ]	= esc_html__( 'URL to the booking admin panel.', 'booking-activities' ) . ' ' . esc_html__( 'View all bookings for the current event.', 'booking-activities' );
+		$tags[ '{booking_admin_url}' ] = esc_html__( 'URL to the booking admin panel.', 'booking-activities' ) . ' ' . esc_html__( 'View only the current booking.', 'booking-activities' );
+		$tags[ '{event_admin_url}' ]   = esc_html__( 'URL to the booking admin panel.', 'booking-activities' ) . ' ' . esc_html__( 'View all bookings for the current event.', 'booking-activities' );
 		$tags[ '{event_booking_list}{/event_booking_list}' ] = esc_html__( 'Event booking list (table)', 'booking-activities' ) . '. ' 
-															/* translators: %s = "[bookingactivities_list] shortcode parameters" (link to the documentation) */
-															.  sprintf( esc_html__( 'Use %s between the tags. E.g.:', 'booking-activities' ), $booking_list_shortcode_docs ) . ' <code>{event_booking_list}status="delivered, booked, pending" columns="booking_id, quantity, customer_display_name, customer_email"{/event_booking_list}</code>';
+		/* translators: %s = "[bookingactivities_list] shortcode parameters" (link to the documentation) */
+		.  sprintf( esc_html__( 'Use %s between the tags. E.g.:', 'booking-activities' ), $booking_list_shortcode_docs ) . ' <code>{event_booking_list}status="delivered, booked, pending" columns="booking_id, quantity, customer_display_name, customer_email"{/event_booking_list}</code>';
 	}
 	
 	if( strpos( $notification_id, '_rescheduled' ) !== false ) {
-		$tags[ '{booking_old_start_raw}' ]	= esc_html__( 'Booking start date and time before reschedule. Displayed in the ISO format.', 'booking-activities' );
-		$tags[ '{booking_old_end_raw}' ]	= esc_html__( 'Booking end date and time before reschedule. Displayed in the ISO format.', 'booking-activities' );
-		$tags[ '{booking_old_start}' ]		= esc_html__( 'Booking start date and time before reschedule. Displayed in a user-friendly format.', 'booking-activities' );
-		$tags[ '{booking_old_end}' ]		= esc_html__( 'Booking end date and time before reschedule. Displayed in a user-friendly format.', 'booking-activities' );
+		$tags[ '{booking_old_start_raw}' ] = esc_html__( 'Booking start date and time before reschedule. Displayed in the ISO format.', 'booking-activities' );
+		$tags[ '{booking_old_end_raw}' ]   = esc_html__( 'Booking end date and time before reschedule. Displayed in the ISO format.', 'booking-activities' );
+		$tags[ '{booking_old_start}' ]     = esc_html__( 'Booking start date and time before reschedule. Displayed in a user-friendly format.', 'booking-activities' );
+		$tags[ '{booking_old_end}' ]       = esc_html__( 'Booking end date and time before reschedule. Displayed in a user-friendly format.', 'booking-activities' );
 	}
 	
 	if( strpos( $notification_id, '_refunded' ) !== false || strpos( $notification_id, '_refund_requested' ) !== false ) {

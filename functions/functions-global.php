@@ -392,7 +392,7 @@ function bookacti_is_db_version_outdated() {
 /**
  * Get the variables used with javascript
  * @since 1.8.0
- * @version 1.15.12
+ * @version 1.15.15
  * @return array
  */
 function bookacti_get_js_variables() {
@@ -491,10 +491,11 @@ function bookacti_get_js_variables() {
 		'wp_time_format'                     => get_option( 'time_format' ),
 		'wp_start_of_week'                   => get_option( 'start_of_week' ),
 		
-		'price_format'                       => '{price}',
-		'price_thousand_separator'           => '',
-		'price_decimal_separator'            => ',',
-		'price_decimal_number'               => 2
+		'price_format'                       => bookacti_get_price_format(),
+		'price_currency_symbol'              => bookacti_get_setting_value( 'bookacti_general_settings', 'price_currency_symbol' ),
+		'price_thousand_separator'           => bookacti_get_setting_value( 'bookacti_general_settings', 'price_thousand_separator' ),
+		'price_decimal_separator'            => bookacti_get_setting_value( 'bookacti_general_settings', 'price_decimal_separator' ),
+		'price_decimal_number'               => bookacti_get_setting_value( 'bookacti_general_settings', 'price_decimals_number' )
 	);
 	
 	// Strings for backend only
@@ -595,7 +596,7 @@ function bookacti_get_active_add_ons( $prefix = '', $exclude = array( 'balau' ) 
 /**
  * Get add-on data by prefix
  * @since 1.7.14
- * @version 1.15.13
+ * @version 1.15.15
  * @param string $prefix
  * @param array $exclude
  * @return array
@@ -624,7 +625,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-prices-and-credits', 
 			'end_of_life' => '', 
 			'download_id' => 438,
-			'min_version' => '1.8.0'
+			'min_version' => '1.8.1'
 		),
 		'baaf' => array( 
 			'title'       => 'Advanced Forms', 
@@ -632,7 +633,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-advanced-forms', 
 			'end_of_life' => '', 
 			'download_id' => 2705,
-			'min_version' => '1.3.0'
+			'min_version' => '1.4.0'
 		),
 		'baofc' => array( 
 			'title'	      => 'Order for Customers', 
@@ -648,7 +649,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-resource-availability', 
 			'end_of_life' => '', 
 			'download_id' => 29249,
-			'min_version' => '1.0.2'
+			'min_version' => '1.1.0'
 		),
 		'balau' => array( 
 			'title'       => 'Licenses & Updates', 
@@ -1119,7 +1120,37 @@ function bookacti_display_field( $args ) {
 
 	// SINGLE CHECKBOX (boolean)
 	else if( $args[ 'type' ] === 'checkbox' ) {
-		bookacti_onoffswitch( esc_attr( $args[ 'name' ] ), esc_attr( $args[ 'value' ] ), esc_attr( $args[ 'id' ] ) );
+		$disabled = strpos( $args[ 'attr' ], 'disabled="disabled"' ) !== false;
+		?>
+		<div class='bookacti-onoffswitch' <?php if( $disabled ) { echo 'bookacti-disabled'; } ?>>
+			<?php if( ! $disabled ) { ?>
+			<input type='hidden' name='<?php echo esc_attr( $args[ 'name' ] ); ?>' value='0' class='bookacti-onoffswitch-hidden-input'/>
+			<?php } ?>
+			<input type='checkbox' 
+				   name='<?php echo esc_attr( $args[ 'name' ] ); ?>'
+				   id='<?php echo esc_attr( $args[ 'id' ] ); ?>'
+				   class='bookacti-input bookacti-onoffswitch-checkbox<?php echo esc_attr( $args[ 'class' ] ); ?>' 
+				   autocomplete='<?php echo $args[ 'autocomplete' ] ? esc_attr( $args[ 'autocomplete' ] ) : 'off'; ?>'
+				   value='1' 
+				<?php 
+					checked( '1', $args[ 'value' ] );
+					if( ! empty( $args[ 'attr' ] ) ) { echo ' ' . $args[ 'attr' ]; }
+					if( $args[ 'required' ] && ! $disabled ) { echo ' required'; }
+				?>
+			/>
+			<?php if( $disabled ) { ?>
+			<input type='hidden' name='<?php echo esc_attr( $args[ 'name' ] ); ?>' value='<?php echo esc_attr( $args[ 'value' ] ); ?>'/>
+			<?php } ?>
+			<div class='bookacti-onoffswitch-knobs'></div>
+			<div class='bookacti-onoffswitch-layer'></div>
+		</div>
+		<?php 
+		if( $args[ 'label' ] ) { ?>
+		<label for='<?php echo esc_attr( $args[ 'id' ] ); ?>' >
+			<?php echo $args[ 'label' ]; ?>
+		</label>
+		<?php 
+		}
 	}
 
 	// MULTIPLE CHECKBOX
@@ -1436,41 +1467,6 @@ function bookacti_help_tip( $tip, $echo = true ){
 
 
 /**
- * Create ON / OFF switch
- * @version 1.12.6
- * @param string $name
- * @param string $current_value
- * @param string $id
- * @param boolean $disabled
- */
-function bookacti_onoffswitch( $name, $current_value, $id = NULL, $disabled = false ) {
-
-	// Format current value
-	$current_value = in_array( $current_value, array( true, 'true', 1, '1', 'on' ), true ) ? '1' : '0';
-
-	$checked = checked( '1', $current_value, false );
-	if( is_null ( $id ) || $id === '' || ! $id ) { $id = $name; }
-
-	?>
-	<div class='bookacti-onoffswitch' <?php if( $disabled ) { echo 'bookacti-disabled'; } ?>>
-		<input type='hidden' name='<?php echo esc_attr( $name ); ?>' value='0' class='bookacti-onoffswitch-hidden-input'/>
-		<input type='checkbox' 
-			   name='<?php echo esc_attr( $name ); ?>' 
-			   class='bookacti-onoffswitch-checkbox' 
-			   id='<?php echo esc_attr( $id ); ?>' 
-			   value='1' 
-				<?php echo $checked; ?> 
-				<?php if( $disabled ) { echo 'disabled'; } ?> 
-		/>
-		<div class='bookacti-onoffswitch-knobs'></div>
-		<div class='bookacti-onoffswitch-layer'></div>
-	</div>
-	<?php
-	if( $disabled ) { echo '<input type="hidden" name="' . esc_attr( $name ) . '" value="' . esc_attr( $current_value ) . '" />'; }
-}
-
-
-/**
  * Create a user selectbox
  * @since 1.3.0
  * @version 1.15.4
@@ -1738,7 +1734,23 @@ function bookacti_get_loading_html() {
 }
 
 
+
+
 // FORMATING AND SANITIZING
+
+/**
+ * Add HTML allowed tags through kses
+ * @since 1.15.15
+ * @param array $tags
+ * @param string $context
+ * @return array
+ */
+function bookacti_kses_allowed_html( $tags, $context ) {
+	if( ! isset( $tags[ 'bdi' ] ) && $context = 'post' ) { $tags[ 'bdi' ] = array(); }
+	return $tags;
+}
+add_filter( 'wp_kses_allowed_html', 'bookacti_kses_allowed_html', 10, 2 );
+
 
 /**
  * Check if a string is valid for UTF-8 use
@@ -2244,6 +2256,110 @@ function bookacti_sanitize_ical_property( $value, $property_name = '' ) {
 		$lines[] = $value;
 	}
 	return implode( PHP_EOL . ' ', $lines ); // Line break + leading space
+}
+
+
+/**
+ * Get the price format depending on the currency position.
+ * @since 1.15.15
+ * @return string %1$s = currency symbol, %2$s = price amount
+ */
+function bookacti_get_price_format() {
+	$currency_pos = bookacti_get_setting_value( 'bookacti_general_settings', 'price_currency_position' );
+	$format       = '%1$s%2$s';
+
+	switch( $currency_pos ) {
+		case 'left':
+			$format = '%1$s%2$s';
+			break;
+		case 'right':
+			$format = '%2$s%1$s';
+			break;
+		case 'left_space':
+			$format = '%1$s&nbsp;%2$s';
+			break;
+		case 'right_space':
+			$format = '%2$s&nbsp;%1$s';
+			break;
+	}
+
+	return apply_filters( 'bookacti_price_format', $format, $currency_pos );
+}
+
+
+/**
+ * Format a price with currency symbol
+ * @since 1.15.15
+ * @param int|float $price_raw
+ * @param array $args_raw Arguments to format a price (default to price settings values) {
+ *     @type string $currency_symbol    Currency symbol.
+ *     @type string $decimal_separator  Decimal separator.
+ *     @type string $thousand_separator Thousand separator.
+ *     @type string $decimals           Number of decimals.
+ *     @type string $price_format       Price format depending on the currency position.
+ *     @type boolean $plain_text        Return plain text instead of HTML.
+ * }
+ * @return string
+ */
+function bookacti_format_price( $price_raw, $args_raw = array() ) {
+	if( ! is_numeric( $price_raw ) ) { return ''; }
+	
+	$args = apply_filters(
+		'bookacti_price_args',
+		wp_parse_args(
+			$args_raw,
+			array(
+				'currency_symbol'    => bookacti_get_setting_value( 'bookacti_general_settings', 'price_currency_symbol' ),
+				'decimal_separator'  => bookacti_get_setting_value( 'bookacti_general_settings', 'price_decimal_separator' ),
+				'thousand_separator' => bookacti_get_setting_value( 'bookacti_general_settings', 'price_thousand_separator' ),
+				'decimals'           => bookacti_get_setting_value( 'bookacti_general_settings', 'price_decimals_number' ),
+				'price_format'       => bookacti_get_price_format(),
+				'plain_text'         => false
+			)
+		), $args_raw, $price_raw
+	);
+
+	// Convert to float to avoid issues on PHP 8.
+	$price  = (float) $price_raw;
+	$amount = number_format( abs( $price ), $args[ 'decimals' ], $args[ 'decimal_separator' ], $args[ 'thousand_separator' ] );
+
+	if( apply_filters( 'bookacti_price_trim_zeros', false ) && $args[ 'decimals' ] > 0 ) {
+		$amount = preg_replace( '/' . preg_quote( $args[ 'decimal_separator' ], '/' ) . '0++$/', '', $amount );
+	}
+
+	ob_start();
+	if( empty( $args[ 'plain_text' ] ) ) {
+	?>
+	<span class='bookacti-price'>
+		<bdi>
+		<?php if( $price < 0 ) { ?>
+			<span class='bookacti-price-sign'>-</span>
+		<?php } 
+			echo sprintf( 
+				$args[ 'price_format' ], 
+				'<span class="bookacti-price-currency-symbol">' . trim( $args[ 'currency_symbol' ] ) . '</span>',
+				'<span class="bookacti-price-amount">' . $amount . '</span>'
+			);
+		?>
+		</bdi>
+	</span>
+	<?php
+	} else {
+		if( $price < 0 ) { echo '-'; }
+		echo sprintf( $args[ 'price_format' ], $amount, trim( $args[ 'currency_symbol' ] ) );
+	}
+
+	return apply_filters( 'bookacti_formatted_price', str_replace( array( "\t", "\r", "\n" ), '', trim( ob_get_clean() ) ), $amount, $price_raw, $args_raw );
+}
+
+
+/**
+ * Get the inline CSS for the price container
+ * @since 1.15.15
+ * @return string
+ */
+function bookacti_get_inline_price_container_css() {
+	return apply_filters( 'bookacti_inline_price_container_css', 'display:inline-block;vertical-align:middle;margin-left:10px;padding:5px;font-weight:bolder;border-radius:3px;border:1px solid #fff;background-color:rgba(0,0,0,0.3);color:#fff;' );
 }
 
 

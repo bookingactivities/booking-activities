@@ -129,6 +129,8 @@ ul[id$='-select-box-results'] li[aria-disabled='true'] { display: none; }
 .bookacti-settings-table .dashicons-yes:before	{ color: #3cb371; }
 .bookacti-settings-table .dashicons-no:before	{ color: #cd5c5c; }
 
+.bookacti-settings-section-price { display: none; }
+
 .bookacti-notification-id-container { display: inline-block; font-size: 13px; font-weight: normal; }
 #bookacti-notifications-list-column-title { width: 350px; }
 .bookacti-settings-table .bookacti-notifications-list-column-value-title a { text-decoration: none; font-weight: bold; }

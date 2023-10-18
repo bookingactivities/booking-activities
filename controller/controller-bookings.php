@@ -419,7 +419,7 @@ add_action( 'wp_ajax_nopriv_bookactiGetRescheduleBookingSystemData', 'bookacti_c
 
 /**
  * AJAX Controller - Reschedule a booking
- * @version 1.15.6
+ * @version 1.15.15
  */
 function bookacti_controller_reschedule_booking() {
 	$booking_id = intval( $_POST[ 'booking_id' ] );
@@ -455,7 +455,8 @@ function bookacti_controller_reschedule_booking() {
 		'picked_events'      => $picked_events,
 		'quantity'           => intval( $booking->quantity ),
 		'form_id'            => ! empty( $booking->form_id ) && ! current_user_can( 'bookacti_edit_bookings' ) ? $booking->form_id : 0,
-		'context'            => ! empty( $_POST[ 'is_admin' ] ) ? 'admin' : 'front', 
+		'is_admin'           => ! empty( $_POST[ 'is_admin' ] ), 
+		'context'            => 'reschedule', 
 		'send_notifications' => ! empty( $_POST[ 'is_admin' ] ) && isset( $_POST[ 'send_notifications' ] ) ? intval( $_POST[ 'send_notifications' ] ) : 1
 	), $booking );
 	
@@ -1022,16 +1023,16 @@ function bookacti_controller_generate_export_bookings_url() {
 	$picked_events = ! empty( $_POST[ 'booking_filters' ][ 'selected_events' ] ) ? bookacti_format_picked_events( $_POST[ 'booking_filters' ][ 'selected_events' ] ) : array();
 	if( ! empty( $picked_events[ 0 ][ 'group_id' ] ) )  { $booking_filters_raw[ 'event_group_id' ] = $picked_events[ 0 ][ 'group_id' ]; }
 	else {
-		if( ! empty( $picked_events[ 0 ][ 'id' ] ) )    { $booking_filters_raw[ 'event_id' ] = $picked_events[ 0 ][ 'id' ]; }
+		if( ! empty( $picked_events[ 0 ][ 'id' ] ) )    { $booking_filters_raw[ 'event_id' ]    = $picked_events[ 0 ][ 'id' ]; }
 		if( ! empty( $picked_events[ 0 ][ 'start' ] ) ) { $booking_filters_raw[ 'event_start' ] = $picked_events[ 0 ][ 'start' ]; }
-		if( ! empty( $picked_events[ 0 ][ 'end' ] ) )   { $booking_filters_raw[ 'event_end' ] = $picked_events[ 0 ][ 'end' ]; }
+		if( ! empty( $picked_events[ 0 ][ 'end' ] ) )   { $booking_filters_raw[ 'event_end' ]   = $picked_events[ 0 ][ 'end' ]; }
 	}
 
 	$default_fitlers = bookacti_get_default_booking_filters();
 	$booking_filters = bookacti_format_booking_filters( $booking_filters_raw );
 	
-	$default_settings= bookacti_get_bookings_export_default_settings();
-	$export_settings = bookacti_sanitize_bookings_export_settings( $_POST );
+	$default_settings = bookacti_get_bookings_export_default_settings();
+	$export_settings  = bookacti_sanitize_bookings_export_settings( $_POST );
 	
 	// Keep only the required data to keep the URL as short as possible
 	foreach( $booking_filters as $filter_name => $filter_value ) {

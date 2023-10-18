@@ -111,6 +111,7 @@ $j( document ).ready( function() {
 	/**
 	 * Refresh total price field - on events picked / unpicked
 	 * @since 1.12.4
+	 * @version 1.15.15
 	 * @param {Event} e
 	 * @param {Object} picked_event
 	 * @param {Int} group_id
@@ -118,7 +119,7 @@ $j( document ).ready( function() {
 	 */
 	$j( 'body' ).on( 'bookacti_events_picked bookacti_events_unpicked', '.bookacti-booking-system', function( e, picked_event, group_id, group_date ) {
 		var form = $j( this ).closest( 'form' ).length ? $j( this ).closest( 'form' ) : $j( this ).closest( '.bookacti-form-fields' );
-		if( form.length ) { bookacti_update_total_price_field_data_and_refresh( form ); }
+		if( form.length ) { bookacti_refresh_total_price_field( form ); }
 	});
 	
 	

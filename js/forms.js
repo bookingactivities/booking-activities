@@ -191,24 +191,26 @@ $j( document ).ready( function() {
 	/**
 	 * Refresh total price field - on bookacti_booking_form_quantity_change
 	 * @since 1.2.14
+	 * @version 1.15.15
 	 * @param {Event} e
 	 * @param {Int} quantity
 	 * @param {HTMLElement} qty_field
 	 */
 	$j( 'body' ).on( 'bookacti_booking_form_quantity_change', 'form, .bookacti-form-fields', function( e, quantity, qty_field ) {
 		var form = $j( this ).closest( 'form' ).length ? $j( this ).closest( 'form' ) : $j( this ).closest( '.bookacti-form-fields' );
-		if( form.length ) { bookacti_update_total_price_field_data_and_refresh( form ); }
+		if( form.length ) { bookacti_refresh_total_price_field( form ); }
 	});
 	
 	
 	/**
 	 * Refresh total price field - on page load
 	 * @since 1.12.4
+	 * @version 1.15.15
 	 */
 	if( $j( '.bookacti-form-field-type-total_price' ).length ) {
 		$j( '.bookacti-form-field-type-total_price' ).each( function() {
 			var form = $j( this ).closest( 'form' ).length ? $j( this ).closest( 'form' ) : $j( this ).closest( '.bookacti-form-fields' );
-			bookacti_update_total_price_field_data_and_refresh( form );
+			bookacti_refresh_total_price_field( form );
 		});
 	}
 });
@@ -327,7 +329,7 @@ function bookacti_check_password_strength( password_field, password_confirm_fiel
 /**
  * Submit login form
  * @since 1.8.0
- * @version 1.15.14
+ * @version 1.15.15
  * @param {HTMLElement} submit_button
  */
 function bookacti_submit_login_form( submit_button ) {
@@ -368,27 +370,20 @@ function bookacti_submit_login_form( submit_button ) {
 		return;
 	}
 	
-	// Change form action field value
-	var has_form_action = form.find( 'input[name="action"]' ).length;
-	var old_form_action = has_form_action ? form.find( 'input[name="action"]' ).val() : '';
-	if( has_form_action ) { form.find( 'input[name="action"]' ).val( 'bookactiSubmitLoginForm' ); } 
-	else { form.append( '<input type="hidden" name="action" value="bookactiSubmitLoginForm"/>' ); }
-	
 	// Get form field values
 	var data = { 'form_data': new FormData( form.get(0) ) };
 	
 	// Trigger action before sending form
 	field_container.trigger( 'bookacti_before_submit_login_form', [ data ] );
 	
-	// Restore form action field value
-	if( has_form_action ) { form.find( 'input[name="action"]' ).val( old_form_action ); } 
-	else { form.find( 'input[name="action"]' ).remove(); }
-	
 	if( ! ( data.form_data instanceof FormData ) ) { 
 		// Re-enable the submit button
 		submit_button.prop( 'disabled', false );
 		return false;
 	}
+	
+	// Change action
+	data.form_data.set( 'action', 'bookactiSubmitLoginForm' );
 	
 	// Display a loader after the submit button
 	bookacti_add_loading_html( submit_button, 'after' );
@@ -412,7 +407,7 @@ function bookacti_submit_login_form( submit_button ) {
 			}
 			
 			if( response.status === 'success' ) {
-				var form_redirect_url = typeof form.attr( 'action' ) !== 'undefined' && old_form_action === 'bookactiSubmitLoginForm' ? form.attr( 'action' ) : window.location.href;
+				var form_redirect_url = typeof form.attr( 'action' ) !== 'undefined' && form.find( 'input[name="action"]' ).val() === 'bookactiSubmitLoginForm' ? form.attr( 'action' ) : window.location.href;
 				data.redirect_url = response.redirect_url ? response.redirect_url : form_redirect_url;
 				
 				// Trigger action after sending form
@@ -507,27 +502,20 @@ function bookacti_submit_booking_form( form ) {
 		return false; // End script
 	}
 
-	// Change form action field value
-	var has_form_action = form.find( 'input[name="action"]' ).length;
-	var old_form_action = has_form_action ? form.find( 'input[name="action"]' ).val() : '';
-	if( has_form_action ) { form.find( 'input[name="action"]' ).val( 'bookactiSubmitBookingForm' ); } 
-	else { form.append( '<input type="hidden" name="action" value="bookactiSubmitBookingForm"/>' ); }
-	
 	// Get form field values
 	var data = { 'form_data': new FormData( form.get(0) ) };
 	
 	// Trigger action before sending form
 	form.trigger( 'bookacti_before_submit_booking_form', [ data ] );
 	
-	// Restore form action field value
-	if( has_form_action ) { form.find( 'input[name="action"]' ).val( old_form_action ); } 
-	else { form.find( 'input[name="action"]' ).remove(); }
-	
 	if( ! ( data.form_data instanceof FormData ) ) { 
 		// Re-enable the submit button
 		if( submit_button.length ) { submit_button.prop( 'disabled', false ); }
 		return false;
 	}
+	
+	// Change action
+	data.form_data.set( 'action', 'bookactiSubmitBookingForm' );
 	
 	bookacti_start_loading_booking_system( booking_system );
 
@@ -734,132 +722,78 @@ function bookacti_dialog_forgotten_password( field_id ) {
 // TOTAL PRICE FIELD
 
 /**
- * Update all total price field data and refresh it asynchronously
- * Every functions changing the price field data should be triggered here
+ * Refresh Total Price field according to form values
  * @since 1.12.4
+ * @version 1.15.15
  * @param {HTMLElement} form
  */
-function bookacti_update_total_price_field_data_and_refresh( form ) {
+function bookacti_refresh_total_price_field( form ) {
 	// Check if the form has a total price field
-	if( ! form.find( '.bookacti-form-field-type-total_price' ).length ) { return; }
+	if( ! form.find( '.bookacti-form-field-type-total_price' ).length || form.attr( 'id' ) === 'bookacti-form-editor-page-form' ) { return; }
 	
 	var form_id = form.attr( 'id' );
-	var handler = 'bookacti_update_total_price_field_' + form_id;
-
+	var handler = 'bookacti_refresh_total_price_field_' + form_id;
+	
 	// Clear the previous timeout
 	if( typeof window[ handler ] !== 'undefined' ) { if( window[ handler ] ) { clearTimeout( window[ handler ] ); } }
 
 	// Set a small timeout to trigger this process only once
 	window[ handler ] = setTimeout( function() {
-		bookacti_update_total_price_field_data( form );
-		bookacti_refresh_total_price_field( form );
-	}, 200 );
-}
+		// Get form field values
+		var data = { 'form_data': new FormData( form.get(0) ) };
 
+		// Trigger action before updating total price field
+		form.trigger( 'bookacti_before_refresh_total_price_field', [ data ] );
 
-/**
- * Update all total price field data
- * @since 1.12.4
- * @param {HTMLElement} form
- */
-function bookacti_update_total_price_field_data( form ) {
-	bookacti_update_total_price_field_picked_events_data( form );
-	
-	// Every functions changing the price field data should be triggered here
-	form.trigger( 'bookacti_update_total_price_field_data' );
-}
+		if( ! ( data.form_data instanceof FormData ) ) { return; }
 
+		// Change action
+		data.form_data.set( 'action', 'bookactiGetTotalPriceField' );
 
-/**
- * Update total price field picked events data
- * @since 1.12.4
- * @param {HTMLElement} form
- */
-function bookacti_update_total_price_field_picked_events_data( form ) {
-	var form_id = form.attr( 'id' );
-	if( typeof bookacti.total_price_fields_data[ form_id ] === 'undefined' ) { 
-		bookacti.total_price_fields_data[ form_id ] = { 'items': [], 'total': { 'price': 0.00, 'price_to_display': '' } };
-	}
-	
-	var rows = bookacti.total_price_fields_data[ form_id ];
-	
-	// Remove old events entries
-	rows.items = $j.grep( rows.items, function( item ) {
-		if( typeof item.id === 'undefined' ) { return true; } // keep
-		return item.id.indexOf( 'picked-' ) < 0; // remove picked events items
-	});
-	
-	var booking_system = form.find( '.bookacti-booking-system' );
-	if( ! booking_system.length ) { return; }
-	
-	var booking_system_id = booking_system.attr( 'id' );
-	if( typeof bookacti.booking_system[ booking_system_id ][ 'picked_events' ] === 'undefined' ) { return; }
-	
-	// Add new events entries
-	var events_items = [];
-	var picked_events_list_items = bookacti_get_picked_events_list_items( booking_system );
-	
-	$j.each( picked_events_list_items, function( list_item_id, list_item_data ) {
-		if( list_item_data.quantity > 0 ) {
-			events_items.push( { id: 'picked-' + list_item_id, 'label': list_item_data.list_element.html(), 'price': list_item_data.price, 'price_to_display': list_item_data.price_to_display } );
-		}
-	});
-	
-	// Always place the events on the top of the array
-	rows.items = events_items.concat( rows.items );
-	
-	form.trigger( 'bookacti_total_price_field_picked_events_data', [ rows, picked_events_list_items ] );
-}
-
-
-/**
- * Refresh total price field
- * @since 1.12.4
- * @param {HTMLElement} form
- */
-function bookacti_refresh_total_price_field( form ) {
-	var form_id = form.attr( 'id' );
-	if( typeof bookacti.total_price_fields_data[ form_id ] === 'undefined' ) { return; }
-	if( $j.isEmptyObject( bookacti.total_price_fields_data[ form_id ] ) ) { return; }
-	
-	// bookacti.total_price_fields_data[ form_id ] = { 'items': [ 0: { id: '', 'label': '', 'price': 0.00, 'price_to_display': '' }, 1: ... ], 'total': { 'price': 0.00, 'price_to_display': '' } }
-	var rows = $j.extend( true, {}, bookacti.total_price_fields_data[ form_id ] ); 
-	
-	form.trigger( 'bookacti_refresh_total_price_field', [ rows ] );
-	
-	var grand_total = 0.00;
-	var grand_total_to_display = rows.total.price_to_display;
-	var price_table = form.find( '.bookacti-form-field-type-total_price .bookacti-total-price-table' );
-	var grand_total_container = form.find( '.bookacti-form-field-type-total_price .bookacti-grand-total-price-container' );
-	
-	if( price_table.length ) { price_table.find( 'tbody' ).empty(); }
-	
-	// Compute the grand total and display the items subtotals
-	$j.each( rows.items, function( i, item ) {
-		if( typeof item.price === 'undefined' ) { return true; } // skip
-		if( ! $j.isNumeric( item.price ) ) { return true; } // skip
+		var total_price_field = form.find( '.bookacti-form-field-type-total_price' );
 		
-		grand_total += parseFloat( item.price );
+		var ajax_handler = 'bookacti_ajax_refresh_total_price_field_' + form_id;
 		
-		if( price_table.length ) {
-			var label = typeof item.label !== 'undefined' ? item.label : '';
-			var price = item.price_to_display;
-			if( typeof item.price_to_display === 'undefined' ) { item.price_to_display = ''; }
-			if( ! item.price_to_display && item.price ) { 
-				item.price_to_display = bookacti_format_price( parseFloat( item.price ) );
+		window[ ajax_handler ] = $j.ajax({
+			url: bookacti_localized.ajaxurl,
+			type: 'POST',
+			data: data.form_data,
+			dataType: 'json',
+			cache: false,
+			contentType: false,
+			processData: false,
+			beforeSend: function() {
+				if( window[ ajax_handler ] != null ) { 
+					window[ ajax_handler ].abort();
+				}
+				
+				// Display a loader
+				form.find( '.bookacti-total-price-table, .bookacti-grand-total-price-container' ).addClass( 'bookacti-hidden-field' );
+				bookacti_add_loading_html( total_price_field );
+				total_price_field.show();
+			},
+			success: function( response ) {
+				if( response.status === 'success' ) {
+					total_price_field.replaceWith( response.field_html );
+					
+					// Hide total price field if it is empty
+					if( ! $j.trim( form.find( '.bookacti-total-price-table tbody' ).html() ) 
+					 && ! $j.trim( form.find( 'span.bookacti-grand-total-price-container' ).html() ) ) {
+						form.find( '.bookacti-form-field-type-total_price' ).hide();
+					}
+					
+					form.trigger( 'bookacti_total_price_field_refreshed', [ response, data ] );
+				}
+			},
+			error: function( e ) {
+				if( e.statusText == 'abort' ) { return; }
+				console.log( 'AJAX ' + bookacti_localized.error );
+				console.log( e );
+			},
+			complete: function() {
+				bookacti_remove_loading_html( total_price_field );
+				form.find( '.bookacti-total-price-table, .bookacti-grand-total-price-container' ).removeClass( 'bookacti-hidden-field' );
 			}
-			
-			var row = $j( '<tr></tr>', { 'html': '<td>' + label + '</td><td>' + price + '</td>' });
-			price_table.find( 'tbody' ).append( row );
-		}
-	});
-	
-	if( ! grand_total_to_display && grand_total ) { grand_total_to_display = bookacti_format_price( grand_total ); }
-	if( grand_total_container.length ) { grand_total_container.html( grand_total_to_display ); }
-	
-	form.find( '.bookacti-form-field-type-total_price .bookacti-total-price-value' ).val( grand_total );
-	
-	form.find( '.bookacti-form-field-type-total_price:not(.bookacti-form-editor-field)' ).toggle( price_table.length ? ( price_table.find( 'tbody tr' ).length > 0 ) : ( grand_total_container.html().length > 0 ) );
-	
-	form.trigger( 'bookacti_total_price_field_refreshed', [ rows ] );
+		});
+	}, 200 );
 }

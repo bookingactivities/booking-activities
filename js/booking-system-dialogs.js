@@ -2,7 +2,7 @@
 
 /**
  * Choose a group of events dialog
- * @version 1.15.11
+ * @version 1.15.15
  * @param {HTMLElement} booking_system
  * @param {Object} groups
  * @param {(FullCalendar.EventApi|Object)} event
@@ -41,9 +41,9 @@ function bookacti_dialog_choose_group_of_events( booking_system, groups, event )
 		
 		// Check event availability
 		var is_available = true;
-		if( typeof event.is_available !== 'undefined' )               { if( ! event.is_available ) { is_available = false; } }
-		if( typeof event.extendedProps.is_available !== 'undefined' ) { if( ! event.extendedProps.is_available ) { is_available = false; } }
-		
+		if( typeof event.is_available !== 'undefined' )  { if( ! event.is_available ) { is_available = false; } }
+		if( typeof event.extendedProps !== 'undefined' ) { if( typeof event.extendedProps.is_available !== 'undefined' ) { if( ! event.extendedProps.is_available ) { is_available = false; } } }
+	
 		// Check if the event is past
 		if( past_events ) {
 			var event_start = moment.utc( event.start ).clone();

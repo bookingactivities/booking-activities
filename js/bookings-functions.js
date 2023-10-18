@@ -51,7 +51,7 @@ $j( document ).ready( function() {
 /**
  * Filter the booking list with current filters values
  * @since 1.8.0
- * @version 1.15.14
+ * @version 1.15.15
  * @param {Int} paged
  */
 function bookacti_filter_booking_list( paged ) {
@@ -72,11 +72,7 @@ function bookacti_filter_booking_list( paged ) {
 	
 	booking_system.trigger( 'bookacti_filter_booking_list_data', [ data ] );
 	
-	// Loading feedback
-	bookacti_start_loading_booking_system( booking_system );
-	
 	var column_nb = $j( '#bookacti-booking-list thead .manage-column:not(.hidden)' ).length ? $j( '#bookacti-booking-list thead .manage-column:not(.hidden)' ).length : 1;
-	$j( '#bookacti-booking-list #the-list' ).html( '<tr class="no-items" ><td class="colspanchange" colspan="' + column_nb + '" >' + bookacti_get_loading_html() + '</td></tr>' );
 	
 	bookacti.current_filter_request = $j.ajax({
 		url: bookacti_localized.ajaxurl,
@@ -87,6 +83,10 @@ function bookacti_filter_booking_list( paged ) {
 			if( bookacti.current_filter_request != null ) {
 				bookacti.current_filter_request.abort();
 			}
+			
+			// Loading feedback
+			bookacti_start_loading_booking_system( booking_system );
+			$j( '#bookacti-booking-list #the-list' ).html( '<tr class="no-items" ><td class="colspanchange" colspan="' + column_nb + '" >' + bookacti_get_loading_html() + '</td></tr>' );
 		},
 		success: function( response ) {
 			if( response.status === 'success' ) {

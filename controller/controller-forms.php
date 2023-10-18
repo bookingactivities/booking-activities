@@ -557,7 +557,7 @@ add_filter( 'bookacti_default_form_fields_meta', 'bookacti_remove_unused_total_p
 /**
  * Display the form field "Total price"
  * @since 1.12.4
- * @version 1.14.0
+ * @version 1.15.15
  * @param string $html
  * @param array $field
  * @param string $instance_id
@@ -567,8 +567,8 @@ function bookacti_display_form_field_total_price( $html, $field, $instance_id = 
 	if( ! $instance_id ) { $instance_id = rand(); }
 	$field_id = ! empty( $field[ 'id' ] ) ? esc_attr( $field[ 'id' ] ) : esc_attr( 'bookacti-form-field-' . $field[ 'type' ] . '-' . $field[ 'field_id' ] . '-' . $instance_id );
 	
-	$field_class = 'bookacti-form-field-container';
-	$field_css_data = 'style="display:none;"';
+	$field_class    = 'bookacti-form-field-container';
+	$field_css_data = empty( $field[ 'items' ] ) ? 'style="display:none;"' : '';
 	if( ! empty( $field[ 'name' ] ) )     { $field_class .= ' bookacti-form-field-name-' . sanitize_title_with_dashes( esc_attr( $field[ 'name' ] ) ); $field_css_data .= ' data-field-name="' . esc_attr( $field[ 'name' ] ) . '"'; } 
 	if( ! empty( $field[ 'type' ] ) )     { $field_class .= ' bookacti-form-field-type-' . sanitize_title_with_dashes( esc_attr( $field[ 'type' ] ) ); $field_css_data .= ' data-field-type="' . esc_attr( $field[ 'type' ] ) . '"'; } 
 	if( ! empty( $field[ 'field_id' ] ) ) { $field_class .= ' bookacti-form-field-id-' . esc_attr( $field[ 'field_id' ] ); $field_css_data .= ' data-field-id="' . esc_attr( $field[ 'field_id' ] ) . '"'; }
@@ -576,10 +576,27 @@ function bookacti_display_form_field_total_price( $html, $field, $instance_id = 
 	
 	$tip = esc_attr( $field[ 'tip' ] ) ? bookacti_help_tip( $field[ 'tip' ], false ) : '';
 	
+	// Compute grand total
+	$grand_total_item = array(
+		'id'               => 'grand_total',
+		'label'            => esc_html__( 'Total', 'booking-activities' ),
+		'price'            => 0,
+		'price_to_display' => ''
+	);
+	
+	if( ! empty( $field[ 'items' ] ) ) {
+		foreach( $field[ 'items' ] as $item ) {
+			$grand_total_item[ 'price' ] += $item[ 'price' ];
+		}
+		$grand_total_item[ 'price_to_display' ] = $grand_total_item[ 'price' ] ? bookacti_format_price( $grand_total_item[ 'price' ], array( 'plain_text' => true ) ) : '';
+
+		$grand_total_item = apply_filters( 'bookacti_total_price_field_grand_total_item', $grand_total_item, $field, $instance_id, $context );
+	}
+	
 	ob_start();
 ?>
 	<div class='<?php echo $field_class; ?>' id='<?php echo $field_id; ?>' <?php echo trim( $field_css_data ); ?>>
-		<input type='hidden' name='total_price' value='' class='bookacti-total-price-value'/>
+		<input type='hidden' name='total_price' value='<?php echo $grand_total_item[ 'price' ]; ?>' class='bookacti-total-price-value'/>
 	<?php if( ! empty( $field[ 'label' ] ) ) { ?>
 			<label><?php echo $field[ 'label' ]; ?></label>
 			<?php echo $tip; ?>
@@ -592,16 +609,46 @@ function bookacti_display_form_field_total_price( $html, $field, $instance_id = 
 					<th><?php esc_html_e( 'Price', 'booking-activities' ); ?></th>
 				</tr>
 			</thead>
-			<tbody></tbody>
+			<tbody>
+			<?php
+				if( ! empty( $field[ 'items' ] ) ) {
+					foreach( $field[ 'items' ] as $item ) {
+						if( ! ( isset( $item[ 'label' ] ) || isset( $item[ 'id' ] ) ) 
+						||  ! ( isset( $item[ 'price_to_display' ] ) || isset( $item[ 'price' ] ) ) ) { continue; }
+					?>
+						<tr data-item-id='<?php echo isset( $item[ 'id' ] ) ? $item[ 'id' ] : ''; ?>'>
+							<td><?php echo isset( $item[ 'label' ] ) ? $item[ 'label' ] : $item[ 'id' ]; ?></td>
+							<td><?php echo isset( $item[ 'price_to_display' ] ) ? $item[ 'price_to_display' ] : $item[ 'price' ]; ?></td>
+						</tr>
+					<?php
+					}
+				}
+			?>
+			</tbody>
 			<tfoot>
 				<tr>
-					<th><?php esc_html_e( 'Total', 'booking-activities' ); if( empty( $field[ 'label' ] ) ) { echo $tip; } ?></th>
-					<th class='bookacti-grand-total-price-container'></th>
+					<th>
+					<?php 
+						echo $grand_total_item[ 'label' ]; 
+						if( empty( $field[ 'label' ] ) ) { 
+							echo $tip;
+						}
+					?>
+					</th>
+					<th class='bookacti-grand-total-price-container'>
+					<?php 
+						echo $grand_total_item[ 'price_to_display' ];
+					?>
+					</th>
 				</tr>
 			</tfoot>
 		</table>
 	<?php } else { ?>
-		<span class='bookacti-grand-total-price-container'></span>
+		<span class='bookacti-grand-total-price-container'>
+		<?php 
+			echo $grand_total_item[ 'price_to_display' ];
+		?>
+		</span>
 	<?php 
 		if( empty( $field[ 'label' ] ) ) { echo $tip; }
 	} ?>
@@ -623,9 +670,9 @@ add_filter( 'bookacti_html_form_field_total_price', 'bookacti_display_form_field
  */
 function bookacti_controller_get_form() {
 	// Sanitize values
-	$form_id	= intval( $_POST[ 'form_id' ] );
-	$instance_id= ! empty( $_POST[ 'instance_id' ] ) ? sanitize_title_with_dashes( $_POST[ 'instance_id' ] ) : '';
-	$context	= ! empty( $_POST[ 'context' ] ) ? sanitize_title_with_dashes( $_POST[ 'context' ] ) : 'display';
+	$form_id     = intval( $_POST[ 'form_id' ] );
+	$instance_id = ! empty( $_POST[ 'instance_id' ] ) ? sanitize_title_with_dashes( $_POST[ 'instance_id' ] ) : '';
+	$context     = ! empty( $_POST[ 'context' ] ) ? sanitize_title_with_dashes( $_POST[ 'context' ] ) : 'display';
 	
 	// Get the form
 	$form_html = bookacti_display_form( $form_id, $instance_id, $context, false );
@@ -684,7 +731,7 @@ add_action( 'wp_ajax_nopriv_bookactiForgottenPassword', 'bookacti_controller_for
 
 
 /**
- * Check if login form is correct and then register / log the user in
+ * AJAX Controller - Check if login form is correct and then register / log the user in
  * @since 1.8.0
  * @version 1.14.0
  */
@@ -819,9 +866,9 @@ add_action( 'wp_ajax_nopriv_bookactiSubmitLoginForm', 'bookacti_controller_valid
 
 
 /**
- * Check if booking form is correct and then book the event, or send the error message
+ * AJAX Controller - Check if booking form is correct and then book the event, or send the error message
  * @since 1.5.0
- * @version 1.15.7
+ * @version 1.15.15
  */
 function bookacti_controller_validate_booking_form() {
 	$return_array = array(
@@ -992,7 +1039,8 @@ function bookacti_controller_validate_booking_form() {
 		'form_id'        => $form_id,
 		'user_id'        => $return_array[ 'user_id' ],
 		'status'         => bookacti_get_setting_value( 'bookacti_general_settings', 'default_booking_state' ), 
-		'payment_status' => bookacti_get_setting_value( 'bookacti_general_settings', 'default_payment_status' )
+		'payment_status' => bookacti_get_setting_value( 'bookacti_general_settings', 'default_payment_status' ),
+		'context'        => 'submit_booking_form', 
 	), $form_id, $return_array );
 
 	// Check if the booking is correct
@@ -1082,6 +1130,97 @@ function bookacti_controller_validate_booking_form() {
 }
 add_action( 'wp_ajax_bookactiSubmitBookingForm', 'bookacti_controller_validate_booking_form' );
 add_action( 'wp_ajax_nopriv_bookactiSubmitBookingForm', 'bookacti_controller_validate_booking_form' );
+
+
+/**
+ * AJAX Controller - Get total price field according to booking form values
+ * @since 1.15.15
+ */
+function bookacti_controller_get_total_price_field() {
+	$form_id = ! empty( $_POST[ 'form_id' ] ) ? intval( $_POST[ 'form_id' ] ) : 0;
+	$form    = $form_id ? bookacti_get_form_data( $form_id ) : array();
+	$fields  = $form_id ? bookacti_get_form_fields_data( $form_id ) : array();
+	
+	$calendar_field    = array();
+	$total_price_field = array();
+	
+	foreach( $fields as $field ) {
+		if( $field[ 'name' ] === 'calendar' )       { $calendar_field = $field; }
+		if( $field[ 'name' ] === 'total_price' )    { $total_price_field = $field; }
+		if( $calendar_field && $total_price_field ) { break; }
+	}
+	
+	if( ! $form || ! $calendar_field || ! $total_price_field ) {
+		bookacti_send_json( array( 'status' => 'error', 'message' => esc_html__( 'Invalid form ID.', 'booking-activities' ) ), 'get_total_price_field' );
+	}
+	
+	$quantity      = ! empty( $_POST[ 'quantity' ] ) ? intval( $_POST[ 'quantity' ] ) : 1;
+	$picked_events = ! empty( $_POST[ 'selected_events' ] ) ? bookacti_format_picked_events( $_POST[ 'selected_events' ], true ) : array();
+	if( $quantity <= 0 || ! $picked_events ) {
+		$field_html = bookacti_display_form_field( $total_price_field, '', 'display', false );
+		bookacti_send_json( array( 'status' => 'success', 'field_html' => $field_html, 'items' => array() ), 'get_total_price_field' );
+	}
+	
+	// Get min event interval based on picked events
+	$events_min_interval_dt = array();
+	foreach( $picked_events as $picked_event ) {
+		foreach( $picked_event[ 'events' ] as $event ) {
+			$start_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $event[ 'start' ] );
+			$end_dt   = DateTime::createFromFormat( 'Y-m-d H:i:s', $event[ 'end' ] );
+			if( empty( $events_min_interval_dt[ 'start' ] ) || ( isset( $events_min_interval_dt[ 'start' ] ) && $events_min_interval_dt[ 'start' ] > $start_dt ) ) {
+				$events_min_interval_dt[ 'start' ] = clone $start_dt;
+			}
+			if( empty( $events_min_interval_dt[ 'end' ] ) || ( isset( $events_min_interval_dt[ 'end' ] ) && $events_min_interval_dt[ 'end' ] < $end_dt ) ) {
+				$events_min_interval_dt[ 'end' ] = clone $end_dt;
+			}
+		}
+	}
+	
+	// Get booking system data
+	$booking_system_atts = bookacti_get_calendar_field_booking_system_attributes( $calendar_field );
+	if( $events_min_interval_dt ) {
+		$booking_system_atts[ 'events_min_interval' ] = array(
+			'start' => $events_min_interval_dt[ 'start' ]->format( 'Y-m-d H:i:s' ),
+			'end'   => $events_min_interval_dt[ 'end' ]->format( 'Y-m-d H:i:s' )
+		);
+	}
+	$booking_system_atts[ 'auto_load' ] = true;
+	$booking_system_data = bookacti_get_booking_system_data( $booking_system_atts );
+	
+	// Events
+	$event_items = array();
+	foreach( $picked_events as $picked_event ) {
+		$group_id  = ! empty( $picked_event[ 'group_id' ] ) ? intval( $picked_event[ 'group_id' ] ) : 0;
+		$event_id  = ! empty( $picked_event[ 'events' ][ 0 ][ 'id' ] ) ? intval( $picked_event[ 'events' ][ 0 ][ 'id' ] ) : 0;
+		$event_uid = ! empty( $picked_event[ 'group_id' ] ) ? 'group_' . $picked_event[ 'group_id' ] . '_' . $picked_event[ 'group_date' ] : 'event_' . $event_id . '_' . $picked_event[ 'events' ][ 0 ][ 'start' ] . '_' . $picked_event[ 'events' ][ 0 ][ 'end' ];
+		$title     = $group_id && ! empty( $booking_system_data[ 'groups_data' ][ $group_id ][ 'title' ] ) ? $booking_system_data[ 'groups_data' ][ $group_id ][ 'title' ] : ( ! empty( $booking_system_data[ 'events_data' ][ $event_id ][ 'title' ] ) ? $booking_system_data[ 'events_data' ][ $event_id ][ 'title' ] : '' );
+		$dates     = bookacti_get_formatted_event_dates( $picked_event[ 'events' ][ 0 ][ 'start' ], $picked_event[ 'events' ][ ( count( $picked_event[ 'events' ] ) - 1 ) ][ 'end' ], false );
+
+		$event_items[] = array(
+			'id'               => 'picked-' . $event_uid,
+			'label'            => $title . ' - ' . $dates,
+			'price'            => 0,
+			'price_to_display' => '',
+			'picked_event'     => $picked_event
+		);
+	}
+	
+	$event_items = apply_filters( 'bookacti_total_price_field_picked_events_items', $event_items, $form, $fields, $booking_system_data );
+	
+	// Allow plugins to add items
+	$items = apply_filters( 'bookacti_total_price_field_items', array(), $form, $fields, $booking_system_data );
+	
+	// Always place the events on the top of the array, even if they have no prices
+	$total_price_field[ 'items' ] = array_merge( $event_items, $items );
+	
+	// Generate Total Price field HTML
+	$field_html = bookacti_display_form_field( $total_price_field, '', 'display', false );
+	
+	$return_array = array( 'status' => 'success', 'field_html' => $field_html, 'items' => $total_price_field[ 'items' ] );
+	bookacti_send_json( $return_array, 'get_total_price_field' );
+}
+add_action( 'wp_ajax_bookactiGetTotalPriceField', 'bookacti_controller_get_total_price_field' );
+add_action( 'wp_ajax_nopriv_bookactiGetTotalPriceField', 'bookacti_controller_get_total_price_field' );
 
 
 /**
@@ -1661,7 +1800,7 @@ add_action( 'wp_ajax_bookactiSaveFormFieldOrder', 'bookacti_controller_save_form
 /**
  * AJAX Controller - Update a field
  * @since 1.5.0
- * @version 1.14.0
+ * @version 1.15.15
  */
 function bookacti_controller_update_form_field() {
 	// Check nonce
@@ -1708,7 +1847,11 @@ function bookacti_controller_update_form_field() {
 	
 	// Update form field
 	$saved_data = array_map( 'maybe_serialize', $sanitized_data );
-	foreach( $null_keys as $key ) { if( ! isset( $saved_data[ $key ] ) ) { $saved_data[ $key ] = 'null'; } }
+	foreach( $null_keys as $key ) { 
+		if( ! isset( $saved_data[ $key ] ) || ! empty( $null_data[ $key ] ) ) { 
+			$saved_data[ $key ] = 'null';
+		}
+	}
 	$updated = bookacti_update_form_field( $saved_data );
 	
 	if( $updated === false ) {

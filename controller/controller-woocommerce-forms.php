@@ -164,6 +164,72 @@ add_filter( 'bookacti_is_total_price_field_used', '__return_true' );
 
 
 /**
+ * Fill total price field data according to the form values and WC product prices
+ * @since 1.8.1
+ * @version 1.15.15
+ * @param array $event_items
+ * @param array $form
+ * @param array $fields
+ * @param array $booking_system_data
+ * @return array 
+ */
+function bookacti_wc_total_price_field_picked_events_items( $event_items, $form, $fields, $booking_system_data ) {
+	if( ! $event_items ) { return $event_items; }
+	
+	$quantity = ! empty( $_POST[ 'quantity' ] ) ? intval( $_POST[ 'quantity' ] ) : 1;
+	
+	foreach( $event_items as $event_uid => $event_item ) {
+		$product_id   = 0;
+		$picked_event = $event_item[ 'picked_event' ];
+
+		// Check if the booking is added to cart via the product page
+		if( ! empty( $_POST[ 'product_id' ] ) || ! empty( $_POST[ 'variation_id' ] ) ) {
+			$product_id = ! empty( $_POST[ 'variation_id' ] ) ? intval( $_POST[ 'variation_id' ] ) : ( ! empty( $_POST[ 'product_id' ] ) ? intval( $_POST[ 'product_id' ] ) : 0 );
+		} 
+		// Check if the form is configured to add a product to cart
+		else {
+			$calendar_field = array();
+			foreach( $fields as $field ) {
+				if( $field[ 'name' ] === 'calendar' ) {
+					$calendar_field = $field;
+					break;
+				}
+			}
+			if( in_array( $calendar_field[ 'form_action' ], array( 'add_product_to_cart', 'redirect_to_product_page' ), true ) ) {
+				$group_id = ! empty( $picked_event[ 'group_id' ] ) ? intval( $picked_event[ 'group_id' ] ) : 0;
+				$event_id = ! empty( $picked_event[ 'events' ][ 0 ][ 'id' ] ) ? intval( $picked_event[ 'events' ][ 0 ][ 'id' ] ) : 0;
+				if( $group_id ) {
+					if( ! empty( $calendar_field[ 'product_by_group_category' ] ) ) {
+						$group_category_id = ! empty( $booking_system_data[ 'groups_data' ][ $group_id ][ 'category_id' ] ) ? intval( $booking_system_data[ 'groups_data' ][ $group_id ][ 'category_id' ] ) : 0;
+						$product_id        = $group_category_id && ! empty( $calendar_field[ 'product_by_group_category' ][ $group_category_id ] ) ? intval( $calendar_field[ 'product_by_group_category' ][ $group_category_id ] ) : 0;
+					}
+				} else {
+					if( ! empty( $calendar_field[ 'product_by_activity' ] ) ) {
+						$activity_id = ! empty( $booking_system_data[ 'events_data' ][ $event_id ][ 'activity_id' ] ) ? intval( $booking_system_data[ 'events_data' ][ $event_id ][ 'activity_id' ] ) : 0;
+						$product_id  = $activity_id && ! empty( $calendar_field[ 'product_by_activity' ][ $activity_id ] ) ? intval( $calendar_field[ 'product_by_activity' ][ $activity_id ] ) : 0;
+					}
+				}
+			}
+		}
+		if( ! $product_id ) { continue; }
+
+		global $woocommerce;
+		$product = wc_get_product( $product_id );
+		if( $product->is_taxable() ) {
+			$event_items[ $event_uid ][ 'product_price' ] = $woocommerce->cart->display_prices_including_tax() ? wc_get_price_including_tax( $product ) : wc_get_price_excluding_tax( $product );
+		} else {
+			$event_items[ $event_uid ][ 'product_price' ] = $product->get_price();
+		}
+		$event_items[ $event_uid ][ 'price' ]            = $event_items[ $event_uid ][ 'product_price' ] * $quantity;
+		$event_items[ $event_uid ][ 'price_to_display' ] = bookacti_format_price( $event_items[ $event_uid ][ 'price' ], array( 'plain_text' => true ) );
+	}
+	
+	return $event_items;
+}
+add_filter( 'bookacti_total_price_field_picked_events_items', 'bookacti_wc_total_price_field_picked_events_items', 10, 4 );
+
+
+/**
  * Add an icon before WC unsupported form field in form editor
  * @since 1.5.0
  * @version 1.15.0
@@ -277,36 +343,6 @@ function bookacti_add_wc_form_action_options( $options ) {
 	return $options;
 }
 add_filter( 'bookacti_form_action_options', 'bookacti_add_wc_form_action_options', 10, 1 );
-
-
-/**
- * Add product price per activity / category to booking sytem data if the form action is related to products
- * @since 1.12.4
- * @param array $booking_system_data
- * @param array $atts
- * @return array
- */
-function bookacti_wc_add_product_price_per_activity_to_booking_system_data( $booking_system_data, $atts ) {
-	if( ! in_array( $atts[ 'form_action' ], array( 'add_product_to_cart', 'redirect_to_product_page' ), true ) ) { return $booking_system_data; }
-	
-	$booking_system_data[ 'product_price_by_activity' ] = array();
-	$booking_system_data[ 'product_price_by_group_category' ] = array();
-
-	// Display price according to Tax options
-	$tax_display_shop = get_option( 'woocommerce_tax_display_shop' );
-
-	foreach( $booking_system_data[ 'product_by_activity' ] as $activity_id => $product_id ) {
-		$product = wc_get_product( $product_id );
-		if( $product ) { $booking_system_data[ 'product_price_by_activity' ][ $activity_id ] = $tax_display_shop === 'incl' ? wc_get_price_including_tax( $product ) : wc_get_price_excluding_tax( $product ); }
-	}
-	foreach( $booking_system_data[ 'product_by_group_category' ] as $category_id => $product_id ) {
-		$product = wc_get_product( $product_id );
-		if( $product ) { $booking_system_data[ 'product_price_by_group_category' ][ $category_id ] = $tax_display_shop === 'incl' ? wc_get_price_including_tax( $product ) : wc_get_price_excluding_tax( $product ); }
-	}
-	
-	return $booking_system_data;
-}
-add_filter( 'bookacti_booking_system_data', 'bookacti_wc_add_product_price_per_activity_to_booking_system_data', 20, 2 );
 
 
 /**

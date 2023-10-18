@@ -10,7 +10,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 	
 	/**
 	 * Bookings WP_List_Table
-	 * @version 1.15.5
+	 * @version 1.15.15
 	 */
 	class Bookings_List_Table extends WP_List_Table {
 		
@@ -223,7 +223,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		
 		/**
 		 * Get booking list items. Parameters can be passed in the URL.
-		 * @version 1.15.6
+		 * @version 1.15.15
 		 * @access public
 		 * @return array
 		 */
@@ -351,7 +351,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 				$creation_date_raw = ! empty( $booking->creation_date ) ? bookacti_sanitize_datetime( $booking->creation_date ) : '';
 				$creation_date_dt = new DateTime( $creation_date_raw, $utc_timezone_obj );
 				$creation_date_dt->setTimezone( $timezone_obj );
-				$creation_date = $creation_date_raw ? bookacti_format_datetime( $creation_date_dt->format( 'Y-m-d H:i:s' ), $date_format ) : '';
+				$creation_date = $creation_date_raw ? bookacti_format_datetime( $creation_date_dt->format( 'Y-m-d H:i:s' ), $datetime_format ) : '';
 				$creation_date = $creation_date ? '<span title="' . esc_attr( $booking->creation_date ) . '">' . $creation_date . '</span>' : '';
 				
 				// Format customer column
@@ -441,7 +441,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			 * Third parties can add or change rows and columns, do your best to optimize your process
 			 * @since 1.6.0
 			 */
-			$booking_list_items = apply_filters( 'bookacti_booking_list_items', $booking_list_items, $bookings, $booking_groups, $displayed_groups, $users, $this );
+			$booking_list_items = apply_filters( 'bookacti_booking_list_items', $booking_list_items, $bookings, $booking_groups, $displayed_groups, $bookings_per_group, $users, $this );
 			
 			foreach( $booking_list_items as $booking_id => $booking_list_item ) {
 				$booking = $booking_list_item[ 'booking_type' ] === 'group' ? $booking_groups[ $booking_list_item[ 'raw_id' ] ] : $bookings[ $booking_list_item[ 'raw_id' ] ];

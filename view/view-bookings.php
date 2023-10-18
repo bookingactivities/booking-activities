@@ -249,31 +249,31 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 						// Display the booking system
 						$atts = apply_filters( 'bookacti_bookings_booking_system_attributes', array( 
-							'bookings_only'			=> 1,
-							'calendars'				=> $selected_templates,
-							'status'				=> $selected_status,
-							'user_id'				=> $selected_user,
-							'group_categories'		=> array(),
-							'groups_only'			=> 0,
-							'groups_single_events'	=> 1,
-							'method'				=> 'calendar',
-							'id'					=> 'bookacti-booking-system-bookings-page',
-							'start'					=> ! empty( $_REQUEST[ 'from' ] ) ? bookacti_sanitize_date( $_REQUEST[ 'from' ] ) : '',
-							'end'					=> ! empty( $_REQUEST[ 'to' ] ) ? bookacti_sanitize_date( $_REQUEST[ 'to' ] ) : '',
-							'trim'					=> 0, // Doesn't play nicely when dynamically changing bookings
-							'past_events'			=> 1,
-							'past_events_bookable'	=> 1,
-							'check_roles'			=> 0,
-							'auto_load'				=> 0, // Prevent to load on page load to save some performance
-							'picked_events'			=> $picked_events,
-							'tooltip_booking_list'			=> $user_calendar_settings[ 'tooltip_booking_list' ],
-							'tooltip_booking_list_columns'	=> $user_calendar_settings[ 'tooltip_booking_list_columns' ],
-							'display_data'			=> $display_data
+							'bookings_only'                => 1,
+							'calendars'                    => $selected_templates,
+							'status'                       => $selected_status,
+							'user_id'                      => $selected_user,
+							'group_categories'             => array(),
+							'groups_only'                  => 0,
+							'groups_single_events'         => 1,
+							'method'                       => 'calendar',
+							'id'                           => 'bookacti-booking-system-bookings-page',
+							'start'                        => ! empty( $_REQUEST[ 'from' ] ) ? bookacti_sanitize_date( $_REQUEST[ 'from' ] ) : '',
+							'end'                          => ! empty( $_REQUEST[ 'to' ] ) ? bookacti_sanitize_date( $_REQUEST[ 'to' ] ) : '',
+							'trim'                         => 0, // Doesn't play nicely when dynamically changing bookings
+							'past_events'                  => 1,
+							'past_events_bookable'         => 1,
+							'check_roles'                  => 0,
+							'auto_load'                    => 0, // Prevent to load on page load to save some performance
+							'picked_events'                => $picked_events,
+							'tooltip_booking_list'         => $user_calendar_settings[ 'tooltip_booking_list' ],
+							'tooltip_booking_list_columns' => $user_calendar_settings[ 'tooltip_booking_list_columns' ],
+							'display_data'                 => $display_data
 						), $user_calendar_settings );
 
 						// Format booking system attributes
 						$atts = bookacti_format_booking_system_attributes( $atts );
-
+						
 						echo bookacti_get_booking_system( $atts );
 					?>
 					<script>

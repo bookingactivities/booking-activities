@@ -579,35 +579,39 @@ function bookacti_get_formatted_time_before_expiration( $expiration_date, $preci
 /**
  * Get product price as is it should be displayed in cart (with or without tax according to settings)
  * @since 1.9.0
+ * @version 1.15.15
  * @global woocommerce $woocommerce
  * @param WC_Product $product
  * @param float $price
  * @param int $qty
- * @return string
+ * @param boolean $formatted
+ * @return string|float
  */
-function bookacti_wc_get_displayed_product_price( $product, $price = '', $qty = 1 ) {
+function bookacti_wc_get_displayed_product_price( $product, $price = '', $qty = 1, $formatted = true ) {
 	global $woocommerce;
 	
+	$display_price = $price !== '' ? floatval( $price ) : 0;
 	if( $product->is_taxable() ) {
 		if( $woocommerce->cart->display_prices_including_tax() ) {
-			$price_inc_tax		= wc_get_price_including_tax( $product, array( 'price' => $price, 'qty' => $qty ) );
-			$formatted_price	= wc_price( $price_inc_tax );
+			$display_price   = wc_get_price_including_tax( $product, array( 'price' => $price, 'qty' => $qty ) );
+			$formatted_price = wc_price( $display_price );
 			if( ! wc_prices_include_tax() && $woocommerce->cart->get_subtotal_tax() > 0 ) {
 				$formatted_price .= ' <small class="tax_label">' . $woocommerce->countries->inc_tax_or_vat() . '</small>';
 			}
 		} else {
-			$price_exc_tax		= wc_get_price_excluding_tax( $product, array( 'price' => $price, 'qty' => $qty ) );
-			$formatted_price	= wc_price( $price_exc_tax );
+			$display_price   = wc_get_price_excluding_tax( $product, array( 'price' => $price, 'qty' => $qty ) );
+			$formatted_price = wc_price( $display_price );
 			if( wc_prices_include_tax() && $woocommerce->cart->get_subtotal_tax() > 0 ) {
 				$formatted_price .= ' <small class="tax_label">' . $woocommerce->countries->ex_tax_or_vat() . '</small>';
 			}
 		}
 	} else {
-		$price = $price !== '' ? max( 0.0, (float) $price ) : $product->get_price();
-		$formatted_price = wc_price( $price * $qty );
+		$display_price   = $price !== '' ? max( 0.0, (float) $price ) : $product->get_price();
+		$display_price  *= $qty;
+		$formatted_price = wc_price( $price );
 	}
 	
-	return $formatted_price;
+	return $formatted ? $formatted_price : $display_price;
 }
 
 

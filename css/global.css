@@ -242,7 +242,8 @@ fieldset legend .bookacti-show-hide-advanced-options { cursor: pointer; color: #
 .bookacti-calendar .fc-event.bookacti-picked-event { border-width: 2px; transition: border 0.2s; }
 .bookacti-calendar .fc-event.bookacti-picked-event .fc-event-main { background: rgba( 255, 255, 255, 0.5 ); }
 .bookacti-calendar .fc-timegrid-event.bookacti-event-hidden { display: none; }
-.bookacti-calendar .fc-daygrid-event.bookacti-event-hidden { visibility: hidden; }
+.bookacti-calendar .fc-daygrid-event.bookacti-event-hidden  { visibility: hidden; }
+.bookacti-calendar .fc-daygrid-event .bookacti-availability-container { position: relative; width: fit-content; margin-left: auto; }
 
 .bookacti-calendar .fc-view.fc-daygrid .fc-event .fc-event-title-container,
 .bookacti-calendar .fc-view.fc-daygrid .fc-event .fc-event-title-container,
@@ -317,3 +318,14 @@ fieldset legend .bookacti-show-hide-advanced-options { cursor: pointer; color: #
 	.bookacti-loading-text      { display: block; margin: auto;  }
 	.bookacti-spinner           { display: inline-block;  }
 }
+
+
+/** PRICE **/
+.bookacti-price-container { box-sizing: border-box; display: block; width: fit-content; padding: 5px; font-weight: bolder; font-size: 1.2em; line-height: 1.2em; border-radius: 3px; background-color: rgba(0,0,0,0.3); color: #fff; }
+.bookacti-price-container:not(.bookacti-has-price) .bookacti-price { display: none !important; }
+
+#bookacti-booking-list .bookacti-price-container,
+.bookacti-form-field-container:not(.bookacti-form-field-type-calendar) .bookacti-price-container       { display: inline-block; vertical-align: middle; margin: 0 0 0 10px; }
+.rtl .bookacti-form-field-container:not(.bookacti-form-field-type-calendar) .bookacti-price-container  { margin: 0 10px 0 0; }
+.bookacti-form-field-container .bookacti-form-field-checkbox-field-container .bookacti-price-container { display: table-cell; }
+.bookacti-form-field-container:not(.bookacti-form-field-type-calendar) .bookacti-price-container:not(.bookacti-has-price) { display: none; }

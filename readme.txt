@@ -3,9 +3,9 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
-Tested up to: 6.2
+Tested up to: 6.4
 Requires PHP: 5.3
-Stable tag: 1.15.14
+Stable tag: 1.15.15
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -21,7 +21,7 @@ It is very easy to use:
 2. Copy / Paste a **shortcode** to display a booking form. Or **integrate it with WooCommerce** products.
 3. **Pick** an event on this calendar and book it. 
 
-Try this reservation tool live on the [demo website](https://demo.booking-activities.fr/en/), or [generate a temporary site](https://tastewp.com/template/bookingactivities/?redirect=admin.php%3Fpage%3Dbookacti_calendars&ni=true) to test the backend!
+Try this reservation tool live on the [demo website](https://demo.booking-activities.fr/en/), or [generate a temporary site](https://tastewp.com/new/?pre-installed-plugin-slug=booking-activities&pre-installed-plugin-slug=woocommerce&pre-installed-theme-slug=twentytwentythree&redirect=admin.php%3Fpage%3Dbookacti_calendars&ni=true) to test the backend!
 
 [youtube https://www.youtube.com/watch?v=Q7gbK5i4DPU]
 
@@ -322,6 +322,20 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.15.15 - 2023/10/18 =
+* Tweak - Do not empty booking form if add to cart failed with WooCommerce
+* Tweak - Change booking status icons to one specific icon per status
+* Fix - Display error messages on WC cart page after changing quantity
+* Fix - JS error when opening the grouped event dialog with the Display Pack's "Waterfall" booking method
+* Dev - Add options and an API to handle price formatting (overriden by WooCommerce)
+* Dev - Remove bookacti_onoffswitch function, use bookacti_display_field instead
+* Dev - Add js hooks when opening booking dialogs
+* Dev - Allow bdi HTML tag in wp_kses_post
+* Dev - Refactor notification {price} tag and add {price_raw} tag
+* Dev - Refactor Total Price field: it is now refreshed via AJAX (PHP) instead of JS to improve compatibility and accuracy
+* Dev - Refactor WC cart item subtotal display
+* Lib - Update FullCalendar to 6.1.9
+
 = 1.15.14 - 2023/06/08 =
 * Fix - Bookings from not allowed calendars may be displayed in backend Bookings calendar after changing the filters
 * Fix - Booking forms now use window.location.assign for external redirects, without parameters, to avoid error 405 and error 414
@@ -335,12 +349,12 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Lib - Update FullCalendar to 6.1.7
 
 = 1.15.12 - 2023/05/04 =
-* Tweak - Add french translation for select2, more translation files can be added in wp-content/languages/select2
+* Tweak - Add French translation for select2, more translation files can be added in wp-content/languages/select2
 * Tweak - Display existing options immediatly in select2 using AJAX 
 * Fix - Display select2 loading during AJAX search
 * Fix - JS error when setting invalid date format in "Go to" date input
 * Fix - Remove max height limitation to group categories and groups of events in calendar editor
-* Fix - Add a delay when sorting activities, groups and cetegories to avoid undesired drags in calendar editor
+* Fix - Add a delay when sorting activities, groups and categories to avoid undesired drags in calendar editor
 * Fix - Hide WC Payments Google Pay / Apple Pay buttons on "Activity" product pages (it is too early for Booking Activities)
 * Dev - Add not_in__status and not_in__payment_status filters to bookacti_get_bookings()
 * Lib - Update FullCalendar to 6.1.6

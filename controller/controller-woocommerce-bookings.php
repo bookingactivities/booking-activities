@@ -71,7 +71,6 @@ add_filter( 'bookacti_current_user_id', 'bookacti_get_customer_id_for_non_logged
 
 /**
  * Add 'in_cart' state to active states
- * 
  * @param array $active_states
  * @return array
  */
@@ -87,14 +86,14 @@ add_filter( 'bookacti_active_booking_states', 'bookacti_add_woocommerce_active_b
 
 /**
  * Add booking states labels related to cart
- * @version 1.6.0
+ * @version 1.15.15
  * @param array $labels
  * @return array
  */
 function bookacti_add_in_cart_state_label( $labels ) {
-	$labels[ 'in_cart' ] =  array( 'display_state' => 'warning',	'label' => esc_html__( 'In cart', 'booking-activities' ) );
-	$labels[ 'expired' ] =  array( 'display_state' => 'bad',		'label' => esc_html__( 'Expired', 'booking-activities' ) );
-	$labels[ 'removed' ] =  array( 'display_state' => 'bad',		'label' => esc_html__( 'Removed', 'booking-activities' ) );
+	$labels[ 'in_cart' ] =  array( 'display_state' => 'warning', 'label' => esc_html__( 'In cart', 'booking-activities' ) );
+	$labels[ 'expired' ] =  array( 'display_state' => 'bad',     'label' => esc_html__( 'Expired', 'booking-activities' ) );
+	$labels[ 'removed' ] =  array( 'display_state' => 'bad',     'label' => esc_html__( 'Removed', 'booking-activities' ) );
 
 	return $labels;
 }
@@ -623,7 +622,7 @@ add_filter( 'woocommerce_email_order_items_table', 'bookacti_order_items_unset_e
 /**
  * Add WC data to the booking list
  * @since 1.6.0 (was bookacti_woocommerce_fill_booking_list_custom_columns before)
- * @version 1.14.0
+ * @version 1.15.15
  * @param array $booking_list_items
  * @param array $bookings
  * @param array $booking_groups
@@ -632,7 +631,7 @@ add_filter( 'woocommerce_email_order_items_table', 'bookacti_order_items_unset_e
  * @param Bookings_List_Table $booking_list
  * @return array
  */
-function bookacti_add_wc_data_to_booking_list_items( $booking_list_items, $bookings, $booking_groups, $displayed_groups, $users, $booking_list ) {
+function bookacti_add_wc_data_to_booking_list_items( $booking_list_items, $bookings, $booking_groups, $displayed_groups, $bookings_per_group, $users, $booking_list ) {
 	if( ! $booking_list_items ) { return $booking_list_items; }
 
 	$admin_url = admin_url();
@@ -767,9 +766,9 @@ function bookacti_add_wc_data_to_booking_list_items( $booking_list_items, $booki
 		}
 	}
 
-	return apply_filters( 'bookacti_booking_list_items_with_wc_data', $booking_list_items, $bookings, $booking_groups, $displayed_groups, $users, $booking_list, $orders, $order_items );
+	return apply_filters( 'bookacti_booking_list_items_with_wc_data', $booking_list_items, $bookings, $booking_groups, $displayed_groups, $bookings_per_group, $users, $booking_list, $orders, $order_items );
 }
-add_filter( 'bookacti_booking_list_items', 'bookacti_add_wc_data_to_booking_list_items', 10, 6 );
+add_filter( 'bookacti_booking_list_items', 'bookacti_add_wc_data_to_booking_list_items', 10, 7 );
 
 
 /**
