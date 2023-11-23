@@ -656,22 +656,19 @@ function bookacti_perform_form_action( booking_system ) {
 /**
  * Forgotten password dialog
  * @since 1.5.0
- * @version 1.15.5
+ * @version 1.15.16
  * @param {string} field_id
  */
 function bookacti_dialog_forgotten_password( field_id ) {
 	var dialog = $j( '.bookacti-forgotten-password-dialog[data-field-id="' + field_id + '"]' );
 	if( ! dialog.length ) { dialog = $j( '.bookacti-forgotten-password-dialog:first' ); }
 	
-	// Open the modal dialog
-	dialog.dialog( 'open' );
-	
 	// Add the buttons
 	dialog.dialog( 'option', 'buttons',
-		// OK button
 		[{
-			text: bookacti_localized.dialog_button_ok,			
-			click: function() { 
+			text: bookacti_localized.dialog_button_send,
+			'class': 'bookacti-dialog-send-button',
+			click: function() {
 				// Clear feedbacks
 				dialog.find( '.bookacti-notices' ).remove();
 				
@@ -680,6 +677,7 @@ function bookacti_dialog_forgotten_password( field_id ) {
 				
 				// Display a loader
 				bookacti_add_loading_html( dialog );
+				dialog.parent( '.bookacti-dialog' ).find( '.bookacti-dialog-send-button' ).prop( 'disabled', true );
 				
 				$j.ajax({
 					url: bookacti_localized.ajaxurl,
@@ -694,6 +692,8 @@ function bookacti_dialog_forgotten_password( field_id ) {
 							if( typeof response.message !== 'undefined' ) {
 								dialog.append( '<div class="bookacti-notices"><ul class="bookacti-success-list"><li>' + response.message + '</li></ul></div>' );
 							}
+							
+							dialog.parent( '.bookacti-dialog' ).find( '.bookacti-dialog-send-button' ).hide();
 							
 							$j( 'body' ).trigger( 'bookacti_reset_password_notification_sent', [ user_login, response ] );
 							
@@ -711,11 +711,17 @@ function bookacti_dialog_forgotten_password( field_id ) {
 					complete: function() {
 						dialog.find( '.bookacti-notices' ).show();
 						bookacti_remove_loading_html( dialog );
+						dialog.parent( '.bookacti-dialog' ).find( '.bookacti-dialog-send-button' ).prop( 'disabled', false );
 					}
 				});
 			}
 		}]
     );
+	
+	dialog.parent( '.bookacti-dialog' ).find( '.bookacti-dialog-send-button' ).show();
+	
+	// Open the modal dialog
+	dialog.dialog( 'open' );
 }
 
 

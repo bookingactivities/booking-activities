@@ -390,8 +390,33 @@ function bookacti_settings_field_started_groups_bookable_callback() {
 
 
 /**
+ * Display "default payment status" setting
+ * @since 1.3.0
+ * @version 1.15.16
+ */
+function bookacti_settings_field_default_payment_status_callback() {
+	$payment_status = bookacti_get_payment_status_labels();
+	$payment_status_array = array();
+	foreach( $payment_status as $payment_status_id => $payment_status_data ) {
+		$payment_status_array[ esc_attr( $payment_status_id ) ] = esc_html( $payment_status_data[ 'label' ] );
+	}
+	
+	$args = apply_filters( 'bookacti_settings_default_payment_status_field_args', array(
+		'type'    => 'select',
+		'name'    => 'bookacti_general_settings[default_payment_status]',
+		'id'      => 'default_payment_status',
+		'options' => $payment_status_array,
+		'value'   => bookacti_get_setting_value( 'bookacti_general_settings', 'default_payment_status' ),
+		'tip'     => esc_html__( 'Choose what payment status a booking should have when a customer complete the booking form.', 'booking-activities' )
+	) );
+	
+	bookacti_display_fields( array( 'default_payment_status' => $args ) );
+}
+
+
+/**
  * Display "default booking state" setting
- * @version 1.6.0
+ * @version 1.15.16
  */
 function bookacti_settings_field_default_booking_state_callback() {
 	$booking_state_labels = bookacti_get_booking_state_labels();
@@ -401,39 +426,16 @@ function bookacti_settings_field_default_booking_state_callback() {
 		$options[ $state_key ] = ! empty( $booking_state_labels[ $state_key ][ 'label' ] ) ? $booking_state_labels[ $state_key ][ 'label' ] : $state_key;
 	}
 
-	$args = array(
-		'type'		=> 'select',
-		'name'		=> 'bookacti_general_settings[default_booking_state]',
-		'id'		=> 'default_booking_state',
-		'options'	=> $options,
-		'value'		=> bookacti_get_setting_value( 'bookacti_general_settings', 'default_booking_state' ),
-		'tip'		=> __( 'Choose what status a booking should have when a customer complete the booking form.', 'booking-activities' )
-					. '<br/>' . __( 'This option has no effect on bookings made with WooCommerce.', 'booking-activities' )
-	);
-	bookacti_display_field( $args );
-}
-
-
-/**
- * Display "default payment status" setting
- * @since 1.3.0
- * @version 1.7.18
- */
-function bookacti_settings_field_default_payment_status_callback() {
-	$payment_status = bookacti_get_payment_status_labels();
-	$payment_status_array = array();
-	foreach( $payment_status as $payment_status_id => $payment_status_data ) {
-		$payment_status_array[ esc_attr( $payment_status_id ) ] = esc_html( $payment_status_data[ 'label' ] );
-	}
-	bookacti_display_field( array(
-		'type'		=> 'select',
-		'name'		=> 'bookacti_general_settings[default_payment_status]',
-		'id'		=> 'default_payment_status',
-		'options'	=> $payment_status_array,
-		'value'		=> bookacti_get_setting_value( 'bookacti_general_settings', 'default_payment_status' ),
-		'tip'		=> esc_html__( 'Choose what payment status a booking should have when a customer complete the booking form.', 'booking-activities' )
-					. '<br/>' . esc_html__( 'This option has no effect on bookings made with WooCommerce.', 'booking-activities' )
-	));
+	$args = apply_filters( 'bookacti_settings_default_booking_status_field_args', array(
+		'type'    => 'select',
+		'name'    => 'bookacti_general_settings[default_booking_state]',
+		'id'      => 'default_booking_state',
+		'options' => $options,
+		'value'   => bookacti_get_setting_value( 'bookacti_general_settings', 'default_booking_state' ),
+		'tip'     => esc_html__( 'Choose what status a booking should have when a customer complete the booking form.', 'booking-activities' )
+	) );
+	
+	bookacti_display_fields( array( 'default_booking_state' => $args ) );
 }
 
 

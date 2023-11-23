@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Init Booking Activities settings
- * @version 1.15.15
+ * @version 1.15.16
  */
 function bookacti_init_settings() { 
 	/* General settings Section - 1 - Misc */
@@ -75,14 +75,6 @@ function bookacti_init_settings() {
 		'bookacti_general_settings', 
 		'bookacti_settings_section_general' 
 	);
-	
-	add_settings_field(  
-		'default_booking_state', 
-		esc_html__( 'Default booking state', 'booking-activities' ), 
-		'bookacti_settings_field_default_booking_state_callback', 
-		'bookacti_general_settings', 
-		'bookacti_settings_section_general' 
-	);
 
 	add_settings_field(  
 		'default_payment_status', 
@@ -92,6 +84,14 @@ function bookacti_init_settings() {
 		'bookacti_settings_section_general' 
 	);
 	
+	add_settings_field(  
+		'default_booking_state', 
+		esc_html__( 'Default booking state', 'booking-activities' ), 
+		'bookacti_settings_field_default_booking_state_callback', 
+		'bookacti_general_settings', 
+		'bookacti_settings_section_general' 
+	);
+
 	add_settings_field(  
 		'display_private_columns', 
 		esc_html__( 'Allow private columns in frontend booking lists', 'booking-activities' ), 

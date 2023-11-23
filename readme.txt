@@ -322,6 +322,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.15.16 =
+* Fix - Prevent forgotten password notification to be sent twice
+* Fix - Filtering bookings by booking group showed bookings from all repeated groups
+* Fix - JS error when loading events of a larger scope (e.g. week to month) if "Load events every" option is too low
+
 = 1.15.15 - 2023/10/18 =
 * Tweak - Do not empty booking form if add to cart failed with WooCommerce
 * Tweak - Change booking status icons to one specific icon per status
