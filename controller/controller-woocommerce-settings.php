@@ -300,7 +300,15 @@ function bookacti_wc_settings_default_booking_status_field_args( $args ) {
 				<th><?php esc_html_e( 'If the order is not paid', 'booking-activities' ); ?></th>
 			</tr>
 			<tr>
-				<th><?php /* translators: "%1$s" = "Virtual" WC option label. "%2$s" = "Activity" WC option label. */ echo sprintf( esc_html__( 'If the order contains "%1$s" "%2$s" products only', 'booking-activities' ), '<strong>' . esc_html__( 'Virtual', 'woocommerce' ) . '</strong>', '<strong>' . esc_html__( 'Activity', 'booking-activities' ) . '</strong>' ); ?></th>
+				<th>
+				<?php 
+					/* translators: "%1$s" = "Virtual" WC option label. "%2$s" = "Activity" WC option label. */ 
+					echo sprintf( esc_html__( 'If the order contains "%1$s" "%2$s" products only', 'booking-activities' ), 
+						'<strong>' . esc_html__( 'Virtual', 'woocommerce' ) . '</strong>', 
+						'<strong>' . esc_html__( 'Activity', 'booking-activities' ) . '</strong>'
+					);
+				?>
+				</th>
 				<td><?php esc_html_e( 'Order', 'booking-activities' ); ?>: <strong><?php esc_html_e( 'Completed', 'woocommerce' ); ?></strong><br/><?php esc_html_e( 'Bookings', 'booking-activities' ); ?>: <strong><?php esc_html_e( 'Booked', 'booking-activities' ); ?></strong> and <strong><?php esc_html_e( 'Paid', 'booking-activities' ); ?></strong></td>
 				<td><?php esc_html_e( 'Order', 'booking-activities' ); ?>: <strong><?php esc_html_e( 'Processing', 'woocommerce' ); ?></strong><br/><?php esc_html_e( 'Bookings', 'booking-activities' ); ?>: <strong><?php esc_html_e( 'Pending', 'booking-activities' ); ?></strong> and <strong><?php esc_html_e( 'Due', 'booking-activities' ); ?></strong></td>
 			</tr>

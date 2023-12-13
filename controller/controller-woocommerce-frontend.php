@@ -2138,6 +2138,7 @@ add_action( 'woocommerce_account_bookings_endpoint', 'bookacti_display_my_accoun
 /**
  * Display links to the new "Bookings" endpoint on the customer's WC account dashboard
  * @since 1.12.0
+ * @version 1.15.16
  */
 function bookacti_display_my_account_dashboard_links() {
 	$page_id = intval( bookacti_get_setting_value( 'bookacti_account_settings', 'wc_my_account_bookings_page_id' ) );
@@ -2146,9 +2147,25 @@ function bookacti_display_my_account_dashboard_links() {
 	<p>
 		<?php
 			/* translators: %s = link to "Bookings" */
-			echo sprintf( esc_html__( 'You can also manage your %s.', 'booking-activities' ), '<a href="' . esc_url( wc_get_endpoint_url( 'bookings' ) ) . '">' . esc_html__( 'Bookings', 'booking-activities' ) . '</a>' );
+			echo sprintf( esc_html__( 'You can also manage your %s.', 'booking-activities' ), 
+				'<a href="' . esc_url( wc_get_endpoint_url( 'bookings' ) ) . '">' 
+					. esc_html__( 'Bookings', 'booking-activities' ) 
+				. '</a>' );
 		?>
 	</p>	
 <?php
 }
 add_action( 'woocommerce_account_dashboard', 'bookacti_display_my_account_dashboard_links', 20 );
+
+
+/**
+ * Hide order again button if the order includes bookings
+ * @since 1.15.16
+ * @param WC_Order $order
+ */
+function bookacti_wc_hide_order_again_button( $order ) {
+	if( bookacti_wc_get_order_items_bookings( $order ) ) {
+		remove_action( 'woocommerce_order_details_after_order_table', 'woocommerce_order_again_button' );
+	}
+}
+add_action( 'woocommerce_order_details_after_order_table', 'bookacti_wc_hide_order_again_button', 5, 1 );

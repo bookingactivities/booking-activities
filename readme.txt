@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 6.4
 Requires PHP: 5.3
-Stable tag: 1.15.15
+Stable tag: 1.15.16
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -322,10 +322,13 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.15.16 =
+= 1.15.16 - 2023/12/13 =
 * Fix - Prevent forgotten password notification to be sent twice
 * Fix - Filtering bookings by booking group showed bookings from all repeated groups
 * Fix - JS error when loading events of a larger scope (e.g. week to month) if "Load events every" option is too low
+* Fix - Hide WC "order again" button if the order contains bookings
+* Fix - Incorrect iCal formatting in specific server configuration if a multiline text was exported
+* Lib - Update FullCalendar to 6.1.10
 
 = 1.15.15 - 2023/10/18 =
 * Tweak - Do not empty booking form if add to cart failed with WooCommerce

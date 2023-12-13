@@ -230,7 +230,7 @@ function bookacti_display_forms_screen_options() {
 /**
  * Display Timezone setting
  * @since 1.1.0
- * @version 1.4.0
+ * @version 1.15.16
  */
 function bookacti_settings_field_timezone_callback() {
 	$regions = array(
@@ -252,7 +252,7 @@ function bookacti_settings_field_timezone_callback() {
 	foreach( $regions as $name => $mask ) {
 		$zones = DateTimeZone::listIdentifiers( $mask );
 		foreach( $zones as $timezone ) {
-			$time = new DateTime( NULL, new DateTimeZone( $timezone ) );
+			$time = new DateTime( 'now', new DateTimeZone( $timezone ) );
 			$ampm = $time->format( 'H' ) > 12 ? ' (' . $time->format( 'g:i a' ) . ')' : '';
 			$label = $name === 'UTC' ? $name : substr( $timezone, strlen( $name ) + 1 );
 			$timezones[ $name ][ $timezone ] = $label . ' - ' . $time->format( 'H:i' ) . $ampm;

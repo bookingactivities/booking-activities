@@ -2215,7 +2215,7 @@ function bookacti_sanitize_values( $default_data, $raw_data, $keys_by_type, $san
 /**
  * Escape illegal caracters in ical properties
  * @since 1.6.0
- * @version 1.8.8
+ * @version 1.15.16
  * @param string $value
  * @param string $property_name
  * @return string
@@ -2223,13 +2223,13 @@ function bookacti_sanitize_values( $default_data, $raw_data, $keys_by_type, $san
 function bookacti_sanitize_ical_property( $value, $property_name = '' ) {
 	$is_desc = $property_name === 'DESCRIPTION';
 	$eol = $is_desc ? '\n' : ' ';
-	$value = trim( $value );                                     // Remove whitespaces at the start and at the end of the string
-	$value = ! $is_desc ? strip_tags( $value ) : $value;         // Remove PHP and HTML elements
-	$value = html_entity_decode( $value );                       // Decode html entities first because semicolons will be escaped
-	$value = preg_replace( '/([\,;])/', '\\\$1', $value );       // Escape illegal caracters in ical properties
-	$value = preg_replace( '/' . PHP_EOL . '+/', $eol, $value ); // Replace End of lines with a whitespace or a \n in DESCRIPTION
-	$value = preg_replace( '/\s{2,}/', ' ', $value );            // Replace multiple whitespaces with a single space
-	$property_name_len = strlen( $property_name ) + 1;           // Add 1 character for the colon (:) after the property name
+	$value = trim( $value );                               // Remove whitespaces at the start and at the end of the string
+	$value = ! $is_desc ? strip_tags( $value ) : $value;   // Remove PHP and HTML elements
+	$value = html_entity_decode( $value );                 // Decode html entities first because semicolons will be escaped
+	$value = preg_replace( '/([\,;])/', '\\\$1', $value ); // Escape illegal caracters in ical properties
+	$value = preg_replace( '/\r|\n/', $eol, $value );      // Replace End of lines with a whitespace or a \n in DESCRIPTION
+	$value = preg_replace( '/\s{2,}/', ' ', $value );      // Replace multiple whitespaces with a single space
+	$property_name_len = strlen( $property_name ) + 1;     // Add 1 character for the colon (:) after the property name
 	$lines = array();
 	while( strlen( $value ) > ( 75 - $property_name_len ) ) {
 		$space = ( 75 - $property_name_len );
