@@ -420,6 +420,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		 * Called right after the element has been added to the DOM.
 		 * If the event data changes, this is NOT called again.
 		 * @since 1.15.0
+		 * @version 1.15.16
 		 * @param {Object} info {
 		 *  @type {FullCalendar.EventApi} event
 		 *  @type {String} timeText
@@ -437,19 +438,24 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 			// Directly return if the event is resizing or dragging to avoid overload
 			if( info.isMirror ) { return; }
 			
+			// Check if event exists
+			if( typeof info.event === 'undefined' ) { return; }
+			var event_id = typeof info.event.groupId !== 'undefined' ? parseInt( info.event.groupId ) : parseInt( info.event.id );
+			if( typeof bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event_id ] === 'undefined' ) { return; }
+			
 			// Add data to the event element
 			var event_start_formatted = moment.utc( info.event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
 			var event_end_formatted   = moment.utc( info.event.end ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
 
 			// Add some info to the event
-			$j( info.el ).data( 'event-id',         info.event.groupId );
-			$j( info.el ).attr( 'data-event-id',    info.event.groupId );
+			$j( info.el ).data( 'event-id',         event_id );
+			$j( info.el ).attr( 'data-event-id',    event_id );
 			$j( info.el ).data( 'event-start',      event_start_formatted );
 			$j( info.el ).attr( 'data-event-start', event_start_formatted );
 			$j( info.el ).data( 'event-end',        event_end_formatted );
 			$j( info.el ).attr( 'data-event-end',   event_end_formatted );			
 			
-			var event_data = bookacti.booking_system[ booking_system_id ][ 'events_data' ][ info.event.groupId ];
+			var event_data = bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event_id ];
 			if( typeof event_data.activity_id !== 'undefined' ) {
 				$j( info.el ).data( 'activity-id', event_data.activity_id );
 				$j( info.el ).attr( 'data-activity-id', event_data.activity_id );
@@ -463,6 +469,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		 * Add classes to the event
 		 * It is called every time the associated event data changes
 		 * @since 1.15.0
+		 * @since 1.15.16
 		 * @param {Object} info {
 		 *  @type {FullCalendar.EventApi} event
 		 *  @type {String} timeText
@@ -479,23 +486,28 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		eventClassNames: function( info ) {
 			var return_object = { 'class_names': [] };
 			
+			// Check if event exists
+			if( typeof info.event === 'undefined' ) { return return_object.class_names; }
+			var event_id = typeof info.event.groupId !== 'undefined' ? parseInt( info.event.groupId ) : parseInt( info.event.id );
+			if( typeof bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event_id ] === 'undefined' ) { return return_object.class_names; }
+			
 			// Directly return if the event is hidden, or resizing or dragging to avoid overload
-			if( info.isMirror || info.event.display === 'none' ) { return return_object; }
+			if( info.isMirror || info.event.display === 'none' ) { return return_object.class_names; }
 			
 			// Display element as picked if they actually are
 			var event_start = moment.utc( info.event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
 			$j.each( bookacti.booking_system[ booking_system_id ][ 'picked_events' ], function( i, picked_event ) {
 				var picked_event_start = moment.utc( picked_event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
-				if( picked_event.id == info.event.groupId && event_start === picked_event_start ) { 
+				if( picked_event.id == event_id && event_start === picked_event_start ) { 
 					return_object.class_names.push( 'bookacti-picked-event' );
 				}
 			});
 			
 			// Add a class if the current user has booked this event
 			var event_start_formatted = moment.utc( info.event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
-			if( typeof bookacti.booking_system[ booking_system_id ][ 'bookings' ][ info.event.groupId ] !== 'undefined' ) {
-				if( typeof bookacti.booking_system[ booking_system_id ][ 'bookings' ][ info.event.groupId ][ event_start_formatted ] !== 'undefined' ) {
-					var current_user_bookings = parseInt( bookacti.booking_system[ booking_system_id ][ 'bookings' ][ info.event.groupId ][ event_start_formatted ][ 'current_user_bookings' ] );
+			if( typeof bookacti.booking_system[ booking_system_id ][ 'bookings' ][ event_id ] !== 'undefined' ) {
+				if( typeof bookacti.booking_system[ booking_system_id ][ 'bookings' ][ event_id ][ event_start_formatted ] !== 'undefined' ) {
+					var current_user_bookings = parseInt( bookacti.booking_system[ booking_system_id ][ 'bookings' ][ event_id ][ event_start_formatted ][ 'current_user_bookings' ] );
 					if( current_user_bookings ) { return_object.class_names.push( 'bookacti-event-booked-by-current-user' ); }
 				}
 			}
@@ -525,6 +537,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		 * Add HTML elements in the event
 		 * It is called every time the associated event data changes
 		 * @since 1.15.0
+		 * @version 1.15.16
 		 * @param {Object} info {
 		 *  @type {FullCalendar.EventApi} event
 		 *  @type {String} timeText
@@ -540,6 +553,11 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		 */
 		eventContent: function( info ) {
 			var return_object = { 'domNodes': [] };
+			
+			// Check if event exists
+			if( typeof info.event === 'undefined' ) { return return_object; }
+			var event_id = typeof info.event.groupId !== 'undefined' ? parseInt( info.event.groupId ) : parseInt( info.event.id );
+			if( typeof bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event_id ] === 'undefined' ) { return return_object; }
 			
 			// Directly return if the event is hidden to avoid overload
 			if( info.event.display === 'none' ) { return return_object; }

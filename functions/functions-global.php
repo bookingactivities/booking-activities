@@ -392,7 +392,7 @@ function bookacti_is_db_version_outdated() {
 /**
  * Get the variables used with javascript
  * @since 1.8.0
- * @version 1.15.15
+ * @version 1.15.16
  * @return array
  */
 function bookacti_get_js_variables() {
@@ -476,6 +476,7 @@ function bookacti_get_js_variables() {
 		'hide_availability_fixed'            => apply_filters( 'bookacti_hide_availability_fixed', 0 ), // Threshold above which availability is masked. 0 to always show availability.
 
 		'dialog_button_ok'                   => esc_html__( 'OK', 'booking-activities' ),
+		'dialog_button_send'                 => esc_html__( 'Send', 'booking-activities' ),
 		'dialog_button_cancel'               => $messages[ 'cancel_dialog_button' ][ 'value' ],
 		'dialog_button_cancel_booking'       => $messages[ 'cancel_booking_dialog_button' ][ 'value' ],
 		'dialog_button_reschedule'           => $messages[ 'reschedule_dialog_button' ][ 'value' ],
@@ -1018,7 +1019,7 @@ function bookacti_display_fields( $fields, $args = array() ) {
 /**
  * Display various fields
  * @since 1.2.0
- * @version 1.15.8
+ * @version 1.15.16
  * @param array $args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'attr', 'value', 'tip', 'required']
  */
 function bookacti_display_field( $args ) {
@@ -1028,7 +1029,7 @@ function bookacti_display_field( $args ) {
 	// Display field according to type
 
 	// TEXT & NUMBER
-	if( in_array( $args[ 'type' ], array( 'text', 'hidden', 'number', 'date', 'time', 'email', 'tel', 'password', 'file', 'color' ), true ) ) {
+	if( in_array( $args[ 'type' ], array( 'text', 'hidden', 'number', 'date', 'time', 'email', 'tel', 'password', 'file', 'color', 'url' ), true ) ) {
 	?>
 		<input type='<?php echo esc_attr( $args[ 'type' ] ); ?>' 
 				name='<?php echo esc_attr( $args[ 'name' ] ); ?>' 
@@ -1057,7 +1058,7 @@ function bookacti_display_field( $args ) {
 	}
 
 	// DURATION
-	if( $args[ 'type' ] === 'duration' ) {
+	else if( $args[ 'type' ] === 'duration' ) {
 		// Convert value from seconds
 		$duration = is_numeric( $args[ 'value' ] ) ? bookacti_format_duration( $args[ 'value' ], 'array' ) : array( 'days' => '', 'hours' => '', 'minutes' => '', 'seconds' => '' );
 		$step = is_numeric( $args[ 'options' ][ 'step' ] ) ? bookacti_format_duration( $args[ 'options' ][ 'step' ], 'array' ) : array( 'days' => '', 'hours' => '', 'minutes' => '', 'seconds' => '' );
@@ -1215,7 +1216,7 @@ function bookacti_display_field( $args ) {
 			<?php
 				}
 				// Display the tip
-				if( !empty( $option[ 'description' ] ) ) {
+				if( ! empty( $option[ 'description' ] ) ) {
 					$tip = $option[ 'description' ];
 					bookacti_help_tip( $tip );
 				}
@@ -1292,11 +1293,6 @@ function bookacti_display_field( $args ) {
 		bookacti_display_user_selectbox( $args[ 'options' ] );
 	}
 
-	// Custom
-	else {
-		do_action( 'bookacti_display_field', $args );
-	}
-
 	// Display the tip
 	if( $args[ 'tip' ] ) {
 		bookacti_help_tip( $args[ 'tip' ] );
@@ -1307,7 +1303,7 @@ function bookacti_display_field( $args ) {
 /**
  * Format arguments to display a proper field
  * @since 1.2.0
- * @version 1.15.7
+ * @version 1.15.16
  * @param array $raw_args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'attr', 'value', 'multiple', 'tip', 'required']
  * @return array|false
  */
@@ -1319,7 +1315,7 @@ function bookacti_format_field_args( $raw_args ) {
 	if( ! isset( $raw_args[ 'type' ] ) || ! isset( $raw_args[ 'name' ] ) ) { return false; }
 
 	// If field type is not supported, return
-	if( ! in_array( $raw_args[ 'type' ], array( 'text', 'hidden', 'email', 'tel', 'date', 'time', 'password', 'number', 'duration', 'checkbox', 'checkboxes', 'select', 'radio', 'textarea', 'file', 'color', 'editor', 'user_id' ) ) ) { 
+	if( ! in_array( $raw_args[ 'type' ], array( 'text', 'hidden', 'email', 'tel', 'date', 'time', 'password', 'number', 'duration', 'checkbox', 'checkboxes', 'select', 'radio', 'textarea', 'file', 'color', 'url', 'editor', 'user_id' ) ) ) { 
 		return false; 
 	}
 
@@ -2219,7 +2215,7 @@ function bookacti_sanitize_values( $default_data, $raw_data, $keys_by_type, $san
 /**
  * Escape illegal caracters in ical properties
  * @since 1.6.0
- * @version 1.8.8
+ * @version 1.15.16
  * @param string $value
  * @param string $property_name
  * @return string
@@ -2227,13 +2223,13 @@ function bookacti_sanitize_values( $default_data, $raw_data, $keys_by_type, $san
 function bookacti_sanitize_ical_property( $value, $property_name = '' ) {
 	$is_desc = $property_name === 'DESCRIPTION';
 	$eol = $is_desc ? '\n' : ' ';
-	$value = trim( $value );                                     // Remove whitespaces at the start and at the end of the string
-	$value = ! $is_desc ? strip_tags( $value ) : $value;         // Remove PHP and HTML elements
-	$value = html_entity_decode( $value );                       // Decode html entities first because semicolons will be escaped
-	$value = preg_replace( '/([\,;])/', '\\\$1', $value );       // Escape illegal caracters in ical properties
-	$value = preg_replace( '/' . PHP_EOL . '+/', $eol, $value ); // Replace End of lines with a whitespace or a \n in DESCRIPTION
-	$value = preg_replace( '/\s{2,}/', ' ', $value );            // Replace multiple whitespaces with a single space
-	$property_name_len = strlen( $property_name ) + 1;           // Add 1 character for the colon (:) after the property name
+	$value = trim( $value );                               // Remove whitespaces at the start and at the end of the string
+	$value = ! $is_desc ? strip_tags( $value ) : $value;   // Remove PHP and HTML elements
+	$value = html_entity_decode( $value );                 // Decode html entities first because semicolons will be escaped
+	$value = preg_replace( '/([\,;])/', '\\\$1', $value ); // Escape illegal caracters in ical properties
+	$value = preg_replace( '/\r|\n/', $eol, $value );      // Replace End of lines with a whitespace or a \n in DESCRIPTION
+	$value = preg_replace( '/\s{2,}/', ' ', $value );      // Replace multiple whitespaces with a single space
+	$property_name_len = strlen( $property_name ) + 1;     // Add 1 character for the colon (:) after the property name
 	$lines = array();
 	while( strlen( $value ) > ( 75 - $property_name_len ) ) {
 		$space = ( 75 - $property_name_len );

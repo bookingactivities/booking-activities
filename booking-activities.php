@@ -3,7 +3,7 @@
  * Plugin Name: Booking Activities
  * Plugin URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Description: Booking system specialized in activities (sports, cultural, leisure, events...). Works great with WooCommerce.
- * Version: 1.15.15
+ * Version: 1.15.16
  * Author: Booking Activities Team
  * Author URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Text Domain: booking-activities
@@ -40,7 +40,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 // GLOBALS AND CONSTANTS
-if( ! defined( 'BOOKACTI_VERSION' ) )     { define( 'BOOKACTI_VERSION', '1.15.15' ); }
+if( ! defined( 'BOOKACTI_VERSION' ) )     { define( 'BOOKACTI_VERSION', '1.15.16' ); }
 if( ! defined( 'BOOKACTI_PLUGIN_NAME' ) ) { define( 'BOOKACTI_PLUGIN_NAME', 'booking-activities' ); }
 if( ! defined( 'BOOKACTI_PATH' ) )        { define( 'BOOKACTI_PATH', __DIR__ ); }
 
@@ -199,7 +199,7 @@ add_action( 'wp_enqueue_scripts', 'bookacti_enqueue_libraries_scripts', 9 );
 
 /**
  * Enqueue high priority scripts
- * @version 1.15.13
+ * @version 1.15.16
  */
 function bookacti_enqueue_high_priority_global_scripts() {
 	// Chck if we are on a WC page that needs Booking Activities scripts
@@ -213,8 +213,7 @@ function bookacti_enqueue_high_priority_global_scripts() {
 	
 	// Include javascript files
 	wp_enqueue_script( 'bookacti-js-global-var',               plugins_url( 'js/global-var.min.js', __FILE__ ), array( 'jquery' ), BOOKACTI_VERSION, false ); // Load in header
-	/* TEMPORARY COMPATIBILITY FIX (to be removed in 1.16.0): enqueue jquery-serialize-object (it is not actually required, but it is useful to keep compatibility with outdated add-ons) */
-	wp_enqueue_script( 'bookacti-js-global-functions',         plugins_url( 'js/global-functions.min.js', __FILE__ ), array( 'jquery', 'moment', 'jquery-tiptip', 'bookacti-js-global-var', 'jquery-ui-sortable', 'jquery-serialize-object' ), BOOKACTI_VERSION, true );
+	wp_enqueue_script( 'bookacti-js-global-functions',         plugins_url( 'js/global-functions.min.js', __FILE__ ), array( 'jquery', 'moment', 'jquery-tiptip', 'bookacti-js-global-var', 'jquery-ui-sortable' ), BOOKACTI_VERSION, true );
 	wp_enqueue_script( 'bookacti-js-booking-system-functions', plugins_url( 'js/booking-system-functions.min.js', __FILE__ ), array( 'jquery', 'moment', 'jquery-effects-highlight', 'bookacti-js-global-var', 'bookacti-js-global-functions' ), BOOKACTI_VERSION, true );
 }
 add_action( 'admin_enqueue_scripts', 'bookacti_enqueue_high_priority_global_scripts', 10 );

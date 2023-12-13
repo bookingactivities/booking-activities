@@ -164,7 +164,7 @@ $j( document ).ready( function() {
 	 *  @type {FullCalendar.ViewApi} view The current View Object.
 	 * }
 	 */
-	booking_system.on( 'bookacti_calendar_event_class_names', function( e, return_object, info ) { 
+	booking_system.on( 'bookacti_calendar_event_class_names', function( e, return_object, info ) {
 		// Check if the event is hidden
 		var event_id           = typeof info.event.groupId !== 'undefined' ? parseInt( info.event.groupId ) : parseInt( info.event.id );
 		var activity_id        = bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event_id ][ 'activity_id' ];
@@ -183,7 +183,7 @@ $j( document ).ready( function() {
 	
 	
 	/**
-	 * Add total availability to availbaility div in Bookings calendar events
+	 * Add total availability to availability div in Bookings calendar events
 	 * @version 1.15.0
 	 * @param {Event} e
 	 * @param {Object} return_object {
@@ -353,4 +353,3 @@ $j( document ).ready( function() {
 		bookacti_filter_booking_list( paged );
 	});
 });
-

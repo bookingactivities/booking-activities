@@ -275,3 +275,82 @@ function bookacti_wc_default_messages( $messages ) {
 	return array_merge( $messages, $wc_messages );
 }
 add_filter( 'bookacti_default_messages', 'bookacti_wc_default_messages', 10, 1 );
+
+
+/**
+ * Add WC notice to Default booking status settings
+ * @since 1.15.16
+ * @param array $args
+ * @return array
+ */
+function bookacti_wc_settings_default_booking_status_field_args( $args ) {
+	ob_start();
+?>
+	<div class='bookacti-info bookacti-default-booking-status-wc-notice'>
+		<span class='dashicons dashicons-info'></span>
+		<span>
+		<?php 
+			echo esc_html__( 'This option has no effect on bookings made with WooCommerce.', 'booking-activities' ) . ' ' . esc_html__( 'Here is how booking statuses are handled with WooCommerce:', 'booking-activities' );
+		?>
+		</span>
+		<table>
+			<tr>
+				<td style='border:none;'></td>
+				<th><?php esc_html_e( 'If the order is paid', 'booking-activities' ); ?></th>
+				<th><?php esc_html_e( 'If the order is not paid', 'booking-activities' ); ?></th>
+			</tr>
+			<tr>
+				<th>
+				<?php 
+					/* translators: "%1$s" = "Virtual" WC option label. "%2$s" = "Activity" WC option label. */ 
+					echo sprintf( esc_html__( 'If the order contains "%1$s" "%2$s" products only', 'booking-activities' ), 
+						'<strong>' . esc_html__( 'Virtual', 'woocommerce' ) . '</strong>', 
+						'<strong>' . esc_html__( 'Activity', 'booking-activities' ) . '</strong>'
+					);
+				?>
+				</th>
+				<td><?php esc_html_e( 'Order', 'booking-activities' ); ?>: <strong><?php esc_html_e( 'Completed', 'woocommerce' ); ?></strong><br/><?php esc_html_e( 'Bookings', 'booking-activities' ); ?>: <strong><?php esc_html_e( 'Booked', 'booking-activities' ); ?></strong> and <strong><?php esc_html_e( 'Paid', 'booking-activities' ); ?></strong></td>
+				<td><?php esc_html_e( 'Order', 'booking-activities' ); ?>: <strong><?php esc_html_e( 'Processing', 'woocommerce' ); ?></strong><br/><?php esc_html_e( 'Bookings', 'booking-activities' ); ?>: <strong><?php esc_html_e( 'Pending', 'booking-activities' ); ?></strong> and <strong><?php esc_html_e( 'Due', 'booking-activities' ); ?></strong></td>
+			</tr>
+			<tr>
+				<th><?php esc_html_e( 'Else', 'booking-activities' ); ?></th>
+				<td><?php esc_html_e( 'Order', 'booking-activities' ); ?>: <strong><?php esc_html_e( 'Processing', 'woocommerce' ); ?></strong><br/><?php esc_html_e( 'Bookings', 'booking-activities' ); ?>: <strong><?php esc_html_e( 'Booked', 'booking-activities' ); ?></strong> and <strong><?php esc_html_e( 'Paid', 'booking-activities' ); ?></strong></td>
+				<td><?php esc_html_e( 'Order', 'booking-activities' ); ?>: <strong><?php esc_html_e( 'Processing', 'woocommerce' ); ?></strong><br/><?php esc_html_e( 'Bookings', 'booking-activities' ); ?>: <strong><?php esc_html_e( 'Pending', 'booking-activities' ); ?></strong> and <strong><?php esc_html_e( 'Due', 'booking-activities' ); ?></strong></td>
+			</tr>
+		</table>
+		<style>
+			.bookacti-default-booking-status-wc-notice table    { border-collapse: collapse; margin-top: 10px; }
+			.bookacti-default-booking-status-wc-notice table th,
+			.bookacti-default-booking-status-wc-notice table td { border: 1px solid #ccc; padding: 10px; }
+		</style>
+	</div>
+<?php
+	$args[ 'after' ] = ob_get_clean();
+	$args[ 'tip' ]  .= '<br/>' . esc_html__( 'This option has no effect on bookings made with WooCommerce.', 'booking-activities' );
+	return $args;
+}
+add_filter( 'bookacti_settings_default_booking_status_field_args', 'bookacti_wc_settings_default_booking_status_field_args' );
+
+
+/**
+ * Add WC notice to Default payment status settings
+ * @since 1.15.16
+ * @param array $args
+ * @return array
+ */
+function bookacti_wc_settings_default_payment_status_field_args( $args ) {
+	ob_start();
+?>
+	<div class='bookacti-info bookacti-default-booking-status-wc-notice'>
+		<span class='dashicons dashicons-info'></span>
+		<span>
+		<?php 
+			echo esc_html__( 'This option has no effect on bookings made with WooCommerce.', 'booking-activities' );
+		?>
+		</span>
+<?php
+	$args[ 'after' ] = ob_get_clean();
+	$args[ 'tip' ]  .= '<br/>' . esc_html__( 'This option has no effect on bookings made with WooCommerce.', 'booking-activities' );
+	return $args;
+}
+add_filter( 'bookacti_settings_default_payment_status_field_args', 'bookacti_wc_settings_default_payment_status_field_args' );
