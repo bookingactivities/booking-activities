@@ -2,7 +2,7 @@
 /**
  * Form list page
  * @since 1.5.0
- * @version 1.15.4
+ * @version 1.15.17
  */
 
 // Exit if accessed directly
@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	if( $can_create_form && $templates ) { 
 		?>
 		<a href='<?php echo esc_url( admin_url( 'admin.php?page=bookacti_forms&action=new' ) ); ?>' class='page-title-action' >
-			<?php echo esc_html_x( 'Add New', 'post' ); ?>
+			<?php esc_html_e( 'Add New Form', 'booking-activities' ); ?>
 		</a>
 		<?php
 	}

@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 6.4
 Requires PHP: 5.3
-Stable tag: 1.15.16
+Stable tag: 1.15.17
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -321,6 +321,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.15.17 =
+* Fix - "Add new" buttons were not translated
+* Fix - Compatibility with WC HPOS
+* Dev - Use WC_Product methods instead of WP_Post functions to handle product data (not required for HPOS, but more future-proof)
 
 = 1.15.16 - 2023/12/13 =
 * Fix - Prevent forgotten password notification to be sent twice

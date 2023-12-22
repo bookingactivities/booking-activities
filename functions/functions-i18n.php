@@ -263,6 +263,7 @@ function bookacti_translate_external_text_with_wpml( $text, $lang = '', $fallbac
 /**
  * Translate a WooCommerce string into the desired language with WPML (default to current site language)
  * @since 1.14.0
+ * @version 1.15.17
  * @param string $text
  * @param string $lang Optional. Two letter lang id (e.g. fr or en) or locale id (e.g. fr_FR or en_US).
  * @param boolean $fallback Optional. False to display empty string if the text doesn't exist in the desired language. True to display the text of another existing language.
@@ -276,10 +277,9 @@ function bookacti_translate_wc_text_with_wpml( $translated_text, $text, $lang, $
 	if( intval( $args[ 'object_id' ] ) && in_array( $args[ 'object_type' ], array( 'product', 'product_variation' ), true ) ) {
 		$translated_object_id = apply_filters( 'wpml_object_id', intval( $args[ 'object_id' ] ), $args[ 'object_type' ], false, $lang );
 		if( $translated_object_id ) {
-			$translated_post = get_post( $translated_object_id );
-			if( isset( $translated_post->{ $args[ 'field' ] } ) ) {
-				$translated_text = $fallback && ! $translated_post->{ $args[ 'field' ] } ? $text : $translated_post->{ $args[ 'field' ] };
-			}
+			$product         = wc_get_product( $translated_object_id );
+			$meta_value      = $product->get_meta( $args[ 'field' ] );
+			$translated_text = $fallback && ! $meta_value ? $text : $meta_value;
 		}
 	}
 	

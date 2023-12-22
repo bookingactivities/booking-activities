@@ -247,7 +247,7 @@ add_action( 'woocommerce_before_single_product_summary', 'bookacti_move_add_to_c
 
 /**
  * Add booking forms to single product page (front-end)
- * @version 1.15.15
+ * @version 1.15.17
  * @global WC_Product $product
  */
 function bookacti_add_booking_system_in_single_product_page() {
@@ -282,8 +282,9 @@ function bookacti_add_booking_system_in_single_product_page() {
 		if( $default_attributes ) { 
 			$variation_id = bookacti_get_product_variation_matching_attributes( $product, $default_attributes );
 			$default_variation_id = $variation_id;
-			if( $default_variation_id ) { 
-				$form_id = get_post_meta( $default_variation_id, 'bookacti_variable_form', true );
+			if( $default_variation_id ) {
+				$variation = wc_get_product( $default_variation_id );
+				$form_id   = $variation->get_meta( 'bookacti_variable_form' );
 				if( $form_id ) { 
 					$form_instance_id = 'bookacti-wc-form-fields-product-variation-' . $default_variation_id;
 				}	
@@ -292,7 +293,7 @@ function bookacti_add_booking_system_in_single_product_page() {
 
 	} else if( $product->is_type( 'variation' ) ) {
 		$variation_id = $product->get_id();
-		$form_id = get_post_meta( $variation_id, 'bookacti_variable_form', true );
+		$form_id      = $product->get_meta( 'bookacti_variable_form' );
 		if( $form_id ) { 
 			$form_instance_id = 'bookacti-wc-form-fields-product-variation-' . $variation_id;
 		}
@@ -809,14 +810,14 @@ add_filter( 'wc_add_to_cart_message_html', 'bookacti_add_to_cart_message_html', 
 /**
  * Do not display "In stock" for activities in variable product pages
  * @since 1.0.4
- * @version 1.8.0
+ * @version 1.15.17
  * @param string $availability_html
  * @param WC_Product $variation
  * @return string
  */
 function bookacti_dont_display_instock_in_variation( $availability_html, $variation ) {
 	if( $variation->get_stock_status() === 'instock' ) {
-		$is_activity = get_post_meta( $variation->get_id(), 'bookacti_variable_is_activity', true ) === 'yes';
+		$is_activity = $variation->get_meta( 'bookacti_variable_is_activity' ) === 'yes';
 		if( $is_activity ) {
 			$availability_html = '';
 		}

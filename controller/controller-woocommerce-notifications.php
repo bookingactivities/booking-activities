@@ -237,7 +237,7 @@ add_filter( 'bookacti_notifications_tags', 'bookacti_wc_notifications_tags', 15,
 /**
  * Set WC notifications tags values
  * @since 1.6.0
- * @version 1.15.15
+ * @version 1.15.17
  * @param array $tags
  * @param object $booking
  * @param string $booking_type
@@ -263,9 +263,10 @@ function bookacti_wc_notifications_tags_values( $tags, $booking, $booking_type, 
 	$item_id         = $item->get_id();
 	$product_id      = $item->get_variation_id() ? $item->get_variation_id() : $item->get_product_id();
 	$order_id        = $item->get_order_id();
+	$order           = $item->get_order();
 	$order_item_name = $item->get_name();
 	$item_price      = (float) $item->get_total() + (float) $item->get_total_tax();
-	$currency        = get_post_meta( $booking->order_id, '_order_currency', true );
+	$currency        = $order->get_meta( '_order_currency' );
 	$currency_symbol = $currency ? get_woocommerce_currency_symbol( $currency ) : '';
 	
 	$tags[ '{product_id}' ]    = $product_id ? $product_id : '';

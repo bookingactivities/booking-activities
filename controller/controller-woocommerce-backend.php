@@ -300,28 +300,29 @@ add_filter( 'woocommerce_product_data_tabs', 'bookacti_create_activity_tab', 10,
 
 /**
  * Content of the activity tab
- * @version 1.15.0
- * @global int $thepostid
+ * @version 1.15.17
+ * @global WP_Post $post
  */
 function bookacti_activity_tab_content() {
-	global $thepostid;
+	global $post;
+	$product = wc_get_product( $post );
 	?>
 	<div id='bookacti_activity_options' class='panel woocommerce_options_panel'>
 		<div class='options_group'>
 			<?php
-				$form_id        = '_bookacti_form'; 
+				$form_id_key    = '_bookacti_form'; 
 				$forms          = bookacti_get_forms( bookacti_format_form_filters( array( 'active' => 1 ) ) );
-				$current_form   = get_post_meta( $thepostid, $form_id, true );
+				$current_form   = $product->get_meta( $form_id_key );
 				$can_edit_forms = current_user_can( 'bookacti_edit_forms' );
 			?>
-			<p class='form-field <?php echo $form_id; ?>_field' >
-				<label for='<?php echo $form_id; ?>'>
+			<p class='form-field <?php echo $form_id_key; ?>_field' >
+				<label for='<?php echo $form_id_key; ?>'>
 				<?php
 					echo esc_html__( 'Booking form', 'booking-activities' );
 				?>
 				</label>
-				<select id='<?php echo $form_id; ?>' 
-						name='<?php echo $form_id; ?>' 
+				<select id='<?php echo $form_id_key; ?>' 
+						name='<?php echo $form_id_key; ?>' 
 						class='select short'
 						<?php if( $can_edit_forms ) { echo 'style="margin-right:10px;"'; } ?> >
 				<?php
@@ -338,7 +339,7 @@ function bookacti_activity_tab_content() {
 					}
 				?>
 				</select>
-				<span class='bookacti-form-selectbox-link' data-form-selectbox-id='<?php echo $form_id; ?>'>
+				<span class='bookacti-form-selectbox-link' data-form-selectbox-id='<?php echo $form_id_key; ?>'>
 				<?php 
 					if( $can_edit_forms ) {
 						if( $forms_nb ) {
@@ -368,22 +369,18 @@ add_action( 'woocommerce_product_data_panels', 'bookacti_activity_tab_content' )
 
 /**
  * Save custom activity product type and activity tab content
- * @version 1.8.0
- * @param int $post_id
+ * @version 1.15.17
+ * @param WC_Product $product
  */
-function bookacti_save_custom_product_type_and_tab_content( $post_id ) { 
-	if( ! empty( $_POST['_bookacti_is_activity'] ) ) {
-		update_post_meta( $post_id, '_bookacti_is_activity', sanitize_text_field( 'yes' ) );
-	} else {
-		update_post_meta( $post_id, '_bookacti_is_activity', sanitize_text_field( 'no' ) );
-	}
+function bookacti_save_custom_product_type_and_tab_content( $product ) { 
+	$is_activity = ! empty( $_POST['_bookacti_is_activity'] ) ? 'yes' : 'no';
+	$product->update_meta_data( '_bookacti_is_activity', sanitize_text_field( $is_activity ) );
 
 	if( isset( $_POST['_bookacti_form'] ) ) {
-		update_post_meta( $post_id, '_bookacti_form', intval( $_POST['_bookacti_form'] ) );
+		$product->update_meta_data( '_bookacti_form', intval( $_POST['_bookacti_form'] ) );
 	}
 }
-add_action( 'woocommerce_process_product_meta', 'bookacti_save_custom_product_type_and_tab_content', 30, 1 ); 
-
+add_action( 'woocommerce_admin_process_product_object', 'bookacti_save_custom_product_type_and_tab_content', 10, 1 ); 
 
 
 
@@ -391,12 +388,13 @@ add_action( 'woocommerce_process_product_meta', 'bookacti_save_custom_product_ty
 
 /**
  * Add custom variation product type option
- * @version 1.14.0
+ * @version 1.15.17
  * @param int $loop
  * @param array $variation_data
- * @param WP_Post $variation
+ * @param WP_Post $post
  */
-function bookacti_add_variation_option( $loop, $variation_data, $variation ) {
+function bookacti_add_variation_option( $loop, $variation_data, $post ) {
+	$variation = wc_get_product( $post );
 	/* translators: Help tip to explain why and when you should check the 'Activity' type of product in WooCommerce */
 	$tip = esc_html__( 'Enable this option if the product is a bookable activity', 'booking-activities' );
 ?>
@@ -409,7 +407,7 @@ function bookacti_add_variation_option( $loop, $variation_data, $variation ) {
 			class='checkbox bookacti_variable_is_activity' 
 			name='bookacti_variable_is_activity[<?php echo esc_attr( $loop ); ?>]' 
 			value='yes'
-			<?php checked( 'yes', esc_attr( get_post_meta( $variation->ID, 'bookacti_variable_is_activity', true ) ), true ); ?> 
+			<?php checked( 'yes', esc_attr( $variation->get_meta( 'bookacti_variable_is_activity' ) ), true ); ?> 
 		/>
 	</label>
 <?php
@@ -419,19 +417,20 @@ add_action( 'woocommerce_variation_options', 'bookacti_add_variation_option', 10
 
 /**
  * Add custom fields for activity variation product type
- * @version 1.15.0
+ * @version 1.15.17
  * @param int $loop
  * @param array $variation_data
- * @param WP_Post $variation
+ * @param WP_Post $post
  */
-function bookacti_add_variation_fields( $loop, $variation_data, $variation ) { 
-	$form_id        = 'bookacti_variable_form'; 
+function bookacti_add_variation_fields( $loop, $variation_data, $post ) {
+	$variation      = wc_get_product( $post );
+	$form_id_key    = 'bookacti_variable_form'; 
 	$forms          = bookacti_get_forms( bookacti_format_form_filters( array( 'active' => 1 ) ) );
-	$current_form   = get_post_meta( $variation->ID, $form_id, true );
+	$current_form   = $variation->get_meta( $form_id_key );
 	$can_edit_forms = current_user_can( 'bookacti_edit_forms' );
 
 	// Check if variation is flagged as activity
-	$is_variation_activity = get_post_meta( $variation->ID, 'bookacti_variable_is_activity', true );
+	$is_variation_activity = $variation->get_meta( 'bookacti_variable_is_activity' );
 	$variation_class = $is_variation_activity === 'yes' ? 'bookacti-show-fields' : 'bookacti-hide-fields';
 	?>
 	<div class='show_if_variation_activity <?php echo $variation_class; ?>'>
@@ -439,10 +438,10 @@ function bookacti_add_variation_fields( $loop, $variation_data, $variation ) {
 			<strong><?php esc_html_e( 'Activity', 'booking-activities' ) ?></strong>
 		</p>
 		<p class='form-row form-row-full' >
-			<label for='<?php echo $form_id . '_' . esc_attr( $loop ); ?>' ><?php esc_html_e( 'Booking form', 'booking-activities' ); ?></label>
-			<select name='<?php echo $form_id; ?>[<?php echo esc_attr( $loop ); ?>]' 
-					id='<?php echo $form_id . '_' . esc_attr( $loop ); ?>' 
-					class='<?php echo $form_id; ?>' 
+			<label for='<?php echo $form_id_key . '_' . esc_attr( $loop ); ?>' ><?php esc_html_e( 'Booking form', 'booking-activities' ); ?></label>
+			<select name='<?php echo $form_id_key; ?>[<?php echo esc_attr( $loop ); ?>]' 
+					id='<?php echo $form_id_key . '_' . esc_attr( $loop ); ?>' 
+					class='<?php echo $form_id_key; ?>' 
 					data-loop='<?php echo esc_attr( $loop ); ?>'
 					<?php if( $can_edit_forms ) { echo 'style="margin-right:10px;"'; } ?>>
 				<?php
@@ -459,7 +458,7 @@ function bookacti_add_variation_fields( $loop, $variation_data, $variation ) {
 				}
 			?>
 			</select>
-			<span class='bookacti-form-selectbox-link' data-form-selectbox-id='<?php echo $form_id . '_' . esc_attr( $loop ); ?>'>
+			<span class='bookacti-form-selectbox-link' data-form-selectbox-id='<?php echo $form_id_key . '_' . esc_attr( $loop ); ?>'>
 			<?php 
 				if( $can_edit_forms ) {
 					if( $forms_nb ) {
@@ -487,48 +486,40 @@ add_action( 'woocommerce_product_after_variable_attributes', 'bookacti_add_varia
 
 /**
  * Save custom variation product
- * @version 1.8.0
- * @param int $post_id
+ * @version 1.15.17
+ * @param WC_Product_Variation $variation
+ * @param int $i
  */
-function bookacti_save_variation_option( $post_id ) {
-	$variable_post_id	= is_array( $_POST[ 'variable_post_id' ] ) ? $_POST[ 'variable_post_id' ] : array();
-	$keys				= array_keys( $variable_post_id );
-
-	// Save data for each variation
-	foreach ( $keys as $key ) {
-		$variation_id = intval( $variable_post_id[ $key ] );
-		if( $variation_id ) {
-			// Save 'is_activity' checkbox
-			if ( isset( $_POST[ 'bookacti_variable_is_activity' ][ $key ] ) ) {
-				$variable_is_activity = $_POST[ 'bookacti_variable_is_activity' ][ $key ] === 'yes' ? 'yes' : 'no';
-				update_post_meta( $variation_id, 'bookacti_variable_is_activity', $variable_is_activity );
-			}
-
-			// Save form
-			if ( isset( $_POST[ 'bookacti_variable_form' ][ $key ] ) ) {
-				$variable_form = intval( $_POST[ 'bookacti_variable_form' ][ $key ] );
-				update_post_meta( $variation_id, 'bookacti_variable_form', $variable_form );
-			}
-		}
+function bookacti_save_variation_option( $variation, $i ) {
+	// Save 'is_activity' checkbox
+	if( isset( $_POST[ 'bookacti_variable_is_activity' ][ $i ] ) ) {
+		$variable_is_activity = $_POST[ 'bookacti_variable_is_activity' ][ $i ] === 'yes' ? 'yes' : 'no';
+		$variation->update_meta_data( 'bookacti_variable_is_activity', $variable_is_activity );
+	}
+	// Save form
+	if( isset( $_POST[ 'bookacti_variable_form' ][ $i ] ) ) {
+		$variable_form = intval( $_POST[ 'bookacti_variable_form' ][ $i ] );
+		$variation->update_meta_data( 'bookacti_variable_form', $variable_form );
 	}
 }
-add_action( 'woocommerce_save_product_variation', 'bookacti_save_variation_option', 10, 1 );
+add_action( 'woocommerce_admin_process_variation_object', 'bookacti_save_variation_option', 10, 2 );
 
 
 /**
  * Load custom variation settings in order to use it in frontend
- * 
  * @since 1.1.0 (was load_variation_settings_fields before)
- * @version 1.8.0
- * @param array $variations
+ * @version 1.15.17
+ * @param array $data
+ * @param WC_Product_Variable $product
+ * @param WC_Product_Variation $variation
  * @return array
  */
-function bookacti_load_variation_settings_fields( $variations ) {
-	$variations[ 'bookacti_is_activity' ]	= get_post_meta( $variations[ 'variation_id' ], 'bookacti_variable_is_activity', true ) === 'yes';
-	$variations[ 'bookacti_form_id' ]		= get_post_meta( $variations[ 'variation_id' ], 'bookacti_variable_form', true );
-	return $variations;
+function bookacti_load_variation_settings_fields( $data, $product, $variation ) {
+	$data[ 'bookacti_is_activity' ] = $variation->get_meta( 'bookacti_variable_is_activity' ) === 'yes';
+	$data[ 'bookacti_form_id' ]     = $variation->get_meta( 'bookacti_variable_form' );
+	return $data;
 }
-add_filter( 'woocommerce_available_variation', 'bookacti_load_variation_settings_fields' );
+add_filter( 'woocommerce_available_variation', 'bookacti_load_variation_settings_fields', 10, 3 );
 
 
 
