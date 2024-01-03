@@ -3,6 +3,23 @@
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
+ * Declare support for WC HPOS for Booking Activities and its add-ons
+ * @since 1.15.17
+ */
+function bookacti_wc_support_hpos() {
+	if( ! class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) { return; }
+	$add_ons = bookacti_get_add_ons_data( '', array( 'bapos' ) );
+	$plugins = array( 'bookacti' => array( 'plugin_name' => 'booking-activities' ) ) + $add_ons;
+	foreach( $plugins as $prefix => $plugin ) {
+		if( empty( $plugin[ 'plugin_name' ] ) ) { continue; }
+		if( ! bookacti_is_plugin_active( $plugin[ 'plugin_name' ] . '/' . $plugin[ 'plugin_name' ] . '.php' ) ) { continue; }
+		\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', $plugin[ 'plugin_name' ] . '/' . $plugin[ 'plugin_name' ] . '.php', true );
+	}
+}
+add_action( 'before_woocommerce_init', 'bookacti_wc_support_hpos' );
+
+
+/**
  * Hide Price settings section if WC is active
  * @since 1.15.15
  */

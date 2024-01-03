@@ -622,7 +622,7 @@ add_filter( 'woocommerce_email_order_items_table', 'bookacti_order_items_unset_e
 /**
  * Add WC data to the booking list
  * @since 1.6.0 (was bookacti_woocommerce_fill_booking_list_custom_columns before)
- * @version 1.15.15
+ * @version 1.15.17
  * @param array $booking_list_items
  * @param array $bookings
  * @param array $booking_groups
@@ -634,8 +634,7 @@ add_filter( 'woocommerce_email_order_items_table', 'bookacti_order_items_unset_e
 function bookacti_add_wc_data_to_booking_list_items( $booking_list_items, $bookings, $booking_groups, $displayed_groups, $bookings_per_group, $users, $booking_list ) {
 	if( ! $booking_list_items ) { return $booking_list_items; }
 
-	$admin_url = admin_url();
-	$can_edit_users = current_user_can( 'edit_users' );
+	$can_edit_users    = current_user_can( 'edit_users' );
 	$can_edit_products = current_user_can( 'edit_published_products' ) && current_user_can( 'edit_others_products' );
 
 	$order_ids = array();
@@ -651,7 +650,7 @@ function bookacti_add_wc_data_to_booking_list_items( $booking_list_items, $booki
 
 			// Set a link for "view-order" action
 			if( isset( $booking_list_item[ 'actions' ][ 'view-order' ] ) ) {
-				$booking_list_items[ $booking_id ][ 'actions' ][ 'view-order' ][ 'link' ] = $admin_url . 'post.php?action=edit&post=' . $booking_list_item[ 'order_id' ];
+				$booking_list_items[ $booking_id ][ 'actions' ][ 'view-order' ][ 'link' ] = \Automattic\WooCommerce\Utilities\OrderUtil::get_order_admin_edit_url( $booking_list_item[ 'order_id' ] );
 			}
 		} else {
 			// Remove "view-order" action
@@ -666,7 +665,7 @@ function bookacti_add_wc_data_to_booking_list_items( $booking_list_items, $booki
 			if( $booking_list_item[ 'order_id' ] || empty( $booking_list_item[ 'customer' ] ) ) {
 				$display_name  = ! empty( $user->first_name ) && ! empty( $user->last_name ) ? $user->first_name . ' ' . $user->last_name : $user->display_name;
 				$customer_name = ! empty( $user->billing_first_name ) && ! empty( $user->billing_last_name ) ? $user->billing_first_name . ' ' . $user->billing_last_name : $display_name;
-				$customer      = $can_edit_users ? '<a href="' . esc_url( $admin_url . 'user-edit.php?user_id=' . $booking_list_item[ 'user_id' ] ) . '">' . esc_html( $customer_name ) . '</a>' : esc_html( $customer_name );
+				$customer      = $can_edit_users ? '<a href="' . esc_url( admin_url( 'user-edit.php?user_id=' . $booking_list_item[ 'user_id' ] ) ) . '">' . esc_html( $customer_name ) . '</a>' : esc_html( $customer_name );
 				$booking_list_items[ $booking_id ][ 'customer' ] = $customer;
 			}
 
@@ -717,7 +716,7 @@ function bookacti_add_wc_data_to_booking_list_items( $booking_list_items, $booki
 			$order_item_title = $order_item->get_name();
 			$product_title = $order_item_title !== '' ? apply_filters( 'bookacti_translate_text_external', $order_item_title, false, true, array( 'domain' => 'woocommerce', 'object_type' => 'order_item', 'object_id' => $order_item_id, 'field' => 'title', 'order_id' => $order_id ) ) : $order_item_title;
 			if( ! empty( $order_item[ 'product_id' ] ) && $can_edit_products ) {
-				$product_title = '<a href="' . esc_url( $admin_url . 'post.php?action=edit&post=' . $order_item[ 'product_id' ] ) . '">' . $product_title . '</a>';
+				$product_title = '<a href="' . esc_url( admin_url( 'post.php?action=edit&post=' . $order_item[ 'product_id' ] ) ) . '">' . $product_title . '</a>';
 			}
 			$booking_list_items[ $booking_id ][ 'product' ] = $product_title;
 

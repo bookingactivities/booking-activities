@@ -2,14 +2,14 @@
 # This file is distributed under the GPL3.
 msgid ""
 msgstr ""
-"Project-Id-Version: Booking Activities 1.15.16\n"
+"Project-Id-Version: Booking Activities 1.15.17\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/booking-activities\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2023-12-13T15:56:15+00:00\n"
+"POT-Creation-Date: 2023-12-21T16:25:23+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.6.0\n"
 "X-Domain: booking-activities\n"
@@ -47,16 +47,16 @@ msgid "Booking forms"
 msgstr ""
 
 #: booking-activities.php:472
-#: controller/controller-woocommerce-frontend.php:1325
-#: controller/controller-woocommerce-frontend.php:2074
-#: controller/controller-woocommerce-frontend.php:2096
-#: controller/controller-woocommerce-frontend.php:2104
-#: controller/controller-woocommerce-frontend.php:2111
-#: controller/controller-woocommerce-frontend.php:2152
-#: controller/controller-woocommerce-settings.php:312
-#: controller/controller-woocommerce-settings.php:313
-#: controller/controller-woocommerce-settings.php:317
-#: controller/controller-woocommerce-settings.php:318
+#: controller/controller-woocommerce-frontend.php:1326
+#: controller/controller-woocommerce-frontend.php:2075
+#: controller/controller-woocommerce-frontend.php:2097
+#: controller/controller-woocommerce-frontend.php:2105
+#: controller/controller-woocommerce-frontend.php:2112
+#: controller/controller-woocommerce-frontend.php:2153
+#: controller/controller-woocommerce-settings.php:329
+#: controller/controller-woocommerce-settings.php:330
+#: controller/controller-woocommerce-settings.php:334
+#: controller/controller-woocommerce-settings.php:335
 #: functions/functions-settings.php:1647
 #: view/view-bookings.php:11
 msgid "Bookings"
@@ -175,10 +175,10 @@ msgstr ""
 #: class/class-bookings-list.php:79
 #: controller/controller-woocommerce-backend.php:272
 #: controller/controller-woocommerce-backend.php:290
-#: controller/controller-woocommerce-backend.php:404
-#: controller/controller-woocommerce-backend.php:439
+#: controller/controller-woocommerce-backend.php:402
+#: controller/controller-woocommerce-backend.php:438
 #: controller/controller-woocommerce-forms.php:84
-#: controller/controller-woocommerce-settings.php:308
+#: controller/controller-woocommerce-settings.php:325
 #: functions/functions-booking-system.php:938
 #: functions/functions-bookings.php:2555
 #: functions/functions-templates-forms-control.php:191
@@ -257,8 +257,8 @@ msgstr ""
 #. translators: %d is the form ID
 #: class/class-forms-list.php:296
 #: controller/controller-forms.php:2107
-#: controller/controller-woocommerce-backend.php:335
-#: controller/controller-woocommerce-backend.php:456
+#: controller/controller-woocommerce-backend.php:336
+#: controller/controller-woocommerce-backend.php:455
 msgid "Form #%d"
 msgstr ""
 
@@ -334,7 +334,7 @@ msgid "An error occurred while trying to change the booking quantity."
 msgstr ""
 
 #: controller/controller-bookings.php:437
-#: controller/controller-woocommerce-frontend.php:488
+#: controller/controller-woocommerce-frontend.php:489
 #: functions/functions-booking-system.php:1268
 msgid "You haven't picked any event. Please pick an event first."
 msgstr ""
@@ -479,7 +479,7 @@ msgid "Items"
 msgstr ""
 
 #: controller/controller-forms.php:609
-#: controller/controller-woocommerce-frontend.php:1888
+#: controller/controller-woocommerce-frontend.php:1889
 msgid "Price"
 msgstr ""
 
@@ -1025,23 +1025,23 @@ msgstr ""
 msgid "Activities are bookable according to the defined calendar, and expire in cart."
 msgstr ""
 
-#: controller/controller-woocommerce-backend.php:320
-#: controller/controller-woocommerce-backend.php:442
+#: controller/controller-woocommerce-backend.php:321
+#: controller/controller-woocommerce-backend.php:441
 msgid "Booking form"
 msgstr ""
 
-#: controller/controller-woocommerce-backend.php:347
-#: controller/controller-woocommerce-backend.php:468
+#: controller/controller-woocommerce-backend.php:348
+#: controller/controller-woocommerce-backend.php:467
 msgid "Edit this form"
 msgstr ""
 
-#: controller/controller-woocommerce-backend.php:353
-#: controller/controller-woocommerce-backend.php:474
+#: controller/controller-woocommerce-backend.php:354
+#: controller/controller-woocommerce-backend.php:473
 msgid "Create a form"
 msgstr ""
 
 #. translators: Help tip to explain why and when you should check the 'Activity' type of product in WooCommerce
-#: controller/controller-woocommerce-backend.php:401
+#: controller/controller-woocommerce-backend.php:399
 msgid "Enable this option if the product is a bookable activity"
 msgstr ""
 
@@ -1073,12 +1073,12 @@ msgstr ""
 
 #. translators: %s is the coupon code used for the refund
 #: controller/controller-woocommerce-bookings.php:752
-#: controller/controller-woocommerce-frontend.php:2024
+#: controller/controller-woocommerce-frontend.php:2025
 msgid "Refunded with coupon %s"
 msgstr ""
 
 #: controller/controller-woocommerce-bookings.php:886
-#: controller/controller-woocommerce-frontend.php:1886
+#: controller/controller-woocommerce-frontend.php:1887
 msgid "Product ID"
 msgstr ""
 
@@ -1087,7 +1087,7 @@ msgid "Product variation ID"
 msgstr ""
 
 #: controller/controller-woocommerce-bookings.php:888
-#: controller/controller-woocommerce-frontend.php:1887
+#: controller/controller-woocommerce-frontend.php:1888
 msgid "Product title"
 msgstr ""
 
@@ -1181,7 +1181,7 @@ msgid "The coupon code is %s. Use it on your next cart!"
 msgstr ""
 
 #: controller/controller-woocommerce-bookings.php:1334
-#: controller/controller-woocommerce-frontend.php:1333
+#: controller/controller-woocommerce-frontend.php:1334
 msgid "Coupon code"
 msgstr ""
 
@@ -1365,45 +1365,45 @@ msgid "The item has been automatically removed from your cart."
 msgstr ""
 
 #. translators: %d is a variable number of products
-#: controller/controller-woocommerce-frontend.php:972
-#: controller/controller-woocommerce-frontend.php:1569
+#: controller/controller-woocommerce-frontend.php:973
+#: controller/controller-woocommerce-frontend.php:1570
 msgid "%d product has expired and has been automatically removed from cart."
 msgid_plural "%d products have expired and have been automatically removed from cart."
 msgstr[0] ""
 msgstr[1] ""
 
-#: controller/controller-woocommerce-frontend.php:1064
-#: controller/controller-woocommerce-frontend.php:1218
+#: controller/controller-woocommerce-frontend.php:1065
+#: controller/controller-woocommerce-frontend.php:1219
 msgid "An error occurred while trying to change the quantity of the bookings attached to the item."
 msgstr ""
 
-#: controller/controller-woocommerce-frontend.php:1073
+#: controller/controller-woocommerce-frontend.php:1074
 msgid "You can't update quantity since this product is temporarily booked on an order pending payment. Please, first cancel the order or remove this product from cart."
 msgstr ""
 
-#: controller/controller-woocommerce-frontend.php:1329
-#: controller/controller-woocommerce-frontend.php:1817
+#: controller/controller-woocommerce-frontend.php:1330
+#: controller/controller-woocommerce-frontend.php:1818
 msgid "Booking"
 msgid_plural "Bookings"
 msgstr[0] ""
 msgstr[1] ""
 
-#: controller/controller-woocommerce-frontend.php:1331
+#: controller/controller-woocommerce-frontend.php:1332
 msgid "Booking group"
 msgstr ""
 
-#: controller/controller-woocommerce-frontend.php:1332
+#: controller/controller-woocommerce-frontend.php:1333
 msgid "Refund method"
 msgstr ""
 
 #. translators: %1$s = the booking ID. %2$s = the event title and dates. %3$s = the order ID.
-#: controller/controller-woocommerce-frontend.php:1680
-#: controller/controller-woocommerce-frontend.php:1742
+#: controller/controller-woocommerce-frontend.php:1681
+#: controller/controller-woocommerce-frontend.php:1743
 msgid "You have already purchased the booking #%1$s \"%2$s\" in the order #%3$s."
 msgstr ""
 
 #. translators: %s = link to "Bookings"
-#: controller/controller-woocommerce-frontend.php:2150
+#: controller/controller-woocommerce-frontend.php:2151
 msgid "You can also manage your %s."
 msgstr ""
 
@@ -1423,166 +1423,166 @@ msgstr ""
 msgid "The order item title."
 msgstr ""
 
-#: controller/controller-woocommerce-notifications.php:372
+#: controller/controller-woocommerce-notifications.php:373
 msgid "Click here to go to the order page and process the refund:"
 msgstr ""
 
-#: controller/controller-woocommerce-notifications.php:374
+#: controller/controller-woocommerce-notifications.php:375
 msgid "Go to refund page"
 msgstr ""
 
 #. translators: %s = link to "WooCommerce currency options"
-#: controller/controller-woocommerce-settings.php:21
+#: controller/controller-woocommerce-settings.php:38
 msgid "Please configure the price format in %s"
 msgstr ""
 
-#: controller/controller-woocommerce-settings.php:23
+#: controller/controller-woocommerce-settings.php:40
 msgid "WooCommerce currency options"
 msgstr ""
 
-#: controller/controller-woocommerce-settings.php:44
+#: controller/controller-woocommerce-settings.php:61
 msgid "WooCommerce"
 msgstr ""
 
-#: controller/controller-woocommerce-settings.php:74
+#: controller/controller-woocommerce-settings.php:91
 msgid "Products settings"
 msgstr ""
 
-#: controller/controller-woocommerce-settings.php:86
+#: controller/controller-woocommerce-settings.php:103
 msgid "Booking form location on product pages"
 msgstr ""
 
-#: controller/controller-woocommerce-settings.php:96
+#: controller/controller-woocommerce-settings.php:113
 msgid "Account settings"
 msgstr ""
 
-#: controller/controller-woocommerce-settings.php:108
+#: controller/controller-woocommerce-settings.php:125
 msgid "Bookings page in My Account"
 msgstr ""
 
-#: controller/controller-woocommerce-settings.php:118
+#: controller/controller-woocommerce-settings.php:135
 msgid "Cart settings"
 msgstr ""
 
-#: controller/controller-woocommerce-settings.php:130
+#: controller/controller-woocommerce-settings.php:147
 msgid "Activate cart expiration"
 msgstr ""
 
 #. translators: 'Timeout' stands for the amount of time a user has to proceed to checkout before his cart gets empty.
-#: controller/controller-woocommerce-settings.php:139
+#: controller/controller-woocommerce-settings.php:156
 msgid "Timeout (minutes)"
 msgstr ""
 
 #. translators: It is an option meaning that each product in cart has its own expiration date, and they expire one after the other, not all the cart content at once
-#: controller/controller-woocommerce-settings.php:148
+#: controller/controller-woocommerce-settings.php:165
 msgid "Per product expiration"
 msgstr ""
 
-#: controller/controller-woocommerce-settings.php:156
+#: controller/controller-woocommerce-settings.php:173
 msgid "Reset countdown when cart changes"
 msgstr ""
 
-#: controller/controller-woocommerce-settings.php:210
+#: controller/controller-woocommerce-settings.php:227
 msgid "Send when an order is made"
 msgstr ""
 
-#: controller/controller-woocommerce-settings.php:211
+#: controller/controller-woocommerce-settings.php:228
 msgid "Wether to send this automatic notification when a new WooCommerce order is made, for each booking (group) of the order."
 msgstr ""
 
-#: controller/controller-woocommerce-settings.php:213
+#: controller/controller-woocommerce-settings.php:230
 msgid "Send when an order is cancelled"
 msgstr ""
 
-#: controller/controller-woocommerce-settings.php:214
+#: controller/controller-woocommerce-settings.php:231
 msgid "Wether to send this automatic notification when a WooCommerce order is \"Cancelled\", for each booking (group) affected in the order. It will not be sent for \"Failed\" orders (when a pending payment fails), because the booking is still considered as temporary."
 msgstr ""
 
-#: controller/controller-woocommerce-settings.php:216
+#: controller/controller-woocommerce-settings.php:233
 msgid "Send when an order is processing"
 msgstr ""
 
-#: controller/controller-woocommerce-settings.php:217
+#: controller/controller-woocommerce-settings.php:234
 msgid "Wether to send this automatic notification when a WooCommerce order is \"Processing\", for each booking (group) affected in the order. It will not be sent for \"Pending\" orders (when an order is pending payment), because the booking is still considered as temporary. It may be sent along the WooCommerce confirmation email."
 msgstr ""
 
-#: controller/controller-woocommerce-settings.php:219
+#: controller/controller-woocommerce-settings.php:236
 msgid "Send when an order is completed"
 msgstr ""
 
-#: controller/controller-woocommerce-settings.php:220
+#: controller/controller-woocommerce-settings.php:237
 msgid "Wether to send this automatic notification when a WooCommerce order is \"Completed\", for each booking (group) affected in the order. It may be sent along the WooCommerce confirmation email."
 msgstr ""
 
-#: controller/controller-woocommerce-settings.php:222
+#: controller/controller-woocommerce-settings.php:239
 msgid "Send when an order is refunded"
 msgstr ""
 
-#: controller/controller-woocommerce-settings.php:223
+#: controller/controller-woocommerce-settings.php:240
 msgid "Wether to send this automatic notification when a WooCommerce order is \"Refunded\", for each booking (group) affected in the order. It may be sent along the WooCommerce refund email."
 msgstr ""
 
-#: controller/controller-woocommerce-settings.php:261
+#: controller/controller-woocommerce-settings.php:278
 #: functions/functions-forms.php:554
 msgid "Book"
 msgstr ""
 
-#: controller/controller-woocommerce-settings.php:262
+#: controller/controller-woocommerce-settings.php:279
 msgid "Add to cart button label on \"Activity\" products pages only."
 msgstr ""
 
 #. translators: {time} tag is a variable standing for an amount of days, hours and minutes. E.g.: {time}' can be '1 day, 6 hours, 30 minutes'.
-#: controller/controller-woocommerce-settings.php:266
+#: controller/controller-woocommerce-settings.php:283
 msgid "Your activity is temporarily booked for {time}. Please proceed to checkout."
 msgstr ""
 
-#: controller/controller-woocommerce-settings.php:267
+#: controller/controller-woocommerce-settings.php:284
 msgid "When a temporary booking is added to cart. Use the {time} tag to display the remaining time before expiration."
 msgstr ""
 
 #. translators: {countdown} tag is to be replaced by a real-time countdown: E.g.: 'Your cart expires in 3 days 12:35:26' or 'Your cart expires in 01:30:05'
-#: controller/controller-woocommerce-settings.php:271
+#: controller/controller-woocommerce-settings.php:288
 msgid "Your cart expires in {countdown}"
 msgstr ""
 
-#: controller/controller-woocommerce-settings.php:272
+#: controller/controller-woocommerce-settings.php:289
 msgid "This message will be displayed above your cart. Use the {countdown} tag to display the real-time countdown."
 msgstr ""
 
-#: controller/controller-woocommerce-settings.php:293
-#: controller/controller-woocommerce-settings.php:329
-#: controller/controller-woocommerce-settings.php:348
-#: controller/controller-woocommerce-settings.php:353
+#: controller/controller-woocommerce-settings.php:310
+#: controller/controller-woocommerce-settings.php:346
+#: controller/controller-woocommerce-settings.php:365
+#: controller/controller-woocommerce-settings.php:370
 msgid "This option has no effect on bookings made with WooCommerce."
 msgstr ""
 
-#: controller/controller-woocommerce-settings.php:293
+#: controller/controller-woocommerce-settings.php:310
 msgid "Here is how booking statuses are handled with WooCommerce:"
 msgstr ""
 
-#: controller/controller-woocommerce-settings.php:299
+#: controller/controller-woocommerce-settings.php:316
 msgid "If the order is paid"
 msgstr ""
 
-#: controller/controller-woocommerce-settings.php:300
+#: controller/controller-woocommerce-settings.php:317
 msgid "If the order is not paid"
 msgstr ""
 
 #. translators: "%1$s" = "Virtual" WC option label. "%2$s" = "Activity" WC option label.
-#: controller/controller-woocommerce-settings.php:306
+#: controller/controller-woocommerce-settings.php:323
 msgid "If the order contains \"%1$s\" \"%2$s\" products only"
 msgstr ""
 
-#: controller/controller-woocommerce-settings.php:312
-#: controller/controller-woocommerce-settings.php:313
-#: controller/controller-woocommerce-settings.php:317
-#: controller/controller-woocommerce-settings.php:318
-#: functions/functions-woocommerce.php:1980
+#: controller/controller-woocommerce-settings.php:329
+#: controller/controller-woocommerce-settings.php:330
+#: controller/controller-woocommerce-settings.php:334
+#: controller/controller-woocommerce-settings.php:335
+#: functions/functions-woocommerce.php:1983
 msgid "Order"
 msgstr ""
 
-#: controller/controller-woocommerce-settings.php:312
-#: controller/controller-woocommerce-settings.php:317
+#: controller/controller-woocommerce-settings.php:329
+#: controller/controller-woocommerce-settings.php:334
 #: functions/functions-bookings.php:2438
 #: functions/functions-notifications.php:115
 #: functions/functions-notifications.php:116
@@ -1590,15 +1590,15 @@ msgstr ""
 msgid "Booked"
 msgstr ""
 
-#: controller/controller-woocommerce-settings.php:312
-#: controller/controller-woocommerce-settings.php:317
+#: controller/controller-woocommerce-settings.php:329
+#: controller/controller-woocommerce-settings.php:334
 #: functions/functions-bookings.php:2457
 msgid "Paid"
 msgstr ""
 
 #. translators: %s = a booking status. E.g.: "Pending", "Booked"...
-#: controller/controller-woocommerce-settings.php:313
-#: controller/controller-woocommerce-settings.php:318
+#: controller/controller-woocommerce-settings.php:330
+#: controller/controller-woocommerce-settings.php:335
 #: functions/functions-bookings.php:2439
 #: functions/functions-notifications.php:98
 #: functions/functions-notifications.php:100
@@ -1606,12 +1606,12 @@ msgstr ""
 msgid "Pending"
 msgstr ""
 
-#: controller/controller-woocommerce-settings.php:313
-#: controller/controller-woocommerce-settings.php:318
+#: controller/controller-woocommerce-settings.php:330
+#: controller/controller-woocommerce-settings.php:335
 msgid "Due"
 msgstr ""
 
-#: controller/controller-woocommerce-settings.php:316
+#: controller/controller-woocommerce-settings.php:333
 msgid "Else"
 msgstr ""
 
@@ -2849,15 +2849,15 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %s = external link to "WPML String Translation"
-#: functions/functions-i18n.php:310
+#: functions/functions-i18n.php:311
 msgid "You need the %s add-on to translate user generated content."
 msgstr ""
 
-#: functions/functions-i18n.php:317
+#: functions/functions-i18n.php:318
 msgid "Find and translate"
 msgstr ""
 
-#: functions/functions-i18n.php:320
+#: functions/functions-i18n.php:321
 msgid "Search all the translatable settings values that you have manually input. Then, you will be able to translate them in WPML > String Translation. This process can last several minutes and can be ressource intensive, depending on your amount of data."
 msgstr ""
 
@@ -3921,95 +3921,95 @@ msgstr ""
 msgid "Go to the edit page."
 msgstr ""
 
-#: functions/functions-woocommerce.php:1693
+#: functions/functions-woocommerce.php:1696
 msgid "Coupon"
 msgstr ""
 
-#: functions/functions-woocommerce.php:1694
+#: functions/functions-woocommerce.php:1697
 msgid "Create a coupon worth the price paid. The coupon can be used once for any orders at any time. "
 msgstr ""
 
-#: functions/functions-woocommerce.php:1698
+#: functions/functions-woocommerce.php:1701
 msgid "Auto refund"
 msgstr ""
 
-#: functions/functions-woocommerce.php:1699
+#: functions/functions-woocommerce.php:1702
 msgid "Refund automatically via the gateway used for payment."
 msgstr ""
 
-#: functions/functions-woocommerce.php:1968
-#: functions/functions-woocommerce.php:2189
+#: functions/functions-woocommerce.php:1971
+#: functions/functions-woocommerce.php:2192
 msgid "The order item bound to the booking was not found."
 msgstr ""
 
-#: functions/functions-woocommerce.php:1976
+#: functions/functions-woocommerce.php:1979
 msgid "Coupon created as a refund for:"
 msgstr ""
 
-#: functions/functions-woocommerce.php:1978
+#: functions/functions-woocommerce.php:1981
 msgid "User"
 msgstr ""
 
-#: functions/functions-woocommerce.php:1983
+#: functions/functions-woocommerce.php:1986
 msgid "Booking number"
 msgstr ""
 
-#: functions/functions-woocommerce.php:1985
+#: functions/functions-woocommerce.php:1988
 msgid "Booking group number"
 msgstr ""
 
-#: functions/functions-woocommerce.php:1991
-#: functions/functions-woocommerce.php:2199
+#: functions/functions-woocommerce.php:1994
+#: functions/functions-woocommerce.php:2202
 msgid "User message:"
 msgstr ""
 
-#: functions/functions-woocommerce.php:2197
+#: functions/functions-woocommerce.php:2200
 msgid "Auto refund proceeded by user."
 msgstr ""
 
 #. translators: %s is the name of the described option: "Inline (original layout)"
-#: functions/functions-woocommerce.php:2350
-#: functions/functions-woocommerce.php:2355
+#: functions/functions-woocommerce.php:2353
+#: functions/functions-woocommerce.php:2358
 msgid "Inline (original layout)"
 msgstr ""
 
 #. translators: %s is the name of the described option: "Full width (default)"
-#: functions/functions-woocommerce.php:2351
-#: functions/functions-woocommerce.php:2358
+#: functions/functions-woocommerce.php:2354
+#: functions/functions-woocommerce.php:2361
 msgid "Full width"
 msgstr ""
 
 #. translators: %s is the name of the described option: "Inline (original layout)"
-#: functions/functions-woocommerce.php:2355
+#: functions/functions-woocommerce.php:2358
 msgid "%s: display the booking form before the add to cart button, without changing your theme layout."
 msgstr ""
 
 #. translators: %s is the name of the described option: "Full width (default)"
-#: functions/functions-woocommerce.php:2358
+#: functions/functions-woocommerce.php:2361
 msgid "%s: move the add to cart form below the product summary. This option may not work properly with certain themes."
 msgstr ""
 
-#: functions/functions-woocommerce.php:2383
+#: functions/functions-woocommerce.php:2386
 msgid "Default booking list"
 msgstr ""
 
-#: functions/functions-woocommerce.php:2397
+#: functions/functions-woocommerce.php:2400
 msgid "Select the page to display in the \"Bookings\" tab of the \"My account\" area. You can also display the default booking list, or completely disable this tab."
 msgstr ""
 
-#: functions/functions-woocommerce.php:2422
+#: functions/functions-woocommerce.php:2425
 msgid "If cart expiration is off, the booking is made at the end of the checkout process. It means that an event available at the moment you add it to cart can be no longer available at the moment you wish to complete the order. With cart expiration on, the booking is made when it is added to cart and remains temporary until the end of the checkout process."
 msgstr ""
 
-#: functions/functions-woocommerce.php:2438
+#: functions/functions-woocommerce.php:2441
 msgid "The expiration time will be set for each product independantly, each with their own countdown before being removed from cart."
 msgstr ""
 
-#: functions/functions-woocommerce.php:2455
+#: functions/functions-woocommerce.php:2458
 msgid "Define the amount of time a user has before his cart gets empty."
 msgstr ""
 
-#: functions/functions-woocommerce.php:2471
+#: functions/functions-woocommerce.php:2474
 msgid "The countdown will be reset each time a product is added, or when a product quantity is changed."
 msgstr ""
 
@@ -4962,6 +4962,10 @@ msgstr ""
 
 #: view/view-form-list.php:12
 msgid "Booking Forms"
+msgstr ""
+
+#: view/view-form-list.php:19
+msgid "Add New Form"
 msgstr ""
 
 #: view/view-landing.php:18

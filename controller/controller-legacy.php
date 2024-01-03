@@ -305,9 +305,9 @@ function bookacti_update_removed_global_settings_in_1_7_16( $old_version ) {
 	// Do it only once, when Booking Activities is updated for the first time after 1.7.16
 	if( version_compare( $old_version, '1.7.16', '<' ) ) {
 		// Get the global values
-		$global_booking_method				= bookacti_get_setting_value( 'bookacti_general_settings', 'booking_method' );
-		$global_availability_period_start	= bookacti_get_setting_value( 'bookacti_general_settings', 'availability_period_start' );
-		$global_availability_period_end		= bookacti_get_setting_value( 'bookacti_general_settings', 'availability_period_end' );
+		$global_booking_method            = bookacti_get_setting_value( 'bookacti_general_settings', 'booking_method' );
+		$global_availability_period_start = bookacti_get_setting_value( 'bookacti_general_settings', 'availability_period_start' );
+		$global_availability_period_end   = bookacti_get_setting_value( 'bookacti_general_settings', 'availability_period_end' );
 		
 		global $wpdb;
 		

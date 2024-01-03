@@ -237,7 +237,7 @@ add_filter( 'bookacti_notifications_tags', 'bookacti_wc_notifications_tags', 15,
 /**
  * Set WC notifications tags values
  * @since 1.6.0
- * @version 1.15.15
+ * @version 1.15.17
  * @param array $tags
  * @param object $booking
  * @param string $booking_type
@@ -263,9 +263,10 @@ function bookacti_wc_notifications_tags_values( $tags, $booking, $booking_type, 
 	$item_id         = $item->get_id();
 	$product_id      = $item->get_variation_id() ? $item->get_variation_id() : $item->get_product_id();
 	$order_id        = $item->get_order_id();
+	$order           = $item->get_order();
 	$order_item_name = $item->get_name();
 	$item_price      = (float) $item->get_total() + (float) $item->get_total_tax();
-	$currency        = get_post_meta( $booking->order_id, '_order_currency', true );
+	$currency        = $order->get_meta( '_order_currency' );
 	$currency_symbol = $currency ? get_woocommerce_currency_symbol( $currency ) : '';
 	
 	$tags[ '{product_id}' ]    = $product_id ? $product_id : '';
@@ -356,7 +357,7 @@ add_filter( 'bookacti_send_group_of_events_cancelled_notification_count', 'booka
 
 /**
  * Add WC message to the refund requested notification sent to administrators
- * @version 1.8.6
+ * @since 1.15.17 (was bookacti_woocommerce_add_refund_request_email_message)
  * @param array $notification
  * @param array $tags
  * @param string $locale
@@ -365,12 +366,12 @@ add_filter( 'bookacti_send_group_of_events_cancelled_notification_count', 'booka
  * @param array $args
  * @return array
  */
-function bookacti_woocommerce_add_refund_request_email_message( $notification, $tags, $locale, $booking, $booking_type, $args ) {
+function bookacti_wc_add_refund_request_email_message( $notification, $tags, $locale, $booking, $booking_type, $args ) {
 	if( strpos( $notification[ 'id' ], 'admin_refund_requested' ) === false || empty( $booking->order_id ) ) { return $notification; }
 	
 	$go_to_order =	'<div style="background-color: #f5faff; padding: 10px; border: 1px solid #abc; margin-bottom: 30px;" >' 
 						. esc_html__( 'Click here to go to the order page and process the refund:', 'booking-activities' ) 
-						. ' <a href="' . admin_url( 'post.php?post=' . absint( $booking->order_id ) . '&action=edit' ) . '" target="_blank" >' 
+						. ' <a href="' . \Automattic\WooCommerce\Utilities\OrderUtil::get_order_admin_edit_url( absint( $booking->order_id ) ) . '" target="_blank" >' 
 							. esc_html__( 'Go to refund page', 'booking-activities' ) 
 						. '</a>'
 					. '</div>';
@@ -378,7 +379,7 @@ function bookacti_woocommerce_add_refund_request_email_message( $notification, $
 	$notification[ 'email' ][ 'message' ] = $go_to_order . $notification[ 'email' ][ 'message' ];
 	return $notification;
 }
-add_filter( 'bookacti_notification_data', 'bookacti_woocommerce_add_refund_request_email_message', 10, 6 );
+add_filter( 'bookacti_notification_data', 'bookacti_wc_add_refund_request_email_message', 10, 6 );
 
 
 /**

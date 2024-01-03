@@ -1561,7 +1561,7 @@ function bookacti_display_product_selectbox( $raw_args = array() ) {
 
 /**
  * Tell if the product is activity or has variations that are activities
- * @version 1.14.0
+ * @version 1.15.17
  * @param WC_Product|int $product
  * @return boolean
  */
@@ -1576,7 +1576,7 @@ function bookacti_product_is_activity( $product ) {
 	$is_activity = false;
 	
 	if( $product->is_type( 'variation' ) ) {
-		$is_activity = get_post_meta( $product->get_id(), 'bookacti_variable_is_activity', true ) === 'yes';
+		$is_activity = $product->get_meta( 'bookacti_variable_is_activity' ) === 'yes';
 	}
 	else if( $product->is_type( 'variable' ) ) {
 		$variations = $product->get_available_variations();
@@ -1585,7 +1585,7 @@ function bookacti_product_is_activity( $product ) {
 		}
 	}
 	else if( ! $product->is_type( 'grouped' ) && ! $product->is_type( 'external' ) ) {
-		$is_activity = get_post_meta( $product->get_id(), '_bookacti_is_activity', true ) === 'yes';
+		$is_activity = $product->get_meta( '_bookacti_is_activity' ) === 'yes';
 	}
 
 	return apply_filters( 'bookacti_product_is_activity', $is_activity, $product );
@@ -1657,21 +1657,24 @@ function bookacti_get_product_default_attributes( $product ) {
 /**
  * Get the form ID bound to a product / variation
  * @since 1.9.0
+ * @version 1.15.17
  * @param int $product_id
  * @param boolean $is_variation
  * @return int
  */
 function bookacti_get_product_form_id( $product_id, $is_variation = 'check' ) {
-	// Check if the product is simple or a variation
-	if( $is_variation === 'check' ) {
-		$is_variation = false;
-		$product = wc_get_product( $product_id );
-		if( $product ) {
+	$form_id = 0;
+	$product = wc_get_product( $product_id );
+	
+	if( $product ) {
+		// Check if the product is simple or a variation
+		if( $is_variation === 'check' ) {
 			$is_variation = $product->get_type() === 'variation';
 		}
+		
+		$meta_key = $is_variation ? 'bookacti_variable_form' : '_bookacti_form';
+		$form_id  = $product->get_meta( $meta_key );
 	}
-
-	$form_id = $is_variation ? get_post_meta( $product_id, 'bookacti_variable_form', true ) : get_post_meta( $product_id, '_bookacti_form', true );
 	
 	return apply_filters( 'bookacti_product_booking_form_id', intval( $form_id ), $product_id, $is_variation );
 }
