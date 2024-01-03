@@ -322,7 +322,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.15.17 =
+= 1.15.17 - 2024/01/03 =
 * Fix - "Add new" buttons were not translated
 * Fix - Compatibility with WC HPOS
 * Dev - Use WC_Product methods instead of WP_Post functions to handle product data (not required for HPOS, but more future-proof)
