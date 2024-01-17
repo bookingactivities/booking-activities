@@ -3322,7 +3322,7 @@ function bookacti_convert_events_to_ical( $events, $name = '', $description = ''
 /**
  * Generate a ICAL file of events according to booking system attributes
  * @since 1.6.0
- * @version 1.12.0
+ * @version 1.15.18
  * @param array $atts Booking system attributes
  * @param string $calname
  * @param string $caldesc
@@ -3330,8 +3330,9 @@ function bookacti_convert_events_to_ical( $events, $name = '', $description = ''
  */
 function bookacti_export_events_page( $atts, $calname = '', $caldesc = '', $sequence = 0 ) {
 	// Retrieve all events, bypass the interval and the relative availability period
+	$interval_duration   = apply_filters( 'bookacti_export_events_interval_duration', 365 * 5, $atts );
 	$availability_period = bookacti_get_calendar_field_availability_period( $atts );
-	$events_interval = bookacti_get_new_interval_of_events( $availability_period, array(), 999999999, $atts[ 'past_events' ] );
+	$events_interval     = bookacti_get_new_interval_of_events( $availability_period, array(), $interval_duration, $atts[ 'past_events' ] );
 	
 	// Get the events
 	$events = array( 'events' => array(), 'data' => array() );

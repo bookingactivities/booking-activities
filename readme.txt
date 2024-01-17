@@ -322,6 +322,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.15.18 =
+* Tweak - Wait 1 second for the user to complete the quantity input before checking min and max quantity
+* Fix - Error when trying to export form events without ending limit (limit to 5 years by default)
+
 = 1.15.17 - 2024/01/03 =
 * Fix - "Add new" buttons were not translated
 * Fix - Compatibility with WC HPOS
