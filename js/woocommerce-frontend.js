@@ -151,19 +151,27 @@ $j( document ).ready( function() {
 
 	/**
 	 * Change picked events list, set min and max quantity, and refresh total price field - on WC product page quantity change
-	 * @version 1.15.5
+	 * @version 1.15.18
 	 */
 	$j( '.woocommerce' ).on( 'keyup mouseup change', 'form.cart input.qty', function() {
-		var form = $j( this ).closest( 'form' ).length ? $j( this ).closest( 'form' ) : $j( this ).closest( '.bookacti-form-fields' );
+		var qty_input = $j( this );
+		var form      = qty_input.closest( 'form' ).length ? qty_input.closest( 'form' ) : qty_input.closest( '.bookacti-form-fields' );
 		if( ! form.length ) { return; }
 		
-		form.trigger( 'bookacti_booking_form_quantity_change', [ $j( this ).val(), $j( this ) ] );
-		
-		var booking_system = form.find( '.bookacti-booking-system' );
-		if( booking_system.length ) {
-			bookacti_set_min_and_max_quantity( booking_system );
-			bookacti_fill_picked_events_list( booking_system );
+		// Clear the timeout
+		if( typeof bookacti_quantity_change_monitor !== 'undefined' ) { 
+			if( bookacti_quantity_change_monitor ) { clearTimeout( bookacti_quantity_change_monitor ); }
 		}
+		
+		bookacti_quantity_change_monitor = setTimeout( function() {
+			var booking_system = form.find( '.bookacti-booking-system' );
+			if( booking_system.length ) {
+				bookacti_set_min_and_max_quantity( booking_system );
+				bookacti_fill_picked_events_list( booking_system );
+			}
+			
+			form.trigger( 'bookacti_booking_form_quantity_change', [ qty_input.val(), qty_input ] );
+		}, 1000 );
 	});
 	
 	
