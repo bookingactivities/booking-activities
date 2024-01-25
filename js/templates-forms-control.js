@@ -160,7 +160,7 @@ function bookacti_validate_template_form() {
 
 /**
  * Check activity form
- * @version 1.12.0
+ * @version 1.15.19
  * @returns {Boolean}
  */
 function bookacti_validate_activity_form() {
@@ -176,7 +176,6 @@ function bookacti_validate_activity_form() {
 	var valid_form = {
 		'isTitle':          false,
 		'isColor':          false,
-		'isColorWhite':     false,
 		'isAvail':          false,
 		'isAvailPositive':  false,
 		'isDays':           false,
@@ -192,7 +191,6 @@ function bookacti_validate_activity_form() {
 	// Make the tests and change the booleans
 	if( title.length )                                            { valid_form.isTitle          = true; }
 	if( color.length )                                            { valid_form.isColor          = true; }
-	if( valid_form.isColor && color === '#ffffff' )               { valid_form.isColorWhite     = true; }
 	if( avail.length )                                            { valid_form.isAvail          = true; }
 	if( valid_form.isAvail && parseInt( avail ) >= 0 )            { valid_form.isAvailPositive  = true; }
 	if( days.length )                                             { valid_form.isDays           = true; }
@@ -254,9 +252,6 @@ function bookacti_validate_activity_form() {
 	}
 
 	// WARNINGS
-	if( valid_form.isColorWhite ) { 
-		$j( '#bookacti-activity-color' ).addClass( 'bookacti-input-warning' );
-	}
 	if( ! valid_form.isDays ){ 
 		$j( '#bookacti-activity-duration-days' ).addClass( 'bookacti-input-warning' );
 		$j( '#bookacti-activity-duration-days' ).val( 0 );

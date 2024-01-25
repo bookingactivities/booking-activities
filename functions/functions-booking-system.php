@@ -91,7 +91,7 @@ function bookacti_get_booking_system( $atts ) {
 /**
  * Get booking system data
  * @since 1.7.4
- * @version 1.15.15
+ * @version 1.15.19
  * @param array $atts (see bookacti_format_booking_system_attributes())
  * @return array
  */
@@ -167,11 +167,11 @@ function bookacti_get_booking_system_data( $atts ) {
 			}
 
 			// Remove events on days off
+			$events_removed = false;
+			$remaining_events_ids = array();
 			if( $atts[ 'days_off' ] ) {
 				$events_from_dt = new DateTime( $events_interval[ 'start' ] );
 				$events_to_dt   = new DateTime( $events_interval[ 'end' ] );
-				$events_removed = false;
-				$remaining_events_ids = array();
 				foreach( $atts[ 'days_off' ] as $off_period ) {
 					$off_from_dt = new DateTime( $off_period[ 'from' ] . ' 00:00:00' );
 					$off_to_dt   = new DateTime( $off_period[ 'to' ] . ' 23:59:59' );
@@ -185,10 +185,37 @@ function bookacti_get_booking_system_data( $atts ) {
 						} else { $remaining_events_ids[] = $event[ 'id' ]; }
 					}
 				}
-				if( $events_removed ) {
-					$events[ 'data' ]   = array_intersect_key( $events[ 'data' ], array_flip( $remaining_events_ids ) );
-					$events[ 'events' ] = array_values( $events[ 'events' ] );
+			}
+
+			// Keep only the first event per group
+			if( $atts[ 'groups_first_event_only' ] && ! empty( $groups[ 'groups' ] ) ) {
+				$events_uid_to_keep   = array();
+				$events_uid_to_remove = array();
+				foreach( $groups[ 'groups' ] as $group_id => $group_occurences ) {
+					foreach( $group_occurences as $group_date => $group_events ) {
+						foreach( $group_events as $i => $group_event ) {
+							$event_uid = $group_event[ 'id' ] . '_' . $group_event[ 'start' ];
+							if( $i === 0 ) { $events_uid_to_keep[] = $event_uid; }
+							else { $events_uid_to_remove[] = $event_uid; }
+						}
+					}
 				}
+				$events_uid_to_remove = array_diff( $events_uid_to_remove, $events_uid_to_keep );
+				if( $events_uid_to_remove ) {
+					foreach( $events[ 'events' ] as $i => $event ) {
+						$event_uid = $event[ 'id' ] . '_' . $event[ 'start' ];
+						if( in_array( $event_uid, $events_uid_to_remove, true ) ) {
+							unset( $events[ 'events' ][ $i ] );
+							$events_removed = true;
+						} else { $remaining_events_ids[] = $event[ 'id' ]; }
+					}
+				}
+			}
+			
+			// Remove useless event data and make sure events array is not associative
+			if( $events_removed ) {
+				$events[ 'data' ]   = array_intersect_key( $events[ 'data' ], array_flip( $remaining_events_ids ) );
+				$events[ 'events' ] = array_values( $events[ 'events' ] );
 			}
 
 			// Get the booking list for each events
@@ -282,7 +309,7 @@ function bookacti_display_booking_system_dialogs( $booking_system_id ) {
  */
 function bookacti_get_available_booking_methods(){
 	$available_booking_methods = array(
-		'calendar'	=> esc_html__( 'Calendar', 'booking-activities' )
+		'calendar' => esc_html__( 'Calendar', 'booking-activities' )
 	);
 	return apply_filters( 'bookacti_available_booking_methods', $available_booking_methods );
 }
@@ -333,7 +360,7 @@ function bookacti_get_calendar_html( $booking_system_data = array() ) {
 /**
  * Get default booking system attributes
  * @since 1.5.0
- * @version 1.15.6
+ * @version 1.15.19
  * @return array
  */
 function bookacti_get_booking_system_default_attributes() {
@@ -349,6 +376,7 @@ function bookacti_get_booking_system_default_attributes() {
 		'group_categories'               => array( 'none' ),
 		'groups_only'                    => 0,
 		'groups_single_events'           => 0,
+		'groups_first_event_only'        => 0,
 		'multiple_bookings'              => 0,
 		'bookings_only'                  => 0,
 		'tooltip_booking_list'           => 0,
@@ -379,7 +407,7 @@ function bookacti_get_booking_system_default_attributes() {
 
 /**
  * Check booking system attributes and format them to be correct
- * @version 1.15.11
+ * @version 1.15.19
  * @param array $raw_atts 
  * @return array
  */
@@ -396,7 +424,7 @@ function bookacti_format_booking_system_attributes( $raw_atts = array() ) {
 	$formatted_atts = $defaults;
 	
 	// Sanitize booleans
-	$booleans_to_check = array( 'multiple_bookings', 'bookings_only', 'tooltip_booking_list', 'groups_only', 'groups_single_events', 'auto_load', 'trim', 'past_events', 'past_events_bookable', 'check_roles' );
+	$booleans_to_check = array( 'multiple_bookings', 'bookings_only', 'tooltip_booking_list', 'groups_only', 'groups_single_events', 'groups_first_event_only', 'auto_load', 'trim', 'past_events', 'past_events_bookable', 'check_roles' );
 	foreach( $booleans_to_check as $key ) {
 		$formatted_atts[ $key ] = in_array( $atts[ $key ], array( 1, '1', true, 'true', 'yes', 'ok' ), true ) ? 1 : 0;
 	}
@@ -884,7 +912,7 @@ function bookacti_format_booking_system_url_attributes( $atts = array() ) {
 /**
  * Get booking system fields default data
  * @since 1.5.0
- * @version 1.15.5
+ * @version 1.15.19
  * @param array $fields
  * @return array
  */
@@ -984,6 +1012,17 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 			'value' => 0,
 			'title' => esc_html__( 'Book grouped events alone', 'booking-activities' ),
 			'tip'   => esc_html__( 'When a customer picks an event belonging to a group, let the customer choose between the group or the event alone.', 'booking-activities' )
+		);
+	}
+	
+	// Diplay Group's first event only
+	if( ! $fields || in_array( 'groups_first_event_only', $fields, true ) ) {
+		$defaults[ 'groups_first_event_only' ] = array(
+			'type'  => 'checkbox',
+			'name'  => 'groups_first_event_only',
+			'value' => 0,
+			'title' => esc_html__( 'Show only first event of groups', 'booking-activities' ),
+			'tip'   => esc_html__( 'Only the first events of groups will be displayed. Selecting that event will still select the whole group of events.', 'booking-activities' )
 		);
 	}
 	

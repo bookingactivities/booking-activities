@@ -33,8 +33,8 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			
 			parent::__construct( array(
 				/*translator:  */
-				'singular'	=> 'booking',	// Singular name of the listed records
-				'plural'	=> 'bookings',	// Plural name of the listed records
+				'singular'	=> 'booking',  // Singular name of the listed records
+				'plural'	=> 'bookings', // Plural name of the listed records
 				'ajax'		=> false,
 				'screen'	=> 'booking-activities_page_bookacti_bookings'
 			));

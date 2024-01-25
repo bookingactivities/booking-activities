@@ -2,7 +2,7 @@
 /**
  * Form editor dialogs
  * @since 1.5.0
- * @version 1.15.13
+ * @version 1.15.19
  */
 
 // Exit if accessed directly
@@ -169,7 +169,7 @@ foreach( $fields_default as $field_name => $field_data ) {
 		/**
 		 * Display the content of the "Filters" tab of the "Calendar" dialog
 		 * @since 1.5.0
-		 * @version 1.9.3
+		 * @version 1.15.19
 		 * @param array $params
 		 */
 		function bookacti_fill_calendar_dialog_filters_tab( $params ) {
@@ -186,7 +186,7 @@ foreach( $fields_default as $field_name => $field_data ) {
 		<fieldset id='bookacti-groups-of-events-fieldset'>
 			<legend><?php esc_html_e( 'Groups of events', 'booking-activities' ); ?></legend>
 			<?php 
-				$fields = bookacti_get_booking_system_fields_default_data( array( 'group_categories', 'groups_only', 'groups_single_events' ) );
+				$fields = bookacti_get_booking_system_fields_default_data( array( 'group_categories', 'groups_only', 'groups_single_events', 'groups_first_event_only' ) );
 				bookacti_display_fields( $fields );
 			?>
 		</fieldset>

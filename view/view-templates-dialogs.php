@@ -1,7 +1,7 @@
 <?php 
 /**
  * Calendar editor dialogs
- * @version 1.15.11
+ * @version 1.15.19
  */
 
 // Exit if accessed directly
@@ -403,7 +403,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			<?php
 			/**
 			 * Display the 'General' tab content of activity settings
-			 * @version 1.14.0
+			 * @version 1.15.19
 			 * @param array $params
 			 */
 			function bookacti_fill_activity_tab_general( $params = array() ) {
@@ -440,8 +440,8 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 						'name'  => 'color',
 						'id'    => 'bookacti-activity-color',
 						'value' => '#3a87ad',
-						'title' => esc_html__( 'Color', 'booking-activities' ),
-						'tip'   => esc_html__( 'Choose a color for the events of this activity.', 'booking-activities' )
+						'title' => esc_html__( 'Background color', 'booking-activities' ),
+						'tip'   => esc_html__( 'Choose the color of the event background.', 'booking-activities' )
 					)
 				);
 				

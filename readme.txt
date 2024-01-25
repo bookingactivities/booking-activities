@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 6.4
 Requires PHP: 5.3
-Stable tag: 1.15.18
+Stable tag: 1.15.19
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -321,6 +321,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.15.19 - 2024/01/25 =
+* Feature - Add an option to display only the first event of groups (in booking form > Calendar settings)
+* Tweak - Add notification tags: {booking_payment_status}, {order_status}, {order_payment_status}
 
 = 1.15.18 - 2024/01/17 =
 * Tweak - Wait 1 second for the user to complete the quantity input before checking min and max quantity

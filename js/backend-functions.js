@@ -160,7 +160,7 @@ function bookacti_show_hide_advanced_options( button ) {
 
 /**
  * Empty all dialog forms fields
- * @version 1.15.10
+ * @version 1.15.19
  * @param {string} scope
  */
 function bookacti_empty_all_dialog_forms( scope ) {
@@ -180,7 +180,7 @@ function bookacti_empty_all_dialog_forms( scope ) {
 	$j( scope + 'input[type="date"]' ).val( '' );
 	$j( scope + 'input[type="time"]' ).val( '' );
 	$j( scope + 'textarea' ).val( '' );
-	$j( scope + 'input[type="color"]' ).val( '#3a87ad' );
+	$j( scope + 'input[type="color"]' ).val( '' );
 	$j( scope + 'input[type="checkbox"]' ).prop( 'checked', false );
 	$j( scope + 'input[type="radio"]' ).prop( 'checked', false );
 	$j( scope + 'select' ).val( null ).trigger( 'change' );
