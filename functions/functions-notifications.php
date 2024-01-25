@@ -353,38 +353,39 @@ function bookacti_sanitize_notification_settings( $args, $notification_id = '' )
 /**
  * Get notifications tags
  * @since 1.2.0
- * @version 1.15.15
+ * @version 1.15.19
  * @param string $notification_id Optional.
  * @return array
  */
 function bookacti_get_notifications_tags( $notification_id = '' ) {
 	$tags = array( 
-		'{booking_id}'            => esc_html__( 'Booking unique ID (integer). Bookings and booking groups have different set of IDs.', 'booking-activities' ),
-		'{booking_title}'         => esc_html__( 'The event / group of events title.', 'booking-activities' ),
-		'{booking_quantity}'      => esc_html__( 'Booking quantity. If bookings of a same group happen to have different quantities, the higher is displayed.', 'booking-activities' ),
-		'{booking_total_qty}'     => esc_html__( 'For booking groups, this is the bookings sum. For single bookings, this is the same as {booking_quantity}.', 'booking-activities' ),
-		'{booking_status}'        => esc_html__( 'Current booking status.', 'booking-activities' ),
-		'{booking_event_id}'      => esc_html__( 'Booking event ID. For booking groups, the group of events ID is used.', 'booking-activities' ),
-		'{booking_start}'         => esc_html__( 'Booking start date and time displayed in a user-friendly format. For booking groups, the first event start date and time is used.', 'booking-activities' ),
-		'{booking_start_raw}'     => esc_html__( 'Booking start date and time displayed in the ISO format. For booking groups, the first event start date and time is used.', 'booking-activities' ),
-		'{booking_end}'           => esc_html__( 'Booking end date and time displayed in a user-friendly format. For booking groups, the last event end date and time is used.', 'booking-activities' ),
-		'{booking_end_raw}'       => esc_html__( 'Booking end date and time displayed in the ISO format. For booking groups, the last event end date and time is used.', 'booking-activities' ),
-		'{booking_list}'          => esc_html__( 'Booking summary displayed as a booking list. You should use this tag once in every notification to know what booking (group) it is about.', 'booking-activities' ),
-		'{booking_list_raw}'      => esc_html__( 'Booking summary displayed as a comma separated booking list, without HTML formatting.', 'booking-activities' ),
-		'{activity_id}'           => esc_html__( 'Activity or Group Category ID', 'booking-activities' ),
-		'{activity_title}'        => esc_html__( 'Activity or Group Category title', 'booking-activities' ),
-		'{calendar_id}'           => esc_html__( 'Calendar ID', 'booking-activities' ),
-		'{user_firstname}'        => esc_html__( 'The user first name', 'booking-activities' ),
-		'{user_lastname}'         => esc_html__( 'The user last name', 'booking-activities' ),
-		'{user_email}'            => esc_html__( 'The user email address', 'booking-activities' ),
-		'{user_phone}'            => esc_html__( 'The user phone number', 'booking-activities' ),
-		'{user_id}'               => esc_html__( 'The user ID. If the user has booked without account, this will display his email address.', 'booking-activities' ),
-		'{user_locale}'           => esc_html__( 'The user locale code. If the user has booked without account, the site locale will be used.', 'booking-activities' ),
-		'{user_ical_url}'         => esc_html__( 'URL to export the user list of bookings in ical format. You can append the "start" and "end" parameters with relative time format to this URL (e.g.: {user_ical_url}&start=today&end=next+year). If the user has booked without account, only the current booking is exported.', 'booking-activities' ),
-		'{booking_ical_url}'      => esc_html__( 'URL to export the current booking in ical format.', 'booking-activities' ),
-		'{price}'                 => esc_html__( 'Booking price, with currency.', 'booking-activities' ),
-		'{price_raw}'             => esc_html__( 'Booking price, without currency.', 'booking-activities' ),
-		'{shortcode}{/shortcode}' => esc_html__( 'Use any shortcode between these tags.', 'booking-activities' )
+		'{booking_id}'             => esc_html__( 'Booking unique ID (integer). Bookings and booking groups have different set of IDs.', 'booking-activities' ),
+		'{booking_title}'          => esc_html__( 'The event / group of events title.', 'booking-activities' ),
+		'{booking_quantity}'       => esc_html__( 'Booking quantity. If bookings of a same group happen to have different quantities, the higher is displayed.', 'booking-activities' ),
+		'{booking_total_qty}'      => esc_html__( 'For booking groups, this is the bookings sum. For single bookings, this is the same as {booking_quantity}.', 'booking-activities' ),
+		'{booking_status}'         => esc_html__( 'Current booking status.', 'booking-activities' ),
+		'{booking_payment_status}' => esc_html__( 'Current booking status.', 'booking-activities' ),
+		'{booking_event_id}'       => esc_html__( 'Booking event ID. For booking groups, the group of events ID is used.', 'booking-activities' ),
+		'{booking_start}'          => esc_html__( 'Booking start date and time displayed in a user-friendly format. For booking groups, the first event start date and time is used.', 'booking-activities' ),
+		'{booking_start_raw}'      => esc_html__( 'Booking start date and time displayed in the ISO format. For booking groups, the first event start date and time is used.', 'booking-activities' ),
+		'{booking_end}'            => esc_html__( 'Booking end date and time displayed in a user-friendly format. For booking groups, the last event end date and time is used.', 'booking-activities' ),
+		'{booking_end_raw}'        => esc_html__( 'Booking end date and time displayed in the ISO format. For booking groups, the last event end date and time is used.', 'booking-activities' ),
+		'{booking_list}'           => esc_html__( 'Booking summary displayed as a booking list. You should use this tag once in every notification to know what booking (group) it is about.', 'booking-activities' ),
+		'{booking_list_raw}'       => esc_html__( 'Booking summary displayed as a comma separated booking list, without HTML formatting.', 'booking-activities' ),
+		'{activity_id}'            => esc_html__( 'Activity or Group Category ID', 'booking-activities' ),
+		'{activity_title}'         => esc_html__( 'Activity or Group Category title', 'booking-activities' ),
+		'{calendar_id}'            => esc_html__( 'Calendar ID', 'booking-activities' ),
+		'{user_firstname}'         => esc_html__( 'The user first name', 'booking-activities' ),
+		'{user_lastname}'          => esc_html__( 'The user last name', 'booking-activities' ),
+		'{user_email}'             => esc_html__( 'The user email address', 'booking-activities' ),
+		'{user_phone}'             => esc_html__( 'The user phone number', 'booking-activities' ),
+		'{user_id}'                => esc_html__( 'The user ID. If the user has booked without account, this will display his email address.', 'booking-activities' ),
+		'{user_locale}'            => esc_html__( 'The user locale code. If the user has booked without account, the site locale will be used.', 'booking-activities' ),
+		'{user_ical_url}'          => esc_html__( 'URL to export the user list of bookings in ical format. You can append the "start" and "end" parameters with relative time format to this URL (e.g.: {user_ical_url}&start=today&end=next+year). If the user has booked without account, only the current booking is exported.', 'booking-activities' ),
+		'{booking_ical_url}'       => esc_html__( 'URL to export the current booking in ical format.', 'booking-activities' ),
+		'{price}'                  => esc_html__( 'Booking price, with currency.', 'booking-activities' ),
+		'{price_raw}'              => esc_html__( 'Booking price, without currency.', 'booking-activities' ),
+		'{shortcode}{/shortcode}'  => esc_html__( 'Use any shortcode between these tags.', 'booking-activities' )
 	);
 	
 	if( substr( $notification_id, 0, 6 ) === 'admin_' ) {
@@ -414,7 +415,7 @@ function bookacti_get_notifications_tags( $notification_id = '' ) {
 /**
  * Get notifications tags and values corresponding to given booking
  * @since 1.2.0
- * @version 1.15.7
+ * @version 1.15.19
  * @param object $booking
  * @param string $booking_type 'group' or 'single'
  * @param array $notification
@@ -476,13 +477,14 @@ function bookacti_get_notifications_tags_values( $booking, $booking_type, $notif
 		
 		$sorted_bookings = bookacti_sort_events_array_by_dates( $bookings, false, false, array( 'start' => 'event_start', 'end' => 'event_end' ) );
 		
-		$booking_data[ '{booking_id}' ]       = $booking->id;
-		$booking_data[ '{booking_status}' ]   = bookacti_format_booking_state( $booking->state );
-		$booking_data[ '{booking_quantity}' ] = $booking->quantity;
-		$booking_data[ '{booking_list}' ]     = bookacti_get_formatted_booking_events_list( $sorted_bookings );
-		$booking_data[ '{booking_list_raw}' ] = bookacti_get_formatted_booking_events_list_raw( $sorted_bookings );
-		$booking_data[ '{calendar_id}' ]      = $booking->template_id;
-		$booking_data[ '{refund_message}' ]   = ! empty( $booking->refund_message ) ? $booking->refund_message : '';
+		$booking_data[ '{booking_id}' ]             = $booking->id;
+		$booking_data[ '{booking_status}' ]         = bookacti_format_booking_state( $booking->state );
+		$booking_data[ '{booking_payment_status}' ] = bookacti_format_payment_status( $booking->payment_status );
+		$booking_data[ '{booking_quantity}' ]       = $booking->quantity;
+		$booking_data[ '{booking_list}' ]           = bookacti_get_formatted_booking_events_list( $sorted_bookings );
+		$booking_data[ '{booking_list_raw}' ]       = bookacti_get_formatted_booking_events_list_raw( $sorted_bookings );
+		$booking_data[ '{calendar_id}' ]            = $booking->template_id;
+		$booking_data[ '{refund_message}' ]         = ! empty( $booking->refund_message ) ? $booking->refund_message : '';
 		
 		$user_ical_key = '';
 		$booking_data[ '{user_locale}' ] = $locale;

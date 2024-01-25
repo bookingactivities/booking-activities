@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking list page
- * @version 1.15.5
+ * @version 1.15.19
  */
 
 // Exit if accessed directly
@@ -256,6 +256,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							'group_categories'             => array(),
 							'groups_only'                  => 0,
 							'groups_single_events'         => 1,
+							'groups_first_event_only'      => 0,
 							'method'                       => 'calendar',
 							'id'                           => 'bookacti-booking-system-bookings-page',
 							'start'                        => ! empty( $_REQUEST[ 'from' ] ) ? bookacti_sanitize_date( $_REQUEST[ 'from' ] ) : '',
