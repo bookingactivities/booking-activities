@@ -99,9 +99,9 @@ add_action( 'bookacti_calendar_dialog_actions_tab_before_tables', 'bookacti_form
  * @return array
  */
 function bookacti_default_wc_booking_system_attributes( $atts ) {
-	$atts[ 'product_by_activity' ]			= array();
-	$atts[ 'product_by_group_category' ]	= array();
-	$atts[ 'products_page_url' ]			= array();
+	$atts[ 'product_by_activity' ]       = array();
+	$atts[ 'product_by_group_category' ] = array();
+	$atts[ 'products_page_url' ]         = array();
 	return $atts;
 }
 add_filter( 'bookacti_booking_system_default_attributes', 'bookacti_default_wc_booking_system_attributes', 10, 1 );

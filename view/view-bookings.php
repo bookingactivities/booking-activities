@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking list page
- * @version 1.15.19
+ * @version 1.16.0
  */
 
 // Exit if accessed directly
@@ -31,10 +31,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	// Format templates from URL
 	$available_template_ids = array_map( 'intval', array_keys( $templates ) );
-	$desired_templates	= isset( $_REQUEST[ 'templates' ] ) && is_array( $_REQUEST[ 'templates' ] ) ? array_filter( array_map( 'intval', $_REQUEST[ 'templates' ] ) ) : array();
+	$desired_templates      = isset( $_REQUEST[ 'templates' ] ) && is_array( $_REQUEST[ 'templates' ] ) ? array_filter( array_map( 'intval', $_REQUEST[ 'templates' ] ) ) : array();
 
 	$bypass_template_managers_check = apply_filters( 'bookacti_bypass_template_managers_check', false );
-	$allowed_templates = ! empty( $desired_templates ) ? array_values( array_intersect( $desired_templates, $available_template_ids ) ) : $available_template_ids;
+	$allowed_templates  = ! empty( $desired_templates ) ? array_values( array_intersect( $desired_templates, $available_template_ids ) ) : $available_template_ids;
 	$selected_templates = ! empty( $allowed_templates ) ? $allowed_templates : array( 'none' );
 
 	$templates_select_options = array();
@@ -181,13 +181,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					</div>
 					<div class='bookacti-filter-content' >
 					<?php
-						$selected_user = isset( $_REQUEST[ 'user_id' ] ) ? esc_attr( $_REQUEST[ 'user_id' ] ) : '';
+						$selected_user = isset( $_REQUEST[ 'user_id' ] ) ? $_REQUEST[ 'user_id' ] : array();
 						$args = apply_filters( 'bookacti_booking_list_user_selectbox_args', array(
 							'name'				=> 'user_id',
 							'id'				=> 'bookacti-booking-filter-customer',
 							'show_option_all'	=> esc_html__( 'All', 'booking-activities' ),
 							'option_label'		=> array( 'first_name', ' ', 'last_name', ' (', 'user_login', ' / ', 'user_email', ')' ),
 							'selected'			=> $selected_user,
+							'no_account'		=> 1,
 							'allow_clear'		=> 1,
 							'allow_tags'		=> 1,
 							'echo'				=> 1
@@ -246,21 +247,42 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						foreach( $default_display_data as $name => $default_value ) {
 							$display_data[ $name ] = ! empty( $user_calendar_settings[ $name ] ) ? $user_calendar_settings[ $name ] : $default_value;
 						}
-
+						
+						// Search by both user email and ID
+						$selected_users = array();
+						if( $selected_user ) {
+							if( is_array( $selected_user ) ) { $selected_users = $selected_user; }
+							else { $selected_users = array( $selected_user ); }
+							foreach( $selected_users as $user_id ) {
+								if( is_email( $user_id ) ) {
+									$user = get_user_by( 'email', $user_id );
+									if( $user ) {
+										$selected_users[] = $user->ID;
+									}
+								} else if( is_numeric( $user_id ) ) {
+									$user = get_user_by( 'ID', $user_id );
+									if( $user ) {
+										$selected_users[] = $user->user_email;
+									}
+								}
+							}
+							$selected_users = array_unique( array_filter( $selected_users ) );
+						}
+						
 						// Display the booking system
 						$atts = apply_filters( 'bookacti_bookings_booking_system_attributes', array( 
 							'bookings_only'                => 1,
 							'calendars'                    => $selected_templates,
 							'status'                       => $selected_status,
-							'user_id'                      => $selected_user,
+							'user_id'                      => $selected_users,
 							'group_categories'             => array(),
 							'groups_only'                  => 0,
 							'groups_single_events'         => 1,
 							'groups_first_event_only'      => 0,
 							'method'                       => 'calendar',
 							'id'                           => 'bookacti-booking-system-bookings-page',
-							'start'                        => ! empty( $_REQUEST[ 'from' ] ) ? bookacti_sanitize_date( $_REQUEST[ 'from' ] ) : '',
-							'end'                          => ! empty( $_REQUEST[ 'to' ] ) ? bookacti_sanitize_date( $_REQUEST[ 'to' ] ) : '',
+							'start'                        => $from,
+							'end'                          => $to,
 							'trim'                         => 0, // Doesn't play nicely when dynamically changing bookings
 							'past_events'                  => 1,
 							'past_events_bookable'         => 1,
@@ -288,7 +310,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			<?php do_action( 'bookacti_before_booking_list' ); ?>
 			<div id='bookacti-booking-list'>
 			<?php
-				$filters = array( 'templates' => $selected_templates, 'status' => $selected_status, 'fetch_meta' => true, 'merge_url_parameters' => true );
+				$filters = apply_filters( 'bookacti_bookings_list_filters', array( 
+					'templates'            => $selected_templates, 
+					'status'               => $selected_status,
+					'in__user_id'          => $selected_users,
+					'fetch_meta'           => true, 
+					'merge_url_parameters' => true
+				), $atts );
 				$bookings_list_table = new Bookings_List_Table();
 				$bookings_list_table->prepare_items( $filters );
 				$bookings_list_table->display();

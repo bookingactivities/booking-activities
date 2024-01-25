@@ -1571,6 +1571,80 @@ function bookacti_get_number_of_bookings_per_event_per_user( $events ) {
 
 
 /**
+ * Get bookings made without account
+ * @since 1.16.0
+ * @global wpdb $wpdb
+ * @param array $filters
+ * @param boolean $like Use the LIKE %...% operator instead of =
+ * @return array
+ */
+function bookacti_get_bookings_without_account( $filters = array() ) {
+	// Sanitize filters
+	$default_filters = array( 
+		'emails'   => array(), 
+		'like'     => false, 
+		'distinct' => false
+	);
+	$filters = array_merge( $default_filters, $filters );
+	$filters[ 'emails' ] = array_values( $filters[ 'emails' ] );
+	
+	global $wpdb;
+	
+	$query_select = ' SELECT DISTINCT B.id, B.user_id, B.order_id, B.form_id, B.group_id, B.event_id, B.event_start, B.event_end, B.state, B.payment_status, B.creation_date, B.expiration_date, B.quantity, B.active, IF( B.group_id IS NULL, B.id, CONCAT( "G", B.group_id ) ) as unique_group_id,'
+	              . ' E.title as event_title, E.active as event_active, E.availability,'
+	              . ' A.id as activity_id, A.title as activity_title, A.active as activity_active,'
+	              . ' T.id as template_id, T.title as template_title, T.active as template_active,'
+	              . ' BG.group_date, BG.event_group_id, BG.state as group_state, BG.payment_status as group_payment_status, BG.user_id as group_user_id, BG.order_id as group_order_id, BG.form_id as group_form_id, BG.active as group_active,'
+	              . ' EG.category_id, EG.title as group_title, EG.active as event_group_active';
+	
+	$query_join = ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B ' 
+	            . ' LEFT JOIN ' . BOOKACTI_TABLE_EVENTS . ' as E ON B.event_id = E.id ' 
+	            . ' LEFT JOIN ' . BOOKACTI_TABLE_ACTIVITIES . ' as A ON E.activity_id = A.id ' 
+	            . ' LEFT JOIN ' . BOOKACTI_TABLE_TEMPLATES . ' as T ON E.template_id = T.id '
+	            . ' LEFT JOIN ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' as BG ON B.group_id = BG.id '
+	            . ' LEFT JOIN ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as EG ON BG.event_group_id = EG.id ';
+	
+	$query = $query_select . $query_join . ' WHERE TRUE ';
+	
+	// Make sure the user_id is an email
+	$query .= ' AND B.user_id LIKE %s';	
+	$variables = array( '%' . $wpdb->esc_like( '@' ) . '%' );
+	
+	if( $filters[ 'emails' ] ) {
+		$array_count = count( $filters[ 'emails' ] );
+		if( ! $filters[ 'like' ] ) {
+			$query .= ' AND B.user_id IN ( %s ';
+			if( $array_count >= 2 ) {
+				for( $i=1; $i<$array_count; ++$i ) {
+					$query .= ', %s ';
+				}
+			}
+			$query .= ') ';
+			$variables = array_merge( $variables, $filters[ 'emails' ] );
+		} else {
+			$query .= ' AND ( B.user_id LIKE %s ';
+			$variables[] = '%' . $wpdb->esc_like( $filters[ 'emails' ][ 0 ] ) . '%';
+			if( $array_count >= 2 ) {
+				for( $i=1; $i<$array_count; ++$i ) {
+					$query .= 'OR B.user_id LIKE %s ';
+					$variables[] = '%' . $wpdb->esc_like( $filters[ 'emails' ][ $i ] ) . '%';
+				}
+			}
+			$query .= ') ';
+		}
+	}
+	
+	if( $filters[ 'distinct' ] ) {
+		$query .= 'GROUP BY B.user_id';	
+	}
+	
+	$query = $wpdb->prepare( $query, $variables );
+	
+	return $wpdb->get_results( $query );
+}
+
+
+/**
  * Cancel a booking
  * @version 1.9.0
  * @global wpdb $wpdb

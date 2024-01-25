@@ -10,7 +10,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 	
 	/**
 	 * Bookings WP_List_Table
-	 * @version 1.15.16
+	 * @version 1.16.0
 	 */
 	class Bookings_List_Table extends WP_List_Table {
 		
@@ -464,7 +464,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		
 		/**
 		 * Format filters passed as argument or retrieved via POST or GET
-		 * @version 1.15.16
+		 * @version 1.16.0
 		 * @access public
 		 * @param array $filters_raw
 		 * @param boolean $merge_url_param Merge $filters_raw with URL parameters if not set
@@ -484,17 +484,16 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 				// Specific cases
 				$picked_events = ! empty( $_REQUEST[ 'selected_events' ] ) ? bookacti_format_picked_events( $_REQUEST[ 'selected_events' ] ) : array();
 				
-				if( ! empty( $picked_events[ 0 ][ 'group_id' ] ) )	{ 
+				if( ! empty( $picked_events[ 0 ][ 'group_id' ] ) ) { 
 					$filters[ 'in__event_group_id' ]     = array( $picked_events[ 0 ][ 'group_id' ] );
 					$filters[ 'in__booking_group_date' ] = ! empty( $picked_events[ 0 ][ 'group_date' ] ) ? array( $picked_events[ 0 ][ 'group_date' ] ) : array();
-					
 				}
 				else {
-					if( ! empty( $picked_events[ 0 ][ 'id' ] ) )	{ $filters[ 'event_id' ] = $picked_events[ 0 ][ 'id' ]; }
-					if( ! empty( $picked_events[ 0 ][ 'start' ] ) )	{ $filters[ 'event_start' ] = $picked_events[ 0 ][ 'start' ]; }
-					if( ! empty( $picked_events[ 0 ][ 'end' ] ) )	{ $filters[ 'event_end' ] = $picked_events[ 0 ][ 'end' ]; }
+					if( ! empty( $picked_events[ 0 ][ 'id' ] ) )    { $filters[ 'event_id' ] = $picked_events[ 0 ][ 'id' ]; }
+					if( ! empty( $picked_events[ 0 ][ 'start' ] ) ) { $filters[ 'event_start' ] = $picked_events[ 0 ][ 'start' ]; }
+					if( ! empty( $picked_events[ 0 ][ 'end' ] ) )   { $filters[ 'event_end' ] = $picked_events[ 0 ][ 'end' ]; }
 				}
-				if( ! empty( $_REQUEST[ 'orderby' ] ) )				{ $filters[ 'order_by' ] = $_REQUEST[ 'orderby' ]; }
+				if( ! empty( $_REQUEST[ 'orderby' ] ) )             { $filters[ 'order_by' ] = $_REQUEST[ 'orderby' ]; }
 			}
 			
 			// Format filters before making the request
@@ -504,7 +503,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			$protocol = is_ssl() ? 'https' : 'http';
 			$base_url = defined( 'DOING_AJAX' ) && DOING_AJAX ? admin_url( 'admin.php?page=bookacti_bookings' ) : $protocol . '://' . $_SERVER[ 'HTTP_HOST' ] . $_SERVER[ 'REQUEST_URI' ];
 			$url_filters = array_intersect_key( $this->filters, $filters );
-			$this->url = esc_url_raw( add_query_arg( $url_filters, $base_url ) );
+			$this->url = esc_url_raw( add_query_arg( urlencode_deep( $url_filters ), $base_url ) );
 		}
 		
 		

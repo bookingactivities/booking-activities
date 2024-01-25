@@ -205,7 +205,7 @@ function bookacti_unpick_all_events_filter() {
 
 /**
  * Reload bookings booking system according to filters
- * @version 1.15.14
+ * @version 1.16.0
  * @param {HTMLElement} booking_system
  */
 function bookacti_reload_booking_system_according_to_filters( booking_system ) {
@@ -229,7 +229,7 @@ function bookacti_reload_booking_system_according_to_filters( booking_system ) {
 	bookacti.booking_system[ booking_system_id ][ 'activities' ]       = [];
 	bookacti.booking_system[ booking_system_id ][ 'group_categories' ] = [];
 	bookacti.booking_system[ booking_system_id ][ 'status' ]           = selected_status ? selected_status : [];
-	bookacti.booking_system[ booking_system_id ][ 'user_id' ]          = selected_user ? selected_user : 0;
+	bookacti.booking_system[ booking_system_id ][ 'user_id' ]          = selected_user ? [ selected_user ] : [];
 	bookacti.booking_system[ booking_system_id ][ 'start' ]            = selected_from ? selected_from + ' 00:00:00' : '';
 	bookacti.booking_system[ booking_system_id ][ 'end' ]              = selected_end ? selected_end + ' 23:59:59' : '';
 	

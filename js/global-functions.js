@@ -282,7 +282,7 @@ function bookacti_serialize_object( form ) {
 /**
  * Init selectbox with AJAX search
  * @since 1.7.19
- * @version 1.15.12
+ * @version 1.16.0
  */
 function bookacti_select2_init() {
 	if( ! $j.fn.select2 ) { return; }
@@ -313,7 +313,8 @@ function bookacti_select2_init() {
 			dataType: 'json',
 			delay: 1000,
 			data: function( params ) {
-				var data_type = $j( this ).data( 'type' ) ? $j( this ).data( 'type' ).trim() : '';
+				var data_type     = $j( this ).data( 'type' ) ? $j( this ).data( 'type' ).trim() : '';
+				var search_params = $j( this ).data( 'params' ) ? JSON.parse( JSON.stringify( $j( this ).data( 'params' ) ) ) : {};
 				var current_options = [];
 				$j( this ).find( 'option' ).each( function() {
 					if( $j( this ).val() !== '' ) {
@@ -321,14 +322,14 @@ function bookacti_select2_init() {
 					}
 				});
 				
-				var data = {
-					action: data_type ? 'bookactiSelect2Query_' + data_type : 'bookactiSelect2Query',
-					term: typeof params.term == 'string' ? params.term : '',
-					options: current_options,
-					name: $j( this ).attr( 'name' ) ? $j( this ).attr( 'name' ) : '',
-					id: $j( this ).attr( 'id' ) ? $j( this ).attr( 'id' ) : '',
-					nonce: bookacti_localized.nonce_query_select2_options
-				};
+				var data = $j.extend( search_params, {
+					"action": data_type ? 'bookactiSelect2Query_' + data_type : 'bookactiSelect2Query',
+					"term": typeof params.term == 'string' ? params.term : '',
+					"options": current_options,
+					"name": $j( this ).attr( 'name' ) ? $j( this ).attr( 'name' ) : '',
+					"id": $j( this ).attr( 'id' ) ? $j( this ).attr( 'id' ) : '',
+					"nonce": bookacti_localized.nonce_query_select2_options
+				});
 				
 				$j( this ).trigger( 'bookacti_select2_query_data', [ data ] );
 				

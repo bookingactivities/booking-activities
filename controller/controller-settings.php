@@ -857,7 +857,7 @@ add_filter( 'editable_extensions', 'bookacti_add_editable_extensions', 10, 2 );
 /**
  * Search users for AJAX selectbox
  * @since 1.7.19
- * @version 1.15.12
+ * @version 1.16.0
  */
 function bookacti_controller_search_select2_users() {
 	// Check nonce
@@ -868,15 +868,16 @@ function bookacti_controller_search_select2_users() {
 	if( ! current_user_can( 'list_users' ) && ! current_user_can( 'edit_users' ) ) { bookacti_send_json_not_allowed( 'search_select2_users' ); }
 	
 	// Sanitize search
-	$term			= isset( $_REQUEST[ 'term' ] ) ? sanitize_text_field( stripslashes( $_REQUEST[ 'term' ] ) ) : '';
-	$id__in			= ! empty( $_REQUEST[ 'id__in' ] ) ? bookacti_ids_to_array( $_REQUEST[ 'id__in' ] ) : array();
-	$id__not_in		= ! empty( $_REQUEST[ 'id__not_in' ] ) ? bookacti_ids_to_array( $_REQUEST[ 'id__not_in' ] ) : array();
-	$role			= ! empty( $_REQUEST[ 'role' ] ) ? bookacti_str_ids_to_array( $_REQUEST[ 'role' ] ) : array();
-	$role__in		= ! empty( $_REQUEST[ 'role__in' ] ) ? bookacti_str_ids_to_array( $_REQUEST[ 'role__in' ] ) : array();
-	$role__not_in	= ! empty( $_REQUEST[ 'role__not_in' ] ) ? bookacti_str_ids_to_array( $_REQUEST[ 'role__not_in' ] ) : array();
+	$term         = isset( $_REQUEST[ 'term' ] ) ? sanitize_text_field( stripslashes( $_REQUEST[ 'term' ] ) ) : '';
+	$id__in       = ! empty( $_REQUEST[ 'id__in' ] ) ? bookacti_ids_to_array( $_REQUEST[ 'id__in' ] ) : array();
+	$id__not_in   = ! empty( $_REQUEST[ 'id__not_in' ] ) ? bookacti_ids_to_array( $_REQUEST[ 'id__not_in' ] ) : array();
+	$role         = ! empty( $_REQUEST[ 'role' ] ) ? bookacti_str_ids_to_array( $_REQUEST[ 'role' ] ) : array();
+	$role__in     = ! empty( $_REQUEST[ 'role__in' ] ) ? bookacti_str_ids_to_array( $_REQUEST[ 'role__in' ] ) : array();
+	$role__not_in = ! empty( $_REQUEST[ 'role__not_in' ] ) ? bookacti_str_ids_to_array( $_REQUEST[ 'role__not_in' ] ) : array();
+	$no_account   = ! empty( $_REQUEST[ 'no_account' ] );
 	
 	// Check if the search is not empty
-	if( ! $term && ! $id__in && ! $role && ! $role__in ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'empty_query' ), 'search_select2_users' ); }
+	if( ! $term && ! $id__in && ! $role && ! $role__in && ! $no_account ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'empty_query' ), 'search_select2_users' ); }
 	
 	$defaults = array(
 		'name' => isset( $_REQUEST[ 'name' ] ) ? sanitize_title_with_dashes( stripslashes( $_REQUEST[ 'name' ] ) ) : '', // Used for developers to identify the selectbox
@@ -916,6 +917,15 @@ function bookacti_controller_search_select2_users() {
 			}
 		}
 		$options[] = array( 'id' => $user->ID, 'text' => esc_html( $label ) );
+	}
+	
+	// Retrieve user emails from bookings made without accounts
+	if( $no_account && $term ) {
+		$bookings = bookacti_get_bookings_without_account( array( 'emails' => array( $term ), 'like' => true, 'distinct' => true ) );
+		$booking_emails = array();
+		foreach( $bookings as $booking ) {
+			$options[] = array( 'id' => esc_attr( $booking->user_id ), 'text' => esc_html( $booking->user_id ) );
+		}
 	}
 	
 	// Allow plugins to add their values

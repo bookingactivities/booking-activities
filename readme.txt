@@ -322,6 +322,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.16.0 =
+* Tweak - "Customer" booking filter: List the customer emails from booking made without accounts
+* Tweak - "Customer" booking filter: Display the bookings made with and without account by the selected customer (need a page refresh, not working with AJAX)
+* Fix - Booking filters may not be correctly applied after reloading the bookings page
+
 = 1.15.19 - 2024/01/25 =
 * Feature - Add an option to display only the first event of groups (in booking form > Calendar settings)
 * Tweak - Add notification tags: {booking_payment_status}, {order_status}, {order_payment_status}

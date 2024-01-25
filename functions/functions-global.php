@@ -1465,7 +1465,7 @@ function bookacti_help_tip( $tip, $echo = true ){
 /**
  * Create a user selectbox
  * @since 1.3.0
- * @version 1.15.4
+ * @version 1.16.0
  * @param array $raw_args
  * @return string|void
  */
@@ -1477,6 +1477,7 @@ function bookacti_display_user_selectbox( $raw_args ) {
 		'selected' => array(), 'multiple' => 0, 'name' => 'user_id', 'class' => '', 'id' => '',
 		'include' => array(), 'exclude' => array(),
 		'role' => array(), 'role__in' => array(), 'role__not_in' => array(),
+		'no_account' => false,
 		'meta' => true, 'meta_single' => true,
 		'orderby' => 'display_name', 'order' => 'ASC'
 	);
@@ -1488,7 +1489,7 @@ function bookacti_display_user_selectbox( $raw_args ) {
 	$args[ 'class' ] = $args[ 'ajax' ] ? 'bookacti-select2-ajax ' . trim( $args[ 'class' ] ) : ( $args[ 'select2' ] ? 'bookacti-select2-no-ajax ' . trim( $args[ 'class' ] ) : trim( $args[ 'class' ] ) );
 	
 	// Format selected user ids
-	if( ! is_array( $args[ 'selected' ] ) ) { $args[ 'selected' ] = array( $args[ 'selected' ] ); }
+	if( ! is_array( $args[ 'selected' ] ) ) { $args[ 'selected' ] = $args[ 'selected' ] || in_array( $args[ 'selected' ], array( 0, '0' ), true ) ? array( $args[ 'selected' ] ) : array(); }
 	$selected_user_ids = bookacti_ids_to_array( $args[ 'selected' ] );
 	
 	if( $args[ 'ajax' ] && $args[ 'selected' ] && $is_allowed ) {
@@ -1497,7 +1498,47 @@ function bookacti_display_user_selectbox( $raw_args ) {
 	}
 	
 	if( $args[ 'multiple' ] && strpos( $args[ 'name' ], '[]' ) === false ) { $args[ 'name' ] .= '[]'; } 
+	
+	$options = array();
+	if( $users ) {
+		foreach( $users as $user ) {
+			$selected_key = array_search( intval( $user->ID ), $selected_user_ids, true );
+			if( $selected_key !== false ) { unset( $selected_user_ids[ $selected_key ] ); }
 
+			// Build the option label based on the array
+			$label = '';
+			foreach( $args[ 'option_label' ] as $show ) {
+				// If the key contain "||" display the first not empty value
+				if( strpos( $show, '||' ) !== false ) {
+					$keys = explode( '||', $show );
+					$show = $keys[ 0 ];
+					foreach( $keys as $key ) {
+						if( ! empty( $user->{ $key } ) ) { $show = $key; break; }
+					}
+				}
+
+				// Display the value if the key exists, else display the key as is, as a separator
+				if( isset( $user->{ $show } ) ) {
+					$label .= $user->{ $show };
+				} else {
+					$label .= $show;
+				}
+			}
+			$options[] = array( 'id' => $user->ID, 'text' => $label, 'selected' => $selected_key !== false );
+		}
+	}
+	
+	// Retrieve user emails from bookings made without accounts
+	if( $args[ 'no_account' ] && ! $args[ 'ajax' ] && $is_allowed ) {
+		$bookings = bookacti_get_bookings_without_account( array( 'distinct' => true ) );
+		$booking_emails = array();
+		foreach( $bookings as $booking ) {
+			$options[] = array( 'id' => $booking->user_id, 'text' => $booking->user_id, 'selected' => in_array( $booking->user_id, $args[ 'selected' ], true ) );
+		}
+	}
+	
+	$options = apply_filters( 'bookacti_user_selectbox_options', $options, $args, $raw_args );
+	
 	ob_start();
 	?>
 	<input type='hidden' name='<?php echo $args[ 'name' ]; ?>' value=''/>
@@ -1509,6 +1550,7 @@ function bookacti_display_user_selectbox( $raw_args ) {
 		data-placeholder='<?php echo ! empty( $args[ 'placeholder' ] ) ? esc_attr( $args[ 'placeholder' ] ) : ''; ?>'
 		data-sortable='<?php echo ! empty( $args[ 'sortable' ] ) ? 1 : 0; ?>'
 		data-type='users'
+		data-params='{"no_account":<?php echo ! empty( $args[ 'no_account' ] ) ? 1 : 0; ?>}'
 		<?php if( $args[ 'multiple' ] ) { echo ' multiple'; } ?>>
 		<?php if( ! $args[ 'multiple' ] ) {  ?>
 			<option><!-- Used for the placeholder --></option>
@@ -1527,32 +1569,10 @@ function bookacti_display_user_selectbox( $raw_args ) {
 
 			do_action( 'bookacti_add_user_selectbox_options', $args, $users );
 			
-			if( $users ) {
-				foreach( $users as $user ) {
-					$selected_key = array_search( intval( $user->ID ), $selected_user_ids, true );
-					if( $selected_key !== false ) { unset( $selected_user_ids[ $selected_key ] ); }
-					
-					// Build the option label based on the array
-					$label = '';
-					foreach( $args[ 'option_label' ] as $show ) {
-						// If the key contain "||" display the first not empty value
-						if( strpos( $show, '||' ) !== false ) {
-							$keys = explode( '||', $show );
-							$show = $keys[ 0 ];
-							foreach( $keys as $key ) {
-								if( ! empty( $user->{ $key } ) ) { $show = $key; break; }
-							}
-						}
-
-						// Display the value if the key exists, else display the key as is, as a separator
-						if( isset( $user->{ $show } ) ) {
-							$label .= $user->{ $show };
-						} else {
-							$label .= $show;
-						}
-					}
+			if( $options ) {
+				foreach( $options as $option ) {
 				?>
-					<option value='<?php echo $user->ID; ?>' <?php if( $selected_key !== false ) { echo 'selected'; } ?> ><?php echo esc_html( $label ); ?></option>
+					<option value='<?php echo esc_attr( $option[ 'id' ] ); ?>' <?php if( ! empty( $option[ 'selected' ] ) ) { echo 'selected'; } ?> ><?php echo esc_html( $option[ 'label' ] ); ?></option>
 				<?php
 				}
 			}
