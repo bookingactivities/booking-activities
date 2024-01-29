@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Init Booking Activities settings
- * @version 1.15.16
+ * @version 1.16.0
  */
 function bookacti_init_settings() { 
 	/* General settings Section - 1 - Misc */
@@ -210,6 +210,13 @@ function bookacti_init_settings() {
 		'bookacti_settings_section_cancellation' 
 	);
 	
+	add_settings_field(  
+		'admin_reschedule_scope',                      
+		esc_html__( 'Administrators can reschedule bookings to', 'booking-activities' ),               
+		'bookacti_settings_field_admin_reschedule_scope_callback',   
+		'bookacti_cancellation_settings',                     
+		'bookacti_settings_section_cancellation' 
+	);
 	
 	
 	/* Notifications settings Section - 1 - General settings */

@@ -658,7 +658,7 @@ function bookacti_booking_can_be_cancelled( $booking, $context = '', $allow_grou
 
 /**
  * Check if a booking is allowed to be rescheduled
- * @version 1.14.0
+ * @version 1.16.0
  * @param object|int $booking
  * @param string $context
  * @return boolean
@@ -667,20 +667,15 @@ function bookacti_booking_can_be_rescheduled( $booking, $context = '' ) {
 	// Get booking
 	if( is_numeric( $booking ) ) { $booking = bookacti_get_booking_by_id( $booking, true ); }
 	
-	$is_allowed	= true;
-	if( ! $booking ) { $is_allowed = false; }
-	else {
-		if( ! current_user_can( 'bookacti_edit_bookings' ) || $context === 'front' ) {
-			$is_reschedule_allowed = bookacti_get_setting_value( 'bookacti_cancellation_settings', 'allow_customers_to_reschedule' );
-			$is_grouped            = apply_filters( 'bookacti_allow_grouped_booking_changes', false, $booking, 'reschedule' ) ? false : ! empty( $booking->group_id );
-			$is_in_delay           = apply_filters( 'bookacti_bypass_booking_changes_deadline', false, $booking, 'reschedule' ) ? true : bookacti_is_booking_in_delay( $booking, 'reschedule' );
-			$user_id               = isset( $booking->user_id ) && is_numeric( $booking->user_id ) ? intval( $booking->user_id ) : 0;
-			$is_own                = apply_filters( 'bookacti_allow_others_booking_changes', $user_id && $user_id === get_current_user_id(), $booking, 'reschedule' );
-			if( ! $is_reschedule_allowed || ! $booking->active || $is_grouped || ! $is_in_delay || ! $is_own ) { $is_allowed = false; }
-		}
-
-		// If the booked event has been removed, we cannot know its activity, then, the booking cannot be rescheduled.
-		if( ! bookacti_get_event_by_id( $booking->event_id ) ) { $is_allowed = false; }
+	$is_allowed	= $booking ? true : false;
+	
+	if( $booking && ( ! current_user_can( 'bookacti_edit_bookings' ) || $context === 'user_booking_list' ) ) {
+		$is_reschedule_allowed = bookacti_get_setting_value( 'bookacti_cancellation_settings', 'allow_customers_to_reschedule' );
+		$is_grouped            = apply_filters( 'bookacti_allow_grouped_booking_changes', false, $booking, 'reschedule' ) ? false : ! empty( $booking->group_id );
+		$is_in_delay           = apply_filters( 'bookacti_bypass_booking_changes_deadline', false, $booking, 'reschedule' ) ? true : bookacti_is_booking_in_delay( $booking, 'reschedule' );
+		$user_id               = isset( $booking->user_id ) && is_numeric( $booking->user_id ) ? intval( $booking->user_id ) : 0;
+		$is_own                = apply_filters( 'bookacti_allow_others_booking_changes', $user_id && $user_id === get_current_user_id(), $booking, 'reschedule' );
+		if( ! $is_reschedule_allowed || ! $booking->active || $is_grouped || ! $is_in_delay || ! $is_own ) { $is_allowed = false; }
 	}
 
 	return apply_filters( 'bookacti_booking_can_be_rescheduled', $is_allowed, $booking, $context );
@@ -690,7 +685,7 @@ function bookacti_booking_can_be_rescheduled( $booking, $context = '' ) {
 /**
  * Check if a booking can be rescheduled to another event
  * @since 1.1.0
- * @version 1.15.10
+ * @version 1.16.0
  * @param object|int $booking
  * @param int $event_id
  * @param string $event_start
@@ -699,15 +694,16 @@ function bookacti_booking_can_be_rescheduled( $booking, $context = '' ) {
  * @return boolean
  */
 function bookacti_booking_can_be_rescheduled_to( $booking, $event_id, $event_start, $event_end, $context = '' ) {
-	// Get booking
-	if( is_numeric( $booking ) ) { $booking = bookacti_get_booking_by_id( $booking, true ); }
+	if( is_numeric( $booking ) ) {
+		$booking = bookacti_get_booking_by_id( $booking, true );
+	}
 	
 	if( ! $booking ) { 
 		$return_array[ 'status' ]  = 'failed';
 		$return_array[ 'error' ]   = 'booking_not_found';
 		$return_array[ 'message' ] = esc_html__( 'You are not allowed to reschedule this event.', 'booking-activities' );
-
-	} else {
+	}
+	else {
 		$return_array = array( 'status' => 'success' );
 		$is_allowed   = bookacti_booking_can_be_rescheduled( $booking, $context );
 		
@@ -715,13 +711,78 @@ function bookacti_booking_can_be_rescheduled_to( $booking, $event_id, $event_sta
 			$return_array[ 'status' ]  = 'failed';
 			$return_array[ 'error' ]   = 'reschedule_not_allowed';
 			$return_array[ 'message' ] = esc_html__( 'You are not allowed to reschedule this event.', 'booking-activities' );
-
-		} else {
-			$event = bookacti_get_event_by_id( $event_id );
-			if( ! $event || ( $event && intval( $booking->activity_id ) !== intval( $event->activity_id ) ) ) {
+		} 
+		else {
+			// Check the reschedule scope
+			$is_admin                = current_user_can( 'bookacti_edit_bookings' ) && $context !== 'user_booking_list';
+			$event                   = bookacti_get_event_by_id( $event_id );
+			$activity_id             = ! empty( $booking->activity_id ) ? intval( $booking->activity_id ) : 0;
+			$activity_meta           = $activity_id ? bookacti_get_metadata( 'activity', $activity_id ) : array();
+			$reschedule_scope        = ! empty( $activity_meta[ 'reschedule_scope' ] ) ? $activity_meta[ 'reschedule_scope' ] : ( $is_admin ? 'all_self' : 'form_self' );
+			$reschedule_activity_ids = ! empty( $activity_meta[ 'reschedule_activity_ids' ] ) ? bookacti_ids_to_array( $activity_meta[ 'reschedule_activity_ids' ] ) : array();
+			$admin_reschedule_scope  = bookacti_get_setting_value( 'bookacti_cancellation_settings', 'admin_reschedule_scope' );
+			
+			// For administrators, keep the widest reschedule scope
+			if( $is_admin ) {
+				if( strpos( $reschedule_scope, 'all_' ) !== false && strpos( $admin_reschedule_scope, 'form_' ) !== false ) {
+					$admin_reschedule_scope = str_replace( 'form_', 'all_', $admin_reschedule_scope );
+				}
+				if( strpos( $reschedule_scope, '_custom' ) !== false && strpos( $admin_reschedule_scope, '_self' ) !== false ) {
+					$admin_reschedule_scope = str_replace( '_self', '_custom', $admin_reschedule_scope );
+				}
+				else if( strpos( $reschedule_scope, '_any' ) !== false && strpos( $admin_reschedule_scope, '_self' ) !== false ) {
+					$admin_reschedule_scope = str_replace( '_self', '_any', $admin_reschedule_scope );
+				}
+				$reschedule_scope = $admin_reschedule_scope;
+			}
+			
+			if( ! $event ) {
 				$return_array[ 'status' ]  = 'failed';
-				$return_array[ 'error' ]   = 'reschedule_to_different_activity';
-				$return_array[ 'message' ] = esc_html__( 'The desired event haven\'t the same activity as the booked event.', 'booking-activities' );
+				$return_array[ 'error' ]   = 'reschedule_to_unknown_event';
+				$return_array[ 'message' ] = esc_html__( 'The desired event is unknown.', 'booking-activities' );
+			}
+			else {
+				$event->id         = $event_id;
+				$event_activity_id = ! empty( $event->activity_id ) ? intval( $event->activity_id ) : 0;
+				$event_template_id = ! empty( $event->template_id ) ? intval( $event->template_id ) : 0;
+				$form_id           = ! empty( $booking->form_id ) ? intval( $booking->form_id ) : 0;
+				
+				if( strpos( $reschedule_scope, '_self' ) !== false && intval( $booking->activity_id ) !== $event_activity_id ) {
+					$return_array[ 'status' ]  = 'failed';
+					$return_array[ 'error' ]   = 'reschedule_to_different_activity';
+					$return_array[ 'message' ] = esc_html__( 'The desired event does not have the same activity as the booked event.', 'booking-activities' );
+				}
+				else if( strpos( $reschedule_scope, '_custom' ) !== false && $reschedule_activity_ids ) {
+					$reschedule_activity_ids = bookacti_ids_to_array( array_merge( array( $activity_id ), $reschedule_activity_ids ) );
+					if( ! in_array( $event_activity_id, $reschedule_activity_ids, true ) ) {
+						$return_array[ 'status' ]  = 'failed';
+						$return_array[ 'error' ]   = 'reschedule_to_not_allowed_activity';
+						$return_array[ 'message' ] = esc_html__( 'The desired event does not have the same activity as the booked event.', 'booking-activities' ) . ' ' 
+												   . esc_html__( 'You cannot replace the booked activity with this activity.', 'booking-activities' );
+					}
+				}
+
+				if( $return_array[ 'status' ] !== 'failed' ) {
+					if( strpos( $reschedule_scope, 'form_' ) !== false ) {
+						$picked_event   = bookacti_format_picked_event( array( 'id' => $event_id, 'start' => $event_start, 'end' => $event_end ) );
+						$form_validated = $form_id ? bookacti_is_picked_event_available_on_form( $picked_event, (array) $event, $form_id ) : array( 'status' => 'failed' );
+						if( $form_validated[ 'status' ] !== 'success' ) {
+							$return_array[ 'status' ]  = 'failed';
+							$return_array[ 'error' ]   = ! empty( $form_validated[ 'error' ] ) ? $form_validated[ 'error' ] : 'reschedule_to_different_form';
+							$return_array[ 'message' ] = ! empty( $form_validated[ 'message' ] ) ? $form_validated[ 'message' ] : esc_html__( 'The desired event is not in the same booking form as the booked event.', 'booking-activities' );
+						}
+					} else if( strpos( $reschedule_scope, 'all_' ) !== false ) {
+						$form                 = $form_id ? bookacti_get_form_data( $form_id ) : array();
+						$form_author_id       = ! empty( $form[ 'user_id' ] ) ? intval( $form[ 'user_id' ] ) : 0;
+						$allowed_template_ids = $form_author_id ? bookacti_ids_to_array( array_keys( bookacti_fetch_templates( array(), $form_author_id ) ) ) : array();
+						if( ! in_array( $event_template_id, $allowed_template_ids, true ) ) {
+							$return_array[ 'status' ]  = 'failed';
+							$return_array[ 'error' ]   = 'reschedule_to_not_allowed_calendar';
+							$return_array[ 'message' ] = esc_html__( 'The desired event does not belong to the same calendar as the booked event.', 'booking-activities' ) . ' ' 
+													   . esc_html__( 'You cannot replace the booked event with an event from this calendar.', 'booking-activities' );
+						}
+					}
+				}
 			}
 		}
 	}

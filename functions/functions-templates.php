@@ -41,15 +41,15 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 
 /**
  * Check if user is allowed to manage template
- * @version 1.8.0
+ * @version 1.16.0
  * @param int|array $template_ids
  * @param int|false $user_id False for current user
  * @return boolean
  */
 function bookacti_user_can_manage_template( $template_ids, $user_id = false ) {
 	$user_can_manage_template = false;
-	$bypass_template_managers_check = apply_filters( 'bookacti_bypass_template_managers_check', false, $user_id );
 	if( ! $user_id ) { $user_id = get_current_user_id(); }
+	$bypass_template_managers_check = apply_filters( 'bookacti_bypass_template_managers_check', false, $user_id );
 	if( is_super_admin( $user_id ) || $bypass_template_managers_check ) { $user_can_manage_template = true; }
 	else {
 		$admins = bookacti_get_template_managers( $template_ids );
@@ -64,7 +64,7 @@ function bookacti_user_can_manage_template( $template_ids, $user_id = false ) {
 
 /**
  * Check if user is allowed to manage activity
- * @version 1.8.0
+ * @version 1.16.0
  * @param int|array $activity_ids
  * @param int|false $user_id False for current user
  * @param array|false $admins False to retrieve the activity managers
@@ -72,8 +72,8 @@ function bookacti_user_can_manage_template( $template_ids, $user_id = false ) {
  */
 function bookacti_user_can_manage_activity( $activity_ids, $user_id = false, $admins = false ) {
 	$user_can_manage_activity = false;
-	$bypass_activity_managers_check = apply_filters( 'bookacti_bypass_activity_managers_check', false, $user_id );
 	if( ! $user_id ) { $user_id = get_current_user_id(); }
+	$bypass_activity_managers_check = apply_filters( 'bookacti_bypass_activity_managers_check', false, $user_id );
 	if( is_super_admin( $user_id ) || $bypass_activity_managers_check ) { $user_can_manage_activity = true; }
 	else {
 		$admins = $admins === false ? bookacti_get_activity_managers( $activity_ids ) : $admins;

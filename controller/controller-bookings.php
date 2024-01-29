@@ -355,24 +355,30 @@ add_action( 'wp_ajax_bookactiChangeBookingQuantity', 'bookacti_controller_change
 /**
  * AJAX Controller - Get reschedule booking system data by booking ID
  * @since 1.8.0 (was bookacti_controller_get_booking_data)
- * @version 1.15.0
+ * @version 1.16.0
  */
 function bookacti_controller_get_reschedule_booking_system_data() {
 	$booking_id	= intval( $_POST[ 'booking_id' ] );
 	
-	// No need to check nonce
-	// Check capabilities
+	// Check capabilities (No need to check nonce)
 	$is_allowed = bookacti_user_can_manage_booking( $booking_id );
-	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'get_reschedule_booking_system_data' ); }
+	if( ! $is_allowed ) { 
+		bookacti_send_json_not_allowed( 'get_reschedule_booking_system_data' );
+	}
 	
 	$booking = bookacti_get_booking_by_id( $booking_id, true );
 	if( ! $booking ) {
 		bookacti_send_json( array( 'status' => 'failed', 'error' => 'booking_not_found', 'message' => esc_html__( 'Invalid booking ID.', 'booking-activities' ) ), 'get_reschedule_booking_system_data' );
 	}
 	
-	$calendar_field_data = $booking->form_id ? bookacti_get_form_field_data_by_name( $booking->form_id, 'calendar' ) : array();
-	$init_atts = bookacti_get_calendar_field_booking_system_attributes( $calendar_field_data );
-	$atts = $init_atts;
+	$is_admin = current_user_can( 'bookacti_edit_bookings' ) && ! empty( $_POST[ 'is_admin' ] );
+	$calendar_field_data = ! empty( $booking->form_id ) ? bookacti_get_form_field_data_by_name( $booking->form_id, 'calendar' ) : array();
+	if( ! $is_admin && ! $calendar_field_data ) {
+		bookacti_send_json( array( 'status' => 'failed', 'error' => 'invalid_form_id', 'message' => esc_html__( 'Invalid form ID.', 'booking-activities' ) ), 'get_reschedule_booking_system_data' );
+	}
+	
+	$init_atts  = bookacti_get_calendar_field_booking_system_attributes( $calendar_field_data );
+	$atts       = $init_atts;
 	$mixed_data = array();
 
 	// Set compulsory data
@@ -382,11 +388,59 @@ function bookacti_controller_get_reschedule_booking_system_data() {
 	$atts[ 'multiple_bookings' ]        = 0;
 	$atts[ 'auto_load' ]                = 0;
 
-	// Load only the events from the same activity as the booked event
-	$atts[ 'activities' ] = intval( $booking->activity_id ) ? array( intval( $booking->activity_id ) ) : array( 0 );
-
-	// On the backend, display past events and grouped events, from all calendars, and make them all bookable
-	$is_admin = intval( $_POST[ 'is_admin' ] );
+	// Display events from activities corresponding to the reschedule scope
+	$activity_id             = ! empty( $booking->activity_id ) ? intval( $booking->activity_id ) : 0;
+	$activity_meta           = $activity_id ? bookacti_get_metadata( 'activity', $activity_id ) : array();
+	$reschedule_scope        = ! empty( $activity_meta[ 'reschedule_scope' ] ) ? $activity_meta[ 'reschedule_scope' ] : 'form_self';
+	$reschedule_activity_ids = ! empty( $activity_meta[ 'reschedule_activity_ids' ] ) ? bookacti_ids_to_array( $activity_meta[ 'reschedule_activity_ids' ] ) : array();
+	$admin_reschedule_scope  = bookacti_get_setting_value( 'bookacti_cancellation_settings', 'admin_reschedule_scope' );
+	
+	// For administrators, keep the widest reschedule scope
+	if( $is_admin ) {
+		if( strpos( $reschedule_scope, 'all_' ) !== false && strpos( $admin_reschedule_scope, 'form_' ) !== false ) {
+			$admin_reschedule_scope = str_replace( 'form_', 'all_', $admin_reschedule_scope );
+		}
+		if( strpos( $reschedule_scope, '_custom' ) !== false && strpos( $admin_reschedule_scope, '_self' ) !== false ) {
+			$admin_reschedule_scope = str_replace( '_self', '_custom', $admin_reschedule_scope );
+		}
+		else if( strpos( $reschedule_scope, '_any' ) !== false && strpos( $admin_reschedule_scope, '_self' ) !== false ) {
+			$admin_reschedule_scope = str_replace( '_self', '_any', $admin_reschedule_scope );
+		}
+		$reschedule_scope = $admin_reschedule_scope;
+	}
+	
+	if( $reschedule_scope === 'all_any' ) {
+		$atts[ 'activities' ] = array();
+	} else if( strpos( $reschedule_scope, '_custom' ) !== false ) {
+		$atts[ 'activities' ] = array_unique( array_merge( array( $activity_id ), $reschedule_activity_ids ) );
+	} else if( strpos( $reschedule_scope, '_self' ) !== false ) {
+		$atts[ 'activities' ] = array( $activity_id );
+	}
+	
+	// Display events from all calendars on the backend, or if the reschedule scope is set accordingly
+	if( strpos( $reschedule_scope, 'all_' ) !== false ) {
+		$form                 = bookacti_get_form_data( $booking->form_id );
+		$form_author_id       = ! empty( $form[ 'user_id' ] ) ? intval( $form[ 'user_id' ] ) : 0;
+		$allowed_template_ids = $form_author_id ? bookacti_ids_to_array( array_keys( bookacti_fetch_templates( array(), $form_author_id ) ) ) : array();
+		
+		if( $allowed_template_ids ) {
+			if( $atts[ 'activities' ] ) {
+				$template_ids = bookacti_ids_to_array( bookacti_get_templates_by_activity( $atts[ 'activities' ], true ) );
+				if( $template_ids ) {
+					$atts[ 'calendars' ] = $allowed_template_ids ? array_intersect( $template_ids, $allowed_template_ids ) : array( 'none' );
+					if( count( $atts[ 'calendars' ] ) !== 1 ) {
+						$mixed_data = bookacti_get_mixed_template_data( $atts[ 'calendars' ] );
+						$atts[ 'display_data' ][ 'slotMinTime' ] = ! empty( $mixed_data[ 'settings' ][ 'slotMinTime' ] ) ? $mixed_data[ 'settings' ][ 'slotMinTime' ] : '00:00';
+						$atts[ 'display_data' ][ 'slotMaxTime' ] = ! empty( $mixed_data[ 'settings' ][ 'slotMaxTime' ] ) ? $mixed_data[ 'settings' ][ 'slotMaxTime' ] : '00:00';
+					}
+				}
+			} else {
+				$atts[ 'calendars' ] = $allowed_template_ids ? $allowed_template_ids : array( 'none' );
+			}
+		}
+	}
+	
+	// On the backend, display past events and grouped events and make them all bookable
 	if( $is_admin ) {
 		$atts[ 'groups_single_events' ] = 1;
 		$atts[ 'start' ]                = '';
@@ -394,23 +448,13 @@ function bookacti_controller_get_reschedule_booking_system_data() {
 		$atts[ 'trim' ]                 = 1;
 		$atts[ 'past_events' ]          = 1;
 		$atts[ 'past_events_bookable' ] = 1;
-
-		// Make sure display data doesn't prevent events from being displayed
-		if( $booking->activity_id ) {
-			$atts[ 'calendars' ] = bookacti_get_templates_by_activity( $atts[ 'activities' ], true );
-			if( count( $atts[ 'calendars' ] ) !== 1 ) {
-				$mixed_data = bookacti_get_mixed_template_data( $atts[ 'calendars' ] );
-				$atts[ 'display_data' ][ 'slotMinTime' ] = ! empty( $mixed_data[ 'settings' ][ 'slotMinTime' ] ) ? $mixed_data[ 'settings' ][ 'slotMinTime' ] : '00:00';
-				$atts[ 'display_data' ][ 'slotMaxTime' ] = ! empty( $mixed_data[ 'settings' ][ 'slotMaxTime' ] ) ? $mixed_data[ 'settings' ][ 'slotMaxTime' ] : '00:00';
-			}
-		}
 	}
 
 	// Add the rescheduled booking data to the booking system data
 	$atts[ 'rescheduled_booking_data' ] = (array) apply_filters( 'bookacti_rescheduled_booking_data', $booking );
 
 	$atts = apply_filters( 'bookacti_reschedule_booking_system_attributes', $atts, $booking, $init_atts, $mixed_data );
-
+	
 	bookacti_send_json( array( 'status' => 'success', 'booking_system_data' => $atts ), 'get_reschedule_booking_system_data' );
 }
 add_action( 'wp_ajax_bookactiGetRescheduleBookingSystemData', 'bookacti_controller_get_reschedule_booking_system_data' );
@@ -419,7 +463,7 @@ add_action( 'wp_ajax_nopriv_bookactiGetRescheduleBookingSystemData', 'bookacti_c
 
 /**
  * AJAX Controller - Reschedule a booking
- * @version 1.15.15
+ * @version 1.16.0
  */
 function bookacti_controller_reschedule_booking() {
 	$booking_id = intval( $_POST[ 'booking_id' ] );
@@ -451,12 +495,14 @@ function bookacti_controller_reschedule_booking() {
 		bookacti_send_json( $return_array, 'reschedule_booking' );
 	}
 	
+	$context = ! empty( $_POST[ 'context' ] ) ? sanitize_title_with_dashes( $_POST[ 'context' ] ) : '';
+	
 	$reschedule_form_values = apply_filters( 'bookacti_reschedule_booking_form_values', array(
 		'picked_events'      => $picked_events,
 		'quantity'           => intval( $booking->quantity ),
 		'form_id'            => ! empty( $booking->form_id ) && ! current_user_can( 'bookacti_edit_bookings' ) ? $booking->form_id : 0,
 		'is_admin'           => ! empty( $_POST[ 'is_admin' ] ), 
-		'context'            => 'reschedule', 
+		'context'            => $context, 
 		'send_notifications' => ! empty( $_POST[ 'is_admin' ] ) && isset( $_POST[ 'send_notifications' ] ) ? intval( $_POST[ 'send_notifications' ] ) : 1
 	), $booking );
 	
@@ -499,11 +545,10 @@ function bookacti_controller_reschedule_booking() {
 
 	do_action( 'bookacti_booking_rescheduled', $new_booking, $booking, $reschedule_form_values );
 
-	$context     = ! empty( $_POST[ 'context' ] ) ? sanitize_title_with_dashes( $_POST[ 'context' ] ) : '';
 	$columns     = ! empty( $_POST[ 'columns' ] ) && is_array( $_POST[ 'columns' ] ) ? array_map( 'sanitize_title_with_dashes', $_POST[ 'columns' ] ) : array();
 	$row_filters = apply_filters( 'bookacti_booking_action_row_filters', array( 'booking_id' => $booking_id ), array( $new_booking ), 'reschedule_booking', $context );
 	$row         = bookacti_get_booking_list_rows_according_to_context( $context, $row_filters, $columns );
-
+	
 	bookacti_send_json( array( 'status' => 'success', 'row' => $row, 'old_booking' => $booking, 'new_booking' => $new_booking, 'form_values' => $reschedule_form_values ), 'reschedule_booking' );
 }
 add_action( 'wp_ajax_bookactiRescheduleBooking', 'bookacti_controller_reschedule_booking' );

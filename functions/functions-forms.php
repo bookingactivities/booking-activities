@@ -1897,15 +1897,15 @@ function bookacti_display_calendar_field_help() {
 /**
  * Check if user is allowed to manage form
  * @since 1.5.0
- * @version 1.7.17
+ * @version 1.16.0
  * @param int $form_id
  * @param int $user_id
  * @return boolean
  */
 function bookacti_user_can_manage_form( $form_id, $user_id = false ) {
 	$user_can_manage_form = false;
-	$bypass_form_managers_check = apply_filters( 'bookacti_bypass_form_managers_check', false, $user_id );
 	if( ! $user_id ) { $user_id = get_current_user_id(); }
+	$bypass_form_managers_check = apply_filters( 'bookacti_bypass_form_managers_check', false, $user_id );
 	if( is_super_admin( $user_id ) || $bypass_form_managers_check ) { $user_can_manage_form = true; }
 	else {
 		$admins = bookacti_get_form_managers( $form_id );
@@ -1940,7 +1940,7 @@ function bookacti_get_form_managers( $form_ids ) {
 /**
  * Format form managers
  * @since 1.5.0
- * @version 1.8.8
+ * @version 1.16.0
  * @param array $form_managers
  * @return array
  */
@@ -1948,9 +1948,9 @@ function bookacti_format_form_managers( $form_managers = array() ) {
 	$form_managers = bookacti_ids_to_array( $form_managers );
 	
 	// If user is not super admin, add him automatically in the form managers list if he isn't already
-	$bypass_form_managers_check = apply_filters( 'bookacti_bypass_form_managers_check', false );
-	if( ! is_super_admin() && ! $bypass_form_managers_check ) {
-		$user_id = get_current_user_id();
+	$user_id = get_current_user_id();
+	$bypass_form_managers_check = apply_filters( 'bookacti_bypass_form_managers_check', false, $user_id );
+	if( ! is_super_admin( $user_id ) && ! $bypass_form_managers_check ) {
 		if( ! in_array( $user_id, $form_managers, true ) ) {
 			$form_managers[] = $user_id;
 		}

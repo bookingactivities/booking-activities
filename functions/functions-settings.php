@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Get default settings values
  * @since 1.3.0 (was bookacti_define_default_settings_constants)
- * @version 1.15.15
+ * @version 1.16.0
  */
 function bookacti_get_default_settings() {
 	$date = new DateTime(); 
@@ -31,6 +31,7 @@ function bookacti_get_default_settings() {
 		'allow_customers_to_reschedule'     => true,
 		'booking_changes_deadline'          => 604800, // 7 days
 		'refund_actions_after_cancellation' => array(),
+		'admin_reschedule_scope'            => 'all_self',
 		'notifications_from_name'           => wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ),
 		'notifications_from_email'          => '', // Use the default sender email address (wordpress@...)
 		'notifications_async'               => true,
@@ -679,6 +680,31 @@ function bookacti_settings_field_cancellation_refund_actions_callback() {
 	</div>
 	<?php
 }
+
+
+/**
+ * Display the Admin reschedule scope option
+ * @since 1.16.0
+ */
+function bookacti_settings_field_admin_reschedule_scope_callback() {
+	$args = array(
+		'type'     => 'select',
+		'name'     => 'bookacti_cancellation_settings[admin_reschedule_scope]',
+		'id'       => 'admin_reschedule_scope',
+		'title'    => esc_html__( 'Administrators can reschedule bookings to', 'booking-activities' ),
+		'options'  => array(
+			'all_self'  => esc_html__( 'All calendars, same activity', 'booking-activities' ),
+			'all_any'   => esc_html__( 'All calendars, any activities', 'booking-activities' ),
+			'form_self' => esc_html__( 'Same form, same activity', 'booking-activities' ),
+			'form_any'  => esc_html__( 'Same form, any activities', 'booking-activities' ),
+		),
+		'value'    => bookacti_get_setting_value( 'bookacti_cancellation_settings', 'admin_reschedule_scope' ),
+		'tip'      => esc_html__( 'Allow the administrators to reschedule a booking to a different activity, from the backend only.', 'booking-activities' )
+		           . '<br/>'  . esc_html__( 'There is an option is the activity settings to allow customers to reschedule their bookings to a different activity. If this option is set, administrators can reschedule to the widest scope.', 'booking-activities' )
+	);
+	bookacti_display_field( $args );
+}
+
 
 
 

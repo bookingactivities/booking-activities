@@ -429,6 +429,9 @@ function bookacti_format_booking_system_attributes( $raw_atts = array() ) {
 	
 	$formatted_atts = $defaults;
 	
+	// Sanitize form id
+	$formatted_atts[ 'form_id' ] = is_numeric( $atts[ 'form_id' ] ) ? intval( $atts[ 'form_id' ] ) : 0;	
+	
 	// Sanitize booleans
 	$booleans_to_check = array( 'multiple_bookings', 'bookings_only', 'tooltip_booking_list', 'groups_only', 'groups_single_events', 'groups_first_event_only', 'auto_load', 'trim', 'past_events', 'past_events_bookable', 'check_roles' );
 	foreach( $booleans_to_check as $key ) {
@@ -459,10 +462,12 @@ function bookacti_format_booking_system_attributes( $raw_atts = array() ) {
 	
 	// Check if the desired templates are active and allowed
 	if( ! in_array( 'none', $calendars, true ) ) {
+		$form                   = $formatted_atts[ 'form_id' ] ? bookacti_get_form_data( $formatted_atts[ 'form_id' ] ) : array();
+		$manager_id             = ! empty( $form[ 'user_id' ] ) ? intval( $form[ 'user_id' ] ) : get_current_user_id();
 		$calendars              = array_values( array_unique( array_map( 'intval', array_filter( $calendars, 'is_numeric' ) ) ) );
-		$available_template_ids = array_keys( bookacti_fetch_templates( array(), 0 ) );
+		$available_template_ids = array_keys( bookacti_fetch_templates( array(), $manager_id ) );
 		$had_templates          = ! empty( $calendars );
-		$allowed_templates      = ! apply_filters( 'bookacti_bypass_template_managers_check', false ) && ! is_super_admin() ? array_values( array_intersect( $calendars, $available_template_ids ) ) : $calendars;
+		$allowed_templates      = ! apply_filters( 'bookacti_bypass_template_managers_check', false, $manager_id ) ? array_values( array_intersect( $calendars, $available_template_ids ) ) : $calendars;
 		$calendars              = ! empty( $allowed_templates ) ? $allowed_templates : ( ! $had_templates && $available_template_ids ? $available_template_ids : array( 'none' ) );
 	} 
 	$formatted_atts[ 'calendars' ] = $calendars;
@@ -546,9 +551,6 @@ function bookacti_format_booking_system_attributes( $raw_atts = array() ) {
 	
 	// Format picked events
 	$formatted_atts[ 'picked_events' ] = bookacti_format_picked_events( $atts[ 'picked_events' ] );
-	
-	// Sanitize form id
-	$formatted_atts[ 'form_id' ] = is_numeric( $atts[ 'form_id' ] ) ? intval( $atts[ 'form_id' ] ) : 0;	
 	
 	// Format actions
 	$possible_form_actions  = array_keys( bookacti_get_available_form_actions() );

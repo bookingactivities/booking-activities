@@ -323,9 +323,15 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 == Changelog ==
 
 = 1.16.0 =
+* Feature - Add an option to allow customers to reschedule a booking to an event of a different activity and / or to an event in a different calendar (in Calendar Editor > the activity settings)
+* Feature - Add an option to allow administrators to reschedule a booking to an event of a different activity and / or to an event in a different calendar (in Settings > Cancellation tab)
+* Feature - Add an option to select the activities a booking can be rescheduled to (in Calendar Editor > the activity settings)
 * Tweak - "Customer" booking filter: List the customer emails from booking made without accounts
 * Tweak - "Customer" booking filter: Display the bookings made with and without account by the selected customer (need a page refresh, not working with AJAX)
+* Tweak - You cannot display events from a calendar that the booking form author cannot manage
+* Tweak - You cannot reschedule a booking to an event located on a calendar that the original booking form author cannot manage
 * Fix - Booking filters may not be correctly applied after reloading the bookings page
+* Fix - Deleting an activity deleted it from all calendars instead of removing it only from the current calendar
 
 = 1.15.19 - 2024/01/25 =
 * Feature - Add an option to display only the first event of groups (in booking form > Calendar settings)

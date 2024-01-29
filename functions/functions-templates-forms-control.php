@@ -144,7 +144,7 @@ function bookacti_validate_template_data( $data ) {
 /**
  * Sanitize template managers
  * @since 1.12.0 (was bookacti_format_template_managers)
- * @version 1.12.3
+ * @version 1.16.0
  * @param array $template_managers
  * @return array
  */
@@ -152,9 +152,9 @@ function bookacti_sanitize_template_managers( $template_managers ) {
 	$template_managers = bookacti_ids_to_array( $template_managers );
 	
 	// Add the current user automatically if not super admin
-	$bypass_managers_check = apply_filters( 'bookacti_bypass_template_managers_check', false );
-	if( ! is_super_admin() && ! $bypass_managers_check ) {
-		$user_id = get_current_user_id();
+	$user_id = get_current_user_id();
+	$bypass_managers_check = apply_filters( 'bookacti_bypass_template_managers_check', false, $user_id );
+	if( ! is_super_admin( $user_id ) && ! $bypass_managers_check ) {
 		if( ! in_array( $user_id, $template_managers, true ) ) {
 			$template_managers[] = $user_id;
 		}
@@ -187,12 +187,12 @@ function bookacti_sanitize_template_managers( $template_managers ) {
  */
 function bookacti_get_activity_default_data() {
 	return apply_filters( 'bookacti_activity_default_data', array(
-		'id' => 0,
-		'title' => esc_html__( 'Activity', 'booking-activities' ),
-		'color' => '#3a87ad',
+		'id'           => 0,
+		'title'        => esc_html__( 'Activity', 'booking-activities' ),
+		'color'        => '#3a87ad',
 		'availability' => 1,
-		'duration' => 3600,
-		'active' => 1
+		'duration'     => 3600,
+		'active'       => 1
 	));
 }
 
@@ -200,18 +200,21 @@ function bookacti_get_activity_default_data() {
 /**
  * Get activity default meta
  * @since 1.12.0
+ * @version 1.16.0
  */
 function bookacti_get_activity_default_meta() {
 	return apply_filters( 'bookacti_activity_default_meta', array(
-		'unit_name_singular'		=> '',
-		'unit_name_plural'			=> '',
-		'show_unit_in_availability'	=> 0,
-		'places_number'				=> 0,
-		'min_bookings_per_user'		=> 0,
-		'max_bookings_per_user'		=> 0,
-		'max_users_per_event'		=> 0,
-		'booking_changes_deadline'	=> '',
-		'allowed_roles'				=> array()
+		'unit_name_singular'        => '',
+		'unit_name_plural'          => '',
+		'show_unit_in_availability' => 0,
+		'places_number'             => 0,
+		'min_bookings_per_user'     => 0,
+		'max_bookings_per_user'     => 0,
+		'max_users_per_event'       => 0,
+		'booking_changes_deadline'  => '',
+		'reschedule_scope'	        => '',
+		'reschedule_activity_ids'   => array(),
+		'allowed_roles'             => array()
 	));
 }
 
@@ -219,7 +222,7 @@ function bookacti_get_activity_default_meta() {
 /**
  * Sanitize activity data
  * @since 1.12.0 (was bookacti_format_activity_settings)
- * @version 1.14.0
+ * @version 1.16.0
  * @param array $raw_data
  * @return array
  */
@@ -229,11 +232,13 @@ function bookacti_sanitize_activity_data( $raw_data ) {
 	
 	// Sanitize by type
 	$keys_by_type = array( 
-		'absint'	=> array( 'id', 'availability', 'duration', 'places_number', 'min_bookings_per_user', 'max_bookings_per_user', 'max_users_per_event', 'booking_changes_deadline' ),
-		'str'		=> array( 'title', 'unit_name_singular', 'unit_name_plural' ),
-		'color'		=> array( 'color' ),
-		'bool'		=> array( 'show_unit_in_availability' ),
-		'array'		=> array( 'allowed_roles', 'managers' )
+		'absint'    => array( 'id', 'availability', 'duration', 'places_number', 'min_bookings_per_user', 'max_bookings_per_user', 'max_users_per_event', 'booking_changes_deadline' ),
+		'str'       => array( 'title', 'unit_name_singular', 'unit_name_plural' ),
+		'str_id'    => array( 'reschedule_scope' ),
+		'color'     => array( 'color' ),
+		'bool'      => array( 'show_unit_in_availability' ),
+		'array'     => array( 'allowed_roles', 'managers' ),
+		'array_ids' => array( 'reschedule_activity_ids' )
 	);
 	$data = bookacti_sanitize_values( array_merge( $default_data, $default_meta, array( 'managers' => array() ) ), $raw_data, $keys_by_type );
 	
@@ -316,20 +321,20 @@ function bookacti_get_event_default_data() {
 	$dt->add( new DateInterval( 'PT1H' ) );
 	$end = $dt->format( 'Y-m-d H:i:s' );
 	return apply_filters( 'bookacti_event_default_data', array(
-		'id' => 0,
-		'template_id' => 0,
-		'activity_id' => 0,
-		'title' => esc_html__( 'Event', 'booking-activities' ),
-		'start' => $start,
-		'end' => $end,
-		'availability' => 1,
-		'repeat_freq' => 'none',
-		'repeat_step' => 1,
-		'repeat_on' => '',
-		'repeat_from' => '',
-		'repeat_to' => '',
+		'id'                => 0,
+		'template_id'       => 0,
+		'activity_id'       => 0,
+		'title'             => esc_html__( 'Event', 'booking-activities' ),
+		'start'             => $start,
+		'end'               => $end,
+		'availability'      => 1,
+		'repeat_freq'       => 'none',
+		'repeat_step'       => 1,
+		'repeat_on'         => '',
+		'repeat_from'       => '',
+		'repeat_to'         => '',
 		'repeat_exceptions' => array(),
-		'active' => 1
+		'active'            => 1
 	));
 }
 
@@ -349,9 +354,9 @@ function bookacti_get_event_default_meta() {
  */
 function bookacti_get_event_repeat_periods() {
 	return apply_filters( 'bookacti_event_repeat_periods', array( 
-		'none' => esc_html__( 'Do not repeat', 'booking-activities' ),
-		'daily' => esc_html__( 'Day', 'booking-activities' ),
-		'weekly' => esc_html__( 'Week', 'booking-activities' ),
+		'none'    => esc_html__( 'Do not repeat', 'booking-activities' ),
+		'daily'   => esc_html__( 'Day', 'booking-activities' ),
+		'weekly'  => esc_html__( 'Week', 'booking-activities' ),
 		'monthly' => esc_html__( 'Month', 'booking-activities' )
 	) );
 }
@@ -368,13 +373,13 @@ function bookacti_sanitize_event_data( $raw_data ) {
 	
 	// Sanitize common values
 	$keys_by_type = array( 
-		'absint'	=> array( 'id', 'template_id', 'activity_id', 'availability', 'repeat_step' ),
-		'str_html'	=> array( 'title' ),
-		'datetime'	=> array( 'start', 'end' ),
-		'str_id'	=> array( 'repeat_freq', 'repeat_on' ),
-		'date'		=> array( 'repeat_from', 'repeat_to' ),
-		'array'		=> array( 'repeat_exceptions' ),
-		'bool'		=> array( 'active' )
+		'absint'   => array( 'id', 'template_id', 'activity_id', 'availability', 'repeat_step' ),
+		'str_html' => array( 'title' ),
+		'datetime' => array( 'start', 'end' ),
+		'str_id'   => array( 'repeat_freq', 'repeat_on' ),
+		'date'     => array( 'repeat_from', 'repeat_to' ),
+		'array'    => array( 'repeat_exceptions' ),
+		'bool'     => array( 'active' )
 	);
 	$data = bookacti_sanitize_values( array_merge( $default_data, $default_meta ), $raw_data, $keys_by_type );
 	
@@ -417,10 +422,10 @@ function bookacti_sanitize_repeat_data( $object_data, $object_type = 'event' ) {
 	
 	// Sanitize common values
 	$keys_by_type = array( 
-		'int'		=> array( 'repeat_step' ),
-		'str_id'	=> array( 'repeat_freq', 'repeat_on' ),
-		'date'		=> array( 'repeat_from', 'repeat_to' ),
-		'array'		=> array( 'repeat_exceptions' )
+		'int'    => array( 'repeat_step' ),
+		'str_id' => array( 'repeat_freq', 'repeat_on' ),
+		'date'   => array( 'repeat_from', 'repeat_to' ),
+		'array'  => array( 'repeat_exceptions' )
 	);
 	$data = array_merge( $object_data, bookacti_sanitize_values( $default_data, $object_data, $keys_by_type ) );
 	
@@ -542,10 +547,10 @@ function bookacti_sanitize_repeat_data( $object_data, $object_type = 'event' ) {
 	
 	// If the event is not repeated, remove all repeat data
 	if( $data[ 'repeat_freq' ] === 'none' ) {
-		$data[ 'repeat_step' ] = -1;
-		$data[ 'repeat_on' ] = 'null';
-		$data[ 'repeat_from' ] = 'null';
-		$data[ 'repeat_to' ] = 'null';
+		$data[ 'repeat_step' ]       = -1;
+		$data[ 'repeat_on' ]         = 'null';
+		$data[ 'repeat_from' ]       = 'null';
+		$data[ 'repeat_to' ]         = 'null';
 		$data[ 'repeat_exceptions' ] = 'null';
 	}
 	
@@ -624,16 +629,16 @@ function bookacti_validate_event_data( $data ) {
  */
 function bookacti_get_group_of_events_default_data() {
 	return apply_filters( 'bookacti_group_of_events_default_data', array(
-		'id' => 0,
-		'category_id' => 0,
-		'title' => esc_html__( 'Group of events', 'booking-activities' ),
-		'repeat_freq' => 'none',
-		'repeat_step' => 1,
-		'repeat_on' => '',
-		'repeat_from' => '',
-		'repeat_to' => '',
+		'id'                => 0,
+		'category_id'       => 0,
+		'title'             => esc_html__( 'Group of events', 'booking-activities' ),
+		'repeat_freq'       => 'none',
+		'repeat_step'       => 1,
+		'repeat_on'         => '',
+		'repeat_from'       => '',
+		'repeat_to'         => '',
 		'repeat_exceptions' => array(),
-		'active' => 1
+		'active'            => 1
 	));
 }
 
@@ -660,13 +665,13 @@ function bookacti_sanitize_group_of_events_data( $raw_data ) {
 	
 	// Sanitize common values
 	$keys_by_type = array( 
-		'absint'	=> array( 'id', 'category_id', 'repeat_step' ),
-		'str_html'	=> array( 'title' ),
-		'str'		=> array( 'category_title' ),
-		'str_id'	=> array( 'repeat_freq', 'repeat_on' ),
-		'date'		=> array( 'repeat_from', 'repeat_to' ),
-		'array'		=> array( 'repeat_exceptions' ),
-		'bool'		=> array( 'active' )
+		'absint'   => array( 'id', 'category_id', 'repeat_step' ),
+		'str_html' => array( 'title' ),
+		'str'      => array( 'category_title' ),
+		'str_id'   => array( 'repeat_freq', 'repeat_on' ),
+		'date'     => array( 'repeat_from', 'repeat_to' ),
+		'array'    => array( 'repeat_exceptions' ),
+		'bool'     => array( 'active' )
 	);
 	$data = bookacti_sanitize_values( array_merge( $default_data, $default_meta, array( 'category_title' => '' ) ), $raw_data, $keys_by_type );
 	
@@ -756,10 +761,10 @@ function bookacti_validate_group_of_events_data( $data ) {
  */
 function bookacti_get_group_category_default_data() {
 	return apply_filters( 'bookacti_group_category_default_data', array(
-		'id' => 0,
+		'id'          => 0,
 		'template_id' => 0,
-		'title' => esc_html__( 'Group category', 'booking-activities' ),
-		'active' => 1
+		'title'       => esc_html__( 'Group category', 'booking-activities' ),
+		'active'      => 1
 	));
 }
 
@@ -770,12 +775,12 @@ function bookacti_get_group_category_default_data() {
  */
 function bookacti_get_group_category_default_meta() {
 	return apply_filters( 'bookacti_group_category_default_meta', array(
-		'min_bookings_per_user'		=> 0,
-		'max_bookings_per_user'		=> 0,
-		'max_users_per_event'		=> 0,
-		'booking_changes_deadline'	=> '',
-		'started_groups_bookable'	=> -1,
-		'allowed_roles'				=> array()
+		'min_bookings_per_user'    => 0,
+		'max_bookings_per_user'    => 0,
+		'max_users_per_event'      => 0,
+		'booking_changes_deadline' => '',
+		'started_groups_bookable'  => -1,
+		'allowed_roles'            => array()
 	));
 }
 
@@ -793,10 +798,10 @@ function bookacti_sanitize_group_category_data( $raw_data ) {
 	
 	// Sanitize by type
 	$keys_by_type = array( 
-		'absint'	=> array( 'id', 'template_id', 'min_bookings_per_user', 'max_bookings_per_user', 'max_users_per_event', 'booking_changes_deadline' ),
-		'str'		=> array( 'title' ),
-		'bool'		=> array( 'started_groups_bookable' ),
-		'array'		=> array( 'allowed_roles' )
+		'absint' => array( 'id', 'template_id', 'min_bookings_per_user', 'max_bookings_per_user', 'max_users_per_event', 'booking_changes_deadline' ),
+		'str'    => array( 'title' ),
+		'bool'   => array( 'started_groups_bookable' ),
+		'array'  => array( 'allowed_roles' )
 	);
 	$data = bookacti_sanitize_values( array_merge( $default_data, $default_meta ), $raw_data, $keys_by_type );
 	

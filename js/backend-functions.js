@@ -342,7 +342,7 @@ function bookacti_fill_fields_from_array( fields, field_prefix, scope ) {
 
 /**
  * Switch a selectbox to multiple
- * @version 1.15.13
+ * @version 1.16.0
  * @param {HTMLElement} checkbox
  */
 function bookacti_switch_select_to_multiple( checkbox ) {
@@ -356,6 +356,8 @@ function bookacti_switch_select_to_multiple( checkbox ) {
 	var values = $j( 'select#' + select_id ).val();
 	
 	$j( 'select#' + select_id ).prop( 'multiple', is_checked );
+	
+	$j( 'select#' + select_id ).trigger( 'bookacti_switch_multiple_before', [ is_checked ] );
 	
 	// Forbidden values if multiple selection is allowed
 	$j( 'select#' + select_id + ' option[value="all"]' ).prop( 'disabled', is_checked );
@@ -398,7 +400,7 @@ function bookacti_switch_select_to_multiple( checkbox ) {
 		bookacti_select2_init();
 	}
 	
-	$j( 'select#' + select_id ).trigger( 'bookacti_switched_multiple' );
+	$j( 'select#' + select_id ).trigger( 'bookacti_switched_multiple', [ is_checked ] );
 }
 
 

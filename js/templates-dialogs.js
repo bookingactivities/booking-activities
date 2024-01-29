@@ -188,7 +188,7 @@ function bookacti_init_template_dialogs() {
 
 /**
  * Dialog Create Template
- * @version 1.15.13
+ * @version 1.16.0
  */
 function bookacti_dialog_add_new_template() {
 	// Set the dialog title
@@ -201,7 +201,7 @@ function bookacti_dialog_add_new_template() {
 	$j( '#bookacti-slotmintime' ).val( '00:00' );
 	$j( '#bookacti-slotmaxtime' ).val( '00:00' );
 	$j( '#bookacti-snapduration' ).val( '00:05' );
-
+	
 	$j( '#bookacti-template-data-dialog' ).trigger( 'bookacti_default_template_settings' );
 
 	// Show and activate the duplicate fields
@@ -268,14 +268,9 @@ function bookacti_dialog_add_new_template() {
 									loading = true;
 								}
 
-								// Add the template to the template select box
-								$j( '#bookacti-template-picker' ).append(
-									"<option value='" + response.template_id + "'>" + title + "</option>"
-								);
-
-								// Add the template to other template select boxes
-								$j( 'select.bookacti-template-select-box' ).append(
-									"<option value='" + response.template_id + "'>" + title + "</option>"
+								// Add the template to template selectboxes
+								$j( '#bookacti-template-picker, select.bookacti-template-selectbox' ).append(
+									'<option value="' + response.template_id + '">' + title + '</option>'
 								);
 
 								// If the created template is the second one, you need to refresh dialog bounds
@@ -448,7 +443,7 @@ function bookacti_dialog_update_template( template_id ) {
 
 /**
  * Dialog Deactivate Template
- * @version 1.15.5
+ * @version 1.16.0
  * @param {int} template_id
  */
 function bookacti_dialog_deactivate_template( template_id ) {
@@ -482,13 +477,11 @@ function bookacti_dialog_deactivate_template( template_id ) {
 					dataType: 'json',
 					success: function( response ) {
 						if( response.status === 'success' ) {
-							// Remove the template from the select box
+							// Remove the template from the selectboxes
 							$j( '#bookacti-template-picker option[value=' + template_id + ']' ).remove();
+							$j( 'select.bookacti-template-selectbox option[value=' + template_id + ']' ).remove();
 							var new_template_id = $j( '#bookacti-template-picker option:first' ).val();
-
-							// Remove the template from other template select boxes
-							$j( 'select.bookacti-template-select-box option[value=' + template_id + ']' ).remove();
-
+							
 							// If there is only 1 template left, you need to refresh dialog bounds
 							// because clicking on new activity has to stop offer to import activity
 							if( $j( '#bookacti-template-picker option' ).length === 1 ) {
@@ -1440,7 +1433,7 @@ function bookacti_dialog_import_activity() {
 
 /**
  * Dialog Create Activity
- * @version 1.15.13
+ * @version 1.16.0
  */
 function bookacti_dialog_create_activity() {
 	if( ! bookacti.selected_template ) { return; }
@@ -1456,7 +1449,8 @@ function bookacti_dialog_create_activity() {
 	$j( '#bookacti-activity-activity-id' ).val( '' );
 	$j( '#bookacti-activity-color' ).val( '#3a87ad' );
 	$j( '#bookacti-activity-action' ).val( 'bookactiInsertActivity' );
-	
+	$j( '#bookacti-activity-reschedule-scope' ).val( 'form_self' ).trigger( 'change' );
+
 	$j( '#bookacti-activity-data-dialog' ).trigger( 'bookacti_activity_insert_dialog' );
 	
 	// Add the 'OK' button
@@ -1497,7 +1491,12 @@ function bookacti_dialog_create_activity() {
 
 							// Refresh activity list
 							bookacti_refresh_activity_list();
-
+							
+							// Add activity in activities selectboxes
+							$j( 'select.bookacti-activity-selectbox' ).append( 
+								'<option value="' + response.activity_id + '">' + response.activity_data.title + '</option>'
+							);
+							
 							$j( '#bookacti-activity-data-dialog' ).trigger( 'bookacti_activity_inserted', [ response, data ] );
 							
 							// Close the modal dialogs
@@ -1532,7 +1531,7 @@ function bookacti_dialog_create_activity() {
 
 /**
  * Open a dialog to update an activity
- * @version 1.15.13
+ * @version 1.16.0
  * @param {Int} activity_id
  */
 function bookacti_dialog_update_activity( activity_id ) {
@@ -1550,6 +1549,7 @@ function bookacti_dialog_update_activity( activity_id ) {
 	$j( '#bookacti-activity-template-id' ).val( bookacti.selected_template );
 	$j( '#bookacti-activity-activity-id' ).val( activity_id );
 	$j( '#bookacti-activity-action' ).val( 'bookactiUpdateActivity' );
+	$j( '#bookacti-activity-reschedule-scope' ).val( 'form_self' ).trigger( 'change' );
 
 	// General tab
 	$j( '#bookacti-activity-title' ).val( activity_data.multilingual_title ); 
@@ -1663,7 +1663,7 @@ function bookacti_dialog_update_activity( activity_id ) {
 
 /**
  * Dialog Delete Activity
- * @version 1.15.5
+ * @version 1.16.0
  * @param {int} activity_id
  */
 function bookacti_dialog_delete_activity( activity_id ) {
@@ -1708,8 +1708,10 @@ function bookacti_dialog_delete_activity( activity_id ) {
 							// Update activities data array
 							delete bookacti.booking_system[ 'bookacti-template-calendar' ][ 'activities_data' ][ activity_id ];
 							
+							// Remove the activity from activities list and selectboxes
 							$j( '.bookacti-activity[data-activity-id="' + activity_id + '"]' ).remove();
-
+							$j( 'select.bookacti-activity-selectbox option[value=' + activity_id + ']' ).remove();
+							
 							// Update groups and refresh events if user chose to deleted events
 							if( data.delete_events ) { 
 								bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_data' ] = response.groups_data;

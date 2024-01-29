@@ -1572,7 +1572,7 @@ function bookacti_display_user_selectbox( $raw_args ) {
 			if( $options ) {
 				foreach( $options as $option ) {
 				?>
-					<option value='<?php echo esc_attr( $option[ 'id' ] ); ?>' <?php if( ! empty( $option[ 'selected' ] ) ) { echo 'selected'; } ?> ><?php echo esc_html( $option[ 'label' ] ); ?></option>
+					<option value='<?php echo esc_attr( $option[ 'id' ] ); ?>' <?php if( ! empty( $option[ 'selected' ] ) ) { echo 'selected'; } ?> ><?php echo esc_html( $option[ 'text' ] ); ?></option>
 				<?php
 				}
 			}
