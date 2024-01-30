@@ -326,6 +326,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Feature - Add an option to allow customers to reschedule a booking to an event of a different activity and / or to an event in a different calendar (in Calendar Editor > the activity settings)
 * Feature - Add an option to allow administrators to reschedule a booking to an event of a different activity and / or to an event in a different calendar (in Settings > Cancellation tab)
 * Feature - Add an option to select the activities a booking can be rescheduled to (in Calendar Editor > the activity settings)
+* Feature - Manually send a notification from the backend booking list (in the Actions column)
 * Tweak - "Customer" booking filter: List the customer emails from booking made without accounts
 * Tweak - "Customer" booking filter: Display the bookings made with and without account by the selected customer (need a page refresh, not working with AJAX)
 * Tweak - You cannot display events from a calendar that the booking form author cannot manage

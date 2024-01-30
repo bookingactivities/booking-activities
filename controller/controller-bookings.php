@@ -556,6 +556,52 @@ add_action( 'wp_ajax_nopriv_bookactiRescheduleBooking', 'bookacti_controller_res
 
 
 /**
+ * AJAX Controller - Manually send a notification for a booking
+ * @since 1.16.0
+ */
+function bookacti_controller_send_booking_notification() {
+	// Check nonce
+	$is_nonce_valid = check_ajax_referer( 'bookacti_send_booking_notification', 'nonce', false );
+	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'send_booking_notification' ); }
+	
+	// Check the booking and the notification id
+	$booking_id      = ! empty( $_POST[ 'booking_id' ] ) ? intval( $_POST[ 'booking_id' ] ) : 0;
+	$booking_type    = ! empty( $_POST[ 'booking_type' ] ) ? sanitize_title_with_dashes( $_POST[ 'booking_type' ] ) : '';
+	$notification_id = ! empty( $_POST[ 'notification_id' ] ) ? sanitize_title_with_dashes( $_POST[ 'notification_id' ] ) : '';
+	$args            = array( 'notification' => array( 'active' => true ) );
+	if( ! in_array( $booking_type, array( 'single', 'group' ), true ) ) { $booking_type = ''; }
+	if( ! $booking_id || ! $booking_type || ! $notification_id ) { bookacti_send_json_not_allowed( 'send_booking_notification' ); }
+	
+	// Check capabilities
+	$is_allowed = $booking_type === 'group' ? bookacti_user_can_manage_booking_group( $booking_id, false ) : bookacti_user_can_manage_booking( $booking_id, false );
+	if( ! $is_allowed ) {
+		bookacti_send_json( array( 'status' => 'failed', 'error' => 'booking_not_found', 'message' => esc_html__( 'Invalid booking ID.', 'booking-activities' ) ), 'send_booking_notification' );
+	}
+	
+	do_action( 'bookacti_before_send_booking_notification', $booking_id );
+	
+	$sent = bookacti_send_notification( $notification_id, $booking_id, $booking_type, $args, false );
+	
+	// Remove the async flag because the notification was not sent by a cron job
+	$notification_unique_key = md5( json_encode( array( $notification_id, $booking_id, $booking_type, $args ) ) );
+	delete_transient( 'bookacti_notif_' . $notification_unique_key );
+	
+	if( ! $sent ) {
+		bookacti_send_json( array( 
+			'status'  => 'failed', 
+			'error'   => 'not_sent', 
+			'message' => esc_html__( 'An error occurred while trying to send the notification.', 'booking-activities' )
+		), 'send_booking_notification' );
+	}
+
+	do_action( 'bookacti_booking_notification_sent', $booking_id );
+	
+	bookacti_send_json( array( 'status' => 'success' ), 'send_booking_notification' );
+}
+add_action( 'wp_ajax_bookactiSendBookingNotification', 'bookacti_controller_send_booking_notification' );
+
+
+/**
  * AJAX Controller - Delete a booking
  * @since 1.5.0
  * @version 1.15.5

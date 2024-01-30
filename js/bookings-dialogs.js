@@ -967,6 +967,100 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 
 
 /**
+ * Send a notification for a booking or a booking group
+ * @since 1.16.0
+ * @param {int} booking_id
+ * @param {string} booking_type
+ */
+function bookacti_dialog_send_booking_notification( booking_id, booking_type ) {
+	// Sanitize booking_type
+	booking_type = booking_type === 'group' ? 'group' : 'single';
+	
+	// Get current row and actions container
+	var row;
+	if( booking_type === 'single' ) {
+		row = $j( '.bookacti-change-booking-quantity[data-booking-id="' + booking_id + '"]' ).closest( 'tr' );
+	} else {
+		row = $j( '.bookacti-change-booking-group-quantity[data-booking-group-id="' + booking_id + '"]' ).closest( 'tr' );
+	}
+	
+	var is_bookings_page = row.first().closest( '#bookacti-booking-list' ).length ? 1 : 0;
+	
+	row.first().trigger( 'bookacti_booking_action_dialog_opened', [ booking_id, booking_type, 'send_notification' ] );
+	
+	// Add the buttons
+    $j( '#bookacti-send-booking-notification-dialog' ).dialog( 'option', 'buttons',
+		[{
+			text: bookacti_localized.dialog_button_send,
+			click: function() {
+				var notification_id = $j( '#bookacti-booking-notification-id' ).val();
+				if( ! notification_id ) { return; }
+				
+				// Reset error notices
+				$j( '#bookacti-send-booking-notification-dialog .bookacti-notices' ).remove();
+
+				var data = bookacti_serialize_object( $j( '#bookacti-send-booking-notification-dialog-form' ) );
+				data.action           = 'bookactiSendBookingNotification';
+				data.booking_id       = booking_id;
+				data.booking_type     = booking_type;
+				data.is_bookings_page = is_bookings_page;
+				data.is_admin         = bookacti_localized.is_admin ? 1 : 0;
+				data.context          = bookacti_localized.is_admin ? 'admin_booking_list' : 'user_booking_list';
+				
+				row.first().trigger( 'bookacti_booking_action_data', [ data, booking_id, booking_type, 'send_notification' ] );
+
+				// Display a loader
+				bookacti_booking_row_enter_loading_state( row );
+				bookacti_add_loading_html( $j( '#bookacti-send-booking-notification-dialog' ) );
+
+				$j.ajax({
+					url: bookacti_localized.ajaxurl,
+					type: 'POST',
+					data: data,
+					dataType: 'json',
+					success: function( response ) {
+						if( response.status === 'success' ) {
+							// Close the modal dialog
+							$j( '#bookacti-send-booking-notification-dialog' ).dialog( 'close' );
+
+							// Trigger a hook when the notification is sent
+							$j( 'body' ).trigger( 'bookacti_booking_notification_sent', [ notification_id, booking_id, booking_type ] );
+
+						} else if( response.status === 'failed' ) {
+							var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
+							$j( '#bookacti-send-booking-notification-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + error_message + '</li></ul></div>' ).show();
+							console.log( error_message );
+							console.log( response );
+						}
+					},
+					error: function( e ){
+						$j( '#bookacti-send-booking-notification-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + 'AJAX ' + bookacti_localized.error + '</li></ul></div>' ).show();
+						console.log( 'AJAX ' + bookacti_localized.error );
+						console.log( e );
+					},
+					complete: function() {
+						$j( '#bookacti-send-booking-notification-dialog .bookacti-notices' ).show();
+						bookacti_remove_loading_html( $j( '#bookacti-send-booking-notification-dialog' ) );
+						bookacti_booking_row_exit_loading_state( row );
+					}
+				});
+			}
+		},
+		// Cancel button
+		{
+            text: bookacti_localized.dialog_button_cancel,
+            click: function() {
+				$j( this ).dialog( 'close' );
+            }
+        }]
+    );
+	
+	// Open the modal dialog
+    $j( '#bookacti-send-booking-notification-dialog' ).dialog( 'open' );
+}
+
+
+/**
  * Delete a booking or a booking group
  * @since 1.5.0
  * @version 1.15.15

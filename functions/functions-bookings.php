@@ -1355,7 +1355,7 @@ function bookacti_booking_group_user_can_be_changed( $bookings, $new_user_id = '
 /**
  * Get booking actions array
  * @since 1.6.0 (replace bookacti_get_booking_actions_array)
- * @version 1.8.5
+ * @version 1.16.0
  * @param string $admin_or_front Can be "both", "admin", "front. Default "both".
  * @return array
  */
@@ -1391,6 +1391,12 @@ function bookacti_get_booking_actions( $admin_or_front = 'both' ) {
 			'description'    => esc_html__( 'Refund the booking with one of the available refund method.', 'booking-activities' ),
 			'link'           => '',
 			'admin_or_front' => 'both' ),
+		'send-notification' => array( 
+			'class'          => 'bookacti-send-booking-notification',
+			'label'          => esc_html__( 'Send notification', 'booking-activities' ),
+			'description'    => esc_html__( 'Send a notification.', 'booking-activities' ),
+			'link'           => '',
+			'admin_or_front' => 'admin' ),
 		'delete' => array( 
 			'class'          => 'bookacti-delete-booking bookacti-delete-button',
 			'label'          => esc_html__( 'Delete', 'booking-activities' ),
@@ -1413,7 +1419,7 @@ function bookacti_get_booking_actions( $admin_or_front = 'both' ) {
 /**
  * Get booking actions according to booking id
  * @since 1.6.0 (replace bookacti_get_booking_actions_array)
- * @version 1.12.0
+ * @version 1.16.0
  * @param object|int $booking
  * @param string $admin_or_front Can be "both", "admin", "front". Default "both".
  * @return array
@@ -1425,8 +1431,9 @@ function bookacti_get_booking_actions_by_booking( $booking, $admin_or_front = 'b
 
 	$actions = bookacti_get_booking_actions( $admin_or_front );
 	if( ! current_user_can( 'bookacti_edit_bookings' ) ) {
-		if( isset( $actions[ 'change-state' ] ) )	{ unset( $actions[ 'change-state' ] ); }
-		if( isset( $actions[ 'change-quantity' ] ) ){ unset( $actions[ 'change-quantity' ] ); }
+		if( isset( $actions[ 'change-state' ] ) )      { unset( $actions[ 'change-state' ] ); }
+		if( isset( $actions[ 'change-quantity' ] ) )   { unset( $actions[ 'change-quantity' ] ); }
+		if( isset( $actions[ 'send-notification' ] ) ) { unset( $actions[ 'send-notification' ] ); }
 	}
 	if( isset( $actions[ 'cancel' ] ) && ! bookacti_booking_can_be_cancelled( $booking, $admin_or_front ) ) {
 		unset( $actions[ 'cancel' ] );
@@ -1449,7 +1456,7 @@ function bookacti_get_booking_actions_by_booking( $booking, $admin_or_front = 'b
  * Get booking actions html
  * @version 1.12.0
  * @param object|int $booking
- * @param string $admin_or_front Can be "both", "admin", "front. Default "both".
+ * @param string $admin_or_front Can be "both", "admin", "front". Default "both".
  * @param array $actions
  * @param boolean $return_array
  * @param boolean $with_container
@@ -1465,17 +1472,17 @@ function bookacti_get_booking_actions_html( $booking, $admin_or_front = 'both', 
 	$actions_html_array	= array();
 	foreach( $actions as $action_id => $action ){
 			$action_html = '<a '
-						 . 'href="' . esc_url( $action[ 'link' ] ) . '" '
-						 . 'id="bookacti-booking-action-' . esc_attr( $action_id ) . '-' . esc_attr( $booking->id ) . '" '
-						 . 'class="button ' . esc_attr( $action[ 'class' ] ) . ' bookacti-booking-action bookacti-tip" '
-						 . 'data-tip="' . esc_attr( $action[ 'description' ] ) . '" '
-						 . 'data-booking-id="' . esc_attr( $booking->id ) . '" >';
+			             . 'href="' . esc_url( $action[ 'link' ] ) . '" '
+			             . 'id="bookacti-booking-action-' . esc_attr( $action_id ) . '-' . esc_attr( $booking->id ) . '" '
+			             . 'class="button ' . esc_attr( $action[ 'class' ] ) . ' bookacti-booking-action bookacti-tip" '
+			             . 'data-tip="' . esc_attr( $action[ 'description' ] ) . '" '
+			             . 'data-booking-id="' . esc_attr( $booking->id ) . '" >';
 
 			if( $admin_or_front === 'front' || $action[ 'admin_or_front' ] === 'front' ) { 
 				$action_html .= esc_html( $action[ 'label' ] ); 
 			}
 
-			$action_html	.= '</a>';
+			$action_html .= '</a>';
 			$actions_html_array[ $action_id ] = $action_html;
 	}
 
@@ -1489,8 +1496,8 @@ function bookacti_get_booking_actions_html( $booking, $admin_or_front = 'both', 
 	// Add a container
 	if( $with_container ) {
 		$actions_html = '<div class="bookacti-booking-actions" data-booking-id="' . esc_attr( $booking->id ) . '" >'
-					  .	$actions_html
-					  . '</div>';
+		              .	$actions_html
+		              . '</div>';
 	}
 
 	return apply_filters( 'bookacti_booking_actions_html', $actions_html, $booking, $admin_or_front );
@@ -1509,8 +1516,8 @@ function bookacti_get_booking_price_details_html( $prices_array, $booking ) {
 	foreach( $prices_array as $price_id => $price ) {
 		if( ! is_array( $price ) )         { continue; }
 		if( ! isset( $price[ 'value' ] ) ) { continue; }
-		if( ! isset( $price[ 'title' ] ) )			{ $price[ 'title' ] = $price_id; }
-		if( ! isset( $price[ 'display_value' ] ) )	{ $price[ 'display_value' ] = $price[ 'value' ]; }
+		if( ! isset( $price[ 'title' ] ) )         { $price[ 'title' ] = $price_id; }
+		if( ! isset( $price[ 'display_value' ] ) ) { $price[ 'display_value' ] = $price[ 'value' ]; }
 
 		$prices_html .= '<div class="bookacti-price-details bookacti-price-details-' . esc_attr( $price_id ) . '" data-price="' . $price[ 'value' ] . '"><span class="bookacti-booking-price-details-title">' . $price[ 'title' ] . ': </span><span class="bookacti-booking-price-details-value">' . $price[ 'display_value' ] . '</span></div>';
 	}
@@ -1527,8 +1534,8 @@ function bookacti_get_booking_price_details_html( $prices_array, $booking ) {
 /**
  * Get booking group actions array
  * @since 1.6.0 (replace bookacti_get_booking_group_actions_array)
- * @version 1.14.0
- * @param string $admin_or_front Can be "both", "admin", "front. Default "both".
+ * @version 1.16.0
+ * @param string $admin_or_front Can be "both", "admin", "front". Default "both".
  * @return array
  */
 function bookacti_get_booking_group_actions( $admin_or_front = 'both' ) {
@@ -1563,6 +1570,12 @@ function bookacti_get_booking_group_actions( $admin_or_front = 'both' ) {
 			'description'    => esc_html__( 'Refund the booking group with one of the available refund method.', 'booking-activities' ),
 			'link'           => '',
 			'admin_or_front' => 'both' ),
+		'send-notification' => array( 
+			'class'          => 'bookacti-send-booking-group-notification',
+			'label'          => esc_html__( 'Send notification', 'booking-activities' ),
+			'description'    => esc_html__( 'Send a notification.', 'booking-activities' ),
+			'link'           => '',
+			'admin_or_front' => 'admin' ),
 		'delete' => array( 
 			'class'          => 'bookacti-delete-booking-group bookacti-delete-button',
 			'label'          => esc_html__( 'Delete', 'booking-activities' ),
@@ -1585,9 +1598,9 @@ function bookacti_get_booking_group_actions( $admin_or_front = 'both' ) {
 /**
  * Get booking actions according to booking id
  * @since 1.6.0 (replace bookacti_get_booking_actions_array)
- * @version 1.12.3
+ * @version 1.16.0
  * @param array|int $bookings
- * @param string $admin_or_front Can be "both", "admin", "front. Default "both".
+ * @param string $admin_or_front Can be "both", "admin", "front". Default "both".
  * @return array
  */
 function bookacti_get_booking_group_actions_by_booking_group( $bookings, $admin_or_front = 'both' ) {
@@ -1597,8 +1610,9 @@ function bookacti_get_booking_group_actions_by_booking_group( $bookings, $admin_
 
 	$actions = bookacti_get_booking_group_actions( $admin_or_front );
 	if( ! current_user_can( 'bookacti_edit_bookings' ) ) {
-		if( isset( $actions[ 'change-state' ] ) ) { unset( $actions[ 'change-state' ] ); }
-		if( isset( $actions[ 'change-quantity' ] ) ) { unset( $actions[ 'change-quantity' ] ); }
+		if( isset( $actions[ 'change-state' ] ) )      { unset( $actions[ 'change-state' ] ); }
+		if( isset( $actions[ 'change-quantity' ] ) )   { unset( $actions[ 'change-quantity' ] ); }
+		if( isset( $actions[ 'send-notification' ] ) ) { unset( $actions[ 'send-notification' ] ); }
 	}
 	if( ! current_user_can( 'bookacti_manage_bookings' ) && ! current_user_can( 'bookacti_edit_bookings' ) ) {
 		if( isset( $actions[ 'edit-single' ] ) ) { unset( $actions[ 'edit-single' ] ); }
@@ -1643,11 +1657,11 @@ function bookacti_get_booking_group_actions_html( $bookings, $admin_or_front = '
 	$actions_html_array	= array();
 	foreach( $actions as $action_id => $action ){
 		$action_html = '<a '
-					 . 'href="' . esc_url( $action[ 'link' ] ) . '" '
-					 . 'id="bookacti-booking-group-action-' . esc_attr( $action_id ) . '-' . $booking_group_id . '" '
-					 . 'class="button ' . esc_attr( $action[ 'class' ] ) . ' bookacti-booking-group-action bookacti-tip" '
-					 . 'data-tip="' . esc_attr( $action[ 'description' ] ) . '" '
-					 . 'data-booking-group-id="' . $booking_group_id . '" >';
+		             . 'href="' . esc_url( $action[ 'link' ] ) . '" '
+		             . 'id="bookacti-booking-group-action-' . esc_attr( $action_id ) . '-' . $booking_group_id . '" '
+		             . 'class="button ' . esc_attr( $action[ 'class' ] ) . ' bookacti-booking-group-action bookacti-tip" '
+		             . 'data-tip="' . esc_attr( $action[ 'description' ] ) . '" '
+		             . 'data-booking-group-id="' . $booking_group_id . '" >';
 
 		if( $admin_or_front === 'front' || $action[ 'admin_or_front' ] === 'front' ) { 
 			$action_html .= esc_html( $action[ 'label' ] ); 
@@ -1667,8 +1681,8 @@ function bookacti_get_booking_group_actions_html( $bookings, $admin_or_front = '
 	// Add a container
 	if( $with_container ) {
 		$actions_html = '<div class="bookacti-booking-group-actions" data-booking-group-id="' . $booking_group_id . '" >' 
-					  .	$actions_html
-					  . '</div>';
+		              .	$actions_html
+		              . '</div>';
 	}
 
 	return apply_filters( 'bookacti_booking_group_actions_html', $actions_html, $bookings, $admin_or_front, $actions, $with_container );

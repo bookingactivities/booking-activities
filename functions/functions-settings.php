@@ -713,7 +713,7 @@ function bookacti_settings_field_admin_reschedule_scope_callback() {
 /**
  * Settings section callback - Notifications - General settings (displayed before settings)
  * @since 1.2.1 (was bookacti_settings_section_notifications_callback in 1.2.0)
- * @version 1.8.6
+ * @version 1.16.0
  */
 function bookacti_settings_section_notifications_general_callback() { 
 	// Display a table of configurable notifications
@@ -737,7 +737,6 @@ function bookacti_settings_section_notifications_general_callback() {
 			<tbody>
 		<?php
 			// Get notifications IDs and their settings
-			$notifications_ids = array();
 			$notifications_settings = array();
 			$notifications_ids = array_keys( bookacti_get_notifications_default_settings() );
 			foreach( $notifications_ids as $notification_id ) {
