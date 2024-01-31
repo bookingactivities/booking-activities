@@ -1,4 +1,6 @@
 $j( document ).ready( function() {
+	var user_auth_key = '';
+	
 	/**
 	 * Init booking actions
 	 */
@@ -156,7 +158,7 @@ function bookacti_dialog_update_bookings_calendar_settings() {
 
 /**
  * Cancel booking dialog
- * @version 1.15.15
+ * @version 1.16.0
  * @param {int} booking_id
  * @param {string} booking_type
  */
@@ -204,6 +206,7 @@ function bookacti_dialog_cancel_booking( booking_id, booking_type ) {
 					'booking_id': booking_id,
 					'context': bookacti_localized.is_admin ? 'admin_booking_list' : 'user_booking_list',
 					'columns': columns,
+					'user_auth_key': typeof user_auth_key !== 'undefined' ? user_auth_key : '',
 					'nonce': bookacti_localized.nonce_cancel_booking
 				};
 				row.first().trigger( 'bookacti_booking_action_data', [ data, booking_id, booking_type, 'cancel' ] );
@@ -274,7 +277,7 @@ function bookacti_dialog_cancel_booking( booking_id, booking_type ) {
 
 /**
  * Refund a booking
- * @version 1.15.15
+ * @version 1.16.0
  * @param {int} booking_id
  * @param {string} booking_type
  */
@@ -316,6 +319,7 @@ function bookacti_dialog_refund_booking( booking_id, booking_type ) {
 			'action': action_html, 
 			'booking_id': booking_id,
 			'is_admin': bookacti_localized.is_admin ? 1 : 0,
+			'user_auth_key': typeof user_auth_key !== 'undefined' ? user_auth_key : '',
 			'nonce': bookacti_localized.nonce_refund_booking
 		},
 		dataType: 'json',
@@ -380,6 +384,7 @@ function bookacti_dialog_refund_booking( booking_id, booking_type ) {
 								'is_admin': bookacti_localized.is_admin ? 1 : 0,
 								'context': bookacti_localized.is_admin ? 'admin_booking_list' : 'user_booking_list',
 								'columns': columns,
+								'user_auth_key': typeof user_auth_key !== 'undefined' ? user_auth_key : '',
 								'nonce': bookacti_localized.nonce_refund_booking
 							};
 							row.first().trigger( 'bookacti_booking_action_data', [ data, booking_id, booking_type, 'refund' ] );
@@ -799,7 +804,7 @@ function bookacti_dialog_change_booking_quantity( booking_id, booking_type ) {
 
 /**
  * Reschedule booking dialog
- * @version 1.15.15
+ * @version 1.16.0
  * @param {int} booking_id
  */
 function bookacti_dialog_reschedule_booking( booking_id ) {
@@ -835,6 +840,7 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 		type: 'POST',
 		data: { 'action': 'bookactiGetRescheduleBookingSystemData', 
 				'booking_id': booking_id,
+				'user_auth_key': typeof user_auth_key !== 'undefined' ? user_auth_key : '',
 				'is_admin': bookacti_localized.is_admin ? 1 : 0
 			},
 		dataType: 'json',
@@ -905,6 +911,7 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 					'context': bookacti_localized.is_admin ? 'admin_booking_list' : 'user_booking_list',
 					'is_admin': bookacti_localized.is_admin ? 1 : 0,
 					'send_notifications': send_notifications,
+					'user_auth_key': typeof user_auth_key !== 'undefined' ? user_auth_key : '',
 					'nonce': bookacti_localized.nonce_reschedule_booking
 				};
 				row.first().trigger( 'bookacti_booking_action_data', [ data, booking_id, 'single', 'reschedule' ] );

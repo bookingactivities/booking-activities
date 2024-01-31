@@ -251,9 +251,10 @@ function bookacti_init_booking_actions() {
 	$j( '.bookacti-user-booking-list-table, .woocommerce-table, #bookacti-booking-list' ).on( 'click', '.bookacti-booking-action, .bookacti-booking-group-action', function ( e ) {
 		e.preventDefault();
 		
+		user_auth_key = $j( this ).data( 'user-auth-key' ).length ? $j( this ).data( 'user-auth-key' ) : '';
+		
 		// Single Bookings
 		if( $j( this ).hasClass( 'bookacti-booking-action' ) ) {
-
 			var booking_id = $j( this ).data( 'booking-id' );
 			if( $j( this ).hasClass( 'bookacti-cancel-booking' ) ){
 				bookacti_dialog_cancel_booking( booking_id, 'single' );

@@ -622,7 +622,7 @@ add_filter( 'woocommerce_email_order_items_table', 'bookacti_order_items_unset_e
 /**
  * Add WC data to the booking list
  * @since 1.6.0 (was bookacti_woocommerce_fill_booking_list_custom_columns before)
- * @version 1.15.17
+ * @version 1.16.0
  * @param array $booking_list_items
  * @param array $bookings
  * @param array $booking_groups
@@ -725,7 +725,7 @@ function bookacti_add_wc_data_to_booking_list_items( $booking_list_items, $booki
 			$booking_list_items[ $booking_id ][ 'price_details' ][ 'order_item' ] = array(
 				'title' => esc_html__( 'WC item', 'booking-activities' ),
 				'value' => $total_price,
-				'display_value' => wc_price( $total_price )
+				'display_value' => html_entity_decode( wc_price( $total_price ) )
 			);
 			
 			// Try to find a coupon code
@@ -1088,7 +1088,7 @@ add_filter( 'bookacti_refund_actions_by_booking_group', 'bookacti_filter_refund_
 
 /**
  * Refund amount to display in refund dialog
- * @version 1.9.0
+ * @version 1.16.0
  * @param string $refund_amount
  * @param array $bookings
  * @param string $booking_type
@@ -1109,7 +1109,7 @@ function bookacti_display_price_to_be_refunded( $refund_amount, $bookings, $book
 	// Booking Activities assumes that 1 order item can have only 1 booking (group). So the item price is the booking (group) price.
 	$refund_amount = bookacti_wc_get_item_remaining_refund_amount( $item );
 	
-	return wc_price( $refund_amount );
+	return html_entity_decode( wc_price( $refund_amount ) );
 }
 add_filter( 'bookacti_booking_refund_amount', 'bookacti_display_price_to_be_refunded', 20, 3 );
 
@@ -1312,7 +1312,7 @@ add_filter( 'bookacti_booking_refunds_formatted', 'bookacti_wc_format_booking_re
 /**
  * Display additional booking refund data
  * @since 1.9.0
- * @version 1.11.3
+ * @version 1.16.0
  * @param array $data
  * @param array $refund
  * @param int|string $refund_id
@@ -1337,7 +1337,7 @@ function bookacti_wc_booking_refund_displayed_data( $data, $refund, $refund_id )
 	if( isset( $refund[ 'amount' ] ) )	{ 
 		$data[ 'amount' ] = array(
 			'label' => esc_html__( 'Amount', 'booking-activities' ),
-			'value' => wc_price( $refund[ 'amount' ] )
+			'value' => html_entity_decode( wc_price( $refund[ 'amount' ] ) )
 		);
 	}
 	return $data;

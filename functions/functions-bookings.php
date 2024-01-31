@@ -584,7 +584,7 @@ function bookacti_get_removed_event_bookings_to_cancel( $event ) {
 
 /**
  * Check if user is allowed to manage a booking
- * @version 1.12.3
+ * @version 1.16.0
  * @param object|int $booking
  * @param bool $allow_self Return true if the booking belongs to the user.
  * @param array $capabilities The user must have one of these capabilities. Default to array( 'bookacti_edit_bookings' ).
@@ -595,31 +595,35 @@ function bookacti_user_can_manage_booking( $booking, $allow_self = true, $capabi
 	$user_can_manage_booking = false;
 	
 	// Get desired user (fallback to current user)
-	$user = false;
-	if( ! $user_id && function_exists( 'wp_get_current_user' ) ) { $user = wp_get_current_user(); }
-	else if( $user_id && function_exists( 'get_user_by' ) ) { $user = get_user_by( 'id', $user_id ); }
+	$user = $user_id ? get_user_by( 'id', $user_id ) : wp_get_current_user();
 	
+	// Check capabilities
+	if( ! $capabilities ) {
+		$capabilities = array( 'bookacti_edit_bookings' );
+	}
+	
+	$has_cap = false;
 	if( $user ) {
-		// Check capabilities
-		$has_cap = false;
-		if( ! $capabilities ) { $capabilities = array( 'bookacti_edit_bookings' ); }
-		foreach( $capabilities as $capability ) { if( user_can( $user, $capability ) ) { $has_cap = true; break; } }
-		
-		// Get booking
-		if( is_numeric( $booking ) ) { $booking = bookacti_get_booking_by_id( $booking, true ); }
-	
-		if( $booking ) {
-			$booking_user_id = isset( $booking->user_id ) && is_numeric( $booking->user_id ) ? intval( $booking->user_id ) : 0;
-			$is_own = $booking_user_id && $booking_user_id === intval( $user->ID );
-			if( ( $has_cap && bookacti_user_can_manage_template( $booking->template_id, $user->ID ) ) 
-			 || ( $allow_self && $is_own )
-			) { 
-				$user_can_manage_booking = true; 
+		foreach( $capabilities as $capability ) {
+			if( user_can( $user, $capability ) ) {
+				$has_cap = true;
+				break;
 			}
-		} 
-		
-		// Allow administrators
-		else if( in_array( 'administrator', (array) $user->roles, true ) ) { $user_can_manage_booking = true; }
+		}
+	}
+	
+	// Get booking
+	if( is_numeric( $booking ) ) { 
+		$booking = bookacti_get_booking_by_id( $booking, true );
+	}
+	
+	if( $booking ) {
+		$booking_user_id = isset( $booking->user_id ) && is_numeric( $booking->user_id ) ? intval( $booking->user_id ) : 0;
+		$is_own = apply_filters( 'bookacti_allow_others_booking_changes', $booking_user_id && $booking_user_id === intval( $user_id ), $booking, 'edit' );
+		if( ( $has_cap && bookacti_user_can_manage_template( $booking->template_id, $user_id ) ) 
+		 || ( $allow_self && $is_own ) ) { 
+			$user_can_manage_booking = true; 
+		}
 	}
 	
 	return apply_filters( 'bookacti_user_can_manage_booking', $user_can_manage_booking, $booking, $user_id );
@@ -1454,7 +1458,7 @@ function bookacti_get_booking_actions_by_booking( $booking, $admin_or_front = 'b
 
 /**
  * Get booking actions html
- * @version 1.12.0
+ * @version 1.16.0
  * @param object|int $booking
  * @param string $admin_or_front Can be "both", "admin", "front". Default "both".
  * @param array $actions
@@ -1469,13 +1473,16 @@ function bookacti_get_booking_actions_html( $booking, $admin_or_front = 'both', 
 	// Get booking actions
 	if( ! $actions ) { $actions = bookacti_get_booking_actions_by_booking( $booking, $admin_or_front ); }
 	
+	$auth_key = ! empty( $_REQUEST[ 'user_auth_key' ] ) ? sanitize_text_field( $_REQUEST[ 'user_auth_key' ] ) : '';
+	
 	$actions_html_array	= array();
 	foreach( $actions as $action_id => $action ){
 			$action_html = '<a '
 			             . 'href="' . esc_url( $action[ 'link' ] ) . '" '
-			             . 'id="bookacti-booking-action-' . esc_attr( $action_id ) . '-' . esc_attr( $booking->id ) . '" '
+			             . 'id="bookacti-booking-action-' . esc_attr( $action_id . '-' . $booking->id ) . '" '
 			             . 'class="button ' . esc_attr( $action[ 'class' ] ) . ' bookacti-booking-action bookacti-tip" '
 			             . 'data-tip="' . esc_attr( $action[ 'description' ] ) . '" '
+			             . 'data-user-auth-key="' . esc_attr( $auth_key ) . '"'
 			             . 'data-booking-id="' . esc_attr( $booking->id ) . '" >';
 
 			if( $admin_or_front === 'front' || $action[ 'admin_or_front' ] === 'front' ) { 
@@ -1633,7 +1640,7 @@ function bookacti_get_booking_group_actions_by_booking_group( $bookings, $admin_
 
 /**
  * Get booking group actions html
- * @version 1.12.0
+ * @version 1.16.0
  * @param array|int $bookings
  * @param string $admin_or_front Can be "both", "admin", "front. Default "both".
  * @param array $actions
@@ -1653,15 +1660,18 @@ function bookacti_get_booking_group_actions_html( $bookings, $admin_or_front = '
 	if( ! $actions ) {
 		$actions = bookacti_get_booking_group_actions_by_booking_group( $bookings, $admin_or_front );
 	}
+	
+	$auth_key = ! empty( $_REQUEST[ 'user_auth_key' ] ) ? sanitize_text_field( $_REQUEST[ 'user_auth_key' ] ) : '';
 
 	$actions_html_array	= array();
 	foreach( $actions as $action_id => $action ){
 		$action_html = '<a '
 		             . 'href="' . esc_url( $action[ 'link' ] ) . '" '
-		             . 'id="bookacti-booking-group-action-' . esc_attr( $action_id ) . '-' . $booking_group_id . '" '
+		             . 'id="bookacti-booking-group-action-' . esc_attr( $action_id . '-' . $booking_group_id ) . '" '
 		             . 'class="button ' . esc_attr( $action[ 'class' ] ) . ' bookacti-booking-group-action bookacti-tip" '
 		             . 'data-tip="' . esc_attr( $action[ 'description' ] ) . '" '
-		             . 'data-booking-group-id="' . $booking_group_id . '" >';
+		             . 'data-user-auth-key="' . esc_attr( $auth_key ) . '"'
+		             . 'data-booking-group-id="' . esc_attr( $booking_group_id ) . '" >';
 
 		if( $admin_or_front === 'front' || $action[ 'admin_or_front' ] === 'front' ) { 
 			$action_html .= esc_html( $action[ 'label' ] ); 
@@ -1680,7 +1690,7 @@ function bookacti_get_booking_group_actions_html( $bookings, $admin_or_front = '
 
 	// Add a container
 	if( $with_container ) {
-		$actions_html = '<div class="bookacti-booking-group-actions" data-booking-group-id="' . $booking_group_id . '" >' 
+		$actions_html = '<div class="bookacti-booking-group-actions" data-booking-group-id="' . esc_attr( $booking_group_id ) . '" >' 
 		              .	$actions_html
 		              . '</div>';
 	}

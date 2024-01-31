@@ -12,7 +12,7 @@ if( ! isset( $GLOBALS[ 'global_bookacti_wc' ] ) ) { $GLOBALS[ 'global_bookacti_w
 
 /**
  * Add woocommerce related translations
- * @version 1.15.15
+ * @version 1.16.0
  * @param array $translation_array
  * @param array $messages
  * @return array
@@ -23,7 +23,7 @@ function bookacti_woocommerce_translation_array( $translation_array, $messages )
 	$translation_array[ 'day' ]                             = esc_html_x( 'day', 'singular of days','booking-activities' );
 	$translation_array[ 'error_cart_expired' ]              = esc_html__( 'Your cart has expired.', 'booking-activities' );
 	$translation_array[ 'add_product_to_cart_button_text' ] = esc_html__( 'Add to cart', 'woocommerce' );
-	$translation_array[ 'add_booking_to_cart_button_text' ] = $messages[ 'booking_form_submit_button' ][ 'value' ];
+	$translation_array[ 'add_booking_to_cart_button_text' ] = ! empty( $messages[ 'booking_form_submit_button' ][ 'value' ] ) ? $messages[ 'booking_form_submit_button' ][ 'value' ] : esc_html__( 'Book', 'booking-activities' );
 	$translation_array[ 'price_format' ]                    = get_woocommerce_price_format();
 	$translation_array[ 'price_currency_symbol' ]           = get_woocommerce_currency_symbol();
 	$translation_array[ 'price_thousand_separator' ]        = wc_get_price_thousand_separator();
@@ -42,6 +42,7 @@ add_filter( 'bookacti_translation_array', 'bookacti_woocommerce_translation_arra
 /**
  * Format price with WC settings
  * @since 1.15.15
+ * @version 1.16.0
  * @param string $formatted_price
  * @param int|float $amount
  * @param int|float $price_raw
@@ -49,7 +50,7 @@ add_filter( 'bookacti_translation_array', 'bookacti_woocommerce_translation_arra
  * @return string
  */
 function bookacti_wc_formatted_price( $formatted_price, $amount, $price_raw, $args_raw ) {
-	$wc_price = wc_price( $price_raw, $args_raw );
+	$wc_price = html_entity_decode( wc_price( $price_raw, $args_raw ) );
 	if( empty( $args_raw[ 'plain_text' ] ) ) { 
 		$wc_price = '<span class="bookacti-price">' . $wc_price . '</span>';
 	} else {
@@ -1909,7 +1910,7 @@ add_filter( 'bookacti_user_booking_list_default_columns', 'bookacti_reorder_wooc
 /**
  * Add WC data to the user booking list
  * @since 1.7.12 (was bookacti_fill_wc_price_column_in_booking_list)
- * @version 1.14.0
+ * @version 1.16.0
  * @param array $booking_list_items
  * @param array $bookings
  * @param array $booking_groups
@@ -1994,7 +1995,7 @@ function bookacti_add_wc_data_to_user_booking_list_items( $booking_list_items, $
 
 			// Fill price column
 			$order_item_total = $order_item->get_total() + $order_item->get_total_tax();
-			$booking_list_items[ $booking_id ][ 'price' ] = apply_filters( 'bookacti_user_booking_list_order_item_price', wc_price( $order_item_total ), $order_item, $booking_list_items[ $booking_id ], $booking_object, $order_item_booking_id[ 'type' ], $filters );
+			$booking_list_items[ $booking_id ][ 'price' ] = apply_filters( 'bookacti_user_booking_list_order_item_price', html_entity_decode( wc_price( $order_item_total ) ), $order_item, $booking_list_items[ $booking_id ], $booking_object, $order_item_booking_id[ 'type' ], $filters );
 			
 			
 			// Try to find a coupon code

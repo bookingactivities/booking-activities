@@ -637,6 +637,39 @@ function bookacti_controller_delete_booking() {
 add_action( 'wp_ajax_bookactiDeleteBooking', 'bookacti_controller_delete_booking' );
 
 
+/**
+ * Allow non logged in users to edit their bookings thanks to an authentication key in the URL
+ * @since 1.16.0
+ * @param bool $is_allowed
+ * @param object $booking
+ * @param string $context
+ * @return bool
+ */
+function bookacti_allow_to_manage_bookings_with_auth_key( $is_allowed, $booking, $context = '' ) {
+	if( empty( $_REQUEST[ 'user_auth_key' ] ) || $is_allowed ) { return $is_allowed; }
+	
+	$user_email = sanitize_email( bookacti_decrypt( sanitize_text_field( $_REQUEST[ 'user_auth_key' ] ) ) );
+	if( ! is_email( $user_email ) ) { $user_email = ''; }
+	if( ! $user_email ) { return $is_allowed; }
+	
+	$booking_user_id    = ! empty( $booking->user_id ) ? $booking->user_id : 0;
+	$booking_user_email = is_email( $booking_user_id ) ? $booking_user_id : '';
+	if( is_numeric( $booking_user_id ) ) {
+		$user = get_user_by( 'id', $booking_user_id );
+		if( $user && ! empty( $user->user_email ) && is_email( $user->user_email ) ) {
+			$booking_user_email = $user->user_email;
+		}
+	}
+	
+	if( $booking_user_email === $user_email ) {
+		$is_allowed = true;
+	}
+	
+	return $is_allowed;
+}
+add_filter( 'bookacti_allow_others_booking_changes', 'bookacti_allow_to_manage_bookings_with_auth_key', 10, 3 );
+
+
 
 
 // BOOKING GROUPS

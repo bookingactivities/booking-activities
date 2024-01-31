@@ -327,12 +327,15 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Feature - Add an option to allow administrators to reschedule a booking to an event of a different activity and / or to an event in a different calendar (in Settings > Cancellation tab)
 * Feature - Add an option to select the activities a booking can be rescheduled to (in Calendar Editor > the activity settings)
 * Feature - Manually send a notification from the backend booking list (in the Actions column)
+* Feature - Allow customers to manage their bookings without being logged in by using an authentication key in the URL of the page displaying the [bookingactivities_list] shortcode (see {user_auth_key} notification tag)
+* Feature - Add the {user_auth_key} notification tag (to be used as the user_auth_key URL parameter value, e.g.: yoursite/my-booking-list/?user_auth_key={user_auth_key})
 * Tweak - "Customer" booking filter: List the customer emails from booking made without accounts
 * Tweak - "Customer" booking filter: Display the bookings made with and without account by the selected customer (need a page refresh, not working with AJAX)
 * Tweak - You cannot display events from a calendar that the booking form author cannot manage
 * Tweak - You cannot reschedule a booking to an event located on a calendar that the original booking form author cannot manage
 * Fix - Booking filters may not be correctly applied after reloading the bookings page
 * Fix - Deleting an activity deleted it from all calendars instead of removing it only from the current calendar
+* Fix - Decode HTML entities before displaying WooCommerce price
 
 = 1.15.19 - 2024/01/25 =
 * Feature - Add an option to display only the first event of groups (in booking form > Calendar settings)

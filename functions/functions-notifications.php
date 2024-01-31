@@ -353,7 +353,7 @@ function bookacti_sanitize_notification_settings( $args, $notification_id = '' )
 /**
  * Get notifications tags
  * @since 1.2.0
- * @version 1.15.19
+ * @version 1.16.0
  * @param string $notification_id Optional.
  * @return array
  */
@@ -381,6 +381,7 @@ function bookacti_get_notifications_tags( $notification_id = '' ) {
 		'{user_phone}'             => esc_html__( 'The user phone number', 'booking-activities' ),
 		'{user_id}'                => esc_html__( 'The user ID. If the user has booked without account, this will display his email address.', 'booking-activities' ),
 		'{user_locale}'            => esc_html__( 'The user locale code. If the user has booked without account, the site locale will be used.', 'booking-activities' ),
+		'{user_auth_key}'          => esc_html__( 'The user authentication key, it allows users to manage their bookings without being logged in. Use it as the value of the user_auth_key parameter in the URL of a page where the [bookingactivities_list] shortcode is displayed (e.g.: https://example.net/my-bookings/?user_auth_key={user_auth_key}).', 'booking-activities' ),
 		'{user_ical_url}'          => esc_html__( 'URL to export the user list of bookings in ical format. You can append the "start" and "end" parameters with relative time format to this URL (e.g.: {user_ical_url}&start=today&end=next+year). If the user has booked without account, only the current booking is exported.', 'booking-activities' ),
 		'{booking_ical_url}'       => esc_html__( 'URL to export the current booking in ical format.', 'booking-activities' ),
 		'{price}'                  => esc_html__( 'Booking price, with currency.', 'booking-activities' ),
@@ -415,7 +416,7 @@ function bookacti_get_notifications_tags( $notification_id = '' ) {
 /**
  * Get notifications tags and values corresponding to given booking
  * @since 1.2.0
- * @version 1.15.19
+ * @version 1.16.0
  * @param object $booking
  * @param string $booking_type 'group' or 'single'
  * @param array $notification
@@ -511,6 +512,7 @@ function bookacti_get_notifications_tags_values( $booking, $booking_type, $notif
 				$booking_data[ '{user_email}' ]     = ! empty( $booking->user_email ) ? $booking->user_email : ( is_email( $booking->user_id ) ? $booking->user_id : '' );
 				$booking_data[ '{user_phone}' ]     = ! empty( $booking->user_phone ) ? $booking->user_phone : '';
 			}
+			$booking_data[ '{user_auth_key}' ] = $booking_data[ '{user_email}' ] && is_email( $booking_data[ '{user_email}' ] ) ? bookacti_encrypt( $booking_data[ '{user_email}' ] ) : '';
 		}
 		
 		$booking_ical_key = $user_ical_key ? $user_ical_key : ( ! empty( $booking->secret_key ) ? $booking->secret_key : '' );

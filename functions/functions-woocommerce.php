@@ -579,7 +579,7 @@ function bookacti_get_formatted_time_before_expiration( $expiration_date, $preci
 /**
  * Get product price as is it should be displayed in cart (with or without tax according to settings)
  * @since 1.9.0
- * @version 1.15.15
+ * @version 1.16.0
  * @global woocommerce $woocommerce
  * @param WC_Product $product
  * @param float $price
@@ -594,13 +594,13 @@ function bookacti_wc_get_displayed_product_price( $product, $price = '', $qty = 
 	if( $product->is_taxable() ) {
 		if( $woocommerce->cart->display_prices_including_tax() ) {
 			$display_price   = wc_get_price_including_tax( $product, array( 'price' => $price, 'qty' => $qty ) );
-			$formatted_price = wc_price( $display_price );
+			$formatted_price = html_entity_decode( wc_price( $display_price ) );
 			if( ! wc_prices_include_tax() && $woocommerce->cart->get_subtotal_tax() > 0 ) {
 				$formatted_price .= ' <small class="tax_label">' . $woocommerce->countries->inc_tax_or_vat() . '</small>';
 			}
 		} else {
 			$display_price   = wc_get_price_excluding_tax( $product, array( 'price' => $price, 'qty' => $qty ) );
-			$formatted_price = wc_price( $display_price );
+			$formatted_price = html_entity_decode( wc_price( $display_price ) );
 			if( wc_prices_include_tax() && $woocommerce->cart->get_subtotal_tax() > 0 ) {
 				$formatted_price .= ' <small class="tax_label">' . $woocommerce->countries->ex_tax_or_vat() . '</small>';
 			}
@@ -608,7 +608,7 @@ function bookacti_wc_get_displayed_product_price( $product, $price = '', $qty = 
 	} else {
 		$display_price   = $price !== '' ? max( 0.0, (float) $price ) : $product->get_price();
 		$display_price  *= $qty;
-		$formatted_price = wc_price( $price );
+		$formatted_price = html_entity_decode( wc_price( $price ) );
 	}
 	
 	return $formatted ? $formatted_price : $display_price;
@@ -1938,7 +1938,7 @@ function bookacti_update_order_bookings_on_order_refund( $refund ) {
 
 /**
  * Create a coupon to refund a booking
- * @version 1.12.9
+ * @version 1.16.0
  * @param array $bookings
  * @param string $booking_type Determine if the given id is a booking id or a booking group. Accepted values are 'single' or 'group'.
  * @param string $refund_message
@@ -2047,7 +2047,7 @@ function bookacti_refund_booking_with_coupon( $bookings, $booking_type, $refund_
 
 		return array( 
 			'status'        => 'success', 
-			'coupon_amount' => is_array( $existing_coupon ) && isset( $existing_coupon[ 'coupon' ][ 'amount' ] ) ? wc_price( $existing_coupon[ 'coupon' ][ 'amount' ] ) : '', 
+			'coupon_amount' => is_array( $existing_coupon ) && isset( $existing_coupon[ 'coupon' ][ 'amount' ] ) ? html_entity_decode( wc_price( $existing_coupon[ 'coupon' ][ 'amount' ] ) ) : '', 
 			'coupon_code'   => $existing_coupon_code, 
 			'new_state'     => 'refunded' 
 		);
@@ -2096,7 +2096,7 @@ function bookacti_refund_booking_with_coupon( $bookings, $booking_type, $refund_
 		
 		$return_data = array( 
 			'status'        => 'success', 
-			'coupon_amount' => wc_price( $data[ 'coupon' ][ 'amount' ] ), 
+			'coupon_amount' => html_entity_decode( wc_price( $data[ 'coupon' ][ 'amount' ] ) ), 
 			'coupon_code'   => $coupon[ 'coupon' ][ 'code' ], 
 			'new_state'     => 'refunded' 
 		);
