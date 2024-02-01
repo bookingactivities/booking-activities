@@ -648,7 +648,7 @@ add_action( 'wp_ajax_bookactiDeleteBooking', 'bookacti_controller_delete_booking
 function bookacti_allow_to_manage_bookings_with_auth_key( $is_allowed, $booking, $context = '' ) {
 	if( empty( $_REQUEST[ 'user_auth_key' ] ) || $is_allowed ) { return $is_allowed; }
 	
-	$user_email = sanitize_email( bookacti_decrypt( sanitize_text_field( $_REQUEST[ 'user_auth_key' ] ) ) );
+	$user_email = sanitize_email( bookacti_decrypt( sanitize_text_field( $_REQUEST[ 'user_auth_key' ] ), 'user_auth' ) );
 	if( ! is_email( $user_email ) ) { $user_email = ''; }
 	if( ! $user_email ) { return $is_allowed; }
 	

@@ -90,7 +90,7 @@ function bookacti_shortcode_booking_list( $raw_atts = array(), $content = null, 
 		// Check if the user is passed to the URL
 		$user_id = '';
 		if( ! empty( $_REQUEST[ 'user_auth_key' ] ) ) {
-			$user_decrypted = bookacti_decrypt( sanitize_text_field( $_REQUEST[ 'user_auth_key' ] ) );
+			$user_decrypted = bookacti_decrypt( sanitize_text_field( $_REQUEST[ 'user_auth_key' ] ), 'user_auth' );
 			if( is_email( sanitize_email( $user_decrypted ) ) ) {
 				$user_id = sanitize_email( $user_decrypted );
 			}

@@ -151,11 +151,12 @@ function bookacti_get_string_between( $string, $start, $end ) {
 /**
  * Encrypt a string
  * @since 1.7.15
- * @version 1.12.7
+ * @version 1.16.0
  * @param string $string
+ * @param $context $string
  * @return string
  */
-function bookacti_encrypt( $string ) {
+function bookacti_encrypt( $string, $context = '' ) {
 	$secret_key = get_option( 'bookacti_secret_key' );
 	$secret_iv  = get_option( 'bookacti_secret_iv' );
 
@@ -164,8 +165,8 @@ function bookacti_encrypt( $string ) {
 
 	$output = $string;
 	$encrypt_method = 'AES-256-CBC';
-	$key = hash( 'sha256', $secret_key );
-	$iv  = substr( hash( 'sha256', $secret_iv ), 0, 16 );
+	$key = hash( 'sha256', $context . $secret_key );
+	$iv  = substr( hash( 'sha256', $context . $secret_iv ), 0, 16 );
 
 	if( function_exists( 'openssl_encrypt' ) && version_compare( phpversion(), '5.3.3', '>=' ) ) {
 		$output = base64_encode( openssl_encrypt( $string, $encrypt_method, $key, 0, $iv ) );
@@ -180,10 +181,12 @@ function bookacti_encrypt( $string ) {
 /**
  * Dencrypt a string
  * @since 1.7.15
+ * @version 1.16.0
  * @param string $string
+ * @param string $context
  * @return string
  */
-function bookacti_decrypt( $string ) {
+function bookacti_decrypt( $string, $context = '' ) {
 	$secret_key = get_option( 'bookacti_secret_key' );
 	$secret_iv  = get_option( 'bookacti_secret_iv' );
 
@@ -191,8 +194,8 @@ function bookacti_decrypt( $string ) {
 
 	$output = $string;
 	$encrypt_method = 'AES-256-CBC';
-	$key = hash( 'sha256', $secret_key );
-	$iv  = substr( hash( 'sha256', $secret_iv ), 0, 16 );
+	$key = hash( 'sha256', $context . $secret_key );
+	$iv  = substr( hash( 'sha256', $context . $secret_iv ), 0, 16 );
 
 	if( function_exists( 'openssl_decrypt' ) && version_compare( phpversion(), '5.3.3', '>=' ) ) {
 		$output = openssl_decrypt( base64_decode( $string ), $encrypt_method, $key, 0, $iv );
