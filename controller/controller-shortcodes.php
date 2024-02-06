@@ -88,19 +88,24 @@ function bookacti_shortcode_booking_list( $raw_atts = array(), $content = null, 
 	// If the user is not logged in
 	if( ! is_user_logged_in() ) {
 		// Check if the user is passed to the URL
-		$user_id = '';
+		$user_email = '';
 		if( ! empty( $_REQUEST[ 'user_auth_key' ] ) ) {
 			$user_decrypted = bookacti_decrypt( sanitize_text_field( $_REQUEST[ 'user_auth_key' ] ), 'user_auth' );
 			if( is_email( sanitize_email( $user_decrypted ) ) ) {
-				$user_id = sanitize_email( $user_decrypted );
+				$user_email = sanitize_email( $user_decrypted );
 			}
-			if( $user_id && ( empty( $raw_atts[ 'user_id' ] ) || ( ! empty( $raw_atts[ 'user_id' ] ) && $raw_atts[ 'user_id' ] === 'current' ) ) ) {
-				$atts[ 'user_id' ] = $user_id;
+			if( $user_email && ( empty( $raw_atts[ 'user_id' ] ) || ( ! empty( $raw_atts[ 'user_id' ] ) && $raw_atts[ 'user_id' ] === 'current' ) ) ) {
+				$atts[ 'in__user_id' ] = array( $user_email );
+				$user = get_user_by( 'email', $user_email );
+				if( $user ) {
+					$atts[ 'in__user_id' ][] = intval( $user->ID );
+				}
+				unset( $atts[ 'user_id' ] );
 			}
 		}
 		
 		// If a login form is defined, show it instead of the booking list
-		if( ! $user_id && ! empty( $raw_atts[ 'login_form' ] ) ) {
+		if( ! $user_email && ! empty( $raw_atts[ 'login_form' ] ) ) {
 			$atts[ 'form' ] = $raw_atts[ 'login_form' ];
 			return bookacti_shortcode_login_form( $atts, $content, $tag );
 		}

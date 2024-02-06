@@ -25,6 +25,27 @@ add_action( 'bookacti_deactivate', 'bookacti_deregister_cron_event_to_clean_late
 
 
 /**
+ * Controller - Send async notifications
+ * @since 1.16.0
+ */
+function bookacti_controller_send_async_notifications() {
+	// Do not send on AJAX calls to avoid multiple calls and expired cache
+	$is_ajax = function_exists( 'wp_doing_ajax' ) ? wp_doing_ajax() : defined( 'DOING_AJAX' );
+	if( $is_ajax ) { return; }
+	
+	// Check if CRON is running (so it doesn't slow down any users)
+	if( ! wp_doing_cron() ) { return; }
+	
+	// Check if async notifications are allowed
+	$allow_async = apply_filters( 'bookacti_allow_async_notifications', bookacti_get_setting_value( 'bookacti_notifications_settings', 'notifications_async' ) );
+	if( ! $allow_async ) { return; }
+	
+	bookacti_send_async_notifications();
+}
+add_action( 'init', 'bookacti_controller_send_async_notifications', 100 );
+
+
+/**
  * Clean the latest emails logs
  * @since 1.7.1
  */
@@ -76,7 +97,6 @@ function bookacti_send_notification_when_booking_is_made( $return_array, $bookin
 	}
 }
 add_action( 'bookacti_booking_form_validated', 'bookacti_send_notification_when_booking_is_made', 100, 3 );
-
 
 
 /**

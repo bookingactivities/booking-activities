@@ -129,16 +129,15 @@ function bookacti_increase_max_execution_time( $context = '' ) {
 /**
  * Get a substring between two specific strings
  * @since 1.7.10
+ * @version 1.16.0
  * @param string $string
  * @param string $start
  * @param string $end
  * @return string
  */
 function bookacti_get_string_between( $string, $start, $end ) {
-	$string = ' ' . $string;
 	$ini = strpos( $string, $start );
-
-	if( $ini == 0 ) { return ''; }
+	if( $ini === false ) { return ''; }
 
 	$ini += strlen( $start );
 	$len = strpos( $string, $end, $ini ) - $ini;
@@ -600,7 +599,7 @@ function bookacti_get_active_add_ons( $prefix = '', $exclude = array( 'balau' ) 
 /**
  * Get add-on data by prefix
  * @since 1.7.14
- * @version 1.15.17
+ * @version 1.16.0
  * @param string $prefix
  * @param array $exclude
  * @return array
@@ -621,7 +620,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-notification-pack', 
 			'end_of_life' => '', 
 			'download_id' => 1393,
-			'min_version' => '1.3.1'
+			'min_version' => '1.3.3'
 		),
 		'bapap' => array( 
 			'title'       => 'Prices and Credits', 
@@ -1817,6 +1816,49 @@ function bookacti_substr( $string, $offset = 0, $length = null ) {
 		$substr = implode( '', $slice );
 	}
 	return $substr;
+}
+
+
+/**
+ * Array replace recursive, but only for associative arrays
+ * @since 1.16.0
+ * @param array $array
+ * @param array $defaults
+ * @param array $recursive_keys
+ * @return array
+ */
+function bookacti_associative_array_replace_recursive( $array, $defaults, $recursive_keys = array() ) {
+	if( ! is_array( $array ) )    { $array = array(); }
+	if( ! is_array( $defaults ) ) { $defaults = array(); }
+	
+	$merged_array = $array;
+	
+	foreach( $defaults as $key => $default_value ) {
+		// Check if the value and the default value are associative arrays
+		$array_value   = isset( $array[ $key ] ) ? $array[ $key ] : array();
+		$array_keys    = is_array( $array_value ) ? array_keys( $array_value ) : array();
+		$defaults_keys = is_array( $default_value ) ? array_keys( $default_value ) : array();
+		$are_assoc     = $array_keys && $defaults_keys && $defaults_keys !== array_keys( $defaults_keys ) && $array_keys !== array_keys( $array_keys );
+		
+		// Keep the array value, except if it is an associative array
+		if( isset( $array[ $key ] ) && ( ! is_array( $array[ $key ] ) || ! $are_assoc ) ) {
+			continue;
+		}
+		
+		// For associative arrays, add the default value of each missing key
+		if( $are_assoc ) {
+			$parent_keys          = array_merge( $recursive_keys, array( $key ) );
+			$merged_array[ $key ] = bookacti_associative_array_replace_recursive( $array_value, $default_value, $parent_keys );
+			continue;
+		}
+		
+		// Add the default value of the missing key
+		if( ! isset( $array[ $key ] ) ) {
+			$merged_array[ $key ] = $default_value;
+		}
+	}
+	
+	return $merged_array;
 }
 
 
