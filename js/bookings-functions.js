@@ -51,7 +51,7 @@ $j( document ).ready( function() {
 /**
  * Filter the booking list with current filters values
  * @since 1.8.0
- * @version 1.15.15
+ * @version 1.16.0
  * @param {Int} paged
  */
 function bookacti_filter_booking_list( paged ) {
@@ -70,7 +70,7 @@ function bookacti_filter_booking_list( paged ) {
 		});
 	}
 	
-	booking_system.trigger( 'bookacti_filter_booking_list_data', [ data ] );
+	$j( '#bookacti-booking-list-filters-form' ).trigger( 'bookacti_filter_booking_list_data', [ data ] );
 	
 	var column_nb = $j( '#bookacti-booking-list thead .manage-column:not(.hidden)' ).length ? $j( '#bookacti-booking-list thead .manage-column:not(.hidden)' ).length : 1;
 	
@@ -262,7 +262,7 @@ function bookacti_init_booking_actions() {
 				bookacti_dialog_reschedule_booking( booking_id );
 			} else if( $j( this ).hasClass( 'bookacti-refund-booking' ) ){
 				bookacti_dialog_refund_booking( booking_id, 'single' );
-			} else if( $j( this ).hasClass( 'bookacti-change-booking-state' ) ){
+			} else if( $j( this ).hasClass( 'bookacti-change-booking-status' ) ){
 				bookacti_dialog_change_booking_state( booking_id, 'single' );
 			} else if( $j( this ).hasClass( 'bookacti-change-booking-quantity' ) ){
 				bookacti_dialog_change_booking_quantity( booking_id, 'single' );
@@ -309,12 +309,42 @@ function bookacti_init_booking_actions() {
 /**
  * Init booking bulk actions
  * @since 1.6.0
- * @version 1.8.0
+ * @version 1.16.0
  */
 function bookacti_init_booking_bulk_actions() {
-	$j( 'body' ).on( 'submit', '.bookacti-bookings-bulk-action', function( e ) {
-		if( $j( this ).find( '[name="action"]' ).val() == -1 || $j( this ).find( '[name="action2"]' ).val() == -1 ) {
-			e.preventDefault();
+	$j( '#bookacti-bookings-container' ).on( 'click', '.bulkactions input[type="submit"]', function( e ) {
+		e.preventDefault();
+		var action = $j( this ).siblings( 'select[name^="action"]' ).val();
+		if( ! action ) { return; }
+		
+		var booking_selection = {
+			'booking_ids': [],
+			'booking_group_ids': [],
+			'all': parseInt( $j( '#bookacti-all-selected' ).val() ) ? 1 : 0
+		};
+		
+		if( ! booking_selection.all ) {
+			$j( '#bookacti-bookings-container tbody .check-column input[name="booking_ids[]"]:checked' ).each( function() {
+				booking_selection.booking_ids.push( parseInt( $j( this ).val() ) );
+			});
+
+			$j( '#bookacti-bookings-container tbody .check-column input[name="booking_group_ids[]"]:checked' ).each( function() {
+				booking_selection.booking_group_ids.push( parseInt( $j( this ).val() ) );
+			});
+		}
+		
+		if( action === 'reschedule' ) {
+			bookacti_dialog_reschedule_booking( booking_id );
+		} else if( action === 'refund' ) {
+			bookacti_dialog_refund_booking( booking_id, 'single' );
+		} else if( action === 'edit_status' ) {
+			bookacti_dialog_change_bookings_status( booking_selection );
+		} else if( action === 'edit_quantity' ) {
+			bookacti_dialog_change_booking_quantity( booking_id, 'single' );
+		} else if( action === 'send_notification' ) {
+			bookacti_dialog_send_booking_notification( booking_id, 'single' );
+		} else if( action === 'delete' ) {
+			bookacti_dialog_delete_booking( booking_id, 'single' );
 		}
 	});
 }
@@ -422,24 +452,24 @@ function bookacti_display_grouped_bookings( booking_group_id ) {
 
 /**
  * Start booking row loading
- * @version 1.15.0
+ * @version 1.16.0
  * @param {HTMLElement} row
  */
 function bookacti_booking_row_enter_loading_state( row ) {
-	row.find( '.bookacti-booking-state' ).hide();
-	bookacti_add_loading_html( row.find( '.bookacti-booking-state' ), 'after' );
+	row.find( '.bookacti-booking-status' ).hide();
+	bookacti_add_loading_html( row.find( '.bookacti-booking-status' ), 'after' );
 	row.find( '.bookacti-booking-action' ).attr( 'disabled', true );
 }
 
 
 /**
  * Stop booking row loading
- * @version 1.15.0
+ * @version 1.16.0
  * @param {HTMLElement} row
  */
 function bookacti_booking_row_exit_loading_state( row ) {
 	bookacti_remove_loading_html( row );
-	row.find( '.bookacti-booking-state' ).show();
+	row.find( '.bookacti-booking-status' ).show();
 	row.find( '.bookacti-booking-action' ).attr( 'disabled', false );
 }
 

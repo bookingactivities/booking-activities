@@ -30,8 +30,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	}
 	
 	// Format templates from URL
-	$available_template_ids = array_map( 'intval', array_keys( $templates ) );
-	$desired_templates      = isset( $_REQUEST[ 'templates' ] ) && is_array( $_REQUEST[ 'templates' ] ) ? array_filter( array_map( 'intval', $_REQUEST[ 'templates' ] ) ) : array();
+	$available_template_ids = bookacti_ids_to_array( array_keys( $templates ) );
+	$desired_templates      = isset( $_REQUEST[ 'templates' ] ) ? bookacti_ids_to_array( $_REQUEST[ 'templates' ], false ) : array();
 
 	$bypass_template_managers_check = apply_filters( 'bookacti_bypass_template_managers_check', false );
 	$allowed_templates  = ! empty( $desired_templates ) ? array_values( array_intersect( $desired_templates, $available_template_ids ) ) : $available_template_ids;
@@ -43,7 +43,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	}
 	
 	// Format activities from URL
-	$selected_activities = isset( $_REQUEST[ 'activities' ] ) ? $_REQUEST[ 'activities' ] : array();
+	$selected_activities = isset( $_REQUEST[ 'activities' ] ) ? bookacti_ids_to_array( $_REQUEST[ 'activities' ], false ) : array();
 	
 	$activities = bookacti_fetch_activities_with_templates_association( $available_template_ids );
 	$activities_select_options = array();
@@ -117,7 +117,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							'attr'        => array( '<select>' => ' data-allow-clear="0"' ),
 							'placeholder' => esc_html__( 'All', 'booking-activities' ),
 							'options'     => $activities_select_options,
-							'value'       => array_map( 'intval', $selected_activities ),
+							'value'       => $selected_activities,
 							'multiple'    => true
 						);
 						bookacti_display_field( $args );
@@ -132,14 +132,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					<?php
 						// Format status from URL
 						$default_status = get_user_meta( get_current_user_id(), 'bookacti_status_filter', true );
-						$default_status = is_array( $default_status ) ? $default_status : array( 'delivered', 'booked', 'pending', 'cancelled', 'refunded', 'refund_requested' );
+						$default_status = is_array( $default_status ) ? bookacti_str_ids_to_array( $default_status ) : array( 'delivered', 'booked', 'pending', 'cancelled', 'refunded', 'refund_requested' );
 						$statuses = bookacti_get_booking_state_labels();
 						$status_select_options = array();
 						foreach ( $statuses as $status_id => $status ) {
 							$status_select_options[ $status_id ] = esc_html( $status[ 'label' ] );
 						}
-						$selected_status = isset( $_REQUEST[ 'status' ] ) ? $_REQUEST[ 'status' ] : $default_status;
-						$selected_status = is_array( $selected_status ) ? $selected_status : array( $selected_status );
+						$selected_status = isset( $_REQUEST[ 'status' ] ) ? bookacti_str_ids_to_array( $_REQUEST[ 'status' ] ) : array();
+						if( ! $selected_status ) { $selected_status = $default_status; }
 						$args = array(
 							'type'        => 'select',
 							'name'        => 'status',
@@ -167,9 +167,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					<div class='bookacti-filter-content' >
 						<?php
 							$from = isset( $_REQUEST[ 'from' ] ) ? bookacti_sanitize_date( $_REQUEST[ 'from' ] ) : '';
-							$to = isset( $_REQUEST[ 'to' ] ) ? bookacti_sanitize_date( $_REQUEST[ 'to' ] ) : '';
+							$to   = isset( $_REQUEST[ 'to' ] ) ? bookacti_sanitize_date( $_REQUEST[ 'to' ] ) : '';
 							if( ! $from ) { $from = isset( $_REQUEST[ 'from' ] ) ? substr( bookacti_sanitize_datetime( $_REQUEST[ 'from' ] ), 0, 10 ) : ''; }
-							if( ! $to ) { $to = isset( $_REQUEST[ 'to' ] ) ? substr( bookacti_sanitize_datetime( $_REQUEST[ 'to' ] ), 0, 10 ) : ''; }
+							if( ! $to )   { $to   = isset( $_REQUEST[ 'to' ] ) ? substr( bookacti_sanitize_datetime( $_REQUEST[ 'to' ] ), 0, 10 ) : ''; }
 						?>
 						<div><label for='bookacti-booking-filter-dates-from'><?php /* translators: Followed by a date. E.g.: From 04/02/2021. */ echo esc_html_x( 'From', 'date', 'booking-activities' ) . ' '; ?></label><input type='date' name='from' id='bookacti-booking-filter-dates-from' value='<?php echo $from; ?>' ></div>
 						<div><label for='bookacti-booking-filter-dates-to'><?php /* translators: Followed by a date. E.g.: To 04/02/2021. */ echo esc_html_x( 'To', 'date', 'booking-activities' ) . ' '; ?></label><input type='date' name='to'  id='bookacti-booking-filter-dates-to' value='<?php echo $to; ?>' ></div>
@@ -181,7 +181,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					</div>
 					<div class='bookacti-filter-content' >
 					<?php
-						$selected_user = isset( $_REQUEST[ 'user_id' ] ) ? $_REQUEST[ 'user_id' ] : array();
+						$selected_user = isset( $_REQUEST[ 'user_id' ] ) ? sanitize_text_field( $_REQUEST[ 'user_id' ] ) : array();
 						$args = apply_filters( 'bookacti_booking_list_user_selectbox_args', array(
 							'name'				=> 'user_id',
 							'id'				=> 'bookacti-booking-filter-customer',
@@ -257,12 +257,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 								if( is_email( $user_id ) ) {
 									$user = get_user_by( 'email', $user_id );
 									if( $user ) {
-										$selected_users[] = $user->ID;
+										$selected_users[] = intval( $user->ID );
 									}
 								} else if( is_numeric( $user_id ) ) {
 									$user = get_user_by( 'ID', $user_id );
 									if( $user ) {
-										$selected_users[] = $user->user_email;
+										$selected_users[] = sanitize_email( $user->user_email );
 									}
 								}
 							}
@@ -307,22 +307,25 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		</div>
 
 		<div id='bookacti-booking-list-container'>
-			<?php do_action( 'bookacti_before_booking_list' ); ?>
-			<div id='bookacti-booking-list'>
-			<?php
-				$filters = apply_filters( 'bookacti_bookings_list_filters', array( 
-					'templates'            => $selected_templates, 
-					'status'               => $selected_status,
-					'in__user_id'          => $selected_users,
-					'fetch_meta'           => true, 
-					'merge_url_parameters' => true
-				), $atts );
-				$bookings_list_table = new Bookings_List_Table();
-				$bookings_list_table->prepare_items( $filters );
-				$bookings_list_table->display();
-			?>
-			</div>
-			<?php do_action( 'bookacti_after_booking_list' ); ?>
+			<form id='bookacti-booking-list-form' action=''>
+				<input type='hidden' value='0' id='bookacti-all-selected'/>
+				<?php do_action( 'bookacti_before_booking_list' ); ?>
+				<div id='bookacti-booking-list'>
+				<?php
+					$filters = apply_filters( 'bookacti_bookings_list_filters', array( 
+						'templates'            => $selected_templates, 
+						'status'               => $selected_status,
+						'in__user_id'          => $selected_users,
+						'fetch_meta'           => true, 
+						'merge_url_parameters' => true
+					), $atts );
+					$bookings_list_table = new Bookings_List_Table();
+					$bookings_list_table->prepare_items( $filters );
+					$bookings_list_table->display();
+				?>
+				</div>
+				<?php do_action( 'bookacti_after_booking_list' ); ?>
+			</form>
 		</div>
 		
 		<div class='bookacti-sos'>

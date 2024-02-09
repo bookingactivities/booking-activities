@@ -394,7 +394,7 @@ function bookacti_is_db_version_outdated() {
 /**
  * Get the variables used with javascript
  * @since 1.8.0
- * @version 1.15.16
+ * @version 1.16.0
  * @return array
  */
 function bookacti_get_js_variables() {
@@ -502,12 +502,15 @@ function bookacti_get_js_variables() {
 	);
 	
 	// Strings for backend only
-	if( is_admin() ) { 
+	if( is_admin() ) {
 		$bookacti_localized_backend = array(
 			'nonce_dismiss_5stars_rating_notice' => wp_create_nonce( 'bookacti_dismiss_5stars_rating_notice' ),
 			'admin_url'                          => admin_url(),
 			'is_qtranslate'                      => bookacti_get_translation_plugin() === 'qtranslate',
 			'utc_offset'                         => intval( $timezone->getOffset( $current_datetime_utc ) ),
+			'nb_selected'                        => esc_html__( '{nb} selected', 'booking-activities' ),
+			'select_all'                         => esc_html__( 'Select all {nb}', 'booking-activities' ),
+			'unselect_all'                       => esc_html__( 'Clear selection', 'booking-activities' ),
 			'create_new'                         => esc_html__( 'Create new', 'booking-activities' ),
 			'edit_id'                            => esc_html_x( 'id', 'An id is a unique identification number', 'booking-activities' ),
 			'dialog_button_generate_link'        => esc_html__( 'Generate export link', 'booking-activities' ),
@@ -628,7 +631,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-prices-and-credits', 
 			'end_of_life' => '', 
 			'download_id' => 438,
-			'min_version' => '1.8.1'
+			'min_version' => '1.8.7'
 		),
 		'baaf' => array( 
 			'title'       => 'Advanced Forms', 
@@ -636,7 +639,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-advanced-forms', 
 			'end_of_life' => '', 
 			'download_id' => 2705,
-			'min_version' => '1.4.0'
+			'min_version' => '1.4.1'
 		),
 		'baofc' => array( 
 			'title'	      => 'Order for Customers', 
@@ -1916,13 +1919,18 @@ function bookacti_sort_events_array_by_dates( $array, $sort_by_end = false, $des
 
 /**
  * Sanitize int ids to array
- * @version 1.15.4
+ * @version 1.16.0
  * @param array|int $ids
+ * @param bool|?callable $filter
  * @return array 
  */
-function bookacti_ids_to_array( $ids ) {
+function bookacti_ids_to_array( $ids, $filter = 'empty' ) {
 	if( is_array( $ids ) ){
-		return array_filter( array_unique( array_map( 'intval', array_filter( $ids, 'is_numeric' ) ) ) );
+		$ids = array_unique( array_map( 'intval', array_filter( $ids, 'is_numeric' ) ) );
+		if( $filter && is_callable( $filter ) ) {
+			$ids = array_filter( array_unique( array_map( 'intval', array_filter( $ids, 'is_numeric' ) ) ), $filter );
+		}
+		return $ids;
 	} else if( ! empty( $ids ) ){
 		if( is_numeric( $ids ) && intval( $ids ) ) {
 			return array( intval( $ids ) );
@@ -1934,12 +1942,17 @@ function bookacti_ids_to_array( $ids ) {
 /**
  * Sanitize str ids to array
  * @since 1.8.3
+ * @version 1.16.0
  * @param array|string $ids
  * @return array 
  */
-function bookacti_str_ids_to_array( $ids ) {
+function bookacti_str_ids_to_array( $ids, $filter = 'empty' ) {
 	if( is_array( $ids ) ){
-		return array_filter( array_unique( array_map( 'sanitize_title_with_dashes', $ids ) ) );
+		$ids = array_unique( array_map( 'sanitize_title_with_dashes', $ids ) );
+		if( $filter && is_callable( $filter ) ) {
+			$ids = array_filter( array_unique( array_map( 'sanitize_title_with_dashes', $ids ) ), $filter );
+		}
+		return $ids;
 	} else if( ! empty( $ids ) ){
 		if( is_string( $ids ) ) {
 			return array( sanitize_title_with_dashes( $ids ) );

@@ -54,15 +54,14 @@ ul[id$='-select-box-results'] li[aria-disabled='true'] { display: none; }
 .bookacti-list-table ul.striped>:nth-child(odd)    { -webkit-transition: background-color 400ms linear; -ms-transition: background-color 400ms linear; transition: background-color 400ms linear; }
 
 .bookacti-list-table th.sortable a, 
-.bookacti-list-table th.sorted a                   { overflow: visible; white-space: nowrap; }
-.bookacti-list-table th.sortable a span, 
-.bookacti-list-table th.sorted a span              { float: none; display: inline-block; vertical-align: top; }
+.bookacti-list-table th.sorted a                   { position: relative; }
+.bookacti-list-table .sorting-indicators           { position: absolute; right: 0; }
 .bookacti-list-table .sorting-indicator            { display: none !important; }
 .bookacti-list-table th.asc a:focus span.sorting-indicator, 
 .bookacti-list-table th.asc:hover span.sorting-indicator, 
 .bookacti-list-table th.desc a:focus span.sorting-indicator, 
 .bookacti-list-table th.desc:hover span.sorting-indicator, 
-.bookacti-list-table th.sorted .sorting-indicator  { display: inline-block !important; }
+.bookacti-list-table th.sorted .sorting-indicator  { display: block !important; }
 
 .bookacti-list-table .wp-list-table.widefat        { border-collapse: collapse; }
 .bookacti-list-table tbody td                      { vertical-align: middle; }

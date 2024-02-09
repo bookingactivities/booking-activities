@@ -362,6 +362,7 @@ add_filter( 'bookacti_send_group_of_events_cancelled_notification_count', 'booka
 /**
  * Add WC message to the refund requested notification sent to administrators
  * @since 1.15.17 (was bookacti_woocommerce_add_refund_request_email_message)
+ * @version 1.16.0
  * @param array $notification
  * @param array $tags
  * @param string $locale
@@ -373,13 +374,24 @@ add_filter( 'bookacti_send_group_of_events_cancelled_notification_count', 'booka
 function bookacti_wc_add_refund_request_email_message( $notification, $tags, $locale, $booking, $booking_type, $args ) {
 	if( strpos( $notification[ 'id' ], 'admin_refund_requested' ) === false || empty( $booking->order_id ) ) { return $notification; }
 	
-	$go_to_order =	'<div style="background-color: #f5faff; padding: 10px; border: 1px solid #abc; margin-bottom: 30px;" >' 
+	$edit_order_url = '';
+	if( class_exists( '\Automattic\WooCommerce\Utilities\OrderUtil' ) ) {
+		$edit_order_url = \Automattic\WooCommerce\Utilities\OrderUtil::get_order_admin_edit_url( absint( $booking->order_id ) );
+	} else {
+		// WooCommerce Backward Compatibility
+		$order = wc_get_order( absint( $booking->order_id ) );
+		if( $order ) {
+			$edit_order_url = $order->get_edit_order_url();
+		}
+	}
+	
+	$go_to_order =	'<div style="background-color: #f5faff; padding: 10px; border: 1px solid #abc; margin-bottom: 30px;">' 
 						. esc_html__( 'Click here to go to the order page and process the refund:', 'booking-activities' ) 
-						. ' <a href="' . \Automattic\WooCommerce\Utilities\OrderUtil::get_order_admin_edit_url( absint( $booking->order_id ) ) . '" target="_blank" >' 
+						. ' <a href="' . $edit_order_url . '" target="_blank">' 
 							. esc_html__( 'Go to refund page', 'booking-activities' ) 
 						. '</a>'
 					. '</div>';
-
+	
 	$notification[ 'email' ][ 'message' ] = $go_to_order . $notification[ 'email' ][ 'message' ];
 	return $notification;
 }

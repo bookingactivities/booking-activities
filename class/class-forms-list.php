@@ -11,7 +11,7 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 	/**
 	 * Forms WP_List_Table
 	 * @since 1.5.0
-	 * @version 1.15.5
+	 * @version 1.16.0
 	 */
 	class Forms_List_Table extends WP_List_Table {
 		
@@ -21,6 +21,7 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 		
 		/**
 		 * Set up the Form list table
+		 * @version 1.16.0
 		 * @access public
 		 */
 		public function __construct(){
@@ -28,11 +29,10 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 			if( ! isset( $GLOBALS[ 'hook_suffix' ] ) ) { $GLOBALS[ 'hook_suffix' ] = null; }
 			
 			parent::__construct( array(
-				/*translator:  */
-				'singular'	=> 'form',	// Singular name of the listed records
-				'plural'	=> 'forms',	// Plural name of the listed records
-				'ajax'		=> false,
-				'screen'	=> null
+				'singular' => 'form',  // Singular name of the listed records
+				'plural'   => 'forms', // Plural name of the listed records
+				'ajax'     => false,
+				'screen'   => null
 			));
 			
 			// Hide default columns
@@ -49,14 +49,14 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 		public function get_columns(){
 			// Set the columns
 			$columns = array(
-//				'cb'		=> '<input type="checkbox" />',
-				'id'		=> _x( 'id', 'An id is a unique identification number', 'booking-activities' ),
-				'title'		=> __( 'Title', 'booking-activities' ),
-				'author'	=> __( 'Author', 'booking-activities' ),
-				'date'		=> __( 'Date', 'booking-activities' ),
-				'status'	=> _x( 'Status', 'Form status', 'booking-activities' ),
-				'shortcode'	=> __( 'Shortcode', 'booking-activities' ),
-				'active'	=> __( 'Active', 'booking-activities' )
+//				'cb'        => '<input type="checkbox" />',
+				'id'        => _x( 'id', 'An id is a unique identification number', 'booking-activities' ),
+				'title'     => __( 'Title', 'booking-activities' ),
+				'author'    => __( 'Author', 'booking-activities' ),
+				'date'      => __( 'Date', 'booking-activities' ),
+				'status'    => _x( 'Status', 'Form status', 'booking-activities' ),
+				'shortcode' => __( 'Shortcode', 'booking-activities' ),
+				'active'    => __( 'Active', 'booking-activities' )
 			);
 
 			/**
@@ -127,11 +127,11 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 		 */
 		protected function get_sortable_columns() {
 			return array(
-				'id'	=> array( 'id', true ),
-				'title'	=> array( 'title', false ),
-				'author'=> array( 'user_id', false ),
-				'date'	=> array( 'creation_date', false ),
-				'status'=> array( 'status', false )
+				'id'     => array( 'id', true ),
+				'title'  => array( 'title', false ),
+				'author' => array( 'user_id', false ),
+				'date'   => array( 'creation_date', false ),
+				'status' => array( 'status', false )
 			);
 		}
 		
@@ -151,12 +151,12 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 		
 		/**
 		 * Prepare the items to be displayed in the list
+		 * @version 1.16.0
 		 * @access public
 		 * @param array $filters
 		 * @param boolean $no_pagination
 		 */
 		public function prepare_items( $filters = array(), $no_pagination = false ) {
-			
 			$this->get_column_info();
 			$this->_column_headers[0] = $this->get_columns();
 			
@@ -164,9 +164,9 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 			
 			if( ! $no_pagination ) {
 				// Get the number of forms to display per page
-				$screen			= $this->get_wp_screen();
-				$screen_option	= $screen->get_option( 'per_page', 'option' );
-				$per_page		= intval( get_user_meta( get_current_user_id(), $screen_option, true ) );
+				$screen        = $this->get_wp_screen();
+				$screen_option = $screen->get_option( 'per_page', 'option' );
+				$per_page      = intval( get_user_meta( get_current_user_id(), $screen_option, true ) );
 				if( empty ( $per_page ) || $per_page < 1 ) {
 					$per_page = $screen->get_option( 'per_page', 'default' );
 				}
@@ -177,8 +177,8 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 					'per_page'    => $per_page
 				) );
 
-				$this->filters[ 'offset' ]		= ( $this->get_pagenum() - 1 ) * $per_page;
-				$this->filters[ 'per_page' ]	= $per_page;
+				$this->filters[ 'offset' ]   = ( $this->get_pagenum() - 1 ) * $per_page;
+				$this->filters[ 'per_page' ] = $per_page;
 			}
 			
 			$items = $this->get_form_list_items();
@@ -210,7 +210,7 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 		
 		/**
 		 * Fill "Title" column and add action buttons
-		 * @version 1.15.4
+		 * @version 1.16.0
 		 * @access public
 		 * @param array $item
 		 * @return string
@@ -220,32 +220,16 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 			$actions	= array();
 			
 			if( current_user_can( 'bookacti_edit_forms' ) ) {
-				
-				// Add the 'edit' and the 'duplicate' actions
 				if( $item[ 'active_raw' ] ) {
-					$actions[ 'edit' ]	= '<a href="' . esc_url( admin_url( 'admin.php?page=bookacti_forms&action=edit&form_id=' . $form_id ) ) . '" >'
-											. esc_html__( 'Edit' )
-										. '</a>';
-					$actions[ 'duplicate' ]	= '<a href="' . esc_url( wp_nonce_url( admin_url( 'admin.php?page=bookacti_forms&action=duplicate&form_id=' . $form_id ), 'duplicate-form_' . $form_id ) ) . '" >'
-												. esc_html__( 'Duplicate', 'booking-activities' )
-											. '</a>';
+					$actions[ 'edit' ]      = '<a href="' . esc_url( admin_url( 'admin.php?page=bookacti_forms&action=edit&form_id=' . $form_id ) ) . '" >' . esc_html__( 'Edit' ) . '</a>';
+					$actions[ 'duplicate' ] = '<a href="' . esc_url( wp_nonce_url( admin_url( 'admin.php?page=bookacti_forms&action=duplicate&form_id=' . $form_id ), 'duplicate-form_' . $form_id ) ) . '" >' . esc_html__( 'Duplicate', 'booking-activities' ) . '</a>';
 				}
-				
 				if( current_user_can( 'bookacti_delete_forms' ) ) {
 					if( $item[ 'active_raw' ] ) {
-						// Add the 'trash' action
-						$actions[ 'trash' ] = '<a href="' . esc_url( wp_nonce_url( admin_url( 'admin.php?page=bookacti_forms&action=trash&form_id=' . $form_id ), 'trash-form_' . $form_id ) ) . '" >'
-												. esc_html_x( 'Trash', 'verb' )
-											. '</a>';
+						$actions[ 'trash' ]   = '<a href="' . esc_url( wp_nonce_url( admin_url( 'admin.php?page=bookacti_forms&action=trash&form_id=' . $form_id ), 'trash-form_' . $form_id ) ) . '" >' . esc_html_x( 'Trash', 'verb' ) . '</a>';
 					} else {
-						// Add the 'restore' action
-						$actions[ 'restore' ] = '<a href="' . esc_url( wp_nonce_url( admin_url( 'admin.php?page=bookacti_forms&action=restore&form_id=' . $form_id ), 'restore-form_' . $form_id ) ) . '" >'
-												. esc_html__( 'Restore' )
-											. '</a>';
-						// Add the 'delete' action
-						$actions[ 'delete' ] = '<a href="' . esc_url( wp_nonce_url( admin_url( 'admin.php?page=bookacti_forms&status=trash&action=delete&form_id=' . $form_id ), 'delete-form_' . $form_id ) ) . '" >'
-												. esc_html__( 'Delete Permanently' )
-											. '</a>';
+						$actions[ 'restore' ] = '<a href="' . esc_url( wp_nonce_url( admin_url( 'admin.php?page=bookacti_forms&action=restore&form_id=' . $form_id ), 'restore-form_' . $form_id ) ) . '" >' . esc_html__( 'Restore' ) . '</a>';
+						$actions[ 'delete' ]  = '<a href="' . esc_url( wp_nonce_url( admin_url( 'admin.php?page=bookacti_forms&status=trash&action=delete&form_id=' . $form_id ), 'delete-form_' . $form_id ) ) . '" >' . esc_html__( 'Delete Permanently' ) . '</a>';
 					}
 				}
 			}
@@ -277,9 +261,9 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 			$forms = bookacti_get_forms( $this->filters );
 			$can_edit_forms = current_user_can( 'bookacti_edit_forms' );
 			
-			$date_format = get_option( 'date_format' );
+			$date_format      = get_option( 'date_format' );
 			$utc_timezone_obj = new DateTimeZone( 'UTC' );
-			$timezone = function_exists( 'wp_timezone_string' ) ? wp_timezone_string() : get_option( 'timezone_string' );
+			$timezone         = function_exists( 'wp_timezone_string' ) ? wp_timezone_string() : get_option( 'timezone_string' );
 			try { $timezone_obj = new DateTimeZone( $timezone ); }
 			catch ( Exception $ex ) { $timezone_obj = clone $utc_timezone_obj; }
 			
@@ -342,27 +326,22 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 		
 		/**
 		 * Format filters passed as argument or retrieved via POST or GET
-		 * @version 1.5.7
+		 * @version 1.16.0
 		 * @access public
 		 * @param array $filters
 		 * @return array
 		 */
 		public function format_filters( $filters = array() ) {
-			
 			// Get filters from URL if no filter was directly passed
 			if( ! $filters ) {
-				
-				$active = false;
-				if( isset( $_REQUEST[ 'active' ] ) ) { $active = ! $_REQUEST[ 'active' ] ? 0 : 1; }
-				
 				$filters = array(
-					'id'		=> isset( $_REQUEST[ 'id' ] )		? $_REQUEST[ 'id' ] : array(), 
-					'title'		=> isset( $_REQUEST[ 'title' ] )	? $_REQUEST[ 'title' ] : '', 
-					'user_id'	=> isset( $_REQUEST[ 'user_id' ] )	? $_REQUEST[ 'user_id' ] : 0, 
-					'status'	=> isset( $_REQUEST[ 'status' ] )	? $_REQUEST[ 'status' ] : '', 
-					'active'	=> $active, 
-					'order_by'	=> isset( $_REQUEST[ 'orderby' ] )	? $_REQUEST[ 'orderby' ] : array( 'id' ),
-					'order'		=> isset( $_REQUEST[ 'order' ] )	? $_REQUEST[ 'order' ] : 'DESC'
+					'id'       => isset( $_REQUEST[ 'id' ] )      ? $_REQUEST[ 'id' ] : array(), 
+					'title'    => isset( $_REQUEST[ 'title' ] )   ? $_REQUEST[ 'title' ] : '', 
+					'user_id'  => isset( $_REQUEST[ 'user_id' ] ) ? $_REQUEST[ 'user_id' ] : 0, 
+					'status'   => isset( $_REQUEST[ 'status' ] )  ? $_REQUEST[ 'status' ] : '', 
+					'active'   => isset( $_REQUEST[ 'active' ] )  ? ( $_REQUEST[ 'active' ] ? 1 : 0 ) : false, 
+					'order_by' => isset( $_REQUEST[ 'orderby' ] ) ? $_REQUEST[ 'orderby' ] : array( 'id' ),
+					'order'    => isset( $_REQUEST[ 'order' ] )   ? $_REQUEST[ 'order' ] : 'DESC'
 				);
 			}
 			
@@ -496,27 +475,18 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 		
 		/**
 		 * Get an associative array ( id => link ) with the list of views available on this table
-		 * @version 1.15.4
+		 * @version 1.16.0
 		 * @return array
 		 */
 		protected function get_views() {
-			$published_current	= 'current';
-			$trash_current		= '';
-			if( isset( $_REQUEST[ 'status' ] ) && $_REQUEST[ 'status' ] === 'trash' ) { 
-				$published_current	= '';
-				$trash_current		= 'current';
-			}
-			
-			$filters			= bookacti_format_form_filters();
-			$published_filter	= $filters; $published_filter[ 'status' ] = array( 'publish' );
-			$trash_filter		= $filters; $trash_filter[ 'status' ] = array( 'trash' );
-			
-			$published_count	= bookacti_get_number_of_form_rows( $published_filter );
-			$trash_count		= bookacti_get_number_of_form_rows( $trash_filter );
+			$is_trash        = isset( $_REQUEST[ 'status' ] ) && $_REQUEST[ 'status' ] === 'trash';
+			$filters         = bookacti_format_form_filters();
+			$published_count = bookacti_get_number_of_form_rows( array_merge( $filters, array( 'status' => 'publish' ) ) );
+			$trash_count     = bookacti_get_number_of_form_rows( array_merge( $filters, array( 'status' => 'trash' ) ) );
 			
 			return array(
-				'published'	=> '<a href="' . esc_url( admin_url( 'admin.php?page=bookacti_forms' ) ) . '" class="' . $published_current . '" >' . esc_html__( 'Published' ) . ' <span class="count">(' . $published_count . ')</span></a>',
-				'trash'		=> '<a href="' . esc_url( admin_url( 'admin.php?page=bookacti_forms&status=trash' ) ) . '" class="' . $trash_current . '" >' . esc_html_x( 'Trash', 'noun' ) . ' <span class="count">(' . $trash_count . ')</span></a>'
+				'published' => '<a href="' . esc_url( admin_url( 'admin.php?page=bookacti_forms' ) ) . '" class="' . ( ! $is_trash ? 'current' : '' ) . '" >' . esc_html__( 'Published' ) . ' <span class="count">(' . $published_count . ')</span></a>',
+				'trash'     => '<a href="' . esc_url( admin_url( 'admin.php?page=bookacti_forms&status=trash' ) ) . '" class="' . ( $is_trash ? 'current' : '' ) . '" >' . esc_html_x( 'Trash', 'noun' ) . ' <span class="count">(' . $trash_count . ')</span></a>'
 			);
 		}
 		
@@ -534,7 +504,7 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 
 			if( ! $action_count ) { return ''; }
 
-			$class_visible		= $always_visible ? 'visible' : '';
+			$class_visible = $always_visible ? 'visible' : '';
 			$out = '<div class="row-actions ' . esc_attr( $class_visible ) . '">';
 			foreach ( $actions as $action => $link ) {
 				++$i;
@@ -566,10 +536,10 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 		protected function pagination( $which ) {
 			if( $which !== 'top' ) { parent::pagination( $which ); return; }
 			?>
-			<form action='<?php echo esc_url( add_query_arg( 'paged', '%d' ) ); ?>' class='bookacti-list-table-go-to-page-form' >
-				<input type='hidden' name='page' value='bookacti_forms' />
-				<?php parent::pagination( $which ); ?>
-			</form>
+				<form action='<?php echo esc_url( add_query_arg( 'paged', '%d' ) ); ?>' class='bookacti-list-table-go-to-page-form' >
+					<input type='hidden' name='page' value='bookacti_forms' />
+					<?php parent::pagination( $which ); ?>
+				</form>
 			<?php 
 		}
 		

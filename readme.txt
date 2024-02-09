@@ -263,7 +263,7 @@ We recommend to accept online payments since it's a great way to automate your b
 = Events are not "Booked" after booking form submission, they are "Pending", why? =
 Don't worry, the reservation is well registered. Now, it is up to you to turn it to "Booked" right away or when your customer comes, or when your customer gives you the money...
 But you can just turn the default booking status to "Booked" in Booking Activities settings.
-Note that if you use WooCommerce and online payments, booking states turn automatically to "Booked" if the payment is complete, or "Cancelled" if not.
+Note that if you use WooCommerce and online payments, booking status turn automatically to "Booked" if the payment is complete, or "Cancelled" if not.
 
 
 = Cart expires but events are still booked = 
@@ -334,10 +334,14 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Tweak - "Customer" booking filter: Display the bookings made with and without account by the selected customer (need a page refresh, not working with AJAX)
 * Tweak - You cannot display events from a calendar that the booking form author cannot manage
 * Tweak - You cannot reschedule a booking to an event located on a calendar that the original booking form author cannot manage
+* Tweak - Remove "When to load the events?" option, you can use the bookacti_booking_system_default_attributes hook to set auto_load to 0 (after page load (default)) or 1 (on page load (not recommended, support no longer provided))
 * Fix - Booking filters may not be correctly applied after reloading the bookings page
 * Fix - Deleting an activity deleted it from all calendars instead of removing it only from the current calendar
 * Fix - Decode HTML entities before displaying WooCommerce price
 * Dev - Refactor the way async notifications are scheduled
+
+= 1.15.20 - 2024/02/09 =
+* Fix - Improve booking filters sanitizing
 
 = 1.15.19 - 2024/01/25 =
 * Feature - Add an option to display only the first event of groups (in booking form > Calendar settings)

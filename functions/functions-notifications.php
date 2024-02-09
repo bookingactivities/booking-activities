@@ -758,6 +758,10 @@ function bookacti_send_async_notifications() {
 		$async_notifications = bookacti_merge_planned_notifications( $async_notifications );
 	}
 	
+	// If there are a lot of notifications to send, this operation can take a while
+	// So we need to increase the max_execution_time and the memory_limit
+	bookacti_increase_max_execution_time( 'send_async_notifications' );
+	
 	// Send the notifications
 	foreach( $async_notifications as $async_notification ) {
 		bookacti_send_notification( $async_notification[ 'notification_id' ], $async_notification[ 'booking_id' ], $async_notification[ 'booking_type'], $async_notification[ 'args' ], 0 );

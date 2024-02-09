@@ -490,11 +490,10 @@ add_action( 'wp_ajax_bookactiSelect2Query_products', 'bookacti_controller_search
 /**
  * Add products bound to the selected events to cart
  * @since 1.7.0
- * @version 1.15.8
+ * @version 1.16.0
  */
 function bookacti_controller_add_bound_product_to_cart() {
 	$form_id       = intval( $_POST[ 'form_id' ] );
-	$quantity      = empty( $_REQUEST[ 'quantity' ] ) ? 1 : wc_stock_amount( wp_unslash( $_REQUEST[ 'quantity' ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	$picked_events = ! empty( $_POST[ 'selected_events' ] ) ? bookacti_format_picked_events( $_POST[ 'selected_events' ], true ) : array();
 	$return_array  = array( 'status' => 'failed', 'error' => '', 'messages' => array(), 'message' => '', 'products' => array() );
 	

@@ -120,7 +120,7 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 						$args = array(
 							'type'        => 'email',
 							'name'        => 'email',
-							'value'       => ! empty( $_REQUEST[ 'email' ] ) ? esc_attr( $_REQUEST[ 'email' ] ) : '',
+							'value'       => ! empty( $_REQUEST[ 'email' ] ) ? esc_attr( sanitize_text_field( $_REQUEST[ 'email' ] ) ) : '',
 							'id'          => $field_id . '-email',
 							'class'       => 'bookacti-form-field bookacti-email',
 							'placeholder' => esc_attr( $field[ 'placeholder' ][ 'email' ] ),
@@ -148,7 +148,7 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 						$args = array(
 							'type'        => 'password',
 							'name'        => 'password',
-							'value'       => ! empty( $_REQUEST[ 'password' ] ) ? esc_attr( $_REQUEST[ 'password' ] ) : '',
+							'value'       => ! empty( $_REQUEST[ 'password' ] ) ? esc_attr( sanitize_text_field( $_REQUEST[ 'password' ] ) ) : '',
 							'id'          => $field_id . '-password',
 							'class'       => 'bookacti-form-field bookacti-password',
 							'placeholder' => esc_attr( $field[ 'placeholder' ][ 'password' ] ),
@@ -270,7 +270,7 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 										$args = array(
 											'type'        => $register_field[ 'type' ],
 											'name'        => esc_attr( $register_field_name ),
-											'value'       => ! empty( $_REQUEST[ $register_field_name ] ) ? esc_attr( $_REQUEST[ $register_field_name ] ) : ( isset( $register_field[ 'value' ] ) ? esc_attr( $register_field[ 'value' ] ) : '' ),
+											'value'       => ! empty( $_REQUEST[ $register_field_name ] ) ? esc_attr( sanitize_text_field( $_REQUEST[ $register_field_name ] ) ) : ( isset( $register_field[ 'value' ] ) ? esc_attr( $register_field[ 'value' ] ) : '' ),
 											'id'          => esc_attr( $field_id . '-' . $register_field_name ),
 											'class'       => esc_attr( 'bookacti-form-field bookacti-' . $register_field_name ),
 											'required'    => esc_attr( $field[ 'required_fields' ][ $register_field_name ] ),
@@ -1394,22 +1394,21 @@ add_action( 'load-booking-activities_page_bookacti_forms', 'bookacti_controller_
 /**
  * AJAX Controller - Update a booking form
  * @since 1.5.0
- * @version 1.15.5
+ * @version 1.16.0
  */
 function bookacti_controller_update_form() {
-	$form_id = intval( $_REQUEST[ 'form_id' ] );
-	
 	// Check nonce and capabilities
 	$is_nonce_valid = check_ajax_referer( 'bookacti_update_form', 'nonce', false );
 	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'update_form' ); }
 	
+	$form_id    = ! empty( $_REQUEST[ 'form_id' ] ) ? intval( $_REQUEST[ 'form_id' ] ) : 0;
 	$is_allowed = current_user_can( 'bookacti_edit_forms' ) && bookacti_user_can_manage_form( $form_id );
 	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'update_form' ); }
 	
-	$was_active		= intval( $_REQUEST[ 'is_active' ] );
-	$form_title		= sanitize_text_field( stripslashes( $_REQUEST[ 'form_title' ] ) );
-	$managers_array	= isset( $_REQUEST[ 'form-managers' ] ) ? bookacti_ids_to_array( $_REQUEST[ 'form-managers' ] ) : array();
-	$form_managers	= bookacti_format_form_managers( $managers_array );
+	$was_active     = ! empty( $_REQUEST[ 'is_active' ] );
+	$form_title     = ! empty( $_REQUEST[ 'form_title' ] ) ? sanitize_text_field( stripslashes( $_REQUEST[ 'form_title' ] ) ) : '';
+	$managers_array = isset( $_REQUEST[ 'form-managers' ] ) ? bookacti_ids_to_array( $_REQUEST[ 'form-managers' ] ) : array();
+	$form_managers  = bookacti_format_form_managers( $managers_array );
 	
 	// Update the form
 	$updated = bookacti_update_form( $form_id, $form_title, -1, '', 'publish', 1 );
@@ -2079,10 +2078,11 @@ add_action( 'wp_ajax_bookactiResetExportEventsUrl', 'bookacti_controller_reset_f
 /**
  * Export events of a specific form
  * @since 1.6.0
- * @version 1.14.0
+ * @version 1.16.0
  */
 function bookacti_export_form_events_page() {
-	if( empty( $_REQUEST[ 'action' ] ) || $_REQUEST[ 'action' ] !== 'bookacti_export_form_events' ) { return; }
+	$action = ! empty( $_REQUEST[ 'action' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'action' ] ) : '';
+	if( $action !== 'bookacti_export_form_events' ) { return; }
 	
 	// Check if the form is valid
 	$form_id = ! empty( $_REQUEST[ 'form_id' ] ) ? intval( $_REQUEST[ 'form_id' ] ) : 0;

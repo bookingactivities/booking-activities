@@ -85,7 +85,7 @@ add_filter( 'bookacti_active_booking_states', 'bookacti_add_woocommerce_active_b
 
 
 /**
- * Add booking states labels related to cart
+ * Add booking status labels related to cart
  * @version 1.15.15
  * @param array $labels
  * @return array
@@ -650,7 +650,16 @@ function bookacti_add_wc_data_to_booking_list_items( $booking_list_items, $booki
 
 			// Set a link for "view-order" action
 			if( isset( $booking_list_item[ 'actions' ][ 'view-order' ] ) ) {
-				$booking_list_items[ $booking_id ][ 'actions' ][ 'view-order' ][ 'link' ] = \Automattic\WooCommerce\Utilities\OrderUtil::get_order_admin_edit_url( $booking_list_item[ 'order_id' ] );
+				$booking_list_items[ $booking_id ][ 'actions' ][ 'view-order' ][ 'link' ] = '';
+				if( class_exists( '\Automattic\WooCommerce\Utilities\OrderUtil' ) ) {
+					$booking_list_items[ $booking_id ][ 'actions' ][ 'view-order' ][ 'link' ] = \Automattic\WooCommerce\Utilities\OrderUtil::get_order_admin_edit_url( $booking_list_item[ 'order_id' ] );
+				} else {
+					// WooCommerce Backward Compatibility
+					$order = wc_get_order( $booking_list_item[ 'order_id' ] );
+					if( $order ) {
+						$booking_list_items[ $booking_id ][ 'actions' ][ 'view-order' ][ 'link' ] = $order->get_edit_order_url();
+					}
+				}
 			}
 		} else {
 			// Remove "view-order" action
@@ -750,7 +759,7 @@ function bookacti_add_wc_data_to_booking_list_items( $booking_list_items, $booki
 				/* translators: %s is the coupon code used for the refund */
 				$coupon_label = sprintf( esc_html__( 'Refunded with coupon %s', 'booking-activities' ), strtoupper( $coupon_code ) );
 				if( $coupon_error_label ) { $coupon_label .= '<br/>' . $coupon_error_label; }
-				$booking_list_items[ $booking_id ][ 'state' ] = '<span class="bookacti-booking-state bookacti-booking-state-bad bookacti-booking-state-refunded bookacti-converted-to-coupon bookacti-tip" data-booking-state="refunded" data-tip="' . esc_attr( $coupon_label ) . '" ></span><span class="bookacti-refund-coupon-code ' . esc_attr( $coupon_class ) . ' bookacti-custom-scrollbar">' . strtoupper( $coupon_code ) . '</span>';
+				$booking_list_items[ $booking_id ][ 'state' ] = '<span class="bookacti-booking-status bookacti-booking-status-bad bookacti-booking-status-refunded bookacti-converted-to-coupon bookacti-tip" data-booking-status="refunded" data-tip="' . esc_attr( $coupon_label ) . '" ></span><span class="bookacti-refund-coupon-code ' . esc_attr( $coupon_class ) . ' bookacti-custom-scrollbar">' . strtoupper( $coupon_code ) . '</span>';
 			}
 
 			// Filter refund actions
@@ -1163,7 +1172,7 @@ add_filter( 'bookacti_refund_booking', 'bookacti_woocommerce_refund_booking', 10
 /**
  * Update the bookings attached to the refunded order items
  * Update quantity when a partial refund in done, 
- * Update booking state when a total refund is done
+ * Update booking status when a total refund is done
  * @since 1.2.0 (was named bookacti_update_booking_when_order_item_is_refunded before)
  * @version 1.15.4
  * @param int $refund_id

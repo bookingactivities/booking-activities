@@ -295,22 +295,22 @@ $j( document ).ready( function() {
 	
 	
 	/**
-	 * Refresh bookings number when a booking state or payment status has changed
-	 * @version 1.7.10
-	 * @param {Event} e
-	 * @param {Int} booking_id
-	 * @param {String} booking_type
-	 * @param {String} new_state
-	 * @param {String} old_state
-	 * @param {Boolean} is_bookings_page
-	 * @param {Boolean} active_changed
+	 * Refresh bookings number when a booking status has changed
+	 * @version 1.16.0
 	 */
-	$j( 'body' ).on( 'bookacti_booking_state_changed bookacti_payment_status_changed', function( e, booking_id, booking_type, new_state, old_state, is_bookings_page, active_changed ){
+	$j( 'body' ).on( 'bookacti_booking_status_changed', function() {
 		bookacti_init_tooltip();
-		
-		if( ! active_changed ) { return false; }
 		var booking_system = $j( '#bookacti-booking-system-bookings-page' );
 		bookacti_refresh_booking_numbers( booking_system );
+	});
+	
+	
+	/**
+	 * Refresh tooltip when a booking payment status has changed
+	 * @since 1.16.0
+	 */
+	$j( 'body' ).on( 'bookacti_payment_status_changed', function() {
+		bookacti_init_tooltip();
 	});
 	
 	
@@ -351,5 +351,49 @@ $j( document ).ready( function() {
 		var paged_index = href.indexOf( 'paged=' );
 		var paged = paged_index !== -1 ? href.substr( paged_index + 6 ) : 1;
 		bookacti_filter_booking_list( paged );
+	});
+	
+	
+	/**
+	 * Show the number of selected elements - on change
+	 * @since 1.16.0
+	 */
+	$j( 'body' ).on( 'change', '.bookacti-list-table .check-column input', function() {
+		$j( '#bookacti-bookings-container .bookacti-select-all-container' ).remove();
+		$j( '#bookacti-all-selected' ).val( 0 );
+		
+		var nb_selected = '<span class="bookacti-nb-selected">' + bookacti_localized.nb_selected.replace( '{nb}', $j( '#bookacti-bookings-container tbody .check-column input:checked' ).length ) + '</span>';
+		var select_all  = '<button class="bookacti-select-all button">' + bookacti_localized.select_all.replace( '{nb}', $j( '#bookacti-bookings-container .displaying-num' ).first().text() ) + '</button>';
+		
+		$j( '#bookacti-bookings-container .tablenav .bulkactions' ).append( '<span class="bookacti-select-all-container">' + nb_selected + select_all + '</span>' );
+	});
+	
+	
+	/**
+	 * Select all items of a WP_List_Table according to filters, even those not displayed
+	 * @since 1.16.0
+	 * @param {Event} e
+	 */
+	$j( 'body' ).on( 'click', '#bookacti-booking-list .bookacti-select-all', function( e ) {
+		e.preventDefault();
+		$j( '#bookacti-bookings-container thead .check-column input[type="checkbox"]' ).prop( 'checked', false ).trigger( 'click.wp-toggle-checkboxes' );
+		var nb_selected  = '<span class="bookacti-nb-selected">' + bookacti_localized.nb_selected.replace( '{nb}', $j( '#bookacti-bookings-container .displaying-num' ).first().text() ) + '</span>';
+		var unselect_all = '<button class="bookacti-unselect-all button">' + bookacti_localized.unselect_all + '</button>';
+		$j( '#bookacti-bookings-container .tablenav .bookacti-nb-selected' ).replaceWith( nb_selected );
+		$j( '#bookacti-bookings-container .tablenav .bookacti-select-all' ).replaceWith( unselect_all );
+		$j( '#bookacti-all-selected' ).val( 1 );
+	});
+	
+	
+	/**
+	 * Unselect all items of a WP_List_Table according to filters
+	 * @since 1.16.0
+	 * @param {Event} e
+	 */
+	$j( 'body' ).on( 'click', '#bookacti-booking-list .bookacti-unselect-all', function( e ) {
+		e.preventDefault();
+		$j( '#bookacti-bookings-container thead .check-column input[type="checkbox"]' ).prop( 'checked', true ).trigger( 'click.wp-toggle-checkboxes' );
+		$j( '#bookacti-bookings-container .tablenav .bookacti-select-all-container' ).remove();
+		$j( '#bookacti-all-selected' ).val( 0 );
 	});
 });

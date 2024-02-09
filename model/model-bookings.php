@@ -1864,7 +1864,7 @@ function bookacti_update_bookings_event_id( $old_event_id, $new_event_id, $event
 
 
 /**
- * Update booking state
+ * Update booking status
  * 
  * @global wpdb $wpdb
  * @param int $booking_id
@@ -1891,6 +1891,45 @@ function bookacti_update_booking_state( $booking_id, $state, $active = 'auto' ) 
 
 
 /**
+ * Update bookings status
+ * @since 1.16.0
+ * @global wpdb $wpdb
+ * @param int $booking_id
+ * @param string $state
+ * @param int|string $active
+ * @return int|false
+ */
+function bookacti_update_bookings_status( $booking_ids, $new_status, $active = 'auto' ) {
+	global $wpdb;
+	
+	if( $active === 'auto' ) {
+		$active = in_array( $new_status, bookacti_get_active_booking_states(), true ) ? 1 : 0;
+	}
+	$active = intval( $active ) > 1 ? 1 : ( intval( $active ) < 0 ? -1 : 0 );
+	
+	$query = 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS
+	       . ' SET state = %s, active = IFNULL( NULLIF( %d, -1 ), active ) '
+	       . ' WHERE id IN ( %d ';
+	
+	$variables = array( $new_status, $active );
+	
+	$array_count = count( $booking_ids );
+	if( $array_count >= 2 ) {
+		for( $i=1; $i<$array_count; ++$i ) {
+			$query .= ', %d ';
+		}
+	}
+	$query .= ') ';
+	$variables = array_merge( $variables, $booking_ids );
+	
+	$query   = $wpdb->prepare( $query, $variables );
+	$updated = $wpdb->query( $query );
+	
+	return $updated;
+}
+
+
+/**
  * Update booking payment status
  * 
  * @since 1.3.0
@@ -1908,6 +1947,40 @@ function bookacti_update_booking_payment_status( $booking_id, $status ) {
 	       . ' WHERE id = %d';
 	$prep  = $wpdb->prepare( $query, $status, $booking_id );
 	$updated = $wpdb->query( $prep );
+	
+	return $updated;
+}
+
+
+/**
+ * Update bookings payment status
+ * @since 1.16.0
+ * @global wpdb $wpdb
+ * @param int $booking_id
+ * @param string $state
+ * @param int|string $active
+ * @return int|false
+ */
+function bookacti_update_bookings_payment_status( $booking_ids, $new_status ) {
+	global $wpdb;
+	
+	$query = 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS
+	       . ' SET payment_status = %s '
+	       . ' WHERE id IN ( %d ';
+	
+	$variables = array( $new_status );
+	
+	$array_count = count( $booking_ids );
+	if( $array_count >= 2 ) {
+		for( $i=1; $i<$array_count; ++$i ) {
+			$query .= ', %d ';
+		}
+	}
+	$query .= ') ';
+	$variables = array_merge( $variables, $booking_ids );
+	
+	$query   = $wpdb->prepare( $query, $variables );
+	$updated = $wpdb->query( $query );
 	
 	return $updated;
 }
@@ -2208,6 +2281,63 @@ function bookacti_update_booking_group_state( $booking_group_id, $state, $active
 
 
 /**
+ * Update booking groups status
+ * @since 1.16.0
+ * @global wpdb $wpdb
+ * @param int $booking_group_id
+ * @param string $new_status
+ * @param 0|1|'auto' $active
+ * @param 0|1|'same_status' $update_bookings
+ * @return int|false
+ */
+function bookacti_update_booking_groups_status( $group_ids, $new_status, $active = 'auto', $update_bookings = 'same_status' ) {
+	global $wpdb;
+	
+	if( $active === 'auto' ) {
+		$active = in_array( $new_status, bookacti_get_active_booking_states(), true ) ? 1 : 0;
+	}
+	$active = intval( $active ) > 1 ? 1 : ( intval( $active ) < 0 ? -1 : 0 );
+	
+	$group_ids_placeholders = '%d';
+	$array_count = count( $group_ids );
+	if( $array_count >= 2 ) {
+		for( $i=1; $i<$array_count; ++$i ) {
+			$group_ids_placeholders .= ', %d ';
+		}
+	}
+	
+	$variables = array_merge( array( $new_status, $active ), $group_ids );
+	
+	if( $update_bookings ) {
+		$query = 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS . ' as B ';
+		
+		if( $update_bookings === 'same_status' ) {
+			$query .= ' LEFT JOIN ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' as BG ON B.group_id = BG.id';
+		}
+		
+		$query .= ' SET B.state = %s, B.active = IFNULL( NULLIF( %d, -1 ), B.active ) '
+		        . ' WHERE B.group_id IN ( ' . $group_ids_placeholders . ')';
+		
+		if( $update_bookings === 'same_status' ) {
+			$query .= ' AND BG.state = B.state';
+		}
+		
+		$query = $wpdb->prepare( $query, $variables );
+		$wpdb->query( $query );
+	}
+	
+	$query = 'UPDATE ' . BOOKACTI_TABLE_BOOKING_GROUPS
+	       . ' SET state = %s, active = IFNULL( NULLIF( %d, -1 ), active ) '
+	       . ' WHERE id IN ( ' . $group_ids_placeholders . ')';
+	
+	$query   = $wpdb->prepare( $query, $variables );
+	$updated = $wpdb->query( $query );
+	
+	return $updated;
+}
+
+
+/**
  * Update booking group payment status
  * @since 1.3.0
  * @version 1.10.0
@@ -2240,6 +2370,57 @@ function bookacti_update_booking_group_payment_status( $booking_group_id, $statu
 		}
 	}
 
+	return $updated;
+}
+
+
+/**
+ * Update booking groups payment status
+ * @since 1.16.0
+ * @global wpdb $wpdb
+ * @param int $booking_group_id
+ * @param string $new_status
+ * @param 0|1|'same_status' $update_bookings
+ * @return int|false
+ */
+function bookacti_update_booking_groups_payment_status( $group_ids, $new_status, $update_bookings = 'same_status' ) {
+	global $wpdb;
+	
+	$group_ids_placeholders = '%d';
+	$array_count = count( $group_ids );
+	if( $array_count >= 2 ) {
+		for( $i=1; $i<$array_count; ++$i ) {
+			$group_ids_placeholders .= ', %d ';
+		}
+	}
+	
+	$variables = array_merge( array( $new_status ), $group_ids );
+	
+	if( $update_bookings ) {
+		$query = 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS . ' as B ';
+		
+		if( $update_bookings === 'same_status' ) {
+			$query .= ' LEFT JOIN ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' as BG ON B.group_id = BG.id';
+		}
+		
+		$query .= ' SET B.payment_status = %s '
+		        . ' WHERE B.group_id IN ( ' . $group_ids_placeholders . ')';
+		
+		if( $update_bookings === 'same_status' ) {
+			$query .= ' AND BG.payment_status = B.payment_status';
+		}
+		
+		$query = $wpdb->prepare( $query, $variables );
+		$wpdb->query( $query );
+	}
+	
+	$query = 'UPDATE ' . BOOKACTI_TABLE_BOOKING_GROUPS
+	       . ' SET payment_status = %s '
+	       . ' WHERE id IN ( ' . $group_ids_placeholders . ')';
+	
+	$query   = $wpdb->prepare( $query, $variables );
+	$updated = $wpdb->query( $query );
+	
 	return $updated;
 }
 

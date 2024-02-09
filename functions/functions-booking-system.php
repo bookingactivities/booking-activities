@@ -390,7 +390,7 @@ function bookacti_get_booking_system_default_attributes() {
 		'status'                         => array(),
 		'user_id'                        => array(),
 		'method'                         => 'calendar',
-		'auto_load'                      => bookacti_get_setting_value( 'bookacti_general_settings', 'when_events_load' ) === 'on_page_load' ? 1 : 0,
+		'auto_load'                      => 0,
 		'start'                          => $current_datetime->format( 'Y-m-d H:i:s' ),
 		'end'                            => '',
 		'trim'                           => 1,
@@ -864,7 +864,7 @@ function bookacti_sanitize_booking_system_display_data( $raw_display_data ) {
 /**
  * Format booking system attributes passed via the URL
  * @since 1.6.0
- * @version 1.8.0
+ * @version 1.16.0
  * @param array $atts
  * @return array
  */
@@ -896,13 +896,19 @@ function bookacti_format_booking_system_url_attributes( $atts = array() ) {
 	
 	// Format the URL attributes
 	$timezone = new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
-	if( ! empty( $url_raw_atts[ 'start' ] ) && (bool)strtotime( $url_raw_atts[ 'start' ] ) ) {
-		$from_datetime = new DateTime( $url_raw_atts[ 'start' ], $timezone );
-		$url_raw_atts[ 'start' ] = $from_datetime->format( 'Y-m-d H:i:s' );
+	if( ! empty( $url_raw_atts[ 'start' ] ) ) {
+		$url_raw_atts[ 'start' ] = sanitize_text_field( $url_raw_atts[ 'start' ] );
+		if( $url_raw_atts[ 'start' ] && (bool) strtotime( $url_raw_atts[ 'start' ] ) ) {
+			$from_datetime = new DateTime( $url_raw_atts[ 'start' ], $timezone );
+			$url_raw_atts[ 'start' ] = $from_datetime->format( 'Y-m-d H:i:s' );
+		}
 	}
-	if( ! empty( $url_raw_atts[ 'end' ] ) && (bool)strtotime( $url_raw_atts[ 'end' ] ) ) {
-		$to_datetime = new DateTime( $url_raw_atts[ 'end' ], $timezone );
-		$url_raw_atts[ 'end' ] = ! bookacti_sanitize_datetime( $url_raw_atts[ 'end' ] ) && $to_datetime->format( 'H:i:s' ) === '00:00:00' ? $to_datetime->format( 'Y-m-d' ) . ' 23:59:59' : $to_datetime->format( 'Y-m-d H:i:s' );
+	if( ! empty( $url_raw_atts[ 'end' ] ) ) {
+		$url_raw_atts[ 'end' ] = sanitize_text_field( $url_raw_atts[ 'end' ] );
+		if( $url_raw_atts[ 'end' ] && (bool) strtotime( $url_raw_atts[ 'end' ] ) ) {
+			$to_datetime = new DateTime( $url_raw_atts[ 'end' ], $timezone );
+			$url_raw_atts[ 'end' ] = ! bookacti_sanitize_datetime( $url_raw_atts[ 'end' ] ) && $to_datetime->format( 'H:i:s' ) === '00:00:00' ? $to_datetime->format( 'Y-m-d' ) . ' 23:59:59' : $to_datetime->format( 'Y-m-d H:i:s' );
+		}
 	}
 	
 	// Isolate display data
@@ -912,7 +918,7 @@ function bookacti_format_booking_system_url_attributes( $atts = array() ) {
 	
 	// Replace booking system attributes with attributes passed through the URL
 	foreach( $default_atts as $att_name => $att_value ) {
-		if( ! isset( $url_raw_atts[ $att_name ] ) || ( ! $url_raw_atts[ $att_name ] && ! in_array( $url_raw_atts[ $att_name ], array( 0, '0' ), true ) ) ) { continue; }
+		if( ! isset( $url_raw_atts[ $att_name ] ) || ( isset( $url_raw_atts[ $att_name ] ) && ! $url_raw_atts[ $att_name ] && ! in_array( $url_raw_atts[ $att_name ], array( 0, '0' ), true ) ) ) { continue; }
 		if( $att_name === 'past_events' && $url_raw_atts[ 'past_events' ] === 'auto' ) { continue; }
 		$atts[ $att_name ] = $url_atts[ $att_name ];
 	}
@@ -3409,7 +3415,7 @@ function bookacti_export_events_page( $atts, $calname = '', $caldesc = '', $sequ
 				$filename = 'my-bookings';
 				break;
 			case 'bookacti_export_form_events':
-				$filename = ! empty( $_REQUEST[ 'form_id' ] ) ? 'booking-activities-events-form-' . $_REQUEST[ 'form_id' ] : 'booking-activities-events-form-unknown';
+				$filename = ! empty( $_REQUEST[ 'form_id' ] ) ? 'booking-activities-events-form-' . intval( $_REQUEST[ 'form_id' ] ) : 'booking-activities-events-form-unknown';
 				break;
 			default:
 				$filename = 'my-events';

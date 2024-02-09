@@ -12,7 +12,6 @@ function bookacti_get_default_settings() {
 	$tz = $date->getTimezone()->getName();
 	
 	$default = array(
-		'when_events_load'                  => 'after_page_load',
 		'event_load_interval'               => 92,
 		'started_events_bookable'           => false,
 		'started_groups_bookable'           => false,
@@ -303,38 +302,6 @@ function bookacti_settings_field_calendar_localization_callback() {
 
 
 /**
- * Display "When to load the events?" setting
- * @since 1.1.0
- * @version 1.9.0
- */
-function bookacti_settings_field_when_events_load_callback() {
-	$args = array(
-		'type'		=> 'select',
-		'name'		=> 'bookacti_general_settings[when_events_load]',
-		'id'		=> 'when_events_load',
-		'options'	=> array( 
-							'on_page_load' => esc_html__( 'On page load', 'booking-activities' ),
-							'after_page_load' => esc_html__( 'After page load', 'booking-activities' )
-						),
-		'value'		=> bookacti_get_setting_value( 'bookacti_general_settings', 'when_events_load' ),
-		'tip'		=> apply_filters( 'bookacti_when_events_load_tip', esc_html__( 'Choose whether you want to load events when the page is loaded or after.', 'booking-activities' ) )
-	);
-	bookacti_display_field( $args );
-?>
-	<div class='bookacti-backend-settings-only-notice bookacti-warning' style='margin-top: 10px;'>
-		<span class='dashicons dashicons-warning'></span>
-		<span>
-			<?php 
-				/* translators: %s = "After page load" (it's an option name) */
-				echo sprintf( esc_html__( 'You must choose "%s" if you are using a caching sytem (via a plugin, your webhost, a CDN...).', 'booking-activities' ), esc_html__( 'After page load', 'booking-activities' ) );
-			?>
-		</span>
-	</div>
-<?php
-}
-
-
-/**
  * Display Event Load Interval setting
  * @since 1.2.2
  * @version 1.12.2
@@ -416,7 +383,7 @@ function bookacti_settings_field_default_payment_status_callback() {
 
 
 /**
- * Display "default booking state" setting
+ * Display "default booking status" setting
  * @version 1.15.16
  */
 function bookacti_settings_field_default_booking_state_callback() {

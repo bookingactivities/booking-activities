@@ -45,14 +45,6 @@ function bookacti_init_settings() {
 	);
 	
 	add_settings_field(  
-		'when_events_load', 
-		esc_html__( 'When to load the events?', 'booking-activities' ), 
-		'bookacti_settings_field_when_events_load_callback', 
-		'bookacti_general_settings', 
-		'bookacti_settings_section_general'
-	);
-	
-	add_settings_field(  
 		'event_load_interval', 
 		esc_html__( 'Load events every', 'booking-activities' ), 
 		'bookacti_settings_field_event_load_interval_callback', 
@@ -86,7 +78,7 @@ function bookacti_init_settings() {
 	
 	add_settings_field(  
 		'default_booking_state', 
-		esc_html__( 'Default booking state', 'booking-activities' ), 
+		esc_html__( 'Default booking status', 'booking-activities' ), 
 		'bookacti_settings_field_default_booking_state_callback', 
 		'bookacti_general_settings', 
 		'bookacti_settings_section_general' 
@@ -332,11 +324,13 @@ add_action( 'admin_menu', 'bookacti_add_screen_options', 20 );
 /**
  * Add booking page columns screen options
  * @since 1.3.0
- * @version 1.6.0
+ * @version 1.16.0
  */
 function bookacti_add_booking_page_screen_option() {
-	$booking_list = new Bookings_List_Table();
-	$booking_list->process_bulk_action();
+	$action = ! empty( $_REQUEST[ 'action' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'action' ] ) : '';
+	if( ! $action || ! in_array( $action, array( 'edit', 'new' ), true ) ) {
+		new Bookings_List_Table();
+	}
 }
 add_action( 'admin_head-booking-activities_page_bookacti_bookings', 'bookacti_add_booking_page_screen_option' );
 
@@ -344,9 +338,11 @@ add_action( 'admin_head-booking-activities_page_bookacti_bookings', 'bookacti_ad
 /**
  * Add form page columns screen options
  * @since 1.5.0
+ * @version 1.16.0
  */
 function bookacti_add_form_page_screen_option() {
-	if( empty( $_REQUEST[ 'action' ] ) || ! in_array( $_REQUEST[ 'action' ], array( 'edit', 'new' ), true ) ) {
+	$action = ! empty( $_REQUEST[ 'action' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'action' ] ) : '';
+	if( ! $action || ! in_array( $action, array( 'edit', 'new' ), true ) ) {
 		new Forms_List_Table();
 	}
 }
@@ -875,11 +871,11 @@ function bookacti_controller_search_select2_users() {
 	if( ! current_user_can( 'list_users' ) && ! current_user_can( 'edit_users' ) ) { bookacti_send_json_not_allowed( 'search_select2_users' ); }
 	
 	// Sanitize search
-	$term         = isset( $_REQUEST[ 'term' ] ) ? sanitize_text_field( stripslashes( $_REQUEST[ 'term' ] ) ) : '';
-	$id__in       = ! empty( $_REQUEST[ 'id__in' ] ) ? bookacti_ids_to_array( $_REQUEST[ 'id__in' ] ) : array();
-	$id__not_in   = ! empty( $_REQUEST[ 'id__not_in' ] ) ? bookacti_ids_to_array( $_REQUEST[ 'id__not_in' ] ) : array();
-	$role         = ! empty( $_REQUEST[ 'role' ] ) ? bookacti_str_ids_to_array( $_REQUEST[ 'role' ] ) : array();
-	$role__in     = ! empty( $_REQUEST[ 'role__in' ] ) ? bookacti_str_ids_to_array( $_REQUEST[ 'role__in' ] ) : array();
+	$term         = isset( $_REQUEST[ 'term' ] )           ? sanitize_text_field( stripslashes( $_REQUEST[ 'term' ] ) ) : '';
+	$id__in       = ! empty( $_REQUEST[ 'id__in' ] )       ? bookacti_ids_to_array( $_REQUEST[ 'id__in' ] ) : array();
+	$id__not_in   = ! empty( $_REQUEST[ 'id__not_in' ] )   ? bookacti_ids_to_array( $_REQUEST[ 'id__not_in' ] ) : array();
+	$role         = ! empty( $_REQUEST[ 'role' ] )         ? bookacti_str_ids_to_array( $_REQUEST[ 'role' ] ) : array();
+	$role__in     = ! empty( $_REQUEST[ 'role__in' ] )     ? bookacti_str_ids_to_array( $_REQUEST[ 'role__in' ] ) : array();
 	$role__not_in = ! empty( $_REQUEST[ 'role__not_in' ] ) ? bookacti_str_ids_to_array( $_REQUEST[ 'role__not_in' ] ) : array();
 	$no_account   = ! empty( $_REQUEST[ 'no_account' ] );
 	
@@ -887,8 +883,8 @@ function bookacti_controller_search_select2_users() {
 	if( ! $term && ! $id__in && ! $role && ! $role__in && ! $no_account ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'empty_query' ), 'search_select2_users' ); }
 	
 	$defaults = array(
-		'name' => isset( $_REQUEST[ 'name' ] ) ? sanitize_title_with_dashes( stripslashes( $_REQUEST[ 'name' ] ) ) : '', // Used for developers to identify the selectbox
-		'id' => isset( $_REQUEST[ 'id' ] ) ? sanitize_title_with_dashes( stripslashes( $_REQUEST[ 'id' ] ) ) : '',		 // Used for developers to identify the selectbox
+		'name' => isset( $_REQUEST[ 'name' ] ) ? sanitize_title_with_dashes( stripslashes( $_REQUEST[ 'name' ] ) ) : '', // For developers to identify the selectbox
+		'id' => isset( $_REQUEST[ 'id' ] ) ? sanitize_title_with_dashes( stripslashes( $_REQUEST[ 'id' ] ) ) : '',		 // For developers to identify the selectbox
 		'search' => $term !== '' ? '*' . esc_attr( $term ) . '*' : '',
 		'search_columns' => array( 'user_login', 'user_url', 'user_email', 'user_nicename', 'display_name' ),
 		'option_label' => array( 'first_name', ' ', 'last_name', ' (', 'user_login', ' / ', 'user_email', ')' ),

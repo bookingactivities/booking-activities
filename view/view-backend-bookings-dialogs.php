@@ -155,14 +155,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	</form>
 </div>
 
-<div id='bookacti-change-booking-state-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' style='display:none;' title='<?php esc_html_e( 'Change booking state', 'booking-activities' ); ?>'>
-	<form id='bookacti-change-booking-state-form'>
-		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_change_booking_state' ); ?>'/>
+<div id='bookacti-change-booking-status-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' style='display:none;' title='<?php esc_html_e( 'Change booking status', 'booking-activities' ); ?>'>
+	<form id='bookacti-change-booking-status-form'>
+		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_change_booking_status' ); ?>'/>
 		<fieldset>
-			<legend><?php esc_html_e( 'Booking state', 'booking-activities' ); ?></legend>
+			<legend><?php esc_html_e( 'Booking status', 'booking-activities' ); ?></legend>
 			<div>
-				<label for='bookacti-select-booking-state' ><?php esc_html_e( 'Booking state', 'booking-activities' ); ?></label>
-				<select name='select-booking-state' id='bookacti-select-booking-state' >
+				<label for='bookacti-select-booking-status' ><?php esc_html_e( 'Booking status', 'booking-activities' ); ?></label>
+				<select name='booking_status' id='bookacti-select-booking-status' >
+					<option value=''><?php esc_html_e( 'Do not change', 'booking-activities' ); ?></option>
 					<?php
 					$booking_state_labels   = bookacti_get_booking_state_labels();
 					$allowed_booking_states = apply_filters( 'bookacti_booking_states_you_can_manually_change', array( 'delivered', 'booked', 'pending', 'cancelled', 'refund_requested', 'refunded' ) );
@@ -174,12 +175,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				</select>
 			</div>
 			<div>
-				<label for='bookacti-send-notifications-on-state-change' ><?php esc_html_e( 'Send notifications', 'booking-activities' ); ?></label>
+				<label for='bookacti-send-notifications-on-status-change'><?php esc_html_e( 'Send notifications', 'booking-activities' ); ?></label>
 				<?php 
 					$args = array(
 						'type'  => 'checkbox',
-						'name'  => 'send-notifications-on-state-change',
-						'id'    => 'bookacti-send-notifications-on-state-change',
+						'name'  => 'send_notifications',
+						'id'    => 'bookacti-send-notifications-on-status-change',
 						'value' => 0,
 						/* Translators: %s is a link to the "Notifications settings" */
 						'tip'   => sprintf( esc_html__( 'Send the booking status change notifications configured in %s.', 'booking-activities' ), '<a href="' . admin_url( 'admin.php?page=bookacti_settings&tab=notifications' ) . '">' . esc_html__( 'Notifications settings', 'booking-activities' ) . '</a>' )
@@ -192,7 +193,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			<legend><?php esc_html_e( 'Payment status', 'booking-activities' ); ?></legend>
 			<div>
 				<label for='bookacti-select-payment-status' ><?php esc_html_e( 'Payment status', 'booking-activities' ); ?></label>
-				<select name='select-payment-status' id='bookacti-select-payment-status' >
+				<select name='payment_status' id='bookacti-select-payment-status'>
+					<option value=''><?php esc_html_e( 'Do not change', 'booking-activities' ); ?></option>
 					<?php
 					$payment_status = bookacti_get_payment_status_labels();
 					foreach( $payment_status as $payment_status_id => $payment_status_data ) {

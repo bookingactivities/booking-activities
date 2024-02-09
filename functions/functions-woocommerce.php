@@ -746,7 +746,7 @@ function bookacti_wc_get_item_bookings_attributes( $item_bookings ) {
 /**
  * Get array of displayed attributes per item per booking
  * @since 1.9.0
- * @version 1.14.0
+ * @version 1.16.0
  * @param array $item_bookings
  * @return array
  */
@@ -766,8 +766,9 @@ function bookacti_wc_get_item_bookings_attributes_html( $item_bookings ) {
 	foreach( $bookings_attributes as $booking_attributes ) {
 		$i++;
 		$container_margin = $i !== $last_i ? 'margin-bottom:25px;' : '';
+		$classes = ! empty( $booking_attributes[ 'id' ] ) ? ( $booking_attributes[ 'id' ][ 'type' ] === 'group' ? 'bookacti-booking-group' : 'bookacti-single-booking' ) : '';
 		$attr_booking_id = ! empty( $booking_attributes[ 'id' ] ) ? ( $booking_attributes[ 'id' ][ 'type' ] === 'group' ? 'data-booking-group-id="' . $booking_attributes[ 'id' ][ 'value' ] . '"' : 'data-booking-id="' . $booking_attributes[ 'id' ][ 'value' ] . '"' ) : '';
-		$html .= '<div class="bookacti-wc-order-item-booking-attributes bookacti-booking-row" ' . $attr_booking_id . ' style="' . $container_margin . '">';
+		$html .= '<div class="bookacti-wc-order-item-booking-attributes bookacti-booking-row ' . $classes . '" ' . $attr_booking_id . ' style="' . $container_margin . '">';
 		foreach( $booking_attributes as $booking_attribute_id => $booking_attribute ) {
 			if( $booking_attribute[ 'label' ] === '' && $booking_attribute[ 'value' ] === '' ) { continue; }
 			$fullwidth_class = ! empty( $booking_attribute[ 'fullwidth' ] ) ? 'bookacti-fullwidth-label' : '';
@@ -1095,7 +1096,7 @@ function bookacti_wc_update_order_status_according_to_its_bookings( $order_id ) 
 	$items_bookings = bookacti_wc_get_order_items_bookings( $items );
 	if( ! $items_bookings ) { return; }
 
-	// Get items booking states and
+	// Get items booking status and
 	// Determine if the order is only composed of activities
 	$states = array();
 	$only_activities = true;
@@ -1900,7 +1901,7 @@ function bookacti_update_order_bookings_on_order_refund( $refund ) {
 			
 			// Single booking
 			if( $item_booking[ 'type' ] === 'single' ) {
-				// Update booking state to 'refunded'
+				// Update booking status to 'refunded'
 				$booking_data = bookacti_sanitize_booking_data( array( 'id' => $item_booking[ 'id' ], 'status' => 'refunded', 'active' => 0 ) );
 				$updated = bookacti_update_booking( $booking_data );
 				
