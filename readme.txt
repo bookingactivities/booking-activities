@@ -338,6 +338,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Booking filters may not be correctly applied after reloading the bookings page
 * Fix - Deleting an activity deleted it from all calendars instead of removing it only from the current calendar
 * Fix - Decode HTML entities before displaying WooCommerce price
+* Fix - Incorrect bookings retrieved if booking_group_id_operator filter was set to "OR" and no booking ids where provided
 * Dev - Refactor the way async notifications are scheduled
 
 = 1.15.20 - 2024/02/09 =

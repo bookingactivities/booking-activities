@@ -189,6 +189,8 @@ function bookacti_get_selected_bookings_filters( $booking_type = 'single', $cont
 	if( $filters_raw && ! $filters ) {
 		$filters = bookacti_format_booking_filters( $filters_raw );
 		wp_cache_set( 'selected_bookings_filters_' . $booking_type, $filters, 'bookacti' );
+	} else if( ! $filters ) {
+		$filters = array();
 	}
 	
 	if( $filters && $context === 'admin_booking_list' ) {
@@ -216,7 +218,7 @@ function bookacti_get_selected_bookings( $context = '' ) {
 	
 	$group_filters   = bookacti_get_selected_bookings_filters( 'group', $context );
 	$booking_groups  = $group_filters ? bookacti_get_booking_groups( $group_filters ) : array();
-	$groups_bookings = $group_filters ? bookacti_get_bookings( $group_filters ) : array();
+	$groups_bookings = $group_filters ? bookacti_get_bookings( array_merge( $group_filters, array( 'group_by' => 'none' ) ) ) : array();
 	
 	$selected_bookings = apply_filters( 'bookacti_selected_bookings', array(
 		'bookings'        => $bookings,

@@ -253,9 +253,17 @@ function bookacti_init_booking_actions() {
 		
 		user_auth_key = $j( this ).data( 'user-auth-key' ).length ? $j( this ).data( 'user-auth-key' ) : '';
 		
+		var booking_selection = {
+			'booking_ids': [],
+			'booking_group_ids': [],
+			'all': 0
+		};
+		
 		// Single Bookings
 		if( $j( this ).hasClass( 'bookacti-booking-action' ) ) {
 			var booking_id = $j( this ).data( 'booking-id' );
+			booking_selection.booking_ids.push( booking_id );
+			
 			if( $j( this ).hasClass( 'bookacti-cancel-booking' ) ){
 				bookacti_dialog_cancel_booking( booking_id, 'single' );
 			} else if( $j( this ).hasClass( 'bookacti-reschedule-booking' ) ){
@@ -263,7 +271,7 @@ function bookacti_init_booking_actions() {
 			} else if( $j( this ).hasClass( 'bookacti-refund-booking' ) ){
 				bookacti_dialog_refund_booking( booking_id, 'single' );
 			} else if( $j( this ).hasClass( 'bookacti-change-booking-status' ) ){
-				bookacti_dialog_change_booking_state( booking_id, 'single' );
+				bookacti_dialog_change_bookings_status( booking_selection );
 			} else if( $j( this ).hasClass( 'bookacti-change-booking-quantity' ) ){
 				bookacti_dialog_change_booking_quantity( booking_id, 'single' );
 			} else if( $j( this ).hasClass( 'bookacti-send-booking-notification' ) ){
@@ -275,12 +283,14 @@ function bookacti_init_booking_actions() {
 		// Booking Groups
 		} else {
 			var booking_group_id = $j( this ).data( 'booking-group-id' );
+			booking_selection.booking_group_ids.push( booking_group_id );
+			
 			if( $j( this ).hasClass( 'bookacti-cancel-booking-group' ) ){
 				bookacti_dialog_cancel_booking( booking_group_id, 'group' );
 			} else if( $j( this ).hasClass( 'bookacti-refund-booking-group' ) ){
 				bookacti_dialog_refund_booking( booking_group_id, 'group' );
 			} else if( $j( this ).hasClass( 'bookacti-change-booking-group-state' ) ){
-				bookacti_dialog_change_booking_state( booking_group_id, 'group' );
+				bookacti_dialog_change_bookings_status( booking_selection );
 			} else if( $j( this ).hasClass( 'bookacti-change-booking-group-quantity' ) ){
 				bookacti_dialog_change_booking_quantity( booking_group_id, 'group' );
 			} else if( $j( this ).hasClass( 'bookacti-show-booking-group-bookings' ) ){

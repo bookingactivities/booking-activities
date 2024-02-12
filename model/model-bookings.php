@@ -126,7 +126,7 @@ function bookacti_update_booking( $booking_data, $where = array() ) {
 
 /**
  * Get bookings according to filters
- * @version 1.15.13
+ * @version 1.16.0
  * @global wpdb $wpdb
  * @param array $filters Use bookacti_format_booking_filters() before
  * @return array
@@ -271,7 +271,7 @@ function bookacti_get_bookings( $filters ) {
 	}
 	
 	if( $filters[ 'in__booking_group_id' ] ) {
-		$query .= ' ' . $filters[ 'booking_group_id_operator' ];
+		$query .= ' ' . ( $filters[ 'in__booking_id' ] ? $filters[ 'booking_group_id_operator' ] : 'AND' );
 		$query .= ' B.group_id IN ( %d ';
 		$array_count = count( $filters[ 'in__booking_group_id' ] );
 		if( $array_count >= 2 ) {
@@ -530,6 +530,9 @@ function bookacti_get_bookings( $filters ) {
 	
 	$query = apply_filters( 'bookacti_get_bookings_query', $query, $filters );
 	
+	bookacti_log( '$query' );
+	bookacti_log( $query );
+	
 	$bookings = $wpdb->get_results( $query, OBJECT );
 	
 	$bookings_array    = array();
@@ -570,7 +573,7 @@ function bookacti_get_bookings( $filters ) {
 /**
  * Get the total amount of booking rows according to filters
  * @since 1.3.1
- * @version 1.15.13
+ * @version 1.16.0
  * @global wpdb $wpdb
  * @param array $filters Use bookacti_format_booking_filters() before
  * @return int
@@ -716,7 +719,7 @@ function bookacti_get_number_of_booking_rows( $filters ) {
 	}
 	
 	if( $filters[ 'in__booking_group_id' ] ) {
-		$query .= ' ' . $filters[ 'booking_group_id_operator' ];
+		$query .= ' ' . ( $filters[ 'in__booking_id' ] ? $filters[ 'booking_group_id_operator' ] : 'AND' );
 		$query .= ' B.group_id IN ( %d ';
 		$array_count = count( $filters[ 'in__booking_group_id' ] );
 		if( $array_count >= 2 ) {
@@ -966,7 +969,7 @@ function bookacti_get_number_of_booking_rows( $filters ) {
 
 /**
  * Get number of bookings of a specific event or a specific occurrence
- * @version 1.15.13
+ * @version 1.16.0
  * @global wpdb $wpdb
  * @param array $filters Use bookacti_format_booking_filters() before
  * @return int
@@ -1121,7 +1124,7 @@ function bookacti_get_number_of_bookings( $filters ) {
 	}
 	
 	if( $filters[ 'in__booking_group_id' ] ) {
-		$query .= ' ' . $filters[ 'booking_group_id_operator' ];
+		$query .= ' ' . ( $filters[ 'in__booking_id' ] ? $filters[ 'booking_group_id_operator' ] : 'AND' );
 		$query .= ' B.group_id IN ( %d ';
 		$array_count = count( $filters[ 'in__booking_group_id' ] );
 		if( $array_count >= 2 ) {
