@@ -333,15 +333,13 @@ function bookacti_init_booking_bulk_actions() {
 			'all': parseInt( $j( '#bookacti-all-selected' ).val() ) ? 1 : 0
 		};
 		
-		if( ! booking_selection.all ) {
-			$j( '#bookacti-bookings-container tbody .check-column input[name="booking_ids[]"]:checked' ).each( function() {
-				booking_selection.booking_ids.push( parseInt( $j( this ).val() ) );
-			});
+		$j( '#bookacti-bookings-container tbody .check-column input[name="booking_ids[]"]:checked' ).each( function() {
+			booking_selection.booking_ids.push( parseInt( $j( this ).val() ) );
+		});
 
-			$j( '#bookacti-bookings-container tbody .check-column input[name="booking_group_ids[]"]:checked' ).each( function() {
-				booking_selection.booking_group_ids.push( parseInt( $j( this ).val() ) );
-			});
-		}
+		$j( '#bookacti-bookings-container tbody .check-column input[name="booking_group_ids[]"]:checked' ).each( function() {
+			booking_selection.booking_group_ids.push( parseInt( $j( this ).val() ) );
+		});
 		
 		if( action === 'reschedule' ) {
 			bookacti_dialog_reschedule_booking( booking_id );

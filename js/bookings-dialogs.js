@@ -604,10 +604,10 @@ function bookacti_dialog_change_bookings_status( booking_selection ) {
 										$j( this ).replaceWith( new_row );
 									}
 								});
-								rows.remove();
 								bookacti_refresh_list_table_hidden_columns();
 							}
-
+							rows.remove();
+							
 							// Update booking status
 							if( new_booking_status ) {
 								$j( 'body' ).trigger( 'bookacti_booking_status_changed', [ response, booking_selection, new_booking_status ] );
@@ -616,6 +616,11 @@ function bookacti_dialog_change_bookings_status( booking_selection ) {
 							// Update payment status
 							if( new_payment_status ) {
 								$j( 'body' ).trigger( 'bookacti_payment_status_changed', [ response, booking_selection, new_payment_status ] );
+							}
+							
+							// If the rows have not been refresh, reload the page
+							if( ! response.rows ) {
+								window.location.reload();
 							}
 
 						} else if( response.status === 'failed' ) {

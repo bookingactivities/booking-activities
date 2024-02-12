@@ -362,8 +362,9 @@ function bookacti_controller_change_bookings_status() {
 	$updated = apply_filters( 'bookacti_bookings_status_updated', $updated, $selected_bookings, $new_selected_bookings );
 	
 	$columns     = ! empty( $_POST[ 'columns' ] ) ? bookacti_str_ids_to_array( $_POST[ 'columns' ] ) : array();
-	$row_filters = apply_filters( 'bookacti_booking_action_row_filters', bookacti_get_selected_bookings_filters( 'both', $context ), 'change_booking_status', $context );
-	$rows        = bookacti_get_booking_list_rows_according_to_context( $context, $row_filters, $columns );
+	$row_filters = bookacti_get_selected_bookings_filters( 'both', $context );
+	$row_filters = $row_filters ? apply_filters( 'bookacti_booking_action_row_filters', array_merge( $row_filters, array( 'group_by' => 'booking_group' ) ), 'change_booking_status', $context ) : array();
+	$rows        = $row_filters ? bookacti_get_booking_list_rows_according_to_context( $context, $row_filters, $columns ) : '';
 	
 	bookacti_send_json( array( 'status' => 'success', 'rows' => $rows, 'updated' => $updated ), 'change_booking_status' );
 }

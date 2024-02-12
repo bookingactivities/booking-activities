@@ -530,9 +530,6 @@ function bookacti_get_bookings( $filters ) {
 	
 	$query = apply_filters( 'bookacti_get_bookings_query', $query, $filters );
 	
-	bookacti_log( '$query' );
-	bookacti_log( $query );
-	
 	$bookings = $wpdb->get_results( $query, OBJECT );
 	
 	$bookings_array    = array();
