@@ -273,7 +273,7 @@ function bookacti_init_booking_actions() {
 			} else if( $j( this ).hasClass( 'bookacti-change-booking-status' ) ){
 				bookacti_dialog_change_bookings_status( booking_selection );
 			} else if( $j( this ).hasClass( 'bookacti-change-booking-quantity' ) ){
-				bookacti_dialog_change_booking_quantity( booking_id, 'single' );
+				bookacti_dialog_change_bookings_quantity( booking_selection );
 			} else if( $j( this ).hasClass( 'bookacti-send-booking-notification' ) ){
 				bookacti_dialog_send_booking_notification( booking_id, 'single' );
 			} else if( $j( this ).hasClass( 'bookacti-delete-booking' ) ){
@@ -292,7 +292,7 @@ function bookacti_init_booking_actions() {
 			} else if( $j( this ).hasClass( 'bookacti-change-booking-group-state' ) ){
 				bookacti_dialog_change_bookings_status( booking_selection );
 			} else if( $j( this ).hasClass( 'bookacti-change-booking-group-quantity' ) ){
-				bookacti_dialog_change_booking_quantity( booking_group_id, 'group' );
+				bookacti_dialog_change_bookings_quantity( booking_selection );
 			} else if( $j( this ).hasClass( 'bookacti-show-booking-group-bookings' ) ){
 				bookacti_display_grouped_bookings( booking_group_id );
 			} else if( $j( this ).hasClass( 'bookacti-send-booking-group-notification' ) ){
@@ -348,13 +348,37 @@ function bookacti_init_booking_bulk_actions() {
 		} else if( action === 'edit_status' ) {
 			bookacti_dialog_change_bookings_status( booking_selection );
 		} else if( action === 'edit_quantity' ) {
-			bookacti_dialog_change_booking_quantity( booking_id, 'single' );
+			bookacti_dialog_change_bookings_quantity( booking_selection );
 		} else if( action === 'send_notification' ) {
 			bookacti_dialog_send_booking_notification( booking_id, 'single' );
 		} else if( action === 'delete' ) {
 			bookacti_dialog_delete_booking( booking_id, 'single' );
 		}
 	});
+}
+
+
+/**
+ * Get booking list filters as a serialized object
+ * @since 1.16.0
+ * @returns {Object}
+ */
+function bookacti_get_booking_list_filters() {
+	var filters = $j( '#bookacti-booking-list-filters-form' ).length ? bookacti_serialize_object( $j( '#bookacti-booking-list-filters-form' ) ) : {};
+	
+	// Select only available templates
+	if( ! $j.isEmptyObject( filters ) ) {
+		if( ! filters.templates ) {
+			filters.templates = [];
+			$j( '#bookacti-booking-filter-templates option' ).each( function() {
+				filters.templates.push( $j( this ).val() );
+			});
+		}
+	}
+	
+	$j( '#bookacti-booking-list-filters-form' ).trigger( 'bookacti_filter_booking_list_data', [ filters ] );
+	
+	return filters;
 }
 
 

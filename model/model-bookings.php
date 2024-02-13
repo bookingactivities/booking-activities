@@ -1930,29 +1930,6 @@ function bookacti_update_bookings_status( $booking_ids, $new_status, $active = '
 
 
 /**
- * Update booking payment status
- * 
- * @since 1.3.0
- * @global wpdb $wpdb
- * @param int $booking_id
- * @param string $status
- * @return int|false
- */
-function bookacti_update_booking_payment_status( $booking_id, $status ) {
-	
-	global $wpdb;
-	
-	$query = 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS . ' '
-	       . ' SET payment_status = %s '
-	       . ' WHERE id = %d';
-	$prep  = $wpdb->prepare( $query, $status, $booking_id );
-	$updated = $wpdb->query( $prep );
-	
-	return $updated;
-}
-
-
-/**
  * Update bookings payment status
  * @since 1.16.0
  * @global wpdb $wpdb
@@ -1987,18 +1964,34 @@ function bookacti_update_bookings_payment_status( $booking_ids, $new_status ) {
 
 
 /**
- * Forced update of booking quantity (do not check availability)
- * @version 1.7.10
+ * Forced update of bookings quantity (do not check availability)
+ * @since 1.16.0
  * @global wpdb $wpdb
- * @param int $booking_id
- * @param int $quantity
+ * @param array $booking_ids
+ * @param int $new_quantity
  * @return int|false
  */
-function bookacti_force_update_booking_quantity( $booking_id, $quantity ) {
+function bookacti_force_update_bookings_quantity( $booking_ids, $new_quantity ) {
 	global $wpdb;
-	$query = 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS . ' SET quantity = %d WHERE id = %d';
-	$prep  = $wpdb->prepare( $query, $quantity, $booking_id );
-	$updated = $wpdb->query( $prep );
+	
+	$query = 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS
+	       . ' SET quantity = %d '
+	       . ' WHERE id IN ( %d ';
+	
+	$variables = array( $new_quantity );
+	
+	$array_count = count( $booking_ids );
+	if( $array_count >= 2 ) {
+		for( $i=1; $i<$array_count; ++$i ) {
+			$query .= ', %d ';
+		}
+	}
+	$query .= ') ';
+	$variables = array_merge( $variables, $booking_ids );
+	
+	$query   = $wpdb->prepare( $query, $variables );
+	$updated = $wpdb->query( $query );
+	
 	return $updated;
 }
 
@@ -2338,43 +2331,6 @@ function bookacti_update_booking_groups_status( $group_ids, $new_status, $active
 
 
 /**
- * Update booking group payment status
- * @since 1.3.0
- * @version 1.10.0
- * @global wpdb $wpdb
- * @param int $booking_group_id
- * @param string $state
- * @param 0|1|'auto' $active
- * @param boolean $update_bookings Whether to updates bookings state of the group.
- * @param string $old_status The bookings payment status must be the same as the given one.
- * @return int|boolean
- */
-function bookacti_update_booking_group_payment_status( $booking_group_id, $status, $update_bookings = false, $old_status = '' ) {
-	global $wpdb;
-
-	$query1 = 'UPDATE ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' '
-	        . ' SET payment_status = %s '
-	        . ' WHERE id = %d';
-	$prep1  = $wpdb->prepare( $query1, $status, $booking_group_id );
-	$updated1 = $wpdb->query( $prep1 );
-
-	$updated = $updated1;
-
-	if( $update_bookings ) {
-		$updated2 = bookacti_update_booking_group_bookings_payment_status( $booking_group_id, $status, $old_status );
-
-		if( is_int( $updated1 ) && is_int( $updated2 ) ) {
-			$updated = $updated1 + $updated2;
-		} else {
-			$updated = false;
-		}
-	}
-
-	return $updated;
-}
-
-
-/**
  * Update booking groups payment status
  * @since 1.16.0
  * @global wpdb $wpdb
@@ -2576,31 +2532,34 @@ function bookacti_update_booking_group_bookings_payment_status( $booking_group_i
 
 
 /**
- * Update booking group bookings quantity (forced update)
- * 
- * @since 1.1.0
- * 
+ * Update booking groups bookings quantity (forced update)
+ * @since 1.16.0
  * @global wpdb $wpdb
- * @param int $booking_group_id
- * @param int $quantity
- * @param boolean $add_quantity
+ * @param array $group_ids
+ * @param int $new_quantity
  * @return int|false
  */
-function bookacti_force_update_booking_group_bookings_quantity( $booking_group_id, $quantity, $add_quantity = false ) {
+function bookacti_force_update_booking_groups_bookings_quantity( $group_ids, $new_quantity ) {
 	global $wpdb;
-
-	$query = 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS 
-	       . ' SET quantity = %d ';
-
-	if( $add_quantity ) {
-		$query .= '+ quantity';
+	
+	$query = 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS
+	       . ' SET quantity = %d '
+	       . ' WHERE group_id IN ( %d ';
+	
+	$variables = array( $new_quantity );
+	
+	$array_count = count( $group_ids );
+	if( $array_count >= 2 ) {
+		for( $i=1; $i<$array_count; ++$i ) {
+			$query .= ', %d ';
+		}
 	}
+	$query .= ') ';
+	$variables = array_merge( $variables, $group_ids );
 
-	$query .= ' WHERE group_id = %d';
-
-	$prep = $wpdb->prepare( $query, $quantity, $booking_group_id );
-	$updated = $wpdb->query( $prep );
-
+	$query   = $wpdb->prepare( $query, $variables );
+	$updated = $wpdb->query( $query );
+	
 	return $updated;
 }
 

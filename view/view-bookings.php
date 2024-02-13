@@ -59,8 +59,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_get_booking_list' ); ?>'/>
 				<?php
 					// Display sorting data
-					if( ! empty( $_GET[ 'orderby' ] ) || ! empty( $_GET[ 'order_by' ] ) ) {
-						$order_by = ! empty( $_GET[ 'order_by' ] ) ? $_GET[ 'order_by' ] : $_GET[ 'orderby' ];
+					if( ! empty( $_REQUEST[ 'orderby' ] ) || ! empty( $_REQUEST[ 'order_by' ] ) ) {
+						$order_by = ! empty( $_REQUEST[ 'order_by' ] ) ? $_REQUEST[ 'order_by' ] : $_REQUEST[ 'orderby' ];
 						if( ! is_array( $order_by ) ) {
 							$order_by = array( $order_by );
 						}
@@ -73,11 +73,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							++$i;
 						}
 					}
-					if( ! empty( $_GET[ 'order' ] ) ) {
-						echo '<input type="hidden" name="order" value="' . esc_attr( $_GET[ 'order' ] ) . '" />';
+					if( ! empty( $_REQUEST[ 'order' ] ) ) {
+						echo '<input type="hidden" name="order" value="' . esc_attr( $_REQUEST[ 'order' ] ) . '" />';
 					}
-					if( ! empty( $_GET[ 'group_by' ] ) ) {
-						echo '<input type="hidden" name="group_by" value="' . esc_attr( $_GET[ 'group_by' ] ) . '" />';
+					if( ! empty( $_REQUEST[ 'group_by' ] ) ) {
+						echo '<input type="hidden" name="group_by" value="' . esc_attr( $_REQUEST[ 'group_by' ] ) . '" />';
 					}
 
 					do_action( 'bookacti_before_booking_filters' );

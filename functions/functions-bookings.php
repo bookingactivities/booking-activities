@@ -177,25 +177,16 @@ function bookacti_get_selected_bookings_filters( $booking_type = 'single', $cont
 			$filters_raw[ 'in__booking_group_id' ] = bookacti_ids_to_array( array_merge( $in__booking_group_id, $booking_group_ids ) );
 		}
 		if( ( $booking_type === 'single' && empty( $filters_raw[ 'booking_id' ] ) && empty( $filters_raw[ 'in__booking_id' ] ) )
-		||  ( $booking_type === 'group' && empty( $filters_raw[ 'booking_group_id' ] ) && empty( $filters_raw[ 'in__booking_group_id' ] ) ) ) {
+		||  ( $booking_type === 'group' && empty( $filters_raw[ 'booking_group_id' ] ) && empty( $filters_raw[ 'in__booking_group_id' ] ) )
+		||  ( $booking_type === 'both' && empty( $filters_raw[ 'booking_id' ] ) && empty( $filters_raw[ 'in__booking_id' ] ) && empty( $filters_raw[ 'booking_group_id' ] ) && empty( $filters_raw[ 'in__booking_group_id' ] ) ) ) {
 			$filters_raw = array();
 		}
-		if( $booking_type === 'both' ) {
-			if( empty( $filters_raw[ 'booking_id' ] ) && empty( $filters_raw[ 'in__booking_id' ] ) && empty( $filters_raw[ 'booking_group_id' ] ) && empty( $filters_raw[ 'in__booking_group_id' ] ) ) {
-				$filters_raw = array();
-			} else if( $filters_raw ) {
-				$filters_raw[ 'booking_group_id_operator' ] = 'OR';
-			}
+		if( $booking_type === 'both' && $filters_raw ) {
+			$filters_raw[ 'booking_group_id_operator' ] = 'OR';
 		}
 	}
 	
 	$filters = $filters_raw ? bookacti_format_booking_filters( $filters_raw ) : array();
-
-	if( $filters && $context === 'admin_booking_list' ) {
-		if( $filters[ 'event_id' ] && ! $filters[ 'event_group_id' ] ) { $filters[ 'group_by' ] = 'none'; }
-		if( ! $filters[ 'booking_group_id' ] && $filters[ 'group_by' ] !== 'none' ) { $filters[ 'group_by' ] = 'booking_group'; }
-		$filters[ 'fetch_meta' ] = true;
-	}
 	
 	return apply_filters( 'bookacti_selected_bookings_filters', $filters, $booking_type, $context );
 }
@@ -211,36 +202,54 @@ function bookacti_get_selected_bookings( $context = '' ) {
 	$selected_bookings = wp_cache_get( 'selected_bookings', 'bookacti' );
 	if( $selected_bookings ) { return $selected_bookings; }
 	
-	// Bookings
-	$bookings_filters = bookacti_get_selected_bookings_filters( 'single', $context );
-	$bookings         = $bookings_filters ? bookacti_get_bookings( $bookings_filters ) : array();
-	
-	// Booking groups
-	$group_filters     = bookacti_get_selected_bookings_filters( 'group', $context );
 	$booking_selection = isset( $_REQUEST[ 'booking_selection' ] ) ? ( is_array( $_REQUEST[ 'booking_selection' ] ) ? $_REQUEST[ 'booking_selection' ] : ( is_string( $_REQUEST[ 'booking_selection' ] ) ? bookacti_maybe_decode_json( stripslashes( $_REQUEST[ 'booking_selection' ] ), true ) : array() ) ) : array();
 	$all_bookings      = ! empty( $booking_selection[ 'all' ] );
-	if( $group_filters && $all_bookings ) {
-		foreach( $bookings as $booking ) {
-			$group_id = ! empty( $booking->group_id ) ? intval( $booking->group_id ) : 0;
-			if( $group_id && ! in_array( $group_id, $group_filters[ 'in__booking_group_id' ], true ) ) {
-				$group_filters[ 'in__booking_group_id' ][] = $group_id;
+	
+	// Bookings
+	$bookings_filters = bookacti_get_selected_bookings_filters( 'single', $context );
+	if( $bookings_filters ) {
+		$bookings_filters[ 'group_by' ] = $all_bookings ? 'booking_group' : 'none';
+	}
+	$bookings = $bookings_filters ? bookacti_get_bookings( array_merge( $bookings_filters, array( 'fetch_meta' => true ) ) ) : array();
+	
+	$booking_group_ids = array();
+	foreach( $bookings as $i => $booking ) {
+		$group_id = ! empty( $booking->group_id ) ? intval( $booking->group_id ) : 0;
+		if( $group_id ) {
+			$booking_group_ids[] = $group_id;
+			if( $bookings_filters[ 'group_by' ] === 'booking_group' ) {
+				unset( $bookings[ $i ] );
 			}
 		}
+	}
+	
+	// Booking groups
+	$group_filters = bookacti_get_selected_bookings_filters( 'group', $context );
+	if( $group_filters && $all_bookings ) {
+		$group_filters[ 'in__booking_group_id' ] = bookacti_ids_to_array( array_merge( $group_filters[ 'in__booking_group_id' ], $booking_group_ids ) );
 		if( empty( $group_filters[ 'in__booking_group_id' ] ) && empty( $group_filters[ 'booking_group_id' ] ) ) {
 			$group_filters = array();
 		}
 	}
-	$booking_groups = $group_filters ? bookacti_get_booking_groups( $group_filters ) : array();
+	$booking_groups = $group_filters ? bookacti_get_booking_groups( array_merge( $group_filters, array( 'fetch_meta' => true ) ) ) : array();
 	
 	// Groups' bookings
 	$group_ids       = $booking_groups ? bookacti_ids_to_array( array_keys( $booking_groups ) ) : array();
-	$grouped_filters = $group_ids ? bookacti_format_booking_filters( array( 'in__booking_group_id' => $group_ids, 'group_by' => 'none' ) ) : array();
+	$grouped_filters = $group_ids ? bookacti_format_booking_filters( array( 'in__booking_group_id' => $group_ids, 'group_by' => 'none', 'fetch_meta' => true ) ) : array();
 	$groups_bookings = $grouped_filters ? bookacti_get_bookings( $grouped_filters ) : array();
+	
+	$bookings_by_group = array();
+	foreach( $groups_bookings as $groups_booking ) {
+		if( ! isset( $bookings_by_group[ $groups_booking->group_id ] ) ) {
+			$bookings_by_group[ $groups_booking->group_id ] = array();
+		}
+		$bookings_by_group[ $groups_booking->group_id ][] = $groups_booking;
+	}
 	
 	$selected_bookings = apply_filters( 'bookacti_selected_bookings', array(
 		'bookings'        => $bookings,
 		'booking_groups'  => $booking_groups,
-		'groups_bookings' => $groups_bookings,
+		'groups_bookings' => $bookings_by_group,
 	), $context );
 	
 	// Cache data
