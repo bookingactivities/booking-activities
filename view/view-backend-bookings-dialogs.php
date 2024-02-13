@@ -255,42 +255,39 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 <div id='bookacti-send-booking-notification-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' style='display:none;' title='<?php esc_html_e( 'Send booking notification', 'booking-activities' ); ?>'>
-	<form id='bookacti-send-booking-notification-dialog-form'>
-		<input type='hidden' name='action' value='bookactiSendBookingNotification'/>
+	<form id='bookacti-send-booking-notification-form'>
 		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_send_booking_notification' ); ?>'/>
-		<input type='hidden' name='booking_id' value='0'/>
-		<input type='hidden' name='booking_type' value=''/>
-	<?php
-		$notifications_ids      = array_keys( bookacti_get_notifications_default_settings() );
-		$notifications_settings = array();
-		$notification_options   = array();
-		foreach( $notifications_ids as $notification_id ) {
-			$notifications_settings[ $notification_id ] = bookacti_get_notification_settings( $notification_id, false );
-		}
-		foreach( $notifications_settings as $notification_id => $notification_settings ) {
-			$notification_options[ $notification_id ] = substr( $notification_id, 0, 6 ) === 'admin_' ? esc_html__( 'Administrator', 'booking-activities' ) : esc_html__( 'Customer', 'booking-activities' );
-			$notification_options[ $notification_id ] .= ' - ';
-			$notification_options[ $notification_id ] .= ! empty( $notification_settings[ 'title' ] ) ? $notification_settings[ 'title' ] : $notification_id;
-		}
-	
-		$fields = array(
-			'notification_id' => array(
-				'name'        => 'notification_id',
-				'type'        => 'select',
-				'class'       => 'bookacti-select2-no-ajax',
-				'id'          => 'bookacti-booking-notification-id',
-				'placeholder' => esc_html__( 'Search...', 'booking-activities' ),
-				'attr'        => array( '<select>' => ' data-allow-clear="0"' ),
-				'options'     => $notification_options,
-				'value'       => '', 
-				'title'       => esc_html__( 'Notification', 'booking-activities' ),
-				'tip'         => esc_html__( 'The notification to send.', 'booking-activities' )
-			)
-		);
-		bookacti_display_fields( $fields );
+		<?php
+			$notifications_ids      = array_keys( bookacti_get_notifications_default_settings() );
+			$notifications_settings = array();
+			$notification_options   = array();
+			foreach( $notifications_ids as $notification_id ) {
+				$notifications_settings[ $notification_id ] = bookacti_get_notification_settings( $notification_id, false );
+			}
+			foreach( $notifications_settings as $notification_id => $notification_settings ) {
+				$notification_options[ $notification_id ] = substr( $notification_id, 0, 6 ) === 'admin_' ? esc_html__( 'Administrator', 'booking-activities' ) : esc_html__( 'Customer', 'booking-activities' );
+				$notification_options[ $notification_id ] .= ' - ';
+				$notification_options[ $notification_id ] .= ! empty( $notification_settings[ 'title' ] ) ? $notification_settings[ 'title' ] : $notification_id;
+			}
 
-		do_action( 'bookacti_send_booking_notification_form_after' );
-	?>
+			$fields = array(
+				'notification_id' => array(
+					'name'        => 'notification_id',
+					'type'        => 'select',
+					'class'       => 'bookacti-select2-no-ajax',
+					'id'          => 'bookacti-booking-notification-id',
+					'placeholder' => esc_html__( 'Search...', 'booking-activities' ),
+					'attr'        => array( '<select>' => ' data-allow-clear="0"' ),
+					'options'     => $notification_options,
+					'value'       => '', 
+					'title'       => esc_html__( 'Notification', 'booking-activities' ),
+					'tip'         => esc_html__( 'The notification to send.', 'booking-activities' )
+				)
+			);
+			bookacti_display_fields( $fields );
+
+			do_action( 'bookacti_send_booking_notification_form_after' );
+		?>
 		<p class='bookacti-warning'>
 			<span class='dashicons dashicons-warning'></span>
 			<span>

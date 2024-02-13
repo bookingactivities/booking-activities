@@ -830,11 +830,15 @@ function bookacti_merge_planned_notifications( $planned_notifications ) {
 				$notification_id = $planned_notification[ 'notification_id' ];
 				$booking         = $planned_notification[ 'booking_type' ] === 'group' && isset( $booking_groups[ $booking_id ] ) ? $booking_groups[ $booking_id ] : ( $planned_notification[ 'booking_type' ] === 'single' && isset( $bookings[ $booking_id ] ) ? $bookings[ $booking_id ] : array() );
 				if( ! $booking ) { continue; }
-				$user_id = is_numeric( $booking->user_id ) ? intval( $booking->user_id ) : $booking->user_id;
-				if( is_email( $booking->user_id ) ) {
-					$user = get_user_by( 'email', $booking->user_id );
-					if( $user ) {
-						$user_id = intval( $user->ID );
+				if( substr( $notification_id, 0, 6 ) === 'admin_' ) {
+					$user_id = 'admin'; // Always merge notifications sent to the administrators
+				} else {
+					$user_id = is_numeric( $booking->user_id ) ? intval( $booking->user_id ) : $booking->user_id;
+					if( is_email( $booking->user_id ) ) {
+						$user = get_user_by( 'email', $booking->user_id );
+						if( $user ) {
+							$user_id = intval( $user->ID );
+						}
 					}
 				}
 				if( ! isset( $notifications_to_merge[ $notification_id . $user_id ] ) ) {

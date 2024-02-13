@@ -663,37 +663,76 @@ add_action( 'wp_ajax_nopriv_bookactiRescheduleBooking', 'bookacti_controller_res
 
 
 /**
- * AJAX Controller - Manually send a notification for a booking
+ * AJAX Controller - Send a notification for bookings (groups)
  * @since 1.16.0
  */
-function bookacti_controller_send_booking_notification() {
+function bookacti_controller_send_bookings_notification() {
 	// Check nonce
 	$is_nonce_valid = check_ajax_referer( 'bookacti_send_booking_notification', 'nonce', false );
 	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'send_booking_notification' ); }
 	
-	// Check the booking and the notification id
-	$booking_id      = ! empty( $_POST[ 'booking_id' ] ) ? intval( $_POST[ 'booking_id' ] ) : 0;
-	$booking_type    = ! empty( $_POST[ 'booking_type' ] ) ? sanitize_title_with_dashes( $_POST[ 'booking_type' ] ) : '';
-	$notification_id = ! empty( $_POST[ 'notification_id' ] ) ? sanitize_title_with_dashes( $_POST[ 'notification_id' ] ) : '';
-	$args            = array( 'notification' => array( 'active' => true ) );
-	if( ! in_array( $booking_type, array( 'single', 'group' ), true ) ) { $booking_type = ''; }
-	if( ! $booking_id || ! $booking_type || ! $notification_id ) { bookacti_send_json_not_allowed( 'send_booking_notification' ); }
+	$is_admin          = ! empty( $_POST[ 'is_admin' ] );
+	$context           = $is_admin ? 'admin_booking_list' : 'user_booking_list';
+	$selected_bookings = bookacti_get_selected_bookings( $context );
+	$bookings          = $selected_bookings[ 'bookings' ];
+	$booking_groups    = $selected_bookings[ 'booking_groups' ];
+	$groups_bookings   = $selected_bookings[ 'groups_bookings' ];
+	$group_ids         = bookacti_ids_to_array( array_keys( $booking_groups ) );
+	$booking_ids       = bookacti_ids_to_array( array_keys( $bookings ) );
 	
-	// Check capabilities
-	$is_allowed = $booking_type === 'group' ? bookacti_user_can_manage_booking_group( $booking_id, false ) : bookacti_user_can_manage_booking( $booking_id, false );
-	if( ! $is_allowed ) {
-		bookacti_send_json( array( 'status' => 'failed', 'error' => 'booking_not_found', 'message' => esc_html__( 'Invalid booking ID.', 'booking-activities' ) ), 'send_booking_notification' );
+	if( ! $bookings && ! $booking_groups ) {
+		bookacti_send_json( array( 'status' => 'failed', 'error' => 'booking_not_found', 'message' => esc_html__( 'Invalid booking selection.', 'booking-activities' ) ), 'send_booking_notification' );
 	}
 	
-	do_action( 'bookacti_before_send_booking_notification', $notification_id, $booking_id, $booking_type );
+	// Check capabilities for each booking
+	$bookings_to_check = $bookings;
+	foreach( $groups_bookings as $group_bookings ) {
+		$bookings_to_check = array_merge( $bookings_to_check, $group_bookings );
+	}
+	$bookings_to_check = bookacti_ids_to_array( $bookings );
+	foreach( $bookings_to_check as $booking_to_check ) {
+		$is_allowed = bookacti_user_can_manage_booking( $booking_to_check, false );
+		if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'send_booking_notification' ); }
+	}
 	
-	bookacti_send_notification( $notification_id, $booking_id, $booking_type, $args );
+	$notification_id = ! empty( $_POST[ 'notification_id' ] ) ? sanitize_title_with_dashes( $_POST[ 'notification_id' ] ) : '';
 	
-	do_action( 'bookacti_booking_notification_sent', $notification_id, $booking_id, $booking_type );
+	// Check if the notification is valid
+	if( ! $notification_id ) {
+		bookacti_send_json( array( 'status' => 'failed', 'error' => 'invalid_notification', 'message' => esc_html__( 'The selected notification is not valid.', 'booking-activities' ) ), 'send_booking_notification' );
+	}
 	
-	bookacti_send_json( array( 'status' => 'success' ), 'send_booking_notification' );
+	do_action( 'bookacti_before_send_bookings_notification', $notification_id, $selected_bookings );
+	
+	$sent = array( 'bookings' => array(), 'booking_groups' => array() );
+	foreach( $selected_bookings[ 'bookings' ] as $booking_id => $booking ) {
+		bookacti_send_notification( $notification_id, $booking_id, 'single', array( 'notification' => array( 'active' => true ) ) );
+		$sent[ 'bookings' ][ $booking_id ] = $notification_id;
+	}
+	foreach( $selected_bookings[ 'booking_groups' ] as $booking_group_id => $booking_group ) {
+		bookacti_send_notification( $notification_id, $booking_group_id, 'group', array( 'notification' => array( 'active' => true ) ) );
+		$sent[ 'booking_groups' ][ $booking_group_id ] = $notification_id;
+	}
+	
+	$sent = apply_filters( 'bookacti_bookings_notification_sent', $sent, $notification_id, $selected_bookings );
+	
+	$sent_nb = count( $sent[ 'bookings' ] ) + count( $sent[ 'booking_groups' ] );
+	/* translators: %s = number of notifications sent */
+	$message = sprintf( esc_html__( '%s notifications have been sent.', 'booking-activities' ), $sent_nb );
+	$async   = apply_filters( 'bookacti_allow_async_notifications', bookacti_get_setting_value( 'bookacti_notifications_settings', 'notifications_async' ) );
+	if( $async ) {
+		/* translators: %s = link labelled "Trigger manually" */
+		$message .= '</li><li>' . sprintf( esc_html__( 'Please be patient, the notifications are sent asynchronously (%s).', 'booking-activities' ), '<a href="' . esc_url( get_site_url() . '/wp-cron.php?bookacti_send_async_notifications=1' ) . '" target="_blank">' . esc_html__( 'Trigger manually', 'booking-activities' ) . '</a>' );
+	
+		if( $sent_nb > 1 ) {
+			$message .= '</li><li>' . esc_html__( 'Notifications sent to the same recipient will be merged.', 'booking-activities' );
+		}
+		$message .= '</li><li>' . esc_html__( 'You must wait 3 minutes before you can send the same notification again to the same recipient.', 'booking-activities' );
+	}
+	
+	bookacti_send_json( array( 'status' => 'success', 'message' => $message, 'sent' => $sent ), 'send_booking_notification' );
 }
-add_action( 'wp_ajax_bookactiSendBookingNotification', 'bookacti_controller_send_booking_notification' );
+add_action( 'wp_ajax_bookactiSendBookingsNotification', 'bookacti_controller_send_bookings_notification' );
 
 
 /**
