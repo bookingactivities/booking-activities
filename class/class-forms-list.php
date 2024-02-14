@@ -328,17 +328,17 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 		 * Format filters passed as argument or retrieved via POST or GET
 		 * @version 1.16.0
 		 * @access public
-		 * @param array $filters
+		 * @param array $filters_raw
 		 * @return array
 		 */
-		public function format_filters( $filters = array() ) {
+		public function format_filters( $filters_raw = array() ) {
 			// Get filters from URL if no filter was directly passed
-			if( ! $filters ) {
-				$filters = array(
+			if( ! $filters_raw ) {
+				$filters_raw = array(
 					'id'       => isset( $_REQUEST[ 'id' ] )      ? $_REQUEST[ 'id' ] : array(), 
 					'title'    => isset( $_REQUEST[ 'title' ] )   ? $_REQUEST[ 'title' ] : '', 
 					'user_id'  => isset( $_REQUEST[ 'user_id' ] ) ? $_REQUEST[ 'user_id' ] : 0, 
-					'status'   => isset( $_REQUEST[ 'status' ] )  ? $_REQUEST[ 'status' ] : '', 
+					'status'   => isset( $_REQUEST[ 'status' ] )  ? $_REQUEST[ 'status' ] : array(), 
 					'active'   => isset( $_REQUEST[ 'active' ] )  ? ( $_REQUEST[ 'active' ] ? 1 : 0 ) : false, 
 					'order_by' => isset( $_REQUEST[ 'orderby' ] ) ? $_REQUEST[ 'orderby' ] : array( 'id' ),
 					'order'    => isset( $_REQUEST[ 'order' ] )   ? $_REQUEST[ 'order' ] : 'DESC'
@@ -346,7 +346,11 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 			}
 			
 			// Format filters before making the request
-			$filters = bookacti_format_form_filters( $filters );
+			$filters = bookacti_format_form_filters( $filters_raw );
+			
+			if( empty( $filters[ 'status' ] ) ) {
+				$filters[ 'status' ] = array( 'publish' );
+			}
 			
 			return $filters;
 		}
@@ -474,15 +478,15 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 
 		
 		/**
-		 * Get an associative array ( id => link ) with the list of views available on this table
+		 * Get an associative array( id => link ) with the list of views available on this table
 		 * @version 1.16.0
 		 * @return array
 		 */
 		protected function get_views() {
 			$is_trash        = isset( $_REQUEST[ 'status' ] ) && $_REQUEST[ 'status' ] === 'trash';
 			$filters         = bookacti_format_form_filters();
-			$published_count = bookacti_get_number_of_form_rows( array_merge( $filters, array( 'status' => 'publish' ) ) );
-			$trash_count     = bookacti_get_number_of_form_rows( array_merge( $filters, array( 'status' => 'trash' ) ) );
+			$published_count = bookacti_get_number_of_form_rows( array_merge( $filters, array( 'status' => array( 'publish' ) ) ) );
+			$trash_count     = bookacti_get_number_of_form_rows( array_merge( $filters, array( 'status' => array( 'trash' ) ) ) );
 			
 			return array(
 				'published' => '<a href="' . esc_url( admin_url( 'admin.php?page=bookacti_forms' ) ) . '" class="' . ( ! $is_trash ? 'current' : '' ) . '" >' . esc_html__( 'Published' ) . ' <span class="count">(' . $published_count . ')</span></a>',

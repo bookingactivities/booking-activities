@@ -20,10 +20,6 @@ p.form-field._bookacti_groups_field          { margin-bottom: 0; }
 
 table.woocommerce_order_items ul.bookacti-booking-events-list { margin: 0; }
 
-.bookacti-order-item-action-buttons > div                  { display: inline-block; vertical-align: middle; }
-.bookacti-order-item-action-buttons > div:after            { content: ' | '; vertical-align: middle; }
-.bookacti-order-item-action-buttons > div:last-child:after { content: ''; }
-
 
 /***** FRONTEND WOOCOMMERCE *****/
 

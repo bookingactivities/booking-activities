@@ -234,20 +234,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 <div id='bookacti-delete-booking-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' style='display:none;' title='<?php esc_html_e( 'Delete a booking', 'booking-activities' ); ?>'>
-	<form id='bookacti-delete-booking-dialog-content'>
-		<input type='hidden' name='action' value='bookactiDeleteBooking'/>
+	<form id='bookacti-delete-booking-form'>
 		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_delete_booking' ); ?>'/>
-		<input type='hidden' name='booking_id' value='0'/>
-		<input type='hidden' name='booking_type' value=''/>
-		<p class='bookacti-dialog-intro bookacti-delete-single-booking-description' >
+		<p class='bookacti-dialog-intro'>
 			<?php esc_html_e( 'Are you sure to delete this booking permanently?', 'booking-activities' ); ?>
 		</p>
 		<p class='bookacti-error'>
 			<span class='dashicons dashicons-warning'></span>
 			<span><?php esc_html_e( 'This action cannot be undone.', 'booking-activities' ); ?></span>
 		</p>
-		<p class='bookacti-dialog-intro bookacti-delete-booking-group-description' style='display:none;'>
-			<?php esc_html_e( 'All the bookings included in this booking group will also be delete.', 'booking-activities' ); ?>
+		<p class='bookacti-dialog-intro' id='bookacti-delete-booking-group-warning' style='display:none;'>
+			<?php esc_html_e( 'All the bookings included in the booking groups will also be delete.', 'booking-activities' ); ?>
 		</p>
 		<?php do_action( 'bookacti_delete_booking_form_after' ); ?>
 	</form>

@@ -277,7 +277,7 @@ function bookacti_init_booking_actions() {
 			} else if( $j( this ).hasClass( 'bookacti-send-booking-notification' ) ){
 				bookacti_dialog_send_bookings_notification( booking_selection );
 			} else if( $j( this ).hasClass( 'bookacti-delete-booking' ) ){
-				bookacti_dialog_delete_booking( booking_id, 'single' );
+				bookacti_dialog_delete_bookings( booking_selection );
 			}
 		
 		// Booking Groups
@@ -298,7 +298,7 @@ function bookacti_init_booking_actions() {
 			} else if( $j( this ).hasClass( 'bookacti-send-booking-group-notification' ) ){
 				bookacti_dialog_send_bookings_notification( booking_selection );
 			} else if( $j( this ).hasClass( 'bookacti-delete-booking-group' ) ){
-				bookacti_dialog_delete_booking( booking_group_id, 'group' );
+				bookacti_dialog_delete_bookings( booking_selection );
 			}
 			
 		}
@@ -352,7 +352,7 @@ function bookacti_init_booking_bulk_actions() {
 		} else if( action === 'send_notification' ) {
 			bookacti_dialog_send_bookings_notification( booking_selection );
 		} else if( action === 'delete' ) {
-			bookacti_dialog_delete_booking( booking_id, 'single' );
+			bookacti_dialog_delete_bookings( booking_selection );
 		}
 	});
 }

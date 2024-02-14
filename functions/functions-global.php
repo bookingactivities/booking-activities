@@ -655,7 +655,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-resource-availability', 
 			'end_of_life' => '', 
 			'download_id' => 29249,
-			'min_version' => '1.1.0'
+			'min_version' => '1.1.2'
 		),
 		'balau' => array( 
 			'title'       => 'Licenses & Updates', 
@@ -1927,16 +1927,17 @@ function bookacti_sort_events_array_by_dates( $array, $sort_by_end = false, $des
 function bookacti_ids_to_array( $ids, $filter = 'empty' ) {
 	if( is_array( $ids ) ){
 		$ids = array_unique( array_map( 'intval', array_filter( $ids, 'is_numeric' ) ) );
-		if( $filter && is_callable( $filter ) ) {
-			$ids = array_filter( array_unique( array_map( 'intval', array_filter( $ids, 'is_numeric' ) ) ), $filter );
-		}
-		return $ids;
-	} else if( ! empty( $ids ) ){
-		if( is_numeric( $ids ) && intval( $ids ) ) {
-			return array( intval( $ids ) );
-		}
+	} else if( ! empty( $ids ) && is_numeric( $ids ) ) {
+		$ids = array( intval( $ids ) );
+	} else {
+		$ids = array();
 	}
-	return array();
+	
+	if( $ids && $filter && is_callable( $filter ) ) {
+		$ids = array_filter( $ids, $filter );
+	}
+	
+	return $ids;
 }
 
 /**
@@ -1948,17 +1949,18 @@ function bookacti_ids_to_array( $ids, $filter = 'empty' ) {
  */
 function bookacti_str_ids_to_array( $ids, $filter = 'empty' ) {
 	if( is_array( $ids ) ){
-		$ids = array_unique( array_map( 'sanitize_title_with_dashes', $ids ) );
-		if( $filter && is_callable( $filter ) ) {
-			$ids = array_filter( array_unique( array_map( 'sanitize_title_with_dashes', $ids ) ), $filter );
-		}
-		return $ids;
-	} else if( ! empty( $ids ) ){
-		if( is_string( $ids ) ) {
-			return array( sanitize_title_with_dashes( $ids ) );
-		}
+		$ids = array_unique( array_map( 'sanitize_title_with_dashes', array_filter( $ids, 'is_string' ) ) );
+	} else if( ! empty( $ids ) && is_string( $ids ) ){
+		$ids = array( sanitize_title_with_dashes( $ids ) );
+	} else {
+		$ids = array();
 	}
-	return array();
+	
+	if( $ids && $filter && is_callable( $filter ) ) {
+		$ids = array_filter( $ids, $filter );
+	}
+	
+	return $ids;
 }
 
 

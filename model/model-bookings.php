@@ -2018,31 +2018,6 @@ function bookacti_reschedule_booking( $booking_id, $event_id, $event_start, $eve
 
 
 /**
- * Delete a booking
- * @since 1.5.0
- * @version 1.5.8
- * @global wpdb $wpdb
- * @param int $booking_id
- * @return int|false
- */
-function bookacti_delete_booking( $booking_id ) {
-	global $wpdb;
-	
-	// Delete booking
-	$query = 'DELETE FROM ' . BOOKACTI_TABLE_BOOKINGS . ' WHERE id = %d ';
-	$query = $wpdb->prepare( $query, $booking_id );
-	$deleted = $wpdb->query( $query );
-	
-	if( $deleted ) {
-		// Delete booking group metadata
-		bookacti_delete_metadata( 'booking', $booking_id );
-	}
-	
-	return $deleted;
-}
-
-
-/**
  * Update specific bookings dates with a relative amount of seconds
  * @version 1.14.0
  * @global wpdb $wpdb
@@ -2074,6 +2049,39 @@ function bookacti_shift_bookings_dates( $booking_ids, $delta_seconds_start = 0, 
 	$updated = $wpdb->query( $query );
 
 	return $updated;   
+}
+
+
+/**
+ * Delete bookings
+ * @since 1.16.0
+ * @global wpdb $wpdb
+ * @param array $booking_ids
+ * @return int|false
+ */
+function bookacti_delete_bookings( $booking_ids ) {
+	global $wpdb;
+	
+	$query = 'DELETE FROM ' . BOOKACTI_TABLE_BOOKINGS
+	       . ' WHERE id IN ( %d ';
+	
+	$array_count = count( $booking_ids );
+	if( $array_count >= 2 ) {
+		for( $i=1; $i<$array_count; ++$i ) {
+			$query .= ', %d ';
+		}
+	}
+	$query .= ') ';
+	
+	$query   = $wpdb->prepare( $query, $booking_ids );
+	$deleted = $wpdb->query( $query );
+	
+	// Delete booking metadata
+	if( $deleted ) {
+		bookacti_delete_metadata( 'booking', $booking_ids );
+	}
+	
+	return $deleted;
 }
 
 
@@ -2878,24 +2886,33 @@ function bookacti_get_booking_group_bookings_ids( $booking_group_id ) {
 
 
 /**
- * Delete a booking group 
- * @since 1.5.0
- * @version 1.5.8
+ * Delete booking groups 
+ * @since 1.16.0
  * @global wpdb $wpdb
- * @param int $booking_group_id
+ * @param array $booking_group_ids
  * @return int|false
  */
-function bookacti_delete_booking_group( $booking_group_id ) {
+function bookacti_delete_booking_groups( $booking_group_ids ) {
 	global $wpdb;
 
 	// Delete booking group
-	$query = 'DELETE FROM ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' WHERE id = %d';
-	$query = $wpdb->prepare( $query, $booking_group_id );
+	$query = 'DELETE FROM ' . BOOKACTI_TABLE_BOOKING_GROUPS
+	      . ' WHERE id IN ( %d ';
+	
+	$array_count = count( $booking_group_ids );
+	if( $array_count >= 2 ) {
+		for( $i=1; $i<$array_count; ++$i ) {
+			$query .= ', %d ';
+		}
+	}
+	$query .= ') ';
+	
+	$query   = $wpdb->prepare( $query, $booking_group_ids );
 	$deleted = $wpdb->query( $query );
-
+	
 	// Delete booking group metadata
 	if( $deleted ) {
-		bookacti_delete_metadata( 'booking_group', $booking_group_id );
+		bookacti_delete_metadata( 'booking_group', $booking_group_ids );
 	}
 
 	return $deleted;

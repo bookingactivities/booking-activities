@@ -1357,22 +1357,22 @@ add_filter( 'bookacti_booking_refund_displayed_data', 'bookacti_wc_booking_refun
 /**
  * Add WC fields to delete booking form
  * @since 1.5.0
- * @version 1.9.0
+ * @version 1.16.0
  */
 function bookacti_add_wc_fields_to_delete_booking_form() {
 ?>
-	<div class='bookacti-delete-wc-order-item-container' style='display:none;'>
+	<div class='bookacti-delete-wc-order-item-container'>
 		<hr/>
 		<p class='bookacti-error bookacti-delete-wc-order-item-description'>
 			<span class='dashicons dashicons-warning'></span>
 			<span>
-				<?php esc_html_e( 'This booking is bound to an item in a WooCommerce order. Do you want to remove the booking data from this item as well?', 'booking-activities' ); ?>
+				<?php esc_html_e( 'If the booking is bound to an item in a WooCommerce order, do you want to remove the booking data from this item as well?', 'booking-activities' ); ?>
 			</span>
 		</p>
 		<?php
 			$args = array(
 				'type' => 'select',
-				'name' => 'order-item-action',
+				'name' => 'order_item_action',
 				'value' => 'none',
 				'options' => array(
 					'none' => esc_html__( 'Do nothing', 'booking-activities' ),
@@ -1395,107 +1395,76 @@ add_action( 'bookacti_delete_booking_form_after', 'bookacti_add_wc_fields_to_del
 
 
 /**
- * AJAX Controller - Delete an order item (or only its metadata)
- * @since 1.5.0
- * @version 1.9.0
- * @param WC_Order_Item_Product $item
- * @param string $action "unbind_booking" to remove only the booking metadata from the item. "delete_item" to delete the whole item.
- * @param array $item_bookings_ids_to_delete Leave it empty to unbind all bookings from the item
+ * Delete selected bookings order item (or their booking metadata only)
+ * @since 1.16.0
+ * @param array $deleted
+ * @param array $selected_bookings
+ * @param array $new_selected_bookings
+ * @return $deleted
  */
-function bookacti_controller_delete_order_item( $item, $action, $item_bookings_ids_to_delete = array() ) {
-	if( ! $action ) { 
-		$array = array(
-			'status'	=> 'failed',
-			'error'		=> 'no_action',
-			'message'	=> esc_html__( 'The booking is bound to an item in a WooCommerce Order, but no action has been set about it.', 'booking-activities' )
-		);
-		bookacti_send_json( $array, 'delete_order_item' );
-	}
-
-	if( $action === 'none' ) { return; }
-
-	// Get item id and order id
-	$item_id	= $item->get_id();
-	$order_id	= $item->get_order_id();
-	$order		= wc_get_order( $order_id );
-
-	// Remove all metadata related to Booking Activities from the order item
-	if( $action === 'unbind_booking' ) {
-		$deleted = bookacti_wc_remove_order_item_bookings( $item, $item_bookings_ids_to_delete );
+function bookacti_delete_selected_bookings_order_item( $deleted, $selected_bookings, $new_selected_bookings ) {
+	$action = ! empty( $_POST[ 'order_item_action' ] ) ? sanitize_title_with_dashes( $_POST[ 'order_item_action' ] ) : 'none';
+	if( ! in_array( $action, array( 'unbind_booking', 'delete_item' ), true ) ) { return $deleted; }
+	
+	$bookings_items = array();
+	foreach( $selected_bookings[ 'bookings' ] as $booking_id => $booking ) {
+		if( ! empty( $new_selected_bookings[ 'bookings' ][ $booking_id ] ) ) { continue; }
 		
-		if( $deleted === false ) {
-			$array = array(
-				'status'	=> 'failed',
-				'error'		=> 'not_deleted',
-				'message'	=> esc_html__( 'An error occurred while trying to delete the booking meta from the order item.', 'booking-activities' ) 
-							   . ' ' . '<a href="' . get_edit_post_link( $order_id ) . '">' . esc_html__( 'Please proceed manually.', 'booking-activities' ) . '</a>'
-			);
-			bookacti_send_json( $array, 'delete_order_item_booking_meta' );
-		}
+		$item = bookacti_get_order_item_by_booking_id( $booking );
+		if( ! $item ) { continue; }
+		
+		$bookings_items[] = array( 'booking_id' => $booking_id, 'booking_type' => 'single', 'order_item' => $item );
+	}
+	foreach( $selected_bookings[ 'booking_groups' ] as $booking_group_id => $booking_group ) {
+		if( ! empty( $new_selected_bookings[ 'booking_groups' ][ $booking_group_id ] ) ) { continue; }
+		
+		$item = bookacti_get_order_item_by_booking_group_id( $booking_group );
+		if( ! $item ) { continue; }
+		
+		$bookings_items[] = array( 'booking_id' => $booking_group_id, 'booking_type' => 'group', 'order_item' => $item );
+	}
+	if( ! $bookings_items ) { return $deleted; }
+	
+	foreach( $bookings_items as $bookings_item ) {
+		$item        = $bookings_item[ 'order_item' ];
+		$item_id     = $item->get_id();
+		$order       = $item->get_order();
+		$booking_id  = intval( $bookings_item[ 'booking_id' ] );
+		$booking_uid = $bookings_item[ 'booking_type' ] === 'group' ? 'G' . $booking_id : $booking_id;
+		$booking_key = $bookings_item[ 'booking_type' ] === 'group' ? 'booking_groups' : 'bookings';
+		
+		// Remove all metadata related to Booking Activities from the order item
+		if( $action === 'unbind_booking' ) {
+			$item_bookings_ids_to_delete = array( array( 'id' => intval( $bookings_item[ 'booking_id' ] ), 'type' => $bookings_item[ 'booking_type' ] ) );
+			$order_item_meta_deleted = bookacti_wc_remove_order_item_bookings( $item, $item_bookings_ids_to_delete );
+			
+			if( $order_item_meta_deleted ) {
+				$deleted[ $booking_key ][ $booking_id ][ 'wc_order_item_meta' ] = 1;
+				if( $order ) {
+					/* translators: %1$s = WooCommerce order item id. %2$s = Booking ID. */
+					$message = sprintf( esc_html__( 'The order item #%1$s booking metadata have been deleted while deleting the corresponding booking (#%2$s).', 'booking-activities' ), $item_id, $booking_uid );
+					$order->add_order_note( $message, 0, 0 );
+				}
+			}
 
-		if( $order ) { 
-			/* translators: %s is the item id. */
-			$message = sprintf( esc_html__( 'The order item %s booking metadata have been deleted while deleting the corresponding booking.', 'booking-activities' ), $item_id );
-			$order->add_order_note( $message, 0, 0 );
-		}
-
-	// Remove the whole order item
-	} else if( $action === 'delete_item' ) {
-		$deleted = wc_delete_order_item( $item_id );
-
-		if( ! $deleted ) {
-			$array = array(
-				'status'	=> 'failed',
-				'error'		=> 'not_deleted',
-				'message'	=> esc_html__( 'An error occurred while trying to delete the order item.', 'booking-activities' ) 
-							   . ' ' . '<a href="' . get_edit_post_link( $order_id ) . '">' . esc_html__( 'Please proceed manually.', 'booking-activities' ) . '</a>'
-			);
-			bookacti_send_json( $array, 'delete_order_item' );
-		}
-
-		if( $order ) { 
-			/* translators: %s is the item id. */
-			$message = sprintf( esc_html__( 'The order item %s has been deleted while deleting the corresponding booking.', 'booking-activities' ), $item_id );
-			$order->add_order_note( $message, 0, 0 );
+		// Remove the whole order item
+		} else if( $action === 'delete_item' ) {
+			$order_item_deleted = wc_delete_order_item( $item_id );
+			
+			if( $order_item_deleted ) { 
+				$deleted[ $booking_key ][ $booking_id ][ 'wc_order_item' ] = 1;
+				if( $order ) {
+					/* translators: %1$s = WooCommerce order item id. %2$s = Booking ID. */
+					$message = sprintf( esc_html__( 'The order item #%1$s has been deleted while deleting the corresponding booking (#%2$s).', 'booking-activities' ), $item_id, $booking_uid );
+					$order->add_order_note( $message, 0, 0 );
+				}
+			}
 		}
 	}
-}
-
-
-/**
- * AJAX Controller - Delete an order item (or only its metadata) bound to a specific booking group
- * @since 1.5.0
- * @version 1.9.0
- * @param int $booking_group_id
- */
-function bookacti_controller_delete_order_item_bound_to_booking_group( $booking_group_id ) {
-	$action = ! empty( $_POST[ 'order-item-action' ] ) ? sanitize_title_with_dashes( $_POST[ 'order-item-action' ] ) : 'none';
-
-	$item = bookacti_get_order_item_by_booking_group_id( $booking_group_id );
-	if( ! $item ) { return; }
 	
-	$item_bookings_ids_to_delete = array( array( 'id' => intval( $booking_group_id ), 'type' => 'group' ) );
-	bookacti_controller_delete_order_item( $item, $action, $item_bookings_ids_to_delete );
+	return $deleted;
 }
-add_action( 'bookacti_before_delete_booking_group', 'bookacti_controller_delete_order_item_bound_to_booking_group', 10, 1 );
-
-
-/**
- * AJAX Controller - Delete an order item (or only its metadata) bound to a specific booking
- * @since 1.5.0
- * @version 1.9.0
- * @param int $booking_id
- */
-function bookacti_controller_delete_order_item_bound_to_booking( $booking_id ) {
-	$action = ! empty( $_POST[ 'order-item-action' ] ) ? sanitize_title_with_dashes( $_POST[ 'order-item-action' ] ) : 'none';
-
-	$item = bookacti_get_order_item_by_booking_id( $booking_id );
-	if( ! $item ) { return; }
-	
-	$item_bookings_ids_to_delete = array( array( 'id' => intval( $booking_id ), 'type' => 'single' ) );
-	bookacti_controller_delete_order_item( $item, $action, $item_bookings_ids_to_delete );
-}
-add_action( 'bookacti_before_delete_booking', 'bookacti_controller_delete_order_item_bound_to_booking', 10, 1 );
+add_filter( 'bookacti_bookings_deleted', 'bookacti_delete_selected_bookings_order_item', 10, 3 );
 
 
 /**

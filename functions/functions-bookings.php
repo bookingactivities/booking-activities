@@ -239,11 +239,11 @@ function bookacti_get_selected_bookings( $context = '' ) {
 	$groups_bookings = $grouped_filters ? bookacti_get_bookings( $grouped_filters ) : array();
 	
 	$bookings_by_group = array();
-	foreach( $groups_bookings as $groups_booking ) {
+	foreach( $groups_bookings as $groups_booking_id => $groups_booking ) {
 		if( ! isset( $bookings_by_group[ $groups_booking->group_id ] ) ) {
 			$bookings_by_group[ $groups_booking->group_id ] = array();
 		}
-		$bookings_by_group[ $groups_booking->group_id ][] = $groups_booking;
+		$bookings_by_group[ $groups_booking->group_id ][ $groups_booking_id ] = $groups_booking;
 	}
 	
 	$selected_bookings = apply_filters( 'bookacti_selected_bookings', array(
