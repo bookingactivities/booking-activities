@@ -1039,88 +1039,138 @@ add_filter( 'bookacti_booking_actions_by_booking', 'bookacti_wc_booking_actions_
 /**
  * Get booking group actions according to the order bound to the booking group
  * @since 1.6.0 (replace bookacti_display_actions_buttons_on_booking_group_items)
- * @version 1.9.0
+ * @version 1.16.0
  * @param array $actions
- * @param array $bookings
+ * @param array $booking_group
+ * @param array $group_bookings
  * @param string $admin_or_front Can be "both", "admin", "front. Default "both".
  * @return array
  */
-function bookacti_wc_booking_group_actions_per_booking_group( $actions, $bookings, $admin_or_front ) {
-	if( ! $actions || ! $bookings ) { return $actions; }
-	return bookacti_wc_booking_actions_per_order_id( $actions, $bookings[ 0 ]->group_order_id );
+function bookacti_wc_booking_group_actions_per_booking_group( $actions, $booking_group, $group_bookings, $admin_or_front ) {
+	if( ! $actions || ! $booking_group || ! $group_bookings ) { return $actions; }
+	return bookacti_wc_booking_actions_per_order_id( $actions, $booking_group->order_id );
 }
-add_filter( 'bookacti_booking_group_actions_by_booking_group', 'bookacti_wc_booking_group_actions_per_booking_group', 10, 3 );
+add_filter( 'bookacti_booking_group_actions_by_booking_group', 'bookacti_wc_booking_group_actions_per_booking_group', 10, 4 );
 
 
 /**
  * Filter refund actions by booking
- * @version 1.9.0
+ * @since 1.16.0 (was bookacti_filter_refund_actions_by_booking)
  * @param array $possible_actions
- * @param array $bookings
+ * @param array $selected_bookings
  * @param string $context
  * @return array
  */
-function bookacti_filter_refund_actions_by_booking( $possible_actions, $bookings, $context = '' ) {
-	if( ! $bookings ) { return $possible_actions; }
+function bookacti_wc_selected_bookings_refund_actions( $possible_actions, $selected_bookings, $context ) {
+	$wc_actions = bookacti_wc_get_refund_actions();
+	if( ! array_intersect_key( $wc_actions, $possible_actions ) ) { return $possible_actions; }
 	
-	$booking_keys = array_keys( $bookings );
-	$first_key = reset( $booking_keys );
-	$booking = $bookings[ $first_key ];
-	$order_id = $booking->order_id;
-
-	return bookacti_filter_refund_actions_by_order( $possible_actions, $order_id );
-}
-add_filter( 'bookacti_refund_actions_by_booking', 'bookacti_filter_refund_actions_by_booking', 10, 3 );
-
-
-/**
- * Filter refund actions by booking group
- * @since 1.1.0
- * @version 1.9.0
- * @param array $possible_actions
- * @param array $bookings
- * @param string $context
- * @return array
- */
-function bookacti_filter_refund_actions_by_booking_group( $possible_actions, $bookings, $context = '' ) {
-	if( ! $bookings ) { return $possible_actions; }
-	
-	$booking_keys = array_keys( $bookings );
-	$first_key = reset( $booking_keys );
-	$booking = $bookings[ $first_key ];
-	$order_id = ! empty( $booking->group_order_id ) ? $booking->group_order_id : $booking->order_id;
-	
-	return bookacti_filter_refund_actions_by_order( $possible_actions, $order_id );
-}
-add_filter( 'bookacti_refund_actions_by_booking_group', 'bookacti_filter_refund_actions_by_booking_group', 10, 3 );
-
-
-/**
- * Refund amount to display in refund dialog
- * @version 1.16.0
- * @param string $refund_amount
- * @param array $bookings
- * @param string $booking_type
- * @return string
- */
-function bookacti_display_price_to_be_refunded( $refund_amount, $bookings, $booking_type ) {
-	if( $refund_amount || ! $bookings ) { return $refund_amount; }
-	
-	if( $booking_type === 'single' ) {
-		$order_id = $bookings[ 0 ]->order_id;
-		$item = bookacti_get_order_item_by_booking_id( $bookings[ 0 ] );
-	} else if( $booking_type === 'group' ) {
-		$order_id	= ! empty( $bookings[ 0 ]->group_order_id ) ? $bookings[ 0 ]->group_order_id : $bookings[ 0 ]->order_id;
-		$item = bookacti_get_order_item_by_booking_group_id( $bookings[ 0 ] );
+	$order_ids = array();
+	$bookings_per_order = array();
+	foreach( $selected_bookings[ 'bookings' ] as $booking ) {
+		$order_id = ! empty( $booking->order_id ) && is_numeric( $booking->order_id ) ? intval( $booking->order_id ) : 0;
+		if( $order_id ) {
+			$order_ids[] = $order_id;
+			if( ! isset( $bookings_per_order[ $order_id ] ) ) {
+				$bookings_per_order[ $order_id ] = array( 'booking_ids' => array(), 'booking_group_ids' => array() );
+			}
+			$bookings_per_order[ $order_id ][ 'booking_ids' ][] = intval( $booking->id );
+		}
 	}
-	if( ! $item ) { return $refund_amount; }
+	foreach( $selected_bookings[ 'booking_groups' ] as $booking_group ) {
+		$order_id = ! empty( $booking_group->order_id ) && is_numeric( $booking_group->order_id ) ? intval( $booking_group->order_id ) : 0;
+		if( $order_id ) {
+			$order_ids[] = $order_id;
+			if( ! isset( $bookings_per_order[ $order_id ] ) ) {
+				$bookings_per_order[ $order_id ] = array( 'booking_ids' => array(), 'booking_group_ids' => array() );
+			}
+			$bookings_per_order[ $order_id ][ 'booking_group_ids' ][] = intval( $booking_group->id );
+		}
+	}
+	$order_ids = bookacti_ids_to_array( $order_ids );
 	
-	// Booking Activities assumes that 1 order item can have only 1 booking (group). So the item price is the booking (group) price.
-	$refund_amount = bookacti_wc_get_item_remaining_refund_amount( $item );
+	if( $order_ids ) {
+		if( isset( $possible_actions[ 'auto' ] ) ) {
+			$possible_actions[ 'auto' ][ 'booking_ids' ]       = array();
+			$possible_actions[ 'auto' ][ 'booking_group_ids' ] = array();
+		}
+		if( isset( $possible_actions[ 'coupon' ] ) ) {
+			$possible_actions[ 'coupon' ][ 'booking_ids' ]       = array();
+			$possible_actions[ 'coupon' ][ 'booking_group_ids' ] = array();
+		}
+		
+		foreach( $order_ids as $order_id ) {
+			$order = wc_get_order( $order_id );
+			if( isset( $possible_actions[ 'auto' ] ) && bookacti_does_order_support_auto_refund( $order ) ) {
+				if( ! empty( $bookings_per_order[ $order_id ][ 'booking_ids' ] ) ) {
+					$possible_actions[ 'auto' ][ 'booking_ids' ] = bookacti_ids_to_array( array_merge( $possible_actions[ 'auto' ][ 'booking_ids' ], $bookings_per_order[ $order_id ][ 'booking_ids' ] ) );
+				}
+				if( ! empty( $bookings_per_order[ $order_id ][ 'booking_group_ids' ] ) ) {
+					$possible_actions[ 'auto' ][ 'booking_group_ids' ] = bookacti_ids_to_array( array_merge( $possible_actions[ 'auto' ][ 'booking_group_ids' ], $bookings_per_order[ $order_id ][ 'booking_group_ids' ] ) );
+				}
+			}
+			if( isset( $possible_actions[ 'coupon' ] ) && is_a( $order, 'WC_Order' ) ) {
+				if( ! empty( $bookings_per_order[ $order_id ][ 'booking_ids' ] ) ) {
+					$possible_actions[ 'coupon' ][ 'booking_ids' ] = bookacti_ids_to_array( array_merge( $possible_actions[ 'coupon' ][ 'booking_ids' ], $bookings_per_order[ $order_id ][ 'booking_ids' ] ) );
+				}
+				if( ! empty( $bookings_per_order[ $order_id ][ 'booking_group_ids' ] ) ) {
+					$possible_actions[ 'coupon' ][ 'booking_group_ids' ] = bookacti_ids_to_array( array_merge( $possible_actions[ 'coupon' ][ 'booking_group_ids' ], $bookings_per_order[ $order_id ][ 'booking_group_ids' ] ) );
+				}
+			}
+		}
+		
+		if( empty( $possible_actions[ 'auto' ][ 'booking_ids' ] ) && empty( $possible_actions[ 'auto' ][ 'booking_group_ids' ] ) ) {
+			unset( $possible_actions[ 'auto' ] );
+		}
+		if( empty( $possible_actions[ 'coupon' ][ 'booking_ids' ] ) && empty( $possible_actions[ 'coupon' ][ 'booking_group_ids' ] ) ) {
+			unset( $possible_actions[ 'coupon' ] );
+		}
+	}
+	// If no bookings were made with WooCommerce, remove WooCommerce refund methods
+	else {
+		$possible_actions = array_diff_key( $possible_actions, $wc_actions );
+	}
 	
-	return html_entity_decode( wc_price( $refund_amount ) );
+	return $possible_actions;
 }
-add_filter( 'bookacti_booking_refund_amount', 'bookacti_display_price_to_be_refunded', 20, 3 );
+add_filter( 'bookacti_selected_bookings_refund_actions', 'bookacti_wc_selected_bookings_refund_actions', 10, 3 );
+
+
+/**
+ * Refund amount of the selected bookings
+ * @since 1.16.0 (was bookacti_display_price_to_be_refunded)
+ * @param string $refund_amount
+ * @param array $selected_bookings
+ * @param bool $is_formatted
+ * @return int|float|string
+ */
+function bookacti_wc_selected_bookings_refund_amount( $refund_amount, $selected_bookings, $is_formatted ) {
+	if( $refund_amount ) { return $refund_amount; }
+	
+	$wc_order_items = array();
+	foreach( $selected_bookings[ 'bookings' ] as $booking ) {
+		$item = bookacti_get_order_item_by_booking_id( $booking );
+		if( is_a( $item, 'WC_Order_Item' ) ) {
+			$wc_order_items[ $item->get_id() ] = $item;
+		}
+	}
+	foreach( $selected_bookings[ 'booking_groups' ] as $booking_group ) {
+		$item = bookacti_get_order_item_by_booking_group_id( $booking_group );
+		if( is_a( $item, 'WC_Order_Item' ) ) {
+			$wc_order_items[ $item->get_id() ] = $item;
+		}
+	}
+	if( ! $wc_order_items ) { return $refund_amount; }
+	
+	$refund_amount = 0;
+	foreach( $wc_order_items as $item_id => $wc_order_item ) {
+		// Booking Activities assumes that 1 order item can have only 1 booking (group). So the item price is the booking (group) price.
+		$refund_amount += bookacti_wc_get_item_remaining_refund_amount( $wc_order_item, false );
+	}
+	
+	return $is_formatted ? html_entity_decode( wc_price( $refund_amount ) ) : $refund_amount;
+}
+add_filter( 'bookacti_selected_bookings_refund_amount', 'bookacti_wc_selected_bookings_refund_amount', 20, 3 );
 
 
 /**
@@ -1148,7 +1198,7 @@ add_filter( 'bookacti_refund_actions', 'bookacti_wc_add_refund_actions', 10, 1 )
  */
 function bookacti_woocommerce_refund_booking( $return_array, $bookings, $booking_type, $refund_action, $refund_message, $context = '' ) {
 	$order_id = $booking_type === 'group' && isset( $bookings[ 0 ]->group_order_id ) ? $bookings[ 0 ]->group_order_id : ( isset( $bookings[ 0 ]->order_id ) ? $bookings[ 0 ]->order_id : 0 );
-	$possibles_actions = array_keys( bookacti_get_booking_refund_actions( $bookings, $booking_type, $context ) );
+	$possibles_actions = array_keys( bookacti_get_selected_bookings_refund_actions( $bookings, $booking_type, $context ) );
 	
 	if( in_array( $refund_action, $possibles_actions, true ) ) {
 		if( $refund_action === 'coupon' ) {
@@ -1226,21 +1276,19 @@ add_filter( 'bookacti_booking_can_be_refunded', 'bookacti_woocommerce_booking_ca
 
 /**
  * Check if a booking group can be refunded
- * @version 1.9.0
+ * @version 1.16.0
  * @param boolean $true
- * @param array $bookings
- * @param string|false $refund_action
+ * @param object $booking_group
+ * @param array $group_bookings
  * @param string $context
+ * @param string $refund_action
  * @return boolean
  */
-function bookacti_woocommerce_booking_group_can_be_refunded( $true, $bookings, $refund_action, $context = '' ) {
+function bookacti_woocommerce_booking_group_can_be_refunded( $true, $booking_group, $group_bookings, $context = '', $refund_action = '' ) {
 	if( ! $true ) { return $true; }
 	
-	$booking_keys = array_keys( $bookings );
-	$first_key = reset( $booking_keys );
-	$order_id = ! empty( $bookings[ $first_key ]->group_order_id ) ? $bookings[ $first_key ]->group_order_id : $bookings[ $first_key ]->order_id;
-	
-	$order = wc_get_order( $order_id );
+	$order_id = ! empty( $booking_group->order_id ) ? $booking_group->order_id : 0;
+	$order    = wc_get_order( $order_id );
 	if( ! $order ) { return $true; }
 	
 	if( $order->get_status() === 'pending' ) { $true = false; }
@@ -1248,7 +1296,7 @@ function bookacti_woocommerce_booking_group_can_be_refunded( $true, $bookings, $
 	$is_paid = $order->get_date_paid( 'edit' );
 	if( ! $is_paid ) { $true = false; }	
 
-	$item = bookacti_get_order_item_by_booking_group_id( $bookings[ $first_key ] );
+	$item = bookacti_get_order_item_by_booking_group_id( $booking_group );
 	if( ! $item ) { return false; }
 
 	$total = (float) $item->get_total() + (float) $item->get_total_tax();
@@ -1256,7 +1304,7 @@ function bookacti_woocommerce_booking_group_can_be_refunded( $true, $bookings, $
 
 	return $true;
 }
-add_filter( 'bookacti_booking_group_can_be_refunded', 'bookacti_woocommerce_booking_group_can_be_refunded', 10, 4 );
+add_filter( 'bookacti_booking_group_can_be_refunded', 'bookacti_woocommerce_booking_group_can_be_refunded', 10, 5 );
 
 
 /**

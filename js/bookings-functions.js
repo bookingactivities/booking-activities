@@ -269,7 +269,7 @@ function bookacti_init_booking_actions() {
 			} else if( $j( this ).hasClass( 'bookacti-reschedule-booking' ) ){
 				bookacti_dialog_reschedule_booking( booking_id );
 			} else if( $j( this ).hasClass( 'bookacti-refund-booking' ) ){
-				bookacti_dialog_refund_booking( booking_id, 'single' );
+				bookacti_dialog_refund_bookings( booking_selection );
 			} else if( $j( this ).hasClass( 'bookacti-change-booking-status' ) ){
 				bookacti_dialog_change_bookings_status( booking_selection );
 			} else if( $j( this ).hasClass( 'bookacti-change-booking-quantity' ) ){
@@ -344,7 +344,7 @@ function bookacti_init_booking_bulk_actions() {
 		if( action === 'reschedule' ) {
 			bookacti_dialog_reschedule_booking( booking_id );
 		} else if( action === 'refund' ) {
-			bookacti_dialog_refund_booking( booking_id, 'single' );
+			bookacti_dialog_refund_bookings( booking_selection );
 		} else if( action === 'edit_status' ) {
 			bookacti_dialog_change_bookings_status( booking_selection );
 		} else if( action === 'edit_quantity' ) {

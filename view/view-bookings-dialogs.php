@@ -39,7 +39,7 @@ $messages = bookacti_get_messages();
 			<div id='bookacti-refund-options'></div>
 			<div id='bookacti-refund-message'>
 				<strong><?php echo bookacti_get_message( 'refund_request_dialog_feedback_label' ); ?></strong>
-				<textarea name='refund-message'></textarea>
+				<textarea name='refund_message'></textarea>
 			</div>
 		</div>
 	</form>

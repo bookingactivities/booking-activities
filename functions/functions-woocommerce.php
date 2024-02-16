@@ -122,7 +122,7 @@ function bookacti_wc_add_bookings_to_cart( $product_bookings_data ) {
 /**
  * Get in cart bookings per cart item
  * @since 1.9.0
- * @version 1.15.11
+ * @version 1.16.0
  * @global woocommerce $woocommerce
  * @param array $cart_items
  * @param array $filters
@@ -160,6 +160,16 @@ function bookacti_wc_get_cart_items_bookings( $cart_items = array(), $filters = 
 	
 	$cart_items_bookings = array();
 	if( $bookings ) {
+		// Get booking groups
+		$group_ids = array();
+		foreach( $bookings as $booking ) {
+			$group_id = $booking->group_id ? intval( $booking->group_id ) : 0;
+			if( $group_id ) { $group_ids[] = $group_id; }
+		}
+		$group_ids      = bookacti_ids_to_array( $group_ids );
+		$group_filters  = $group_ids ? bookacti_format_booking_filters( array( 'in__booking_group_id' => $group_ids, 'fetch_meta' => true ) ) : array();
+		$booking_groups = $group_filters ? bookacti_get_booking_groups( $group_filters ) : array();
+		
 		foreach( $bookings as $booking ) {
 			$booking_id = intval( $booking->id );
 			$group_id = intval( $booking->group_id );
@@ -176,7 +186,7 @@ function bookacti_wc_get_cart_items_bookings( $cart_items = array(), $filters = 
 			
 			if( $cart_item_key ) {
 				if( ! isset( $cart_items_bookings[ $cart_item_key ] ) ) { $cart_items_bookings[ $cart_item_key ] = array(); }
-				if( $booking_type === 'single' ) { $cart_items_bookings[ $cart_item_key ][] = array( 'id' => $booking_id, 'type' => 'single', 'bookings' => array( $booking ) ); }
+				if( $booking_type === 'single' ) { $cart_items_bookings[ $cart_item_key ][] = array( 'id' => $booking_id, 'type' => 'single', 'bookings' => array( $booking ), 'booking_group' => array() ); }
 				else if( $booking_type === 'group' ) { 
 					$group_exists = false;
 					foreach( $cart_items_bookings[ $cart_item_key ] as $i => $cart_item_booking ) {
@@ -186,7 +196,7 @@ function bookacti_wc_get_cart_items_bookings( $cart_items = array(), $filters = 
 						}
 					}
 					if( ! $group_exists ) {
-						$cart_items_bookings[ $cart_item_key ][] = array( 'id' => $group_id, 'type' => 'group', 'bookings' => array( $booking ) );
+						$cart_items_bookings[ $cart_item_key ][] = array( 'id' => $group_id, 'type' => 'group', 'bookings' => array( $booking ), 'booking_group' => ! empty( $booking_groups[ $group_id ] ) ? $booking_groups[ $group_id ] : array() );
 					}
 				}
 			}
@@ -722,7 +732,7 @@ function bookacti_wc_get_item_bookings_attributes( $item_bookings ) {
 			// Don't display booking actions in emails, on the backend, and on payment page
 			global $bookacti_is_email;
 			if( ! $bookacti_is_email && ! $is_order_edit_page && empty( $_REQUEST[ 'pay_for_order' ] ) ) {
-				$actions_html_array = $item_booking[ 'type' ] === 'group' ? bookacti_get_booking_group_actions_html( $item_booking[ 'bookings' ], 'front', array(), true, true ) : ( $item_booking[ 'type' ] === 'single' ? bookacti_get_booking_actions_html( $item_booking[ 'bookings' ][ 0 ], 'front', array(), true, true ) : '' );
+				$actions_html_array = $item_booking[ 'type' ] === 'group' ? bookacti_get_booking_group_actions_html( $item_booking[ 'booking_group' ], $item_booking[ 'bookings' ], 'front', array(), true, true ) : ( $item_booking[ 'type' ] === 'single' ? bookacti_get_booking_actions_html( $item_booking[ 'bookings' ][ 0 ], 'front', array(), true, true ) : '' );
 				if( $actions_html_array ) {
 					$booking_attributes[ 'actions' ] = array( 
 						'label' => esc_html( _n( 'Action', 'Actions', count( $actions_html_array ), 'booking-activities' ) ),
@@ -911,7 +921,7 @@ function bookacti_wc_format_order_item_bookings_ids( $order_item ) {
 /**
  * Get order bookings per order item
  * @since 1.9.0
- * @version 1.15.11
+ * @version 1.16.0
  * @global woocommerce $woocommerce
  * @param int|WC_Order|WC_Order_Item_Product[] $order_id
  * @param array $filters
@@ -957,6 +967,16 @@ function bookacti_wc_get_order_items_bookings( $order_id, $filters = array() ) {
 	}
 	if( ! $bookings ) { return array(); }
 	
+	// Get booking groups
+	$group_ids = array();
+	foreach( $bookings as $booking ) {
+		$group_id = $booking->group_id ? intval( $booking->group_id ) : 0;
+		if( $group_id ) { $group_ids[] = $group_id; }
+	}
+	$group_ids      = bookacti_ids_to_array( $group_ids );
+	$group_filters  = $group_ids ? bookacti_format_booking_filters( array( 'in__booking_group_id' => $group_ids, 'fetch_meta' => true ) ) : array();
+	$booking_groups = $group_filters ? bookacti_get_booking_groups( $group_filters ) : array();
+	
 	$order_items_bookings = array();
 	
 	foreach( $bookings as $booking ) {
@@ -975,7 +995,7 @@ function bookacti_wc_get_order_items_bookings( $order_id, $filters = array() ) {
 
 		if( $order_item_id ) {
 			if( ! isset( $order_items_bookings[ $order_item_id ] ) ) { $order_items_bookings[ $order_item_id ] = array(); }
-			if( $booking_type === 'single' ) { $order_items_bookings[ $order_item_id ][] = array( 'id' => $booking_id, 'type' => 'single', 'bookings' => array( $booking ) ); }
+			if( $booking_type === 'single' ) { $order_items_bookings[ $order_item_id ][] = array( 'id' => $booking_id, 'type' => 'single', 'bookings' => array( $booking ), 'booking_group' => array() ); }
 			else if( $booking_type === 'group' ) { 
 				$group_exists = false;
 				foreach( $order_items_bookings[ $order_item_id ] as $i => $order_item_booking ) {
@@ -985,7 +1005,7 @@ function bookacti_wc_get_order_items_bookings( $order_id, $filters = array() ) {
 					}
 				}
 				if( ! $group_exists ) {
-					$order_items_bookings[ $order_item_id ][] = array( 'id' => $group_id, 'type' => 'group', 'bookings' => array( $booking ) );
+					$order_items_bookings[ $order_item_id ][] = array( 'id' => $group_id, 'type' => 'group', 'bookings' => array( $booking ), 'booking_group' => ! empty( $booking_groups[ $group_id ] ) ? $booking_groups[ $group_id ] : array() );
 				}
 			}
 		}

@@ -256,13 +256,14 @@ tr.bookacti-booking-list-selected-row                             { background-c
 .bookacti-refund-options             { display: table; }
 .bookacti-refund-option              { display: table-row; }
 .bookacti-refund-option-radio, 
-.bookacti-refund-option-text         { display: table-cell; vertical-align: middle; }
+.bookacti-refund-option-text         { display: table-cell; vertical-align: top; }
 .bookacti-refund-option-text         { padding: 0 0 15px 15px; }
 .bookacti-refund-option-label        { font-weight: bold; margin-right: 2px; }
-.bookacti-refund-option-label::after { content: ': '; }
-.bookacti-refund-option-description  { font-size: 0.85em; font-style: italic; }
+.bookacti-refund-option-label span:first-of-type::after { content: ': '; }
+.bookacti-refund-option-description  { font-size: 0.85em; font-style: italic; font-weight: normal; }
 .bookacti-refund-option-label,
 .bookacti-refund-option-description  { display: block; }
+.bookacti-refund-option-warning      { display: block; margin-top: 10px; }
 #bookacti-refund-message textarea    { display: block; width: 100%; }
 
 
