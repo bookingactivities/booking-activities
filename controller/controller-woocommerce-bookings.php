@@ -1188,35 +1188,29 @@ add_filter( 'bookacti_refund_actions', 'bookacti_wc_add_refund_actions', 10, 1 )
 
 /**
  * Trigger WooCommerce refund process according to the refund action
- * @version 1.9.0
+ * @since 1.16.0 (was bookacti_woocommerce_refund_booking)
  * @param array $return_array
- * @param array $bookings
+ * @param array $selected_bookings
  * @param string $refund_action
  * @param string $refund_message
  * @param string $context
  * @return array
  */
-function bookacti_woocommerce_refund_booking( $return_array, $bookings, $booking_type, $refund_action, $refund_message, $context = '' ) {
-	$order_id = $booking_type === 'group' && isset( $bookings[ 0 ]->group_order_id ) ? $bookings[ 0 ]->group_order_id : ( isset( $bookings[ 0 ]->order_id ) ? $bookings[ 0 ]->order_id : 0 );
-	$possibles_actions = array_keys( bookacti_get_selected_bookings_refund_actions( $bookings, $booking_type, $context ) );
-	
-	if( in_array( $refund_action, $possibles_actions, true ) ) {
-		if( $refund_action === 'coupon' ) {
-			$return_array = bookacti_refund_booking_with_coupon( $bookings, $booking_type, $refund_message );
-			if( $return_array[ 'status' ] === 'success' && isset( $return_array[ 'coupon_code' ] ) && isset( $return_array[ 'coupon_amount' ] ) ) {
-				/* translators: %s is the amount of the coupon. E.g.: $10. */
-				$return_array[ 'message' ] = sprintf( esc_html__( 'A %s coupon has been created. You can use it once for any order at any time.', 'booking-activities' ), $return_array[ 'coupon_amount' ] );
-				/* translators: %s is the coupon code. E.g.: AAB12. */
-				$return_array[ 'message' ] .= '<br/>' . sprintf(  esc_html__( 'The coupon code is %s. Use it on your next cart!', 'booking-activities' ), '<strong>' . strtoupper( $return_array[ 'coupon_code' ] ) . '</strong>' );
-			}
-		} else if( $refund_action === 'auto' && bookacti_does_order_support_auto_refund( $order_id ) ) {
-			$return_array = bookacti_auto_refund_booking( $bookings, $booking_type, $refund_message );
-		}
+function bookacti_wc_refund_selected_bookings( $return_array, $selected_bookings, $refund_action, $refund_message = '', $context = '' ) {
+	if( $refund_action === 'coupon' ) {
+		$return_array = bookacti_refund_selected_bookings_with_coupon( $selected_bookings, $refund_message );
+	}
+	else if( $refund_action === 'auto' ) {
+//		$order_id = $booking_type === 'group' && isset( $bookings[ 0 ]->group_order_id ) ? $bookings[ 0 ]->group_order_id : ( isset( $bookings[ 0 ]->order_id ) ? $bookings[ 0 ]->order_id : 0 );
+//		$is_supported = bookacti_does_order_support_auto_refund( $order_id );
+//		if( $is_supported ) {
+//			$return_array = bookacti_auto_refund_booking( $bookings, $booking_type, $refund_message );
+//		}
 	}
 	
 	return $return_array;
 }
-add_filter( 'bookacti_refund_booking', 'bookacti_woocommerce_refund_booking', 10, 6 );
+add_filter( 'bookacti_refund_booking', 'bookacti_wc_refund_selected_bookings', 10, 5 );
 
 
 /**

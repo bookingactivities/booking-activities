@@ -1860,7 +1860,7 @@ function bookacti_controller_update_form_field() {
 	// Update field metadata
 	if( $default_meta ) { bookacti_delete_metadata( 'form_field', $field_id, array_keys( $default_meta ) ); }
 	if( $field_meta )   { bookacti_update_metadata( 'form_field', $field_id, array_intersect_key( $sanitized_data, $default_meta ) ); }
-
+	
 	// Remove cache
 	wp_cache_delete( 'form_fields_' . $field[ 'form_id' ], 'bookacti' );
 	wp_cache_delete( 'form_fields_data_' . $field[ 'form_id' ], 'bookacti' );

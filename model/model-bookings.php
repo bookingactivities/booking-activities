@@ -2584,11 +2584,11 @@ function bookacti_get_booking_groups( $filters ) {
 	global $wpdb;
 
 	// Merge single id to multiple ids array
-	if( is_numeric( $filters[ 'booking_group_id' ] ) && $filters[ 'booking_group_id' ] )	{ $filters[ 'in__booking_group_id' ][] = $filters[ 'booking_group_id' ]; }
-	if( is_numeric( $filters[ 'event_group_id' ] ) && $filters[ 'event_group_id' ] )		{ $filters[ 'in__event_group_id' ][] = $filters[ 'event_group_id' ]; }
-	if( is_numeric( $filters[ 'group_category_id' ] ) && $filters[ 'group_category_id' ] )	{ $filters[ 'in__group_category_id' ][] = $filters[ 'group_category_id' ]; }
-	if( is_numeric( $filters[ 'form_id' ] ) && $filters[ 'form_id' ] )						{ $filters[ 'in__form_id' ][] = $filters[ 'form_id' ]; }
-	if( $filters[ 'user_id' ] )																{ $filters[ 'in__user_id' ][] = $filters[ 'user_id' ]; }
+	if( is_numeric( $filters[ 'booking_group_id' ] ) && $filters[ 'booking_group_id' ] )   { $filters[ 'in__booking_group_id' ][] = $filters[ 'booking_group_id' ]; }
+	if( is_numeric( $filters[ 'event_group_id' ] ) && $filters[ 'event_group_id' ] )       { $filters[ 'in__event_group_id' ][] = $filters[ 'event_group_id' ]; }
+	if( is_numeric( $filters[ 'group_category_id' ] ) && $filters[ 'group_category_id' ] ) { $filters[ 'in__group_category_id' ][] = $filters[ 'group_category_id' ]; }
+	if( is_numeric( $filters[ 'form_id' ] ) && $filters[ 'form_id' ] )                     { $filters[ 'in__form_id' ][] = $filters[ 'form_id' ]; }
+	if( $filters[ 'user_id' ] )                                                            { $filters[ 'in__user_id' ][] = $filters[ 'user_id' ]; }
 	
 	// Used for backward compatibility with mySQL 5.7 and MariaDB 10.3
 	$bw_compat_query = bookacti_is_db_version_outdated() ? 'CONCAT( "[", GROUP_CONCAT( id SEPARATOR ", " ), "]" )' : 'JSON_ARRAYAGG( id )';

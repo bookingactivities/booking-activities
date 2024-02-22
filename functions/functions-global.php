@@ -441,7 +441,6 @@ function bookacti_get_js_variables() {
 		'ajaxurl'                            => admin_url( 'admin-ajax.php' ),
 		'nonce_query_select2_options'        => wp_create_nonce( 'bookacti_query_select2_options' ),
 		'nonce_cancel_booking'               => wp_create_nonce( 'bookacti_cancel_booking' ),
-		'nonce_refund_booking'               => wp_create_nonce( 'bookacti_refund_booking' ),
 		'nonce_reschedule_booking'           => wp_create_nonce( 'bookacti_reschedule_booking' ),
 
 		'fullcalendar_timezone'              => 'UTC',

@@ -266,6 +266,12 @@ tr.bookacti-booking-list-selected-row                             { background-c
 .bookacti-refund-option-warning      { display: block; margin-top: 10px; }
 #bookacti-refund-message textarea    { display: block; width: 100%; }
 
+.bookacti-refund-coupon-table        { margin: 20px 0; border: none; }
+.bookacti-refund-coupon-table th     { padding: 5px 0; padding-inline-end: 20px; text-align: start; border: none; }
+.bookacti-refund-coupon-table td     { padding: 5px 0; padding-inline-end: 20px; border: none; }
+
+
+
 
 /***** RESPONSIVE DESIGN *****/
 

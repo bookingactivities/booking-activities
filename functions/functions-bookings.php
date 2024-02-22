@@ -260,6 +260,57 @@ function bookacti_get_selected_bookings( $context = '' ) {
 
 
 /**
+ * Sort selected bookings array per user (id or email)
+ * @since 1.16.0
+ * @param array $selected_bookings
+ * @return array
+ */
+function bookacti_sort_selected_bookings_by_user( $selected_bookings ) {
+	$selected_bookings_per_user = array();
+	
+	foreach( $selected_bookings[ 'bookings' ] as $i => $booking ) {
+		$user_id = is_numeric( $booking->user_id ) ? intval( $booking->user_id ) : $booking->user_id;
+		if( is_email( $user_id ) ) {
+			$user = get_user_by( 'email', $user_id );
+			if( $user ) {
+				$user_id = intval( $user->ID );
+			}
+		}
+		if( ! $user_id || ( ! is_numeric( $user_id ) && ! is_email( $user_id ) ) ) { continue; }
+		
+		if( ! isset( $selected_bookings_per_user[ $user_id ] ) ) {
+			$selected_bookings_per_user[ $user_id ] = array( 'bookings' => array(), 'booking_groups' => array(), 'groups_bookings' => array() );
+		}
+		
+		$selected_bookings_per_user[ $user_id ][ 'bookings' ][ $i ] = $booking;
+	}
+	
+	foreach( $selected_bookings[ 'booking_groups' ] as $i => $booking_group ) {
+		$user_id = is_numeric( $booking_group->user_id ) ? intval( $booking_group->user_id ) : $booking_group->user_id;
+		if( is_email( $user_id ) ) {
+			$user = get_user_by( 'email', $user_id );
+			if( $user ) {
+				$user_id = intval( $user->ID );
+			}
+		}
+		if( ! $user_id || ( ! is_numeric( $user_id ) && ! is_email( $user_id ) ) ) { continue; }
+		
+		if( ! isset( $selected_bookings_per_user[ $user_id ] ) ) {
+			$selected_bookings_per_user[ $user_id ] = array( 'bookings' => array(), 'booking_groups' => array(), 'groups_bookings' => array() );
+		}
+		
+		$selected_bookings_per_user[ $user_id ][ 'booking_groups' ][ $i ] = $booking_group;
+		
+		if( isset( $selected_bookings[ 'groups_bookings' ][ $i ] ) ) {
+			$selected_bookings_per_user[ $user_id ][ 'groups_bookings' ][ $i ] = $selected_bookings[ 'groups_bookings' ][ $i ];
+		}
+	}
+	
+	return $selected_bookings_per_user;
+}
+
+
+/**
  * Get booking by id
  * @version 1.12.0
  * @global wpdb $wpdb
@@ -2543,8 +2594,15 @@ function bookacti_get_refund_actions_html( $actions = array(), $context = '' ) {
 		$bookings_nb    = ! empty( $action[ 'bookings_nb' ] ) ? $action[ 'bookings_nb' ] : 0;
 		$compatible_nb  = ! empty( $action[ 'booking_ids' ] ) ? count( $action[ 'booking_ids' ] ) : 0;
 		$compatible_nb += ! empty( $action[ 'booking_group_ids' ] ) ? count( $action[ 'booking_group_ids' ] ) : 0;
-		/* translators: %1$s = Number of bookings compatible. %2$s = Total number of bookings. */
-		$warning        = $has_compat_nb && $bookings_nb && $compatible_nb < $bookings_nb ? sprintf( esc_html( _n( 'Only %1$s booking out of %2$s is compatible with this refund method.', 'Only %1$s bookings out of %2$s are compatible with this refund method.', $compatible_nb, 'booking-activities' ) ), '<strong>' . $compatible_nb . '</strong>', $bookings_nb ) : '';
+		$warning        = '';
+		if( $has_compat_nb && $bookings_nb && $compatible_nb < $bookings_nb ) {
+			$warning = sprintf( 
+				/* translators: %1$s = Number of bookings compatible. %2$s = Total number of bookings. */
+				esc_html( _n( 'Only %1$s out of %2$s is compatible with this refund method.', 'Only %1$s out of %2$s are compatible with this refund method.', $compatible_nb, 'booking-activities' ) ), 
+				'<strong>' . sprintf( esc_html( _n( '%s booking', '%s bookings', $compatible_nb, 'booking-activities' ) ), $compatible_nb ) . '</strong>', 
+				$bookings_nb
+			);
+		}
 		
 		if( $has_compat_nb && ! $compatible_nb ) { continue; }
 		?>

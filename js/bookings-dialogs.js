@@ -295,6 +295,7 @@ function bookacti_dialog_refund_bookings( booking_selection ) {
 	$j( '#bookacti-refund-booking-dialog #bookacti-no-refund-option' ).hide();
 	$j( '#bookacti-refund-booking-dialog #bookacti-refund-amount' ).empty();
 	$j( '#bookacti-refund-booking-dialog #bookacti-refund-amount-container' ).hide();
+	$j( '#bookacti-refund-booking-dialog' ).dialog( 'option', 'buttons', [] );
 	
 	// Reset error notices
 	$j( '#bookacti-refund-booking-dialog .bookacti-notices' ).remove();
@@ -348,6 +349,9 @@ function bookacti_dialog_refund_bookings( booking_selection ) {
 					text: bookacti_localized.dialog_button_refund,
 					'class': 'bookacti-dialog-delete-button',
 					click: function() {
+						// Make sure the refund action is selected
+						if( ! $j( '#bookacti-refund-booking-form input[name="refund_action"]' ).val() ) { return; }
+						
 						// Reset error notices
 						$j( '#bookacti-refund-booking-dialog .bookacti-notices' ).remove();
 
@@ -360,14 +364,14 @@ function bookacti_dialog_refund_bookings( booking_selection ) {
 
 						booking_selection.filters = booking_selection.all ? bookacti_get_booking_list_filters() : {};
 
-						var data = { 'form_data': new FormData( $j( '#bookacti-refund-booking-form' ).get(0) ) };
-						data.form_data.append( 'action', 'bookactiRefundBookings' );
-						data.form_data.append( 'booking_selection', JSON.stringify( booking_selection ) );
-						data.form_data.append( 'columns', JSON.stringify( columns ) );
-						data.form_data.append( 'is_admin', bookacti_localized.is_admin ? 1 : 0 );
-						data.form_data.append( 'user_auth_key', typeof user_auth_key !== 'undefined' ? user_auth_key : '' );
+						var data_refund = { 'form_data': new FormData( $j( '#bookacti-refund-booking-form' ).get(0) ) };
+						data_refund.form_data.append( 'action', 'bookactiRefundBookings' );
+						data_refund.form_data.append( 'booking_selection', JSON.stringify( booking_selection ) );
+						data_refund.form_data.append( 'columns', JSON.stringify( columns ) );
+						data_refund.form_data.append( 'is_admin', bookacti_localized.is_admin ? 1 : 0 );
+						data_refund.form_data.append( 'user_auth_key', typeof user_auth_key !== 'undefined' ? user_auth_key : '' );
 
-						$j( 'body' ).trigger( 'bookacti_booking_action_data', [ data, booking_selection, 'refund' ] );
+						$j( 'body' ).trigger( 'bookacti_booking_action_data', [ data_refund, booking_selection, 'refund' ] );
 
 						// Display a loader
 						bookacti_booking_row_enter_loading_state( rows );
@@ -376,7 +380,7 @@ function bookacti_dialog_refund_bookings( booking_selection ) {
 						$j.ajax({
 							url: bookacti_localized.ajaxurl,
 							type: 'POST',
-							data: data_get_actions.form_data,
+							data: data_refund.form_data,
 							dataType: 'json',
 							cache: false,
 							contentType: false,
@@ -431,8 +435,7 @@ function bookacti_dialog_refund_bookings( booking_selection ) {
 							complete: function() {
 								$j( '#bookacti-refund-booking-dialog .bookacti-notices' ).show();
 								bookacti_remove_loading_html( $j( '#bookacti-refund-booking-dialog' ) );
-								bookacti_remove_loading_html( loading_container );
-								loading_container.find( '.bookacti-booking-status' ).show();
+								bookacti_booking_row_exit_loading_state( rows );
 							}
 						});
 					}
