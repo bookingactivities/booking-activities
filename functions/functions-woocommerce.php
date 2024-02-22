@@ -1974,7 +1974,7 @@ function bookacti_refund_selected_bookings_with_coupon( $selected_bookings, $ref
 	
 	// Coupon data
 	$coupons_data = array();
-	$coupon_data = array( 
+	$default_coupon_data = array( 
 		'coupon' => array(
 			'type'                         => 'fixed_cart',
 			'code'                         => '',
@@ -2001,7 +2001,6 @@ function bookacti_refund_selected_bookings_with_coupon( $selected_bookings, $ref
 	// Sort bookings by user (to create only one coupon per user)
 	$selected_bookings_per_user = bookacti_sort_selected_bookings_by_user( $selected_bookings );
 	
-	$refunded_ids = array( 'booking_ids' => array(), 'booking_group_ids' => array(), 'order_item_ids' => array() );
 	foreach( $selected_bookings_per_user as $user_id => $user_selected_bookings ) {
 		// Calculate coupon amount
 		$coupon_amount = 0;
@@ -2109,15 +2108,11 @@ function bookacti_refund_selected_bookings_with_coupon( $selected_bookings, $ref
 			$coupon_description .= PHP_EOL . sprintf( esc_html__( 'Product: %s', 'booking-activities' ), implode( ', ', $product_titles ) );
 		}
 		if( $refund_message ) {
-			$coupon_description .= PHP_EOL . PHP_EOL . esc_html__( 'User message:', 'booking-activities' ) . PHP_EOL . $refund_message;
+			$coupon_description .= PHP_EOL . PHP_EOL . esc_html__( 'Customer message:', 'booking-activities' ) . PHP_EOL . $refund_message;
 		}
 		
-		$refunded_ids[ 'booking_ids' ]       = array_unique( array_merge( $refunded_ids[ 'booking_ids' ], $booking_ids ) );
-		$refunded_ids[ 'booking_group_ids' ] = array_unique( array_merge( $refunded_ids[ 'booking_group_ids' ], $booking_group_ids ) );
-		$refunded_ids[ 'order_item_ids' ]    = array_unique( array_merge( $refunded_ids[ 'order_item_ids' ], array_keys( $item_names ) ) );
-		
 		// Coupon data
-		$coupon_data_n = $coupon_data;
+		$coupon_data_n = $default_coupon_data;
 		$coupon_data_n[ 'coupon' ][ 'amount' ]          = $coupon_amount;
 		$coupon_data_n[ 'coupon' ][ 'customer_emails' ] = array_filter( array_unique( $customer_emails ) );
 		$coupon_data_n[ 'coupon' ][ 'description' ]     = $coupon_description;
@@ -2152,21 +2147,21 @@ function bookacti_refund_selected_bookings_with_coupon( $selected_bookings, $ref
 		$i = 1;
 		$coupon = array();
 		$user_id_str   = is_numeric( $refund_data[ 'user_id' ] ) ? $refund_data[ 'user_id' ] : substr( hash( 'sha256', $refund_data[ 'user_id' ] ), 0, 8 );
-		$code_template = apply_filters( 'bookacti_refund_coupon_code_template', 'R{user_id}N{refund_number}' );
+		$code_template = apply_filters( 'bookacti_wc_refund_coupon_code_template', 'R{user_id}N{refund_number}' );
 		$code_template = str_replace( '{user_id}', '%1$s', $code_template );
 		$code_template = str_replace( '{refund_number}', '%2$s', $code_template );
 
-		$coupon_data = apply_filters( 'bookacti_refund_coupon_data', $coupon_data, $refund_data );
+		$coupon_data = apply_filters( 'bookacti_wc_refund_coupon_data', $coupon_data, $refund_data );
 
 		do {
 			// For the first occurrence, try to use the code that may have been changed with 'bookacti_refund_coupon_data' hook
-			$coupon_data[ 'coupon' ][ 'code' ] = apply_filters( 'bookacti_refund_coupon_code', sprintf( $code_template, $user_id_str, $i ), $coupon_data, $refund_data );
+			$coupon_data[ 'coupon' ][ 'code' ] = apply_filters( 'bookacti_wc_refund_coupon_code', sprintf( $code_template, $user_id_str, $i ), $coupon_data, $refund_data );
 			$coupon = WC()->api->WC_API_Coupons->create_coupon( $coupon_data );
 			$i++;
 		}
 		while( is_wp_error( $coupon ) && $coupon->get_error_code() === 'woocommerce_api_coupon_code_already_exists' );
 		
-		if( ! empty( $coupon ) && ! is_wp_error( $coupon ) ) {
+		if( $coupon && ! is_wp_error( $coupon ) ) {
 			// Format the refunded date
 			$refund_date = DateTime::createFromFormat( 'Y-m-d\TH:i:s\Z', $coupon[ 'coupon' ][ 'created_at' ] );
 			if( ! is_a( $refund_date, 'DateTime' ) ) { $refund_date = new DateTime(); }
@@ -2187,7 +2182,7 @@ function bookacti_refund_selected_bookings_with_coupon( $selected_bookings, $ref
 					$booking = $booking_type === 'group' ? $selected_bookings[ 'booking_groups' ][ $booking_id ] : $selected_bookings[ 'bookings' ][ $booking_id ];
 					$refunds = ! empty( $booking->refunds ) && is_array( $booking->refunds ) ? $booking->refunds : array();
 					
-					$refunds[ $coupon[ 'coupon' ][ 'code' ] ] = apply_filters( 'bookacti_wc_booking_refund_data_coupon', array( 
+					$refunds[ $coupon[ 'coupon' ][ 'code' ] ] = apply_filters( 'bookacti_wc_booking_refund_coupon_data', array( 
 						'date'     => $refund_date, 
 						'quantity' => $booking_refund_data[ 'quantity' ], 
 						'amount'   => $coupon[ 'coupon' ][ 'amount' ], 
@@ -2202,7 +2197,7 @@ function bookacti_refund_selected_bookings_with_coupon( $selected_bookings, $ref
 			$return_data[ 'booking_ids' ]       = bookacti_ids_to_array( array_merge( $return_data[ 'booking_ids' ], array_keys( $refund_data[ 'bookings' ] ) ) );
 			$return_data[ 'booking_group_ids' ] = bookacti_ids_to_array( array_merge( $return_data[ 'booking_group_ids' ], array_keys( $refund_data[ 'booking_groups' ] ) ) );
 			$return_data[ 'coupons' ][] = array(
-				'code'        => $coupon[ 'coupon' ][ 'code' ] ,
+				'code'        => $coupon[ 'coupon' ][ 'code' ],
 				'amount'      => $coupon_data[ 'coupon' ][ 'amount' ],
 				'price'       => html_entity_decode( wc_price( $coupon_data[ 'coupon' ][ 'amount' ] ) ),
 				'coupon'      => $coupon,
@@ -2247,7 +2242,7 @@ function bookacti_refund_selected_bookings_with_coupon( $selected_bookings, $ref
 			/* translators: %s = number of the coupon(s). */
 			'<strong>' . sprintf( esc_html( _n( '%s coupon', '%s coupons', $coupons_nb, 'booking-activities' ) ), $coupons_nb ) . '</strong>'
 		) . '</span>';
-		$return_data[ 'message' ] .= '<table class="bookacti-refund-coupon-table"><thead><tr><th>' . esc_html__( 'Coupon code', 'booking-activities' ) . '</th><th>' . esc_html__( 'Coupon value', 'booking-activities' ) . '</th><th>' . esc_html__( 'Refunded bookings', 'booking-activities' ) . '</th></tr></thead><tbody>' . $rows . '</tbody></table>';
+		$return_data[ 'message' ] .= '<table class="bookacti-refund-table bookacti-refund-table-coupon"><thead><tr><th>' . esc_html__( 'Coupon code', 'booking-activities' ) . '</th><th>' . esc_html__( 'Coupon value', 'booking-activities' ) . '</th><th>' . esc_html__( 'Refunded bookings', 'booking-activities' ) . '</th></tr></thead><tbody>' . $rows . '</tbody></table>';
 		$return_data[ 'message' ] .= '<span><em>' . esc_html__( 'You can use your coupon code in the cart the next time you place an order.', 'booking-activities' ) . '</em></span>';
 	} 
 	else {
@@ -2318,75 +2313,206 @@ add_filter( 'woocommerce_coupon_error', 'bookacti_wc_coupon_error_return_code', 
 
 
 /**
- * Auto refund (for supported gateway)
- * @version 1.12.9
- * @param array $bookings
- * @param string $booking_type Determine if the given id is a booking id or a booking group id. Accepted values are 'single' or 'group'.
+ * Refund selected bookings through the payment gateway (for supported gateways)
+ * @since 1.16.0 (was bookacti_auto_refund_booking)
+ * @param array $selected_bookings
  * @param string $refund_message
  * @return array
  */
-function bookacti_auto_refund_booking( $bookings, $booking_type, $refund_message ) {
-	// Get variables
-	if( $booking_type === 'single' ) {
-		$order_id = $bookings[ 0 ]->order_id;
-		$item     = bookacti_get_order_item_by_booking_id( $bookings[ 0 ] );
-	} else if( $booking_type === 'group' ) {
-		$order_id = ! empty( $bookings[ 0 ]->group_order_id ) ? $bookings[ 0 ]->group_order_id : $bookings[ 0 ]->order_id;
-		$item     = bookacti_get_order_item_by_booking_group_id( $bookings[ 0 ] );
-	}
+function bookacti_refund_selected_bookings_with_gateway( $selected_bookings, $refund_message = '' ) {
+	// Sort bookings by order (to refund all the order items at once)
+	$selected_bookings_per_order = bookacti_sort_selected_bookings_by_order( $selected_bookings );
 	
-	$order = wc_get_order( $order_id );
-	
-	if( ! $order || ! $item ) {
-		return array( 
-			'status'  => 'failed', 
-			'error'   => 'no_order_item_found',
-			'message' => esc_html__( 'The order item bound to the booking was not found.', 'booking-activities' )
-		);
-	}
-	
-	$order_item_id = $item->get_id();
-	$refunded_amounts = bookacti_wc_get_item_total_refunded( $item, true );
-	$price_decimals = wc_get_price_decimals();
-	
-	$reason = esc_html__( 'Auto refund proceeded by user.', 'booking-activities' );
-	if( $refund_message !== '' ) {
-		$reason	.= PHP_EOL . esc_html__( 'User message:', 'booking-activities' ) . PHP_EOL . $refund_message;
-	}
-	
-	$item_taxes = $item->get_taxes();
-	$refund_tax = array();
-	if( isset( $item_taxes[ 'total' ] ) ) {
-		foreach( $item_taxes[ 'total' ] as $tax_id => $total ) {
-			$refunded_tax_amount = abs( (float) $order->get_tax_refunded_for_item( $order_item_id, $tax_id ) );
-			$refund_tax[ $tax_id ] = wc_format_decimal( $total - $refunded_tax_amount );
-		}
-	} else {
-		$refund_tax[] = round( $item->get_total_tax(), $price_decimals ) - $refunded_amounts[ 'tax' ];
-	}
-	
-	$line_items	= array();
-	$line_items[ $order_item_id ] = array(
-		'qty'          => $item->get_quantity() - abs( intval( $order->get_qty_refunded_for_item( $order_item_id ) ) ),
-		'refund_total' => round( $item->get_total(), $price_decimals ) - $refunded_amounts[ 'total' ],
-		'refund_tax'   => $refund_tax
-	);
-
-	$data = array(
-		'amount'         => bookacti_wc_get_item_remaining_refund_amount( $item ),
-		'reason'         => $reason,
-		'order_id'       => $order_id,
-		'line_items'     => $line_items,
+	// Order refund data
+	$orders_refund_data = array();
+	$default_order_refund_data = array(
+		'amount'         => 0,
+		'order_id'       => 0,
+		'line_items'     => array(),
+		'reason'         => esc_html__( 'Auto refund triggered by the customer.', 'booking-activities' )
+		                 . ( $refund_message ? ' ' . esc_html__( 'Customer message:', 'booking-activities' ) . ' ' . $refund_message : '' ),
 		'refund_payment' => true
 	);
 	
-	$refund = wc_create_refund( $data );
+	$price_decimals = wc_get_price_decimals();
+	
+	foreach( $selected_bookings_per_order as $order_id => $order_selected_bookings ) {
+		// Get the order and check if the the gateway supports refunds
+		$order = wc_get_order( $order_id );
+		if( ! $order ) { continue; }
+		if( ! bookacti_does_order_support_auto_refund( $order ) ) { continue; }
+		
+		// Calculate refund amount
+		$refund_amount = 0;
+		$line_items	   = array();
+		$refund_data   = array( 'order_id' => $order_id, 'selected_bookings' => $order_selected_bookings, 'user_message' => $refund_message, 'bookings' => array(), 'booking_groups' => array() );
+		foreach( $order_selected_bookings[ 'bookings' ] as $booking_id => $booking ) {
+			$item = bookacti_get_order_item_by_booking_id( $booking );
+			if( ! $item ) { continue; }
+			
+			$item_refund_amount = bookacti_wc_get_item_remaining_refund_amount( $item );
+			if( ! $item_refund_amount ) { continue; }
+			
+			$refund_amount += $item_refund_amount;
+			
+			$item_id          = $item->get_id();
+			$refunded_amounts = bookacti_wc_get_item_total_refunded( $item, true );
+			$item_taxes       = $item->get_taxes();
+			if( isset( $item_taxes[ 'total' ] ) ) {
+				foreach( $item_taxes[ 'total' ] as $tax_id => $total ) {
+					$refunded_tax_amount = abs( (float) $order->get_tax_refunded_for_item( $item_id, $tax_id ) );
+					$refund_tax[ $tax_id ] = wc_format_decimal( $total - $refunded_tax_amount );
+				}
+			} else {
+				$refund_tax[] = round( $item->get_total_tax(), $price_decimals ) - $refunded_amounts[ 'tax' ];
+			}
 
-	if( is_wp_error( $refund ) ) {
-		return array( 'status' => 'failed', 'error' => $refund->get_error_code(), 'message' => $refund->get_error_message() );
+			$line_items[ $item_id ] = array(
+				'qty'          => abs( intval( $item->get_quantity() ) ) - abs( intval( $order->get_qty_refunded_for_item( $item_id ) ) ),
+				'refund_total' => round( $item->get_total(), $price_decimals ) - $refunded_amounts[ 'total' ],
+				'refund_tax'   => $refund_tax
+			);
+
+			$refund_data[ 'bookings' ][ $booking_id ] = array(
+				'order_id'     => $order_id,
+				'item_id'      => $item_id,
+				'item_name'    => $item->get_name(),
+				'quantity'     => $line_items[ $item_id ][ 'qty' ],
+				'refund_total' => $line_items[ $item_id ][ 'refund_total' ],
+				'refund_tax'   => $line_items[ $item_id ][ 'refund_tax' ],
+			);
+		}
+		foreach( $order_selected_bookings[ 'booking_groups' ] as $group_id => $booking_group ) {
+			$item = bookacti_get_order_item_by_booking_group_id( $booking_group );
+			if( ! $item ) { continue; }
+			
+			$item_refund_amount = bookacti_wc_get_item_remaining_refund_amount( $item );
+			if( ! $item_refund_amount ) { continue; }
+			
+			$refund_amount += $item_refund_amount;
+			
+			$item_id          = $item->get_id();
+			$refunded_amounts = bookacti_wc_get_item_total_refunded( $item, true );
+			$item_taxes       = $item->get_taxes();
+			if( isset( $item_taxes[ 'total' ] ) ) {
+				foreach( $item_taxes[ 'total' ] as $tax_id => $total ) {
+					$refunded_tax_amount = abs( (float) $order->get_tax_refunded_for_item( $item_id, $tax_id ) );
+					$refund_tax[ $tax_id ] = wc_format_decimal( $total - $refunded_tax_amount );
+				}
+			} else {
+				$refund_tax[] = round( $item->get_total_tax(), $price_decimals ) - $refunded_amounts[ 'tax' ];
+			}
+
+			$line_items[ $item_id ] = array(
+				'qty'          => abs( intval( $item->get_quantity() ) ) - abs( intval( $order->get_qty_refunded_for_item( $item_id ) ) ),
+				'refund_total' => round( $item->get_total(), $price_decimals ) - $refunded_amounts[ 'total' ],
+				'refund_tax'   => $refund_tax
+			);
+
+			$refund_data[ 'booking_groups' ][ $group_id ] = array(
+				'order_id'     => $order_id,
+				'item_id'      => $item_id,
+				'item_name'    => $item->get_name(),
+				'quantity'     => $line_items[ $item_id ][ 'qty' ],
+				'refund_total' => $line_items[ $item_id ][ 'refund_total' ],
+				'refund_tax'   => $line_items[ $item_id ][ 'refund_tax' ],
+			);
+		}
+		if( ! $line_items || ! $refund_amount ) { continue; }
+		
+		// Order refund data
+		$order_refund_data = $default_order_refund_data;
+		$order_refund_data[ 'amount' ]      = $refund_amount;
+		$order_refund_data[ 'order_id' ]    = $order_id;
+		$order_refund_data[ 'line_items' ]  = $line_items;
+		$order_refund_data[ 'refund_data' ] = $refund_data;
+		
+		$orders_refund_data[ $order_id ] = $order_refund_data;
 	}
-
-	return array( 'status' => 'success', 'do_not_update_status' => 1, 'refund' => $refund );
+	
+	if( ! $orders_refund_data ) {
+		return array( 
+			'status'  => 'failed', 
+			'error'   => 'no_bookings_to_refund',
+			'message' => esc_html__( 'The selected bookings cannot be refunded with the payment gateway.', 'booking-activities' )
+		);
+	}
+	
+	$return_data = array( 'refunds' => array(), 'booking_ids' => array(), 'booking_group_ids' => array() );
+	$wp_errors   = array();
+	
+	foreach( $orders_refund_data as $order_id => $order_refund_data ) {
+		$refund_data = $order_refund_data[ 'refund_data' ];
+		unset( $order_refund_data[ 'refund_data' ] );
+		
+		$order_refund_data = apply_filters( 'bookacti_wc_order_refund_gateway_data', $order_refund_data, $refund_data );
+		
+		$refund = wc_create_refund( $order_refund_data );
+		
+		if( $refund && ! is_wp_error( $refund ) ) {
+			$return_data[ 'booking_ids' ]       = bookacti_ids_to_array( array_merge( $return_data[ 'booking_ids' ], array_keys( $refund_data[ 'bookings' ] ) ) );
+			$return_data[ 'booking_group_ids' ] = bookacti_ids_to_array( array_merge( $return_data[ 'booking_group_ids' ], array_keys( $refund_data[ 'booking_groups' ] ) ) );
+			$return_data[ 'refunds' ][] = array(
+				'order_id'          => $order_id,
+				'amount'            => $order_refund_data[ 'amount' ],
+				'price'             => html_entity_decode( wc_price( $order_refund_data[ 'amount' ] ) ),
+				'refund'            => $refund,
+				'order_refund_data' => $order_refund_data,
+				'refund_data'       => $refund_data
+			);
+		
+		} else if( is_wp_error( $refund ) ) {
+			$wp_errors[] = $refund;
+		}
+	}
+	
+	// Return data
+	if( $return_data[ 'refunds' ] ) {
+		$return_data[ 'status' ]               = 'success';
+		$return_data[ 'new_status' ]           = 'refunded';
+		$return_data[ 'do_not_update_status' ] = true;
+		
+		$rows        = '';
+		$bookings_nb = 0;
+		$refunds_nb  = count( $return_data[ 'refunds' ] );
+		foreach( $return_data[ 'refunds' ] as $refund_return_data ) {
+			$booking_ids       = array_keys( $refund_return_data[ 'refund_data' ][ 'bookings' ] );
+			$booking_group_ids = array_keys( $refund_return_data[ 'refund_data' ][ 'booking_groups' ] );
+			$refunded_bookings_txt = '';
+			if( $booking_ids ) {
+				$bookings_nb += count( $booking_ids );
+				$refunded_bookings_txt .= sprintf( esc_html__( 'Booking #%s', 'booking-activities' ), implode( ', ', $booking_ids ) );
+			}
+			if( $booking_group_ids ) {
+				$bookings_nb += count( $booking_group_ids );
+				if( $refunded_bookings_txt ) { $refunded_bookings_txt .= '<br/>'; }
+				$refunded_bookings_txt .= sprintf( esc_html__( 'Booking group #%s', 'booking-activities' ), implode( ', ', $booking_group_ids ) );
+			}
+			
+			$rows .= '<tr><td><strong>' . intval( $refund_return_data[ 'order_id' ] ) . '</strong></td><td>' . $refund_return_data[ 'price' ] . '</td><td>' . $refunded_bookings_txt . '</td></tr>';
+		}
+		
+		$return_data[ 'message' ] = '<span>' . sprintf( 
+			/* translators: %1$s = number of bookings refunded. E.g.: "2 bookings". %2$s = number of the orders, e.g.: "2 orders".  */
+			esc_html( _n( '%1$s has been refunded in %2$s.', '%1$s have been refunded in %2$s.', $bookings_nb, 'booking-activities' ) ),
+			'<strong>' . sprintf( esc_html( _n( '%s booking', '%s bookings', $bookings_nb, 'booking-activities' ) ), $bookings_nb ) . '</strong>',
+			/* translators: %s = number of the orders. */
+			'<strong>' . sprintf( esc_html( _n( '%s order', '%s orders', $refunds_nb, 'booking-activities' ) ), $refunds_nb ) . '</strong>'
+		) . '</span>';
+		$return_data[ 'message' ] .= '<table class="bookacti-refund-table bookacti-refund-table-gateway"><thead><tr><th>' . esc_html__( 'Order ID', 'booking-activities' ) . '</th><th>' . esc_html__( 'Refunded amount', 'booking-activities' ) . '</th><th>' . esc_html__( 'Refunded bookings', 'booking-activities' ) . '</th></tr></thead><tbody>' . $rows . '</tbody></table>';
+	} 
+	else {
+		$return_data[ 'status' ]    = 'failed';
+		$return_data[ 'error' ]     = 'cannot_refund_via_gateway';
+		$return_data[ 'wp_errors' ] = $wp_errors;
+		$return_data[ 'message' ]   = '';
+		foreach( $wp_errors as $wp_error ) {
+			if( $return_data[ 'message' ] ) { $return_data[ 'message' ] .= '</li><li>'; }
+			$return_data[ 'message' ] .= $wp_error->get_error_message();
+		}
+	}
+	
+	return $return_data;
 }
 
 

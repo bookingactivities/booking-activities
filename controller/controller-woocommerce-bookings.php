@@ -1201,11 +1201,7 @@ function bookacti_wc_refund_selected_bookings( $return_array, $selected_bookings
 		$return_array = bookacti_refund_selected_bookings_with_coupon( $selected_bookings, $refund_message );
 	}
 	else if( $refund_action === 'auto' ) {
-//		$order_id = $booking_type === 'group' && isset( $bookings[ 0 ]->group_order_id ) ? $bookings[ 0 ]->group_order_id : ( isset( $bookings[ 0 ]->order_id ) ? $bookings[ 0 ]->order_id : 0 );
-//		$is_supported = bookacti_does_order_support_auto_refund( $order_id );
-//		if( $is_supported ) {
-//			$return_array = bookacti_auto_refund_booking( $bookings, $booking_type, $refund_message );
-//		}
+		$return_array = bookacti_refund_selected_bookings_with_gateway( $selected_bookings, $refund_message );
 	}
 	
 	return $return_array;

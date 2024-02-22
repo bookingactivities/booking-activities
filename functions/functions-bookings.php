@@ -260,7 +260,7 @@ function bookacti_get_selected_bookings( $context = '' ) {
 
 
 /**
- * Sort selected bookings array per user (id or email)
+ * Sort selected bookings array by user (id or email)
  * @since 1.16.0
  * @param array $selected_bookings
  * @return array
@@ -268,7 +268,7 @@ function bookacti_get_selected_bookings( $context = '' ) {
 function bookacti_sort_selected_bookings_by_user( $selected_bookings ) {
 	$selected_bookings_per_user = array();
 	
-	foreach( $selected_bookings[ 'bookings' ] as $i => $booking ) {
+	foreach( $selected_bookings[ 'bookings' ] as $booking_id => $booking ) {
 		$user_id = is_numeric( $booking->user_id ) ? intval( $booking->user_id ) : $booking->user_id;
 		if( is_email( $user_id ) ) {
 			$user = get_user_by( 'email', $user_id );
@@ -282,10 +282,10 @@ function bookacti_sort_selected_bookings_by_user( $selected_bookings ) {
 			$selected_bookings_per_user[ $user_id ] = array( 'bookings' => array(), 'booking_groups' => array(), 'groups_bookings' => array() );
 		}
 		
-		$selected_bookings_per_user[ $user_id ][ 'bookings' ][ $i ] = $booking;
+		$selected_bookings_per_user[ $user_id ][ 'bookings' ][ $booking_id ] = $booking;
 	}
 	
-	foreach( $selected_bookings[ 'booking_groups' ] as $i => $booking_group ) {
+	foreach( $selected_bookings[ 'booking_groups' ] as $group_id => $booking_group ) {
 		$user_id = is_numeric( $booking_group->user_id ) ? intval( $booking_group->user_id ) : $booking_group->user_id;
 		if( is_email( $user_id ) ) {
 			$user = get_user_by( 'email', $user_id );
@@ -299,14 +299,53 @@ function bookacti_sort_selected_bookings_by_user( $selected_bookings ) {
 			$selected_bookings_per_user[ $user_id ] = array( 'bookings' => array(), 'booking_groups' => array(), 'groups_bookings' => array() );
 		}
 		
-		$selected_bookings_per_user[ $user_id ][ 'booking_groups' ][ $i ] = $booking_group;
+		$selected_bookings_per_user[ $user_id ][ 'booking_groups' ][ $group_id ] = $booking_group;
 		
-		if( isset( $selected_bookings[ 'groups_bookings' ][ $i ] ) ) {
-			$selected_bookings_per_user[ $user_id ][ 'groups_bookings' ][ $i ] = $selected_bookings[ 'groups_bookings' ][ $i ];
+		if( isset( $selected_bookings[ 'groups_bookings' ][ $group_id ] ) ) {
+			$selected_bookings_per_user[ $user_id ][ 'groups_bookings' ][ $group_id ] = $selected_bookings[ 'groups_bookings' ][ $group_id ];
 		}
 	}
 	
 	return $selected_bookings_per_user;
+}
+
+
+/**
+ * Sort selected bookings array by order id
+ * @since 1.16.0
+ * @param array $selected_bookings
+ * @return array
+ */
+function bookacti_sort_selected_bookings_by_order( $selected_bookings ) {
+	$selected_bookings_per_order = array();
+	
+	foreach( $selected_bookings[ 'bookings' ] as $booking_id => $booking ) {
+		$order_id = is_numeric( $booking->order_id ) ? intval( $booking->order_id ) : 0;
+		if( ! $order_id ) { continue; }
+		
+		if( ! isset( $selected_bookings_per_order[ $order_id ] ) ) {
+			$selected_bookings_per_order[ $order_id ] = array( 'bookings' => array(), 'booking_groups' => array(), 'groups_bookings' => array() );
+		}
+		
+		$selected_bookings_per_order[ $order_id ][ 'bookings' ][ $booking_id ] = $booking;
+	}
+	
+	foreach( $selected_bookings[ 'booking_groups' ] as $group_id => $booking_group ) {
+		$order_id = is_numeric( $booking_group->order_id ) ? intval( $booking_group->order_id ) : 0;
+		if( ! $order_id ) { continue; }
+		
+		if( ! isset( $selected_bookings_per_order[ $order_id ] ) ) {
+			$selected_bookings_per_order[ $order_id ] = array( 'bookings' => array(), 'booking_groups' => array(), 'groups_bookings' => array() );
+		}
+		
+		$selected_bookings_per_order[ $order_id ][ 'booking_groups' ][ $group_id ] = $booking_group;
+		
+		if( isset( $selected_bookings[ 'groups_bookings' ][ $group_id ] ) ) {
+			$selected_bookings_per_order[ $order_id ][ 'groups_bookings' ][ $group_id ] = $selected_bookings[ 'groups_bookings' ][ $group_id ];
+		}
+	}
+	
+	return $selected_bookings_per_order;
 }
 
 
