@@ -170,7 +170,7 @@ function bookacti_controller_get_bookings_refund_actions_html() {
 	
 	$refund_actions_array = bookacti_get_selected_bookings_refund_actions( $selected_bookings, $context );
 	$refund_actions_html  = bookacti_get_refund_actions_html( $refund_actions_array, $context );
-	$refund_amount        = bookacti_get_selected_bookings_refund_amount( $selected_bookings, true );
+	$refund_amount        = bookacti_get_selected_bookings_total_price( $selected_bookings, true );
 	
 	bookacti_send_json( array( 'status' => 'success', 'actions_html' => $refund_actions_html, 'actions_array' => $refund_actions_array, 'amount' => $refund_amount ), 'get_refund_actions_html' );
 }

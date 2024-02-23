@@ -1267,7 +1267,7 @@ add_action( 'woocommerce_before_cart', 'bookacti_wc_temp_fix_display_wc_notices_
 /**
  * Display the custom metadata in cart and checkout
  * @since 1.9.0 (was bookacti_get_item_data)
- * @version 1.14.0
+ * @version 1.16.0
  * @param array $item_data
  * @param array $cart_item
  * @return array
@@ -1275,7 +1275,7 @@ add_action( 'woocommerce_before_cart', 'bookacti_wc_temp_fix_display_wc_notices_
 function bookacti_wc_cart_item_meta_formatted( $item_data, $cart_item ) {
 	if( empty( $cart_item[ '_bookacti_options' ][ 'bookings' ] ) ) { return $item_data; }
 
-	$cart_items_bookings = bookacti_wc_get_cart_items_bookings( array( 'temp_key' => $cart_item ), array( 'fetch_meta' => true ) );
+	$cart_items_bookings = bookacti_wc_get_cart_items_bookings( array( 'temp_key' => $cart_item ) );
 	if( empty( $cart_items_bookings[ 'temp_key' ] ) ) { return $item_data; }
 	$cart_item_bookings = $cart_items_bookings[ 'temp_key' ];
 	
@@ -1426,13 +1426,14 @@ add_filter( 'woocommerce_cart_item_name', 'bookacti_add_timeout_to_cart_item_in_
 /**
  * Cart item price display
  * @since 1.15.15
+ * @version 1.16.0
  * @param string $default_unit_price
  * @param array $cart_item
  * @param string $cart_item_key
  * @return string
  */
 function bookacti_wc_cart_item_price( $default_unit_price, $cart_item, $cart_item_key ) { 
-	$cart_item_bookings = bookacti_wc_get_cart_item_bookings( $cart_item_key, array( 'fetch_meta' => true ) );
+	$cart_item_bookings = bookacti_wc_get_cart_item_bookings( $cart_item_key );
 	if( ! $cart_item_bookings ) { return $default_unit_price; }
 	
 	// Get cart item product
@@ -1476,6 +1477,7 @@ add_filter( 'woocommerce_cart_item_price', 'bookacti_wc_cart_item_price', 100, 3
 /**
  * Cart item total price displayed in cart
  * @since 1.15.15
+ * @version 1.16.0
  * @global WooCommerce $woocommerce
  * @param string $default_subtotal
  * @param array $cart_item
@@ -1483,7 +1485,7 @@ add_filter( 'woocommerce_cart_item_price', 'bookacti_wc_cart_item_price', 100, 3
  * @return string
  */
 function bookacti_wc_cart_item_displayed_subtotals( $default_subtotal, $cart_item, $cart_item_key ) {
-	$cart_item_bookings = bookacti_wc_get_cart_item_bookings( $cart_item_key, array( 'fetch_meta' => true ) );
+	$cart_item_bookings = bookacti_wc_get_cart_item_bookings( $cart_item_key );
 	if( ! $cart_item_bookings ) { return $default_subtotal; }
 	
 	// Get product and quantity
@@ -1796,7 +1798,7 @@ add_action( 'woocommerce_checkout_order_processed', 'bookacti_change_booking_sta
 /**
  * Format the order item meta values to display
  * @since 1.0.4 (was bookacti_format_order_item_meta)
- * @version 1.9.0
+ * @version 1.16.0
  * @param string $html
  * @param WC_Order_Item $item
  * @param array $args
@@ -1814,7 +1816,7 @@ function bookacti_wc_order_item_meta_formatted( $formatted_meta, $item ) {
 		// Add 'bookacti_booking_id', 'bookacti_booking_group_id' for Backward compatibility with orders made before BA 1.9.0
 		if( in_array( $meta->key, array( 'bookacti_bookings', 'bookacti_booking_id', 'bookacti_booking_group_id' ), true ) ) {
 			$item_id = $item->get_id();
-			$order_items_bookings = bookacti_wc_get_order_items_bookings( array( $item ), array( 'fetch_meta' => true ) );
+			$order_items_bookings = bookacti_wc_get_order_items_bookings( array( $item ) );
 			$order_item_bookings = ! empty( $order_items_bookings[ $item_id ] ) ? $order_items_bookings[ $item_id ] : bookacti_wc_format_order_item_bookings_ids( $item );
 			$meta->display_key = esc_html( _n( 'Booking', 'Bookings', count( $order_item_bookings ), 'booking-activities' ) );
 			$meta->display_value = bookacti_wc_get_item_bookings_attributes_html( $order_item_bookings );
@@ -1969,13 +1971,15 @@ function bookacti_add_wc_data_to_user_booking_list_items( $booking_list_items, $
 		foreach( $order_item_bookings_ids as $order_item_booking_id ) {
 			$booking_id = 0;
 			$booking_object = new stdClass();
+			$group_bookings = array();
 			
 			// Booking group
 			if( $order_item_booking_id[ 'type' ] === 'group' ) {
 				$booking_group_id = $order_item_booking_id[ 'id' ];
 				if( ! isset( $displayed_groups[ $booking_group_id ] ) ) { continue; }
 				$booking_id = $displayed_groups[ $booking_group_id ];
-				if( ! empty( $booking_groups[ $booking_group_id ] ) ) { $booking_object = $booking_groups[ $booking_group_id ]; }
+				if( ! empty( $booking_groups[ $booking_group_id ] ) )     { $booking_object = $booking_groups[ $booking_group_id ]; }
+				if( ! empty( $bookings_per_group[ $booking_group_id ] ) ) { $group_bookings = $bookings_per_group[ $booking_group_id ]; }
 			}
 
 			// Single booking
@@ -1995,7 +1999,7 @@ function bookacti_add_wc_data_to_user_booking_list_items( $booking_list_items, $
 
 			// Fill price column
 			$order_item_total = $order_item->get_total() + $order_item->get_total_tax();
-			$booking_list_items[ $booking_id ][ 'price' ] = apply_filters( 'bookacti_user_booking_list_order_item_price', html_entity_decode( wc_price( $order_item_total ) ), $order_item, $booking_list_items[ $booking_id ], $booking_object, $order_item_booking_id[ 'type' ], $filters );
+			$booking_list_items[ $booking_id ][ 'price' ] = apply_filters( 'bookacti_user_booking_list_order_item_price', html_entity_decode( wc_price( $order_item_total ) ), $order_item, $booking_list_items[ $booking_id ], $booking_object, $group_bookings, $order_item_booking_id[ 'type' ], $filters );
 			
 			
 			// Try to find a coupon code
@@ -2039,8 +2043,8 @@ function bookacti_add_wc_data_to_user_booking_list_items( $booking_list_items, $
 			}
 		}
 	}
-
-	return apply_filters( 'bookacti_user_booking_list_items_with_wc_data', $booking_list_items, $bookings, $booking_groups, $displayed_groups, $users, $filters, $columns, $orders, $order_items );
+	
+	return apply_filters( 'bookacti_user_booking_list_items_with_wc_data', $booking_list_items, $bookings, $booking_groups, $bookings_per_group, $displayed_groups, $users, $filters, $columns, $orders, $order_items );
 }
 add_filter( 'bookacti_user_booking_list_items', 'bookacti_add_wc_data_to_user_booking_list_items', 10, 8 );
 

@@ -137,19 +137,28 @@ add_action( 'bookacti_delete_expired_bookings', 'bookacti_controller_delete_expi
 /**
  * Delete the in cart bookings when the sessions is cleared
  * @since 1.9.0
- * @version 1.12.2
+ * @version 1.16.0
  * @param array $tool
  */
 function bookacti_wc_controller_remove_in_cart_bookings( $tool ) {
 	if( $tool[ 'id' ] !== 'clear_sessions' || ! $tool[ 'success' ] ) { return; }
 	
-	$in_cart_bookings_filters = bookacti_format_booking_filters( array( 'status' => array( 'in_cart' ), 'group_by' => 'booking_group', 'fetch_meta' => true ) );
-	$in_cart_bookings = bookacti_get_bookings( $in_cart_bookings_filters );
+	$filters         = bookacti_format_booking_filters( array( 'status' => array( 'in_cart' ), 'fetch_meta' => true ) );
+	$bookings        = bookacti_get_bookings( $filters );
+	$booking_groups  = bookacti_get_booking_groups( $filters );
+	$group_ids       = array_keys( $booking_groups );
+	$group_filters   = $group_ids ? bookacti_format_booking_filters( array( 'in__booking_group_id' => $group_ids, 'fetch_meta' => true ) ) : array();
+	$groups_bookings = $group_filters ? bookacti_get_bookings( $group_filters ) : array();
+	$bookings_per_group = array();
+	foreach( $groups_bookings as $booking ) {
+		if( ! isset( $bookings_per_group[ $booking->group_id ] ) ) { $bookings_per_group[ $booking->group_id ] = array(); }
+		$bookings_per_group[ $booking->group_id ][] = $booking;
+	}
 	
 	$deleted = bookacti_wc_update_in_cart_bookings_to_removed();
 	
 	if( $deleted ) {
-		do_action( 'bookacti_wc_clear_sessions_in_cart_bookings_removed', $in_cart_bookings );
+		do_action( 'bookacti_wc_clear_sessions_in_cart_bookings_removed', $bookings, $booking_groups, $bookings_per_group );
 	}
 }
 add_action( 'woocommerce_system_status_tool_executed', 'bookacti_wc_controller_remove_in_cart_bookings', 10, 1 );
@@ -1139,13 +1148,13 @@ add_filter( 'bookacti_selected_bookings_refund_actions', 'bookacti_wc_selected_b
 /**
  * Refund amount of the selected bookings
  * @since 1.16.0 (was bookacti_display_price_to_be_refunded)
- * @param string $refund_amount
+ * @param string $total_price
  * @param array $selected_bookings
  * @param bool $is_formatted
  * @return int|float|string
  */
-function bookacti_wc_selected_bookings_refund_amount( $refund_amount, $selected_bookings, $is_formatted ) {
-	if( $refund_amount ) { return $refund_amount; }
+function bookacti_wc_selected_bookings_total_price( $total_price, $selected_bookings, $is_formatted = false ) {
+	if( $total_price ) { return $total_price; }
 	
 	$wc_order_items = array();
 	foreach( $selected_bookings[ 'bookings' ] as $booking ) {
@@ -1160,17 +1169,17 @@ function bookacti_wc_selected_bookings_refund_amount( $refund_amount, $selected_
 			$wc_order_items[ $item->get_id() ] = $item;
 		}
 	}
-	if( ! $wc_order_items ) { return $refund_amount; }
+	if( ! $wc_order_items ) { return $total_price; }
 	
-	$refund_amount = 0;
+	$total_price = 0;
 	foreach( $wc_order_items as $item_id => $wc_order_item ) {
 		// Booking Activities assumes that 1 order item can have only 1 booking (group). So the item price is the booking (group) price.
-		$refund_amount += bookacti_wc_get_item_remaining_refund_amount( $wc_order_item, false );
+		$total_price += bookacti_wc_get_item_remaining_refund_amount( $wc_order_item, false );
 	}
 	
-	return $is_formatted ? html_entity_decode( wc_price( $refund_amount ) ) : $refund_amount;
+	return $is_formatted ? ( $total_price ? html_entity_decode( wc_price( $total_price ) ) : '' ) : $total_price;
 }
-add_filter( 'bookacti_selected_bookings_refund_amount', 'bookacti_wc_selected_bookings_refund_amount', 20, 3 );
+add_filter( 'bookacti_selected_bookings_total_price', 'bookacti_wc_selected_bookings_total_price', 20, 3 );
 
 
 /**

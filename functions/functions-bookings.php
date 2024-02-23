@@ -2670,15 +2670,14 @@ function bookacti_get_refund_actions_html( $actions = array(), $context = '' ) {
 
 
 /**
- * Get the formatted amount to be refunded for a booking
- * @since 1.8.0 (was bookacti_get_booking_refund_amount)
- * @param array $bookings
- * @param string $booking_type
- * @param bool $formatted
+ * Get the selected bookings total price
+ * @since 1.16.0 (was bookacti_get_booking_refund_amount)
+ * @param array $selected_bookings
+ * @param bool $is_formatted
  * @return int|float|string
  */
-function bookacti_get_selected_bookings_refund_amount( $selected_bookings, $is_formatted = true ) {
-	return apply_filters( 'bookacti_selected_bookings_refund_amount', $is_formatted ? '' : 0, $selected_bookings, $is_formatted );
+function bookacti_get_selected_bookings_total_price( $selected_bookings, $is_formatted = false ) {
+	return apply_filters( 'bookacti_selected_bookings_total_price', $is_formatted ? '' : 0, $selected_bookings, $is_formatted );
 }
 
 

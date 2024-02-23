@@ -33,10 +33,10 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			
 			parent::__construct( array(
 				/*translator:  */
-				'singular'	=> 'booking',  // Singular name of the listed records
-				'plural'	=> 'bookings', // Plural name of the listed records
-				'ajax'		=> false,
-				'screen'	=> 'booking-activities_page_bookacti_bookings'
+				'singular' => 'booking',  // Singular name of the listed records
+				'plural'   => 'bookings', // Plural name of the listed records
+				'ajax'     => false,
+				'screen'   => 'booking-activities_page_bookacti_bookings'
 			));
 			
 			// Hide default columns
@@ -63,23 +63,23 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			 * @param array $columns
 			 */
 			$columns = apply_filters( 'bookacti_booking_list_columns', array(
-				'cb'			=> '<input type="checkbox" />',
-				'id'			=> esc_html_x( 'id', 'An id is a unique identification number', 'booking-activities' ),
-				'customer'		=> esc_html__( 'Customer', 'booking-activities' ),
-				'email'			=> esc_html__( 'Email', 'booking-activities' ),
-				'phone'			=> esc_html__( 'Phone', 'booking-activities' ),
-				'roles'			=> esc_html__( 'Roles', 'booking-activities' ),
-				'state'			=> esc_html_x( 'Status', 'Booking status', 'booking-activities' ),
-				'payment_status'=> esc_html_x( 'Paid', 'Payment status column name', 'booking-activities' ),
-				'quantity'		=> esc_html_x( 'Qty', 'Short for "Quantity"', 'booking-activities' ),
-				'event_title'	=> esc_html__( 'Title', 'booking-activities' ),
-				'start_date'	=> esc_html__( 'Start', 'booking-activities' ),
-				'end_date'		=> esc_html__( 'End', 'booking-activities' ),
-				'template_title'=> esc_html__( 'Calendar', 'booking-activities' ),
-				'activity_title'=> esc_html__( 'Activity', 'booking-activities' ),
-				'creation_date'	=> esc_html__( 'Date', 'booking-activities' ),
-				'price_details'	=> esc_html__( 'Price details', 'booking-activities' ),
-				'actions'		=> esc_html__( 'Actions', 'booking-activities' )
+				'cb'             => '<input type="checkbox" />',
+				'id'             => esc_html_x( 'id', 'An id is a unique identification number', 'booking-activities' ),
+				'customer'       => esc_html__( 'Customer', 'booking-activities' ),
+				'email'          => esc_html__( 'Email', 'booking-activities' ),
+				'phone'          => esc_html__( 'Phone', 'booking-activities' ),
+				'roles'          => esc_html__( 'Roles', 'booking-activities' ),
+				'state'          => esc_html_x( 'Status', 'Booking status', 'booking-activities' ),
+				'payment_status' => esc_html_x( 'Paid', 'Payment status column name', 'booking-activities' ),
+				'quantity'       => esc_html_x( 'Qty', 'Short for "Quantity"', 'booking-activities' ),
+				'event_title'    => esc_html__( 'Title', 'booking-activities' ),
+				'start_date'     => esc_html__( 'Start', 'booking-activities' ),
+				'end_date'       => esc_html__( 'End', 'booking-activities' ),
+				'template_title' => esc_html__( 'Calendar', 'booking-activities' ),
+				'activity_title' => esc_html__( 'Activity', 'booking-activities' ),
+				'creation_date'  => esc_html__( 'Date', 'booking-activities' ),
+				'price_details'  => esc_html__( 'Price details', 'booking-activities' ),
+				'actions'        => esc_html__( 'Actions', 'booking-activities' )
 			));
 
 			
@@ -154,17 +154,17 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		 */
 		protected function get_sortable_columns() {
 			return array(
-				'id'				=> array( 'id', true ),
-				'customer'			=> array( 'user_id', false ),
-				'event_title'		=> array( 'event_title', false ),
-				'start_date'		=> array( 'event_start', false ),
-				'end_date'			=> array( 'event_end', false ),
-				'state'				=> array( 'state', false ),
-				'payment_status'	=> array( 'payment_status', false ),
-				'quantity'			=> array( 'quantity', false ),
-				'template_title'	=> array( 'template_id', false ),
-				'activity_title'	=> array( 'activity_id', false ),
-				'creation_date'		=> array( 'creation_date', false )
+				'id'             => array( 'id', true ),
+				'customer'       => array( 'user_id', false ),
+				'event_title'    => array( 'event_title', false ),
+				'start_date'     => array( 'event_start', false ),
+				'end_date'       => array( 'event_end', false ),
+				'state'          => array( 'state', false ),
+				'payment_status' => array( 'payment_status', false ),
+				'quantity'       => array( 'quantity', false ),
+				'template_title' => array( 'template_id', false ),
+				'activity_title' => array( 'activity_id', false ),
+				'creation_date'  => array( 'creation_date', false )
 			);
 		}
 		

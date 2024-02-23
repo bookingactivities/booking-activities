@@ -153,7 +153,8 @@ function bookacti_wc_get_cart_items_bookings( $cart_items = array(), $filters = 
 			'in__booking_group_id'      => array_keys( $cart_item_keys_by_booking_group_id ), 
 			'booking_group_id_operator' => 'OR',
 			'order_by'                  => array( 'event_start' ),
-			'order'                     => 'asc' 
+			'order'                     => 'asc',
+			'fetch_meta'                => true
 		) ) ) );
 		$bookings = bookacti_get_bookings( $filters );
 	}
@@ -961,7 +962,8 @@ function bookacti_wc_get_order_items_bookings( $order_id, $filters = array() ) {
 		$filters = apply_filters( 'bookacti_wc_order_items_bookings_filters', bookacti_format_booking_filters( array_merge( $filters, array( 
 			'in__booking_id'            => array_keys( $order_item_ids_by_booking_id ), 
 			'in__booking_group_id'      => array_keys( $order_item_ids_by_booking_group_id ), 
-			'booking_group_id_operator' => 'OR' 
+			'booking_group_id_operator' => 'OR',
+			'fetch_meta'                => true
 		) ) ) );
 		$bookings = bookacti_get_bookings( $filters );
 	}
@@ -2108,7 +2110,7 @@ function bookacti_refund_selected_bookings_with_coupon( $selected_bookings, $ref
 			$coupon_description .= PHP_EOL . sprintf( esc_html__( 'Product: %s', 'booking-activities' ), implode( ', ', $product_titles ) );
 		}
 		if( $refund_message ) {
-			$coupon_description .= PHP_EOL . PHP_EOL . esc_html__( 'Customer message:', 'booking-activities' ) . PHP_EOL . $refund_message;
+			$coupon_description .= PHP_EOL . PHP_EOL . esc_html__( 'Note:', 'booking-activities' ) . PHP_EOL . esc_html( $refund_message );
 		}
 		
 		// Coupon data
@@ -2124,7 +2126,7 @@ function bookacti_refund_selected_bookings_with_coupon( $selected_bookings, $ref
 	if( ! $coupons_data ) {
 		return array( 
 			'status'  => 'failed', 
-			'error'   => 'no_bookings_to_refund',
+			'error'   => 'no_bookings_to_refund_with_coupon',
 			'message' => esc_html__( 'The selected bookings cannot be refunded with a coupon.', 'booking-activities' )
 		);
 	}
@@ -2249,11 +2251,11 @@ function bookacti_refund_selected_bookings_with_coupon( $selected_bookings, $ref
 		$return_data[ 'status' ]    = 'failed';
 		$return_data[ 'error' ]     = 'cannot_create_coupon';
 		$return_data[ 'wp_errors' ] = $wp_errors;
-		$return_data[ 'message' ]   = '';
+		$messages = array();
 		foreach( $wp_errors as $wp_error ) {
-			if( $return_data[ 'message' ] ) { $return_data[ 'message' ] .= '</li><li>'; }
-			$return_data[ 'message' ] .= $wp_error->get_error_message();
+			$messages[] = $wp_error->get_error_message();
 		}
+		$return_data[ 'message' ] = implode( '</li><li>', array_unique( $messages ) );
 	}
 	
 	// Remove user cap to create coupon
@@ -2330,7 +2332,7 @@ function bookacti_refund_selected_bookings_with_gateway( $selected_bookings, $re
 		'order_id'       => 0,
 		'line_items'     => array(),
 		'reason'         => esc_html__( 'Auto refund triggered by the customer.', 'booking-activities' )
-		                 . ( $refund_message ? ' ' . esc_html__( 'Customer message:', 'booking-activities' ) . ' ' . $refund_message : '' ),
+		                 . ( $refund_message ? ' ' . esc_html__( 'Note:', 'booking-activities' ) . ' ' . esc_html( $refund_message ) : '' ),
 		'refund_payment' => true
 	);
 	
@@ -2433,7 +2435,7 @@ function bookacti_refund_selected_bookings_with_gateway( $selected_bookings, $re
 	if( ! $orders_refund_data ) {
 		return array( 
 			'status'  => 'failed', 
-			'error'   => 'no_bookings_to_refund',
+			'error'   => 'no_bookings_to_refund_with_gateway',
 			'message' => esc_html__( 'The selected bookings cannot be refunded with the payment gateway.', 'booking-activities' )
 		);
 	}
@@ -2505,11 +2507,11 @@ function bookacti_refund_selected_bookings_with_gateway( $selected_bookings, $re
 		$return_data[ 'status' ]    = 'failed';
 		$return_data[ 'error' ]     = 'cannot_refund_via_gateway';
 		$return_data[ 'wp_errors' ] = $wp_errors;
-		$return_data[ 'message' ]   = '';
+		$messages = array();
 		foreach( $wp_errors as $wp_error ) {
-			if( $return_data[ 'message' ] ) { $return_data[ 'message' ] .= '</li><li>'; }
-			$return_data[ 'message' ] .= $wp_error->get_error_message();
+			$messages[] = $wp_error->get_error_message();
 		}
+		$return_data[ 'message' ] = implode( '</li><li>', array_unique( $messages ) );
 	}
 	
 	return $return_data;

@@ -2769,7 +2769,7 @@ function bookacti_get_booking_groups( $filters ) {
 		$query .= ') ) ';
 		$variables = array_merge( $variables, $filters[ 'not_in__form_id' ] );
 	}
-	
+
 	if( $filters[ 'in__order_id' ] ) {
 		$query .= ' AND BG.order_id IN ( %d ';
 		$array_count = count( $filters[ 'in__order_id' ] );
@@ -2781,7 +2781,7 @@ function bookacti_get_booking_groups( $filters ) {
 		$query .= ') ';
 		$variables = array_merge( $variables, $filters[ 'in__order_id' ] );
 	}
-	
+
 	if( $filters[ 'not_in__order_id' ] ) {
 		$query .= ' AND ( BG.order_id IS NULL OR BG.order_id NOT IN ( %d ';
 		$array_count = count( $filters[ 'not_in__order_id' ] );
