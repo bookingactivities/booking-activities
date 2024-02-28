@@ -910,7 +910,7 @@ function bookacti_booking_can_be_rescheduled_to( $booking, $event_id, $event_sta
 	if( ! $booking ) { 
 		$return_array[ 'status' ]  = 'failed';
 		$return_array[ 'error' ]   = 'booking_not_found';
-		$return_array[ 'message' ] = esc_html__( 'You are not allowed to reschedule this event.', 'booking-activities' );
+		$return_array[ 'message' ] = esc_html__( 'You are not allowed to reschedule this booking.', 'booking-activities' );
 	}
 	else {
 		$return_array = array( 'status' => 'success' );
@@ -919,7 +919,7 @@ function bookacti_booking_can_be_rescheduled_to( $booking, $event_id, $event_sta
 		if( ! $is_allowed ) {
 			$return_array[ 'status' ]  = 'failed';
 			$return_array[ 'error' ]   = 'reschedule_not_allowed';
-			$return_array[ 'message' ] = esc_html__( 'You are not allowed to reschedule this event.', 'booking-activities' );
+			$return_array[ 'message' ] = esc_html__( 'You are not allowed to reschedule this booking.', 'booking-activities' );
 		} 
 		else {
 			// Check the reschedule scope

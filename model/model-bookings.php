@@ -1997,8 +1997,8 @@ function bookacti_force_update_bookings_quantity( $booking_ids, $new_quantity ) 
 
 
 /**
- * Reschedule a booking
- * 
+ * Reschedule bookings
+ * @since 1.16.0
  * @global wpdb $wpdb
  * @param int $booking_id
  * @param int $event_id
@@ -2006,12 +2006,26 @@ function bookacti_force_update_bookings_quantity( $booking_ids, $new_quantity ) 
  * @param string $event_end
  * @return int|false
  */
-function bookacti_reschedule_booking( $booking_id, $event_id, $event_start, $event_end ) {
+function bookacti_reschedule_bookings( $booking_ids, $event_id, $event_start, $event_end ) {
 	global $wpdb;
 	
-	$query = 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS . ' SET event_id = %d, event_start = %s, event_end = %s WHERE id = %d';
-	$prep  = $wpdb->prepare( $query, $event_id, $event_start, $event_end, $booking_id );
-	$updated = $wpdb->query( $prep );
+	$query = 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS 
+	       . ' SET event_id = %d, event_start = %s, event_end = %s '
+	       . ' WHERE id IN ( %d ';
+	
+	$variables = array( $event_id, $event_start, $event_end );
+	
+	$array_count = count( $booking_ids );
+	if( $array_count >= 2 ) {
+		for( $i=1; $i<$array_count; ++$i ) {
+			$query .= ', %d ';
+		}
+	}
+	$query .= ') ';
+	$variables = array_merge( $variables, $booking_ids );
+	
+	$query   = $wpdb->prepare( $query, $variables );
+	$updated = $wpdb->query( $query );
 	
 	return $updated;
 }

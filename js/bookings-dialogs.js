@@ -658,7 +658,7 @@ function bookacti_dialog_change_bookings_quantity( booking_selection ) {
 		});
 	}
 	
-	// Select the current status
+	// Set the current quantity
 	var current_quantity = rows.length === 1 ? parseInt( rows.find( '.column-quantity' ).text() ) : 1;
 	$j( '#bookacti-new-quantity' ).val( current_quantity );
 	
@@ -772,54 +772,68 @@ function bookacti_dialog_change_bookings_quantity( booking_selection ) {
 
 
 /**
- * Reschedule booking dialog
- * @version 1.16.0
- * @param {int} booking_id
+ * Reschedule bookings dialog
+ * @since 1.16.0
+ * @param {Object} booking_selection
  */
-function bookacti_dialog_reschedule_booking( booking_id ) {
-	var row = $j( '.bookacti-reschedule-booking[data-booking-id="' + booking_id + '"]' ).closest( 'tr' );
-	var loading_container = $j( '.bookacti-reschedule-booking[data-booking-id="' + booking_id + '"]' ).closest( 'tr, .bookacti-booking-row' );
-	var booking_system    = $j( '#bookacti-booking-system-reschedule.bookacti-booking-system' );
-	var booking_system_id = booking_system.attr( 'id' );
-	var booking_quantity  = 0;
+function bookacti_dialog_reschedule_bookings( booking_selection ) {
+	// Get booking rows
+	var rows = booking_selection.all ? $j( '.bookacti-single-booking, .bookacti-booking-group' ).closest( 'tr, .bookacti-booking-row' ) : $j();
 	
-	if( bookacti_localized.is_admin ) { $j( '#bookacti-send-notifications-on-reschedule' ).prop( 'checked', false ); }
-	
-	// Clear old booking system info
-	booking_system.empty();
-	bookacti_clear_booking_system_displayed_info( booking_system );
-	
-	// Reset error messages on close
-	if( ! bookacti_localized.is_admin || typeof bookacti_empty_all_dialog_forms === 'undefined' ) {
-		$j( '#bookacti-reschedule-booking-dialog' ).dialog({ 
-			"beforeClose": function() { 
-				$j( '#bookacti-reschedule-booking-dialog .bookacti-notices' ).not( '#bookacti-reschedule-booking-dialog .bookacti-booking-system-container .bookacti-notices' ).remove();
-				$j( '#bookacti-reschedule-booking-dialog .bookacti-booking-system-container .bookacti-notices' ).empty().hide();
-			}
+	if( ! booking_selection.all ) {
+		$j.each( booking_selection.booking_ids, function( i, booking_id ) {
+			rows = rows.add( $j( '.bookacti-single-booking[data-booking-id="' + booking_id + '"]' ).closest( 'tr, .bookacti-booking-row' ) );
+		});
+		$j.each( booking_selection.booking_group_ids, function( i, booking_group_id ) {
+			rows = rows.add( $j( '.bookacti-booking-group[data-booking-group-id="' + booking_group_id + '"]' ).closest( 'tr, .bookacti-booking-row' ) );
 		});
 	}
 	
-	row.first().trigger( 'bookacti_booking_action_dialog_opened', [ booking_id, 'single', 'reschedule' ] );
+	var booking_system    = $j( '#bookacti-booking-system-reschedule.bookacti-booking-system' );
+	var booking_system_id = booking_system.attr( 'id' );
+	var booking_quantity  = 1;
+	
+	// Clear and reset dialog
+	booking_system.empty();
+	bookacti_clear_booking_system_displayed_info( booking_system );
+	$j( '#bookacti-reschedule-booking-dialog > .bookacti-notices' ).remove();
+	$j( '#bookacti-reschedule-booking-dialog .bookacti-booking-system-container .bookacti-notices' ).empty().hide();
+	if( bookacti_localized.is_admin ) {
+		$j( '#bookacti-send-notifications-on-reschedule' ).prop( 'checked', false );
+	}
+	
+	$j( 'body' ).trigger( 'bookacti_booking_action_dialog_opened', [ booking_selection, 'reschedule' ] );
 
+	booking_selection.filters = booking_selection.all ? bookacti_get_booking_list_filters() : {};
+
+	var data_get_booking_system = { 'form_data': new FormData( $j( '#bookacti-reschedule-booking-form' ).get(0) ) };
+	data_get_booking_system.form_data.append( 'action', 'bookactiGetRescheduleBookingSystemData' );
+	data_get_booking_system.form_data.append( 'booking_selection', JSON.stringify( booking_selection ) );
+	data_get_booking_system.form_data.append( 'user_auth_key', typeof user_auth_key !== 'undefined' ? user_auth_key : '' );
+	data_get_booking_system.form_data.append( 'is_admin', bookacti_localized.is_admin ? 1 : 0 );
+
+	$j( 'body' ).trigger( 'bookacti_booking_action_data', [ data_get_booking_system, booking_selection, 'get_reschedule_booking_system_data' ] );
+	
 	// Display a loader
-	bookacti_booking_row_enter_loading_state( loading_container );
+	bookacti_booking_row_enter_loading_state( rows );
+	bookacti_add_loading_html( $j( '#bookacti-reschedule-booking-dialog' ), 'prepend' );
 	
 	$j.ajax({
 		url: bookacti_localized.ajaxurl,
 		type: 'POST',
-		data: { 'action': 'bookactiGetRescheduleBookingSystemData', 
-				'booking_id': booking_id,
-				'user_auth_key': typeof user_auth_key !== 'undefined' ? user_auth_key : '',
-				'is_admin': bookacti_localized.is_admin ? 1 : 0
-			},
+		data: data_get_booking_system.form_data,
 		dataType: 'json',
+		cache: false,
+		contentType: false,
+		processData: false,
 		success: function( response ) {
+			bookacti_remove_loading_html( $j( '#bookacti-reschedule-booking-dialog' ) );
+			
 			if( response.status === 'success' ) {
-				var booking_system_id = booking_system.attr( 'id' );
-				booking_quantity = response.booking_system_data.rescheduled_booking_data.quantity;
-				
+				booking_quantity = response.quantity;
 				booking_system.closest( 'form' ).find( 'input.bookacti-quantity' ).val( booking_quantity );
 				
+				var booking_system_id = booking_system.attr( 'id' );
 				bookacti.booking_system[ booking_system_id ] = response.booking_system_data;
 				
 				booking_system.trigger( 'bookacti_before_reschedule_booking_system_loads', [ response ] );
@@ -829,18 +843,20 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 				
 			} else if( response.status === 'failed' ) {
 				var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
-				booking_system.siblings( '.bookacti-notices' ).html( "<ul class='bookacti-error-list'><li>" + error_message + "</li></ul>").show();
+				$j( '#bookacti-reschedule-booking-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + error_message + '</li></ul></div>' );
 				console.log( error_message );
 				console.log( response );
 			}
 		},
-		error: function( e ){
-			booking_system.siblings( '.bookacti-notices' ).html( '<ul class="bookacti-error-list"><li>' + 'AJAX ' + bookacti_localized.error + '</li></ul>' ).show();
+		error: function( e ) {
+			bookacti_remove_loading_html( $j( '#bookacti-reschedule-booking-dialog' ) );
+			$j( '#bookacti-reschedule-booking-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>AJAX ' + bookacti_localized.error + '</li></ul></div>' );
 			console.log( 'AJAX ' + bookacti_localized.error );
 			console.log( e );
 		},
 		complete: function() {
-			bookacti_booking_row_exit_loading_state( loading_container );
+			$j( '#bookacti-reschedule-booking-dialog > .bookacti-notices' ).show();
+			bookacti_booking_row_exit_loading_state( rows );
 		}
 	});
 	
@@ -851,14 +867,23 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 		[{
 			text: bookacti_localized.dialog_button_reschedule,
 			'class': 'bookacti-dialog-delete-button',
-			
 			click: function() { 
 				var validated = bookacti_validate_picked_events( booking_system, booking_quantity );
 				if( ! validated ) { return; }
 				
+				// Reset error notices
+				$j( '#bookacti-reschedule-booking-dialog > .bookacti-notices' ).remove();
+				
 				// Groups cannot be rescheduled
+				var is_group = false;
 				var picked_events = bookacti.booking_system[ booking_system_id ][ 'picked_events' ];
-				if( parseInt( picked_events[ 0 ][ 'group_id' ] ) > 0 ) { return; }
+				$j.each( picked_events, function( i, picked_event ) {
+					if( parseInt( picked_event[ 'group_id' ] ) > 0 ) {
+						is_group = true;
+						return false; // break
+					}
+				});
+				if( is_group ) { return; }
 				
 				var send_notifications = 1;
 				if( bookacti_localized.is_admin && $j( '#bookacti-send-notifications-on-reschedule' ).length ) {
@@ -867,62 +892,78 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 				
 				// Columns to display
 				var columns = [];
-				row.first().find( 'td' ).each( function() {
+				rows.first().find( 'td' ).each( function() {
 					var column_id = $j( this ).data( 'column-id' );
 					if( column_id ) { columns.push( column_id ); }
 				});
-
-				var data = { 
-					'action': 'bookactiRescheduleBooking', 
-					'booking_id': booking_id,
-					'picked_events': picked_events,
-					'columns': columns,
-					'context': bookacti_localized.is_admin ? 'admin_booking_list' : 'user_booking_list',
-					'is_admin': bookacti_localized.is_admin ? 1 : 0,
-					'send_notifications': send_notifications,
-					'user_auth_key': typeof user_auth_key !== 'undefined' ? user_auth_key : '',
-					'nonce': bookacti_localized.nonce_reschedule_booking
-				};
-				row.first().trigger( 'bookacti_booking_action_data', [ data, booking_id, 'single', 'reschedule' ] );
+				
+				var data = { 'form_data': new FormData( $j( '#bookacti-reschedule-booking-form' ).get(0) ) };
+				data.form_data.append( 'action', 'bookactiRescheduleBookings' );
+				data.form_data.append( 'booking_selection', JSON.stringify( booking_selection ) );
+				data.form_data.append( 'picked_events', JSON.stringify( picked_events ) );
+				data.form_data.append( 'columns', JSON.stringify( columns ) );
+				data.form_data.append( 'is_admin', bookacti_localized.is_admin ? 1 : 0 );
+				data.form_data.append( 'send_notifications', send_notifications );
+				data.form_data.append( 'user_auth_key', typeof user_auth_key !== 'undefined' ? user_auth_key : '' );
+				data.form_data.append( 'nonce', bookacti_localized.nonce_reschedule_booking );
+				
+				$j( 'body' ).trigger( 'bookacti_booking_action_data', [ data, booking_selection, 'reschedule' ] );
 
 				// Display a loader
-				bookacti_booking_row_enter_loading_state( loading_container );
+				bookacti_booking_row_enter_loading_state( rows );
 				bookacti_start_loading_booking_system( booking_system );
 				bookacti_add_loading_html( $j( '#bookacti-reschedule-booking-dialog' ) );
 
 				$j.ajax({
 					url: bookacti_localized.ajaxurl,
 					type: 'POST',
-					data: data,
+					data: data.form_data,
 					dataType: 'json',
-					success: function( response ){
+					cache: false,
+					contentType: false,
+					processData: false,
+					success: function( response ) {
 						if( response.status === 'success' ) {
 							// Close the modal dialog
 							$j( '#bookacti-reschedule-booking-dialog' ).dialog( 'close' );
 
-							// Replace the row
-							if( response.row ) {
-								row.last().after( response.row );
-								row.remove();
+							// Replace the rows
+							if( response.rows ) {
+								var new_rows = $j( response.rows );
+								rows.each( function() {
+									var row_booking_id       = $j( this ).find( '.bookacti-single-booking' ).addBack( '.bookacti-single-booking' ).data( 'booking-id' );
+									var row_booking_group_id = $j( this ).find( '.bookacti-booking-group' ).addBack( '.bookacti-booking-group' ).data( 'booking-group-id' );
+									var new_row_selector     = row_booking_id ? '.bookacti-single-booking[data-booking-id="' + row_booking_id + '"]' : ( row_booking_group_id ? '.bookacti-booking-group[data-booking-group-id="' + row_booking_group_id + '"]' : '' );
+									var new_row              = new_row_selector ? new_rows.find( new_row_selector ).addBack( new_row_selector ).closest( 'tr' ) : $j();
+									if( new_row.length ) {
+										$j( this ).replaceWith( new_row );
+									}
+									if( row_booking_group_id ) {
+										$j( '.bookacti-gouped-booking[data-booking-group-id="' + row_booking_group_id + '"]' ).remove();
+									}
+								});
 								bookacti_refresh_list_table_hidden_columns();
 							}
+							rows.remove();
 
-							$j( 'body' ).trigger( 'bookacti_booking_rescheduled', [ response ] );
+							$j( 'body' ).trigger( 'bookacti_bookings_rescheduled', [ response, booking_selection ] );
 
-						} else {
+						} else if( response.status === 'failed' ) {
 							var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
-							booking_system.siblings( '.bookacti-notices' ).html( "<ul class='bookacti-error-list'><li>" + error_message + "</li></ul>").show();
+							$j( '#bookacti-reschedule-booking-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + error_message + '</li></ul></div>' );
 							console.log( error_message );
 							console.log( response );
 						}
 					},
-					error: function( e ){
+					error: function( e ) {
+						$j( '#bookacti-reschedule-booking-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>AJAX ' + bookacti_localized.error + '</li></ul></div>' );
 						console.log( 'AJAX ' + bookacti_localized.error );
 						console.log( e );
 					},
 					complete: function() {
+						$j( '#bookacti-reschedule-booking-dialog > .bookacti-notices' ).show();
 						bookacti_remove_loading_html( $j( '#bookacti-reschedule-booking-dialog' ) );
-						bookacti_booking_row_exit_loading_state( loading_container );
+						bookacti_booking_row_exit_loading_state( rows );
 						bookacti_stop_loading_booking_system( booking_system );
 					}
 				});

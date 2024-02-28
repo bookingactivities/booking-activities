@@ -170,49 +170,17 @@ add_action( 'bookacti_booking_group_state_changed', 'bookacti_send_notification_
 
 
 /**
- * Send a notification to admin and customer when a booking is rescheduled
- * @since 1.2.1 (was bookacti_send_email_when_booking_is_rescheduled in 1.2.0)
- * @version 1.14.1
- * @param object $booking
- * @param object $old_booking
- * @param array $args
- */
-function bookacti_send_notification_when_booking_is_rescheduled( $booking, $old_booking, $args ) {
-	// Do not send notification if explicitly said
-	if( isset( $args[ 'send_notifications' ] ) && ! $args[ 'send_notifications' ] ) { return; }
-	
-	// If we cannot know if the action was made by customer or admin, send to both
-	$send_to = apply_filters( 'bookacti_reschedule_notification_recipient', ! empty( $args[ 'send_to' ] ) && in_array( $args[ 'send_to' ], array( 'both', 'customer', 'admin' ), true ) ? $args[ 'send_to' ] : 'both', $booking, $old_booking, $args );
-	
-	$notification_args = apply_filters( 'bookacti_booking_rescheduled_notification_args', array( 
-		'tags' => array(
-			'{booking_old_start_raw}' => $old_booking->event_start,
-			'{booking_old_end_raw}' => $old_booking->event_end
-		)
-	), $booking, $old_booking, $args );
-	
-	// If $args[ 'is_admin' ] is true, the customer need to be notified
-	if( $send_to === 'both' || $send_to === 'customer' ) {
-		bookacti_send_notification( 'customer_rescheduled_booking', $booking->id, 'single', $notification_args );
-	}
-	
-	// If $args[ 'is_admin' ] is false, the administrator need to be notified
-	if( $send_to === 'both' || $send_to === 'admin' ) {
-		bookacti_send_notification( 'admin_rescheduled_booking', $booking->id, 'single', $notification_args );
-	}
-}
-add_action( 'bookacti_booking_rescheduled', 'bookacti_send_notification_when_booking_is_rescheduled', 10, 3 );
-
-
-/**
  * Format some rescheduled notifications tags
  * @since 1.10.0
- * @version 1.14.0
+ * @version 1.16.0
  * @param array $tags
+ * @param object $booking
+ * @param string $booking_type
  * @param array $notification
+ * @param array $args
  * @return array
  */
-function bookacti_format_reschedule_notifications_tags_values( $tags, $notification ) {
+function bookacti_format_reschedule_notifications_tags_values( $tags, $booking, $booking_type, $notification, $args ) {
 	if( strpos( $notification[ 'id' ], '_rescheduled' ) === false ) { return $tags; }
 	
 	// Set the {booking_old_start} and {booking_old_end} from their unformatted counterpart
@@ -222,7 +190,7 @@ function bookacti_format_reschedule_notifications_tags_values( $tags, $notificat
 	
 	return $tags;
 }
-add_filter( 'bookacti_notification_tags', 'bookacti_format_reschedule_notifications_tags_values', 10, 2 );
+add_filter( 'bookacti_notifications_tags_values', 'bookacti_format_reschedule_notifications_tags_values', 10, 5 );
 
 
 /**

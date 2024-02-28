@@ -285,9 +285,11 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Refresh the calendar when a booking has been reschedule
+	 * @version 1.16.0
 	 */
-	$j( 'body' ).on( 'bookacti_booking_rescheduled', function(){
+	$j( 'body' ).on( 'bookacti_bookings_rescheduled', function() {
 		bookacti_init_tooltip();
+		if( ! $j( '#bookacti-booking-system-bookings-page' ).length ) { return; }
 		var booking_system = $j( '#bookacti-booking-system-bookings-page' );
 		bookacti_booking_method_refetch_events( booking_system );
 		bookacti_refresh_booking_numbers( booking_system );

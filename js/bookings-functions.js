@@ -251,7 +251,7 @@ function bookacti_init_booking_actions() {
 	$j( '.bookacti-user-booking-list-table, .woocommerce-table, #bookacti-booking-list' ).on( 'click', '.bookacti-booking-action, .bookacti-booking-group-action', function ( e ) {
 		e.preventDefault();
 		
-		user_auth_key = $j( this ).data( 'user-auth-key' ).length ? $j( this ).data( 'user-auth-key' ) : '';
+		user_auth_key = $j( this ).data( 'user-auth-key' ) ? $j( this ).data( 'user-auth-key' ) : '';
 		
 		var booking_selection = {
 			'booking_ids': [],
@@ -267,7 +267,7 @@ function bookacti_init_booking_actions() {
 			if( $j( this ).hasClass( 'bookacti-cancel-booking' ) ){
 				bookacti_dialog_cancel_booking( booking_id, 'single' );
 			} else if( $j( this ).hasClass( 'bookacti-reschedule-booking' ) ){
-				bookacti_dialog_reschedule_booking( booking_id );
+				bookacti_dialog_reschedule_bookings( booking_selection );
 			} else if( $j( this ).hasClass( 'bookacti-refund-booking' ) ){
 				bookacti_dialog_refund_bookings( booking_selection );
 			} else if( $j( this ).hasClass( 'bookacti-change-booking-status' ) ){
@@ -342,7 +342,7 @@ function bookacti_init_booking_bulk_actions() {
 		});
 		
 		if( action === 'reschedule' ) {
-			bookacti_dialog_reschedule_booking( booking_id );
+			bookacti_dialog_reschedule_bookings( booking_selection );
 		} else if( action === 'refund' ) {
 			bookacti_dialog_refund_bookings( booking_selection );
 		} else if( action === 'edit_status' ) {

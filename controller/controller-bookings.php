@@ -307,7 +307,8 @@ function bookacti_controller_refund_bookings() {
 	$refunded = apply_filters( 'bookacti_bookings_refunded', $refunded, $selected_bookings, $new_selected_bookings );
 	
 	$message     = ! empty( $refunded[ 'message' ] ) ? $refunded[ 'message' ] : '';
-	$columns     = ! empty( $_POST[ 'columns' ] ) ? bookacti_str_ids_to_array( $_POST[ 'columns' ] ) : array();
+	$columns_raw = isset( $_POST[ 'columns' ] ) ? ( is_array( $_POST[ 'columns' ] ) ? $_POST[ 'columns' ] : ( is_string( $_POST[ 'columns' ] ) ? bookacti_maybe_decode_json( stripslashes( $_POST[ 'columns' ] ), true ) : array() ) ) : array();
+	$columns     = $columns_raw ? bookacti_str_ids_to_array( $columns_raw ) : array();
 	$row_filters = bookacti_get_selected_bookings_filters( 'both', $context );
 	$group_by    = ! empty( $row_filters[ 'booking_group_id' ] ) || ! empty( $row_filters[ 'in__booking_group_id' ] ) ? 'booking_group' : 'none';
 	$row_filters = $row_filters ? apply_filters( 'bookacti_booking_action_row_filters', array_merge( $row_filters, array( 'group_by' => $group_by ) ), 'refund_booking', $context ) : array();
@@ -439,7 +440,8 @@ function bookacti_controller_change_bookings_status() {
 	
 	$updated = apply_filters( 'bookacti_bookings_status_updated', $updated, $selected_bookings, $new_selected_bookings );
 	
-	$columns     = ! empty( $_POST[ 'columns' ] ) ? bookacti_str_ids_to_array( $_POST[ 'columns' ] ) : array();
+	$columns_raw = isset( $_POST[ 'columns' ] ) ? ( is_array( $_POST[ 'columns' ] ) ? $_POST[ 'columns' ] : ( is_string( $_POST[ 'columns' ] ) ? bookacti_maybe_decode_json( stripslashes( $_POST[ 'columns' ] ), true ) : array() ) ) : array();
+	$columns     = $columns_raw ? bookacti_str_ids_to_array( $columns_raw ) : array();
 	$row_filters = bookacti_get_selected_bookings_filters( 'both', $context );
 	$group_by    = ! empty( $row_filters[ 'booking_group_id' ] ) || ! empty( $row_filters[ 'in__booking_group_id' ] ) ? 'booking_group' : 'none';
 	$row_filters = $row_filters ? apply_filters( 'bookacti_booking_action_row_filters', array_merge( $row_filters, array( 'group_by' => $group_by ) ), 'change_booking_status', $context ) : array();
@@ -529,7 +531,8 @@ function bookacti_controller_change_bookings_quantity() {
 	
 	$updated = apply_filters( 'bookacti_bookings_quantity_updated', $updated, $selected_bookings, $new_selected_bookings );
 	
-	$columns     = ! empty( $_POST[ 'columns' ] ) ? bookacti_str_ids_to_array( $_POST[ 'columns' ] ) : array();
+	$columns_raw = isset( $_POST[ 'columns' ] ) ? ( is_array( $_POST[ 'columns' ] ) ? $_POST[ 'columns' ] : ( is_string( $_POST[ 'columns' ] ) ? bookacti_maybe_decode_json( stripslashes( $_POST[ 'columns' ] ), true ) : array() ) ) : array();
+	$columns     = $columns_raw ? bookacti_str_ids_to_array( $columns_raw ) : array();
 	$row_filters = bookacti_get_selected_bookings_filters( 'both', $context );
 	$group_by    = ! empty( $row_filters[ 'booking_group_id' ] ) || ! empty( $row_filters[ 'in__booking_group_id' ] ) ? 'booking_group' : 'none';
 	$row_filters = $row_filters ? apply_filters( 'bookacti_booking_action_row_filters', array_merge( $row_filters, array( 'group_by' => $group_by ) ), 'change_booking_quantity', $context ) : array();
@@ -541,33 +544,59 @@ add_action( 'wp_ajax_bookactiChangeBookingsQuantity', 'bookacti_controller_chang
 
 
 /**
- * AJAX Controller - Get reschedule booking system data by booking ID
+ * AJAX Controller - Get reschedule booking system data by booking selection
  * @since 1.8.0 (was bookacti_controller_get_booking_data)
  * @version 1.16.0
  */
 function bookacti_controller_get_reschedule_booking_system_data() {
-	$booking_id	= intval( $_POST[ 'booking_id' ] );
+	$is_admin          = current_user_can( 'bookacti_edit_bookings' ) && ! empty( $_POST[ 'is_admin' ] );
+	$context           = $is_admin ? 'admin_booking_list' : 'user_booking_list';
+	$selected_bookings = bookacti_get_selected_bookings( $context );
+	$bookings          = $selected_bookings[ 'bookings' ];
 	
-	// Check capabilities (No need to check nonce)
-	$is_allowed = bookacti_user_can_manage_booking( $booking_id );
-	if( ! $is_allowed ) { 
-		bookacti_send_json_not_allowed( 'get_reschedule_booking_system_data' );
+	if( ! $bookings ) {
+		bookacti_send_json( array( 'status' => 'failed', 'error' => 'booking_not_found', 'message' => esc_html__( 'Invalid booking selection.', 'booking-activities' ) ), 'get_reschedule_booking_system_data' );
 	}
 	
-	$booking = bookacti_get_booking_by_id( $booking_id, true );
-	if( ! $booking ) {
-		bookacti_send_json( array( 'status' => 'failed', 'error' => 'booking_not_found', 'message' => esc_html__( 'Invalid booking ID.', 'booking-activities' ) ), 'get_reschedule_booking_system_data' );
+	// Check capabilities for each booking (ignore booking groups)
+	$highest_quantity = 1;
+	$form_ids = $activity_ids = array();
+	foreach( $bookings as $booking ) {
+		$is_allowed = bookacti_user_can_manage_booking( $booking );
+		if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'change_booking_quantity' ); }
+		
+		if( ! empty( $booking->form_id ) ) {
+			$form_ids[] = intval( $booking->form_id );
+		}
+		if( ! empty( $booking->activity_id ) ) {
+			$activity_ids[] = intval( $booking->activity_id );
+		}
+		if( $booking->quantity > $highest_quantity ) {
+			$highest_quantity = intval( $booking->quantity );
+		}
 	}
+	$form_ids     = bookacti_ids_to_array( $form_ids );
+	$activity_ids = bookacti_ids_to_array( $activity_ids );
 	
-	$is_admin = current_user_can( 'bookacti_edit_bookings' ) && ! empty( $_POST[ 'is_admin' ] );
-	$calendar_field_data = ! empty( $booking->form_id ) ? bookacti_get_form_field_data_by_name( $booking->form_id, 'calendar' ) : array();
-	if( ! $is_admin && ! $calendar_field_data ) {
+	// Get calendar form field data
+	$calendar_fields_data = array();
+	foreach( $form_ids as $form_id ) {
+		$calendar_field_data = bookacti_get_form_field_data_by_name( $form_id, 'calendar' );
+		if( $calendar_field_data ) {
+			$calendar_fields_data[ $form_id ] = $calendar_field_data;
+		}
+	}
+	if( ! $is_admin && ! $calendar_fields_data ) {
 		bookacti_send_json( array( 'status' => 'failed', 'error' => 'invalid_form_id', 'message' => esc_html__( 'Invalid form ID.', 'booking-activities' ) ), 'get_reschedule_booking_system_data' );
 	}
 	
-	$init_atts  = bookacti_get_calendar_field_booking_system_attributes( $calendar_field_data );
-	$atts       = $init_atts;
-	$mixed_data = array();
+	// Get booking system data based on calendar form field data
+	$admin_reschedule_scope = bookacti_get_setting_value( 'bookacti_cancellation_settings', 'admin_reschedule_scope' );
+	$activities_meta        = $activity_ids ? bookacti_get_metadata( 'activity', $activity_ids ) : array();
+	$calendar_field_data    = count( $calendar_fields_data ) === 1 ? reset( $calendar_fields_data ) : array();
+	$init_atts              = bookacti_get_calendar_field_booking_system_attributes( $calendar_field_data );
+	$atts                   = $init_atts;
+	$mixed_data             = array();
 
 	// Set compulsory data
 	$atts[ 'id' ]                       = 'bookacti-booking-system-reschedule';
@@ -575,57 +604,112 @@ function bookacti_controller_get_reschedule_booking_system_data() {
 	$atts[ 'when_perform_form_action' ] = 'on_submit';
 	$atts[ 'multiple_bookings' ]        = 0;
 	$atts[ 'auto_load' ]                = 0;
-
-	// Display events from activities corresponding to the reschedule scope
-	$activity_id             = ! empty( $booking->activity_id ) ? intval( $booking->activity_id ) : 0;
-	$activity_meta           = $activity_id ? bookacti_get_metadata( 'activity', $activity_id ) : array();
-	$reschedule_scope        = ! empty( $activity_meta[ 'reschedule_scope' ] ) ? $activity_meta[ 'reschedule_scope' ] : 'form_self';
-	$reschedule_activity_ids = ! empty( $activity_meta[ 'reschedule_activity_ids' ] ) ? bookacti_ids_to_array( $activity_meta[ 'reschedule_activity_ids' ] ) : array();
-	$admin_reschedule_scope  = bookacti_get_setting_value( 'bookacti_cancellation_settings', 'admin_reschedule_scope' );
 	
-	// For administrators, keep the widest reschedule scope
-	if( $is_admin ) {
-		if( strpos( $reschedule_scope, 'all_' ) !== false && strpos( $admin_reschedule_scope, 'form_' ) !== false ) {
-			$admin_reschedule_scope = str_replace( 'form_', 'all_', $admin_reschedule_scope );
-		}
-		if( strpos( $reschedule_scope, '_custom' ) !== false && strpos( $admin_reschedule_scope, '_self' ) !== false ) {
-			$admin_reschedule_scope = str_replace( '_self', '_custom', $admin_reschedule_scope );
-		}
-		else if( strpos( $reschedule_scope, '_any' ) !== false && strpos( $admin_reschedule_scope, '_self' ) !== false ) {
-			$admin_reschedule_scope = str_replace( '_self', '_any', $admin_reschedule_scope );
-		}
-		$reschedule_scope = $admin_reschedule_scope;
-	}
-	
-	if( $reschedule_scope === 'all_any' ) {
-		$atts[ 'activities' ] = array();
-	} else if( strpos( $reschedule_scope, '_custom' ) !== false ) {
-		$atts[ 'activities' ] = array_unique( array_merge( array( $activity_id ), $reschedule_activity_ids ) );
-	} else if( strpos( $reschedule_scope, '_self' ) !== false ) {
-		$atts[ 'activities' ] = array( $activity_id );
-	}
-	
-	// Display events from all calendars on the backend, or if the reschedule scope is set accordingly
-	if( strpos( $reschedule_scope, 'all_' ) !== false ) {
-		$form                 = bookacti_get_form_data( $booking->form_id );
-		$form_author_id       = ! empty( $form[ 'user_id' ] ) ? intval( $form[ 'user_id' ] ) : 0;
-		$allowed_template_ids = $form_author_id ? bookacti_ids_to_array( array_keys( bookacti_fetch_templates( array(), $form_author_id ) ) ) : array();
+	// Find the calendars and activities corresponding to the reschedule scope
+	$_any_nb = $all_nb = 0;
+	$allowed_activities_per_booking = $allowed_calendars_per_booking = array();
+	foreach( $bookings as $booking_id => $booking ) {
+		$form_id       = ! empty( $booking->form_id ) ? intval( $booking->form_id ) : 0;
+		$activity_id   = ! empty( $booking->activity_id ) ? intval( $booking->activity_id ) : 0;
+		$activity_meta = ! empty( $activities_meta[ $activity_id ] ) ? $activities_meta[ $activity_id ] : array();
+		if( ! $activity_meta ) { continue; }
 		
-		if( $allowed_template_ids ) {
-			if( $atts[ 'activities' ] ) {
-				$template_ids = bookacti_ids_to_array( bookacti_get_templates_by_activity( $atts[ 'activities' ], true ) );
-				if( $template_ids ) {
-					$atts[ 'calendars' ] = $allowed_template_ids ? array_intersect( $template_ids, $allowed_template_ids ) : array( 'none' );
-					if( count( $atts[ 'calendars' ] ) !== 1 ) {
-						$mixed_data = bookacti_get_mixed_template_data( $atts[ 'calendars' ] );
-						$atts[ 'display_data' ][ 'slotMinTime' ] = ! empty( $mixed_data[ 'settings' ][ 'slotMinTime' ] ) ? $mixed_data[ 'settings' ][ 'slotMinTime' ] : '00:00';
-						$atts[ 'display_data' ][ 'slotMaxTime' ] = ! empty( $mixed_data[ 'settings' ][ 'slotMaxTime' ] ) ? $mixed_data[ 'settings' ][ 'slotMaxTime' ] : '00:00';
-					}
-				}
-			} else {
-				$atts[ 'calendars' ] = $allowed_template_ids ? $allowed_template_ids : array( 'none' );
+		$reschedule_scope        = ! empty( $activity_meta[ 'reschedule_scope' ] ) ? $activity_meta[ 'reschedule_scope' ] : 'form_self';
+		$reschedule_activity_ids = ! empty( $activity_meta[ 'reschedule_activity_ids' ] ) ? bookacti_ids_to_array( $activity_meta[ 'reschedule_activity_ids' ] ) : array();
+
+		// For administrators, keep the widest reschedule scope
+		if( $is_admin ) {
+			$booking_admin_reschedule_scope = $admin_reschedule_scope;
+			if( strpos( $reschedule_scope, 'all_' ) !== false && strpos( $admin_reschedule_scope, 'form_' ) !== false ) {
+				$booking_admin_reschedule_scope = str_replace( 'form_', 'all_', $admin_reschedule_scope );
+			}
+			if( strpos( $reschedule_scope, '_custom' ) !== false && strpos( $admin_reschedule_scope, '_self' ) !== false ) {
+				$booking_admin_reschedule_scope = str_replace( '_self', '_custom', $admin_reschedule_scope );
+			}
+			else if( strpos( $reschedule_scope, '_any' ) !== false && strpos( $admin_reschedule_scope, '_self' ) !== false ) {
+				$booking_admin_reschedule_scope = str_replace( '_self', '_any', $admin_reschedule_scope );
+			}
+			$reschedule_scope = $booking_admin_reschedule_scope;
+		}
+		
+		if( strpos( $reschedule_scope, '_any' ) !== false ) {
+			++$_any_nb;
+			if( strpos( $reschedule_scope, 'form_' ) !== false && ! empty( $calendar_fields_data[ $form_id ][ 'activities' ] ) ) {
+				$allowed_activities_per_booking[ $booking_id ] = $calendar_fields_data[ $form_id ][ 'activities' ];
+			}
+		} else if( strpos( $reschedule_scope, '_custom' ) !== false ) {
+			$allowed_activities_per_booking[ $booking_id ] = array_unique( array_merge( array( $activity_id ), $reschedule_activity_ids ) );
+			if( strpos( $reschedule_scope, 'form_' ) !== false && ! empty( $calendar_fields_data[ $form_id ][ 'activities' ] ) ) {
+				$allowed_activities_per_booking[ $booking_id ] = array_intersect( $calendar_fields_data[ $form_id ][ 'activities' ], $allowed_activities_per_booking[ $booking_id ] );
+			}
+		} else if( strpos( $reschedule_scope, '_self' ) !== false ) {
+			$allowed_activities_per_booking[ $booking_id ] = array( $activity_id );
+			if( strpos( $reschedule_scope, 'form_' ) !== false && ! empty( $calendar_fields_data[ $form_id ][ 'activities' ] ) ) {
+				$allowed_activities_per_booking[ $booking_id ] = array_intersect( $calendar_fields_data[ $form_id ][ 'activities' ], $allowed_activities_per_booking[ $booking_id ] );
 			}
 		}
+		
+		if( strpos( $reschedule_scope, 'all_' ) !== false ) {
+			++$all_nb;
+		} else if( strpos( $reschedule_scope, 'form_' ) !== false && ! empty( $calendar_fields_data[ $form_id ][ 'calendars' ] ) ) {
+			$allowed_calendars_per_booking[ $booking_id ] = $calendar_fields_data[ $form_id ][ 'calendars' ];
+		}
+	}
+	
+	// Keep only the activities that are compatible with all the selected bookings
+	$atts[ 'activities' ] = $allowed_activities_per_booking ? array_values( bookacti_ids_to_array( call_user_func_array( 'array_intersect', $allowed_activities_per_booking ) ) ) : array();
+	if( ! $atts[ 'activities' ] && count( $bookings ) !== $_any_nb ) {
+		bookacti_send_json( array( 'status' => 'failed', 'error' => 'no_activities', 'message' => esc_html__( 'Invalid booking selection.', 'booking-activities' ) . ' ' . esc_html__( 'No activities match all the selected bookings.', 'booking-activities' ) ), 'get_reschedule_booking_system_data' );
+	}
+	
+	// Display events from all calendars if the reschedule scope is set accordingly
+	if( count( $bookings ) === $all_nb ) {
+		$forms = $form_ids ? bookacti_get_forms( bookacti_format_form_filters( array( 'id' => $form_ids ) ) ) : array();
+		$templates_per_activity = bookacti_fetch_activities_with_templates_association();
+		
+		$allowed_calendars_per_user = $allowed_calendars_per_form = array();
+		foreach( $forms as $form ) {
+			$form_id = ! empty( $form->id ) ? intval( $form->id ) : 0;
+			$form_author_id = ! empty( $form->user_id ) ? intval( $form->user_id ) : 0;
+			if( $form_author_id && ! isset( $allowed_calendars_per_user[ $form_author_id ] ) ) {
+				$allowed_calendars_per_user[ $form_author_id ] = bookacti_ids_to_array( array_keys( bookacti_fetch_templates( array(), $form_author_id ) ) );
+				$allowed_calendars_per_form[ $form_id ] = $allowed_calendars_per_user[ $form_author_id ];
+			}
+		}
+		
+		foreach( $bookings as $booking_id => $booking ) {
+			$form_id = ! empty( $booking->form_id ) ? intval( $booking->form_id ) : 0;
+			if( isset( $allowed_calendars_per_form[ $form_id ] ) ) {
+				$allowed_calendars_per_booking[ $booking_id ] = $allowed_calendars_per_form[ $form_id ];
+			}
+			
+			if( empty( $allowed_activities_per_booking[ $booking_id ] ) ) { continue; }
+
+			$template_ids = array();
+			foreach( $allowed_activities_per_booking[ $booking_id ] as $activity_id ) {
+				if( ! empty( $templates_per_activity[ $activity_id ][ 'template_ids' ] ) ) {
+					$template_ids = array_merge( $template_ids, $templates_per_activity[ $activity_id ][ 'template_ids' ] );
+				}
+			}
+
+			$template_ids = bookacti_ids_to_array( $template_ids );
+			if( ! $template_ids ) { continue; }
+			
+			$allowed_calendars_per_booking[ $booking_id ] = empty( $allowed_calendars_per_booking[ $booking_id ] ) ? $template_ids : bookacti_ids_to_array( array_intersect( $template_ids, $allowed_calendars_per_booking[ $booking_id ] ) );
+		}
+	}
+	
+	// Keep only the calendars that are compatible with all the selected bookings
+	$atts[ 'calendars' ] = $allowed_calendars_per_booking ? array_values( bookacti_ids_to_array( call_user_func_array( 'array_intersect', $allowed_calendars_per_booking ) ) ) : array();
+	if( ! $atts[ 'calendars' ] ) {
+		bookacti_send_json( array( 'status' => 'failed', 'error' => 'no_calendars', 'message' => esc_html__( 'Invalid booking selection.', 'booking-activities' ) . ' ' . esc_html__( 'No calendars match all the selected bookings.', 'booking-activities' ) ), 'get_reschedule_booking_system_data' );
+	}
+	
+	// Change the display data according to the displayed calendars
+	if( count( $atts[ 'calendars' ] ) > 1 && array_diff( $atts[ 'calendars' ], $init_atts[ 'calendars' ] ) ) {
+		$mixed_data = bookacti_get_mixed_template_data( $atts[ 'calendars' ] );
+		$atts[ 'display_data' ][ 'slotMinTime' ] = ! empty( $mixed_data[ 'settings' ][ 'slotMinTime' ] ) ? $mixed_data[ 'settings' ][ 'slotMinTime' ] : '00:00';
+		$atts[ 'display_data' ][ 'slotMaxTime' ] = ! empty( $mixed_data[ 'settings' ][ 'slotMaxTime' ] ) ? $mixed_data[ 'settings' ][ 'slotMaxTime' ] : '00:00';
 	}
 	
 	// On the backend, display past events and grouped events and make them all bookable
@@ -639,43 +723,51 @@ function bookacti_controller_get_reschedule_booking_system_data() {
 	}
 
 	// Add the rescheduled booking data to the booking system data
-	$atts[ 'rescheduled_booking_data' ] = (array) apply_filters( 'bookacti_rescheduled_booking_data', $booking );
+	$atts[ 'rescheduled_bookings_data' ] = (array) apply_filters( 'bookacti_rescheduled_bookings_data', $bookings );
 
-	$atts = apply_filters( 'bookacti_reschedule_booking_system_attributes', $atts, $booking, $init_atts, $mixed_data );
+	$atts = apply_filters( 'bookacti_reschedule_booking_system_attributes', $atts, $bookings, $init_atts, $mixed_data );
 	
-	bookacti_send_json( array( 'status' => 'success', 'booking_system_data' => $atts ), 'get_reschedule_booking_system_data' );
+	bookacti_send_json( array( 'status' => 'success', 'booking_system_data' => $atts, 'quantity' => $highest_quantity ), 'get_reschedule_booking_system_data' );
 }
 add_action( 'wp_ajax_bookactiGetRescheduleBookingSystemData', 'bookacti_controller_get_reschedule_booking_system_data' );
 add_action( 'wp_ajax_nopriv_bookactiGetRescheduleBookingSystemData', 'bookacti_controller_get_reschedule_booking_system_data' );
 
 
 /**
- * AJAX Controller - Reschedule a booking
- * @version 1.16.0
+ * AJAX Controller - Reschedule bookings
+ * @since 1.16.0
  */
-function bookacti_controller_reschedule_booking() {
-	$booking_id = intval( $_POST[ 'booking_id' ] );
-	
+function bookacti_controller_reschedule_bookings() {
 	// Check nonce
 	$is_nonce_valid = check_ajax_referer( 'bookacti_reschedule_booking', 'nonce', false );
 	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'reschedule_booking' ); }
 	
-	// Check capabilities
-	$is_allowed = bookacti_user_can_manage_booking( $booking_id );
-	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'reschedule_booking' ); }
+	$is_admin           = current_user_can( 'bookacti_edit_bookings' ) && ! empty( $_POST[ 'is_admin' ] );
+	$context            = $is_admin ? 'admin_booking_list' : 'user_booking_list';
+	$selected_bookings  = bookacti_get_selected_bookings( $context );
+	$bookings           = $selected_bookings[ 'bookings' ];
+	$booking_ids        = bookacti_ids_to_array( array_keys( $bookings ) );
+	$picked_events_raw  = isset( $_POST[ 'picked_events' ] ) ? ( is_array( $_POST[ 'picked_events' ] ) ? $_POST[ 'picked_events' ] : ( is_string( $_POST[ 'picked_events' ] ) ? bookacti_maybe_decode_json( stripslashes( $_POST[ 'picked_events' ] ), true ) : array() ) ) : array();
+	$picked_events      = $picked_events_raw ? bookacti_format_picked_events( $picked_events_raw ) : array();
+	$send_notifications = $is_admin && isset( $_POST[ 'send_notifications' ] ) ? boolval( $_POST[ 'send_notifications' ] ) : true;
 	
-	$picked_events = ! empty( $_POST[ 'picked_events' ] ) ? bookacti_format_picked_events( $_POST[ 'picked_events' ] ) : array();
+	if( ! $bookings || ! $booking_ids ) {
+		bookacti_send_json( array( 'status' => 'failed', 'error' => 'booking_not_found', 'message' => esc_html__( 'Invalid booking selection.', 'booking-activities' ) ), 'reschedule_booking' );
+	}
+	
+	// Check capabilities for each booking
+	foreach( $bookings as $booking ) {
+		$is_allowed = bookacti_user_can_manage_booking( $booking );
+		if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'reschedule_booking' ); }
+	}
+	
+	// Check picked event
 	if( ! $picked_events || ! empty( $picked_events[ 0 ][ 'group_id' ] ) || empty( $picked_events[ 0 ][ 'id' ] ) ) { 
 		bookacti_send_json( array( 'status' => 'failed', 'error' => 'no_event_selected', 'message' => esc_html__( 'You haven\'t picked any event. Please pick an event first.', 'booking-activities' ) ), 'reschedule_booking' );
 	}
 	
-	$booking = bookacti_get_booking_by_id( $booking_id, true );
-	if( ! $booking ) {
-		bookacti_send_json( array( 'status' => 'failed', 'error' => 'booking_not_found', 'message' => esc_html__( 'Invalid booking ID.', 'booking-activities' ) ), 'reschedule_booking' );
-	}
-	
 	// Validate the reschedule booking form fields
-	$form_fields_validated = bookacti_validate_reschedule_form_fields( $booking );
+	$form_fields_validated = bookacti_validate_reschedule_form_fields( $bookings );
 	if( $form_fields_validated[ 'status' ] !== 'success' ) {
 		$return_array[ 'error' ]    = 'invalid_form_fields';
 		$return_array[ 'messages' ] = $form_fields_validated[ 'messages' ];
@@ -683,64 +775,103 @@ function bookacti_controller_reschedule_booking() {
 		bookacti_send_json( $return_array, 'reschedule_booking' );
 	}
 	
-	$context = ! empty( $_POST[ 'context' ] ) ? sanitize_title_with_dashes( $_POST[ 'context' ] ) : '';
-	
-	$reschedule_form_values = apply_filters( 'bookacti_reschedule_booking_form_values', array(
-		'picked_events'      => $picked_events,
-		'quantity'           => intval( $booking->quantity ),
-		'form_id'            => ! empty( $booking->form_id ) && ! current_user_can( 'bookacti_edit_bookings' ) ? $booking->form_id : 0,
-		'is_admin'           => ! empty( $_POST[ 'is_admin' ] ), 
-		'context'            => $context, 
-		'send_notifications' => ! empty( $_POST[ 'is_admin' ] ) && isset( $_POST[ 'send_notifications' ] ) ? intval( $_POST[ 'send_notifications' ] ) : 1
-	), $booking );
-	
-	// Check if the desired event is eligible according to the current booking
-	$can_be_rescheduled	= bookacti_booking_can_be_rescheduled_to( $booking, $reschedule_form_values[ 'picked_events' ][ 0 ][ 'id' ], $reschedule_form_values[ 'picked_events' ][ 0 ][ 'start' ], $reschedule_form_values[ 'picked_events' ][ 0 ][ 'end' ], $reschedule_form_values[ 'context' ] );
-	if( $can_be_rescheduled[ 'status' ] !== 'success' ) {
-		bookacti_send_json( $can_be_rescheduled, 'reschedule_booking' );
-	}
-
-	// Validate picked events
-	$validated = bookacti_validate_picked_events( $reschedule_form_values[ 'picked_events' ], $reschedule_form_values );
-
-	if( $validated[ 'status' ] !== 'success' ) {
-		$messages = ! empty( $validated[ 'message' ] ) ? array( $validated[ 'message' ] ) : array();
-		foreach( $validated[ 'messages' ] as $error => $error_messages ) {
-			if( ! is_array( $error_messages ) ) { $error_messages = array( $error_messages ); }
-			$messages = array_merge( $messages, $error_messages );
+	// Check if each booking can be rescheduled to the picked event
+	foreach( $bookings as $booking_id => $booking ) {
+		// Check if the desired event is eligible according to the current booking
+		$can_be_rescheduled	= bookacti_booking_can_be_rescheduled_to( $booking, $picked_events[ 0 ][ 'id' ], $picked_events[ 0 ][ 'start' ], $picked_events[ 0 ][ 'end' ], $context );
+		if( $can_be_rescheduled[ 'status' ] !== 'success' ) {
+			bookacti_send_json( $can_be_rescheduled, 'reschedule_booking' );
 		}
-		bookacti_send_json( array( 'status' => 'failed', 'error' => $validated[ 'error' ], 'message' => implode( '</li><li>', $messages ) ), 'reschedule_booking' );
+
+		// Validate picked events
+		$reschedule_form_values = apply_filters( 'bookacti_reschedule_booking_form_values', array(
+			'quantity' => intval( $booking->quantity ),
+			'form_id'  => ! empty( $booking->form_id ) && ! current_user_can( 'bookacti_edit_bookings' ) ? $booking->form_id : 0,
+			'is_admin' => $is_admin, 
+			'context'  => 'reschedule', 
+		), $booking, $picked_events );
+		
+		$validated = bookacti_validate_picked_events( $picked_events, $reschedule_form_values );
+
+		if( $validated[ 'status' ] !== 'success' ) {
+			$message_prefix = count( $bookings ) > 1 ? sprintf( esc_html__( 'Booking #%s', 'booking-activities' ), $booking_id ) . ': ' : '';
+			$messages = ! empty( $validated[ 'message' ] ) ? array( $validated[ 'message' ] ) : array();
+			foreach( $validated[ 'messages' ] as $error => $error_messages ) {
+				if( ! is_array( $error_messages ) ) { $error_messages = array( $error_messages ); }
+				$messages = array_merge( $messages, $error_messages );
+			}
+			$message = $messages ? $message_prefix . implode( '</li><li>' . $message_prefix, $messages ) : '';
+			bookacti_send_json( array( 'status' => 'failed', 'error' => $validated[ 'error' ], 'message' => $message ), 'reschedule_booking' );
+		}
 	}
-	
-	// Let third party plugins change form values before rescheduling
-	$reschedule_form_values = apply_filters( 'bookacti_reschedule_booking_form_values_before_rescheduling', $reschedule_form_values, $booking );
 	
 	// Let third party plugins do their stuff before rescheduling
-	do_action( 'bookacti_reschedule_booking_form_before_rescheduling', $reschedule_form_values, $booking );
+	do_action( 'bookacti_before_rescheduling_bookings', $selected_bookings, $picked_events );
 	
-	$rescheduled = bookacti_reschedule_booking( $booking_id, $reschedule_form_values[ 'picked_events' ][ 0 ][ 'id' ], $reschedule_form_values[ 'picked_events' ][ 0 ][ 'start' ], $reschedule_form_values[ 'picked_events' ][ 0 ][ 'end' ] );
+	// Change the bookings event
+	$rescheduled = bookacti_reschedule_bookings( $booking_ids, $picked_events[ 0 ][ 'id' ], $picked_events[ 0 ][ 'start' ], $picked_events[ 0 ][ 'end' ] );
 
 	if( $rescheduled === 0 ) {
-		$message = esc_html__( 'You must select a different event than the current one.', 'booking-activities' );
-		bookacti_send_json( array( 'status' => 'failed', 'error' => 'same_event', 'message' => $message ), 'reschedule_booking' );
+		bookacti_send_json( array( 'status' => 'failed', 'error' => 'no_changes', 'message' => esc_html__( 'You must select a different event than the current one.', 'booking-activities' ) ), 'reschedule_booking' );
+	} else if( $rescheduled === false ) {
+		bookacti_send_json( array( 'status' => 'failed', 'error' => 'reschedule_failed', 'message' => esc_html__( 'An error occurred while trying to reschedule the bookings.', 'booking-activities' ) ), 'reschedule_booking' );
 	}
-
-	if( ! $rescheduled ) {
-		bookacti_send_json( array( 'status' => 'failed' ), 'reschedule_booking' );
-	}
-
-	$new_booking = bookacti_get_booking_by_id( $booking_id, true );
-
-	do_action( 'bookacti_booking_rescheduled', $new_booking, $booking, $reschedule_form_values );
-
-	$columns     = ! empty( $_POST[ 'columns' ] ) ? bookacti_str_ids_to_array( $_POST[ 'columns' ] ) : array();
-	$row_filters = apply_filters( 'bookacti_booking_action_row_filters', array( 'booking_id' => $booking_id ), array( $new_booking ), 'reschedule_booking', $context );
-	$row         = bookacti_get_booking_list_rows_according_to_context( $context, $row_filters, $columns );
 	
-	bookacti_send_json( array( 'status' => 'success', 'row' => $row, 'old_booking' => $booking, 'new_booking' => $new_booking, 'form_values' => $reschedule_form_values ), 'reschedule_booking' );
+	wp_cache_delete( 'selected_bookings', 'bookacti' );
+	
+	$new_selected_bookings = bookacti_get_selected_bookings( $context );
+	
+	// Check if the bookings have been updated
+	$updated = array( 'bookings' => array() );
+	foreach( $bookings as $booking_id => $booking ) {
+		if( empty( $new_selected_bookings[ 'bookings' ][ $booking_id ] ) ) { continue; }
+		$new_booking = $new_selected_bookings[ 'bookings' ][ $booking_id ];
+		
+		$sent = false;
+		if( $send_notifications ) {
+			if( $booking->event_id != $new_booking->event_id
+			||  $booking->event_start !== $new_booking->event_start
+			||  $booking->event_end !== $new_booking->event_end ) {
+				$sent = true;
+			}
+		}
+		
+		$updated[ 'bookings' ][ $booking_id ] = array(
+			'old_event_id'      => $booking->event_id,
+			'new_event_id'      => $new_booking->event_id,
+			'old_event_start'   => $booking->event_start,
+			'new_event_start'   => $new_booking->event_start,
+			'old_event_end'     => $booking->event_end,
+			'new_event_end'     => $new_booking->event_end,
+			'notification_sent' => $sent
+		);
+	}
+	
+	$updated = apply_filters( 'bookacti_bookings_rescheduled', $updated, $selected_bookings, $new_selected_bookings );
+	
+	// Send notifications
+	foreach( $updated[ 'bookings' ] as $booking_id => $booking_updated_data ) {
+		if( empty( $booking_updated_data[ 'notification_sent' ] )
+		||  empty( $selected_bookings[ 'bookings' ][ $booking_id ] )
+		||  empty( $new_selected_bookings[ 'bookings' ][ $booking_id ] ) ) { continue; }
+
+		$old_booking = $selected_bookings[ 'bookings' ][ $booking_id ];
+		$new_booking = $new_selected_bookings[ 'bookings' ][ $booking_id ];
+
+		bookacti_send_booking_rescheduled_notification( $new_booking, $booking, $is_admin ? 'customer' : 'both' );
+	}
+	
+	$columns_raw = isset( $_POST[ 'columns' ] ) ? ( is_array( $_POST[ 'columns' ] ) ? $_POST[ 'columns' ] : ( is_string( $_POST[ 'columns' ] ) ? bookacti_maybe_decode_json( stripslashes( $_POST[ 'columns' ] ), true ) : array() ) ) : array();
+	$columns     = $columns_raw ? bookacti_str_ids_to_array( $columns_raw ) : array();
+	$row_filters = bookacti_get_selected_bookings_filters( 'both', $context );
+	$group_by    = ! empty( $row_filters[ 'booking_group_id' ] ) || ! empty( $row_filters[ 'in__booking_group_id' ] ) ? 'booking_group' : 'none';
+	$row_filters = $row_filters ? apply_filters( 'bookacti_booking_action_row_filters', array_merge( $row_filters, array( 'group_by' => $group_by ) ), 'change_booking_status', $context ) : array();
+	$rows        = $row_filters ? bookacti_get_booking_list_rows_according_to_context( $context, $row_filters, $columns ) : '';
+	
+	bookacti_send_json( array( 'status' => 'success', 'rows' => $rows, 'updated' => $updated ), 'change_booking_status' );
 }
-add_action( 'wp_ajax_bookactiRescheduleBooking', 'bookacti_controller_reschedule_booking' );
-add_action( 'wp_ajax_nopriv_bookactiRescheduleBooking', 'bookacti_controller_reschedule_booking' );
+add_action( 'wp_ajax_bookactiRescheduleBookings', 'bookacti_controller_reschedule_bookings' );
+add_action( 'wp_ajax_nopriv_bookactiRescheduleBookings', 'bookacti_controller_reschedule_bookings' );
 
 
 /**

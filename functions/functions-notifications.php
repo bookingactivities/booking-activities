@@ -575,6 +575,11 @@ function bookacti_get_notifications_tags_values( $booking, $booking_type, $notif
 		$tags[ $default_tag ] = isset( $booking_data[ $default_tag ] ) ? $booking_data[ $default_tag ] : '';
 	}
 	
+	// Replace or add tags values
+	if( ! empty( $args[ 'tags' ] ) ) {
+		$tags = bookacti_associative_array_replace_recursive( $args[ 'tags' ], $tags );
+	}
+	
 	return apply_filters( 'bookacti_notifications_tags_values', $tags, $booking, $booking_type, $notification, $args );
 }
 
@@ -703,11 +708,6 @@ function bookacti_send_notification( $notification_id, $booking_id, $booking_typ
 	
 	// Get tags values according to the booking data
 	$tags = bookacti_get_notifications_tags_values( $booking, $booking_type, $notification, $args );
-	
-	// Replace or add tags values
-	if( ! empty( $args[ 'tags' ] ) ) {
-		$tags = bookacti_associative_array_replace_recursive( $args[ 'tags' ], $tags );
-	}
 	
 	$notification  = apply_filters( 'bookacti_notification_data', $notification, $tags, $locale, $booking, $booking_type, $args );
 	$args          = apply_filters( 'bookacti_notification_args', $args, $notification, $tags, $locale, $booking, $booking_type );
@@ -1077,18 +1077,50 @@ function bookacti_send_email( $to, $subject, $message, $headers, $attachments = 
 
 
 /**
+ * Send a notification to admin and customer when a booking is rescheduled
+ * @since 1.16.0 (was bookacti_send_notification_when_booking_is_rescheduled)
+ * @param object $booking
+ * @param object $old_booking
+ * @param string $send_to
+ */
+function bookacti_send_booking_rescheduled_notification( $booking, $old_booking, $send_to = 'both' ) {
+	// If we cannot know if the action was made by customer or admin, send to both
+	$send_to = apply_filters( 'bookacti_reschedule_notification_recipient', $send_to && in_array( $send_to, array( 'both', 'customer', 'admin' ), true ) ? $send_to : 'both', $booking, $old_booking );
+	
+	$notification_args = apply_filters( 'bookacti_booking_rescheduled_notification_args', array( 
+		'tags' => array(
+			'{booking_old_start_raw}' => $old_booking->event_start,
+			'{booking_old_end_raw}'   => $old_booking->event_end
+		)
+	), $booking, $old_booking, $send_to );
+	
+	if( $send_to === 'both' || $send_to === 'customer' ) {
+		bookacti_send_notification( 'customer_rescheduled_booking', $booking->id, 'single', $notification_args );
+	}
+	
+	if( $send_to === 'both' || $send_to === 'admin' ) {
+		bookacti_send_notification( 'admin_rescheduled_booking', $booking->id, 'single', $notification_args );
+	}
+	
+	do_action( 'bookacti_booking_rescheduled_notification_sent', $booking, $old_booking, $send_to, $notification_args );
+}
+
+
+/**
  * Send a notification when an event dates change to the customers who booked it, once per event per user, for future bookings only
  * @since 1.14.1 (was bookacti_send_event_rescheduled_notifications)
+ * @version 1.16.0
  * @param object $old_event
  * @param array $old_bookings
  * @param int $delta_seconds_start
  * @param int $delta_seconds_end
  * @param boolean $send_notifications
+ * @return array
  */
 function bookacti_maybe_send_event_rescheduled_notifications( $old_event, $old_bookings = array(), $delta_seconds_start = 0, $delta_seconds_end = 0, $send_notifications = true ) {
 	$timezone = bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' );
-	$now_dt = new DateTime( 'now', new DateTimeZone( $timezone ) );
-	$from = $old_event->repeat_freq && $old_event->repeat_freq !== 'none' ? $now_dt->format( 'Y-m-d H:i:s' ) : '';
+	$now_dt   = new DateTime( 'now', new DateTimeZone( $timezone ) );
+	$from     = $old_event->repeat_freq && $old_event->repeat_freq !== 'none' ? $now_dt->format( 'Y-m-d H:i:s' ) : '';
 	
 	// If $old_bookings is set, retrieve only the given bookings, if they were not already cancelled
 	// else retrieve all cancelled bookings of the given event
@@ -1100,12 +1132,13 @@ function bookacti_maybe_send_event_rescheduled_notifications( $old_event, $old_b
 	// Get bookings
 	$bookings_filters = bookacti_format_booking_filters( $bookings_filters );
 	$bookings = bookacti_get_bookings( $bookings_filters );
-	if( ! $bookings ) { return; }
+	if( ! $bookings ) { return array(); }
 	
 	// If there are a lot of scheduled notifications to send, this operation can take a while
 	// So we need to increase the max_execution_time and the memory_limit
 	bookacti_increase_max_execution_time( 'send_event_rescheduled_notifications' );
 	
+	$updated = array( 'bookings' => array() );
 	foreach( $bookings as $booking_id => $booking ) {
 		$old_booking = isset( $old_bookings[ $booking_id ] ) ? $old_bookings[ $booking_id ] : $booking;
 		
@@ -1116,21 +1149,44 @@ function bookacti_maybe_send_event_rescheduled_notifications( $old_event, $old_b
 			$delta_seconds_start_di = new DateInterval( 'PT' . abs( $delta_seconds_start ). 'S' );
 			$delta_seconds_end_di   = new DateInterval( 'PT' . abs( $delta_seconds_end ). 'S' );
 			$delta_seconds_start_di->invert = $delta_seconds_start > 0 ? 1 : 0;
-			$delta_seconds_end_di->invert = $delta_seconds_end > 0 ? 1 : 0;
+			$delta_seconds_end_di->invert   = $delta_seconds_end > 0 ? 1 : 0;
 			$old_booking_start_dt->add( $delta_seconds_start_di );
 			$old_booking_end_dt->add( $delta_seconds_end_di );
 			$old_booking->event_start = $old_booking_start_dt->format( 'Y-m-d H:i:s' );
-			$old_booking->event_end = $old_booking_end_dt->format( 'Y-m-d H:i:s' );
+			$old_booking->event_end   = $old_booking_end_dt->format( 'Y-m-d H:i:s' );
+			$old_bookings[ $booking_id ] = $old_booking;
 		}
 		
-		$send = apply_filters( 'bookacti_send_event_rescheduled_notification', $send_notifications, $booking, $old_event, $old_booking, $delta_seconds_start, $delta_seconds_end );
+		$send = apply_filters( 'bookacti_send_event_rescheduled_notification', $send_notifications, $booking, $old_booking, $old_event, $delta_seconds_start, $delta_seconds_end );
 		
-		do_action( 'bookacti_booking_rescheduled', $booking, $old_booking, array( 'is_admin' => true, 'send_notifications' => $send, 'send_to' => 'customer' ) );
-		
-		if( $send ) {
-			do_action( 'bookacti_event_rescheduled_notification_sent', $booking, $old_event, $old_booking, $delta_seconds_start, $delta_seconds_end );
+		$updated[ 'bookings' ][ $booking_id ] = array(
+			'old_event_id'      => $old_booking->event_id,
+			'new_event_id'      => $booking->event_id,
+			'old_event_start'   => $old_booking->event_start,
+			'new_event_start'   => $booking->event_start,
+			'old_event_end'     => $old_booking->event_end,
+			'new_event_end'     => $booking->event_end,
+			'notification_sent' => $send
+		);
+	}
+	
+	$updated = apply_filters( 'bookacti_bookings_rescheduled', array(), array( 'bookings' => $old_bookings, 'booking_groups' => array(), 'groups_bookings' => array() ), array( 'bookings' => $bookings, 'booking_groups' => array(), 'groups_bookings' => array() ) );
+	
+	// Send notifications
+	if( $send_notifications ) {
+		foreach( $updated as $booking_id => $booking_updated_data ) {
+			if( empty( $booking_updated_data[ 'notification_sent' ] )
+			||  empty( $old_bookings[ $booking_id ] )
+			||  empty( $bookings[ $booking_id ] ) ) { continue; }
+			
+			$old_booking = $old_bookings[ $booking_id ];
+			$new_booking = $bookings[ $booking_id ];
+			
+			bookacti_send_booking_rescheduled_notification( $new_booking, $booking, 'customer' );
 		}
 	}
+	
+	return $updated;
 }
 
 

@@ -53,7 +53,7 @@ $messages = bookacti_get_messages();
 
 <!-- Frontend and backend - Reschedule booking -->
 <div id='bookacti-reschedule-booking-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' title='<?php echo $messages[ 'reschedule_dialog_title' ][ 'value' ]; ?>'>
-	<form class='bookacti-booking-form bookacti-reschedule-booking-form'>
+	<form id='bookacti-reschedule-booking-form' class='bookacti-booking-form'>
 		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_reschedule_booking' ); ?>'/>
 		<div>
 			<?php

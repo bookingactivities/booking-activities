@@ -335,12 +335,14 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Tweak - You cannot display events from a calendar that the booking form author cannot manage
 * Tweak - You cannot reschedule a booking to an event located on a calendar that the original booking form author cannot manage
 * Tweak - Remove "When to load the events?" option, you can use the bookacti_booking_system_default_attributes hook to set auto_load to 0 (after page load (default)) or 1 (on page load (not recommended, support no longer provided))
+* Tweak - Async notifications are no longer sent on any page load, they are sent only when a cron job is running
 * Fix - Booking filters may not be correctly applied after reloading the bookings page
 * Fix - Deleting an activity deleted it from all calendars instead of removing it only from the current calendar
 * Fix - Decode HTML entities before displaying WooCommerce price
 * Fix - Incorrect bookings retrieved if booking_group_id_operator filter was set to "OR" and no booking ids where provided
 * Dev - Functions to update and delete Booking Activities objects metadata now allow multiple object ids
 * Dev - Refactor the way async notifications are scheduled
+* Dev - Lots of hooks and functions have changed, especially regarding booking actions, test and update your custom code consequently
 * Lib - Update FullCalendar to 6.1.11
 
 = 1.15.20 - 2024/02/09 =
