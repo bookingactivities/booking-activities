@@ -340,6 +340,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Deleting an activity deleted it from all calendars instead of removing it only from the current calendar
 * Fix - Decode HTML entities before displaying WooCommerce price
 * Fix - Incorrect bookings retrieved if booking_group_id_operator filter was set to "OR" and no booking ids where provided
+* Fix - Selected user ID was displayed in user selectbox instead of proper label
 * Dev - Functions to update and delete Booking Activities objects metadata now allow multiple object ids
 * Dev - Refactor the way async notifications are scheduled
 * Dev - Lots of hooks and functions have changed, especially regarding booking actions, test and update your custom code consequently

@@ -13,14 +13,12 @@ $j( document ).ready( function() {
 	/**
 	 * Add data to booking actions
 	 * @since 1.7.6
-	 * @version 1.12.0
+	 * @version 1.16.0
 	 * @param {Event} e
 	 * @param {Object} data
 	 */
-	$j( '#bookacti-booking-list, .bookacti-user-booking-list-table' ).on( 'bookacti_booking_action_data', 'tr.bookacti-single-booking, tr.bookacti-booking-group', function( e, data ) {
-		var is_FormData = false;
-		if( typeof data.form_data !== 'undefined' ) { if( data.form_data instanceof FormData ) { is_FormData = true; } }
-		if( is_FormData ) {
+	$j( 'body' ).on( 'bookacti_booking_action_data', function( e, data ) {
+		if( data?.form_data instanceof FormData ) {
 			data.form_data.append( 'locale', bookacti_localized.current_locale );
 		} else {
 			data.locale = bookacti_localized.current_locale;
@@ -97,9 +95,10 @@ function bookacti_filter_booking_list( paged ) {
 				// Update the URL without refreshing the page
 				window.history.pushState( { path: response.new_url }, '', response.new_url );
 				
-				/**
-				 * Trigger after the booking list has been filtered
-				 */
+				// Refresh tooltips and grouped bookings visual frame
+				bookacti_refresh_booking_group_frame();
+				bookacti_init_tooltip();
+				
 				$j( '#bookacti-booking-list' ).trigger( 'bookacti_booking_list_filtered', [ response, data ] );
 
 			} else if( response.status === 'failed' ) {
@@ -251,7 +250,7 @@ function bookacti_init_booking_actions() {
 	$j( '.bookacti-user-booking-list-table, .woocommerce-table, #bookacti-booking-list' ).on( 'click', '.bookacti-booking-action, .bookacti-booking-group-action', function ( e ) {
 		e.preventDefault();
 		
-		user_auth_key = $j( this ).data( 'user-auth-key' ) ? $j( this ).data( 'user-auth-key' ) : '';
+		bookacti.user_auth_key = $j( this ).data( 'user-auth-key' ) ? $j( this ).data( 'user-auth-key' ) : '';
 		
 		var booking_selection = {
 			'booking_ids': [],
@@ -295,8 +294,7 @@ function bookacti_init_booking_actions() {
 			}
 		}
 		
-		// Common action
-		// If it is a link which do not have 'prevent-default' class, just follow the link
+		// If the action is a link that do not have 'prevent-default' class, just follow the link
 		if( $j( this ).attr( 'href' ) && $j( this ).attr( 'href' ) !== '' && ! $j( this ).hasClass( 'prevent-default' ) ) {
 			if( $j( this ).hasClass( '_blank' ) ) {
 				window.open( $j( this ).attr( 'href' ) );
@@ -463,7 +461,7 @@ function bookacti_display_grouped_bookings( booking_selection ) {
 	data.form_data.append( 'booking_selection', JSON.stringify( booking_selection ) );
 	data.form_data.append( 'columns', JSON.stringify( columns ) );
 	data.form_data.append( 'is_admin', bookacti_localized.is_admin ? 1 : 0 );
-	data.form_data.append( 'user_auth_key', typeof user_auth_key !== 'undefined' ? user_auth_key : '' );
+	data.form_data.append( 'user_auth_key', typeof bookacti.user_auth_key !== 'undefined' ? bookacti.user_auth_key : '' );
 	data.form_data.append( 'nonce', bookacti_localized.nonce_get_booking_rows );
 
 	$j( 'body' ).trigger( 'bookacti_booking_action_data', [ data, booking_selection, 'display_grouped_bookings' ] );
@@ -499,7 +497,11 @@ function bookacti_display_grouped_bookings( booking_selection ) {
 						}
 					});
 					bookacti_refresh_list_table_hidden_columns();
+					bookacti_init_tooltip();
 				}
+				
+				// Refresh grouped bookings visual frame
+				bookacti_refresh_booking_group_frame();
 				
 				$j( 'body' ).trigger( 'bookacti_grouped_bookings_displayed', [ response ] );
 

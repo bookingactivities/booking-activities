@@ -1485,7 +1485,7 @@ function bookacti_display_user_selectbox( $raw_args ) {
 		'meta' => true, 'meta_single' => true,
 		'orderby' => 'display_name', 'order' => 'ASC'
 	);
-
+	
 	$args = apply_filters( 'bookacti_user_selectbox_args', wp_parse_args( $raw_args, $defaults ), $raw_args );
 	
 	$is_allowed = current_user_can( 'list_users' ) || current_user_can( 'edit_users' );
@@ -1497,7 +1497,7 @@ function bookacti_display_user_selectbox( $raw_args ) {
 	$selected_user_ids = bookacti_ids_to_array( $args[ 'selected' ] );
 	
 	if( $args[ 'ajax' ] && $args[ 'selected' ] && $is_allowed ) {
-		$selected_users = $selected_user_ids ? get_users( array( 'include' => $selected_user_ids ) ) : array();
+		$selected_users = $selected_user_ids ? bookacti_get_users_data( array( 'include' => $selected_user_ids ) ) : array();
 		if( $selected_users ) { $users = $selected_users; }
 	}
 	
@@ -1508,7 +1508,7 @@ function bookacti_display_user_selectbox( $raw_args ) {
 		foreach( $users as $user ) {
 			$selected_key = array_search( intval( $user->ID ), $selected_user_ids, true );
 			if( $selected_key !== false ) { unset( $selected_user_ids[ $selected_key ] ); }
-
+			
 			// Build the option label based on the array
 			$label = '';
 			foreach( $args[ 'option_label' ] as $show ) {
@@ -1561,14 +1561,18 @@ function bookacti_display_user_selectbox( $raw_args ) {
 		<?php
 			}
 			// Keep both numeric and string values
-			$selected_user_ids = array_merge( $selected_user_ids, array_filter( $args[ 'selected' ], 'is_string' ) );
-			
+			foreach( $args[ 'selected' ] as $selected ) {
+				if( $selected && ! is_numeric( $selected ) && is_string( $selected ) ) {
+					$selected_user_ids[] = $selected;
+				}
+			}
 			
 			if( $args[ 'allow_current' ] ) {
 				$selected_key = array_search( 'current', $selected_user_ids, true );
 				if( $selected_key !== false ) { unset( $selected_user_ids[ $selected_key ] ); }
-				
-				?><option value='current' <?php if( $selected_key !== false ) { echo 'selected'; } ?> ><?php esc_html_e( 'Current user', 'booking-activities' ); ?></option><?php
+			?>
+				<option value='current' <?php if( $selected_key !== false ) { echo 'selected'; } ?>><?php esc_html_e( 'Current user', 'booking-activities' ); ?></option>
+			<?php
 			}
 
 			do_action( 'bookacti_add_user_selectbox_options', $args, $users );
@@ -1576,14 +1580,16 @@ function bookacti_display_user_selectbox( $raw_args ) {
 			if( $options ) {
 				foreach( $options as $option ) {
 				?>
-					<option value='<?php echo esc_attr( $option[ 'id' ] ); ?>' <?php if( ! empty( $option[ 'selected' ] ) ) { echo 'selected'; } ?> ><?php echo esc_html( $option[ 'text' ] ); ?></option>
+					<option value='<?php echo esc_attr( $option[ 'id' ] ); ?>' <?php if( ! empty( $option[ 'selected' ] ) ) { echo 'selected'; } ?>><?php echo esc_html( $option[ 'text' ] ); ?></option>
 				<?php
 				}
 			}
-
+			
 			if( $args[ 'allow_tags' ] && $selected_user_ids ) {
 				foreach( $selected_user_ids as $selected_user_id ) {
-					?><option value='<?php echo esc_attr( $selected_user_id ); ?>' selected><?php echo esc_html( $selected_user_id ); ?></option><?php
+				?>
+					<option value='<?php echo esc_attr( $selected_user_id ); ?>' selected><?php echo esc_html( $selected_user_id ); ?></option>
+				<?php
 				}
 			}
 		?>

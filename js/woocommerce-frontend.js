@@ -4,17 +4,12 @@ $j( document ).ready( function() {
 	/**
 	 * Add data to booking actions
 	 * @since 1.0.12
-	 * @version 1.12.0
+	 * @version 1.16.0
 	 * @param {Event} e
 	 * @param {Object} data
-	 * @param {Int} booking_id
-	 * @param {String} booking_type
-	 * @param {String} action
 	 */
-	$j( '.woocommerce' ).on( 'bookacti_booking_action_data', '.woocommerce-table tr.order_item', function( e, data, booking_id, booking_type, action ) {
-		var is_FormData = false;
-		if( typeof data.form_data !== 'undefined' ) { if( data.form_data instanceof FormData ) { is_FormData = true; } }
-		if( is_FormData ) {
+	$j( 'body.woocommerce' ).on( 'bookacti_booking_action_data', function( e, data ) {
+		if( data?.form_data instanceof FormData ) {
 			data.form_data.append( 'context', 'wc_order_items' );
 		} else {
 			data.context = 'wc_order_items';
