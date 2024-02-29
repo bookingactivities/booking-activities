@@ -1,7 +1,7 @@
 <?php 
 /**
  * Frontend and Backend booking dialogs
- * @version 1.15.5
+ * @version 1.16.0
  */
 
 // Exit if accessed directly
@@ -12,10 +12,14 @@ $messages = bookacti_get_messages();
 
 <!-- Frontend and backend - Cancel booking -->
 <div id='bookacti-cancel-booking-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' style='display:none;' title='<?php echo $messages[ 'cancel_dialog_title' ][ 'value' ]; ?>' >
-	<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_cancel_booking' ); ?>'/>
-<?php
-	echo wp_kses_post( wpautop( bookacti_get_message( 'cancel_dialog_content' ) ) );
-?>
+	<form id='bookacti-cancel-booking-form'>
+		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_cancel_booking' ); ?>'/>
+		<?php
+			echo wp_kses_post( wpautop( bookacti_get_message( 'cancel_dialog_content' ) ) );
+		
+			do_action( 'bookacti_cancel_booking_dialog_after' );
+		?>
+	</form>
 </div>
 
 <!-- Frontend and backend - Refund a cancel booking -->

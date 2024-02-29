@@ -824,7 +824,7 @@ function bookacti_user_can_manage_booking( $booking, $allow_self = true, $capabi
 	
 	if( $booking ) {
 		$booking_user_id = isset( $booking->user_id ) && is_numeric( $booking->user_id ) ? intval( $booking->user_id ) : 0;
-		$is_own = apply_filters( 'bookacti_allow_others_booking_changes', $booking_user_id && $booking_user_id === intval( $user_id ), $booking, 'edit' );
+		$is_own = apply_filters( 'bookacti_allow_others_booking_changes', $booking_user_id && $booking_user_id === intval( $user->ID ), $booking, 'edit' );
 		if( ( $has_cap && bookacti_user_can_manage_template( $booking->template_id, $user_id ) ) 
 		 || ( $allow_self && $is_own ) ) { 
 			$user_can_manage_booking = true; 
@@ -837,7 +837,7 @@ function bookacti_user_can_manage_booking( $booking, $allow_self = true, $capabi
 
 /**
  * Check if a booking can be cancelled
- * @version 1.12.7
+ * @version 1.16.0
  * @param object|int $booking
  * @param string $context
  * @param boolean $allow_grouped_booking
@@ -856,9 +856,8 @@ function bookacti_booking_can_be_cancelled( $booking, $context = '', $allow_grou
 			$is_in_delay       = apply_filters( 'bookacti_bypass_booking_changes_deadline', false, $booking, 'cancel' ) ? true : bookacti_is_booking_in_delay( $booking, 'cancel' );
 			$user_id           = isset( $booking->user_id ) && is_numeric( $booking->user_id ) ? intval( $booking->user_id ) : 0;
 			$is_own            = apply_filters( 'bookacti_allow_others_booking_changes', $user_id && $user_id === get_current_user_id(), $booking, 'cancel' );
-			if( ! $is_cancel_allowed || $is_grouped || ! $is_in_delay || ! $is_own ) { $is_allowed = false; }
+			if( ! $is_cancel_allowed || $is_grouped || ! $is_in_delay || ! $is_own || empty( $booking->active ) ) { $is_allowed = false; }
 		}
-		if( empty( $booking->active ) && $context !== 'admin' ) { $is_allowed = false; }
 	}
 
 	return apply_filters( 'bookacti_booking_can_be_cancelled', $is_allowed, $booking, $context, $allow_grouped_booking );
@@ -1766,13 +1765,13 @@ function bookacti_get_booking_price_details_html( $prices_array, $booking ) {
 function bookacti_get_booking_group_actions( $admin_or_front = 'both' ) {
 	$actions = apply_filters( 'bookacti_booking_group_actions', array(
 		'change-state' => array( 
-			'class'          => 'bookacti-change-booking-group-state',
+			'class'          => 'bookacti-change-booking-status',
 			'label'          => esc_html__( 'Change booking status',  'booking-activities' ),
 			'description'    => esc_html__( 'Change the booking group state to any available state.', 'booking-activities' ),
 			'link'           => '',
 			'admin_or_front' => 'admin' ),
 		'change-quantity' => array( 
-			'class'          => 'bookacti-change-booking-group-quantity',
+			'class'          => 'bookacti-change-booking-quantity',
 			'label'          => esc_html__( 'Change booking quantity',  'booking-activities' ),
 			'description'    => esc_html__( 'Change the quantity to any number.', 'booking-activities' ),
 			'link'           => '',
@@ -1784,25 +1783,25 @@ function bookacti_get_booking_group_actions( $admin_or_front = 'both' ) {
 			'link'           => '',
 			'admin_or_front' => 'admin' ),
 		'cancel' => array( 
-			'class'          => 'bookacti-cancel-booking-group',
+			'class'          => 'bookacti-cancel-booking',
 			'label'          => bookacti_get_message( 'cancel_booking_open_dialog_button' ),
 			'description'    => esc_html__( 'Cancel the booking group.', 'booking-activities' ),
 			'link'           => '',
 			'admin_or_front' => 'front' ),
 		'refund' => array( 
-			'class'          => 'bookacti-refund-booking-group',
+			'class'          => 'bookacti-refund-booking',
 			'label'          => $admin_or_front === 'both' || $admin_or_front === 'admin' ? esc_html_x( 'Refund', 'Button label to trigger the refund action', 'booking-activities' ) : bookacti_get_message( 'refund_dialog_button' ),
 			'description'    => esc_html__( 'Refund the booking group with one of the available refund method.', 'booking-activities' ),
 			'link'           => '',
 			'admin_or_front' => 'both' ),
 		'send-notification' => array( 
-			'class'          => 'bookacti-send-booking-group-notification',
+			'class'          => 'bookacti-send-booking-notification',
 			'label'          => esc_html__( 'Send notification', 'booking-activities' ),
 			'description'    => esc_html__( 'Send a notification.', 'booking-activities' ),
 			'link'           => '',
 			'admin_or_front' => 'admin' ),
 		'delete' => array( 
-			'class'          => 'bookacti-delete-booking-group bookacti-delete-button',
+			'class'          => 'bookacti-delete-booking bookacti-delete-button',
 			'label'          => esc_html__( 'Delete', 'booking-activities' ),
 			'description'    => esc_html__( 'Delete permanently the booking group.', 'booking-activities' ),
 			'link'           => '',

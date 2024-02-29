@@ -266,9 +266,19 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Load tooltip for booking actions retrieved via AJAX and Refresh booking groups frames
-	 * @version 1.8.6
+	 * @version 1.16.0
 	 */
-	$j( '#bookacti-booking-list' ).on( 'bookacti_booking_list_filtered bookacti_grouped_bookings_displayed', function(){
+	$j( '#bookacti-booking-list' ).on( 'bookacti_booking_list_filtered', function(){
+		bookacti_init_tooltip();
+		bookacti_refresh_booking_group_frame();
+	});
+	
+	
+	/**
+	 * Load tooltip for booking actions retrieved via AJAX and Refresh booking groups frames
+	 * @since 1.16.0
+	 */
+	$j( 'body' ).on( 'bookacti_grouped_bookings_displayed', function(){
 		bookacti_init_tooltip();
 		bookacti_refresh_booking_group_frame();
 	});

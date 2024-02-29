@@ -1645,24 +1645,6 @@ function bookacti_get_bookings_without_account( $filters = array() ) {
 
 
 /**
- * Cancel a booking
- * @version 1.9.0
- * @global wpdb $wpdb
- * @param int $booking_id
- * @return int|false
- */
-function bookacti_cancel_booking( $booking_id ) {
-	global $wpdb;
-
-	$query = 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS . ' SET state = "cancelled", active = 0 WHERE id = %d AND active = 1';
-	$prep  = $wpdb->prepare( $query, $booking_id );
-	$cancelled = $wpdb->query( $prep );
-
-	return $cancelled;
-}
-
-
-/**
  * Cancel all bookings of an event
  * @since 1.9.0
  * @version 1.15.6
@@ -1864,33 +1846,6 @@ function bookacti_update_bookings_event_id( $old_event_id, $new_event_id, $event
 
 
 /**
- * Update booking status
- * 
- * @global wpdb $wpdb
- * @param int $booking_id
- * @param string $state
- * @param int|string $active
- * @return int|false
- */
-function bookacti_update_booking_state( $booking_id, $state, $active = 'auto' ) {
-	
-	global $wpdb;
-	
-	if( $active === 'auto' ) {
-		$active = in_array( $state, bookacti_get_active_booking_states(), true ) ? 1 : 0;
-	}
-	
-	$query = 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS . ' '
-				. ' SET state = %s, active = IFNULL( NULLIF( %d, -1 ), active ) '
-				. ' WHERE id = %d';
-	$prep  = $wpdb->prepare( $query, $state, $active, $booking_id );
-	$updated = $wpdb->query( $prep );
-	
-	return $updated;
-}
-
-
-/**
  * Update bookings status
  * @since 1.16.0
  * @global wpdb $wpdb
@@ -1905,7 +1860,7 @@ function bookacti_update_bookings_status( $booking_ids, $new_status, $active = '
 	if( $active === 'auto' ) {
 		$active = in_array( $new_status, bookacti_get_active_booking_states(), true ) ? 1 : 0;
 	}
-	$active = intval( $active ) > 1 ? 1 : ( intval( $active ) < 0 ? -1 : 0 );
+	$active = intval( $active ) >= 1 ? 1 : ( intval( $active ) < 0 ? -1 : 0 );
 	
 	$query = 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS
 	       . ' SET state = %s, active = IFNULL( NULLIF( %d, -1 ), active ) '
@@ -2255,47 +2210,6 @@ function bookacti_update_booking_groups_event_group_id( $old_event_group_id, $ne
 
 
 /**
- * Update booking group state
- * @since 1.1.0
- * @version 1.10.0
- * @global wpdb $wpdb
- * @param int $booking_group_id
- * @param string $state
- * @param 0|1|'auto' $active
- * @param boolean $update_bookings Whether to updates bookings state of the group.
- * @param boolean $old_state The bookings must be have the given status.
- * @return int|boolean|null
- */
-function bookacti_update_booking_group_state( $booking_group_id, $state, $active = 'auto', $update_bookings = false, $old_state = '' ) {
-	global $wpdb;
-
-	if( $active === 'auto' ) {
-		$active = in_array( $state, bookacti_get_active_booking_states(), true ) ? 1 : 0;
-	}
-
-	$query1 = 'UPDATE ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' '
-	        . ' SET state = %s, active = IFNULL( NULLIF( %d, -1 ), active ) '
-	        . ' WHERE id = %d';
-	$prep1  = $wpdb->prepare( $query1, $state, $active, $booking_group_id );
-	$updated1 = $wpdb->query( $prep1 );
-
-	$updated = $updated1;
-
-	if( $update_bookings ) {
-		$updated2 = bookacti_update_booking_group_bookings_state( $booking_group_id, $state, $active, $old_state );
-
-		if( is_int( $updated1 ) && is_int( $updated2 ) ) {
-			$updated = $updated1 + $updated2;
-		} else {
-			$updated = false;
-		}
-	}
-
-	return $updated;
-}
-
-
-/**
  * Update booking groups status
  * @since 1.16.0
  * @global wpdb $wpdb
@@ -2311,7 +2225,7 @@ function bookacti_update_booking_groups_status( $group_ids, $new_status, $active
 	if( $active === 'auto' ) {
 		$active = in_array( $new_status, bookacti_get_active_booking_states(), true ) ? 1 : 0;
 	}
-	$active = intval( $active ) > 1 ? 1 : ( intval( $active ) < 0 ? -1 : 0 );
+	$active = intval( $active ) >= 1 ? 1 : ( intval( $active ) < 0 ? -1 : 0 );
 	
 	$group_ids_placeholders = '%d';
 	$array_count = count( $group_ids );
@@ -2457,98 +2371,6 @@ function bookacti_update_booking_group_bookings( $booking_group_data, $where = a
 		do_action( 'bookacti_booking_group_bookings_updated', $booking_group_data, $where );
 	}
 	
-	return $updated;
-}
-
-
-/**
- * Update booking group bookings state
- * 
- * @since 1.1.0
- * @version 1.2.0
- * 
- * @global wpdb $wpdb
- * @param int $booking_group_id
- * @param string $state
- * @param boolean|'auto' $active
- * @param string|false $where_state
- * @return type
- */
-function bookacti_update_booking_group_bookings_state( $booking_group_id, $state, $active = 'auto', $where_state = false ) {
-
-	global $wpdb;
-
-	if( $active === 'auto' ) {
-		$active = in_array( $state, bookacti_get_active_booking_states(), true ) ? 1 : 0;
-	}
-
-	// Get booking ids
-	$query_bookings = 'SELECT id FROM ' . BOOKACTI_TABLE_BOOKINGS 
-	                . ' WHERE group_id = %d ';
-
-	$variables_bookings = array( $booking_group_id );
-
-	if( ! empty( $where_state ) ) {
-		$query_bookings .= ' AND state = %s ';
-		$variables_bookings[] = $where_state;
-	}
-
-	$prep_bookings = $wpdb->prepare( $query_bookings, $variables_bookings );
-	$bookings = $wpdb->get_results( $prep_bookings, OBJECT );
-
-	if( empty( $bookings ) ) {
-		return 0;
-	}
-
-	// Change bundled bookings state
-	$query = 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS 
-	       . ' SET state = %s, active = IFNULL( NULLIF( %d, -1 ), active ) '
-	       . ' WHERE group_id = %d';
-
-	$variables_array = array( $state, $active, $booking_group_id );
-
-	if( ! empty( $where_state ) ) {
-		$query .= ' AND state = %s ';
-		$variables_array[] = $where_state;
-	}
-
-	$prep = $wpdb->prepare( $query, $variables_array );
-	$updated = $wpdb->query( $prep );
-
-	return $updated;
-}
-
-
-/**
- * Update booking group bookings payment status
- * 
- * @since 1.3.0
- * @version 1.5.0
- * @global wpdb $wpdb
- * @param int $booking_group_id
- * @param string $state
- * @param string|false $where_state
- * @return int|false
- */
-function bookacti_update_booking_group_bookings_payment_status( $booking_group_id, $state, $where_state = false ) {
-
-	global $wpdb;
-
-	// Change bundled bookings payment status
-	$query = 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS 
-	       . ' SET payment_status = %s '
-	       . ' WHERE group_id = %d';
-
-	$variables_array = array( $state, $booking_group_id );
-
-	if( ! empty( $where_state ) ) {
-		$query	.= ' AND payment_status = %s ';
-		$variables_array[] = $where_state;
-	}
-
-	$prep = $wpdb->prepare( $query, $variables_array );
-	$updated = $wpdb->query( $prep );
-
 	return $updated;
 }
 

@@ -195,23 +195,17 @@ label[for="bookacti-booking-filter-dates-to"] + input#bookacti-booking-filter-da
 #bookacti-booking-list-container .column-state .bookacti-loading-text      { display: none; }
 
 .wp-admin a.bookacti-booking-action, 
-.wp-admin a.bookacti-booking-group-action                { width: 2em; height: 2em; padding: 0; text-align: center; }
+.wp-admin a.bookacti-booking-group-action              { width: 2em; height: 2em; padding: 0; text-align: center; }
 .wp-admin a.bookacti-booking-action:after,
-.wp-admin a.bookacti-booking-group-action:after          { font-family: 'dashicons'; }
-.wp-admin a.bookacti-change-booking-status:after,
-.wp-admin a.bookacti-change-booking-group-state:after    { content: '\f464'; }
-.wp-admin a.bookacti-change-booking-quantity:after,
-.wp-admin a.bookacti-change-booking-group-quantity:after { content: '\f156'; }
-.wp-admin a.bookacti-refund-booking:after,
-.wp-admin a.bookacti-refund-booking-group:after          { content: '\f526'; }
-.wp-admin a.bookacti-send-booking-notification:after,
-.wp-admin a.bookacti-send-booking-group-notification:after { content: '\f466'; }
-.wp-admin a.bookacti-delete-booking:after,
-.wp-admin a.bookacti-delete-booking-group:after          { content: '\f182'; }
-.wp-admin a.bookacti-view-booking-order:after,
-.wp-admin a.bookacti-view-booking-group-order:after     { font-family: 'WooCommerce'; content: '\e03d'; }
-.wp-admin a.bookacti-reschedule-booking:after           { content: '\f469'; }
-.wp-admin a.bookacti-show-booking-group-bookings:after  { content: '\f163'; }
+.wp-admin a.bookacti-booking-group-action:after        { font-family: 'dashicons'; }
+.wp-admin a.bookacti-change-booking-status:after       { content: '\f464'; }
+.wp-admin a.bookacti-change-booking-quantity:after     { content: '\f156'; }
+.wp-admin a.bookacti-refund-booking:after              { content: '\f526'; }
+.wp-admin a.bookacti-send-booking-notification:after   { content: '\f466'; }
+.wp-admin a.bookacti-delete-booking:after              { content: '\f182'; }
+.wp-admin a.bookacti-view-booking-order:after          { font-family: 'WooCommerce'; content: '\e03d'; }
+.wp-admin a.bookacti-reschedule-booking:after          { content: '\f469'; }
+.wp-admin a.bookacti-show-booking-group-bookings:after { content: '\f163'; }
 
 a.bookacti-booking-group-action[disabled],
 a.bookacti-booking-action[disabled]         { opacity: 0.4; pointer-events: none; }
