@@ -539,15 +539,18 @@ add_action( 'woocommerce_order_status_pending_to_failed', 'bookacti_wc_update_fa
 /**
  * Update order status according to the bookings status bound to its items
  * @since 1.9.0
- * @param object $booking
- * @param string $new_state
+ * @version 1.16.0
+ * @param string $new_status
+ * @param object $booking_object
  * @param array $args
  */
-function bookacti_wc_update_booking_order_status_according_to_its_bookings( $booking ) {
-	if( empty( $booking->order_id ) ) { return; }
-	bookacti_wc_update_order_status_according_to_its_bookings( $booking->order_id );
+function bookacti_wc_update_booking_order_status_according_to_its_bookings( $new_status, $booking_object, $args = array() ) {
+	if( empty( $booking_object->order_id ) ) { return; }
+	if( ! empty( $args[ 'booking_group_status_changed' ] ) ) { return; }
+	bookacti_wc_update_order_status_according_to_its_bookings( $booking_object->order_id );
 }
-add_action( 'bookacti_booking_state_changed', 'bookacti_wc_update_booking_order_status_according_to_its_bookings', 10, 1 );
+add_action( 'bookacti_booking_status_changed', 'bookacti_wc_update_booking_order_status_according_to_its_bookings', 10, 3 );
+add_action( 'bookacti_booking_group_status_changed', 'bookacti_wc_update_booking_order_status_according_to_its_bookings', 10, 2 );
 
 
 /**

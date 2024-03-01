@@ -300,28 +300,8 @@ add_filter( 'bookacti_notifications_tags_values', 'bookacti_wc_notifications_tag
 
 
 /**
- * Whether to send the BA refund notification when the order (item) is manually refunded
- * @since 1.8.3
- * @version 1.10.0
- * @param string $recipients
- * @param object $booking
- * @param string $status
- * @param array $args
- * @return string
- */
-function bookacti_wc_refund_notification_recipients( $recipients, $booking, $status, $args ) {
-	if( ! empty( $args[ 'refund_action' ] ) && $args[ 'refund_action' ] === 'manual' ) {
-		$recipients = 'customer';
-		if( ! defined( 'BOOKACTI_NOTIFICATION_MANUAL_REFUND' ) ) { define( 'BOOKACTI_NOTIFICATION_MANUAL_REFUND', 1 ); }
-	}
-	return $recipients;
-}
-add_filter( 'bookacti_booking_state_change_notification_recipient', 'bookacti_wc_refund_notification_recipients', 10, 4 );
-
-
-/**
- * Decide whether to send the notification when a manual refund is processed
- * @since 1.8.6
+ * Decide whether to send the notification when a refund is processed via WC
+ * @since 1.16.0 (was bookacti_allow_refund_notification_during_manual_refund)
  * @param boolean $sending_allowed
  * @param array $notification
  * @param array $tags
@@ -331,15 +311,17 @@ add_filter( 'bookacti_booking_state_change_notification_recipient', 'bookacti_wc
  * @param array $args
  * @return boolean
  */
-function bookacti_allow_refund_notification_during_manual_refund( $sending_allowed, $notification, $tags, $locale, $booking, $booking_type, $args ) {
-	if( defined( 'BOOKACTI_NOTIFICATION_MANUAL_REFUND' ) 
-	&&  BOOKACTI_NOTIFICATION_MANUAL_REFUND 
-	&&  $sending_allowed 
+function bookacti_wc_allow_sending_refund_notification( $sending_allowed, $notification, $tags, $locale, $booking, $booking_type, $args ) {
+	if( $sending_allowed 
 	&&  strpos( $notification[ 'id' ], '_refunded' ) !== false
-	&&  empty( $notification[ 'active_with_wc' ] ) ) { $sending_allowed = false; }
+	&&  empty( $notification[ 'active_with_wc' ] )
+	&&  ! empty( $args[ 'refund_action' ] )
+	&&  in_array( $args[ 'refund_action' ], array( 'auto', 'manual' ) ) ) { 
+		$sending_allowed = false;
+	}
 	return $sending_allowed;
 }
-add_filter( 'bookacti_notification_sending_allowed', 'bookacti_allow_refund_notification_during_manual_refund', 10, 7 );
+add_filter( 'bookacti_notification_sending_allowed', 'bookacti_wc_allow_sending_refund_notification', 10, 7 );
 
 
 /**

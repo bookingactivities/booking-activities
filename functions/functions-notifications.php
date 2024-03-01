@@ -612,6 +612,7 @@ function bookacti_send_notification( $notification_id, $booking_id, $booking_typ
 	// Send notifications asynchronously
 	$allow_async = apply_filters( 'bookacti_allow_async_notifications', bookacti_get_setting_value( 'bookacti_notifications_settings', 'notifications_async' ) );
 	if( $allow_async && $async ) {
+		// Temporarily save the notification settings in order to send it later
 		$alloptions = wp_load_alloptions();
 		$async_notifications   = isset( $alloptions[ 'bookacti_async_notifications' ] ) ? maybe_unserialize( $alloptions[ 'bookacti_async_notifications' ] ) : array();
 		if( ! is_array( $async_notifications ) ) { $async_notifications = array(); }
@@ -622,6 +623,11 @@ function bookacti_send_notification( $notification_id, $booking_id, $booking_typ
 			'args'            => $args
 		);
 		update_option( 'bookacti_async_notifications', $async_notifications );
+		
+		// Delay with few seconds to try to avoid scheduling problems
+		if ( ! wp_next_scheduled( 'bookacti_cron_send_async_notifications' ) ) {
+			wp_schedule_single_event( time() + 3, 'bookacti_cron_send_async_notifications' );
+		}
 		return array();
 	}
 	
@@ -730,42 +736,6 @@ function bookacti_send_notification( $notification_id, $booking_id, $booking_typ
 	if( $lang_switched ) { bookacti_restore_locale(); }
 	
 	return $sent;
-}
-
-
-/**
- * Send async notifications
- * @since 1.16.0
- */
-function bookacti_send_async_notifications() {
-	$nb_sent = array();
-	
-	// Make sure to run this function once per page load
-	if( defined( 'BOOKACTI_SENDING_ASYNC_NOTIFICATIONS' ) ) { return $nb_sent; }
-	define( 'BOOKACTI_SENDING_ASYNC_NOTIFICATIONS', 1 );
-	
-	$alloptions = wp_load_alloptions();
-	$async_notifications = isset( $alloptions[ 'bookacti_async_notifications' ] ) ? maybe_unserialize( $alloptions[ 'bookacti_async_notifications' ] ) : array();
-	
-	// Remove the async notifications from db right after retrieving them
-	update_option( 'bookacti_async_notifications', array() );
-	
-	if( ! $async_notifications ) { return $nb_sent; }
-	
-	// Try to merge the notifications sent to the same user
-	$merging_allowed = apply_filters( 'bookacti_async_notifications_merging_allowed', true, $async_notifications );
-	if( $merging_allowed ) {
-		$async_notifications = bookacti_merge_planned_notifications( $async_notifications );
-	}
-	
-	// If there are a lot of notifications to send, this operation can take a while
-	// So we need to increase the max_execution_time and the memory_limit
-	bookacti_increase_max_execution_time( 'send_async_notifications' );
-	
-	// Send the notifications
-	foreach( $async_notifications as $async_notification ) {
-		bookacti_send_notification( $async_notification[ 'notification_id' ], $async_notification[ 'booking_id' ], $async_notification[ 'booking_type'], $async_notification[ 'args' ], 0 );
-	}
 }
 
 
@@ -1077,6 +1047,54 @@ function bookacti_send_email( $to, $subject, $message, $headers, $attachments = 
 
 
 /**
+ * Send booking status changes notification
+ * @since 1.16.0
+ * @param string $status
+ * @param object $booking
+ * @param object $old_booking
+ * @param string $send_to
+ * @param array $notification_args
+ */
+function bookacti_send_booking_status_change_notification( $status, $booking, $old_booking, $send_to = 'both', $notification_args = array() ) {
+	$send_to           = apply_filters( 'bookacti_booking_status_change_notification_recipient', $send_to && in_array( $send_to, array( 'both', 'customer', 'admin' ), true ) ? $send_to : 'both', $status, $booking, $old_booking );
+	$notification_args = apply_filters( 'bookacti_booking_status_change_notification_args', $notification_args, $status, $booking, $old_booking, $send_to );
+	
+	if( $send_to === 'customer' || $send_to === 'both' ) {
+		bookacti_send_notification( 'customer_' . $status . '_booking', $booking->id, 'single', $notification_args );
+	}
+	if( $send_to === 'admin' || $send_to === 'both' ) {
+		bookacti_send_notification( 'admin_' . $status . '_booking', $booking->id, 'single', $notification_args );
+	}
+	
+	do_action( 'bookacti_booking_status_change_notification_sent', $status, $booking, $old_booking, $send_to, $notification_args );
+}
+
+
+/**
+ * Send booking group status changes notification
+ * @since 1.16.0
+ * @param string $status
+ * @param object $booking_group
+ * @param object $old_booking_group
+ * @param string $send_to
+ * @param array $notification_args
+ */
+function bookacti_send_booking_group_status_change_notification( $status, $booking_group, $old_booking_group, $send_to = 'both', $notification_args = array() ) {
+	$send_to           = apply_filters( 'bookacti_booking_group_status_change_notification_recipient', $send_to && in_array( $send_to, array( 'both', 'customer', 'admin' ), true ) ? $send_to : 'both', $status, $booking_group, $old_booking_group );
+	$notification_args = apply_filters( 'bookacti_booking_group_status_change_notification_args', $notification_args, $status, $booking_group, $old_booking_group, $send_to );
+	
+	if( $send_to === 'customer' || $send_to === 'both' ) {
+		bookacti_send_notification( 'customer_' . $status . '_booking', $booking_group->id, 'group', $notification_args );
+	}
+	if( $send_to === 'admin' || $send_to === 'both' ) {
+		bookacti_send_notification( 'admin_' . $status . '_booking', $booking_group->id, 'group', $notification_args );
+	}
+	
+	do_action( 'bookacti_booking_group_status_change_notification_sent', $status, $booking_group, $old_booking_group, $send_to, $notification_args );
+}
+
+
+/**
  * Send a notification to admin and customer when a booking is rescheduled
  * @since 1.16.0 (was bookacti_send_notification_when_booking_is_rescheduled)
  * @param object $booking
@@ -1084,9 +1102,7 @@ function bookacti_send_email( $to, $subject, $message, $headers, $attachments = 
  * @param string $send_to
  */
 function bookacti_send_booking_rescheduled_notification( $booking, $old_booking, $send_to = 'both' ) {
-	// If we cannot know if the action was made by customer or admin, send to both
-	$send_to = apply_filters( 'bookacti_reschedule_notification_recipient', $send_to && in_array( $send_to, array( 'both', 'customer', 'admin' ), true ) ? $send_to : 'both', $booking, $old_booking );
-	
+	$send_to           = apply_filters( 'bookacti_reschedule_notification_recipient', $send_to && in_array( $send_to, array( 'both', 'customer', 'admin' ), true ) ? $send_to : 'both', $booking, $old_booking );
 	$notification_args = apply_filters( 'bookacti_booking_rescheduled_notification_args', array( 
 		'tags' => array(
 			'{booking_old_start_raw}' => $old_booking->event_start,
@@ -1094,11 +1110,10 @@ function bookacti_send_booking_rescheduled_notification( $booking, $old_booking,
 		)
 	), $booking, $old_booking, $send_to );
 	
-	if( $send_to === 'both' || $send_to === 'customer' ) {
+	if( $send_to === 'customer' || $send_to === 'both' ) {
 		bookacti_send_notification( 'customer_rescheduled_booking', $booking->id, 'single', $notification_args );
 	}
-	
-	if( $send_to === 'both' || $send_to === 'admin' ) {
+	if( $send_to === 'admin' || $send_to === 'both' ) {
 		bookacti_send_notification( 'admin_rescheduled_booking', $booking->id, 'single', $notification_args );
 	}
 	
@@ -1193,6 +1208,7 @@ function bookacti_maybe_send_event_rescheduled_notifications( $old_event, $old_b
 /**
  * Send a notification when an event is deleted to the customers who booked it
  * @since 1.14.0 (was bookacti_send_event_cancelled_notifications)
+ * @version 1.16.0
  * @param object $event
  * @param array $old_bookings
  * @param boolean $send_notitifications
@@ -1216,7 +1232,7 @@ function bookacti_maybe_send_event_cancelled_notifications( $event, $old_booking
 	}
 	
 	// Get bookings
-	$bookings_filters = bookacti_format_booking_filters( $bookings_filters );
+	$bookings_filters = bookacti_format_booking_filters( array_merge( $bookings_filters, array( 'fetch_meta' => true ) ) );
 	$bookings = bookacti_get_bookings( $bookings_filters );
 	if( ! $bookings ) { return; }
 	
@@ -1226,12 +1242,13 @@ function bookacti_maybe_send_event_cancelled_notifications( $event, $old_booking
 
 	foreach( $bookings as $booking ) {
 		$old_booking = ! empty( $old_bookings[ $booking->id ] ) ? $old_bookings[ $booking->id ] : $booking;
+		if( $old_booking->state === $booking->state ) { continue; }
+		
+		do_action( 'bookacti_booking_status_changed', $booking->state, $old_booking );
 
 		$send = apply_filters( 'bookacti_send_event_cancelled_notification', $send_notitifications, $booking, $event, $old_booking );
-		
-		do_action( 'bookacti_booking_state_changed', $old_booking, 'cancelled', array( 'is_admin' => true, 'send_notifications' => $send, 'send_to' => 'customer' ) );
-		
 		if( $send ) {
+			bookacti_send_booking_status_change_notification( $booking->state, $booking, $old_booking, 'customer' );
 			do_action( 'bookacti_event_cancelled_notification_sent', $event, $booking, $old_booking );
 		}
 	}
@@ -1241,10 +1258,13 @@ function bookacti_maybe_send_event_cancelled_notifications( $event, $old_booking
 /**
  * Send a notification when an event is deleted to the customers who booked it
  * @since 1.14.1 (was bookacti_send_group_of_events_cancelled_notifications)
+ * @version 1.16.0
  * @param array $group_of_events
  * @param array $old_booking_groups
+ * @param array $old_groups_bookings
+ * @param bool $send_notifications
  */
-function bookacti_maybe_send_group_of_events_cancelled_notifications( $group_of_events, $old_booking_groups = array(), $send_notifications = true ) {
+function bookacti_maybe_send_group_of_events_cancelled_notifications( $group_of_events, $old_booking_groups = array(), $old_groups_bookings = array(), $send_notifications = true ) {
 	// If $old_booking_groups is set, retrieve only the given booking groups, if they were not already cancelled
 	// else retrieve all cancelled booking groups of the given event group
 	$booking_group_ids = array();
@@ -1258,7 +1278,7 @@ function bookacti_maybe_send_group_of_events_cancelled_notifications( $group_of_
 	}
 	
 	// Get booking groups
-	$booking_groups_filters = bookacti_format_booking_filters( $booking_groups_filters );
+	$booking_groups_filters = bookacti_format_booking_filters( array_merge( $booking_groups_filters, array( 'fetch_meta' => true ) ) );
 	$booking_groups = bookacti_get_booking_groups( $booking_groups_filters );
 	if( ! $booking_groups ) { return; }
 	
@@ -1267,14 +1287,16 @@ function bookacti_maybe_send_group_of_events_cancelled_notifications( $group_of_
 	bookacti_increase_max_execution_time( 'send_group_of_events_cancelled_notifications' );
 	
 	foreach( $booking_groups as $booking_group ) {
-		$old_booking_group = ! empty( $old_booking_groups[ $booking_group->id ] ) ? $old_booking_groups[ $booking_group->id ] : $booking_group;
+		$old_booking_group  = ! empty( $old_booking_groups[ $booking_group->id ] ) ? $old_booking_groups[ $booking_group->id ] : $booking_group;
+		$old_group_bookings = ! empty( $old_groups_bookings[ $booking_group->id ] ) ? $old_groups_bookings[ $booking_group->id ] : array();
+		if( $old_booking_group->state === $booking_group->state ) { continue; }
 		
-		$send = apply_filters( 'bookacti_send_group_of_events_cancelled_notification', $send_notifications, $booking_group, $group_of_events, $old_booking_group );
+		do_action( 'bookacti_booking_group_status_changed', $booking_group->state, $old_booking_group, $old_group_bookings );
 		
-		do_action( 'bookacti_booking_group_state_changed', $booking_group->id, array(), 'cancelled', array( 'is_admin' => true, 'send_notifications' => $send, 'send_to' => 'customer' ) );
-		
+		$send = apply_filters( 'bookacti_send_group_of_events_cancelled_notification', $send_notifications, $booking_group, $group_of_events, $old_booking_group, $old_group_bookings );
 		if( $send ) {
-			do_action( 'bookacti_group_of_events_cancelled_notification_sent', $group_of_events, $booking_group, $old_booking_group );
+			bookacti_send_booking_group_status_change_notification( $booking_group->state, $booking_group, $old_booking_group, 'customer' );
+			do_action( 'bookacti_group_of_events_cancelled_notification_sent', $group_of_events, $booking_group, $old_booking_group, $old_group_bookings );
 		}
 	}
 }

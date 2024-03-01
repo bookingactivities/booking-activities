@@ -36,6 +36,9 @@ function bookacti_controller_send_async_notifications() {
 	// Check if CRON is running (so it doesn't slow down any users)
 	if( ! wp_doing_cron() ) { return; }
 	
+	// Check if the desired action is to send the async notifications
+	if( empty( $_REQUEST[ 'bookacti_send_async_notifications' ] ) ) { return; }
+	
 	// Check if async notifications are allowed
 	$allow_async = apply_filters( 'bookacti_allow_async_notifications', bookacti_get_setting_value( 'bookacti_notifications_settings', 'notifications_async' ) );
 	if( ! $allow_async ) { return; }
@@ -43,6 +46,43 @@ function bookacti_controller_send_async_notifications() {
 	bookacti_send_async_notifications();
 }
 add_action( 'init', 'bookacti_controller_send_async_notifications', 100 );
+
+
+/**
+ * Send async notifications
+ * @since 1.16.0
+ */
+function bookacti_send_async_notifications() {
+	$nb_sent = array();
+	
+	// Make sure to run this function once per page load
+	if( defined( 'BOOKACTI_SENDING_ASYNC_NOTIFICATIONS' ) ) { return $nb_sent; }
+	define( 'BOOKACTI_SENDING_ASYNC_NOTIFICATIONS', 1 );
+	
+	$alloptions = wp_load_alloptions();
+	$async_notifications = isset( $alloptions[ 'bookacti_async_notifications' ] ) ? maybe_unserialize( $alloptions[ 'bookacti_async_notifications' ] ) : array();
+	
+	// Remove the async notifications from db right after retrieving them
+	update_option( 'bookacti_async_notifications', array() );
+	
+	if( ! $async_notifications ) { return $nb_sent; }
+	
+	// Try to merge the notifications sent to the same user
+	$merging_allowed = apply_filters( 'bookacti_async_notifications_merging_allowed', true, $async_notifications );
+	if( $merging_allowed ) {
+		$async_notifications = bookacti_merge_planned_notifications( $async_notifications );
+	}
+	
+	// If there are a lot of notifications to send, this operation can take a while
+	// So we need to increase the max_execution_time and the memory_limit
+	bookacti_increase_max_execution_time( 'send_async_notifications' );
+	
+	// Send the notifications
+	foreach( $async_notifications as $async_notification ) {
+		bookacti_send_notification( $async_notification[ 'notification_id' ], $async_notification[ 'booking_id' ], $async_notification[ 'booking_type'], $async_notification[ 'args' ], 0 );
+	}
+}
+add_action( 'bookacti_cron_send_async_notifications', 'bookacti_send_async_notifications', 10 );
 
 
 /**
@@ -97,76 +137,6 @@ function bookacti_send_notification_when_booking_is_made( $return_array, $bookin
 	}
 }
 add_action( 'bookacti_booking_form_validated', 'bookacti_send_notification_when_booking_is_made', 100, 3 );
-
-
-/**
- * Send a notification to admin and customer when a single booking status changes
- * @since 1.2.1 (was bookacti_send_email_when_booking_state_changes in 1.2.0)
- * @version 1.14.1
- * @param object $booking
- * @param string $status
- * @param array $args
- */
-function bookacti_send_notification_when_booking_state_changes( $booking, $status, $args ) {
-	// Do not send notifications if the new status is unknown
-	if( ! $status ) { return; }
-	
-	// Do not send notification if explicitly said
-	if( isset( $args[ 'send_notifications' ] ) && ! $args[ 'send_notifications' ] ) { return; }
-	
-	// If the booking is part of a group and the whole group is affected by this change, do not send notification here
-	if( isset( $args[ 'booking_group_state_changed' ] ) && $args[ 'booking_group_state_changed' ] ) { return; }
-	
-	// If we cannot know if the action was made by customer or admin, send to both
-	$send_to = apply_filters( 'bookacti_booking_state_change_notification_recipient', ! empty( $args[ 'send_to' ] ) && in_array( $args[ 'send_to' ], array( 'both', 'customer', 'admin' ), true ) ? $args[ 'send_to' ] : 'both', $booking, $status, $args );
-	
-	$notification_args = apply_filters( 'bookacti_booking_state_change_notification_args', array(), $booking, $status, $args );
-		
-	// If $args[ 'is_admin' ] is true, the customer need to be notified
-	if( $send_to === 'customer' || $send_to === 'both' ) {
-		bookacti_send_notification( 'customer_' . $status . '_booking', $booking->id, 'single', $notification_args );
-	}
-	
-	// If $args[ 'is_admin' ] is false, the administrator need to be notified
-	if( $send_to === 'admin' || $send_to === 'both' ) {
-		bookacti_send_notification( 'admin_' . $status . '_booking', $booking->id, 'single', $notification_args );
-	}
-}
-add_action( 'bookacti_booking_state_changed', 'bookacti_send_notification_when_booking_state_changes', 10, 3 );
-
-
-/**
- * Send a notification to admin and customer when a booking group status changes
- * @since 1.2.1 (was bookacti_send_email_when_booking_group_state_changes in 1.2.0)
- * @version 1.14.1
- * @param int $booking_group_id
- * @param array $bookings
- * @param string $status
- * @param array $args
- */
-function bookacti_send_notification_when_booking_group_state_changes( $booking_group_id, $bookings, $status, $args ) {
-	// Do not send notifications if the new status is unknown
-	if( ! $status ) { return; }
-	
-	// Do not send notification if explicitly said
-	if( isset( $args[ 'send_notifications' ] ) && ! $args[ 'send_notifications' ] ) { return; }
-	
-	// If we cannot know if the action was made by customer or admin, send to both
-	$send_to = apply_filters( 'bookacti_booking_group_state_change_notification_recipient', ! empty( $args[ 'send_to' ] ) && in_array( $args[ 'send_to' ], array( 'both', 'customer', 'admin' ), true ) ? $args[ 'send_to' ] : 'both', $booking_group_id, $status, $args );
-	
-	$notification_args = apply_filters( 'bookacti_booking_group_state_change_notification_args', array(), $booking_group_id, $bookings, $status, $args );
-	
-	// If $args[ 'is_admin' ] is true, the customer need to be notified
-	if( $send_to === 'customer' || $send_to === 'both' ) {
-		bookacti_send_notification( 'customer_' . $status . '_booking', $booking_group_id, 'group', $notification_args );
-	}
-	
-	// If $args[ 'is_admin' ] is false, the administrator need to be notified
-	if( $send_to === 'admin' || $send_to === 'both' ) {
-		bookacti_send_notification( 'admin_' . $status . '_booking', $booking_group_id, 'group', $notification_args );
-	}
-}
-add_action( 'bookacti_booking_group_state_changed', 'bookacti_send_notification_when_booking_group_state_changes', 10, 4 );
 
 
 /**
