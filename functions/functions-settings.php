@@ -384,14 +384,14 @@ function bookacti_settings_field_default_payment_status_callback() {
 
 /**
  * Display "default booking status" setting
- * @version 1.15.16
+ * @version 1.16.0
  */
 function bookacti_settings_field_default_booking_state_callback() {
-	$booking_state_labels = bookacti_get_booking_state_labels();
-	$allowed_booking_states = array( 'pending', 'booked' );
+	$booking_status_labels = bookacti_get_booking_status_labels();
+	$allowed_booking_statuses = array( 'pending', 'booked' );
 	$options = array();
-	foreach( $allowed_booking_states as $state_key ) {
-		$options[ $state_key ] = ! empty( $booking_state_labels[ $state_key ][ 'label' ] ) ? $booking_state_labels[ $state_key ][ 'label' ] : $state_key;
+	foreach( $allowed_booking_statuses as $status_key ) {
+		$options[ $status_key ] = ! empty( $booking_status_labels[ $status_key ][ 'label' ] ) ? $booking_status_labels[ $status_key ][ 'label' ] : $status_key;
 	}
 
 	$args = apply_filters( 'bookacti_settings_default_booking_status_field_args', array(
@@ -1517,7 +1517,7 @@ function bookacti_privacy_exporter_user_data( $email_address, $page = 1 ) {
 /**
  * Export bookings user metadata with WP privacy export tool
  * @since 1.7.0
- * @version 1.14.0
+ * @version 1.16.0
  * @param string $email_address
  * @param int $page
  * @return array
@@ -1588,7 +1588,7 @@ function bookacti_privacy_exporter_bookings_data( $email_address, $page = 1 ) {
 
 			// Set the name / value data to export for each booking
 			$date_format = bookacti_get_message( 'date_format_long' );
-			$states = bookacti_get_booking_state_labels();
+			$statuses = bookacti_get_booking_status_labels();
 			foreach( $bookings as $booking ) {
 				$booking_personal_data = array();
 				$booking_meta		= ! empty( $bookings_meta[ $booking->id ] ) ? $bookings_meta[ $booking->id ] : array();
@@ -1610,7 +1610,7 @@ function bookacti_privacy_exporter_bookings_data( $email_address, $page = 1 ) {
 								$value = bookacti_format_datetime( $booking->$key, $date_format );
 								break;
 							case 'state':
-								$value = ! empty( $states[ $booking->$key ][ 'label' ] ) ? $states[ $booking->$key ][ 'label' ] : $booking->$key;
+								$value = ! empty( $statuses[ $booking->$key ][ 'label' ] ) ? $statuses[ $booking->$key ][ 'label' ] : $booking->$key;
 								break;
 							default:
 								$value = $booking->$key;

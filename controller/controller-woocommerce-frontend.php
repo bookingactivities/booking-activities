@@ -1531,25 +1531,25 @@ add_filter( 'woocommerce_cart_item_subtotal', 'bookacti_wc_cart_item_displayed_s
 /**
  * Check bookings availability before validating checkout in case that "in_cart" state is not active
  * @since 1.3.0
- * @version 1.10.1
+ * @version 1.16.0
  * @global WooCommerce $woocommerce
  * @param array $posted_data An array of posted data.
  * @param WP_Error $errors
  */
 function bookacti_availability_check_before_checkout( $posted_data, $errors = null ) {
 	// Do not make this check if "in_cart" bookings are active, because they already hold their own booking quantity 
-	if( in_array( 'in_cart', bookacti_get_active_booking_states(), true ) ) { return; }
+	if( in_array( 'in_cart', bookacti_get_active_booking_statuses(), true ) ) { return; }
 	
 	$cart_items_bookings = bookacti_wc_get_cart_items_bookings();
 	if( ! $cart_items_bookings ) { return; }
 	
 	global $woocommerce;
-	$valid_status = array_merge( array( 'in_cart' ), bookacti_get_active_booking_states() );
+	$valid_statuses = array_merge( array( 'in_cart' ), bookacti_get_active_booking_statuses() );
 	$nb_deleted_cart_item = 0;
 	
 	foreach( $cart_items_bookings as $cart_item_key => $cart_item_bookings ) {
 		// Check booking status, they must be in_cart or any active status, else, remove cart item
-		if( ! in_array( $cart_item_bookings[ 0 ][ 'bookings' ][ 0 ]->state, $valid_status, true ) ) { 
+		if( ! in_array( $cart_item_bookings[ 0 ][ 'bookings' ][ 0 ]->state, $valid_statuses, true ) ) { 
 			$woocommerce->cart->remove_cart_item( $cart_item_key );
 			++$nb_deleted_cart_item;
 			continue;

@@ -1858,7 +1858,7 @@ function bookacti_update_bookings_status( $booking_ids, $new_status, $active = '
 	global $wpdb;
 	
 	if( $active === 'auto' ) {
-		$active = in_array( $new_status, bookacti_get_active_booking_states(), true ) ? 1 : 0;
+		$active = in_array( $new_status, bookacti_get_active_booking_statuses(), true ) ? 1 : 0;
 	}
 	$active = intval( $active ) >= 1 ? 1 : ( intval( $active ) < 0 ? -1 : 0 );
 	
@@ -1919,14 +1919,14 @@ function bookacti_update_bookings_payment_status( $booking_ids, $new_status ) {
 
 
 /**
- * Forced update of bookings quantity (do not check availability)
+ * Update bookings quantity (do not check availability)
  * @since 1.16.0
  * @global wpdb $wpdb
  * @param array $booking_ids
  * @param int $new_quantity
  * @return int|false
  */
-function bookacti_force_update_bookings_quantity( $booking_ids, $new_quantity ) {
+function bookacti_update_bookings_quantity( $booking_ids, $new_quantity ) {
 	global $wpdb;
 	
 	$query = 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS
@@ -2223,7 +2223,7 @@ function bookacti_update_booking_groups_status( $group_ids, $new_status, $active
 	global $wpdb;
 	
 	if( $active === 'auto' ) {
-		$active = in_array( $new_status, bookacti_get_active_booking_states(), true ) ? 1 : 0;
+		$active = in_array( $new_status, bookacti_get_active_booking_statuses(), true ) ? 1 : 0;
 	}
 	$active = intval( $active ) >= 1 ? 1 : ( intval( $active ) < 0 ? -1 : 0 );
 	
@@ -2376,14 +2376,14 @@ function bookacti_update_booking_group_bookings( $booking_group_data, $where = a
 
 
 /**
- * Update booking groups bookings quantity (forced update)
+ * Update booking groups bookings quantity (do not check availability)
  * @since 1.16.0
  * @global wpdb $wpdb
  * @param array $group_ids
  * @param int $new_quantity
  * @return int|false
  */
-function bookacti_force_update_booking_groups_bookings_quantity( $group_ids, $new_quantity ) {
+function bookacti_update_booking_groups_bookings_quantity( $group_ids, $new_quantity ) {
 	global $wpdb;
 	
 	$query = 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS
@@ -2749,39 +2749,6 @@ function bookacti_delete_booking_groups( $booking_group_ids ) {
 	// Delete booking group metadata
 	if( $deleted ) {
 		bookacti_delete_metadata( 'booking_group', $booking_group_ids );
-	}
-
-	return $deleted;
-}
-
-
-/**
- * Delete the bookings of a booking group 
- * @since 1.5.0
- * @version 1.15.8
- * @global wpdb $wpdb
- * @param int $booking_group_id
- * @return int|false
- */
-function bookacti_delete_booking_group_bookings( $booking_group_id ) {
-	global $wpdb;
-
-	// Delete bookings metadata
-	$booking_ids = bookacti_get_booking_group_bookings_ids( $booking_group_id );
-
-	// Delete bookings
-	$query = 'DELETE FROM ' . BOOKACTI_TABLE_BOOKINGS . ' WHERE group_id = %d ';
-	$query = $wpdb->prepare( $query, $booking_group_id );
-	$deleted = $wpdb->query( $query );
-	
-	if( $deleted && $booking_ids ) {
-		$query = 'DELETE FROM ' . BOOKACTI_TABLE_META . ' WHERE object_type = "booking" AND object_id IN( %d';
-		for( $i=1,$len=count($booking_ids); $i < $len; ++$i ) {
-			$query .= ', %d';
-		}
-		$query .= ' ) ';
-		$query	= $wpdb->prepare( $query, $booking_ids );
-		$wpdb->query( $query );
 	}
 
 	return $deleted;

@@ -326,7 +326,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					$tr_class       = 'bookacti-booking-group';
 					$id             = $group_id_link . '<span class="bookacti-booking-group-indicator">' . esc_html_x( 'Group', 'noun', 'booking-activities' ) . '</span>';
 					$user_id        = $group->user_id;
-					$state          = bookacti_format_booking_state( $group->state, true );
+					$state          = bookacti_format_booking_status( $group->state, true );
 					$paid           = bookacti_format_payment_status( $group->payment_status, true );
 					$title          = $group->group_title;
 					$start          = $group->start;
@@ -334,7 +334,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					$quantity       = $group->quantity;
 					$order_id       = $group->order_id;
 					$actions        = bookacti_get_booking_group_actions_by_booking_group( $group, $grouped_bookings, 'admin' );
-					$refund_actions = bookacti_get_selected_bookings_refund_actions( array( 'bookings' => array(), 'booking_groups' => array( $group->id => $group ), 'groups_bookings' => array( $group->id => $grouped_bookings ) ), 'admin_booking_list' );
+					$refund_actions = bookacti_get_selected_bookings_refund_actions( array( 'bookings' => array(), 'booking_groups' => array( $group->id => $group ), 'groups_bookings' => array( $group->id => $grouped_bookings ) ), false );
 					$activity_title = $group->category_title;
 					$booking_type   = 'group';
 					
@@ -350,7 +350,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					$tr_class        = $booking->group_id ? 'bookacti-single-booking bookacti-gouped-booking bookacti-booking-group-id-' . $booking->group_id : 'bookacti-single-booking';
 					$id              = $booking->group_id ? $booking_id_link . '<span class="bookacti-booking-group-id" >' . $group_id_link . '</span>' : $booking_id_link;
 					$user_id         = $booking->user_id;
-					$state           = bookacti_format_booking_state( $booking->state, true );
+					$state           = bookacti_format_booking_status( $booking->state, true );
 					$paid            = bookacti_format_payment_status( $booking->payment_status, true );
 					$title           = $booking->event_title;
 					$start           = $booking->event_start;
@@ -358,7 +358,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					$quantity        = $booking->quantity;
 					$order_id        = $booking->order_id;
 					$actions         = bookacti_get_booking_actions_by_booking( $booking, 'admin' );
-					$refund_actions  = bookacti_get_selected_bookings_refund_actions( array( 'bookings' => array( $booking->id => $booking ), 'booking_groups' => array(), 'groups_bookings' => array() ), 'admin_booking_list' );
+					$refund_actions  = bookacti_get_selected_bookings_refund_actions( array( 'bookings' => array( $booking->id => $booking ), 'booking_groups' => array(), 'groups_bookings' => array() ), false );
 					$activity_title  = $booking->activity_title;
 					$booking_type    = 'single';
 				}

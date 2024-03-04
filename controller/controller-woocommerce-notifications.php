@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Send a new status notification for a booking attached to an order item
  * @since 1.9.0
- * @version 1.15.8
+ * @version 1.16.0
  * @param array $order_item_booking
  * @param string $new_status
  * @param WC_Order $order
@@ -36,7 +36,7 @@ function bookacti_wc_send_order_item_booking_status_notification( $order_item_bo
 	// If the booking status is pending or booked, notify administrator, unless if the administrator made this change
 	$action = isset( $_REQUEST[ 'action' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'action' ] ) : '';
 	$notify_admin = 0;
-	if(  in_array( $new_status, bookacti_get_active_booking_states(), true )
+	if(  in_array( $new_status, bookacti_get_active_booking_statuses(), true )
 	&& ! in_array( $action, array( 'woocommerce_mark_order_status', 'editpost' ) ) ) {
 		$admin_notification = bookacti_get_notification_settings( 'admin_new_booking' );
 		$notify_admin = ! empty( $admin_notification[ 'active_with_wc' ] ) ? 1 : 0;

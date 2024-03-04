@@ -517,7 +517,7 @@ function bookacti_get_notifications_tags_values( $booking, $booking_type, $notif
 		$booking_data[ '{booking_list}' ] = $booking_data[ '{booking_list}' ] ? '<ul class="bookacti-booking-events-list bookacti-custom-scrollbar" style="clear:both;" >' . $booking_data[ '{booking_list}' ] . '</ul>' : '';
 		
 		$booking_data[ '{booking_id}' ]             = $booking->id;
-		$booking_data[ '{booking_status}' ]         = bookacti_format_booking_state( $booking->state );
+		$booking_data[ '{booking_status}' ]         = bookacti_format_booking_status( $booking->state );
 		$booking_data[ '{booking_payment_status}' ] = bookacti_format_payment_status( $booking->payment_status );
 		$booking_data[ '{booking_quantity}' ]       = $booking->quantity;
 		$booking_data[ '{calendar_id}' ]            = $booking->template_id;

@@ -696,7 +696,7 @@ function bookacti_get_available_form_action_triggers() {
 /**
  * Format field data according to its type
  * @since 1.5.0
- * @version 1.15.19
+ * @version 1.16.0
  * @param array|string $raw_field_data
  * @param $context "view" or "edit"
  * @return array
@@ -737,7 +737,7 @@ function bookacti_format_form_field_data( $raw_field_data, $context = 'view' ) {
 		$field_meta[ 'group_categories' ] = $group_categories && is_array( $group_categories ) ? $group_categories : ( $had_group_categories ? array( 'none' ) : array() );
 		
 		$status                  = isset( $raw_field_data[ 'status' ] ) ? ( is_string( $raw_field_data[ 'status' ] ) ? array( $raw_field_data[ 'status' ] ) : $raw_field_data[ 'status' ] ) : $default_meta[ 'status' ];
-		$field_meta[ 'status' ]  = is_array( $status ) ? array_intersect( $status, array_keys( bookacti_get_booking_state_labels() ) ) : $default_meta[ 'status' ];
+		$field_meta[ 'status' ]  = is_array( $status ) ? array_intersect( $status, array_keys( bookacti_get_booking_status_labels() ) ) : $default_meta[ 'status' ];
 		$field_meta[ 'user_id' ] = isset( $raw_field_data[ 'user_id' ] ) && is_numeric( $raw_field_data[ 'user_id' ] ) ? intval( $raw_field_data[ 'user_id' ] ) : ( isset( $raw_field_data[ 'user_id' ] ) && in_array( $raw_field_data[ 'user_id' ], array( 0, '0', 'current' ), true ) ? $raw_field_data[ 'user_id' ] : $default_meta[ 'user_id' ] );
 		
 		$field_meta[ 'start' ]    = isset( $raw_field_data[ 'start' ] ) && bookacti_sanitize_date( $raw_field_data[ 'start' ] ) ? bookacti_sanitize_date( $raw_field_data[ 'start' ] ) : $default_meta[ 'start' ];
@@ -902,7 +902,7 @@ function bookacti_format_form_field_data( $raw_field_data, $context = 'view' ) {
 /**
  * Sanitize field data according to its type
  * @since 1.5.0
- * @version 1.15.19
+ * @version 1.16.0
  * @param array|string $raw_field_data
  * @return array
  */
@@ -945,7 +945,7 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 		$field_meta[ 'group_categories' ] = $group_categories && is_array( $group_categories ) ? $group_categories : ( $had_group_categories ? array( 'none' ) : array() );
 		
 		$status                  = isset( $raw_field_data[ 'status' ] ) ? ( is_string( $raw_field_data[ 'status' ] ) ? array( $raw_field_data[ 'status' ] ) : $raw_field_data[ 'status' ] ) : $default_meta[ 'status' ];
-		$field_meta[ 'status' ]  = is_array( $status ) ? array_intersect( $status, array_keys( bookacti_get_booking_state_labels() ) ) : $default_meta[ 'status' ];
+		$field_meta[ 'status' ]  = is_array( $status ) ? array_intersect( $status, array_keys( bookacti_get_booking_status_labels() ) ) : $default_meta[ 'status' ];
 		$field_meta[ 'user_id' ] = isset( $raw_field_data[ 'user_id' ] ) && is_numeric( $raw_field_data[ 'user_id' ] ) ? intval( $raw_field_data[ 'user_id' ] ) : ( isset( $raw_field_data[ 'user_id' ] ) && in_array( $raw_field_data[ 'user_id' ], array( 0, '0', 'current' ), true ) ? $raw_field_data[ 'user_id' ] : $default_meta[ 'user_id' ] );
 		
 		$field_meta[ 'start' ]    = isset( $raw_field_data[ 'start' ] ) && bookacti_sanitize_date( $raw_field_data[ 'start' ] ) ? bookacti_sanitize_date( $raw_field_data[ 'start' ] ) : $default_meta[ 'start' ];

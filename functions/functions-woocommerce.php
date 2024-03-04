@@ -379,6 +379,7 @@ function bookacti_wc_update_cart_item_bookings_quantity( $cart_item_key, $new_qu
 /**
  * Update the bookings quantity bound to a cart item
  * @since 1.9.0
+ * @version 1.16.0
  * @global woocommerce $woocommerce
  * @param string||array $cart_item_key Cart item key or Cart item itself
  * @param string $new_status
@@ -388,7 +389,7 @@ function bookacti_wc_update_cart_item_bookings_quantity( $cart_item_key, $new_qu
 function bookacti_wc_update_cart_item_bookings_status( $cart_item_key, $new_status, $new_expiration_date = '' ) {
 	$new_data = array( 
 		'status' => $new_status,
-		'active' => in_array( $new_status, bookacti_get_active_booking_states(), true ) ? 1 : 0
+		'active' => in_array( $new_status, bookacti_get_active_booking_statuses(), true ) ? 1 : 0
 	);
 	if( $new_expiration_date ) { $new_data[ 'expiration_date' ] = $new_expiration_date; }
 	$updated = bookacti_wc_update_cart_item_bookings( $cart_item_key, $new_data );
@@ -659,7 +660,7 @@ function bookacti_wc_get_item_bookings_events_list_html( $item_bookings, $show_q
 /**
  * Get array of displayed attributes per booking
  * @since 1.9.0
- * @version 1.14.0
+ * @version 1.16.0
  * @global boolean $bookacti_is_email
  * @param array $item_bookings
  * @return array
@@ -686,7 +687,7 @@ function bookacti_wc_get_item_bookings_attributes( $item_bookings ) {
 			if( $status ) {
 				$booking_attributes[ 'status' ] = array( 
 					'label' => esc_html__( 'Status', 'booking-activities' ), 
-					'value' => bookacti_format_booking_state( $status )
+					'value' => bookacti_format_booking_status( $status )
 				);
 			}
 		

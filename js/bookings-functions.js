@@ -20,8 +20,6 @@ $j( document ).ready( function() {
 	$j( 'body' ).on( 'bookacti_booking_action_data', function( e, data ) {
 		if( data?.form_data instanceof FormData ) {
 			data.form_data.append( 'locale', bookacti_localized.current_locale );
-		} else {
-			data.locale = bookacti_localized.current_locale;
 		}
 	});
 	
@@ -441,8 +439,6 @@ function bookacti_display_grouped_bookings( booking_selection ) {
 			rows = rows.not( $j( this ) );
 		}
 	});
-	console.log( 'rows.length', rows.length );
-	console.log( 'booking_selection.booking_group_ids', booking_selection.booking_group_ids );
 	if( ! rows.length || ! booking_selection.booking_group_ids.length ) { return; }
 	
 	// Columns to display
@@ -574,8 +570,8 @@ function bookacti_refresh_booking_group_frame() {
 	$j( '.bookacti-gouped-booking' ).each( function() {
 		if( group_id === $j( this ).data( 'booking-group-id' ) ) { return true; } // skip
 		group_id = $j( this ).data( 'booking-group-id' );
-		$j( '.bookacti-gouped-booking[data-booking-group-id="' + group_id + '"]:not(.hidden):first' ).addClass( 'bookacti-gouped-booking-first' );
-		$j( '.bookacti-gouped-booking[data-booking-group-id="' + group_id + '"]:not(.hidden):last' ).addClass( 'bookacti-gouped-booking-last' );
+		$j( '.bookacti-gouped-booking[data-booking-group-id="' + group_id + '"]:first' ).addClass( 'bookacti-gouped-booking-first' );
+		$j( '.bookacti-gouped-booking[data-booking-group-id="' + group_id + '"]:last' ).addClass( 'bookacti-gouped-booking-last' );
 	});
 }
 

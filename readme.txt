@@ -344,6 +344,8 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Dev - Functions to update and delete Booking Activities objects metadata now allow multiple object ids
 * Dev - Refactor the way async notifications are scheduled
 * Dev - Lots of hooks and functions have changed, especially regarding booking actions, test and update your custom code consequently
+* Dev - Refactor some "state" occurences in functions or hook names to "status" for disambiguation
+* Dev - Refactor some "context" or "admin_or_front" functions parameters to a more suited "is_frontend" boolean
 * Lib - Update FullCalendar to 6.1.11
 
 = 1.15.20 - 2024/02/09 =

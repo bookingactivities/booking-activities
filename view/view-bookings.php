@@ -133,7 +133,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						// Format status from URL
 						$default_status = get_user_meta( get_current_user_id(), 'bookacti_status_filter', true );
 						$default_status = is_array( $default_status ) ? bookacti_str_ids_to_array( $default_status ) : array( 'delivered', 'booked', 'pending', 'cancelled', 'refunded', 'refund_requested' );
-						$statuses = bookacti_get_booking_state_labels();
+						$statuses = bookacti_get_booking_status_labels();
 						$status_select_options = array();
 						foreach ( $statuses as $status_id => $status ) {
 							$status_select_options[ $status_id ] = esc_html( $status[ 'label' ] );

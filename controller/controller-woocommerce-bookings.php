@@ -70,34 +70,34 @@ add_filter( 'bookacti_current_user_id', 'bookacti_get_customer_id_for_non_logged
 
 
 /**
- * Add 'in_cart' state to active states
- * @param array $active_states
+ * Add WC active booking statuses
+ * @since 1.16.0 (was bookacti_add_woocommerce_active_booking_states)
+ * @param array $active_statuses
  * @return array
  */
-function bookacti_add_woocommerce_active_booking_states( $active_states ) {
+function bookacti_wc_active_booking_statuses( $active_statuses ) {
 	$is_expiration_active = bookacti_get_setting_value( 'bookacti_cart_settings', 'is_cart_expiration_active' );
 	if( $is_expiration_active ) {
-		$active_states[] = 'in_cart';
+		$active_statuses[] = 'in_cart';
 	}
-	return $active_states;
+	return $active_statuses;
 }
-add_filter( 'bookacti_active_booking_states', 'bookacti_add_woocommerce_active_booking_states' );
+add_filter( 'bookacti_active_booking_statuses', 'bookacti_wc_active_booking_statuses' );
 
 
 /**
- * Add booking status labels related to cart
- * @version 1.15.15
+ * Add WC booking statuses label
+ * @since 1.16.0 (was bookacti_add_in_cart_state_label)
  * @param array $labels
  * @return array
  */
-function bookacti_add_in_cart_state_label( $labels ) {
+function bookacti_wc_booking_status_labels( $labels ) {
 	$labels[ 'in_cart' ] =  array( 'display_state' => 'warning', 'label' => esc_html__( 'In cart', 'booking-activities' ) );
 	$labels[ 'expired' ] =  array( 'display_state' => 'bad',     'label' => esc_html__( 'Expired', 'booking-activities' ) );
 	$labels[ 'removed' ] =  array( 'display_state' => 'bad',     'label' => esc_html__( 'Removed', 'booking-activities' ) );
-
 	return $labels;
 }
-add_filter( 'bookacti_booking_states_labels_array', 'bookacti_add_in_cart_state_label', 10, 1 );
+add_filter( 'bookacti_wc_booking_statuses_label', 'bookacti_wc_booking_status_labels', 10, 1 );
 
 
 /**
@@ -1070,10 +1070,10 @@ add_filter( 'bookacti_booking_group_actions_by_booking_group', 'bookacti_wc_book
  * @since 1.16.0 (was bookacti_filter_refund_actions_by_booking)
  * @param array $possible_actions
  * @param array $selected_bookings
- * @param string $context
+ * @param boolean $is_frontend
  * @return array
  */
-function bookacti_wc_selected_bookings_refund_actions( $possible_actions, $selected_bookings, $context ) {
+function bookacti_wc_selected_bookings_refund_actions( $possible_actions, $selected_bookings, $is_frontend ) {
 	$wc_actions = bookacti_wc_get_refund_actions();
 	if( ! array_intersect_key( $wc_actions, $possible_actions ) ) { return $possible_actions; }
 	
@@ -1248,12 +1248,13 @@ add_action( 'woocommerce_refund_created', 'bookacti_update_order_bookings_on_ref
 
 /**
  * Check if a booking can be refunded
- * @version 1.9.0
+ * @version 1.16.0
  * @param boolean $true
  * @param object $booking
+ * @param boolean $is_frontend
  * @return boolean
  */
-function bookacti_woocommerce_booking_can_be_refunded( $true, $booking, $context = '' ) {
+function bookacti_woocommerce_booking_can_be_refunded( $true, $booking, $is_frontend = true ) {
 	if( ! $true ) { return $true; }
 	
 	// Init var
@@ -1282,11 +1283,11 @@ add_filter( 'bookacti_booking_can_be_refunded', 'bookacti_woocommerce_booking_ca
  * @param boolean $true
  * @param object $booking_group
  * @param array $group_bookings
- * @param string $context
+ * @param boolean $is_frontend
  * @param string $refund_action
  * @return boolean
  */
-function bookacti_woocommerce_booking_group_can_be_refunded( $true, $booking_group, $group_bookings, $context = '', $refund_action = '' ) {
+function bookacti_woocommerce_booking_group_can_be_refunded( $true, $booking_group, $group_bookings, $is_frontend = true, $refund_action = '' ) {
 	if( ! $true ) { return $true; }
 	
 	$order_id = ! empty( $booking_group->order_id ) ? $booking_group->order_id : 0;
@@ -1489,7 +1490,7 @@ function bookacti_delete_selected_bookings_order_item( $deleted, $selected_booki
 			$order_item_meta_deleted = bookacti_wc_remove_order_item_bookings( $item, $item_bookings_ids_to_delete );
 			
 			if( $order_item_meta_deleted ) {
-				$deleted[ $booking_key ][ $booking_id ][ 'wc_order_item_meta' ] = 1;
+				$deleted[ $booking_key ][ $booking_id ][ 'wc_order_item_meta' ] = true;
 				if( $order ) {
 					/* translators: %1$s = WooCommerce order item id. %2$s = Booking ID. */
 					$message = sprintf( esc_html__( 'The order item #%1$s booking metadata have been deleted while deleting the corresponding booking (#%2$s).', 'booking-activities' ), $item_id, $booking_uid );
@@ -1502,7 +1503,7 @@ function bookacti_delete_selected_bookings_order_item( $deleted, $selected_booki
 			$order_item_deleted = wc_delete_order_item( $item_id );
 			
 			if( $order_item_deleted ) { 
-				$deleted[ $booking_key ][ $booking_id ][ 'wc_order_item' ] = 1;
+				$deleted[ $booking_key ][ $booking_id ][ 'wc_order_item' ] = true;
 				if( $order ) {
 					/* translators: %1$s = WooCommerce order item id. %2$s = Booking ID. */
 					$message = sprintf( esc_html__( 'The order item #%1$s has been deleted while deleting the corresponding booking (#%2$s).', 'booking-activities' ), $item_id, $booking_uid );

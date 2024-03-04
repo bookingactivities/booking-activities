@@ -11,8 +11,6 @@ $j( document ).ready( function() {
 	$j( 'body.woocommerce' ).on( 'bookacti_booking_action_data', function( e, data ) {
 		if( data?.form_data instanceof FormData ) {
 			data.form_data.append( 'context', 'wc_order_items' );
-		} else {
-			data.context = 'wc_order_items';
 		}
 	});
 
