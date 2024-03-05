@@ -440,9 +440,7 @@ function bookacti_get_js_variables() {
 		// VARIABLES
 		'ajaxurl'                            => admin_url( 'admin-ajax.php' ),
 		'nonce_query_select2_options'        => wp_create_nonce( 'bookacti_query_select2_options' ),
-		'nonce_cancel_booking'               => wp_create_nonce( 'bookacti_cancel_booking' ),
-		'nonce_reschedule_booking'           => wp_create_nonce( 'bookacti_reschedule_booking' ),
-
+		
 		'fullcalendar_timezone'              => 'UTC',
 		'fullcalendar_locale'                => bookacti_convert_wp_locale_to_fc_locale( bookacti_get_current_lang_code( true ) ),
 		'current_lang_code'                  => bookacti_get_current_lang_code(),

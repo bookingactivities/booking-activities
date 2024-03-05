@@ -840,6 +840,7 @@ function bookacti_wc_get_item_booking_actions( $item_booking ) {
 /**
  * Get item booking possible actions as HTML buttons
  * @since 1.9.0
+ * @version 1.16.0
  * @param array $item_booking
  * @param boolean $return_array Whether to return an array of buttons, or the concatenated buttons HTML
  * @return string
@@ -855,8 +856,9 @@ function bookacti_wc_get_item_booking_actions_html( $item_booking, $return_array
 	foreach( $actions as $action_id => $action ) {
 			$action_html = '<a '
 							. 'href="' . esc_url( $action[ 'link' ] ) . '" '
-							. 'id="bookacti-booking-action-' . esc_attr( $action_id ) . '-' . $item_booking[ 'id' ] . '" '
-							. 'class="button ' . $action_id . ' ' . esc_attr( $action[ 'class' ] ) . $booking_action_class . ' tips" '
+							. 'id="' . $booking_action_class . '-' . esc_attr( $action_id ) . '-' . $item_booking[ 'id' ] . '" '
+							. 'class="button ' . esc_attr( $action[ 'class' ] ) . $booking_action_class . ' tips" '
+							. 'data-action="' . esc_attr( $action_id ) . '" '
 							. 'data-tip="' . esc_attr( $action[ 'description' ] ) . '" '
 							. 'data-booking-type="' . $item_booking[ 'type' ] . '" '
 							. 'data-booking-id="' . $item_booking[ 'id' ] . '" >'

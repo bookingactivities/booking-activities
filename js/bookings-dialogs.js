@@ -911,7 +911,6 @@ function bookacti_dialog_reschedule_bookings( booking_selection ) {
 				data.form_data.append( 'is_admin', bookacti_localized.is_admin ? 1 : 0 );
 				data.form_data.append( 'send_notifications', send_notifications );
 				data.form_data.append( 'user_auth_key', typeof bookacti.user_auth_key !== 'undefined' ? bookacti.user_auth_key : '' );
-				data.form_data.append( 'nonce', bookacti_localized.nonce_reschedule_booking );
 				
 				$j( 'body' ).trigger( 'bookacti_booking_action_data', [ data, booking_selection, 'reschedule' ] );
 

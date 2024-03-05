@@ -245,8 +245,10 @@ function bookacti_reload_booking_system_according_to_filters( booking_system ) {
  * @version 1.16.0
  */
 function bookacti_init_booking_actions() {
-	$j( '.bookacti-user-booking-list-table, .woocommerce-table, #bookacti-booking-list' ).on( 'click', '.bookacti-booking-action, .bookacti-booking-group-action', function ( e ) {
+	$j( '.bookacti-user-booking-list-table, .woocommerce-table, #bookacti-booking-list' ).on( 'click', '.bookacti-booking-action, .bookacti-booking-group-action', function( e ) {
 		e.preventDefault();
+		var action = $j( this ).data( 'action' );
+		if( ! action ) { return; }
 		
 		bookacti.user_auth_key = $j( this ).data( 'user-auth-key' ) ? $j( this ).data( 'user-auth-key' ) : '';
 		
@@ -271,27 +273,6 @@ function bookacti_init_booking_actions() {
 			}
 		}
 		
-		if( booking_selection.booking_ids.length 
-		||  booking_selection.booking_group_ids.length ) {
-			if( $j( this ).hasClass( 'bookacti-cancel-booking' ) ) {
-				bookacti_dialog_cancel_bookings( booking_selection );
-			} else if( $j( this ).hasClass( 'bookacti-reschedule-booking' ) ) {
-				bookacti_dialog_reschedule_bookings( booking_selection );
-			} else if( $j( this ).hasClass( 'bookacti-refund-booking' ) ) {
-				bookacti_dialog_refund_bookings( booking_selection );
-			} else if( $j( this ).hasClass( 'bookacti-change-booking-status' ) ) {
-				bookacti_dialog_change_bookings_status( booking_selection );
-			} else if( $j( this ).hasClass( 'bookacti-change-booking-quantity' ) ) {
-				bookacti_dialog_change_bookings_quantity( booking_selection );
-			} else if( $j( this ).hasClass( 'bookacti-send-booking-notification' ) ) {
-				bookacti_dialog_send_bookings_notification( booking_selection );
-			} else if( $j( this ).hasClass( 'bookacti-delete-booking' ) ) {
-				bookacti_dialog_delete_bookings( booking_selection );
-			} else if( $j( this ).hasClass( 'bookacti-show-booking-group-bookings' ) ) {
-				bookacti_display_grouped_bookings( booking_selection );
-			}
-		}
-		
 		// If the action is a link that do not have 'prevent-default' class, just follow the link
 		if( $j( this ).attr( 'href' ) && $j( this ).attr( 'href' ) !== '' && ! $j( this ).hasClass( 'prevent-default' ) ) {
 			if( $j( this ).hasClass( '_blank' ) ) {
@@ -301,6 +282,8 @@ function bookacti_init_booking_actions() {
 			}
 			return;
 		}
+		
+		bookacti_trigger_booking_action( action, booking_selection );
 	});
 }
 
@@ -337,28 +320,41 @@ function bookacti_init_booking_bulk_actions() {
 			}
 		});
 		
-		if( ! booking_selection.booking_ids.length 
-		&&  ! booking_selection.booking_group_ids.length
-		&&  ! ( booking_selection.all && ! $j.isEmptyObject( booking_selection.filters ) ) ) { return; }
-		
-		if( action === 'reschedule' ) {
-			bookacti_dialog_reschedule_bookings( booking_selection );
-		} else if( action === 'refund' ) {
-			bookacti_dialog_refund_bookings( booking_selection );
-		} else if( action === 'edit_status' ) {
-			bookacti_dialog_change_bookings_status( booking_selection );
-		} else if( action === 'edit_quantity' ) {
-			bookacti_dialog_change_bookings_quantity( booking_selection );
-		} else if( action === 'send_notification' ) {
-			bookacti_dialog_send_bookings_notification( booking_selection );
-		} else if( action === 'delete' ) {
-			bookacti_dialog_delete_bookings( booking_selection );
-		} else if( action === 'display_grouped_bookings' ) {
-			bookacti_display_grouped_bookings( booking_selection );
-		} else if( action === 'cancel' ) {
-			bookacti_dialog_cancel_bookings( booking_selection );
-		}
+		bookacti_trigger_booking_action( action, booking_selection );
 	});
+}
+
+
+/**
+ * Trigger a booking action for a booking selection
+ * @since 1.16.0
+ * @param {string} action
+ * @param {object} booking_selection
+ */
+function bookacti_trigger_booking_action( action, booking_selection ) {
+	if( ! booking_selection.booking_ids.length 
+	&&  ! booking_selection.booking_group_ids.length
+	&&  ! ( booking_selection.all && ! $j.isEmptyObject( booking_selection.filters ) ) ) { return; }
+
+	if( action === 'reschedule' ) {
+		bookacti_dialog_reschedule_bookings( booking_selection );
+	} else if( action === 'refund' ) {
+		bookacti_dialog_refund_bookings( booking_selection );
+	} else if( action === 'edit_status' ) {
+		bookacti_dialog_change_bookings_status( booking_selection );
+	} else if( action === 'edit_quantity' ) {
+		bookacti_dialog_change_bookings_quantity( booking_selection );
+	} else if( action === 'send_notification' ) {
+		bookacti_dialog_send_bookings_notification( booking_selection );
+	} else if( action === 'delete' ) {
+		bookacti_dialog_delete_bookings( booking_selection );
+	} else if( action === 'display_grouped_bookings' ) {
+		bookacti_display_grouped_bookings( booking_selection );
+	} else if( action === 'cancel' ) {
+		bookacti_dialog_cancel_bookings( booking_selection );
+	} else {
+		$j( 'body' ).trigger( 'bookacti_trigger_booking_action', [ action, booking_selection ] );
+	}
 }
 
 

@@ -1583,13 +1583,13 @@ function bookacti_booking_group_user_can_be_changed( $bookings, $new_user_id = '
  */
 function bookacti_get_booking_actions( $admin_or_front = 'both' ) {
 	$actions = apply_filters( 'bookacti_booking_actions', array(
-		'change-state' => array( 
+		'edit_status' => array( 
 			'class'          => 'bookacti-change-booking-status',
 			'label'          => esc_html__( 'Change booking status',  'booking-activities' ),
 			'description'    => esc_html__( 'Change the booking status to any available state.', 'booking-activities' ),
 			'link'           => '',
 			'admin_or_front' => 'admin' ),
-		'change-quantity' => array( 
+		'edit_quantity' => array( 
 			'class'          => 'bookacti-change-booking-quantity',
 			'label'          => esc_html__( 'Change booking quantity',  'booking-activities' ),
 			'description'    => esc_html__( 'Change the quantity to any number.', 'booking-activities' ),
@@ -1613,7 +1613,7 @@ function bookacti_get_booking_actions( $admin_or_front = 'both' ) {
 			'description'    => esc_html__( 'Refund the booking with one of the available refund method.', 'booking-activities' ),
 			'link'           => '',
 			'admin_or_front' => 'both' ),
-		'send-notification' => array( 
+		'send_notification' => array( 
 			'class'          => 'bookacti-send-booking-notification',
 			'label'          => esc_html__( 'Send notification', 'booking-activities' ),
 			'description'    => esc_html__( 'Send a notification.', 'booking-activities' ),
@@ -1655,9 +1655,9 @@ function bookacti_get_booking_actions_by_booking( $booking, $admin_or_front = 'b
 	$is_frontend = $admin_or_front !== 'admin';
 	
 	if( ! current_user_can( 'bookacti_edit_bookings' ) ) {
-		if( isset( $actions[ 'change-state' ] ) )      { unset( $actions[ 'change-state' ] ); }
-		if( isset( $actions[ 'change-quantity' ] ) )   { unset( $actions[ 'change-quantity' ] ); }
-		if( isset( $actions[ 'send-notification' ] ) ) { unset( $actions[ 'send-notification' ] ); }
+		if( isset( $actions[ 'edit_status' ] ) )      { unset( $actions[ 'edit_status' ] ); }
+		if( isset( $actions[ 'edit_quantity' ] ) )   { unset( $actions[ 'edit_quantity' ] ); }
+		if( isset( $actions[ 'send_notification' ] ) ) { unset( $actions[ 'send_notification' ] ); }
 	}
 	if( isset( $actions[ 'cancel' ] ) && ! bookacti_booking_can_be_cancelled( $booking, $is_frontend ) ) {
 		unset( $actions[ 'cancel' ] );
@@ -1701,6 +1701,7 @@ function bookacti_get_booking_actions_html( $booking, $admin_or_front = 'both', 
 			             . 'href="' . esc_url( $action[ 'link' ] ) . '" '
 			             . 'id="bookacti-booking-action-' . esc_attr( $action_id . '-' . $booking->id ) . '" '
 			             . 'class="button ' . esc_attr( $action[ 'class' ] ) . ' bookacti-booking-action bookacti-tip" '
+			             . 'data-action="' . esc_attr( $action_id ) . '" '
 			             . 'data-tip="' . esc_attr( $action[ 'description' ] ) . '" '
 			             . 'data-user-auth-key="' . esc_attr( $auth_key ) . '"'
 			             . 'data-booking-id="' . esc_attr( $booking->id ) . '" >';
@@ -1767,19 +1768,19 @@ function bookacti_get_booking_price_details_html( $prices_array, $booking ) {
  */
 function bookacti_get_booking_group_actions( $admin_or_front = 'both' ) {
 	$actions = apply_filters( 'bookacti_booking_group_actions', array(
-		'change-state' => array( 
+		'edit_status' => array( 
 			'class'          => 'bookacti-change-booking-status',
 			'label'          => esc_html__( 'Change booking status',  'booking-activities' ),
 			'description'    => esc_html__( 'Change the booking group state to any available state.', 'booking-activities' ),
 			'link'           => '',
 			'admin_or_front' => 'admin' ),
-		'change-quantity' => array( 
+		'edit_quantity' => array( 
 			'class'          => 'bookacti-change-booking-quantity',
 			'label'          => esc_html__( 'Change booking quantity',  'booking-activities' ),
 			'description'    => esc_html__( 'Change the quantity to any number.', 'booking-activities' ),
 			'link'           => '',
 			'admin_or_front' => 'admin' ),
-		'edit-single' => array( 
+		'display_grouped_bookings' => array( 
 			'class'          => 'bookacti-show-booking-group-bookings',
 			'label'          => esc_html__( 'Edit bookings',  'booking-activities' ),
 			'description'    => esc_html__( 'Edit each booking of the group separately.', 'booking-activities' ),
@@ -1797,7 +1798,7 @@ function bookacti_get_booking_group_actions( $admin_or_front = 'both' ) {
 			'description'    => esc_html__( 'Refund the booking group with one of the available refund method.', 'booking-activities' ),
 			'link'           => '',
 			'admin_or_front' => 'both' ),
-		'send-notification' => array( 
+		'send_notification' => array( 
 			'class'          => 'bookacti-send-booking-notification',
 			'label'          => esc_html__( 'Send notification', 'booking-activities' ),
 			'description'    => esc_html__( 'Send a notification.', 'booking-activities' ),
@@ -1844,12 +1845,12 @@ function bookacti_get_booking_group_actions_by_booking_group( $booking_group, $g
 	$is_frontend = $admin_or_front !== 'admin';
 	
 	if( ! current_user_can( 'bookacti_edit_bookings' ) ) {
-		if( isset( $actions[ 'change-state' ] ) )      { unset( $actions[ 'change-state' ] ); }
-		if( isset( $actions[ 'change-quantity' ] ) )   { unset( $actions[ 'change-quantity' ] ); }
-		if( isset( $actions[ 'send-notification' ] ) ) { unset( $actions[ 'send-notification' ] ); }
+		if( isset( $actions[ 'edit_status' ] ) )      { unset( $actions[ 'edit_status' ] ); }
+		if( isset( $actions[ 'edit_quantity' ] ) )   { unset( $actions[ 'edit_quantity' ] ); }
+		if( isset( $actions[ 'send_notification' ] ) ) { unset( $actions[ 'send_notification' ] ); }
 	}
 	if( ! current_user_can( 'bookacti_manage_bookings' ) && ! current_user_can( 'bookacti_edit_bookings' ) ) {
-		if( isset( $actions[ 'edit-single' ] ) ) { unset( $actions[ 'edit-single' ] ); }
+		if( isset( $actions[ 'display_grouped_bookings' ] ) ) { unset( $actions[ 'display_grouped_bookings' ] ); }
 	}
 	if( isset( $actions[ 'cancel' ] ) && ! bookacti_booking_group_can_be_cancelled( $booking_group, $group_bookings, $is_frontend ) ) {
 		unset( $actions[ 'cancel' ] );
@@ -1894,11 +1895,12 @@ function bookacti_get_booking_group_actions_html( $booking_group, $group_booking
 	$auth_key = ! empty( $_REQUEST[ 'user_auth_key' ] ) ? sanitize_text_field( $_REQUEST[ 'user_auth_key' ] ) : '';
 
 	$actions_html_array	= array();
-	foreach( $actions as $action_id => $action ){
+	foreach( $actions as $action_id => $action ) {
 		$action_html = '<a '
 		             . 'href="' . esc_url( $action[ 'link' ] ) . '" '
 		             . 'id="bookacti-booking-group-action-' . esc_attr( $action_id . '-' . $booking_group_id ) . '" '
 		             . 'class="button ' . esc_attr( $action[ 'class' ] ) . ' bookacti-booking-group-action bookacti-tip" '
+		             . 'data-action="' . esc_attr( $action_id ) . '" '
 		             . 'data-tip="' . esc_attr( $action[ 'description' ] ) . '" '
 		             . 'data-user-auth-key="' . esc_attr( $auth_key ) . '"'
 		             . 'data-booking-group-id="' . esc_attr( $booking_group_id ) . '" >';

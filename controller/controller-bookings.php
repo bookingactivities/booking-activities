@@ -411,13 +411,14 @@ function bookacti_controller_change_bookings_status() {
 		bookacti_send_json( array( 'status' => 'failed', 'error' => 'booking_not_found', 'message' => esc_html__( 'Invalid booking selection.', 'booking-activities' ) ), 'change_booking_status' );
 	}
 	
-	// Check capabilities for each booking
-	$bookings_to_check = $bookings;
-	foreach( $groups_bookings as $group_bookings ) {
-		$bookings_to_check += $group_bookings;
+	// Check capabilities for each booking (group)
+	foreach( $bookings as $booking ) {
+		$is_allowed = bookacti_user_can_manage_booking( $booking );
+		if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'change_booking_status' ); }
 	}
-	foreach( $bookings_to_check as $booking_to_check ) {
-		$is_allowed = bookacti_user_can_manage_booking( $booking_to_check, false );
+	foreach( $booking_groups as $booking_group_id => $booking_group ) {
+		$group_bookings = ! empty( $groups_bookings[ $booking_group_id ] ) ? $groups_bookings[ $booking_group_id ] : array();
+		$is_allowed = bookacti_user_can_manage_booking_group( $group_bookings );
 		if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'change_booking_status' ); }
 	}
 	
@@ -549,13 +550,14 @@ function bookacti_controller_change_bookings_quantity() {
 		bookacti_send_json( array( 'status' => 'failed', 'error' => 'booking_not_found', 'message' => esc_html__( 'Invalid booking selection.', 'booking-activities' ) ), 'change_booking_quantity' );
 	}
 	
-	// Check capabilities for each booking
-	$bookings_to_check = $bookings;
-	foreach( $groups_bookings as $group_bookings ) {
-		$bookings_to_check += $group_bookings;
+	// Check capabilities for each booking (group)
+	foreach( $bookings as $booking ) {
+		$is_allowed = bookacti_user_can_manage_booking( $booking );
+		if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'change_booking_quantity' ); }
 	}
-	foreach( $bookings_to_check as $booking_to_check ) {
-		$is_allowed = bookacti_user_can_manage_booking( $booking_to_check, false );
+	foreach( $booking_groups as $booking_group_id => $booking_group ) {
+		$group_bookings = ! empty( $groups_bookings[ $booking_group_id ] ) ? $groups_bookings[ $booking_group_id ] : array();
+		$is_allowed = bookacti_user_can_manage_booking_group( $group_bookings );
 		if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'change_booking_quantity' ); }
 	}
 	
@@ -969,13 +971,14 @@ function bookacti_controller_send_bookings_notification() {
 		bookacti_send_json( array( 'status' => 'failed', 'error' => 'booking_not_found', 'message' => esc_html__( 'Invalid booking selection.', 'booking-activities' ) ), 'send_booking_notification' );
 	}
 	
-	// Check capabilities for each booking
-	$bookings_to_check = $bookings;
-	foreach( $groups_bookings as $group_bookings ) {
-		$bookings_to_check += $group_bookings;
+	// Check capabilities for each booking (group)
+	foreach( $bookings as $booking ) {
+		$is_allowed = bookacti_user_can_manage_booking( $booking );
+		if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'send_booking_notification' ); }
 	}
-	foreach( $bookings_to_check as $booking_to_check ) {
-		$is_allowed = bookacti_user_can_manage_booking( $booking_to_check, false );
+	foreach( $booking_groups as $booking_group_id => $booking_group ) {
+		$group_bookings = ! empty( $groups_bookings[ $booking_group_id ] ) ? $groups_bookings[ $booking_group_id ] : array();
+		$is_allowed = bookacti_user_can_manage_booking_group( $group_bookings );
 		if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'send_booking_notification' ); }
 	}
 	
@@ -1040,20 +1043,23 @@ function bookacti_controller_delete_bookings() {
 		bookacti_send_json( array( 'status' => 'failed', 'error' => 'booking_not_found', 'message' => esc_html__( 'Invalid booking selection.', 'booking-activities' ) ), 'delete_booking' );
 	}
 	
-	// Check capabilities for each booking
-	$bookings_to_check = $bookings;
-	foreach( $groups_bookings as $group_bookings ) {
-		$bookings_to_check += $group_bookings;
+	// Check capabilities for each booking (group)
+	$all_bookings = $bookings;
+	foreach( $bookings as $booking ) {
+		$is_allowed = bookacti_user_can_manage_booking( $booking );
+		if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'delete_booking' ); }
 	}
-	foreach( $bookings_to_check as $booking_to_check ) {
-		$is_allowed = bookacti_user_can_manage_booking( $booking_to_check, false, array( 'bookacti_delete_bookings' ) );
+	foreach( $booking_groups as $booking_group_id => $booking_group ) {
+		$group_bookings = ! empty( $groups_bookings[ $booking_group_id ] ) ? $groups_bookings[ $booking_group_id ] : array();
+		$all_bookings += $group_bookings;
+		$is_allowed = bookacti_user_can_manage_booking_group( $group_bookings );
 		if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'delete_booking' ); }
 	}
 	
 	do_action( 'bookacti_before_delete_bookings', $selected_bookings );
 
 	// Delete bookings (groups)
-	$all_booking_ids  = $bookings_to_check ? bookacti_ids_to_array( array_keys( $bookings_to_check ) ) : array();
+	$all_booking_ids  = $all_bookings ? bookacti_ids_to_array( array_keys( $all_bookings ) ) : array();
 	$groups_deleted   = $group_ids ? bookacti_delete_booking_groups( $group_ids ) : 0;
 	$bookings_deleted = $all_booking_ids ? bookacti_delete_bookings( $all_booking_ids ) : 0;
 	
