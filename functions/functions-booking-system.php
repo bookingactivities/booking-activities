@@ -534,7 +534,7 @@ function bookacti_format_booking_system_attributes( $raw_atts = array() ) {
 	$status = is_string( $atts[ 'status' ] ) ? array( sanitize_title_with_dashes( $status ) ) : $atts[ 'status' ];
 	
 	// Check if desired status are registered
-	$formatted_atts[ 'status' ] = is_array( $status ) && $status ? array_intersect( $status, array_keys( bookacti_get_booking_status_labels() ) ) : array();
+	$formatted_atts[ 'status' ] = is_array( $status ) && $status ? array_intersect( $status, array_keys( bookacti_get_booking_statuses() ) ) : array();
 	
 	// Check if desired columns are registered
 	$formatted_atts[ 'tooltip_booking_list_columns' ] = is_array( $atts[ 'tooltip_booking_list_columns' ] ) && $atts[ 'tooltip_booking_list_columns' ] ? array_intersect( $atts[ 'tooltip_booking_list_columns' ], array_keys( bookacti_get_user_booking_list_columns_labels() ) ) : array();
@@ -1069,10 +1069,10 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 	// Bookings status
 	if( ! $fields || in_array( 'status', $fields, true ) ) {
 		// Format status array
-		$statuses = bookacti_get_booking_status_labels();
+		$statuses = bookacti_get_booking_statuses();
 		$status_options = array( 'none' => esc_html__( 'All', 'booking-activities' ) );
-		foreach ( $statuses as $status_id => $status ) { 
-			$status_options[ $status_id ] = esc_html( $status[ 'label' ] );
+		foreach( $statuses as $status => $label ) { 
+			$status_options[ $status ] = esc_html( $label );
 		}
 		$defaults[ 'status' ] = array(
 			'name'        => 'status',

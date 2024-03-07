@@ -360,20 +360,20 @@ function bookacti_settings_field_started_groups_bookable_callback() {
 /**
  * Display "default payment status" setting
  * @since 1.3.0
- * @version 1.15.16
+ * @version 1.16.0
  */
 function bookacti_settings_field_default_payment_status_callback() {
-	$payment_status = bookacti_get_payment_status_labels();
-	$payment_status_array = array();
-	foreach( $payment_status as $payment_status_id => $payment_status_data ) {
-		$payment_status_array[ esc_attr( $payment_status_id ) ] = esc_html( $payment_status_data[ 'label' ] );
+	$statuses = bookacti_get_payment_statuses();
+	$options  = array();
+	foreach( $statuses as $status => $label ) {
+		$options[ $status ] = esc_html( $label );
 	}
 	
 	$args = apply_filters( 'bookacti_settings_default_payment_status_field_args', array(
 		'type'    => 'select',
 		'name'    => 'bookacti_general_settings[default_payment_status]',
 		'id'      => 'default_payment_status',
-		'options' => $payment_status_array,
+		'options' => $options,
 		'value'   => bookacti_get_setting_value( 'bookacti_general_settings', 'default_payment_status' ),
 		'tip'     => esc_html__( 'Choose what payment status a booking should have when a customer complete the booking form.', 'booking-activities' )
 	) );
@@ -387,11 +387,11 @@ function bookacti_settings_field_default_payment_status_callback() {
  * @version 1.16.0
  */
 function bookacti_settings_field_default_booking_state_callback() {
-	$booking_status_labels = bookacti_get_booking_status_labels();
-	$allowed_booking_statuses = array( 'pending', 'booked' );
-	$options = array();
-	foreach( $allowed_booking_statuses as $status_key ) {
-		$options[ $status_key ] = ! empty( $booking_status_labels[ $status_key ][ 'label' ] ) ? $booking_status_labels[ $status_key ][ 'label' ] : $status_key;
+	$allowed_statuses = array( 'pending', 'booked' );
+	$statuses = array_intersect_key( bookacti_get_booking_statuses(), array_flip( $allowed_statuses ) );
+	$options  = array();
+	foreach( $statuses as $status => $label ) {
+		$options[ esc_attr( $status ) ] = esc_html( $label );
 	}
 
 	$args = apply_filters( 'bookacti_settings_default_booking_status_field_args', array(
@@ -1588,7 +1588,7 @@ function bookacti_privacy_exporter_bookings_data( $email_address, $page = 1 ) {
 
 			// Set the name / value data to export for each booking
 			$date_format = bookacti_get_message( 'date_format_long' );
-			$statuses = bookacti_get_booking_status_labels();
+			$statuses = bookacti_get_booking_statuses();
 			foreach( $bookings as $booking ) {
 				$booking_personal_data = array();
 				$booking_meta		= ! empty( $bookings_meta[ $booking->id ] ) ? $bookings_meta[ $booking->id ] : array();
@@ -1610,7 +1610,7 @@ function bookacti_privacy_exporter_bookings_data( $email_address, $page = 1 ) {
 								$value = bookacti_format_datetime( $booking->$key, $date_format );
 								break;
 							case 'state':
-								$value = ! empty( $statuses[ $booking->$key ][ 'label' ] ) ? $statuses[ $booking->$key ][ 'label' ] : $booking->$key;
+								$value = ! empty( $statuses[ $booking->$key ] ) ? $statuses[ $booking->$key ] : $booking->$key;
 								break;
 							default:
 								$value = $booking->$key;

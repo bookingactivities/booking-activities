@@ -164,31 +164,35 @@ label[for="bookacti-booking-filter-dates-to"] + input#bookacti-booking-filter-da
 .bookacti-payment-status,
 .bookacti-booking-status                  { font-weight: bold; }
 .bookacti-booking-status label            { display: inline; vertical-align: middle; margin: 0; font-weight: initial; }
-.bookacti-payment-status-good,
-.bookacti-booking-status-good             { color: #82c818; }
-.bookacti-payment-status-warning,
-.bookacti-booking-status-warning          { color: #f89b2f; }
-.bookacti-payment-status-bad,
-.bookacti-booking-status-bad              { color: #b81c23; }
-.bookacti-payment-status-disabled        { color: #555; }
+
+.bookacti-payment-status-paid,
+.bookacti-booking-status-booked,
+.bookacti-booking-status-delivered        { color: #82c818; }
+.bookacti-payment-status-owed,
+.bookacti-booking-status-pending,
+.bookacti-booking-status-in_cart          { color: #f89b2f; }
+.bookacti-booking-status-cancelled,
+.bookacti-booking-status-refunded,
+.bookacti-booking-status-refund_requested,
+.bookacti-booking-status-expired,
+.bookacti-booking-status-removed          { color: #b81c23; }
+.bookacti-payment-status-none             { color: #555; }
+
 .bookacti-payment-status:before,
-.bookacti-booking-status:before           { font-size: 1.5em; font-weight: bold; white-space: nowrap; vertical-align: middle; vertical-align: middle; margin: 0; }
-.bookacti-payment-status-good:before,
-.bookacti-booking-status-good:before      { content: '\0049  '; font-family: 'booking_activities_icons'; }
-.bookacti-payment-status-warning:before,
-.bookacti-booking-status-warning:before   { content: '\0047  '; font-family: 'booking_activities_icons'; }
-.bookacti-payment-status-bad:before,
-.bookacti-booking-status-bad:before       { content: '\004a  '; font-family: 'booking_activities_icons'; }
-.bookacti-payment-status-disabled:before { content: '\004b  '; font-family: 'booking_activities_icons'; }
-.bookacti-booking-status[data-booking-status="delivered"]::before        { content: '\0048  '; font-family: 'booking_activities_icons'; }
-.bookacti-booking-status[data-booking-status="booked"]::before           { content: '\0049  '; font-family: 'booking_activities_icons'; }
-.bookacti-booking-status[data-booking-status="pending"]::before          { content: '\0047  '; font-family: 'booking_activities_icons'; }
-.bookacti-booking-status[data-booking-status="cancelled"]::before        { content: '\004a  '; font-family: 'booking_activities_icons'; }
-.bookacti-booking-status[data-booking-status="refunded"]::before         { content: '\0041  '; font-family: 'booking_activities_icons'; }
-.bookacti-booking-status[data-booking-status="refund_requested"]::before { content: '\0042  '; font-family: 'booking_activities_icons'; }
-.bookacti-booking-status[data-booking-status="in_cart"]::before          { content: '\0045  '; font-family: 'booking_activities_icons'; }
-.bookacti-booking-status[data-booking-status="expired"]::before          { content: '\0046  '; font-family: 'booking_activities_icons'; }
-.bookacti-booking-status[data-booking-status="removed"]::before          { content: '\0044  '; font-family: 'booking_activities_icons'; }
+.bookacti-booking-status:before                   { font-size: 1.5em; font-weight: bold; white-space: nowrap; vertical-align: middle; vertical-align: middle; margin: 0; }
+.bookacti-payment-status-none:before              { content: '\004b  '; font-family: 'booking_activities_icons'; }
+.bookacti-booking-status-delivered::before        { content: '\0048  '; font-family: 'booking_activities_icons'; }
+.bookacti-payment-status-paid:before,
+.bookacti-booking-status-booked::before           { content: '\0049  '; font-family: 'booking_activities_icons'; }
+.bookacti-payment-status-owed:before,
+.bookacti-booking-status-pending::before          { content: '\0047  '; font-family: 'booking_activities_icons'; }
+.bookacti-booking-status-cancelled::before        { content: '\004a  '; font-family: 'booking_activities_icons'; }
+.bookacti-booking-status-refunded::before         { content: '\0041  '; font-family: 'booking_activities_icons'; }
+.bookacti-booking-status-refund_requested::before { content: '\0042  '; font-family: 'booking_activities_icons'; }
+.bookacti-booking-status-in_cart::before          { content: '\0045  '; font-family: 'booking_activities_icons'; }
+.bookacti-booking-status-expired::before          { content: '\0046  '; font-family: 'booking_activities_icons'; }
+.bookacti-booking-status-removed::before          { content: '\0044  '; font-family: 'booking_activities_icons'; }
+
 #bookacti-booking-list .bookacti-refund-coupon-code { display: block; font-size: 0.8em; font-style: italic; white-space: nowrap; overflow-x: auto; }
 .bookacti-refund-coupon-not-valid                   { text-decoration: line-through; }
 #bookacti-booking-list-container .column-state .bookacti-loading-container { padding: 0; }

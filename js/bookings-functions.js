@@ -243,9 +243,12 @@ function bookacti_reload_booking_system_according_to_filters( booking_system ) {
 /**
  * Init booking actions
  * @version 1.16.0
+ * @param {String} scope
  */
-function bookacti_init_booking_actions() {
-	$j( '.bookacti-user-booking-list-table, .woocommerce-table, #bookacti-booking-list' ).on( 'click', '.bookacti-booking-action, .bookacti-booking-group-action', function( e ) {
+function bookacti_init_booking_actions( scope ) {
+	if( ! scope ) { scope = '#bookacti-booking-list, .bookacti-user-booking-list-table'; }
+	
+	$j( scope ).on( 'click', '.bookacti-booking-action, .bookacti-booking-group-action', function( e ) {
 		e.preventDefault();
 		var action = $j( this ).data( 'action' );
 		if( ! action ) { return; }

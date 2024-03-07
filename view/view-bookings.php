@@ -133,10 +133,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						// Format status from URL
 						$default_status = get_user_meta( get_current_user_id(), 'bookacti_status_filter', true );
 						$default_status = is_array( $default_status ) ? bookacti_str_ids_to_array( $default_status ) : array( 'delivered', 'booked', 'pending', 'cancelled', 'refunded', 'refund_requested' );
-						$statuses = bookacti_get_booking_status_labels();
-						$status_select_options = array();
-						foreach ( $statuses as $status_id => $status ) {
-							$status_select_options[ $status_id ] = esc_html( $status[ 'label' ] );
+						$statuses       = bookacti_get_booking_statuses();
+						$status_options = array();
+						foreach ( $statuses as $status => $label ) {
+							$status_options[ $status ] = esc_html( $label );
 						}
 						$selected_status = isset( $_REQUEST[ 'status' ] ) ? bookacti_str_ids_to_array( $_REQUEST[ 'status' ] ) : array();
 						if( ! $selected_status ) { $selected_status = $default_status; }
@@ -147,7 +147,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							'class'       => 'bookacti-select2-no-ajax', 
 							'attr'        => array( '<select>' => ' data-allow-clear="0"' ),
 							'placeholder' => esc_html__( 'All', 'booking-activities' ),
-							'options'     => $status_select_options,
+							'options'     => $status_options,
 							'value'       => $selected_status,
 							'multiple'    => true
 						);

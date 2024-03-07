@@ -86,18 +86,18 @@ add_filter( 'bookacti_active_booking_statuses', 'bookacti_wc_active_booking_stat
 
 
 /**
- * Add WC booking statuses label
+ * Add WC booking statuses
  * @since 1.16.0 (was bookacti_add_in_cart_state_label)
  * @param array $labels
  * @return array
  */
-function bookacti_wc_booking_status_labels( $labels ) {
-	$labels[ 'in_cart' ] =  array( 'display_state' => 'warning', 'label' => esc_html__( 'In cart', 'booking-activities' ) );
-	$labels[ 'expired' ] =  array( 'display_state' => 'bad',     'label' => esc_html__( 'Expired', 'booking-activities' ) );
-	$labels[ 'removed' ] =  array( 'display_state' => 'bad',     'label' => esc_html__( 'Removed', 'booking-activities' ) );
+function bookacti_wc_booking_statuses( $labels ) {
+	$labels[ 'in_cart' ] = esc_html__( 'In cart', 'booking-activities' );
+	$labels[ 'expired' ] = esc_html__( 'Expired', 'booking-activities' );
+	$labels[ 'removed' ] = esc_html__( 'Removed', 'booking-activities' );
 	return $labels;
 }
-add_filter( 'bookacti_wc_booking_statuses_label', 'bookacti_wc_booking_status_labels', 10, 1 );
+add_filter( 'bookacti_booking_statuses', 'bookacti_wc_booking_statuses', 10, 1 );
 
 
 /**
@@ -771,7 +771,7 @@ function bookacti_add_wc_data_to_booking_list_items( $booking_list_items, $booki
 				/* translators: %s is the coupon code used for the refund */
 				$coupon_label = sprintf( esc_html__( 'Refunded with coupon %s', 'booking-activities' ), strtoupper( $coupon_code ) );
 				if( $coupon_error_label ) { $coupon_label .= '<br/>' . $coupon_error_label; }
-				$booking_list_items[ $booking_id ][ 'state' ] = '<span class="bookacti-booking-status bookacti-booking-status-bad bookacti-booking-status-refunded bookacti-converted-to-coupon bookacti-tip" data-booking-status="refunded" data-tip="' . esc_attr( $coupon_label ) . '" ></span><span class="bookacti-refund-coupon-code ' . esc_attr( $coupon_class ) . ' bookacti-custom-scrollbar">' . strtoupper( $coupon_code ) . '</span>';
+				$booking_list_items[ $booking_id ][ 'state' ] = '<span class="bookacti-booking-status bookacti-booking-status-refunded bookacti-converted-to-coupon bookacti-tip" data-booking-status="refunded" data-tip="' . esc_attr( $coupon_label ) . '" ></span><span class="bookacti-refund-coupon-code ' . esc_attr( $coupon_class ) . ' bookacti-custom-scrollbar">' . strtoupper( $coupon_code ) . '</span>';
 			}
 
 			// Filter refund actions

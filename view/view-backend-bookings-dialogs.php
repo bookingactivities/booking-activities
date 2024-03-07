@@ -165,11 +165,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				<select name='booking_status' id='bookacti-select-booking-status' >
 					<option value=''><?php esc_html_e( 'Do not change', 'booking-activities' ); ?></option>
 					<?php
-					$booking_status_labels   = bookacti_get_booking_status_labels();
-					$allowed_booking_states = apply_filters( 'bookacti_booking_states_you_can_manually_change', array( 'delivered', 'booked', 'pending', 'cancelled', 'refund_requested', 'refunded' ) );
-					foreach( $allowed_booking_states as $state_key ) {
-						$state_label = ! empty( $booking_status_labels[ $state_key ][ 'label' ] ) ? $booking_status_labels[ $state_key ][ 'label' ] : $state_key;
-						echo '<option value="' . esc_attr( $state_key ) . '" >' . $state_label . '</option>';
+					$allowed_statuses = apply_filters( 'bookacti_booking_states_you_can_manually_change', array( 'delivered', 'booked', 'pending', 'cancelled', 'refund_requested', 'refunded' ) );
+					$booking_statuses = array_intersect_key( bookacti_get_booking_statuses(), array_flip( $allowed_statuses ) );
+					foreach( $booking_statuses as $status => $label ) {
+						echo '<option value="' . esc_attr( $status ) . '" >' . esc_html( $label ) . '</option>';
 					}
 					?>
 				</select>
@@ -196,9 +195,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				<select name='payment_status' id='bookacti-select-payment-status'>
 					<option value=''><?php esc_html_e( 'Do not change', 'booking-activities' ); ?></option>
 					<?php
-					$payment_status = bookacti_get_payment_status_labels();
-					foreach( $payment_status as $payment_status_id => $payment_status_data ) {
-						echo '<option value="' . esc_attr( $payment_status_id ) . '" >' . esc_html( $payment_status_data[ 'label' ] ) . '</option>';
+					$payment_statuses = bookacti_get_payment_statuses();
+					foreach( $payment_statuses as $status => $label ) {
+						echo '<option value="' . esc_attr( $status ) . '" >' . esc_html( $label ) . '</option>';
 					}
 					?>
 				</select>

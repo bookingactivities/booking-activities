@@ -77,5 +77,6 @@ table.woocommerce_order_items ul.bookacti-booking-events-list { margin: 0; }
 
 
 /* Orders */
+.bookacti-wc-order-item-bookings-attributes { vertical-align: top; }
 .bookacti-wc-order-item-booking-attribute[data-attribute="actions"] .bookacti-wc-order-item-booking-attribute-label { display: none; }
 .bookacti-wc-order-item-booking-attribute[data-attribute="refunds"] .bookacti-wc-order-item-booking-attribute-value { padding: 0 12px; }

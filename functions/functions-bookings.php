@@ -54,10 +54,10 @@ function bookacti_sanitize_booking_data( $data_raw ) {
 			$sanitized[ $key ] = $datetime ? $datetime : $value;
 		}
 		else if( $key === 'status' ) {
-			$sanitized[ $key ] = in_array( $data_raw[ $key ], array_keys( bookacti_get_booking_status_labels() ), true ) ? $data_raw[ $key ] : $value;
+			$sanitized[ $key ] = in_array( $data_raw[ $key ], array_keys( bookacti_get_booking_statuses() ), true ) ? $data_raw[ $key ] : $value;
 		}
 		else if( $key === 'payment_status' ) {
-			$sanitized[ $key ] = in_array( $data_raw[ $key ], array_keys( bookacti_get_payment_status_labels() ), true ) ? $data_raw[ $key ] : $value;
+			$sanitized[ $key ] = in_array( $data_raw[ $key ], array_keys( bookacti_get_payment_statuses() ), true ) ? $data_raw[ $key ] : $value;
 		}
 		else if( $key === 'active' ) {
 			$sanitized[ $key ] = in_array( $data_raw[ $key ], array( -1, 0, 1, '-1', '0', '1', true, false ), true ) ? intval( $data_raw[ $key ] ) : ( in_array( $sanitized[ 'status' ], $active_statuses, true ) ? 1 : 0 );
@@ -132,10 +132,10 @@ function bookacti_sanitize_booking_group_data( $data_raw ) {
 			}
 		}
 		else if( $key === 'status' ) {
-			$sanitized[ $key ] = in_array( $data_raw[ $key ], array_keys( bookacti_get_booking_status_labels() ), true ) ? $data_raw[ $key ] : $value;
+			$sanitized[ $key ] = in_array( $data_raw[ $key ], array_keys( bookacti_get_booking_statuses() ), true ) ? $data_raw[ $key ] : $value;
 		}
 		else if( $key === 'payment_status' ) {
-			$sanitized[ $key ] = in_array( $data_raw[ $key ], array_keys( bookacti_get_payment_status_labels() ), true ) ? $data_raw[ $key ] : $value;
+			$sanitized[ $key ] = in_array( $data_raw[ $key ], array_keys( bookacti_get_payment_statuses() ), true ) ? $data_raw[ $key ] : $value;
 		}
 		else if( $key === 'active' ) {
 			$sanitized[ $key ] = in_array( $data_raw[ $key ], array( -1, 0, 1, '-1', '0', '1', true, false ), true ) ? intval( $data_raw[ $key ] ) : ( in_array( $sanitized[ 'status' ], $active_statuses, true ) ? 1 : 0 );
@@ -430,7 +430,7 @@ function bookacti_get_activities_html_for_booking_page( $template_ids, $activity
 	$activities = bookacti_get_activities_by_template( $template_ids );
 	$j = 0;
 	$html = '';
-	foreach ( $activities as $activity ) {	
+	foreach ( $activities as $activity ) {
 		if( ( empty( $activity_ids )  && $j === 0 ) || in_array( $activity[ 'id' ], $activity_ids ) ) { $selected = 'selected'; } else { $selected = ''; }
 
 		// Display activity
@@ -1703,7 +1703,7 @@ function bookacti_get_booking_actions_html( $booking, $admin_or_front = 'both', 
 			             . 'class="button ' . esc_attr( $action[ 'class' ] ) . ' bookacti-booking-action bookacti-tip" '
 			             . 'data-action="' . esc_attr( $action_id ) . '" '
 			             . 'data-tip="' . esc_attr( $action[ 'description' ] ) . '" '
-			             . 'data-user-auth-key="' . esc_attr( $auth_key ) . '"'
+			             . 'data-user-auth-key="' . esc_attr( $auth_key ) . '" '
 			             . 'data-booking-id="' . esc_attr( $booking->id ) . '" >';
 
 			if( $admin_or_front === 'front' || $action[ 'admin_or_front' ] === 'front' ) { 
@@ -1902,7 +1902,7 @@ function bookacti_get_booking_group_actions_html( $booking_group, $group_booking
 		             . 'class="button ' . esc_attr( $action[ 'class' ] ) . ' bookacti-booking-group-action bookacti-tip" '
 		             . 'data-action="' . esc_attr( $action_id ) . '" '
 		             . 'data-tip="' . esc_attr( $action[ 'description' ] ) . '" '
-		             . 'data-user-auth-key="' . esc_attr( $auth_key ) . '"'
+		             . 'data-user-auth-key="' . esc_attr( $auth_key ) . '" '
 		             . 'data-booking-group-id="' . esc_attr( $booking_group_id ) . '" >';
 
 		if( $admin_or_front === 'front' || $action[ 'admin_or_front' ] === 'front' ) { 
@@ -2356,10 +2356,10 @@ function bookacti_get_bookings_for_export( $args_raw = array() ) {
 	}
 	$unknown_user_id = esc_attr( apply_filters( 'bookacti_unknown_user_id', 'unknown_user' ) );
 	
-	$date_format     = $args[ 'raw' ] ? 'Y-m-d' : get_option( 'date_format' );
-	$datetime_format = $args[ 'raw' ] ? 'Y-m-d H:i:s' : bookacti_get_message( 'date_format_long' );
-	$booking_status  = $args[ 'raw' ] ? array() : bookacti_get_booking_status_labels();
-	$payment_status  = $args[ 'raw' ] ? array() : bookacti_get_payment_status_labels();
+	$date_format      = $args[ 'raw' ] ? 'Y-m-d' : get_option( 'date_format' );
+	$datetime_format  = $args[ 'raw' ] ? 'Y-m-d H:i:s' : bookacti_get_message( 'date_format_long' );
+	$booking_statuses = $args[ 'raw' ] ? array() : bookacti_get_booking_statuses();
+	$payment_statuses = $args[ 'raw' ] ? array() : bookacti_get_payment_statuses();
 	
 	$utc_timezone_obj = new DateTimeZone( 'UTC' );
 	$timezone = function_exists( 'wp_timezone_string' ) ? wp_timezone_string() : get_option( 'timezone_string' );
@@ -2426,9 +2426,9 @@ function bookacti_get_bookings_for_export( $args_raw = array() ) {
 			'booking_id'            => $id,
 			'booking_type'          => $booking_type,
 			'booking_active'        => $active,
-			'status'                => $args[ 'raw' ] ? $status : ( ! empty( $booking_status[ $status ][ 'label' ] ) ? $booking_status[ $status ][ 'label' ] : $status ),
+			'status'                => $args[ 'raw' ] ? $status : ( ! empty( $booking_statuses[ $status ] ) ? $booking_statuses[ $status ] : $status ),
 			'status_raw'            => $status,
-			'payment_status'        => $args[ 'raw' ] ? $paid : ( ! empty( $payment_status[ $paid ][ 'label' ] ) ? $payment_status[ $paid ][ 'label' ] : $paid ),
+			'payment_status'        => $args[ 'raw' ] ? $paid : ( ! empty( $payment_statuses[ $paid ] ) ? $payment_statuses[ $paid ] : $paid ),
 			'payment_status_raw'    => $paid,
 			'quantity'              => $quantity,
 			'availability'          => $availability,
@@ -2764,98 +2764,103 @@ function bookacti_get_booking_refunds_html( $refunds ) {
 
 
 
-// FORMATTING
+// BOOKING STATUSES
 
 /**
- * Retrieve booking status labels and display data
+ * Get booking statuses
  * @version 1.16.0 (was bookacti_get_booking_state_labels)
  * @return array
  */
-function bookacti_get_booking_status_labels() {
-	return apply_filters( 'bookacti_booking_status_labels_array', array(
-		'delivered'        => array( 'display_state' => 'good',    'label' => esc_html__( 'Delivered', 'booking-activities' ) ),
-		'booked'           => array( 'display_state' => 'good',    'label' => esc_html__( 'Booked', 'booking-activities' ) ),
-		'pending'          => array( 'display_state' => 'warning', 'label' => esc_html__( 'Pending', 'booking-activities' ) ),
-		'cancelled'        => array( 'display_state' => 'bad',     'label' => esc_html__( 'Cancelled', 'booking-activities' ) ),
-		'refunded'         => array( 'display_state' => 'bad',     'label' => esc_html__( 'Refunded', 'booking-activities' ) ),
-		'refund_requested' => array( 'display_state' => 'bad',     'label' => esc_html__( 'Refund requested', 'booking-activities' ) )
+function bookacti_get_booking_statuses() {
+	return apply_filters( 'bookacti_booking_statuses', array(
+		'delivered'        => esc_html__( 'Delivered', 'booking-activities' ),
+		'booked'           => esc_html__( 'Booked', 'booking-activities' ),
+		'pending'          => esc_html__( 'Pending', 'booking-activities' ),
+		'cancelled'        => esc_html__( 'Cancelled', 'booking-activities' ),
+		'refunded'         => esc_html__( 'Refunded', 'booking-activities' ),
+		'refund_requested' => esc_html__( 'Refund requested', 'booking-activities' )
 	) );
 }
 
 
 /**
- * Retrieve payment status labels and display data
- * @since 1.3.0
- * @version 1.14.0
+ * Get array of ACTIVE booking statuses, every other booking statuses will be considered as INACTIVE
+ * @since 1.6.0 (was bookacti_get_active_booking_states)
  * @return array
  */
-function bookacti_get_payment_status_labels() {
-	return apply_filters( 'bookacti_payment_status_labels_array', array(
-		'none' => array( 'display_state' => 'disabled', 'label' => esc_html__( 'No payment required', 'booking-activities' ) ),
-		'owed' => array( 'display_state' => 'warning',  'label' => esc_html__( 'Owed', 'booking-activities' ) ),
-		'paid' => array( 'display_state' => 'good',     'label' => esc_html__( 'Paid', 'booking-activities' ) )
+function bookacti_get_active_booking_statuses() {
+	return apply_filters( 'bookacti_active_booking_statuses', array( 'delivered', 'booked', 'pending' ) );
+}
+
+
+/**
+ * Get payment statuses
+ * @since 1.3.0
+ * @version 1.16.0
+ * @return array
+ */
+function bookacti_get_payment_statuses() {
+	return apply_filters( 'bookacti_payment_statuses', array(
+		'none' => esc_html__( 'No payment required', 'booking-activities' ),
+		'owed' => esc_html__( 'Owed', 'booking-activities' ),
+		'paid' => esc_html__( 'Paid', 'booking-activities' )
 	) );
 }
 
 
 /**
- * Get the formatted and translated booking status
+ * Get booking status HTML
  * @since 1.16.0 (was bookacti_format_booking_state)
  * @param string $status
  * @param boolean $icon_only
  * @return string
  */
 function bookacti_format_booking_status( $status, $icon_only = false ) {
-	$booking_status_labels = bookacti_get_booking_status_labels();
-
-	$formatted_value = '';
-	if( isset( $booking_status_labels[ $status ] ) ) {
-		if( $icon_only ) {
-			$formatted_value = '<span class="bookacti-booking-status bookacti-booking-status-' . esc_attr( $booking_status_labels[ $status ][ 'display_state' ] ) . ' bookacti-tip" data-booking-status="' . esc_attr( $status ) . '" data-tip="'. esc_html( $booking_status_labels[ $status ][ 'label' ] ) . '" ></span>';
-		} else {
-			$formatted_value = '<span class="bookacti-booking-status bookacti-booking-status-' . esc_attr( $booking_status_labels[ $status ][ 'display_state' ] ) . '" data-booking-status="' . esc_attr( $status ) . '" title="' . esc_html( $booking_status_labels[ $status ][ 'label' ] ) . '" ><label>' . esc_html( $booking_status_labels[ $status ][ 'label' ] ) . '</label></span>';
-		}
-	} else if( $status ) {
-		$formatted_value = '<span class="bookacti-booking-status" data-booking-status="' . esc_attr( $status ) . '" title="' . esc_html( $status ) . '"><label>' . esc_html( $status ) . '</label></span>';
+	$statuses = bookacti_get_booking_statuses();
+	$label    = isset( $statuses[ $status ] ) ? $statuses[ $status ] : $status;
+	
+	$atts    = 'title="' . esc_attr( esc_html( $label ) ) . '"';
+	$class   = 'bookacti-booking-status bookacti-booking-status-' . esc_attr( $status );
+	$content = '<label>' . esc_html( $label ) . '</label>';
+	
+	if( $icon_only ) {
+		$atts    = ' data-tip="' . esc_attr( esc_html( $label ) ) . '"';
+		$class  .= ' bookacti-tip';
+		$content = '';
 	}
-
-	return apply_filters( 'bookacti_booking_status_display', $formatted_value, $status, $icon_only );
+	
+	$html = '<span class="' . $class . '" data-booking-status="' . esc_attr( $status ) . '"' . $atts . '>' . $content . '</span>';
+	
+	return apply_filters( 'bookacti_booking_status_html', $html, $status, $icon_only );
 }
 
 
 /**
- * Get the formatted and translated payment status
+ * Get payment status HTML
  * @since 1.8.0
+ * @version 1.16.0
  * @param string $status
  * @param boolean $icon_only
  * @return string
  */
 function bookacti_format_payment_status( $status, $icon_only = false ) {
-	$payment_status_labels = bookacti_get_payment_status_labels();
-
-	$formatted_value = '';
-	if( isset( $payment_status_labels[ $status ] ) ) {
-		if( $icon_only ) {
-			$formatted_value = '<span class="bookacti-payment-status bookacti-payment-status-' . esc_attr( $payment_status_labels[ $status ][ 'display_state' ] ) . ' bookacti-tip" data-payment-status="' . esc_attr( $status ) . '" data-tip="'. esc_html( $payment_status_labels[ $status ][ 'label' ] ) . '" ></span>';
-		} else {
-			$formatted_value = '<span class="bookacti-payment-status bookacti-payment-status-' . esc_attr( $payment_status_labels[ $status ][ 'display_state' ] ) . '" data-payment-status="' . esc_attr( $status ) . '" title="' . esc_html( $payment_status_labels[ $status ][ 'label' ] ) . '"><label>' . esc_html( $payment_status_labels[ $status ][ 'label' ] ) . '</label></span>';
-		}
-	} else if( $status ) {
-		$formatted_value = '<span class="bookacti-payment-status" data-payment-status="' . esc_attr( $status ) . '" title="' . esc_html( $status ) . '"><label>' . esc_html( $status ) . '</label></span>';
+	$statuses = bookacti_get_payment_statuses();
+	$label    = isset( $statuses[ $status ] ) ? $statuses[ $status ] : $status;
+	
+	$atts    = 'title="' . esc_attr( esc_html( $label ) ) . '"';
+	$class   = 'bookacti-payment-status bookacti-payment-status-' . esc_attr( $status );
+	$content = '<label>' . esc_html( $label ) . '</label>';
+	
+	if( $icon_only ) {
+		$atts    = 'data-tip="' . esc_attr( esc_html( $label ) ) . '"';
+		$class  .= ' bookacti-tip';
+		$content = '';
 	}
+	
+	$html = '<span class="' . $class . '" data-payment-status="' . esc_attr( $status ) . '" ' . $atts . '>' . $content . '</span>';
 
-	return apply_filters( 'bookacti_payment_status_display', $formatted_value, $status, $icon_only );
+	return apply_filters( 'bookacti_payment_status_html', $html, $status, $icon_only );
 }
-
-
-/**
- * Get array of ACTIVE booking statuses, every other booking status will be considered as INACTIVE
- * @since 1.6.0 (was bookacti_get_active_booking_states)
- * @return array
- */
-function bookacti_get_active_booking_statuses() {
-	return apply_filters( 'bookacti_active_booking_statuses', array( 'delivered', 'booked', 'pending' ) );
-}	
 
 
 

@@ -612,7 +612,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-display-pack', 
 			'end_of_life' => '', 
 			'download_id' => 482,
-			'min_version' => '1.5.1'
+			'min_version' => '1.5.2'
 		),
 		'banp' => array( 
 			'title'       => 'Notification Pack', 

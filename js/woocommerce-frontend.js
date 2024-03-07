@@ -2,6 +2,11 @@ $j( document ).ready( function() {
 	// ORDER DETAILS
 	
 	/**
+	 * Init booking actions
+	 */
+	bookacti_init_booking_actions( '.bookacti-order-item-activity' );
+	
+	/**
 	 * Add data to booking actions
 	 * @since 1.0.12
 	 * @version 1.16.0

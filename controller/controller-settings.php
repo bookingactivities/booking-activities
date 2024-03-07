@@ -20,7 +20,7 @@ function bookacti_init_settings() {
 		)
 	);
 	
-	add_settings_field(  
+	add_settings_field(
 		'timezone', 
 		esc_html__( 'Calendars timezone', 'booking-activities' ), 
 		'bookacti_settings_field_timezone_callback', 
@@ -36,7 +36,7 @@ function bookacti_init_settings() {
 		'bookacti_settings_section_general'
 	);
 
-	add_settings_field(  
+	add_settings_field(
 		'default_calendar_view_threshold', 
 		esc_html__( 'Load the "Day" view if the calendar width is less than', 'booking-activities' ), 
 		'bookacti_settings_field_default_calendar_view_threshold_callback', 
@@ -44,7 +44,7 @@ function bookacti_init_settings() {
 		'bookacti_settings_section_general' 
 	);
 	
-	add_settings_field(  
+	add_settings_field(
 		'event_load_interval', 
 		esc_html__( 'Load events every', 'booking-activities' ), 
 		'bookacti_settings_field_event_load_interval_callback', 
@@ -52,7 +52,7 @@ function bookacti_init_settings() {
 		'bookacti_settings_section_general'
 	);
 
-	add_settings_field(  
+	add_settings_field(
 		'started_events_bookable', 
 		esc_html__( 'Are started events bookable?', 'booking-activities' ), 
 		'bookacti_settings_field_started_events_bookable_callback', 
@@ -60,7 +60,7 @@ function bookacti_init_settings() {
 		'bookacti_settings_section_general' 
 	);
 
-	add_settings_field(  
+	add_settings_field(
 		'started_groups_bookable', 
 		esc_html__( 'Are started groups of events bookable?', 'booking-activities' ), 
 		'bookacti_settings_field_started_groups_bookable_callback', 
@@ -68,7 +68,7 @@ function bookacti_init_settings() {
 		'bookacti_settings_section_general' 
 	);
 
-	add_settings_field(  
+	add_settings_field(
 		'default_payment_status', 
 		esc_html__( 'Default payment status', 'booking-activities' ), 
 		'bookacti_settings_field_default_payment_status_callback', 
@@ -76,7 +76,7 @@ function bookacti_init_settings() {
 		'bookacti_settings_section_general' 
 	);
 	
-	add_settings_field(  
+	add_settings_field(
 		'default_booking_state', 
 		esc_html__( 'Default booking status', 'booking-activities' ), 
 		'bookacti_settings_field_default_booking_state_callback', 
@@ -84,7 +84,7 @@ function bookacti_init_settings() {
 		'bookacti_settings_section_general' 
 	);
 
-	add_settings_field(  
+	add_settings_field(
 		'display_private_columns', 
 		esc_html__( 'Allow private columns in frontend booking lists', 'booking-activities' ), 
 		'bookacti_settings_field_display_private_columns_callback', 
@@ -92,7 +92,7 @@ function bookacti_init_settings() {
 		'bookacti_settings_section_general' 
 	);
 	
-	add_settings_field(  
+	add_settings_field(
 		'delete_data_on_uninstall', 
 		esc_html__( 'Delete data on uninstall', 'booking-activities' ), 
 		'bookacti_settings_field_delete_data_on_uninstall_callback', 
@@ -114,7 +114,7 @@ function bookacti_init_settings() {
 		)
 	);
 	
-	add_settings_field(  
+	add_settings_field(
 		'price_currency_symbol', 
 		esc_html__( 'Currency', 'booking-activities' ), 
 		'bookacti_settings_field_price_currency_symbol_callback', 
@@ -123,7 +123,7 @@ function bookacti_init_settings() {
 	);
 	
 	
-	add_settings_field(  
+	add_settings_field(
 		'price_currency_position', 
 		esc_html__( 'Currency position', 'booking-activities' ), 
 		'bookacti_settings_field_price_currency_position_callback', 
@@ -131,7 +131,7 @@ function bookacti_init_settings() {
 		'bookacti_settings_section_general_price'
 	);
 	
-	add_settings_field(  
+	add_settings_field(
 		'price_thousand_separator', 
 		esc_html__( 'Thousand separator', 'booking-activities' ), 
 		'bookacti_settings_field_price_thousand_separator_callback', 
@@ -139,7 +139,7 @@ function bookacti_init_settings() {
 		'bookacti_settings_section_general_price'
 	);
 	
-	add_settings_field(  
+	add_settings_field(
 		'price_decimal_separator', 
 		esc_html__( 'Decimal separator', 'booking-activities' ), 
 		'bookacti_settings_field_price_decimal_separator_callback', 
@@ -169,44 +169,44 @@ function bookacti_init_settings() {
 		)
 	);
 	
-	add_settings_field(  
-		'allow_customers_to_cancel',                      
-		esc_html__( 'Allow customers to cancel their bookings', 'booking-activities' ),               
-		'bookacti_settings_field_activate_cancel_callback',   
-		'bookacti_cancellation_settings',                     
+	add_settings_field(
+		'allow_customers_to_cancel',
+		esc_html__( 'Allow customers to cancel their bookings', 'booking-activities' ),
+		'bookacti_settings_field_activate_cancel_callback',
+		'bookacti_cancellation_settings',
 		'bookacti_settings_section_cancellation' 
 	);
 	
-	add_settings_field(  
-		'allow_customers_to_reschedule',                      
-		esc_html__( 'Allow customers to reschedule their bookings', 'booking-activities' ),               
-		'bookacti_settings_field_activate_reschedule_callback',   
-		'bookacti_cancellation_settings',                     
-		'bookacti_settings_section_cancellation' 
+	add_settings_field(
+		'allow_customers_to_reschedule',
+		esc_html__( 'Allow customers to reschedule their bookings', 'booking-activities' ),
+		'bookacti_settings_field_activate_reschedule_callback',
+		'bookacti_cancellation_settings',
+		'bookacti_settings_section_cancellation'
 	);
 	
-	add_settings_field(  
+	add_settings_field(
 		'booking_changes_deadline', 
 		/* translators: Followed by a field indicating a number of days, hours and minutes from now. E.g.: "Changes are allowed for bookings starting in at least 2 days, 12 hours, 25 minutes". */
-		esc_html__( 'Changes are allowed for bookings starting in at least', 'booking-activities' ),               
-		'bookacti_settings_field_cancellation_delay_callback',   
-		'bookacti_cancellation_settings',                     
+		esc_html__( 'Changes are allowed for bookings starting in at least', 'booking-activities' ),
+		'bookacti_settings_field_cancellation_delay_callback',
+		'bookacti_cancellation_settings',
 		'bookacti_settings_section_cancellation' 
 	);
 	
-	add_settings_field(  
-		'refund_actions_after_cancellation',                      
-		esc_html__( 'Possible actions customers can take to be refunded', 'booking-activities' ),               
-		'bookacti_settings_field_cancellation_refund_actions_callback',   
-		'bookacti_cancellation_settings',                     
+	add_settings_field(
+		'refund_actions_after_cancellation',
+		esc_html__( 'Possible actions customers can take to be refunded', 'booking-activities' ),
+		'bookacti_settings_field_cancellation_refund_actions_callback',
+		'bookacti_cancellation_settings',
 		'bookacti_settings_section_cancellation' 
 	);
 	
-	add_settings_field(  
-		'admin_reschedule_scope',                      
-		esc_html__( 'Administrators can reschedule bookings to', 'booking-activities' ),               
-		'bookacti_settings_field_admin_reschedule_scope_callback',   
-		'bookacti_cancellation_settings',                     
+	add_settings_field(
+		'admin_reschedule_scope',
+		esc_html__( 'Administrators can reschedule bookings to', 'booking-activities' ),
+		'bookacti_settings_field_admin_reschedule_scope_callback',
+		'bookacti_cancellation_settings',
 		'bookacti_settings_section_cancellation' 
 	);
 	

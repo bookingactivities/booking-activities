@@ -2029,7 +2029,7 @@ function bookacti_add_wc_data_to_user_booking_list_items( $booking_list_items, $
 				
 				$coupon_label = sprintf( esc_html__( 'Refunded with coupon %s', 'booking-activities' ), '<span class="bookacti-refund-coupon-code ' . esc_attr( $coupon_class ) . '">' . strtoupper( $coupon_code ) . '</span>' );
 				$coupon_tip = $coupon_error_label ? $coupon_label . '<br/>' . $coupon_error_label : $coupon_label;
-				$booking_list_items[ $booking_id ][ 'status' ] = '<span class="bookacti-booking-status bookacti-booking-status-bad bookacti-booking-status-refunded bookacti-converted-to-coupon bookacti-tip" data-booking-status="refunded" data-tip="' . esc_attr( $coupon_tip ) . '" >' . $coupon_label . '</span>';
+				$booking_list_items[ $booking_id ][ 'status' ] = '<span class="bookacti-booking-status bookacti-booking-status-refunded bookacti-converted-to-coupon bookacti-tip" data-booking-status="refunded" data-tip="' . esc_attr( $coupon_tip ) . '" >' . $coupon_label . '</span>';
 			}
 
 			// Filter refund actions
