@@ -1205,17 +1205,16 @@ add_filter( 'bookacti_refund_actions', 'bookacti_wc_add_refund_actions', 10, 1 )
  * @param array $selected_bookings
  * @param string $refund_action
  * @param string $refund_message
- * @param string $context
+ * @param boolean $is_frontend
  * @return array
  */
-function bookacti_wc_refund_selected_bookings( $return_array, $selected_bookings, $refund_action, $refund_message = '', $context = '' ) {
+function bookacti_wc_refund_selected_bookings( $return_array, $selected_bookings, $refund_action, $refund_message = '', $is_frontend = true ) {
 	if( $refund_action === 'coupon' ) {
 		$return_array = bookacti_refund_selected_bookings_with_coupon( $selected_bookings, $refund_message );
 	}
 	else if( $refund_action === 'auto' ) {
 		$return_array = bookacti_refund_selected_bookings_with_gateway( $selected_bookings, $refund_message );
 	}
-	
 	return $return_array;
 }
 add_filter( 'bookacti_refund_booking', 'bookacti_wc_refund_selected_bookings', 10, 5 );
@@ -1493,7 +1492,7 @@ function bookacti_delete_selected_bookings_order_item( $deleted, $selected_booki
 				$deleted[ $booking_key ][ $booking_id ][ 'wc_order_item_meta' ] = true;
 				if( $order ) {
 					/* translators: %1$s = WooCommerce order item id. %2$s = Booking ID. */
-					$message = sprintf( esc_html__( 'The order item #%1$s booking metadata have been deleted while deleting the corresponding booking (#%2$s).', 'booking-activities' ), $item_id, $booking_uid );
+					$message = sprintf( esc_html__( 'The order item #%1$s booking data have been deleted while deleting the corresponding booking (#%2$s).', 'booking-activities' ), $item_id, $booking_uid );
 					$order->add_order_note( $message, 0, 0 );
 				}
 			}

@@ -463,13 +463,13 @@ function bookacti_format_booking_system_attributes( $raw_atts = array() ) {
 	// Check if the desired templates are active and allowed
 	if( ! in_array( 'none', $calendars, true ) ) {
 		$form                   = $formatted_atts[ 'form_id' ] ? bookacti_get_form_data( $formatted_atts[ 'form_id' ] ) : array();
-		$manager_id             = ! empty( $form[ 'user_id' ] ) ? intval( $form[ 'user_id' ] ) : get_current_user_id();
+		$manager_id             = ! empty( $form[ 'user_id' ] ) ? intval( $form[ 'user_id' ] ) : 0;
 		$calendars              = array_values( array_unique( array_map( 'intval', array_filter( $calendars, 'is_numeric' ) ) ) );
 		$available_template_ids = array_keys( bookacti_fetch_templates( array(), $manager_id ) );
 		$had_templates          = ! empty( $calendars );
-		$allowed_templates      = ! apply_filters( 'bookacti_bypass_template_managers_check', false, $manager_id ) ? array_values( array_intersect( $calendars, $available_template_ids ) ) : $calendars;
+		$allowed_templates      = array_values( array_intersect( $calendars, $available_template_ids ) );
 		$calendars              = ! empty( $allowed_templates ) ? $allowed_templates : ( ! $had_templates && $available_template_ids ? $available_template_ids : array( 'none' ) );
-	} 
+	}
 	$formatted_atts[ 'calendars' ] = $calendars;
 	
 	// If there are no calendars, disable activities and group categories too

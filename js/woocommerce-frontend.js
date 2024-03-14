@@ -13,7 +13,7 @@ $j( document ).ready( function() {
 	 * @param {Event} e
 	 * @param {Object} data
 	 */
-	$j( 'body.woocommerce' ).on( 'bookacti_booking_action_data', function( e, data ) {
+	$j( 'body.woocommerce-order-received, body.woocommerce-view-order' ).on( 'bookacti_booking_action_data', function( e, data ) {
 		if( data?.form_data instanceof FormData ) {
 			data.form_data.append( 'context', 'wc_order_items' );
 		}

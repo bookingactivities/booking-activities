@@ -505,8 +505,10 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 				}
 				
 				// Specific cases
-				$picked_events = ! empty( $_REQUEST[ 'selected_events' ] ) ? bookacti_format_picked_events( $_REQUEST[ 'selected_events' ] ) : array();
+				if( ! empty( $_REQUEST[ 'orderby' ] ) ) { $filters[ 'order_by' ] = $_REQUEST[ 'orderby' ]; }
 				
+				// Filter by picked event (group)
+				$picked_events = ! empty( $_REQUEST[ 'selected_events' ] ) ? bookacti_format_picked_events( $_REQUEST[ 'selected_events' ] ) : array();
 				if( ! empty( $picked_events[ 0 ][ 'group_id' ] ) ) { 
 					$filters[ 'in__event_group_id' ]     = array( $picked_events[ 0 ][ 'group_id' ] );
 					$filters[ 'in__booking_group_date' ] = ! empty( $picked_events[ 0 ][ 'group_date' ] ) ? array( $picked_events[ 0 ][ 'group_date' ] ) : array();
@@ -516,7 +518,6 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					if( ! empty( $picked_events[ 0 ][ 'start' ] ) ) { $filters[ 'event_start' ] = $picked_events[ 0 ][ 'start' ]; }
 					if( ! empty( $picked_events[ 0 ][ 'end' ] ) )   { $filters[ 'event_end' ]   = $picked_events[ 0 ][ 'end' ]; }
 				}
-				if( ! empty( $_REQUEST[ 'orderby' ] ) )             { $filters[ 'order_by' ] = $_REQUEST[ 'orderby' ]; }
 			}
 			
 			// Format filters before making the request

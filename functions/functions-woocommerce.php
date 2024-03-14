@@ -397,6 +397,41 @@ function bookacti_wc_update_cart_item_bookings_status( $cart_item_key, $new_stat
 }
 
 
+/**
+ * Load WooCommerce cart from a WP_REST_Request
+ * @param WP_REST_Request $request
+ * @since 1.16.0
+ * @param WP_REST_Request $request
+ * @return boolean
+ */
+function bookacti_wc_load_cart_from_rest_request( $request ) {
+	$cart_token = $request->get_header( 'Cart-Token' );
+	if( $cart_token && JsonWebToken::validate( $cart_token, '@' . wp_salt() ) ) {
+		// Overrides the core session class.
+		add_filter(
+			'woocommerce_session_handler',
+			function() {
+				return SessionHandler::class;
+			}
+		);
+	}
+	
+	if( ! did_action( 'woocommerce_load_cart_from_session' ) && function_exists( 'wc_load_cart' ) ) {
+		wc_load_cart();
+	}
+	
+	$cart = wc()->cart;
+	if( ! $cart ) { return false; }
+	
+	$cart->get_cart();
+	$cart->calculate_fees();
+	$cart->calculate_shipping();
+	$cart->calculate_totals();
+	
+	return $cart;
+}
+
+
 
 
 // CART EXPIRATION
@@ -2301,7 +2336,7 @@ function bookacti_refund_selected_bookings_with_coupon( $selected_bookings, $ref
 			'<strong>' . sprintf( esc_html( _n( '%s coupon', '%s coupons', $coupons_nb, 'booking-activities' ) ), $coupons_nb ) . '</strong>'
 		) . '</span>';
 		$return_data[ 'message' ] .= '<table class="bookacti-refund-table bookacti-refund-table-coupon"><thead><tr><th>' . esc_html__( 'Coupon code', 'booking-activities' ) . '</th><th>' . esc_html__( 'Coupon value', 'booking-activities' ) . '</th><th>' . esc_html__( 'Refunded bookings', 'booking-activities' ) . '</th></tr></thead><tbody>' . $rows . '</tbody></table>';
-		$return_data[ 'message' ] .= '<span><em>' . esc_html__( 'You can use your coupon code in the cart the next time you place an order.', 'booking-activities' ) . '</em></span>';
+		$return_data[ 'message' ] .= '<span><em>' . esc_html__( 'You can use your coupon code the next time you place an order.', 'booking-activities' ) . '</em></span>';
 	} 
 	else {
 		$return_data[ 'status' ]    = 'failed';

@@ -324,8 +324,8 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 = 1.16.0 =
 * Feature - Edit multiple bookings at once: change status, change quantity, reschedule, refund, delete, send notification
-* Feature - Add an option to allow customers to reschedule a booking to an event of a different activity and / or to an event in a different calendar (in Calendar Editor > the activity settings > Availability tab)
-* Feature - Add an option to allow administrators to reschedule a booking to an event of a different activity and / or to an event in a different calendar (in Settings > Cancellation tab)
+* Feature - Add an option to allow customers to reschedule a booking to a different activity and / or to a different calendar (in Calendar Editor > the activity settings > Availability tab)
+* Feature - Add an option to allow administrators to reschedule a booking to a different activity and / or to a different calendar (in Settings > Cancellation tab)
 * Feature - Add an option to select the activities a booking can be rescheduled to (in Calendar Editor > the activity settings > Availability tab)
 * Feature - Send only one notification for multiple bookings / for WC order (the "Asynchronous notifications" option must be ON in Settings > Notifications tab)
 * Feature - Manually send a notification from the backend booking list (in the Actions column)
@@ -334,15 +334,19 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Tweak - "Customer" booking filter: List the customer emails from booking made without accounts
 * Tweak - "Customer" booking filter: Display the bookings made with and without account by the selected customer (need a page refresh, not working with AJAX)
 * Tweak - You cannot display events from a calendar that the booking form author cannot manage
-* Tweak - You cannot reschedule a booking to an event located on a calendar that the original booking form author cannot manage
 * Tweak - Remove "When to load the events?" option, you can use the bookacti_booking_system_default_attributes hook to set auto_load to 0 (after page load (default)) or 1 (on page load (not recommended, support no longer provided))
+* Tweak - Unselect an event by clicking it again (even if multiple events selection is deactivated)
+* Tweak - Export bookings included in groups if the booking list is filtered by event and if export settings are "One row for each booking of the group"
 * Fix - Booking filters may not be correctly applied after reloading the bookings page
 * Fix - Deleting an activity deleted it from all calendars instead of removing it only from the current calendar
 * Fix - Decode HTML entities before displaying WooCommerce price
 * Fix - Incorrect bookings retrieved if booking_group_id_operator filter was set to "OR" and no booking ids where provided
 * Fix - Selected user ID was displayed in user selectbox instead of proper label
+* Fix - (WIP) Support WooCommerce Cart Block: validate cart item quantity and change booking quantity accordingly
+* Fix - (WIP) Support WooCommerce Checkout Block: change booking status after checkout
+* Dev - (WIP) Declare WC Cart and Checkout blocks as NOT supported by Booking Activities and its add-ons for now (use WC Cart and Checkout shortcodes instead)
 * Dev - Functions to update and delete Booking Activities objects metadata now allow multiple object ids
-* Dev - Refactor the way async notifications are scheduled
+* Dev - Refactor async notifications scheduling
 * Dev - Lots of hooks and functions have changed, especially regarding booking actions, test and update your custom code consequently
 * Lib - Update FullCalendar to 6.1.11
 

@@ -218,7 +218,7 @@ function bookacti_dialog_cancel_bookings( booking_selection ) {
 									var row_booking_id       = $j( this ).find( '.bookacti-single-booking' ).addBack( '.bookacti-single-booking' ).data( 'booking-id' );
 									var row_booking_group_id = $j( this ).find( '.bookacti-booking-group' ).addBack( '.bookacti-booking-group' ).data( 'booking-group-id' );
 									var new_row_selector     = row_booking_id ? '.bookacti-single-booking[data-booking-id="' + row_booking_id + '"]' : ( row_booking_group_id ? '.bookacti-booking-group[data-booking-group-id="' + row_booking_group_id + '"]' : '' );
-									var new_row              = new_row_selector ? new_rows.find( new_row_selector ).addBack( new_row_selector ).closest( 'tr' ) : $j();
+									var new_row              = new_row_selector ? new_rows.find( new_row_selector ).addBack( new_row_selector ).closest( 'tr, .bookacti-booking-row' ) : $j();
 									if( new_row.length ) {
 										$j( this ).replaceWith( new_row );
 									}
@@ -392,7 +392,7 @@ function bookacti_dialog_refund_bookings( booking_selection ) {
 											var row_booking_id       = $j( this ).find( '.bookacti-single-booking' ).addBack( '.bookacti-single-booking' ).data( 'booking-id' );
 											var row_booking_group_id = $j( this ).find( '.bookacti-booking-group' ).addBack( '.bookacti-booking-group' ).data( 'booking-group-id' );
 											var new_row_selector     = row_booking_id ? '.bookacti-single-booking[data-booking-id="' + row_booking_id + '"]' : ( row_booking_group_id ? '.bookacti-booking-group[data-booking-group-id="' + row_booking_group_id + '"]' : '' );
-											var new_row              = new_row_selector ? new_rows.find( new_row_selector ).addBack( new_row_selector ).closest( 'tr' ) : $j();
+											var new_row              = new_row_selector ? new_rows.find( new_row_selector ).addBack( new_row_selector ).closest( 'tr, .bookacti-booking-row' ) : $j();
 											if( new_row.length ) {
 												$j( this ).replaceWith( new_row );
 											}
@@ -578,7 +578,7 @@ function bookacti_dialog_change_bookings_status( booking_selection ) {
 									var row_booking_id       = $j( this ).find( '.bookacti-single-booking' ).addBack( '.bookacti-single-booking' ).data( 'booking-id' );
 									var row_booking_group_id = $j( this ).find( '.bookacti-booking-group' ).addBack( '.bookacti-booking-group' ).data( 'booking-group-id' );
 									var new_row_selector     = row_booking_id ? '.bookacti-single-booking[data-booking-id="' + row_booking_id + '"]' : ( row_booking_group_id ? '.bookacti-booking-group[data-booking-group-id="' + row_booking_group_id + '"]' : '' );
-									var new_row              = new_row_selector ? new_rows.find( new_row_selector ).addBack( new_row_selector ).closest( 'tr' ) : $j();
+									var new_row              = new_row_selector ? new_rows.find( new_row_selector ).addBack( new_row_selector ).closest( 'tr, .bookacti-booking-row' ) : $j();
 									if( new_row.length ) {
 										$j( this ).replaceWith( new_row );
 									}
@@ -720,7 +720,7 @@ function bookacti_dialog_change_bookings_quantity( booking_selection ) {
 									var row_booking_id       = $j( this ).find( '.bookacti-single-booking' ).addBack( '.bookacti-single-booking' ).data( 'booking-id' );
 									var row_booking_group_id = $j( this ).find( '.bookacti-booking-group' ).addBack( '.bookacti-booking-group' ).data( 'booking-group-id' );
 									var new_row_selector     = row_booking_id ? '.bookacti-single-booking[data-booking-id="' + row_booking_id + '"]' : ( row_booking_group_id ? '.bookacti-booking-group[data-booking-group-id="' + row_booking_group_id + '"]' : '' );
-									var new_row              = new_row_selector ? new_rows.find( new_row_selector ).addBack( new_row_selector ).closest( 'tr' ) : $j();
+									var new_row              = new_row_selector ? new_rows.find( new_row_selector ).addBack( new_row_selector ).closest( 'tr, .bookacti-booking-row' ) : $j();
 									if( new_row.length ) {
 										$j( this ).replaceWith( new_row );
 									}
@@ -939,7 +939,7 @@ function bookacti_dialog_reschedule_bookings( booking_selection ) {
 									var row_booking_id       = $j( this ).find( '.bookacti-single-booking' ).addBack( '.bookacti-single-booking' ).data( 'booking-id' );
 									var row_booking_group_id = $j( this ).find( '.bookacti-booking-group' ).addBack( '.bookacti-booking-group' ).data( 'booking-group-id' );
 									var new_row_selector     = row_booking_id ? '.bookacti-single-booking[data-booking-id="' + row_booking_id + '"]' : ( row_booking_group_id ? '.bookacti-booking-group[data-booking-group-id="' + row_booking_group_id + '"]' : '' );
-									var new_row              = new_row_selector ? new_rows.find( new_row_selector ).addBack( new_row_selector ).closest( 'tr' ) : $j();
+									var new_row              = new_row_selector ? new_rows.find( new_row_selector ).addBack( new_row_selector ).closest( 'tr, .bookacti-booking-row' ) : $j();
 									if( new_row.length ) {
 										$j( this ).replaceWith( new_row );
 									}
@@ -1258,7 +1258,7 @@ function bookacti_dialog_export_bookings() {
 /**
  * Generate the URL to export bookings
  * @since 1.6.0
- * @version 1.15.13
+ * @version 1.16.0
  * @param {string} reset_key
  */
 function bookacti_generate_export_bookings_url( reset_key ) {
@@ -1271,10 +1271,10 @@ function bookacti_generate_export_bookings_url( reset_key ) {
 	bookacti_add_loading_html( $j( '#bookacti-export-bookings-dialog' ) );
 	
 	// Get current filters and export settings
-	var data = bookacti_serialize_object( $j( '#bookacti-export-bookings-form' ) );
-	data.action = 'bookactiExportBookingsUrl';
-	data.reset_key = reset_key ? 1 : 0;
-	data.booking_filters = bookacti_serialize_object( $j( '#bookacti-booking-list-filters-form' ) );
+	var data             = bookacti_serialize_object( $j( '#bookacti-export-bookings-form' ) );
+	data.action          = 'bookactiExportBookingsUrl';
+	data.reset_key       = reset_key ? 1 : 0;
+	data.booking_filters = bookacti_get_booking_list_filters();
 	
 	$j( '#bookacti-export-bookings-form' ).trigger( 'bookacti_export_bookings_url_data', [ data, reset_key ] );
 	

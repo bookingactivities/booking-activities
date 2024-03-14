@@ -447,7 +447,7 @@ function bookacti_refresh_booking_numbers( booking_system ) {
 
 /**
  * An event is clicked
- * @version 1.15.0
+ * @version 1.16.0
  * @param {HTMLElement} booking_system
  * @param {(FullCalendar.EventApi|Object)} event
  */
@@ -456,10 +456,8 @@ function bookacti_event_click( booking_system, event ) {
 	var multiple_bookings = bookacti.booking_system[ booking_system_id ][ 'multiple_bookings' ];
 	
 	// If the event is picked, just unpick it (or its group)
-	if( multiple_bookings ) {
-		var unpicked_nb = bookacti_unpick_events( booking_system, event );
-		if( unpicked_nb ) { return; }
-	}
+	var unpicked_nb = bookacti_unpick_events( booking_system, event );
+	if( unpicked_nb ) { return; }
 	
 	// Get the group id of an event or open a dialog to choose a group
 	var groups = {};

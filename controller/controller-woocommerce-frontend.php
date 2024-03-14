@@ -991,6 +991,7 @@ add_action( 'wp_loaded', 'bookacti_remove_expired_product_from_cart', 100, 0 );
 /**
  * If quantity changes in cart, temporarily book the extra quantity if possible
  * @version 1.15.15
+ * @global WooCommerce $woocommerce
  * @param int $new_quantity
  * @param string $cart_item_key
  */
@@ -1077,7 +1078,50 @@ function bookacti_update_quantity_in_cart( $new_quantity, $cart_item_key ) {
 	
 	return $restore_qty ? $old_quantity : $new_quantity;
 }
-add_filter( 'woocommerce_stock_amount_cart_item', 'bookacti_update_quantity_in_cart', 40, 2 ); 
+add_filter( 'woocommerce_stock_amount_cart_item', 'bookacti_update_quantity_in_cart', 40, 2 );
+
+
+/**
+ * If quantity changes in cart via Strore API, temporarily book the extra quantity if possible
+ * TEMP FIX - Waiting for a quantity validation filter (https://github.com/woocommerce/woocommerce/pull/45489)
+ * @since 1.16.0
+ * @param mixed $result
+ * @param WP_REST_Server $server
+ * @param WP_REST_Request $request
+ * @return mixed
+ */
+function bookacti_wc_store_api_update_cart_item_quantity( $result, $server, $request ) {
+	if( $request->get_route() !== '/wc/store/v1/cart/update-item' ) { return $result; }
+	
+	$cart_item_key    = $request->get_param( 'key' );
+	$desired_quantity = intval( $request->get_param( 'quantity' ) );
+	if( ! $cart_item_key || ! $desired_quantity ) { return $result; }
+	
+	$cart = bookacti_wc_load_cart_from_rest_request( $request );
+	if( ! $cart ) { return $result; }
+	$item = $cart->get_cart_item( $cart_item_key );
+	if( ! $item ) { return $result; }
+	
+	// Trigger woocommerce_stock_amount_cart_item like in the normal process to update cart quantity 
+	$new_quantity = apply_filters( 'woocommerce_stock_amount_cart_item', $desired_quantity, $cart_item_key );
+	
+	$errors     = array();
+	$wc_notices = wc_get_notices( 'error' );
+	if( $wc_notices ) {
+		foreach( $wc_notices as $wc_notice ) {
+			$errors[] = $wc_notice[ 'notice' ];
+		}
+		wc_clear_notices();
+	}
+	
+	if( $errors ) {
+		$wp_error = new WP_Error( 'bookacti_wc_store_api_invalid_booking_quantity', '<ul><li>' . implode( '<li>', $errors ) . '</ul>', array( 'status' => 400, 'data' => array() ) );
+		$result   = rest_convert_error_to_response( $wp_error );
+	}
+	
+	return $result;
+}
+add_filter( 'rest_pre_dispatch', 'bookacti_wc_store_api_update_cart_item_quantity', 10, 3 );
 
 
 /**
@@ -1716,14 +1760,13 @@ add_action( 'woocommerce_before_pay_action', 'bookacti_availability_check_before
 
 
 /**
- * Change order bookings states after the customer validates checkout
- * @since 1.2.2
- * @version 1.15.11
+ * Change order bookings status after the customer validates checkout
+ * @since 1.16.0 (was bookacti_change_booking_state_after_checkout)
  * @param int $order_id
  * @param array $posted_data
  * @param WC_Order $order
  */
-function bookacti_change_booking_state_after_checkout( $order_id, $posted_data, $order = null ) {
+function bookacti_wc_checkout_order_processed_booking_status( $order_id, $posted_data = array(), $order = null ) {
 	if( ! $order ) { $order = wc_get_order( $order_id ); }
 	if( ! $order ) { return; }
 	
@@ -1788,7 +1831,18 @@ function bookacti_change_booking_state_after_checkout( $order_id, $posted_data, 
 		}
 	}
 }
-add_action( 'woocommerce_checkout_order_processed', 'bookacti_change_booking_state_after_checkout', 10, 3 );
+add_action( 'woocommerce_checkout_order_processed', 'bookacti_wc_checkout_order_processed_booking_status', 10, 3 );
+
+
+/**
+ * Change order bookings status after the customer validates checkout via Store API
+ * @since 1.16.0
+ * @param WC_Order $order
+ */
+function bookacti_wc_store_api_checkout_order_processed_booking_status( $order ) {
+	bookacti_wc_checkout_order_processed_booking_status( $order->get_id(), array(), $order );
+}
+add_action( 'woocommerce_store_api_checkout_order_processed', 'bookacti_wc_store_api_checkout_order_processed_booking_status', 10, 1 );
 
 
 

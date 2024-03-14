@@ -54,19 +54,9 @@ function bookacti_filter_booking_list( paged ) {
 	paged = paged ? paged : 1;
 	var booking_system = $j( '#bookacti-booking-system-bookings-page' );
 	
-	var data    = bookacti_serialize_object( $j( '#bookacti-booking-list-filters-form' ) );
-	data.paged  = paged;
+	var data    = bookacti_get_booking_list_filters();
 	data.action = 'bookactiGetBookingList';
-	
-	// Select only available templates
-	if( ! data.templates ) {
-		data.templates = [];
-		$j( '#bookacti-booking-filter-templates option' ).each( function() {
-			data.templates.push( $j( this ).val() );
-		});
-	}
-	
-	$j( '#bookacti-booking-list-filters-form' ).trigger( 'bookacti_filter_booking_list_data', [ data ] );
+	data.paged  = paged;
 	
 	var column_nb = $j( '#bookacti-booking-list thead .manage-column:not(.hidden)' ).length ? $j( '#bookacti-booking-list thead .manage-column:not(.hidden)' ).length : 1;
 	
