@@ -198,16 +198,15 @@ function bookacti_get_selected_bookings_filters( $booking_type = 'both' ) {
  * @return array
  */
 function bookacti_get_selected_bookings() {
-	$selected_bookings = wp_cache_get( 'selected_bookings', 'bookacti' );
-	if( $selected_bookings ) { return $selected_bookings; }
-	
 	$booking_selection = isset( $_REQUEST[ 'booking_selection' ] ) ? ( is_array( $_REQUEST[ 'booking_selection' ] ) ? $_REQUEST[ 'booking_selection' ] : ( is_string( $_REQUEST[ 'booking_selection' ] ) ? bookacti_maybe_decode_json( stripslashes( $_REQUEST[ 'booking_selection' ] ), true ) : array() ) ) : array();
-	$all_bookings      = ! empty( $booking_selection[ 'all' ] );
+	$selection_hash    = md5( json_encode( $booking_selection ) );
+	$selected_bookings = wp_cache_get( 'selected_bookings_' . $selection_hash, 'bookacti' );
+	if( $selected_bookings ) { return $selected_bookings; }
 	
 	// Bookings
 	$bookings_filters = bookacti_get_selected_bookings_filters( 'single' );
 	if( $bookings_filters ) {
-		$bookings_filters[ 'group_by' ] = $all_bookings ? 'booking_group' : 'none';
+		$bookings_filters[ 'group_by' ] = ! empty( $booking_selection[ 'all' ] ) ? 'booking_group' : 'none';
 	}
 	$bookings = $bookings_filters ? bookacti_get_bookings( array_merge( $bookings_filters, array( 'fetch_meta' => true ) ) ) : array();
 	
@@ -224,7 +223,7 @@ function bookacti_get_selected_bookings() {
 	
 	// Booking groups
 	$group_filters = bookacti_get_selected_bookings_filters( 'group' );
-	if( $group_filters && $all_bookings ) {
+	if( $group_filters && ! empty( $booking_selection[ 'all' ] ) ) {
 		$group_filters[ 'in__booking_group_id' ] = bookacti_ids_to_array( array_merge( $group_filters[ 'in__booking_group_id' ], $booking_group_ids ) );
 		if( empty( $group_filters[ 'in__booking_group_id' ] ) && empty( $group_filters[ 'booking_group_id' ] ) ) {
 			$group_filters = array();
@@ -252,7 +251,7 @@ function bookacti_get_selected_bookings() {
 	) );
 	
 	// Cache data
-	wp_cache_set( 'selected_bookings', $selected_bookings, 'bookacti' );
+	wp_cache_set( 'selected_bookings_' . $selection_hash, $selected_bookings, 'bookacti' );
 	
 	return $selected_bookings;
 }
@@ -858,7 +857,7 @@ function bookacti_booking_can_be_cancelled( $booking, $is_frontend = true, $allo
 			if( ! $is_cancel_allowed || $is_grouped || ! $is_in_delay || ! $is_own || empty( $booking->active ) ) { $is_allowed = false; }
 		}
 	}
-
+	
 	return apply_filters( 'bookacti_booking_can_be_cancelled', $is_allowed, $booking, $is_frontend, $allow_grouped_booking );
 }
 

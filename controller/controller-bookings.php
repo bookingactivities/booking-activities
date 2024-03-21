@@ -732,8 +732,19 @@ function bookacti_controller_get_reschedule_booking_system_data() {
 		}
 	}
 	
+	$i = 0;
+	$allowed_activities = array();
+	foreach( $allowed_activities_per_booking as $activity_ids ) {
+		if( $i === 0 ) {
+			$allowed_activities = $activity_ids;
+		} else {
+			$allowed_activities = array_intersect( $allowed_activities, $activity_ids );
+		}
+		++$i;
+	}
+	
 	// Keep only the activities that are compatible with all the selected bookings
-	$atts[ 'activities' ] = $allowed_activities_per_booking ? array_values( bookacti_ids_to_array( call_user_func_array( 'array_intersect', $allowed_activities_per_booking ) ) ) : array();
+	$atts[ 'activities' ] = $allowed_activities ? array_values( bookacti_ids_to_array( $allowed_activities ) ) : array();
 	if( ! $atts[ 'activities' ] && count( $bookings ) !== $_any_nb ) {
 		bookacti_send_json( array( 'status' => 'failed', 'error' => 'no_activities', 'message' => esc_html__( 'Invalid booking selection.', 'booking-activities' ) . ' ' . esc_html__( 'No activities match all the selected bookings.', 'booking-activities' ) ), 'get_reschedule_booking_system_data' );
 	}
@@ -775,8 +786,19 @@ function bookacti_controller_get_reschedule_booking_system_data() {
 		}
 	}
 	
+	$i = 0;
+	$allowed_calendars = array();
+	foreach( $allowed_calendars_per_booking as $calendar_ids ) {
+		if( $i === 0 ) {
+			$allowed_calendars = $calendar_ids;
+		} else {
+			$allowed_calendars = array_intersect( $allowed_calendars, $calendar_ids );
+		}
+		++$i;
+	}
+	
 	// Keep only the calendars that are compatible with all the selected bookings
-	$atts[ 'calendars' ] = $allowed_calendars_per_booking ? array_values( bookacti_ids_to_array( call_user_func_array( 'array_intersect', $allowed_calendars_per_booking ) ) ) : array();
+	$atts[ 'calendars' ] = $allowed_calendars ? array_values( bookacti_ids_to_array( $allowed_calendars ) ) : array();
 	if( ! $atts[ 'calendars' ] ) {
 		bookacti_send_json( array( 'status' => 'failed', 'error' => 'no_calendars', 'message' => esc_html__( 'Invalid booking selection.', 'booking-activities' ) . ' ' . esc_html__( 'No calendars match all the selected bookings.', 'booking-activities' ) ), 'get_reschedule_booking_system_data' );
 	}

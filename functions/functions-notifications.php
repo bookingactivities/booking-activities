@@ -363,6 +363,7 @@ function bookacti_sanitize_notification_settings( $args, $notification_id = '' )
  */
 function bookacti_get_notifications_tags( $notification_id = '' ) {
 	$tags = array( 
+		'{for_each_booking}{/for_each_booking}' => esc_html__( 'The content between these tags will be displayed once per booking, the tags value will change accordingly.', 'booking-activities' ),
 		'{booking_id}'             => esc_html__( 'Booking unique ID (integer). Bookings and booking groups have different set of IDs.', 'booking-activities' ),
 		'{booking_title}'          => esc_html__( 'The event / group of events title.', 'booking-activities' ),
 		'{booking_quantity}'       => esc_html__( 'Booking quantity. If bookings of a same group happen to have different quantities, the higher is displayed.', 'booking-activities' ),
@@ -390,8 +391,7 @@ function bookacti_get_notifications_tags( $notification_id = '' ) {
 		'{booking_ical_url}'       => esc_html__( 'URL to export the current booking in ical format.', 'booking-activities' ),
 		'{price}'                  => esc_html__( 'Booking price, with currency.', 'booking-activities' ),
 		'{price_raw}'              => esc_html__( 'Booking price, without currency.', 'booking-activities' ),
-		'{shortcode}{/shortcode}'  => esc_html__( 'Use any shortcode between these tags.', 'booking-activities' ),
-		'{for_each_booking}{/for_each_booking}' => esc_html__( 'The content between these tags will be displayed once per booking, the tags value will change accordingly.', 'booking-activities' )
+		'{shortcode}{/shortcode}'  => esc_html__( 'Use any shortcode between these tags.', 'booking-activities' )
 	);
 	
 	if( substr( $notification_id, 0, 6 ) === 'admin_' ) {

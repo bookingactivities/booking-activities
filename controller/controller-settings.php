@@ -368,7 +368,7 @@ add_filter( 'set-screen-option', 'bookacti_save_screen_options', 10, 3 );
 /**
  * Create a settings page for each notification
  * @since 1.2.1 (was bookacti_fill_notifications_settings_section)
- * @version 1.15.13
+ * @version 1.16.0
  * @param string $notification_id
  */
 function bookacti_fill_notification_settings_page( $notification_id ) {
@@ -386,7 +386,7 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 		</h2>
 		
 		<p>
-			<a href='<?php echo esc_url( '?page=bookacti_settings&tab=notifications' ); ?>' >
+			<a href='<?php echo esc_url( '?page=bookacti_settings&tab=notifications' ); ?>'>
 				<?php esc_html_e( 'Go back to notifications settings', 'booking-activities' ); ?>
 			</a>
 		</p>
@@ -396,10 +396,10 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 		<?php do_action( 'bookacti_notification_settings_page_before', $notification_settings, $notification_id ); ?>
 
 		<h3><?php esc_html_e( 'Global notifications settings', 'booking-activities' ); ?></h3>
-		<table class='form-table' id='bookacti-notification-global-settings<?php echo $recipient === 'admin' ? '-admin' : ''; ?>' >
+		<table class='form-table' id='bookacti-notification-global-settings<?php echo $recipient === 'admin' ? '-admin' : ''; ?>'>
 			<tbody>
 				<tr>
-					<th scope='row' ><?php esc_html_e( 'Enable', 'booking-activities' ); ?></th>
+					<th scope='row'><?php esc_html_e( 'Enable', 'booking-activities' ); ?></th>
 					<td>
 						<?php 
 						$args = array(
@@ -418,14 +418,14 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 		</table>
 
 		<h3><?php esc_html_e( 'Email notifications settings', 'booking-activities' ); ?></h3>
-		<table class='form-table' id='bookacti-notification-email-settings<?php echo $recipient === 'admin' ? '-admin' : ''; ?>' >
+		<table class='form-table' id='bookacti-notification-email-settings<?php echo $recipient === 'admin' ? '-admin' : ''; ?>'>
 			<tbody>
 				<?php 
 				do_action( 'bookacti_notification_settings_page_email_before', $notification_settings, $notification_id );
 
 				if( substr( $notification_id, 0, 8 ) !== 'customer' ) { ?>
 				<tr>
-					<th scope='row' ><?php _e( 'Recipient(s)', 'booking-activities' ); ?></th>
+					<th scope='row'><?php _e( 'Recipient(s)', 'booking-activities' ); ?></th>
 					<td>
 						<?php
 						$args = array(
@@ -441,7 +441,7 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 				</tr>
 				<?php } ?>
 				<tr>
-					<th scope='row' ><?php echo esc_html_x( 'Subject', 'email subject', 'booking-activities' ); ?></th>
+					<th scope='row'><?php echo esc_html_x( 'Subject', 'email subject', 'booking-activities' ); ?></th>
 					<td>
 						<?php 
 						$args = array(
@@ -457,19 +457,19 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 					</td>
 				</tr>
 				<tr>
-					<th scope='row' >
+					<th scope='row'>
 					<?php 
 						echo esc_html_x( 'Email content', 'email message', 'booking-activities' ); 
 						$tags = bookacti_get_notifications_tags( $notification_id );
 						if( $tags ) {
 					?>
-						<div class='bookacti-notifications-tags-list' >
+						<div class='bookacti-notifications-tags-list'>
 							<p><?php esc_html_e( 'Use these tags:', 'booking-activities' ); ?></p>
 					<?php
 							foreach( $tags as $tag => $tip ) {
 								?>
-								<div class='bookacti-notifications-tag' >
-									<code><?php echo $tag; ?></code>
+								<div class='bookacti-notifications-tag'>
+									<span><?php echo str_replace( '}{', '}<br/>{', $tag ); ?></span>
 									<?php bookacti_help_tip( $tip ); ?>
 								</div>
 								<?php
@@ -482,8 +482,8 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 								/* translators: %1$s is the placeholder for Notification Pack add-on link */
 								$tip = sprintf( esc_html__( 'You can set a specific message on events, activities, groups of events and group categories and use it in your notifications thanks to %1$s add-on.', 'booking-activities' ), $addon_link );
 								?>
-								<div class='bookacti-notifications-tag' >
-									<code class='bookacti-notifications-tag-promo' >{specific_message}</code>
+								<div class='bookacti-notifications-tag'>
+									<code class='bookacti-notifications-tag-promo'>{specific_message}</code>
 									<?php bookacti_help_tip( $tip ); ?>
 								</div>
 								<?php
@@ -564,10 +564,10 @@ function bookacti_display_messages_fields() {
 	$messages = bookacti_get_messages( true );
 	foreach( $messages as $message_id => $message ) {
 ?>
-		<div class='bookacti-message-setting' >
+		<div class='bookacti-message-setting'>
 			<em><?php echo $message[ 'description' ] ?></em><br/>
 			<?php if( isset( $message[ 'input_type' ] ) && $message[ 'input_type' ] === 'textarea' ) { ?>
-				<textarea id='bookacti_messages_settings_<?php echo $message_id; ?>' class='bookacti-translatable' name='bookacti_messages_settings[<?php echo $message_id; ?>]' ><?php echo esc_textarea( $message[ 'value' ] ); ?></textarea>
+				<textarea id='bookacti_messages_settings_<?php echo $message_id; ?>' class='bookacti-translatable' name='bookacti_messages_settings[<?php echo $message_id; ?>]'><?php echo esc_textarea( $message[ 'value' ] ); ?></textarea>
 			<?php } else { ?>
 				<input type='text' id='bookacti_messages_settings_<?php echo $message_id; ?>' class='bookacti-translatable' name='bookacti_messages_settings[<?php echo $message_id; ?>]' value='<?php esc_attr_e( $message[ 'value' ] ); ?>' />
 			<?php } ?>
@@ -660,7 +660,7 @@ function bookacti_add_ons_compatibility_error_notice() {
 	}
 	if( ! $outdated_add_ons ) { return; }
 ?>
-	<div class='notice notice-error bookacti-add-ons-compatibility-notice' >
+	<div class='notice notice-error bookacti-add-ons-compatibility-notice'>
 		<p>
 			<?php
 				/* translators: %s = Plugin name (Booking Activities) */
@@ -713,7 +713,7 @@ function bookacti_5stars_rating_notice() {
 				$nb_days			= floor( $install_datetime->diff( $current_datetime )->days );
 				if( $nb_days >= 61 ) {
 					?>
-					<div class='notice notice-info bookacti-5stars-rating-notice is-dismissible' >
+					<div class='notice notice-info bookacti-5stars-rating-notice is-dismissible'>
 						<p>
 							<?php 
 								/* translators: %s: Plugin name */
@@ -726,8 +726,8 @@ function bookacti_5stars_rating_notice() {
 							?>
 						</p>
 						<p>
-							<a class='button' href='<?php echo esc_url( 'https://wordpress.org/support/plugin/booking-activities/reviews?rate=5#new-post' ); ?>' target='_blank' ><?php esc_html_e( 'Ok, I\'ll rate you five stars!', 'booking-activities' ); ?></a>
-							<span class='button' id='bookacti-dismiss-5stars-rating' ><?php esc_html_e( 'I already rated you, hide this message', 'booking-activities' ); ?></span>
+							<a class='button' href='<?php echo esc_url( 'https://wordpress.org/support/plugin/booking-activities/reviews?rate=5#new-post' ); ?>' target='_blank'><?php esc_html_e( 'Ok, I\'ll rate you five stars!', 'booking-activities' ); ?></a>
+							<span class='button' id='bookacti-dismiss-5stars-rating'><?php esc_html_e( 'I already rated you, hide this message', 'booking-activities' ); ?></span>
 						</p>
 					</div>
 					<?php

@@ -717,17 +717,21 @@ function bookacti_get_active_locales( $with_locale = true ) {
 
 
 /**
- * Detect current language with Qtranslate-XT or WPML
- * @version 1.14.0
+ * Get current site language
+ * @version 1.16.0
  * @param boolean $with_locale
  * @return string 
  */
 function bookacti_get_current_lang_code( $with_locale = false ) {
-	$locale    = get_locale();
-	$lang_code = $with_locale ? $locale : substr( $locale, 0, strpos( $locale, '_' ) );
+	$locale     = get_locale();
+	$locale_pos = strpos( $locale, '_' );
+	$lang_code  = $with_locale || $locale_pos === false ? $locale : substr( $locale, 0, $locale_pos );
 	
 	$lang_code = apply_filters( 'bookacti_current_lang_code', $lang_code, $with_locale );
-	if( ! $lang_code ) { $lang_code = $with_locale ? 'en_US' : 'en'; }
+	
+	if( ! $lang_code ) { 
+		$lang_code = $with_locale ? 'en_US' : 'en';
+	}
 	
 	return $lang_code;
 }
