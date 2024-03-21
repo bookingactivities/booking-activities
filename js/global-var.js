@@ -6,6 +6,7 @@ if( typeof bookacti === 'undefined' ) {
 		"booking_system": [],
 		"is_touch_device": false,
 		"current_filter_request": null,
+		"user_auth_key": null,
 		"is_variation_activity": [] // Woocommerce
 	};
 
@@ -15,5 +16,6 @@ if( typeof bookacti === 'undefined' ) {
 	if( typeof bookacti.booking_system === 'undefined' )          { bookacti.booking_system = []; }
 	if( typeof bookacti.is_touch_device === 'undefined' )         { bookacti.is_touch_device = false; }
 	if( typeof bookacti.current_filter_request === 'undefined' )  { bookacti.current_filter_request = null; }
+	if( typeof bookacti.user_auth_key === 'undefined' )           { bookacti.user_auth_key = null; }
 	if( typeof bookacti.is_variation_activity === 'undefined' )   { bookacti.is_variation_activity = []; }
 }

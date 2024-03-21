@@ -3,16 +3,7 @@ $j( document ).ready( function() {
 	 * Init booking actions
 	 */
 	bookacti_init_booking_actions();
-	
-	
-	if( $j( '.bookacti-bookings-bulk-action' ).length ) {
-		/**
-		 * Init booking bulk actions
-		 * @since 1.6.0
-		 * @version 1.8.0
-		 */
-		bookacti_init_booking_bulk_actions();
-	}
+	bookacti_init_booking_bulk_actions();
 	
 	
 	/**
@@ -155,31 +146,27 @@ function bookacti_dialog_update_bookings_calendar_settings() {
 
 
 /**
- * Cancel booking dialog
- * @version 1.15.15
- * @param {int} booking_id
- * @param {string} booking_type
+ * Cancel bookings dialog
+ * @since 1.16.0
+ * @param {Object} booking_selection
  */
-function bookacti_dialog_cancel_booking( booking_id, booking_type ) {
-	// Sanitize booking_type
-	booking_type = booking_type === 'group' ? 'group' : 'single';
-	var action = booking_type === 'group' ? 'bookactiCancelBookingGroup' : 'bookactiCancelBooking';
+function bookacti_dialog_cancel_bookings( booking_selection ) {
+	// Get booking rows
+	var rows = booking_selection.all ? $j( '.bookacti-single-booking, .bookacti-booking-group' ).closest( 'tr, .bookacti-booking-row' ) : $j();
 	
-	var row; var loading_container;
-	if( booking_type === 'single' ) {
-		row = $j( '.bookacti-cancel-booking[data-booking-id="' + booking_id + '"]' ).closest( 'tr' );
-		loading_container = $j( '.bookacti-cancel-booking[data-booking-id="' + booking_id + '"]' ).closest( 'tr, .bookacti-booking-row' );
-	} else {
-		row = $j( '.bookacti-cancel-booking-group[data-booking-group-id="' + booking_id + '"]' ).closest( 'tr' );
-		loading_container = $j( '.bookacti-cancel-booking-group[data-booking-group-id="' + booking_id + '"]' ).closest( 'tr, .bookacti-booking-row' );
+	if( ! booking_selection.all ) {
+		$j.each( booking_selection.booking_ids, function( i, booking_id ) {
+			rows = rows.add( $j( '.bookacti-single-booking[data-booking-id="' + booking_id + '"]' ).closest( 'tr, .bookacti-booking-row' ) );
+		});
+		$j.each( booking_selection.booking_group_ids, function( i, booking_group_id ) {
+			rows = rows.add( $j( '.bookacti-booking-group[data-booking-group-id="' + booking_group_id + '"]' ).closest( 'tr, .bookacti-booking-row' ) );
+		});
 	}
 	
-	// Reset error messages on close
-	if( ! bookacti_localized.is_admin || typeof bookacti_empty_all_dialog_forms === 'undefined' ) {
-		$j( '#bookacti-cancel-booking-dialog' ).dialog({ "beforeClose": function() { $j( '#bookacti-cancel-booking-dialog .bookacti-notices' ).remove(); } });
-	}
+	$j( 'body' ).trigger( 'bookacti_booking_action_dialog_opened', [ booking_selection, 'cancel' ] );
 	
-	row.first().trigger( 'bookacti_booking_action_dialog_opened', [ booking_id, booking_type, 'cancel' ] );
+	// Reset error notices
+	$j( '#bookacti-cancel-booking-dialog .bookacti-notices' ).remove();
 	
 	// Add the buttons
 	$j( '#bookacti-cancel-booking-dialog' ).dialog( 'option', 'buttons',
@@ -187,71 +174,84 @@ function bookacti_dialog_cancel_booking( booking_id, booking_type ) {
 		[{
 			text: bookacti_localized.dialog_button_cancel_booking,
 			'class': 'bookacti-dialog-delete-button',
-			
 			click: function() { 
 				// Reset error notices
 				$j( '#bookacti-cancel-booking-dialog .bookacti-notices' ).remove();
 				
 				// Columns to display
 				var columns = [];
-				row.first().find( 'td' ).each( function() {
+				rows.first().find( 'td' ).each( function() {
 					var column_id = $j( this ).data( 'column-id' );
 					if( column_id ) { columns.push( column_id ); }
 				});
 				
-				var data = { 
-					'action': action, 
-					'booking_id': booking_id,
-					'context': bookacti_localized.is_admin ? 'admin_booking_list' : 'user_booking_list',
-					'columns': columns,
-					'nonce': bookacti_localized.nonce_cancel_booking
-				};
-				row.first().trigger( 'bookacti_booking_action_data', [ data, booking_id, booking_type, 'cancel' ] );
-				
+				var data = { 'form_data': new FormData( $j( '#bookacti-cancel-booking-form' ).get(0) ) };
+				data.form_data.append( 'action', 'bookactiCancelBookings' );
+				data.form_data.append( 'booking_selection', JSON.stringify( booking_selection ) );
+				data.form_data.append( 'columns', JSON.stringify( columns ) );
+				data.form_data.append( 'is_admin', bookacti_localized.is_admin ? 1 : 0 );
+				data.form_data.append( 'user_auth_key', typeof bookacti.user_auth_key !== 'undefined' ? bookacti.user_auth_key : '' );
+
+				$j( 'body' ).trigger( 'bookacti_booking_action_data', [ data, booking_selection, 'cancel' ] );
+
 				// Display a loader
+				bookacti_booking_row_enter_loading_state( rows );
 				bookacti_add_loading_html( $j( '#bookacti-cancel-booking-dialog' ) );
-				bookacti_booking_row_enter_loading_state( loading_container );
-								
+
 				$j.ajax({
 					url: bookacti_localized.ajaxurl,
 					type: 'POST',
-					data: data,
+					data: data.form_data,
 					dataType: 'json',
+					cache: false,
+					contentType: false,
+					processData: false,
 					success: function( response ) {
 						if( response.status === 'success' ) {
-							// Replace the row
-							if( response.row ) {
-								row.last().after( response.row );
-								row.remove();
-								bookacti_refresh_list_table_hidden_columns();
-							}
-							
 							// Close the modal dialog
 							$j( '#bookacti-cancel-booking-dialog' ).dialog( 'close' );
 							
+							// Replace the rows
+							if( response.rows ) {
+								var new_rows = $j( response.rows );
+								rows.each( function() {
+									var row_booking_id       = $j( this ).find( '.bookacti-single-booking' ).addBack( '.bookacti-single-booking' ).data( 'booking-id' );
+									var row_booking_group_id = $j( this ).find( '.bookacti-booking-group' ).addBack( '.bookacti-booking-group' ).data( 'booking-group-id' );
+									var new_row_selector     = row_booking_id ? '.bookacti-single-booking[data-booking-id="' + row_booking_id + '"]' : ( row_booking_group_id ? '.bookacti-booking-group[data-booking-group-id="' + row_booking_group_id + '"]' : '' );
+									var new_row              = new_row_selector ? new_rows.find( new_row_selector ).addBack( new_row_selector ).closest( 'tr, .bookacti-booking-row' ) : $j();
+									if( new_row.length ) {
+										$j( this ).replaceWith( new_row );
+									}
+									if( row_booking_group_id ) {
+										$j( '.bookacti-gouped-booking[data-booking-group-id="' + row_booking_group_id + '"]' ).remove();
+									}
+								});
+								bookacti_refresh_list_table_hidden_columns();
+							}
+							rows.remove();
+							
+							$j( 'body' ).trigger( 'bookacti_bookings_cancelled', [ response, booking_selection ] );
+							
 							if( response.allow_refund ) {
-								bookacti_dialog_refund_booking( booking_id, booking_type );
+								bookacti_dialog_refund_bookings( booking_selection );
 							}
 						
-							$j( 'body' ).trigger( 'bookacti_booking_cancelled_by_user', [ booking_id, booking_type ] );
-							
 						} else if( response.status === 'failed' ) {
 							var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
 							$j( '#bookacti-cancel-booking-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + error_message + '</li></ul></div>' );
 							console.log( error_message );
 							console.log( response );
 						}
-						
 					},
 					error: function( e ) {
-						$j( '#bookacti-cancel-booking-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + 'AJAX ' + bookacti_localized.error + '</li></ul></div>' );
+						$j( '#bookacti-cancel-booking-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>AJAX ' + bookacti_localized.error + '</li></ul></div>' );
 						console.log( 'AJAX ' + bookacti_localized.error );
 						console.log( e );
 					},
 					complete: function() {
 						$j( '#bookacti-cancel-booking-dialog .bookacti-notices' ).show();
 						bookacti_remove_loading_html( $j( '#bookacti-cancel-booking-dialog' ) );
-						bookacti_booking_row_exit_loading_state( loading_container );
+						bookacti_booking_row_exit_loading_state( rows );
 					}
 				});
 			}
@@ -259,9 +259,7 @@ function bookacti_dialog_cancel_booking( booking_id, booking_type ) {
 		// Cancel button 
 		{
 			text: bookacti_localized.dialog_button_cancel,
-			// On click on the OK Button, new values are send to a script that update the database
 			click: function() {
-				// Close the modal dialog
 				$j( this ).dialog( 'close' );
 			}
 		}]
@@ -273,16 +271,22 @@ function bookacti_dialog_cancel_booking( booking_id, booking_type ) {
 
 
 /**
- * Refund a booking
- * @version 1.15.15
- * @param {int} booking_id
- * @param {string} booking_type
+ * Refund bookings
+ * @since 1.16.0
+ * @param {Object} booking_selection
  */
-function bookacti_dialog_refund_booking( booking_id, booking_type ) {
-	// Sanitize booking_type
-	booking_type      = booking_type === 'group' ? 'group' : 'single';
-	var action_html   = booking_type === 'group' ? 'bookactiGetBookingGroupRefundActionsHTML' : 'bookactiGetBookingRefundActionsHTML';
-	var action_refund = booking_type === 'group' ? 'bookactiRefundBookingGroup' : 'bookactiRefundBooking';
+function bookacti_dialog_refund_bookings( booking_selection ) {
+	// Get booking rows
+	var rows = booking_selection.all ? $j( '.bookacti-single-booking, .bookacti-booking-group' ).closest( 'tr, .bookacti-booking-row' ) : $j();
+	
+	if( ! booking_selection.all ) {
+		$j.each( booking_selection.booking_ids, function( i, booking_id ) {
+			rows = rows.add( $j( '.bookacti-single-booking[data-booking-id="' + booking_id + '"]' ).closest( 'tr, .bookacti-booking-row' ) );
+		});
+		$j.each( booking_selection.booking_group_ids, function( i, booking_group_id ) {
+			rows = rows.add( $j( '.bookacti-booking-group[data-booking-group-id="' + booking_group_id + '"]' ).closest( 'tr, .bookacti-booking-row' ) );
+		});
+	}
 	
 	// Empty current refund actions
 	$j( '#bookacti-refund-booking-dialog #bookacti-refund-options' ).empty();
@@ -290,173 +294,160 @@ function bookacti_dialog_refund_booking( booking_id, booking_type ) {
 	$j( '#bookacti-refund-booking-dialog #bookacti-no-refund-option' ).hide();
 	$j( '#bookacti-refund-booking-dialog #bookacti-refund-amount' ).empty();
 	$j( '#bookacti-refund-booking-dialog #bookacti-refund-amount-container' ).hide();
+	$j( '#bookacti-refund-booking-dialog' ).dialog( 'option', 'buttons', [] );
 	
-	var row; var loading_container;
-	if( booking_type === 'single' ) {
-		row = $j( '.bookacti-refund-booking[data-booking-id="' + booking_id + '"]' ).closest( 'tr' );
-		loading_container = $j( '.bookacti-refund-booking[data-booking-id="' + booking_id + '"]' ).closest( 'tr, .bookacti-booking-row' );
-	} else {
-		row = $j( '.bookacti-refund-booking-group[data-booking-group-id="' + booking_id + '"]' ).closest( 'tr' );
-		loading_container = $j( '.bookacti-refund-booking-group[data-booking-group-id="' + booking_id + '"]' ).closest( 'tr, .bookacti-booking-row' );
-	}
+	// Reset error notices
+	$j( '#bookacti-refund-booking-dialog .bookacti-notices' ).remove();
+
+	$j( 'body' ).trigger( 'bookacti_booking_action_dialog_opened', [ booking_selection, 'refund' ] );
 	
-	// Reset error messages on close
-	if( ! bookacti_localized.is_admin || typeof bookacti_empty_all_dialog_forms === 'undefined' ) {
-		$j( '#bookacti-refund-booking-dialog' ).dialog({ "beforeClose": function(){ $j( '#bookacti-refund-booking-dialog .bookacti-notices' ).remove(); } });
-	}
+	var data_get_actions = { 'form_data': new FormData( $j( '#bookacti-refund-booking-form' ).get(0) ) };
+	data_get_actions.form_data.append( 'action', 'bookactiGetBookingsRefundActionsHTML' );
+	data_get_actions.form_data.append( 'booking_selection', JSON.stringify( booking_selection ) );
+	data_get_actions.form_data.append( 'is_admin', bookacti_localized.is_admin ? 1 : 0 );
+
+	$j( 'body' ).trigger( 'bookacti_booking_action_data', [ data_get_actions, booking_selection, 'get_refund_actions' ] );
 	
-	// Display loading
+	// Display a loader
+	bookacti_booking_row_enter_loading_state( rows );
 	bookacti_add_loading_html( $j( '#bookacti-refund-booking-dialog' ) );
 	
 	// Get possible refund actions
 	$j.ajax({
 		url: bookacti_localized.ajaxurl,
 		type: 'POST',
-		data: {
-			'action': action_html, 
-			'booking_id': booking_id,
-			'is_admin': bookacti_localized.is_admin ? 1 : 0,
-			'nonce': bookacti_localized.nonce_refund_booking
-		},
+		data: data_get_actions.form_data,
 		dataType: 'json',
+		cache: false,
+		contentType: false,
+		processData: false,
 		success: function( response ) {
 			if( response.status === 'success' ) {
-				var buttons = [];
-				
-				// Add refund booking button if a refund method is available
-				if( response.actions_html ) {
-					// Display the refund options
-					$j( '#bookacti-refund-booking-dialog #bookacti-refund-options' ).html( response.actions_html );
-					$j( '#bookacti-refund-booking-dialog #bookacti-refund-options-container' ).show();
-					
-					// Display the refund amount
-					if( response.amount ) {
-						$j( '#bookacti-refund-booking-dialog #bookacti-refund-amount' ).html( response.amount );
-						$j( '#bookacti-refund-booking-dialog #bookacti-refund-amount-container' ).show();
-					}
-					
-					// Check the first radio
-					$j( '#bookacti-refund-booking-form input[type="radio"]:first' ).prop( 'checked', true );
-					
-					row.first().trigger( 'bookacti_booking_action_dialog_opened', [ booking_id, booking_type, 'refund' ] );
-					
-					buttons.push( {
-						'text': bookacti_localized.dialog_button_refund,
-						'class': 'bookacti-dialog-delete-button',
-
-						click: function() {
-							// Reset error notices
-							$j( '#bookacti-refund-booking-dialog .bookacti-notices' ).remove();
-							
-							var is_bookings_page = row.first().closest( '#bookacti-booking-list' ).length ? 1 : 0;
-
-							// Booking page specific data
-							var reload_grouped_bookings = 0;
-							if( is_bookings_page ) {
-								reload_grouped_bookings = row.next().hasClass( 'bookacti-gouped-booking' ) ? 1 : 0;
-							}
-							
-							// Display a loader
-							loading_container.find( '.bookacti-booking-state' ).hide();
-							bookacti_add_loading_html( loading_container.find( '.bookacti-booking-state' ), 'after' );
-							bookacti_add_loading_html( $j( '#bookacti-refund-booking-dialog' ) );
-							
-							var refund_action  = $j( '#bookacti-refund-booking-form input[name="refund-action"]:checked' ).val();
-							var refund_message = $j( '#bookacti-refund-message textarea[name="refund-message"]' ).val();
-							
-							// Columns to display
-							var columns = [];
-							row.first().find( 'td' ).each( function() {
-								var column_id = $j( this ).data( 'column-id' );
-								if( column_id ) { columns.push( column_id ); }
-							});
-							
-							var data = { 
-								'action': action_refund, 
-								'booking_id': booking_id,
-								'refund_action': refund_action,
-								'refund_message': refund_message,
-								'reload_grouped_bookings': reload_grouped_bookings,
-								'is_admin': bookacti_localized.is_admin ? 1 : 0,
-								'context': bookacti_localized.is_admin ? 'admin_booking_list' : 'user_booking_list',
-								'columns': columns,
-								'nonce': bookacti_localized.nonce_refund_booking
-							};
-							row.first().trigger( 'bookacti_booking_action_data', [ data, booking_id, booking_type, 'refund' ] );
-							
-							$j.ajax({
-								url: bookacti_localized.ajaxurl,
-								type: 'POST',
-								data: data,
-								dataType: 'json',
-								success: function( response ) {
-									if( response.status === 'success' ) {
-										// Replace old grouped bookings by new ones
-										if( reload_grouped_bookings && typeof response.grouped_booking_rows !== 'undefined' ) {
-											row.each( function() {
-												var are_grouped_booking_hidden = $j( this ).next().hasClass( 'hidden' );
-												$j( this ).nextUntil( 'tr:not(.bookacti-gouped-booking)' ).remove();
-												$j( this ).after( response.grouped_booking_rows );
-												if( are_grouped_booking_hidden ) {
-													$j( this ).nextUntil( 'tr:not(.bookacti-gouped-booking)' ).addClass( 'hidden' );
-													if( $j( this ).nextUntil( 'tr:not(.bookacti-gouped-booking)' ).length % 2 ) {
-														$j( this ).after( '<tr class="bookacti-gouped-booking hidden dummy"></tr>' ); // Add a dummy tr to keep the alternate background
-													}
-												}
-											});
-										}
-										
-										// Replace the row
-										if( response.row ) {
-											row.last().after( response.row );
-											row.remove();
-											bookacti_refresh_list_table_hidden_columns();
-										}
-										
-										$j( 'body' ).trigger( 'bookacti_booking_refunded', [ booking_id, booking_type, refund_action, refund_message, response ] );
-										
-										// Close the modal dialog
-										$j( '#bookacti-refund-booking-dialog' ).dialog( 'close' );
-										
-										// Notify user that his booking has been refunded
-										if( response.message ) {
-											bookacti_dialog_refund_confirmation( response.message );
-										}
-										
-									} else if( response.status === 'failed' ) {
-										var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
-										$j( '#bookacti-refund-booking-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + error_message + '</li></ul></div>' );
-										console.log( error_message );
-										console.log( response );
-									}
-								},
-								error: function( e ){
-									console.log( 'AJAX ' + bookacti_localized.error );
-									console.log( e );
-								},
-								complete: function() {
-									$j( '#bookacti-refund-booking-dialog .bookacti-notices' ).show();
-									bookacti_remove_loading_html( $j( '#bookacti-refund-booking-dialog' ) );
-									bookacti_remove_loading_html( loading_container );
-									loading_container.find( '.bookacti-booking-state' ).show();
-								}
-							});
-						}
-					});
-				} else {
+				if( ! response.actions_html ) {
 					$j( '#bookacti-refund-booking-dialog #bookacti-no-refund-option' ).show();
+					return;
 				}
 				
+				// Display the refund options
+				$j( '#bookacti-refund-booking-dialog #bookacti-refund-options' ).html( response.actions_html );
+				$j( '#bookacti-refund-booking-dialog #bookacti-refund-options-container' ).show();
+
+				// Display the refund amount
+				if( response.amount ) {
+					$j( '#bookacti-refund-booking-dialog #bookacti-refund-amount' ).html( response.amount );
+					$j( '#bookacti-refund-booking-dialog #bookacti-refund-amount-container' ).show();
+				}
+
+				// Check the first radio
+				$j( '#bookacti-refund-booking-form #bookacti-refund-options input[type="radio"]:first' ).prop( 'checked', true );
+				
+				// Add the buttons
+				$j( '#bookacti-refund-booking-dialog' ).dialog( 'option', 'buttons', [{
+					text: bookacti_localized.dialog_button_refund,
+					'class': 'bookacti-dialog-delete-button',
+					click: function() {
+						// Make sure the refund action is selected
+						if( ! $j( '#bookacti-refund-booking-form input[name="refund_action"]' ).val() ) { return; }
+						
+						// Reset error notices
+						$j( '#bookacti-refund-booking-dialog .bookacti-notices' ).remove();
+
+						// Columns to display
+						var columns = [];
+						rows.first().find( 'td' ).each( function() {
+							var column_id = $j( this ).data( 'column-id' );
+							if( column_id ) { columns.push( column_id ); }
+						});
+						
+						var data_refund = { 'form_data': new FormData( $j( '#bookacti-refund-booking-form' ).get(0) ) };
+						data_refund.form_data.append( 'action', 'bookactiRefundBookings' );
+						data_refund.form_data.append( 'booking_selection', JSON.stringify( booking_selection ) );
+						data_refund.form_data.append( 'columns', JSON.stringify( columns ) );
+						data_refund.form_data.append( 'is_admin', bookacti_localized.is_admin ? 1 : 0 );
+						data_refund.form_data.append( 'user_auth_key', typeof bookacti.user_auth_key !== 'undefined' ? bookacti.user_auth_key : '' );
+
+						$j( 'body' ).trigger( 'bookacti_booking_action_data', [ data_refund, booking_selection, 'refund' ] );
+
+						// Display a loader
+						bookacti_booking_row_enter_loading_state( rows );
+						bookacti_add_loading_html( $j( '#bookacti-refund-booking-dialog' ) );
+
+						$j.ajax({
+							url: bookacti_localized.ajaxurl,
+							type: 'POST',
+							data: data_refund.form_data,
+							dataType: 'json',
+							cache: false,
+							contentType: false,
+							processData: false,
+							success: function( response ) {
+								if( response.status === 'success' ) {
+									// Close the modal dialog
+									$j( '#bookacti-refund-booking-dialog' ).dialog( 'close' );
+
+									// Replace the rows
+									if( response.rows ) {
+										var new_rows = $j( response.rows );
+										rows.each( function() {
+											var row_booking_id       = $j( this ).find( '.bookacti-single-booking' ).addBack( '.bookacti-single-booking' ).data( 'booking-id' );
+											var row_booking_group_id = $j( this ).find( '.bookacti-booking-group' ).addBack( '.bookacti-booking-group' ).data( 'booking-group-id' );
+											var new_row_selector     = row_booking_id ? '.bookacti-single-booking[data-booking-id="' + row_booking_id + '"]' : ( row_booking_group_id ? '.bookacti-booking-group[data-booking-group-id="' + row_booking_group_id + '"]' : '' );
+											var new_row              = new_row_selector ? new_rows.find( new_row_selector ).addBack( new_row_selector ).closest( 'tr, .bookacti-booking-row' ) : $j();
+											if( new_row.length ) {
+												$j( this ).replaceWith( new_row );
+											}
+											if( row_booking_group_id ) {
+												$j( '.bookacti-gouped-booking[data-booking-group-id="' + row_booking_group_id + '"]' ).remove();
+											}
+										});
+										bookacti_refresh_list_table_hidden_columns();
+										bookacti_init_tooltip();
+									}
+									rows.remove();
+									
+									// Notify user that his booking has been refunded
+									if( response.message ) {
+										bookacti_dialog_refund_confirmation( response.message );
+									}
+									
+									// Refresh bookings calendar
+									if( $j( '#bookacti-booking-system-bookings-page' ).length ) {
+										bookacti_refresh_booking_numbers( $j( '#bookacti-booking-system-bookings-page' ) );
+									}
+								
+									$j( 'body' ).trigger( 'bookacti_bookings_refunded', [ response, booking_selection ] );
+
+									// If the rows have not been refresh, reload the page
+									if( ! response.rows ) {
+										window.location.reload();
+									}
+									
+								} else if( response.status === 'failed' ) {
+									var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
+									$j( '#bookacti-refund-booking-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + error_message + '</li></ul></div>' );
+									console.log( error_message );
+									console.log( response );
+								}
+							},
+							error: function( e ){
+								console.log( 'AJAX ' + bookacti_localized.error );
+								console.log( e );
+							},
+							complete: function() {
+								$j( '#bookacti-refund-booking-dialog .bookacti-notices' ).show();
+								bookacti_remove_loading_html( $j( '#bookacti-refund-booking-dialog' ) );
+								bookacti_booking_row_exit_loading_state( rows );
+							}
+						});
+					}
+				},
 				// Cancel button
-				buttons.push( {
+				{
 					text: bookacti_localized.dialog_button_cancel,
 					click: function() {
 						$j( this ).dialog( 'close' );
 					}
-				});
-				
-				// Add the buttons
-				$j( '#bookacti-refund-booking-dialog' ).dialog( 'option', 'buttons', buttons );
+				}] );
 				
 			} else if( response.status === 'failed' ) {
 				var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
@@ -465,14 +456,15 @@ function bookacti_dialog_refund_booking( booking_id, booking_type ) {
 				console.log( response );
 			}
 		},
-		error: function( e ){
+		error: function( e ) {
 			$j( '#bookacti-refund-booking-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>AJAX ' + bookacti_localized.error + '</li></ul></div>' );
 			console.log( 'AJAX ' + bookacti_localized.error );
 			console.log( e );
 		},
 		complete: function() {
-			bookacti_remove_loading_html( $j( '#bookacti-refund-booking-dialog' ) );
 			$j( '#bookacti-refund-booking-dialog .bookacti-notices' ).show();
+			bookacti_remove_loading_html( $j( '#bookacti-refund-booking-dialog' ) );
+			bookacti_booking_row_exit_loading_state( rows );
 		}
 	});
 	
@@ -506,287 +498,278 @@ function bookacti_dialog_refund_confirmation( message ) {
 
 
 /**
- * Change Booking State
- * @version 1.15.15
- * @param {int} booking_id
- * @param {string} booking_type
+ * Change Bookings Status
+ * @since 1.16.0
+ * @param {Object} booking_selection
  */
-function bookacti_dialog_change_booking_state( booking_id, booking_type ) {
-	// Sanitize booking_type
-	booking_type = booking_type === 'group' ? 'group' : 'single';
-	var action   = booking_type === 'group' ? 'bookactiChangeBookingGroupState' : 'bookactiChangeBookingState';
+function bookacti_dialog_change_bookings_status( booking_selection ) {
+	// Get booking rows
+	var rows = booking_selection.all ? $j( '.bookacti-single-booking, .bookacti-booking-group' ).closest( 'tr, .bookacti-booking-row' ) : $j();
 	
-	// Get current row and actions container
-	var row;
-	if( booking_type === 'single' ) {
-		row = $j( '.bookacti-change-booking-state[data-booking-id="' + booking_id + '"]' ).closest( 'tr' );
-	} else {
-		row = $j( '.bookacti-change-booking-group-state[data-booking-group-id="' + booking_id + '"]' ).closest( 'tr' );
+	if( ! booking_selection.all ) {
+		$j.each( booking_selection.booking_ids, function( i, booking_id ) {
+			rows = rows.add( $j( '.bookacti-single-booking[data-booking-id="' + booking_id + '"]' ).closest( 'tr, .bookacti-booking-row' ) );
+		});
+		$j.each( booking_selection.booking_group_ids, function( i, booking_group_id ) {
+			rows = rows.add( $j( '.bookacti-booking-group[data-booking-group-id="' + booking_group_id + '"]' ).closest( 'tr, .bookacti-booking-row' ) );
+		});
 	}
 	
-	var is_bookings_page = row.first().closest( '#bookacti-booking-list' ).length ? 1 : 0;
-	var reload_grouped_bookings = is_bookings_page && row.next().hasClass( 'bookacti-gouped-booking' ) ? 1 : 0;
-	
-	// Select the current state
-	var booking_state  = row.first().find( '.bookacti-booking-state' ).data( 'booking-state' );
-	var payment_status = row.first().find( '.bookacti-payment-status' ).data( 'payment-status' );
-	if( booking_state )  { $j( 'select#bookacti-select-booking-state' ).val( booking_state ); }
-	if( payment_status ) { $j( 'select#bookacti-select-payment-status' ).val( payment_status ); }
-	$j( '#bookacti-send-notifications-on-state-change' ).prop( 'checked', false );
-	
-	row.first().trigger( 'bookacti_booking_action_dialog_opened', [ booking_id, booking_type, 'change_booking_status' ] );
-	
+	// Select the current status
+	var booking_status = rows.length === 1 ? rows.find( '.bookacti-booking-status' ).data( 'booking-status' ) : '';
+	var payment_status = rows.length === 1 ? rows.find( '.bookacti-payment-status' ).data( 'payment-status' ) : '';
+	$j( 'select#bookacti-select-booking-status' ).val( booking_status );
+	$j( 'select#bookacti-select-payment-status' ).val( payment_status );
+	$j( '#bookacti-send-notifications-on-status-change' ).prop( 'checked', false );
+
+	$j( 'body' ).trigger( 'bookacti_booking_action_dialog_opened', [ booking_selection, 'change_booking_status' ] );
+
 	// Add the buttons
-    $j( '#bookacti-change-booking-state-dialog' ).dialog( 'option', 'buttons',
-		// Change booking state button
+    $j( '#bookacti-change-booking-status-dialog' ).dialog( 'option', 'buttons',
+		// Change booking status button
 		[{
 			text: bookacti_localized.dialog_button_ok,
-			click: function() { 
-				var new_booking_state  = $j( 'select#bookacti-select-booking-state' ).val(); 
-				var new_payment_status = $j( 'select#bookacti-select-payment-status' ).val(); 
-				var send_notifications = $j( '#bookacti-send-notifications-on-state-change' ).prop( 'checked' ) ? 1 : 0; 
-				var nonce = $j( '#bookacti-change-booking-state-dialog input[name="nonce"]' ).val(); 
+			click: function() {
+				// Check if the status have changed
+				var new_booking_status = $j( 'select#bookacti-select-booking-status' ).val(); 
+				var new_payment_status = $j( 'select#bookacti-select-payment-status' ).val();
+				if( ( ! new_booking_status && ! new_payment_status ) 
+				 || ( new_booking_status === booking_status && new_payment_status === payment_status ) ) { return; }
+
+				// Reset error notices
+				$j( '#bookacti-change-booking-status-dialog .bookacti-notices' ).remove();
+
+				// Columns to display
+				var columns = [];
+				rows.first().find( 'td' ).each( function() {
+					var column_id = $j( this ).data( 'column-id' );
+					if( column_id ) { columns.push( column_id ); }
+				});
 				
-				if( ( new_booking_state || new_payment_status ) 
-				&&  ( new_booking_state !== booking_state || new_payment_status !== payment_status ) ) {
-					
-					// Reset error notices
-					$j( '#bookacti-change-booking-state-dialog .bookacti-notices' ).remove();
-					
-					// Columns to display
-					var columns = [];
-					row.first().find( 'td' ).each( function() {
-						var column_id = $j( this ).data( 'column-id' );
-						if( column_id ) { columns.push( column_id ); }
-					});
-					
-					var data = { 
-						'action': action, 
-						'booking_id': booking_id,
-						'new_booking_state': booking_state !== new_booking_state ? new_booking_state : 0,
-						'new_payment_status': new_payment_status,
-						'send_notifications': send_notifications,
-						'is_bookings_page': is_bookings_page,
-						'is_admin': bookacti_localized.is_admin ? 1 : 0,
-						'context': bookacti_localized.is_admin ? 'admin_booking_list' : 'user_booking_list',
-						'columns': columns,
-						'reload_grouped_bookings': reload_grouped_bookings,
-						'nonce': nonce
-					};
-					row.first().trigger( 'bookacti_booking_action_data', [ data, booking_id, booking_type, 'change_booking_status' ] );
-					
-					// Display a loader
-					bookacti_booking_row_enter_loading_state( row );
-					bookacti_add_loading_html( $j( '#bookacti-change-booking-state-dialog' ) );
-					
-					$j.ajax({
-						url: bookacti_localized.ajaxurl,
-						type: 'POST',
-						data: data,
-						dataType: 'json',
-						success: function( response ) {
-							if( response.status === 'success' ) {
-								// Close the modal dialog
-								$j( '#bookacti-change-booking-state-dialog' ).dialog( 'close' );
+				var data = { 'form_data': new FormData( $j( '#bookacti-change-booking-status-form' ).get(0) ) };
+				data.form_data.append( 'action', 'bookactiChangeBookingsStatus' );
+				data.form_data.append( 'booking_selection', JSON.stringify( booking_selection ) );
+				data.form_data.append( 'columns', JSON.stringify( columns ) );
+				data.form_data.append( 'is_admin', bookacti_localized.is_admin ? 1 : 0 );
+				
+				$j( 'body' ).trigger( 'bookacti_booking_action_data', [ data, booking_selection, 'change_booking_status' ] );
+				
+				// Display a loader
+				bookacti_booking_row_enter_loading_state( rows );
+				bookacti_add_loading_html( $j( '#bookacti-change-booking-status-dialog' ) );
+
+				$j.ajax({
+					url: bookacti_localized.ajaxurl,
+					type: 'POST',
+					data: data.form_data,
+					dataType: 'json',
+					cache: false,
+					contentType: false,
+					processData: false,
+					success: function( response ) {
+						if( response.status === 'success' ) {
+							// Close the modal dialog
+							$j( '#bookacti-change-booking-status-dialog' ).dialog( 'close' );
+
+							// Replace the rows
+							if( response.rows ) {
+								var new_rows = $j( response.rows );
+								rows.each( function() {
+									var row_booking_id       = $j( this ).find( '.bookacti-single-booking' ).addBack( '.bookacti-single-booking' ).data( 'booking-id' );
+									var row_booking_group_id = $j( this ).find( '.bookacti-booking-group' ).addBack( '.bookacti-booking-group' ).data( 'booking-group-id' );
+									var new_row_selector     = row_booking_id ? '.bookacti-single-booking[data-booking-id="' + row_booking_id + '"]' : ( row_booking_group_id ? '.bookacti-booking-group[data-booking-group-id="' + row_booking_group_id + '"]' : '' );
+									var new_row              = new_row_selector ? new_rows.find( new_row_selector ).addBack( new_row_selector ).closest( 'tr, .bookacti-booking-row' ) : $j();
+									if( new_row.length ) {
+										$j( this ).replaceWith( new_row );
+									}
+									if( row_booking_group_id ) {
+										$j( '.bookacti-gouped-booking[data-booking-group-id="' + row_booking_group_id + '"]' ).remove();
+									}
+								});
+								bookacti_refresh_list_table_hidden_columns();
+								bookacti_init_tooltip();
+							}
+							rows.remove();
+							
+							// Update booking status
+							if( new_booking_status ) {
+								$j( 'body' ).trigger( 'bookacti_bookings_status_changed', [ response, booking_selection, new_booking_status ] );
 								
-								// Replace old grouped bookings by new ones
-								if( reload_grouped_bookings && typeof response.grouped_booking_rows !== 'undefined' ) {
-									row.each( function() {
-										var are_grouped_booking_hidden = $j( this ).next().hasClass( 'hidden' );
-										$j( this ).nextUntil( 'tr:not(.bookacti-gouped-booking)' ).remove();
-										$j( this ).after( response.grouped_booking_rows );
-										if( are_grouped_booking_hidden ) {
-											$j( this ).nextUntil( 'tr:not(.bookacti-gouped-booking)' ).addClass( 'hidden' );
-											if( $j( this ).nextUntil( 'tr:not(.bookacti-gouped-booking)' ).length % 2 ) {
-												$j( this ).after( '<tr class="bookacti-gouped-booking hidden dummy"></tr>' ); // Add a dummy tr to keep the alternate background
-											}
-										}
-									});
+								// Refresh bookings calendar
+								if( $j( '#bookacti-booking-system-bookings-page' ).length ) {
+									bookacti_refresh_booking_numbers( $j( '#bookacti-booking-system-bookings-page' ) );
 								}
-								
-								// Replace the row
-								if( response.row ) {
-									row.last().after( response.row );
-									row.remove();
-									bookacti_refresh_list_table_hidden_columns();
-								}
-								
-								// Update booking state
-								if( booking_state !== new_booking_state ) {
-									$j( 'body' ).trigger( 'bookacti_booking_state_changed', [ booking_id, booking_type, new_booking_state, booking_state, is_bookings_page, response.active_changed ] );
-								}
-								
-								// Update payment status
-								if( payment_status !== new_payment_status ) {
-									$j( 'body' ).trigger( 'bookacti_payment_status_changed', [ booking_id, booking_type, new_payment_status, payment_status, is_bookings_page, response.active_changed ] );
-								}
-								
-							} else if( response.status === 'failed' ) {
-								var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
-								$j( '#bookacti-change-booking-state-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + error_message + '</li></ul></div>' ).show();
-								console.log( error_message );
-								console.log( response );
 							}
 
-						},
-						error: function( e ){
-							$j( '#bookacti-change-booking-state-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + 'AJAX ' + bookacti_localized.error + '</li></ul></div>' ).show();
-							console.log( 'AJAX ' + bookacti_localized.error );
-							console.log( e );
-						},
-						complete: function() {
-							$j( '#bookacti-change-booking-state-dialog .bookacti-notices' ).show();
-							bookacti_remove_loading_html( $j( '#bookacti-change-booking-state-dialog' ) );
-							bookacti_booking_row_exit_loading_state( row );
+							// Update payment status
+							if( new_payment_status ) {
+								$j( 'body' ).trigger( 'bookacti_bookings_payment_status_changed', [ response, booking_selection, new_payment_status ] );
+							}
+							
+							// If the rows have not been refresh, reload the page
+							if( ! response.rows ) {
+								window.location.reload();
+							}
+
+						} else if( response.status === 'failed' ) {
+							var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
+							$j( '#bookacti-change-booking-status-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + error_message + '</li></ul></div>' ).show();
+							console.log( error_message );
+							console.log( response );
 						}
-					});
-				}
+					},
+					error: function( e ) {
+						$j( '#bookacti-change-booking-status-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + 'AJAX ' + bookacti_localized.error + '</li></ul></div>' ).show();
+						console.log( 'AJAX ' + bookacti_localized.error );
+						console.log( e );
+					},
+					complete: function() {
+						$j( '#bookacti-change-booking-status-dialog .bookacti-notices' ).show();
+						bookacti_remove_loading_html( $j( '#bookacti-change-booking-status-dialog' ) );
+						bookacti_booking_row_exit_loading_state( rows );
+					}
+				});
 			}
 		},
 		// Cancel button
 		{
             text: bookacti_localized.dialog_button_cancel,
-            
-            // On click on the OK Button, new values are send to a script that update the database
             click: function() {
-				// Close the modal dialog
 				$j( this ).dialog( 'close' );
             }
         }]
     );
 	
 	// Open the modal dialog
-    $j( '#bookacti-change-booking-state-dialog' ).dialog( 'open' );
+    $j( '#bookacti-change-booking-status-dialog' ).dialog( 'open' );
 }
 
 
 /**
- * Change Booking quantity
- * @since 1.7.10
- * @version 1.15.13
- * @param {int} booking_id
- * @param {string} booking_type
+ * Change Bookings quantity
+ * @since 1.16.0
+ * @param {Object} booking_selection
  */
-function bookacti_dialog_change_booking_quantity( booking_id, booking_type ) {
-	// Sanitize booking_type
-	booking_type = booking_type === 'group' ? 'group' : 'single';
+function bookacti_dialog_change_bookings_quantity( booking_selection ) {
+	// Get booking rows
+	var rows = booking_selection.all ? $j( '.bookacti-single-booking, .bookacti-booking-group' ).closest( 'tr, .bookacti-booking-row' ) : $j();
 	
-	// Get current row and actions container
-	var row;
-	if( booking_type === 'single' ) {
-		row = $j( '.bookacti-change-booking-quantity[data-booking-id="' + booking_id + '"]' ).closest( 'tr' );
-	} else {
-		row = $j( '.bookacti-change-booking-group-quantity[data-booking-group-id="' + booking_id + '"]' ).closest( 'tr' );
+	if( ! booking_selection.all ) {
+		$j.each( booking_selection.booking_ids, function( i, booking_id ) {
+			rows = rows.add( $j( '.bookacti-single-booking[data-booking-id="' + booking_id + '"]' ).closest( 'tr, .bookacti-booking-row' ) );
+		});
+		$j.each( booking_selection.booking_group_ids, function( i, booking_group_id ) {
+			rows = rows.add( $j( '.bookacti-booking-group[data-booking-group-id="' + booking_group_id + '"]' ).closest( 'tr, .bookacti-booking-row' ) );
+		});
 	}
 	
-	var is_bookings_page = row.first().closest( '#bookacti-booking-list' ).length ? 1 : 0;
-	var reload_grouped_bookings = is_bookings_page && row.next().hasClass( 'bookacti-gouped-booking' ) ? 1 : 0;
-	
-	// Select the current quantity
-	var current_quantity = parseInt( row.first().find( '.column-quantity' ).text() );
+	// Set the current quantity
+	var current_quantity = rows.length === 1 ? parseInt( rows.find( '.column-quantity' ).text() ) : 1;
 	$j( '#bookacti-new-quantity' ).val( current_quantity );
 	
-	row.first().trigger( 'bookacti_booking_action_dialog_opened', [ booking_id, booking_type, 'change_quantity' ] );
+	$j( 'body' ).trigger( 'bookacti_booking_action_dialog_opened', [ booking_selection, 'change_quantity' ] );
 	
 	// Add the buttons
     $j( '#bookacti-change-booking-quantity-dialog' ).dialog( 'option', 'buttons',
-		[
 		// Change booking quantity button
-		{
+		[{
 			text: bookacti_localized.dialog_button_ok,
 			click: function() {
 				var new_quantity = parseInt( $j( '#bookacti-new-quantity' ).val() );
+				if( ! new_quantity ) { return; }
 				
-				if( new_quantity ) {
-					// Reset error notices
-					$j( '#bookacti-change-booking-quantity-dialog .bookacti-notices' ).remove();
-					
-					// Columns to display
-					var columns = [];
-					row.first().find( 'td' ).each( function() {
-						var column_id = $j( this ).data( 'column-id' );
-						if( column_id ) { columns.push( column_id ); }
-					});
-					
-					var data = bookacti_serialize_object( $j( '#bookacti-change-booking-quantity-form' ) );
-					data.action = booking_type === 'group' ? 'bookactiChangeBookingGroupQuantity' : 'bookactiChangeBookingQuantity';
-					data.booking_id = booking_id;
-					data.is_bookings_page = is_bookings_page;
-					data.is_admin = bookacti_localized.is_admin ? 1 : 0;
-					data.context = bookacti_localized.is_admin ? 'admin_booking_list' : 'user_booking_list';
-					data.columns = columns;
-					data.reload_grouped_bookings = reload_grouped_bookings;
-					
-					row.first().trigger( 'bookacti_booking_action_data', [ data, booking_id, booking_type, 'change_quantity' ] );
-					
-					// Display a loader
-					bookacti_booking_row_enter_loading_state( row );
-					bookacti_add_loading_html( $j( '#bookacti-change-booking-quantity-dialog' ) );
-	
-					$j.ajax({
-						url: bookacti_localized.ajaxurl,
-						type: 'POST',
-						data: data,
-						dataType: 'json',
-						success: function( response ) {
-							if( response.status === 'success' ) {
-								// Close the modal dialog
-								$j( '#bookacti-change-booking-quantity-dialog' ).dialog( 'close' );
-								
-								// Replace old grouped bookings by new ones
-								if( reload_grouped_bookings && typeof response.grouped_booking_rows !== 'undefined' ) {
-									row.each( function() {
-										var are_grouped_booking_hidden = $j( this ).next().hasClass( 'hidden' );
-										$j( this ).nextUntil( 'tr:not(.bookacti-gouped-booking)' ).remove();
-										$j( this ).after( response.grouped_booking_rows );
-										if( are_grouped_booking_hidden ) {
-											$j( this ).nextUntil( 'tr:not(.bookacti-gouped-booking)' ).addClass( 'hidden' );
-											if( $j( this ).nextUntil( 'tr:not(.bookacti-gouped-booking)' ).length % 2 ) {
-												$j( this ).after( '<tr class="bookacti-gouped-booking hidden dummy"></tr>' ); // Add a dummy tr to keep the alternate background
-											}
-										}
-									});
-								}
-								
-								// Replace the row
-								if( response.row ) {
-									row.last().after( response.row );
-									row.remove();
-									bookacti_refresh_list_table_hidden_columns();
-								}
-								
-								// Trigger a hook for booking quantity changes
-								$j( 'body' ).trigger( 'bookacti_booking_quantity_changed', [ booking_id, booking_type, new_quantity, current_quantity, is_bookings_page, response.active_changed ] );
-								
-							} else if( response.status === 'failed' ) {
-								var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
-								$j( '#bookacti-change-booking-quantity-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + error_message + '</li></ul></div>' ).show();
-								console.log( error_message );
-								console.log( response );
+				// Reset error notices
+				$j( '#bookacti-change-booking-quantity-dialog .bookacti-notices' ).remove();
+				
+				// Columns to display
+				var columns = [];
+				rows.first().find( 'td' ).each( function() {
+					var column_id = $j( this ).data( 'column-id' );
+					if( column_id ) { columns.push( column_id ); }
+				});
+				
+				var data = { 'form_data': new FormData( $j( '#bookacti-change-booking-quantity-form' ).get(0) ) };
+				data.form_data.append( 'action', 'bookactiChangeBookingsQuantity' );
+				data.form_data.append( 'booking_selection', JSON.stringify( booking_selection ) );
+				data.form_data.append( 'columns', JSON.stringify( columns ) );
+				data.form_data.append( 'is_admin', bookacti_localized.is_admin ? 1 : 0 );
+				
+				$j( 'body' ).trigger( 'bookacti_booking_action_data', [ data, booking_selection, 'change_quantity' ] );
+				
+				// Display a loader
+				bookacti_booking_row_enter_loading_state( rows );
+				bookacti_add_loading_html( $j( '#bookacti-change-booking-quantity-dialog' ) );
+				
+				$j.ajax({
+					url: bookacti_localized.ajaxurl,
+					type: 'POST',
+					data: data.form_data,
+					dataType: 'json',
+					cache: false,
+					contentType: false,
+					processData: false,
+					success: function( response ) {
+						if( response.status === 'success' ) {
+							// Close the modal dialog
+							$j( '#bookacti-change-booking-quantity-dialog' ).dialog( 'close' );
+							
+							// Replace the rows
+							if( response.rows ) {
+								var new_rows = $j( response.rows );
+								rows.each( function() {
+									var row_booking_id       = $j( this ).find( '.bookacti-single-booking' ).addBack( '.bookacti-single-booking' ).data( 'booking-id' );
+									var row_booking_group_id = $j( this ).find( '.bookacti-booking-group' ).addBack( '.bookacti-booking-group' ).data( 'booking-group-id' );
+									var new_row_selector     = row_booking_id ? '.bookacti-single-booking[data-booking-id="' + row_booking_id + '"]' : ( row_booking_group_id ? '.bookacti-booking-group[data-booking-group-id="' + row_booking_group_id + '"]' : '' );
+									var new_row              = new_row_selector ? new_rows.find( new_row_selector ).addBack( new_row_selector ).closest( 'tr, .bookacti-booking-row' ) : $j();
+									if( new_row.length ) {
+										$j( this ).replaceWith( new_row );
+									}
+									if( row_booking_group_id ) {
+										$j( '.bookacti-gouped-booking[data-booking-group-id="' + row_booking_group_id + '"]' ).remove();
+									}
+								});
+								bookacti_refresh_list_table_hidden_columns();
+								bookacti_init_tooltip();
+							}
+							rows.remove();
+							
+							// Trigger a hook for booking quantity changes
+							$j( 'body' ).trigger( 'bookacti_bookings_quantity_changed', [ response, booking_selection, new_quantity ] );
+							
+							// Refresh bookings calendar
+							if( $j( '#bookacti-booking-system-bookings-page' ).length ) {
+								bookacti_refresh_booking_numbers( $j( '#bookacti-booking-system-bookings-page' ) );
+							}
+							
+							// If the rows have not been refresh, reload the page
+							if( ! response.rows ) {
+								window.location.reload();
 							}
 
-						},
-						error: function( e ){
-							$j( '#bookacti-change-booking-quantity-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + 'AJAX ' + bookacti_localized.error + '</li></ul></div>' ).show();
-							console.log( 'AJAX ' + bookacti_localized.error );
-							console.log( e );
-						},
-						complete: function() {
-							$j( '#bookacti-change-booking-quantity-dialog .bookacti-notices' ).show();
-							bookacti_remove_loading_html( $j( '#bookacti-change-booking-quantity-dialog' ) );
-							bookacti_booking_row_exit_loading_state( row );
+						} else if( response.status === 'failed' ) {
+							var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
+							$j( '#bookacti-change-booking-quantity-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + error_message + '</li></ul></div>' ).show();
+							console.log( error_message );
+							console.log( response );
 						}
-					});
-				}
+					},
+					error: function( e ) {
+						$j( '#bookacti-change-booking-quantity-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + 'AJAX ' + bookacti_localized.error + '</li></ul></div>' ).show();
+						console.log( 'AJAX ' + bookacti_localized.error );
+						console.log( e );
+					},
+					complete: function() {
+						$j( '#bookacti-change-booking-quantity-dialog .bookacti-notices' ).show();
+						bookacti_remove_loading_html( $j( '#bookacti-change-booking-quantity-dialog' ) );
+						bookacti_booking_row_exit_loading_state( rows );
+					}
+				});
 			}
 		},
 		// Cancel button
 		{
             text: bookacti_localized.dialog_button_cancel,
-            
-            // On click on the OK Button, new values are send to a script that update the database
             click: function() {
-				// Close the modal dialog
 				$j( this ).dialog( 'close' );
             }
         }]
@@ -798,74 +781,88 @@ function bookacti_dialog_change_booking_quantity( booking_id, booking_type ) {
 
 
 /**
- * Reschedule booking dialog
- * @version 1.15.15
- * @param {int} booking_id
+ * Reschedule bookings dialog
+ * @since 1.16.0
+ * @param {Object} booking_selection
  */
-function bookacti_dialog_reschedule_booking( booking_id ) {
-	var row = $j( '.bookacti-reschedule-booking[data-booking-id="' + booking_id + '"]' ).closest( 'tr' );
-	var loading_container = $j( '.bookacti-reschedule-booking[data-booking-id="' + booking_id + '"]' ).closest( 'tr, .bookacti-booking-row' );
-	var booking_system    = $j( '#bookacti-booking-system-reschedule.bookacti-booking-system' );
-	var booking_system_id = booking_system.attr( 'id' );
-	var booking_quantity  = 0;
+function bookacti_dialog_reschedule_bookings( booking_selection ) {
+	// Get booking rows
+	var rows = booking_selection.all ? $j( '.bookacti-single-booking, .bookacti-booking-group' ).closest( 'tr, .bookacti-booking-row' ) : $j();
 	
-	if( bookacti_localized.is_admin ) { $j( '#bookacti-send-notifications-on-reschedule' ).prop( 'checked', false ); }
-	
-	// Clear old booking system info
-	booking_system.empty();
-	bookacti_clear_booking_system_displayed_info( booking_system );
-	
-	// Reset error messages on close
-	if( ! bookacti_localized.is_admin || typeof bookacti_empty_all_dialog_forms === 'undefined' ) {
-		$j( '#bookacti-reschedule-booking-dialog' ).dialog({ 
-			"beforeClose": function() { 
-				$j( '#bookacti-reschedule-booking-dialog .bookacti-notices' ).not( '#bookacti-reschedule-booking-dialog .bookacti-booking-system-container .bookacti-notices' ).remove();
-				$j( '#bookacti-reschedule-booking-dialog .bookacti-booking-system-container .bookacti-notices' ).empty().hide();
-			}
+	if( ! booking_selection.all ) {
+		$j.each( booking_selection.booking_ids, function( i, booking_id ) {
+			rows = rows.add( $j( '.bookacti-single-booking[data-booking-id="' + booking_id + '"]' ).closest( 'tr, .bookacti-booking-row' ) );
+		});
+		$j.each( booking_selection.booking_group_ids, function( i, booking_group_id ) {
+			rows = rows.add( $j( '.bookacti-booking-group[data-booking-group-id="' + booking_group_id + '"]' ).closest( 'tr, .bookacti-booking-row' ) );
 		});
 	}
 	
-	row.first().trigger( 'bookacti_booking_action_dialog_opened', [ booking_id, 'single', 'reschedule' ] );
+	var booking_system    = $j( '#bookacti-booking-system-reschedule.bookacti-booking-system' );
+	var booking_system_id = booking_system.attr( 'id' );
+	var booking_quantity  = 1;
+	
+	// Clear and reset dialog
+	booking_system.empty();
+	bookacti_clear_booking_system_displayed_info( booking_system );
+	$j( '#bookacti-reschedule-booking-dialog > .bookacti-notices' ).remove();
+	$j( '#bookacti-reschedule-booking-dialog .bookacti-booking-system-container .bookacti-notices' ).empty().hide();
+	if( bookacti_localized.is_admin ) {
+		$j( '#bookacti-send-notifications-on-reschedule' ).prop( 'checked', false );
+	}
+	
+	$j( 'body' ).trigger( 'bookacti_booking_action_dialog_opened', [ booking_selection, 'reschedule' ] );
 
+	var data_get_booking_system = { 'form_data': new FormData( $j( '#bookacti-reschedule-booking-form' ).get(0) ) };
+	data_get_booking_system.form_data.append( 'action', 'bookactiGetRescheduleBookingSystemData' );
+	data_get_booking_system.form_data.append( 'booking_selection', JSON.stringify( booking_selection ) );
+	data_get_booking_system.form_data.append( 'user_auth_key', typeof bookacti.user_auth_key !== 'undefined' ? bookacti.user_auth_key : '' );
+	data_get_booking_system.form_data.append( 'is_admin', bookacti_localized.is_admin ? 1 : 0 );
+
+	$j( 'body' ).trigger( 'bookacti_booking_action_data', [ data_get_booking_system, booking_selection, 'get_reschedule_booking_system_data' ] );
+	
 	// Display a loader
-	bookacti_booking_row_enter_loading_state( loading_container );
+	bookacti_booking_row_enter_loading_state( rows );
+	bookacti_add_loading_html( $j( '#bookacti-reschedule-booking-dialog' ), 'prepend' );
 	
 	$j.ajax({
 		url: bookacti_localized.ajaxurl,
 		type: 'POST',
-		data: { 'action': 'bookactiGetRescheduleBookingSystemData', 
-				'booking_id': booking_id,
-				'is_admin': bookacti_localized.is_admin ? 1 : 0
-			},
+		data: data_get_booking_system.form_data,
 		dataType: 'json',
+		cache: false,
+		contentType: false,
+		processData: false,
 		success: function( response ) {
+			bookacti_remove_loading_html( $j( '#bookacti-reschedule-booking-dialog' ) );
+			
 			if( response.status === 'success' ) {
-				var booking_system_id = booking_system.attr( 'id' );
-				booking_quantity = response.booking_system_data.rescheduled_booking_data.quantity;
-				
+				booking_quantity = response.quantity;
 				booking_system.closest( 'form' ).find( 'input.bookacti-quantity' ).val( booking_quantity );
 				
 				bookacti.booking_system[ booking_system_id ] = response.booking_system_data;
 				
-				booking_system.trigger( 'bookacti_before_reschedule_booking_system_loads', [ response ] );
+				$j( 'body' ).trigger( 'bookacti_before_reschedule_booking_system_loads', [ response ] );
 				
 				// Load booking system with new data
 				bookacti_reload_booking_system( booking_system );
 				
 			} else if( response.status === 'failed' ) {
 				var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
-				booking_system.siblings( '.bookacti-notices' ).html( "<ul class='bookacti-error-list'><li>" + error_message + "</li></ul>").show();
+				$j( '#bookacti-reschedule-booking-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + error_message + '</li></ul></div>' );
 				console.log( error_message );
 				console.log( response );
 			}
 		},
-		error: function( e ){
-			booking_system.siblings( '.bookacti-notices' ).html( '<ul class="bookacti-error-list"><li>' + 'AJAX ' + bookacti_localized.error + '</li></ul>' ).show();
+		error: function( e ) {
+			bookacti_remove_loading_html( $j( '#bookacti-reschedule-booking-dialog' ) );
+			$j( '#bookacti-reschedule-booking-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>AJAX ' + bookacti_localized.error + '</li></ul></div>' );
 			console.log( 'AJAX ' + bookacti_localized.error );
 			console.log( e );
 		},
 		complete: function() {
-			bookacti_booking_row_exit_loading_state( loading_container );
+			$j( '#bookacti-reschedule-booking-dialog > .bookacti-notices' ).show();
+			bookacti_booking_row_exit_loading_state( rows );
 		}
 	});
 	
@@ -876,14 +873,23 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 		[{
 			text: bookacti_localized.dialog_button_reschedule,
 			'class': 'bookacti-dialog-delete-button',
-			
 			click: function() { 
 				var validated = bookacti_validate_picked_events( booking_system, booking_quantity );
 				if( ! validated ) { return; }
 				
+				// Reset error notices
+				$j( '#bookacti-reschedule-booking-dialog > .bookacti-notices' ).remove();
+				
 				// Groups cannot be rescheduled
+				var is_group = false;
 				var picked_events = bookacti.booking_system[ booking_system_id ][ 'picked_events' ];
-				if( parseInt( picked_events[ 0 ][ 'group_id' ] ) > 0 ) { return; }
+				$j.each( picked_events, function( i, picked_event ) {
+					if( parseInt( picked_event[ 'group_id' ] ) > 0 ) {
+						is_group = true;
+						return false; // break
+					}
+				});
+				if( is_group ) { return; }
 				
 				var send_notifications = 1;
 				if( bookacti_localized.is_admin && $j( '#bookacti-send-notifications-on-reschedule' ).length ) {
@@ -892,61 +898,84 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 				
 				// Columns to display
 				var columns = [];
-				row.first().find( 'td' ).each( function() {
+				rows.first().find( 'td' ).each( function() {
 					var column_id = $j( this ).data( 'column-id' );
 					if( column_id ) { columns.push( column_id ); }
 				});
-
-				var data = { 
-					'action': 'bookactiRescheduleBooking', 
-					'booking_id': booking_id,
-					'picked_events': picked_events,
-					'columns': columns,
-					'context': bookacti_localized.is_admin ? 'admin_booking_list' : 'user_booking_list',
-					'is_admin': bookacti_localized.is_admin ? 1 : 0,
-					'send_notifications': send_notifications,
-					'nonce': bookacti_localized.nonce_reschedule_booking
-				};
-				row.first().trigger( 'bookacti_booking_action_data', [ data, booking_id, 'single', 'reschedule' ] );
+				
+				var data = { 'form_data': new FormData( $j( '#bookacti-reschedule-booking-form' ).get(0) ) };
+				data.form_data.append( 'action', 'bookactiRescheduleBookings' );
+				data.form_data.append( 'booking_selection', JSON.stringify( booking_selection ) );
+				data.form_data.append( 'picked_events', JSON.stringify( picked_events ) );
+				data.form_data.append( 'columns', JSON.stringify( columns ) );
+				data.form_data.append( 'is_admin', bookacti_localized.is_admin ? 1 : 0 );
+				data.form_data.append( 'send_notifications', send_notifications );
+				data.form_data.append( 'user_auth_key', typeof bookacti.user_auth_key !== 'undefined' ? bookacti.user_auth_key : '' );
+				
+				$j( 'body' ).trigger( 'bookacti_booking_action_data', [ data, booking_selection, 'reschedule' ] );
 
 				// Display a loader
-				bookacti_booking_row_enter_loading_state( loading_container );
+				bookacti_booking_row_enter_loading_state( rows );
 				bookacti_start_loading_booking_system( booking_system );
 				bookacti_add_loading_html( $j( '#bookacti-reschedule-booking-dialog' ) );
 
 				$j.ajax({
 					url: bookacti_localized.ajaxurl,
 					type: 'POST',
-					data: data,
+					data: data.form_data,
 					dataType: 'json',
-					success: function( response ){
+					cache: false,
+					contentType: false,
+					processData: false,
+					success: function( response ) {
 						if( response.status === 'success' ) {
 							// Close the modal dialog
 							$j( '#bookacti-reschedule-booking-dialog' ).dialog( 'close' );
 
-							// Replace the row
-							if( response.row ) {
-								row.last().after( response.row );
-								row.remove();
+							// Replace the rows
+							if( response.rows ) {
+								var new_rows = $j( response.rows );
+								rows.each( function() {
+									var row_booking_id       = $j( this ).find( '.bookacti-single-booking' ).addBack( '.bookacti-single-booking' ).data( 'booking-id' );
+									var row_booking_group_id = $j( this ).find( '.bookacti-booking-group' ).addBack( '.bookacti-booking-group' ).data( 'booking-group-id' );
+									var new_row_selector     = row_booking_id ? '.bookacti-single-booking[data-booking-id="' + row_booking_id + '"]' : ( row_booking_group_id ? '.bookacti-booking-group[data-booking-group-id="' + row_booking_group_id + '"]' : '' );
+									var new_row              = new_row_selector ? new_rows.find( new_row_selector ).addBack( new_row_selector ).closest( 'tr, .bookacti-booking-row' ) : $j();
+									if( new_row.length ) {
+										$j( this ).replaceWith( new_row );
+									}
+									if( row_booking_group_id ) {
+										$j( '.bookacti-gouped-booking[data-booking-group-id="' + row_booking_group_id + '"]' ).remove();
+									}
+								});
 								bookacti_refresh_list_table_hidden_columns();
+								bookacti_init_tooltip();
 							}
+							rows.remove();
+							
+							// Refresh bookings calendar
+							if( $j( '#bookacti-booking-system-bookings-page' ).length ) {
+								bookacti_booking_method_refetch_events( $j( '#bookacti-booking-system-bookings-page' ) );
+								bookacti_refresh_booking_numbers( $j( '#bookacti-booking-system-bookings-page' ) );
+							}
+						
+							$j( 'body' ).trigger( 'bookacti_bookings_rescheduled', [ response, booking_selection ] );
 
-							$j( 'body' ).trigger( 'bookacti_booking_rescheduled', [ response ] );
-
-						} else {
+						} else if( response.status === 'failed' ) {
 							var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
-							booking_system.siblings( '.bookacti-notices' ).html( "<ul class='bookacti-error-list'><li>" + error_message + "</li></ul>").show();
+							$j( '#bookacti-reschedule-booking-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + error_message + '</li></ul></div>' );
 							console.log( error_message );
 							console.log( response );
 						}
 					},
-					error: function( e ){
+					error: function( e ) {
+						$j( '#bookacti-reschedule-booking-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>AJAX ' + bookacti_localized.error + '</li></ul></div>' );
 						console.log( 'AJAX ' + bookacti_localized.error );
 						console.log( e );
 					},
 					complete: function() {
+						$j( '#bookacti-reschedule-booking-dialog > .bookacti-notices' ).show();
 						bookacti_remove_loading_html( $j( '#bookacti-reschedule-booking-dialog' ) );
-						bookacti_booking_row_exit_loading_state( loading_container );
+						bookacti_booking_row_exit_loading_state( rows );
 						bookacti_stop_loading_booking_system( booking_system );
 					}
 				});
@@ -967,34 +996,130 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 
 
 /**
- * Delete a booking or a booking group
- * @since 1.5.0
- * @version 1.15.15
- * @param {int} booking_id
- * @param {string} booking_type
+ * Send a notification for bookings or booking groups
+ * @since 1.16.0
+ * @param {Object} booking_selection
  */
-function bookacti_dialog_delete_booking( booking_id, booking_type ) {
-	// Sanitize booking_type
-	booking_type= booking_type === 'group' ? 'group' : 'single';
+function bookacti_dialog_send_bookings_notification( booking_selection ) {
+	// Get booking rows
+	var rows = booking_selection.all ? $j( '.bookacti-single-booking, .bookacti-booking-group' ).closest( 'tr, .bookacti-booking-row' ) : $j();
 	
-	// Get current row and show / hide specific fields
-	var row, action;
-	if( booking_type === 'single' ) {
-		action = 'bookactiDeleteBooking';
-		row = $j( '.bookacti-delete-booking[data-booking-id="' + booking_id + '"]' ).closest( 'tr' );
-		$j( '.bookacti-delete-booking-group-description' ).hide();
-	} else {
-		action = 'bookactiDeleteBookingGroup';
-		row = $j( '.bookacti-delete-booking-group[data-booking-group-id="' + booking_id + '"]' ).closest( 'tr' );
-		$j( '.bookacti-delete-booking-group-description' ).show();
+	if( ! booking_selection.all ) {
+		$j.each( booking_selection.booking_ids, function( i, booking_id ) {
+			rows = rows.add( $j( '.bookacti-single-booking[data-booking-id="' + booking_id + '"]' ).closest( 'tr, .bookacti-booking-row' ) );
+		});
+		$j.each( booking_selection.booking_group_ids, function( i, booking_group_id ) {
+			rows = rows.add( $j( '.bookacti-booking-group[data-booking-group-id="' + booking_group_id + '"]' ).closest( 'tr, .bookacti-booking-row' ) );
+		});
 	}
 	
-	// Fill hidden fields
-	$j( '#bookacti-delete-booking-dialog input[name="action"]' ).val( action );
-	$j( '#bookacti-delete-booking-dialog input[name="booking_id"]' ).val( booking_id );
-	$j( '#bookacti-delete-booking-dialog input[name="booking_type"]' ).val( booking_type );
+	$j( 'body' ).trigger( 'bookacti_booking_action_dialog_opened', [ booking_selection, 'send_notification' ] );
 	
-	row.first().trigger( 'bookacti_booking_action_dialog_opened', [ booking_id, booking_type, 'delete' ] );
+	// Add the buttons
+    $j( '#bookacti-send-booking-notification-dialog' ).dialog( 'option', 'buttons',
+		[{
+			text: bookacti_localized.dialog_button_send,
+			click: function() {
+				var notification_id = $j( '#bookacti-booking-notification-id' ).val();
+				if( ! notification_id ) { return; }
+				
+				// Reset error notices
+				$j( '#bookacti-send-booking-notification-dialog .bookacti-notices' ).remove();
+				
+				// Columns to display
+				var columns = [];
+				rows.first().find( 'td' ).each( function() {
+					var column_id = $j( this ).data( 'column-id' );
+					if( column_id ) { columns.push( column_id ); }
+				});
+				
+				var data = { 'form_data': new FormData( $j( '#bookacti-send-booking-notification-form' ).get(0) ) };
+				data.form_data.append( 'action', 'bookactiSendBookingsNotification' );
+				data.form_data.append( 'booking_selection', JSON.stringify( booking_selection ) );
+				data.form_data.append( 'columns', JSON.stringify( columns ) );
+				data.form_data.append( 'is_admin', bookacti_localized.is_admin ? 1 : 0 );
+				
+				$j( 'body' ).trigger( 'bookacti_booking_action_data', [ data, booking_selection, 'send_notification' ] );
+				
+				// Display a loader
+				bookacti_booking_row_enter_loading_state( rows );
+				bookacti_add_loading_html( $j( '#bookacti-send-booking-notification-dialog' ) );
+
+				$j.ajax({
+					url: bookacti_localized.ajaxurl,
+					type: 'POST',
+					data: data.form_data,
+					dataType: 'json',
+					cache: false,
+					contentType: false,
+					processData: false,
+					success: function( response ) {
+						if( response.status === 'success' ) {
+							if( response.message ) {
+								$j( '#bookacti-send-booking-notification-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-success-list"><li>' + response.message + '</li></ul></div>' ).show();
+							} else {
+								// Close the modal dialog
+								$j( '#bookacti-send-booking-notification-dialog' ).dialog( 'close' );
+							}
+							
+							// Trigger a hook when the notifications are sent
+							$j( 'body' ).trigger( 'bookacti_bookings_notification_sent', [ response, booking_selection, notification_id ] );
+							
+						} else if( response.status === 'failed' ) {
+							var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
+							$j( '#bookacti-send-booking-notification-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + error_message + '</li></ul></div>' ).show();
+							console.log( error_message );
+							console.log( response );
+						}
+					},
+					error: function( e ) {
+						$j( '#bookacti-send-booking-notification-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + 'AJAX ' + bookacti_localized.error + '</li></ul></div>' ).show();
+						console.log( 'AJAX ' + bookacti_localized.error );
+						console.log( e );
+					},
+					complete: function() {
+						$j( '#bookacti-send-booking-notification-dialog .bookacti-notices' ).show();
+						bookacti_remove_loading_html( $j( '#bookacti-send-booking-notification-dialog' ) );
+						bookacti_booking_row_exit_loading_state( rows );
+					}
+				});
+			}
+		},
+		// Cancel button
+		{
+            text: bookacti_localized.dialog_button_cancel,
+            click: function() {
+				$j( this ).dialog( 'close' );
+            }
+        }]
+    );
+	
+	// Open the modal dialog
+    $j( '#bookacti-send-booking-notification-dialog' ).dialog( 'open' );
+}
+
+
+/**
+ * Delete bookings (groups)
+ * @since 1.16.0
+ * @param {Object} booking_selection
+ */
+function bookacti_dialog_delete_bookings( booking_selection ) {
+	// Get booking rows
+	var rows = booking_selection.all ? $j( '.bookacti-single-booking, .bookacti-booking-group' ).closest( 'tr, .bookacti-booking-row' ) : $j();
+	
+	if( ! booking_selection.all ) {
+		$j.each( booking_selection.booking_ids, function( i, booking_id ) {
+			rows = rows.add( $j( '.bookacti-single-booking[data-booking-id="' + booking_id + '"]' ).closest( 'tr, .bookacti-booking-row' ) );
+		});
+		$j.each( booking_selection.booking_group_ids, function( i, booking_group_id ) {
+			rows = rows.add( $j( '.bookacti-booking-group[data-booking-group-id="' + booking_group_id + '"]' ).closest( 'tr, .bookacti-booking-row' ) );
+		});
+	}
+	
+	$j( '#bookacti-delete-booking-group-warning' ).toggle( booking_selection.all || booking_selection.booking_group_ids.length );
+	
+	$j( 'body' ).trigger( 'bookacti_booking_action_dialog_opened', [ booking_selection, 'delete' ] );
 	
 	// Add the buttons
     $j( '#bookacti-delete-booking-dialog' ).dialog( 'option', 'buttons',
@@ -1006,36 +1131,56 @@ function bookacti_dialog_delete_booking( booking_id, booking_type ) {
 				// Reset error notices
 				$j( '#bookacti-delete-booking-dialog .bookacti-notices' ).remove();
 				
-				// Get form values
-				var data = bookacti_serialize_object( $j( '#bookacti-delete-booking-dialog form' ) );
-				data.is_admin = bookacti_localized.is_admin ? 1 : 0;
-				data.context = bookacti_localized.is_admin ? 'admin_booking_list' : 'user_booking_list';
-				row.first().trigger( 'bookacti_booking_action_data', [ data, booking_id, booking_type, 'delete' ] );
+				// Columns to display
+				var columns = [];
+				rows.first().find( 'td' ).each( function() {
+					var column_id = $j( this ).data( 'column-id' );
+					if( column_id ) { columns.push( column_id ); }
+				});
+				
+				var data = { 'form_data': new FormData( $j( '#bookacti-delete-booking-form' ).get(0) ) };
+				data.form_data.append( 'action', 'bookactiDeleteBookings' );
+				data.form_data.append( 'booking_selection', JSON.stringify( booking_selection ) );
+				data.form_data.append( 'columns', JSON.stringify( columns ) );
+				data.form_data.append( 'is_admin', bookacti_localized.is_admin ? 1 : 0 );
+				
+				$j( 'body' ).trigger( 'bookacti_booking_action_data', [ data, booking_selection, 'delete' ] );
 				
 				// Display a loader
-				bookacti_booking_row_enter_loading_state( row );
+				bookacti_booking_row_enter_loading_state( rows );
 				bookacti_add_loading_html( $j( '#bookacti-delete-booking-dialog' ) );
-				
+
 				$j.ajax({
 					url: bookacti_localized.ajaxurl,
 					type: 'POST',
-					data: data,
+					data: data.form_data,
 					dataType: 'json',
-					success: function( response ){
+					cache: false,
+					contentType: false,
+					processData: false,
+					success: function( response ) {
 						if( response.status === 'success' ) {
 							// Close the modal dialog
 							$j( '#bookacti-delete-booking-dialog' ).dialog( 'close' );
 							
-							// Remove grouped bookings row
-							if( booking_type === 'group' && $j( '.bookacti-booking-group-id-' + booking_id ).length ) {
-								var group_rows = $j( '.bookacti-booking-group-id-' + booking_id );
-								group_rows.removeClass( 'bookacti-gouped-booking' ).animate( {'opacity': 0}, function() { group_rows.children('td, th').animate({ 'padding': 0 }).wrapInner('<div></div>').children().slideUp( function() { group_rows.remove(); } ); });
+							// Remove the rows
+							rows.animate( {'opacity': 0}, function() { rows.children('td, th').animate({ 'padding': 0 }).wrapInner('<div></div>').children().slideUp(function() { rows.remove(); }); });
+							
+							// Remove the grouped booking rows
+							$j.each( booking_selection.booking_group_ids, function( i, booking_group_id ) {
+								$j( '.bookacti-gouped-booking[data-booking-group-id="' + booking_group_id + '"]' ).remove();
+							});
+							
+							// Trigger a hook when the bookings are deleted
+							$j( 'body' ).trigger( 'bookacti_bookings_deleted', [ response, booking_selection ] );
+							
+							// Refresh grouped bookings visual frame
+							bookacti_refresh_booking_group_frame();
+							
+							// If all rows have been deleted, reload the page
+							if( booking_selection.all ) {
+								window.location.reload();
 							}
-							
-							// Remove the booking row
-							row.animate( {'opacity': 0}, function() { row.children('td, th').animate({ 'padding': 0 }).wrapInner('<div></div>').children().slideUp(function() { row.remove(); }); });
-							
-							$j( 'body' ).trigger( 'bookacti_booking_deleted', [ booking_id, booking_type, response ] );
 							
 						} else if( response.status === 'failed' ) {
 							var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
@@ -1043,9 +1188,8 @@ function bookacti_dialog_delete_booking( booking_id, booking_type ) {
 							console.log( error_message );
 							console.log( response );
 						}
-
 					},
-					error: function( e ){
+					error: function( e ) {
 						$j( '#bookacti-delete-booking-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + 'AJAX ' + bookacti_localized.error + '</li></ul></div>' );
 						console.log( 'AJAX ' + bookacti_localized.error );
 						console.log( e );
@@ -1053,7 +1197,7 @@ function bookacti_dialog_delete_booking( booking_id, booking_type ) {
 					complete: function() {
 						$j( '#bookacti-delete-booking-dialog .bookacti-notices' ).show();
 						bookacti_remove_loading_html( $j( '#bookacti-delete-booking-dialog' ) );
-						bookacti_booking_row_exit_loading_state( row );
+						bookacti_booking_row_exit_loading_state( rows );
 					}
 				});
 			}
@@ -1062,13 +1206,10 @@ function bookacti_dialog_delete_booking( booking_id, booking_type ) {
 		{
             text: bookacti_localized.dialog_button_cancel,
             'class': 'bookacti-dialog-left-button',
-            // On click on the OK Button, new values are send to a script that update the database
             click: function() {
-				// Close the modal dialog
 				$j( this ).dialog( 'close' );
             }
-        }
-		]
+        }]
     );
 	
 	// Open the modal dialog
@@ -1117,7 +1258,7 @@ function bookacti_dialog_export_bookings() {
 /**
  * Generate the URL to export bookings
  * @since 1.6.0
- * @version 1.15.13
+ * @version 1.16.0
  * @param {string} reset_key
  */
 function bookacti_generate_export_bookings_url( reset_key ) {
@@ -1130,10 +1271,10 @@ function bookacti_generate_export_bookings_url( reset_key ) {
 	bookacti_add_loading_html( $j( '#bookacti-export-bookings-dialog' ) );
 	
 	// Get current filters and export settings
-	var data = bookacti_serialize_object( $j( '#bookacti-export-bookings-form' ) );
-	data.action = 'bookactiExportBookingsUrl';
-	data.reset_key = reset_key ? 1 : 0;
-	data.booking_filters = bookacti_serialize_object( $j( '#bookacti-booking-list-filters-form' ) );
+	var data             = bookacti_serialize_object( $j( '#bookacti-export-bookings-form' ) );
+	data.action          = 'bookactiExportBookingsUrl';
+	data.reset_key       = reset_key ? 1 : 0;
+	data.booking_filters = bookacti_get_booking_list_filters();
 	
 	$j( '#bookacti-export-bookings-form' ).trigger( 'bookacti_export_bookings_url_data', [ data, reset_key ] );
 	

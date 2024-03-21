@@ -74,7 +74,7 @@ function bookacti_shortcode_login_form( $raw_atts = array(), $content = null, $t
 /**
  * Display a user related booking list via shortcode
  * @since 1.7.4 (was bookacti_shortcode_booking_list)
- * @version 1.8.6
+ * @version 1.16.0
  * @param array $raw_atts [user_id, per_page, status, and any booking filter such as 'from', 'to', 'activities'...]
  * @param string $content
  * @param string $tag Should be "bookingactivities_list"
@@ -83,18 +83,38 @@ function bookacti_shortcode_login_form( $raw_atts = array(), $content = null, $t
 function bookacti_shortcode_booking_list( $raw_atts = array(), $content = null, $tag = '' ) {
 	// Normalize attribute keys, lowercase
     $raw_atts = array_change_key_case( (array) $raw_atts, CASE_LOWER );
+	$atts     = $raw_atts;
 	
-	// If the user is not logged in, and if a login form is defined, show it instead of the booking list
-	if( ! is_user_logged_in() && ! empty( $raw_atts[ 'login_form' ] ) ) {
-		$raw_atts[ 'form' ] = $raw_atts[ 'login_form' ];
-		return bookacti_shortcode_login_form( $raw_atts, $content, $tag );
+	// If the user is not logged in
+	if( ! is_user_logged_in() ) {
+		// Check if the user is passed to the URL
+		$user_email = '';
+		if( ! empty( $_REQUEST[ 'user_auth_key' ] ) ) {
+			$user_decrypted = bookacti_decrypt( sanitize_text_field( $_REQUEST[ 'user_auth_key' ] ), 'user_auth' );
+			if( is_email( sanitize_email( $user_decrypted ) ) ) {
+				$user_email = sanitize_email( $user_decrypted );
+			}
+			if( $user_email && ( empty( $raw_atts[ 'user_id' ] ) || ( ! empty( $raw_atts[ 'user_id' ] ) && $raw_atts[ 'user_id' ] === 'current' ) ) ) {
+				$atts[ 'in__user_id' ] = array( $user_email );
+				$user = get_user_by( 'email', $user_email );
+				if( $user ) {
+					$atts[ 'in__user_id' ][] = intval( $user->ID );
+				}
+				unset( $atts[ 'user_id' ] );
+			}
+		}
+		
+		// If a login form is defined, show it instead of the booking list
+		if( ! $user_email && ! empty( $raw_atts[ 'login_form' ] ) ) {
+			$atts[ 'form' ] = $raw_atts[ 'login_form' ];
+			return bookacti_shortcode_login_form( $atts, $content, $tag );
+		}
 	}
 	
-	$booking_list = '';
-	
 	// Sanitize the attributes
-	$atts = bookacti_sanitize_booking_list_shortcode_attributes( $raw_atts );
+	$atts = bookacti_sanitize_booking_list_shortcode_attributes( $atts );
 	
+	$booking_list = '';
 	if( $atts !== false ) {
 		$templates = array();
 		if( isset( $atts[ 'templates' ] ) ) { 

@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Get a booking system based on given parameters
- * @version 1.15.15
+ * @version 1.16.0
  * @param array $atts (see bookacti_format_booking_system_attributes())
  * @return string
  */
@@ -19,11 +19,17 @@ function bookacti_get_booking_system( $atts ) {
 	do_action( 'bookacti_before_booking_system_container', $atts, $booking_system_data );
 	
 	// Encrypt user_id
-	$public_user_id = ! empty( $atts[ 'user_id' ] ) ? $atts[ 'user_id' ] : 0;
-	if( $public_user_id && ( ( is_numeric( $public_user_id ) && strlen( (string) $public_user_id ) < 16 ) || is_email( $public_user_id ) ) ) { $public_user_id = bookacti_encrypt( $public_user_id ); }
+	$public_user_ids = array();
+	if( ! empty( $atts[ 'user_id' ] ) ) {
+		foreach( $atts[ 'user_id' ] as $user_id ) {
+			if( $user_id && ( ( is_numeric( $user_id ) && strlen( (string) $user_id ) < 16 ) || is_email( $user_id ) ) ) { 
+				$public_user_ids[] = bookacti_encrypt( $user_id );
+			}
+		}
+	}
 	
 	// Let plugins define what data should be passed to JS
-	$public_booking_system_data = apply_filters( 'bookacti_public_booking_system_data', array_merge( $booking_system_data, array( 'user_id' => $public_user_id ) ), $atts );
+	$public_booking_system_data = apply_filters( 'bookacti_public_booking_system_data', array_merge( $booking_system_data, array( 'user_id' => $public_user_ids ) ), $atts );
 	?>
 
 	<div class='bookacti-booking-system-container' id='<?php echo esc_attr( $booking_system_data[ 'id' ] . '-container' ); ?>' >
@@ -157,7 +163,7 @@ function bookacti_get_booking_system_data( $atts ) {
 				$event_filters = apply_filters( 'bookacti_booking_system_grouped_events_filters', array( 'templates' => $atts[ 'calendars' ], 'activities' => $atts[ 'activities' ], 'past_events' => $atts[ 'past_events' ], 'interval' => $events_interval ), $atts, $groups );
 				$events = bookacti_fetch_events_of_group_of_events_occurrences( $groups[ 'groups' ], $event_filters );
 			} else if( $atts[ 'bookings_only' ] ) {
-				$user_ids = $atts[ 'user_id' ] ? array( $atts[ 'user_id' ] ) : array();
+				$user_ids = $atts[ 'user_id' ] ? $atts[ 'user_id' ] : array();
 				$status = $atts[ 'status' ];
 				$event_filters = apply_filters( 'bookacti_booking_system_booked_events_filters', array( 'templates' => $atts[ 'calendars' ], 'activities' => $atts[ 'activities' ], 'status' => $atts[ 'status' ], 'users' => $user_ids, 'past_events' => $atts[ 'past_events' ], 'interval' => $events_interval ), $atts );
 				$events = bookacti_fetch_booked_events( $event_filters );
@@ -360,7 +366,7 @@ function bookacti_get_calendar_html( $booking_system_data = array() ) {
 /**
  * Get default booking system attributes
  * @since 1.5.0
- * @version 1.15.19
+ * @version 1.16.0
  * @return array
  */
 function bookacti_get_booking_system_default_attributes() {
@@ -382,9 +388,9 @@ function bookacti_get_booking_system_default_attributes() {
 		'tooltip_booking_list'           => 0,
 		'tooltip_booking_list_columns'   => array(),
 		'status'                         => array(),
-		'user_id'                        => 0,
+		'user_id'                        => array(),
 		'method'                         => 'calendar',
-		'auto_load'                      => bookacti_get_setting_value( 'bookacti_general_settings', 'when_events_load' ) === 'on_page_load' ? 1 : 0,
+		'auto_load'                      => 0,
 		'start'                          => $current_datetime->format( 'Y-m-d H:i:s' ),
 		'end'                            => '',
 		'trim'                           => 1,
@@ -407,7 +413,7 @@ function bookacti_get_booking_system_default_attributes() {
 
 /**
  * Check booking system attributes and format them to be correct
- * @version 1.15.19
+ * @version 1.16.0
  * @param array $raw_atts 
  * @return array
  */
@@ -422,6 +428,9 @@ function bookacti_format_booking_system_attributes( $raw_atts = array() ) {
 	}
 	
 	$formatted_atts = $defaults;
+	
+	// Sanitize form id
+	$formatted_atts[ 'form_id' ] = is_numeric( $atts[ 'form_id' ] ) ? intval( $atts[ 'form_id' ] ) : 0;	
 	
 	// Sanitize booleans
 	$booleans_to_check = array( 'multiple_bookings', 'bookings_only', 'tooltip_booking_list', 'groups_only', 'groups_single_events', 'groups_first_event_only', 'auto_load', 'trim', 'past_events', 'past_events_bookable', 'check_roles' );
@@ -453,12 +462,14 @@ function bookacti_format_booking_system_attributes( $raw_atts = array() ) {
 	
 	// Check if the desired templates are active and allowed
 	if( ! in_array( 'none', $calendars, true ) ) {
+		$form                   = $formatted_atts[ 'form_id' ] ? bookacti_get_form_data( $formatted_atts[ 'form_id' ] ) : array();
+		$manager_id             = ! empty( $form[ 'user_id' ] ) ? intval( $form[ 'user_id' ] ) : 0;
 		$calendars              = array_values( array_unique( array_map( 'intval', array_filter( $calendars, 'is_numeric' ) ) ) );
-		$available_template_ids = array_keys( bookacti_fetch_templates( array(), 0 ) );
+		$available_template_ids = array_keys( bookacti_fetch_templates( array(), $manager_id ) );
 		$had_templates          = ! empty( $calendars );
-		$allowed_templates      = ! apply_filters( 'bookacti_bypass_template_managers_check', false ) && ! is_super_admin() ? array_values( array_intersect( $calendars, $available_template_ids ) ) : $calendars;
+		$allowed_templates      = array_values( array_intersect( $calendars, $available_template_ids ) );
 		$calendars              = ! empty( $allowed_templates ) ? $allowed_templates : ( ! $had_templates && $available_template_ids ? $available_template_ids : array( 'none' ) );
-	} 
+	}
 	$formatted_atts[ 'calendars' ] = $calendars;
 	
 	// If there are no calendars, disable activities and group categories too
@@ -509,17 +520,21 @@ function bookacti_format_booking_system_attributes( $raw_atts = array() ) {
 	$formatted_atts[ 'method' ] = in_array( $method, $available_booking_methods, true ) ? $method : ( in_array( $defaults[ 'method' ], $available_booking_methods, true ) ? $defaults[ 'method' ] : 'calendar' );
 	
 	// Sanitize user id
-	$user_id = is_numeric( $atts[ 'user_id' ] ) ? intval( $atts[ 'user_id' ] ) : esc_attr( $atts[ 'user_id' ] );
-	if( $user_id === 'current' ) { $user_id = get_current_user_id(); }
-	if( $user_id && ! is_email( $user_id ) && ( ! is_numeric( $user_id ) || ( is_numeric( $user_id ) && strlen( (string) $user_id ) ) >= 16 ) ) { $user_id = bookacti_decrypt( $user_id ); }
-	$formatted_atts[ 'user_id' ] = $user_id;
-	
+	if( ! is_array( $atts[ 'user_id' ] ) ) { $atts[ 'user_id' ] = $atts[ 'user_id' ] ? array( $atts[ 'user_id' ] ) : array(); }
+	foreach( $atts[ 'user_id' ] as $i => $user_id ) {
+		$user_id = is_numeric( $user_id ) ? intval( $user_id ) : esc_attr( $user_id );
+		if( $user_id === 'current' ) { $user_id = get_current_user_id(); }
+		if( $user_id && ! is_email( $user_id ) && ( ! is_numeric( $user_id ) || ( is_numeric( $user_id ) && strlen( (string) $user_id ) ) >= 16 ) ) { 
+			$user_id = bookacti_decrypt( $user_id );
+		}
+		$formatted_atts[ 'user_id' ][] = $user_id;
+	}
 	
 	// Sanitize booking status
 	$status = is_string( $atts[ 'status' ] ) ? array( sanitize_title_with_dashes( $status ) ) : $atts[ 'status' ];
 	
 	// Check if desired status are registered
-	$formatted_atts[ 'status' ] = is_array( $status ) && $status ? array_intersect( $status, array_keys( bookacti_get_booking_state_labels() ) ) : array();
+	$formatted_atts[ 'status' ] = is_array( $status ) && $status ? array_intersect( $status, array_keys( bookacti_get_booking_statuses() ) ) : array();
 	
 	// Check if desired columns are registered
 	$formatted_atts[ 'tooltip_booking_list_columns' ] = is_array( $atts[ 'tooltip_booking_list_columns' ] ) && $atts[ 'tooltip_booking_list_columns' ] ? array_intersect( $atts[ 'tooltip_booking_list_columns' ], array_keys( bookacti_get_user_booking_list_columns_labels() ) ) : array();
@@ -536,9 +551,6 @@ function bookacti_format_booking_system_attributes( $raw_atts = array() ) {
 	
 	// Format picked events
 	$formatted_atts[ 'picked_events' ] = bookacti_format_picked_events( $atts[ 'picked_events' ] );
-	
-	// Sanitize form id
-	$formatted_atts[ 'form_id' ] = is_numeric( $atts[ 'form_id' ] ) ? intval( $atts[ 'form_id' ] ) : 0;	
 	
 	// Format actions
 	$possible_form_actions  = array_keys( bookacti_get_available_form_actions() );
@@ -852,7 +864,7 @@ function bookacti_sanitize_booking_system_display_data( $raw_display_data ) {
 /**
  * Format booking system attributes passed via the URL
  * @since 1.6.0
- * @version 1.8.0
+ * @version 1.16.0
  * @param array $atts
  * @return array
  */
@@ -884,13 +896,19 @@ function bookacti_format_booking_system_url_attributes( $atts = array() ) {
 	
 	// Format the URL attributes
 	$timezone = new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
-	if( ! empty( $url_raw_atts[ 'start' ] ) && (bool)strtotime( $url_raw_atts[ 'start' ] ) ) {
-		$from_datetime = new DateTime( $url_raw_atts[ 'start' ], $timezone );
-		$url_raw_atts[ 'start' ] = $from_datetime->format( 'Y-m-d H:i:s' );
+	if( ! empty( $url_raw_atts[ 'start' ] ) ) {
+		$url_raw_atts[ 'start' ] = sanitize_text_field( $url_raw_atts[ 'start' ] );
+		if( $url_raw_atts[ 'start' ] && (bool) strtotime( $url_raw_atts[ 'start' ] ) ) {
+			$from_datetime = new DateTime( $url_raw_atts[ 'start' ], $timezone );
+			$url_raw_atts[ 'start' ] = $from_datetime->format( 'Y-m-d H:i:s' );
+		}
 	}
-	if( ! empty( $url_raw_atts[ 'end' ] ) && (bool)strtotime( $url_raw_atts[ 'end' ] ) ) {
-		$to_datetime = new DateTime( $url_raw_atts[ 'end' ], $timezone );
-		$url_raw_atts[ 'end' ] = ! bookacti_sanitize_datetime( $url_raw_atts[ 'end' ] ) && $to_datetime->format( 'H:i:s' ) === '00:00:00' ? $to_datetime->format( 'Y-m-d' ) . ' 23:59:59' : $to_datetime->format( 'Y-m-d H:i:s' );
+	if( ! empty( $url_raw_atts[ 'end' ] ) ) {
+		$url_raw_atts[ 'end' ] = sanitize_text_field( $url_raw_atts[ 'end' ] );
+		if( $url_raw_atts[ 'end' ] && (bool) strtotime( $url_raw_atts[ 'end' ] ) ) {
+			$to_datetime = new DateTime( $url_raw_atts[ 'end' ], $timezone );
+			$url_raw_atts[ 'end' ] = ! bookacti_sanitize_datetime( $url_raw_atts[ 'end' ] ) && $to_datetime->format( 'H:i:s' ) === '00:00:00' ? $to_datetime->format( 'Y-m-d' ) . ' 23:59:59' : $to_datetime->format( 'Y-m-d H:i:s' );
+		}
 	}
 	
 	// Isolate display data
@@ -900,7 +918,7 @@ function bookacti_format_booking_system_url_attributes( $atts = array() ) {
 	
 	// Replace booking system attributes with attributes passed through the URL
 	foreach( $default_atts as $att_name => $att_value ) {
-		if( ! isset( $url_raw_atts[ $att_name ] ) || ( ! $url_raw_atts[ $att_name ] && ! in_array( $url_raw_atts[ $att_name ], array( 0, '0' ), true ) ) ) { continue; }
+		if( ! isset( $url_raw_atts[ $att_name ] ) || ( isset( $url_raw_atts[ $att_name ] ) && ! $url_raw_atts[ $att_name ] && ! in_array( $url_raw_atts[ $att_name ], array( 0, '0' ), true ) ) ) { continue; }
 		if( $att_name === 'past_events' && $url_raw_atts[ 'past_events' ] === 'auto' ) { continue; }
 		$atts[ $att_name ] = $url_atts[ $att_name ];
 	}
@@ -912,7 +930,7 @@ function bookacti_format_booking_system_url_attributes( $atts = array() ) {
 /**
  * Get booking system fields default data
  * @since 1.5.0
- * @version 1.15.19
+ * @version 1.16.0
  * @param array $fields
  * @return array
  */
@@ -1022,7 +1040,7 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 			'name'  => 'groups_first_event_only',
 			'value' => 0,
 			'title' => esc_html__( 'Show only first event of groups', 'booking-activities' ),
-			'tip'   => esc_html__( 'Only the first events of groups will be displayed. Selecting that event will still select the whole group of events.', 'booking-activities' )
+			'tip'   => esc_html__( 'Only the first event of groups will be displayed. Selecting that event will still select the whole group of events.', 'booking-activities' )
 		);
 	}
 	
@@ -1051,10 +1069,10 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 	// Bookings status
 	if( ! $fields || in_array( 'status', $fields, true ) ) {
 		// Format status array
-		$statuses = bookacti_get_booking_state_labels();
+		$statuses = bookacti_get_booking_statuses();
 		$status_options = array( 'none' => esc_html__( 'All', 'booking-activities' ) );
-		foreach ( $statuses as $status_id => $status ) { 
-			$status_options[ $status_id ] = esc_html( $status[ 'label' ] );
+		foreach( $statuses as $status => $label ) { 
+			$status_options[ $status ] = esc_html( $label );
 		}
 		$defaults[ 'status' ] = array(
 			'name'        => 'status',
@@ -2897,7 +2915,7 @@ function bookacti_get_availability_period( $absolute_period = array(), $relative
 /**
  * Get booking system trimmed availability period
  * @since 1.13.0
- * @version 1.15.6
+ * @version 1.16.0
  * @param array $booking_system_data
  * @return array
  */
@@ -2921,7 +2939,7 @@ function bookacti_get_booking_system_availability_period( $booking_system_data )
 			$bounding_groups = ! in_array( 'none', $booking_system_data[ 'group_categories' ], true ) ? bookacti_get_groups_of_events( array( 'templates' => $booking_system_data[ 'calendars' ], 'group_categories' => $booking_system_data[ 'group_categories' ], 'interval' => $availability_period, 'interval_started' => 1, 'past_events' => $booking_system_data[ 'past_events' ], 'data_only' => 1 ) ) : array();
 			$bounding_events = bookacti_get_bounding_events_from_groups_of_events_heuristic( $bounding_groups, array( 'past_events' => $booking_system_data[ 'past_events' ], 'interval' => $availability_period ) );
 		} else if( $booking_system_data[ 'bookings_only' ] ) {
-			$bounding_events = bookacti_fetch_booked_events( array( 'bounding_only' => 1, 'templates' => $booking_system_data[ 'calendars' ], 'activities' => $booking_system_data[ 'activities' ], 'status' => $booking_system_data[ 'status' ], 'users' => $booking_system_data[ 'user_id' ] ? array( $booking_system_data[ 'user_id' ] ) : array(), 'past_events' => $booking_system_data[ 'past_events' ], 'interval' => $availability_period ) );
+			$bounding_events = bookacti_fetch_booked_events( array( 'bounding_only' => 1, 'templates' => $booking_system_data[ 'calendars' ], 'activities' => $booking_system_data[ 'activities' ], 'status' => $booking_system_data[ 'status' ], 'users' => $booking_system_data[ 'user_id' ], 'past_events' => $booking_system_data[ 'past_events' ], 'interval' => $availability_period ) );
 		} else {
 			$bounding_events = bookacti_fetch_events( array( 'bounding_only' => 1, 'templates' => $booking_system_data[ 'calendars' ], 'activities' => $booking_system_data[ 'activities' ], 'past_events' => $booking_system_data[ 'past_events' ], 'interval' => $availability_period ) );	
 		}
@@ -3361,7 +3379,7 @@ function bookacti_convert_events_to_ical( $events, $name = '', $description = ''
 /**
  * Generate a ICAL file of events according to booking system attributes
  * @since 1.6.0
- * @version 1.15.18
+ * @version 1.16.0
  * @param array $atts Booking system attributes
  * @param string $calname
  * @param string $caldesc
@@ -3382,7 +3400,7 @@ function bookacti_export_events_page( $atts, $calname = '', $caldesc = '', $sequ
 		}
 		$events = bookacti_fetch_events_of_group_of_events_occurrences( $groups[ 'groups' ], array( 'templates' => $atts[ 'calendars' ], 'activities' => $atts[ 'activities' ], 'past_events' => $atts[ 'past_events' ], 'interval' => $events_interval ) );
 	} else if( $atts[ 'bookings_only' ] ) {
-		$events = bookacti_fetch_booked_events( array( 'templates' => $atts[ 'calendars' ], 'activities' => $atts[ 'activities' ], 'status' => $atts[ 'status' ], 'users' => $atts[ 'user_id' ] ? array( $atts[ 'user_id' ] ) : array(), 'past_events' => $atts[ 'past_events' ], 'interval' => $events_interval ) );
+		$events = bookacti_fetch_booked_events( array( 'templates' => $atts[ 'calendars' ], 'activities' => $atts[ 'activities' ], 'status' => $atts[ 'status' ], 'users' => $atts[ 'user_id' ], 'past_events' => $atts[ 'past_events' ], 'interval' => $events_interval ) );
 	} else {
 		$events	= bookacti_fetch_events( array( 'templates' => $atts[ 'calendars' ], 'activities' => $atts[ 'activities' ], 'past_events' => $atts[ 'past_events' ], 'interval' => $events_interval ) );	
 	}
@@ -3397,7 +3415,7 @@ function bookacti_export_events_page( $atts, $calname = '', $caldesc = '', $sequ
 				$filename = 'my-bookings';
 				break;
 			case 'bookacti_export_form_events':
-				$filename = ! empty( $_REQUEST[ 'form_id' ] ) ? 'booking-activities-events-form-' . $_REQUEST[ 'form_id' ] : 'booking-activities-events-form-unknown';
+				$filename = ! empty( $_REQUEST[ 'form_id' ] ) ? 'booking-activities-events-form-' . intval( $_REQUEST[ 'form_id' ] ) : 'booking-activities-events-form-unknown';
 				break;
 			default:
 				$filename = 'my-events';

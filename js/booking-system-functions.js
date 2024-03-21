@@ -103,7 +103,7 @@ function bookacti_get_booking_system_data_by_interval( booking_system, interval 
 
 /**
  * Reload a booking system
- * @version 1.14.0
+ * @version 1.16.0
  * @param {HTMLElement} booking_system
  * @param {boolean} keep_picked_events
  */
@@ -136,8 +136,8 @@ function bookacti_reload_booking_system( booking_system, keep_picked_events ) {
 				bookacti.booking_system[ booking_system_id ] = response.booking_system_data;
 				
 				// Specific data
-				if( typeof original_attributes.rescheduled_booking_data !== 'undefined' ) { bookacti.booking_system[ booking_system_id ][ 'rescheduled_booking_data' ] = $j.extend( true, {}, original_attributes.rescheduled_booking_data ); }
-				if( typeof original_attributes.templates_per_activities !== 'undefined' ) { bookacti.booking_system[ booking_system_id ][ 'templates_per_activities' ] = $j.extend( true, {}, original_attributes.templates_per_activities ); }
+				if( typeof original_attributes.rescheduled_bookings_data !== 'undefined' ) { bookacti.booking_system[ booking_system_id ][ 'rescheduled_bookings_data' ] = $j.extend( true, {}, original_attributes.rescheduled_bookings_data ); }
+				if( typeof original_attributes.templates_per_activities !== 'undefined' )  { bookacti.booking_system[ booking_system_id ][ 'templates_per_activities' ] = $j.extend( true, {}, original_attributes.templates_per_activities ); }
 				
 				// Fill the booking method elements
 				booking_system.append( response.html_elements );
@@ -447,7 +447,7 @@ function bookacti_refresh_booking_numbers( booking_system ) {
 
 /**
  * An event is clicked
- * @version 1.15.0
+ * @version 1.16.0
  * @param {HTMLElement} booking_system
  * @param {(FullCalendar.EventApi|Object)} event
  */
@@ -456,10 +456,8 @@ function bookacti_event_click( booking_system, event ) {
 	var multiple_bookings = bookacti.booking_system[ booking_system_id ][ 'multiple_bookings' ];
 	
 	// If the event is picked, just unpick it (or its group)
-	if( multiple_bookings ) {
-		var unpicked_nb = bookacti_unpick_events( booking_system, event );
-		if( unpicked_nb ) { return; }
-	}
+	var unpicked_nb = bookacti_unpick_events( booking_system, event );
+	if( unpicked_nb ) { return; }
 	
 	// Get the group id of an event or open a dialog to choose a group
 	var groups = {};
@@ -1310,7 +1308,7 @@ function bookacti_get_event_availability( booking_system, event ) {
 
 /**
  * Check if an event is event available
- * @version 1.15.11
+ * @version 1.16.0
  * @param {HTMLElement} booking_system
  * @param {(FullCalendar.EventApi|Object)} event
  * @returns {Boolean}
@@ -1346,20 +1344,34 @@ function bookacti_is_event_available( booking_system, event ) {
 		// If the event is part of a group (and not bookable alone), it cannot be available
 		if( is_in_group && ! groups_single_events ) { return false; }
 		
-		var rescheduled_booking_data = typeof attributes[ 'rescheduled_booking_data' ] !== 'undefined' ? attributes[ 'rescheduled_booking_data' ] : [];
+		var rescheduled_bookings_data = typeof attributes[ 'rescheduled_bookings_data' ] !== 'undefined' ? attributes[ 'rescheduled_bookings_data' ] : [];
 		
-		// Don't display self event
-		if( typeof rescheduled_booking_data.event_id !== 'undefined'
-		&&  typeof rescheduled_booking_data.event_start !== 'undefined'
-		&&  typeof rescheduled_booking_data.event_end !== 'undefined' ) {
-			if( rescheduled_booking_data.event_id == event_id
-			&&  rescheduled_booking_data.event_start === event_start.format( 'YYYY-MM-DD HH:mm:ss' )
-			&&  rescheduled_booking_data.event_end === event_end.format( 'YYYY-MM-DD HH:mm:ss' ) ) { return false; }
-		}
-
-		// Don't display event if it hasn't enough availability
-		if( typeof rescheduled_booking_data.quantity !== 'undefined' ) {
-			if( parseInt( rescheduled_booking_data.quantity ) > availability ) { return false; }
+		if( rescheduled_bookings_data ) {
+			var rescheduled_bookings_nb = 0;
+			var is_rescheduled_event    = false;
+			var highest_quantity        = 1;
+			
+			$j.each( rescheduled_bookings_data, function( i, rescheduled_booking ) {
+				if( rescheduled_booking?.event_id == event_id
+				&&  rescheduled_booking?.event_start === event_start.format( 'YYYY-MM-DD HH:mm:ss' )
+				&&  rescheduled_booking?.event_end === event_end.format( 'YYYY-MM-DD HH:mm:ss' ) ) { 
+					is_rescheduled_event = true;
+				}
+				
+				if( typeof rescheduled_booking.quantity !== 'undefined' ) {
+					if( parseInt( rescheduled_booking.quantity ) > highest_quantity ) {
+						highest_quantity = parseInt( rescheduled_booking.quantity );
+					}
+				}
+				
+				++rescheduled_bookings_nb;
+			});
+			
+			// Don't display event if it is the rescheduled booking event
+			if( is_rescheduled_event && rescheduled_bookings_nb === 1 ) { return false; }
+			
+			// Don't display event if it hasn't enough availability
+			if( highest_quantity > availability ) { return false; }
 		}
 	}
 	

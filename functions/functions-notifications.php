@@ -1,11 +1,11 @@
 <?php
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) { exit; }
-	
+
 /**
  * Array of configurable notifications
  * @since 1.2.1 (was bookacti_get_emails_default_settings in 1.2.0)
- * @version 1.15.15
+ * @version 1.16.0
  * @return array
  */
 function bookacti_get_notifications_default_settings() {
@@ -25,7 +25,7 @@ function bookacti_get_notifications_default_settings() {
 					'to'      => array( $admin_email ),
 					'subject' => esc_html__( 'New booking!', 'booking-activities' ),
 					'message' => /* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an administrator receives when a booking is made */
-								__( '<p>You have {booking_total_qty} new booking(s) from {user_firstname} {user_lastname} ({user_email})!</p><p>{booking_list}</p><p>Booking status: <strong>{booking_status}</strong>.</p><p><a href="{booking_admin_url}">Click here</a> to edit this booking (ID: {booking_id}).</p>', 'booking-activities' ) 
+								__( '<p>You have new booking(s)!</p>{for_each_booking}<p>{booking_list}</p><p>Customer info: {user_firstname} {user_lastname} ({user_email})</p><p>Booking status: <strong>{booking_status}</strong>.</p><p><a href="{booking_admin_url}">Click here</a> to edit this booking (ID: {booking_id}).</p>{/for_each_booking}', 'booking-activities' ) 
 				)
 			),
 		'admin_cancelled_booking' => 
@@ -39,7 +39,7 @@ function bookacti_get_notifications_default_settings() {
 					'to'      => array( $admin_email ),
 					'subject' => esc_html__( 'Booking cancelled', 'booking-activities' ),
 					'message' => /* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an administrator receives when a booking is cancelled */
-								__( '<p>A customer has cancelled a booking.</p><p>{booking_list}</p><p>Customer info: {user_firstname} {user_lastname} ({user_email})</p><p><a href="{booking_admin_url}">Click here</a> to edit this booking (ID: {booking_id}).</p>', 'booking-activities' )
+								__( '<p>A customer has cancelled a booking.</p>{for_each_booking}<p>{booking_list}</p><p>Customer info: {user_firstname} {user_lastname} ({user_email})</p><p><a href="{booking_admin_url}">Click here</a> to edit this booking (ID: {booking_id}).</p>{/for_each_booking}', 'booking-activities' )
 				)
 			),
 		'admin_rescheduled_booking' => 
@@ -53,7 +53,7 @@ function bookacti_get_notifications_default_settings() {
 					'to'      => array( $admin_email ),
 					'subject' => esc_html__( 'Booking rescheduled', 'booking-activities' ),
 					'message' => /* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an administrator receives when a booking is rescheduled */
-								__( '<p>A customer has rescheduled a booking.</p><p>Old booking: {booking_old_start} - {booking_old_end}</p><p>New booking: {booking_list}</p><p>Customer info: {user_firstname} {user_lastname} ({user_email})</p><p><a href="{booking_admin_url}">Click here</a> to edit this booking (ID: {booking_id}).</p>', 'booking-activities' ) 
+								__( '<p>A customer has rescheduled a booking.</p>{for_each_booking}<p>Old booking: {booking_old_start} - {booking_old_end}</p><p>New booking: {booking_list}</p><p>Customer info: {user_firstname} {user_lastname} ({user_email})</p><p><a href="{booking_admin_url}">Click here</a> to edit this booking (ID: {booking_id}).</p>{/for_each_booking}', 'booking-activities' ) 
 				)
 			),
 		'admin_refund_requested_booking' => 
@@ -67,10 +67,12 @@ function bookacti_get_notifications_default_settings() {
 					'to'      => array( $admin_email ),
 					/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email subject an administrator receives when a customer submits a refund request for a booking */
 					'subject' => esc_html__( 'Refund request for booking #{booking_id}', 'booking-activities' ),
-					'message' => /* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an administrator receives when a customer submits a refund request for a booking */
-								__( '<h3>{user_firstname} {user_lastname} wants to be refunded for <a href="{booking_admin_url}" target="_blank">booking #{booking_id}</a></h3>', 'booking-activities' )
-									/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an administrator receives when a customer submits a refund request or process a refund for a booking */
+					'message' => '{for_each_booking}'
+								/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an administrator receives when a customer submits a refund request for a booking */
+								. __( '<h3>{user_firstname} {user_lastname} wants to be refunded for <a href="{booking_admin_url}" target="_blank">booking #{booking_id}</a></h3>', 'booking-activities' )
+								/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an administrator receives when a customer submits a refund request or process a refund for a booking */
 								. __( '<h4>Booking</h4>ID: {booking_id}<br/>Name: {booking_title}<br/>Start: {booking_start}<br/>End: {booking_end}<br/>Quantity: {booking_quantity}<br/>Status: {booking_status}<br/>List:<br/>{booking_list}<h4>User</h4>Name: {user_firstname} {user_lastname}<br/>Email: {user_email}<br/>Phone: {user_phone}<h4>User message</h4>{refund_message}', 'booking-activities' )
+								. '{/for_each_booking}'
 				)
 			),
 		'admin_refunded_booking' => 
@@ -83,9 +85,11 @@ function bookacti_get_notifications_default_settings() {
 					'active'  => 1,
 					'to'      => array( get_bloginfo( 'admin_email' ) ),
 					'subject' => esc_html__( 'Booking refunded', 'booking-activities' ),
-					'message' => /* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an administrator receives when a booking is refunded */
-								__( '<h3>{user_firstname} {user_lastname} has been refunded for <a href="{booking_admin_url}" target="_blank">booking #{booking_id}</a></h3>', 'booking-activities' )
+					'message' => '{for_each_booking}'
+								/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an administrator receives when a booking is refunded */
+								. __( '<h3>{user_firstname} {user_lastname} has been refunded for <a href="{booking_admin_url}" target="_blank">booking #{booking_id}</a></h3>', 'booking-activities' )
 								. __( '<h4>Booking</h4>ID: {booking_id}<br/>Name: {booking_title}<br/>Start: {booking_start}<br/>End: {booking_end}<br/>Quantity: {booking_quantity}<br/>Status: {booking_status}<br/>List:<br/>{booking_list}<h4>User</h4>Name: {user_firstname} {user_lastname}<br/>Email: {user_email}<br/>Phone: {user_phone}<h4>User message</h4>{refund_message}', 'booking-activities' )
+								. '{/for_each_booking}'
 				)
 			),
 		
@@ -105,7 +109,7 @@ function bookacti_get_notifications_default_settings() {
 					'to'      => array(),
 					'subject' => esc_html__( 'Your booking is pending', 'booking-activities' ) . ' - ' . $blog_name,
 					'message' => /* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receives when a booking is made, but is still Pending */
-								__( '<p>Thank you for your booking request {user_firstname}!</p><p>{booking_list}</p><p>Your reservation is <strong>pending</strong>.</p><p>We will process your request and contact you as soon as possible.</p>', 'booking-activities' )
+								__( '<p>Thank you for your booking request {user_firstname}!</p><p>The following reservations are <strong>pending</strong>:</p><p>{booking_list}</p><p>We will process your request and contact you as soon as possible.</p>', 'booking-activities' )
 				)
 			),
 		'customer_booked_booking' => 
@@ -120,7 +124,7 @@ function bookacti_get_notifications_default_settings() {
 					'to'      => array(),
 					'subject' => esc_html__( 'Your booking is complete! Thank you', 'booking-activities' ) . ' - ' . $blog_name,
 					'message' => /* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receives when a booking is made and Complete */
-								__( '<p>Thank you for your booking {user_firstname}!</p><p>{booking_list}</p><p>We confirm that your reservation is now <strong>complete</strong>.</p>', 'booking-activities' )
+								__( '<p>Thank you for your booking {user_firstname}!</p><p>We confirm that the following reservations are now <strong>complete</strong>:</p><p>{booking_list}</p>', 'booking-activities' )
 				)
 			),
 		'customer_delivered_booking' => 
@@ -134,7 +138,7 @@ function bookacti_get_notifications_default_settings() {
 					'to'      => array(),
 					'subject' => esc_html__( 'Thank you!', 'booking-activities' ) . ' - ' . $blog_name,
 					'message' => /* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receives when a booking status becomes "Delivered" */
-								__( '<p>Thank you {user_firstname}!</p><p>Your booking is now <strong>complete</strong>.</p><p>{booking_list}</p><p>We hope to see you soon!</p>', 'booking-activities' )
+								__( '<p>Thank you {user_firstname}!</p><p>The following bookings are now <strong>complete</strong>:</p><p>{booking_list}</p><p>We hope to see you soon!</p>', 'booking-activities' )
 				)
 			),
 		'customer_cancelled_booking' => 
@@ -148,7 +152,7 @@ function bookacti_get_notifications_default_settings() {
 					'to'      => array(),
 					'subject' => esc_html__( 'Your booking has been cancelled', 'booking-activities' ) . ' - ' . $blog_name,
 					'message' => /* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receives when a booking is cancelled */
-								__( '<p>Hello {user_firstname},</p><p>Your booking has been <strong>cancelled</strong>.</p><p>{booking_list}</p><p>If you haven\'t cancelled this reservation or if you think this is an error, please contact us.</p>', 'booking-activities' )
+								__( '<p>Hello {user_firstname},</p><p>The following bookings have been <strong>cancelled</strong>:</p><p>{booking_list}</p><p>If you haven\'t cancelled any reservations or if you think there is an error, please contact us.</p>', 'booking-activities' )
 				)
 			),
 		'customer_refund_requested_booking' => 
@@ -162,7 +166,7 @@ function bookacti_get_notifications_default_settings() {
 					'to'      => array(),
 					'subject' => esc_html__( 'A refund has been requested for your booking', 'booking-activities' ) . ' - ' . $blog_name,
 					'message' => /* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receives when he is reimbursed for a booking */
-								__( '<p>Hello {user_firstname},</p><p>We have received your <strong>refund request</strong> for your booking.</p><p>{booking_list}</p><blockquote><strong>Your message:</strong> <q>{refund_message}</q></blockquote><p>We will get back to you as soon as possible.</p><p>If you haven\'t requested a refund for this reservation or if you think this is an error, please contact us.</p>', 'booking-activities' )
+								__( '<p>Hello {user_firstname},</p><p>We have received your <strong>refund request</strong> for the following bookings:</p>{for_each_booking}<p>{booking_list}</p><blockquote><strong>Your message:</strong> <q>{refund_message}</q></blockquote>{/for_each_booking}<p>We will get back to you as soon as possible.</p><p>If you haven\'t requested any refunds or if you think there is an error, please contact us.</p>', 'booking-activities' )
 				)
 			),
 		'customer_refunded_booking' => 
@@ -176,7 +180,7 @@ function bookacti_get_notifications_default_settings() {
 					'to'      => array(),
 					'subject' => esc_html__( 'Your booking has been refunded', 'booking-activities' ) . ' - ' . $blog_name,
 					'message' => /* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receives when he is reimbursed for a booking */
-								__( '<p>Hello {user_firstname},</p><p>Your booking has been <strong>refunded</strong>.</p><p>{booking_list}</p><p>We are sorry for the inconvenience and hope to see you soon.</p>', 'booking-activities' )
+								__( '<p>Hello {user_firstname},</p><p>Your bookings below have been <strong>refunded</strong>:</p><p>{booking_list}</p><p>We are sorry for the inconvenience and hope to see you soon.</p>', 'booking-activities' )
 				)
 			),
 		'customer_rescheduled_booking' => 
@@ -190,7 +194,7 @@ function bookacti_get_notifications_default_settings() {
 					'to'      => array(),
 					'subject' => esc_html__( 'Your booking has been rescheduled', 'booking-activities' ) . ' - ' . $blog_name,
 					'message' => /* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receives when a booking is rescheduled */
-								__( '<p>Hello {user_firstname},</p><p>Your booking has been <strong>rescheduled</strong> from {booking_old_start} to:</p><p>{booking_list}</p><p>If you haven\'t rescheduled this reservation or if you think this is an error, please contact us.</p>', 'booking-activities' )
+								__( '<p>Hello {user_firstname},</p><p>The following bookings have been <strong>rescheduled</strong>:</p>{for_each_booking}<p>from {booking_old_start} to:</p><p>{booking_list}</p>{/for_each_booking}<p>If you haven\'t rescheduled any reservations or if you think there is an error, please contact us.</p>', 'booking-activities' )
 				)
 			)
 	);
@@ -353,12 +357,13 @@ function bookacti_sanitize_notification_settings( $args, $notification_id = '' )
 /**
  * Get notifications tags
  * @since 1.2.0
- * @version 1.15.19
+ * @version 1.16.0
  * @param string $notification_id Optional.
  * @return array
  */
 function bookacti_get_notifications_tags( $notification_id = '' ) {
 	$tags = array( 
+		'{for_each_booking}{/for_each_booking}' => esc_html__( 'The content between these tags will be displayed once per booking, the tags value will change accordingly.', 'booking-activities' ),
 		'{booking_id}'             => esc_html__( 'Booking unique ID (integer). Bookings and booking groups have different set of IDs.', 'booking-activities' ),
 		'{booking_title}'          => esc_html__( 'The event / group of events title.', 'booking-activities' ),
 		'{booking_quantity}'       => esc_html__( 'Booking quantity. If bookings of a same group happen to have different quantities, the higher is displayed.', 'booking-activities' ),
@@ -381,6 +386,7 @@ function bookacti_get_notifications_tags( $notification_id = '' ) {
 		'{user_phone}'             => esc_html__( 'The user phone number', 'booking-activities' ),
 		'{user_id}'                => esc_html__( 'The user ID. If the user has booked without account, this will display his email address.', 'booking-activities' ),
 		'{user_locale}'            => esc_html__( 'The user locale code. If the user has booked without account, the site locale will be used.', 'booking-activities' ),
+		'{user_auth_key}'          => esc_html__( 'The user authentication key, it allows users to manage their bookings without being logged in. Use it as the value of the user_auth_key parameter in the URL of a page where the [bookingactivities_list] shortcode is displayed (e.g.: https://example.net/my-bookings/?user_auth_key={user_auth_key}).', 'booking-activities' ),
 		'{user_ical_url}'          => esc_html__( 'URL to export the user list of bookings in ical format. You can append the "start" and "end" parameters with relative time format to this URL (e.g.: {user_ical_url}&start=today&end=next+year). If the user has booked without account, only the current booking is exported.', 'booking-activities' ),
 		'{booking_ical_url}'       => esc_html__( 'URL to export the current booking in ical format.', 'booking-activities' ),
 		'{price}'                  => esc_html__( 'Booking price, with currency.', 'booking-activities' ),
@@ -415,13 +421,14 @@ function bookacti_get_notifications_tags( $notification_id = '' ) {
 /**
  * Get notifications tags and values corresponding to given booking
  * @since 1.2.0
- * @version 1.15.19
+ * @version 1.16.0
  * @param object $booking
  * @param string $booking_type 'group' or 'single'
  * @param array $notification
+ * @param array $args
  * @return array
  */
-function bookacti_get_notifications_tags_values( $booking, $booking_type, $notification ) {
+function bookacti_get_notifications_tags_values( $booking, $booking_type, $notification, $args = array() ) {
 	// Event booking list default attributes
 	$event_booking_list_atts = array(
 		'user_id'  => 'all',
@@ -431,7 +438,7 @@ function bookacti_get_notifications_tags_values( $booking, $booking_type, $notif
 		'group_by' => 'booking_group'
 	);
 	
-	$booking_data = array();
+	$tags = $booking_data = array();
 	
 	if( $booking ) {
 		$locale = bookacti_get_site_locale();
@@ -475,14 +482,44 @@ function bookacti_get_notifications_tags_values( $booking, $booking_type, $notif
 			$event_booking_list_atts[ 'event_end' ]   = $booking->event_end;
 		}
 		
-		$sorted_bookings = bookacti_sort_events_array_by_dates( $bookings, false, false, array( 'start' => 'event_start', 'end' => 'event_end' ) );
+		// Build the booking lists
+		$sorted_bookings                       = bookacti_sort_events_array_by_dates( $bookings, false, false, array( 'start' => 'event_start', 'end' => 'event_end' ) );
+		$booking_data[ '{booking_list}' ]      = bookacti_get_formatted_booking_events_list( $sorted_bookings, true, false );
+		$booking_data[ '{booking_list_raw}' ]  = bookacti_get_formatted_booking_events_list_raw( $sorted_bookings );
+		$tags[ '{_booking_list}' ]             = $booking_data[ '{booking_list}' ] ? '<ul class="bookacti-booking-events-list bookacti-custom-scrollbar" style="clear:both;" >' . $booking_data[ '{booking_list}' ] . '</ul>' : '';
+		$tags[ '{_booking_list_raw}' ]         = $booking_data[ '{booking_list_raw}' ];
+		if( ! empty( $args[ 'additional_bookings' ] ) ) {
+			$booking_list_raw_single = $booking_type === 'single' ? $booking_data[ '{booking_list_raw}' ] : '';
+			$booking_list_raw_group  = $booking_type === 'group' ? $booking_data[ '{booking_list_raw}' ] : '';
+			foreach( $args[ 'additional_bookings' ] as $additional_booking ) {
+				$_bookings = $additional_booking[ 'type' ] === 'group' ? bookacti_get_booking_group_bookings_by_id( $additional_booking[ 'id' ] ) : array( $additional_booking[ 'booking' ] );
+				if( $_bookings ) {
+					$_sorted_bookings                  = bookacti_sort_events_array_by_dates( $_bookings, false, false, array( 'start' => 'event_start', 'end' => 'event_end' ) );
+					$booking_data[ '{booking_list}' ] .= bookacti_get_formatted_booking_events_list( $_sorted_bookings, true, false );
+					$_booking_list_raw                 = bookacti_get_formatted_booking_events_list_raw( $_sorted_bookings );
+					if( $_booking_list_raw ) {
+						if( $additional_booking[ 'type' ] === 'group' ) {
+							if( $booking_list_raw_group ) { $booking_list_raw_group .= ', '; }
+							$booking_list_raw_group .= $_booking_list_raw;
+						} else {
+							if( $booking_list_raw_single ) { $booking_list_raw_single .= ', '; }
+							$booking_list_raw_single .= $_booking_list_raw;
+						}
+					}
+				}
+			}
+			$booking_data[ '{booking_list_raw}' ]      = $booking_list_raw_single;
+			if( $booking_data[ '{booking_list_raw}' ] && $booking_list_raw_group ) {
+				$booking_data[ '{booking_list_raw}' ] .= ', ';
+			}
+			$booking_data[ '{booking_list_raw}' ]     .= $booking_list_raw_group;
+		}
+		$booking_data[ '{booking_list}' ] = $booking_data[ '{booking_list}' ] ? '<ul class="bookacti-booking-events-list bookacti-custom-scrollbar" style="clear:both;" >' . $booking_data[ '{booking_list}' ] . '</ul>' : '';
 		
 		$booking_data[ '{booking_id}' ]             = $booking->id;
-		$booking_data[ '{booking_status}' ]         = bookacti_format_booking_state( $booking->state );
+		$booking_data[ '{booking_status}' ]         = bookacti_format_booking_status( $booking->state );
 		$booking_data[ '{booking_payment_status}' ] = bookacti_format_payment_status( $booking->payment_status );
 		$booking_data[ '{booking_quantity}' ]       = $booking->quantity;
-		$booking_data[ '{booking_list}' ]           = bookacti_get_formatted_booking_events_list( $sorted_bookings );
-		$booking_data[ '{booking_list_raw}' ]       = bookacti_get_formatted_booking_events_list_raw( $sorted_bookings );
 		$booking_data[ '{calendar_id}' ]            = $booking->template_id;
 		$booking_data[ '{refund_message}' ]         = ! empty( $booking->refund_message ) ? $booking->refund_message : '';
 		
@@ -511,6 +548,7 @@ function bookacti_get_notifications_tags_values( $booking, $booking_type, $notif
 				$booking_data[ '{user_email}' ]     = ! empty( $booking->user_email ) ? $booking->user_email : ( is_email( $booking->user_id ) ? $booking->user_id : '' );
 				$booking_data[ '{user_phone}' ]     = ! empty( $booking->user_phone ) ? $booking->user_phone : '';
 			}
+			$booking_data[ '{user_auth_key}' ] = $booking_data[ '{user_email}' ] && is_email( $booking_data[ '{user_email}' ] ) ? bookacti_encrypt( $booking_data[ '{user_email}' ], 'user_auth' ) : '';
 		}
 		
 		$booking_ical_key = $user_ical_key ? $user_ical_key : ( ! empty( $booking->secret_key ) ? $booking->secret_key : '' );
@@ -523,8 +561,6 @@ function bookacti_get_notifications_tags_values( $booking, $booking_type, $notif
 		$booking_data[ '{booking_ical_url}' ] = esc_url( home_url( '?action=bookacti_export_booked_events&filename=my-bookings&key=' . $booking_ical_key . '&' . $booking_id_param_name . '=' . $booking->id . '&locale=' . $locale ) );
 		if( empty( $booking_data[ '{user_ical_url}' ] ) ) { $booking_data[ '{user_ical_url}' ] = $booking_data[ '{booking_ical_url}' ]; }
 	}
-	
-	$tags = array();
 	
 	// Transform event booking list tag into [bookingactivities_list] shortcode tags
 	$default_args_str = '';
@@ -539,30 +575,58 @@ function bookacti_get_notifications_tags_values( $booking, $booking_type, $notif
 		$tags[ $default_tag ] = isset( $booking_data[ $default_tag ] ) ? $booking_data[ $default_tag ] : '';
 	}
 	
-	return apply_filters( 'bookacti_notifications_tags_values', $tags, $booking, $booking_type, $notification );
+	// Replace or add tags values
+	if( ! empty( $args[ 'tags' ] ) ) {
+		$tags = bookacti_associative_array_replace_recursive( $args[ 'tags' ], $tags );
+	}
+	
+	return apply_filters( 'bookacti_notifications_tags_values', $tags, $booking, $booking_type, $notification, $args );
 }
 
 
 /**
- * Send a notification according to its settings
+ * Send a notification
  * @since 1.2.1 (was bookacti_send_email in 1.2.0)
- * @version 1.14.1
- * @param string $notification_id Must exists in "bookacti_notifications_default_settings"
- * @param int $booking_id
- * @param string $booking_type "single" or "group"
- * @param array $args Replace or add notification settings and tags
+ * @version 1.16.0
+ * @param string $notification_id The notification identifier. It must exists as a key in "bookacti_notifications_default_settings".
+ * @param int $booking_id         Main booking (group) ID
+ * @param string $booking_type    Main booking type ("single" or "group")
+ * @param array $args {
+ *  @type string $locale          Replace the locale
+ *  @type array $notification     Replace or add notification settings
+ *  @type array $tags             Replace or add tags values
+ *  @type array[] $additional_bookings {
+ *   @type array {
+ *    @type int $id               Additional booking (group) ID
+ *    @type string $string        Additional booking type ("single" or "group")
+ *    @type object $booking       (optional) Additional booking object (retrieved with bookacti_get_booking_by_id or bookacti_get_booking_group_by_id)
+ *    @type array $tags           (optional) Additional booking tags values
+ *   }
+ * }
  * @param boolean $async Whether to send the notification asynchronously. 
  * @return array
  */
-function bookacti_send_notification( $notification_id, $booking_id, $booking_type, $args = array(), $async = 1 ) {
+function bookacti_send_notification( $notification_id, $booking_id, $booking_type = 'single', $args = array(), $async = 1 ) {
 	$async = ! empty( $async ) ? 1 : 0;
 	
 	// Send notifications asynchronously
 	$allow_async = apply_filters( 'bookacti_allow_async_notifications', bookacti_get_setting_value( 'bookacti_notifications_settings', 'notifications_async' ) );
 	if( $allow_async && $async ) {
+		// Temporarily save the notification settings in order to send it later
+		$alloptions = wp_load_alloptions();
+		$async_notifications   = isset( $alloptions[ 'bookacti_async_notifications' ] ) ? maybe_unserialize( $alloptions[ 'bookacti_async_notifications' ] ) : array();
+		if( ! is_array( $async_notifications ) ) { $async_notifications = array(); }
+		$async_notifications[] = array( 
+			'notification_id' => $notification_id,
+			'booking_id'      => $booking_id,
+			'booking_type'    => $booking_type,
+			'args'            => $args
+		);
+		update_option( 'bookacti_async_notifications', $async_notifications );
+		
 		// Delay with few seconds to try to avoid scheduling problems
-		if( ! wp_next_scheduled( 'bookacti_send_async_notification', array( $notification_id, $booking_id, $booking_type, $args, 0 ) ) ) {
-			$scheduled = wp_schedule_single_event( time() + 3, 'bookacti_send_async_notification', array( $notification_id, $booking_id, $booking_type, $args, 0 ) );
+		if ( ! wp_next_scheduled( 'bookacti_cron_send_async_notifications' ) ) {
+			wp_schedule_single_event( time() + 3, 'bookacti_cron_send_async_notifications' );
 		}
 		return array();
 	}
@@ -581,7 +645,7 @@ function bookacti_send_notification( $notification_id, $booking_id, $booking_typ
 	if( ! $booking ) { return array(); }
 	
 	// Change params according to recipients
-	$locale = '';
+	$locale = ! empty( $args[ 'locale' ] ) ? $args[ 'locale' ] : '';
 	$user_email = '';
 	if( substr( $notification_id, 0, 8 ) === 'customer' ) {
 		$user_id = $booking->user_id;
@@ -591,7 +655,9 @@ function bookacti_send_notification( $notification_id, $booking_id, $booking_typ
 		if( $user ) {
 			$user_email = $user->user_email;
 			// Use the user locale to translate the email
-			$locale = bookacti_get_user_locale( $user, 'site' );
+			if( ! $locale ) {
+				$locale = bookacti_get_user_locale( $user, 'site' );
+			}
 		} else if( is_email( $user_id ) ) {
 			$user_email = $user_id;
 		} else {
@@ -603,9 +669,8 @@ function bookacti_send_notification( $notification_id, $booking_id, $booking_typ
 	
 	if( ! $locale ) { $locale = bookacti_get_site_locale();	}
 	
-	$locale = apply_filters( 'bookacti_notification_locale', $locale, $notification_id, $booking, $booking_type, $args );
-	
 	// Temporarily switch locale to site or user default's
+	$locale        = apply_filters( 'bookacti_notification_locale', $locale, $notification_id, $booking, $booking_type, $args );
 	$lang_switched = bookacti_switch_locale( $locale );
 	
 	// Get notification settings
@@ -613,7 +678,7 @@ function bookacti_send_notification( $notification_id, $booking_id, $booking_typ
 	
 	// Replace or add notification settings
 	if( ! empty( $args[ 'notification' ] ) ) {
-		$notification = array_merge( $notification, $args[ 'notification' ] );
+		$notification = bookacti_associative_array_replace_recursive( $args[ 'notification' ], $notification );
 	}
 	
 	if( ! $notification || empty( $notification[ 'active' ] ) ) { return array(); }
@@ -621,15 +686,37 @@ function bookacti_send_notification( $notification_id, $booking_id, $booking_typ
 	// Fill the recipients fields
 	if( $user_email ) { $notification[ 'email' ][ 'to' ] = array( $user_email ); }
 	
-	// Replace tags in message and replace linebreaks with html tags
-	$tags = bookacti_get_notifications_tags_values( $booking, $booking_type, $notification );
-	
-	// Replace or add tags values
-	if( ! empty( $args ) && ! empty( $args[ 'tags' ] ) ) {
-		$tags = array_merge( $tags, $args[ 'tags' ] );
+	// Get additional bookings and their tags values
+	if( ! empty( $args[ 'additional_bookings' ] ) ) {
+		$booking_iud        = $booking_type === 'group' ? 'G' . $booking_id : 'B' . $booking_id;
+		$added_booking_uids = array( $booking_iud );
+		foreach( $args[ 'additional_bookings' ] as $i => $_booking ) {
+			$_booking_id = ! empty( $_booking[ 'id' ] ) ? intval( $_booking[ 'id' ] ) : 0;
+			if( $_booking_id ) {
+				$_booking_type = ! empty( $_booking[ 'type' ] ) ? $_booking[ 'type' ] : 'single';
+				$_booking_iud  = $_booking_type === 'group' ? 'G' . $_booking_id : 'B' . $_booking_id;
+				if( ! in_array( $_booking_iud, $added_booking_uids, true ) ) {
+					$added_booking_uids[] = $_booking_iud;
+					$_booking_object      = ! empty( $args[ 'additional_bookings' ][ $i ][ 'booking' ] ) ? $args[ 'additional_bookings' ][ $i ][ 'booking' ] : ( $_booking_type === 'group' ? bookacti_get_booking_group_by_id( $_booking[ 'id' ], true ) : bookacti_get_booking_by_id( $_booking[ 'id' ], true ) );
+					if( $_booking_object ) {
+						$_tags = bookacti_get_notifications_tags_values( $_booking_object, $_booking_type, $notification, array_diff_key( $args, array( 'additional_bookings' => array() ) ) );
+						$args[ 'additional_bookings' ][ $i ][ 'type' ]    = $_booking_type;
+						$args[ 'additional_bookings' ][ $i ][ 'booking' ] = $_booking_object;
+						$args[ 'additional_bookings' ][ $i ][ 'tags' ]    = ! empty( $_booking[ 'tags' ] ) ? array_merge( $_tags, $_booking[ 'tags' ] ) : $_tags;
+						continue;
+					}
+				}
+			}
+			unset( $args[ 'additional_bookings' ][ $i ] );
+		}
+		$args[ 'additional_bookings' ] = array_values( $args[ 'additional_bookings' ] );
 	}
 	
+	// Get tags values according to the booking data
+	$tags = bookacti_get_notifications_tags_values( $booking, $booking_type, $notification, $args );
+	
 	$notification  = apply_filters( 'bookacti_notification_data', $notification, $tags, $locale, $booking, $booking_type, $args );
+	$args          = apply_filters( 'bookacti_notification_args', $args, $notification, $tags, $locale, $booking, $booking_type );
 	$tags          = apply_filters( 'bookacti_notification_tags', $tags, $notification, $locale, $booking, $booking_type, $args );
 	$allow_sending = apply_filters( 'bookacti_notification_sending_allowed', true, $notification, $tags, $locale, $booking, $booking_type, $args );
 	
@@ -637,7 +724,7 @@ function bookacti_send_notification( $notification_id, $booking_id, $booking_typ
 	
 	// Send email notification
 	$sent = array( 'email' => 0 );
-	$sent_email = bookacti_send_email_notification( $notification, $tags );
+	$sent_email = bookacti_send_email_notification( $notification, $tags, $args );
 	
 	if( $sent_email ) {
 		$sent[ 'email' ] = count( $notification[ 'email' ][ 'to' ] );
@@ -651,25 +738,152 @@ function bookacti_send_notification( $notification_id, $booking_id, $booking_typ
 	return $sent;
 }
 
-// Hook the asynchronous call and send the notification
-add_action( 'bookacti_send_async_notification', 'bookacti_send_notification', 10, 5 );
+
+/**
+ * Merge notifications before they are sent
+ * @since 1.16.0
+ * @param array $planned_notifications
+ * @return array
+ */
+function bookacti_merge_planned_notifications( $planned_notifications ) {
+	$init_planned_notifications = $planned_notifications;
+	
+	if( count( $planned_notifications ) > 1 ) {
+		// First, separate the notifications containing multiple bookings (they will be merged again later)
+		foreach( $planned_notifications as $i => $planned_notification ) {
+			if( empty( $planned_notification[ 'args' ][ 'additional_bookings' ] ) ) { continue; }
+			foreach( $planned_notification[ 'args' ][ 'additional_bookings' ] as $j => $_booking ) {
+				$_booking_type = ! empty( $_booking[ 'type' ] ) ? $_booking[ 'type' ] : 'single';
+				$_booking_id   = ! empty( $_booking[ 'id' ] ) ? intval( $_booking[ 'id' ] ) : 0;
+				$_args         = array_diff_key( $planned_notification[ 'args' ], array( 'additional_bookings' => array() ) );
+				if( ! empty( $_booking[ 'tags' ] ) ) {
+					$_args[ 'tags' ] = $_booking[ 'tags' ];
+				}
+				if( $_booking_id ) {
+					$planned_notifications[] = array( 
+						'notification_id' => $planned_notification[ 'notification_id' ],
+						'booking_id'      => $_booking_id,
+						'booking_type'    => $_booking_type,
+						'args'            => $_args
+					);
+				}
+				unset( $planned_notifications[ $i ][ 'args' ][ 'additional_bookings' ][ $j ] );
+			}
+		}
+		
+		// Get the bookings
+		$notification_ids = $booking_ids = $booking_groups_ids = $notification_uids = array();
+		foreach( $planned_notifications as $i => $planned_notification ) {
+			// Remove duplicates notifications
+			$notification_uid = $planned_notification[ 'notification_id' ] . '_' . $planned_notification[ 'booking_type' ] . '_' . $planned_notification[ 'booking_id' ];
+			if( in_array( $notification_uid, $notification_uids, true ) ) {
+				unset( $planned_notifications[ $i ] );
+				continue;
+			}
+			$notification_uids[] = $notification_uid;
+			
+			$notification_ids[] = $planned_notification[ 'notification_id' ];
+			if( $planned_notification[ 'booking_type' ] === 'group' ) {
+				$booking_groups_ids[] = intval( $planned_notification[ 'booking_id' ] );
+			} else {
+				$booking_ids[] = intval( $planned_notification[ 'booking_id' ] );
+			}
+		}
+		$notification_ids = array_unique( $notification_ids );
+		if( count( $notification_ids ) < count( $planned_notifications ) ) {
+			$bookings       = $booking_ids ? bookacti_get_bookings( bookacti_format_booking_filters( array( 'in__booking_id' => $booking_ids ) ) ) : array();
+			$booking_groups = $booking_groups_ids ? bookacti_get_booking_groups( bookacti_format_booking_filters( array( 'in__booking_group_id' => $booking_groups_ids ) ) ) : array();
+			
+			$notifications_to_merge = array();
+			foreach( $planned_notifications as $i => $planned_notification ) {
+				$booking_id      = $planned_notification[ 'booking_id' ];
+				$notification_id = $planned_notification[ 'notification_id' ];
+				$booking         = $planned_notification[ 'booking_type' ] === 'group' && isset( $booking_groups[ $booking_id ] ) ? $booking_groups[ $booking_id ] : ( $planned_notification[ 'booking_type' ] === 'single' && isset( $bookings[ $booking_id ] ) ? $bookings[ $booking_id ] : array() );
+				if( ! $booking ) { continue; }
+				if( substr( $notification_id, 0, 6 ) === 'admin_' ) {
+					$user_id = 'admin'; // Always merge notifications sent to the administrators
+				} else {
+					$user_id = is_numeric( $booking->user_id ) ? intval( $booking->user_id ) : $booking->user_id;
+					if( is_email( $booking->user_id ) ) {
+						$user = get_user_by( 'email', $booking->user_id );
+						if( $user ) {
+							$user_id = intval( $user->ID );
+						}
+					}
+				}
+				if( ! isset( $notifications_to_merge[ $notification_id . $user_id ] ) ) {
+					$notifications_to_merge[ $notification_id . $user_id ] = array();
+				}
+				$notifications_to_merge[ $notification_id . $user_id ][] = $i;
+			}
+			
+			if( $notifications_to_merge ) {
+				foreach( $notifications_to_merge as $planned_notifications_keys ) {
+					if( count( $planned_notifications_keys ) < 2 ) { continue; }
+					$merged_notification = array();
+					foreach( $planned_notifications_keys as $i => $key ) {
+						if( $i === 0 ) {
+							$merged_notification = $planned_notifications[ $key ];
+							unset( $planned_notifications[ $key ] );
+							continue;
+						}
+						
+						$booking_id   = $planned_notifications[ $key ][ 'booking_id' ];
+						$booking_type = $planned_notifications[ $key ][ 'booking_type' ];
+						$booking      = $booking_type === 'group' && isset( $booking_groups[ $booking_id ] ) ? $booking_groups[ $booking_id ] : ( $planned_notification[ 'booking_type' ] === 'single' && isset( $bookings[ $booking_id ] ) ? $bookings[ $booking_id ] : array() );
+						if( empty( $merged_notification[ 'args' ][ 'additional_bookings' ] ) ) {
+							$merged_notification[ 'args' ][ 'additional_bookings' ] = array();
+						}
+						
+						$merged_notification[ 'args' ][ 'additional_bookings' ][] = array(
+							'id'      => $booking_id,
+							'type'    => $booking_type,
+							'booking' => $booking,
+							'tags'    => isset( $planned_notifications[ $key ][ 'args' ][ 'tags' ] ) ? $planned_notifications[ $key ][ 'args' ][ 'tags' ] : array()
+						);
+						
+						unset( $planned_notifications[ $key ] );
+					}
+					$planned_notifications[] = $merged_notification;
+				}
+			}
+		}
+	}
+	
+	return apply_filters( 'bookacti_planned_notifications_merged', $planned_notifications, $init_planned_notifications );
+}
 
 
 /**
  * Send an email notification
  * @since 1.2.0
- * @version 1.14.3
+ * @version 1.16.0
  * @param array $notification
  * @param array $tags
+ * @param array $args
  * @return boolean
  */
-function bookacti_send_email_notification( $notification, $tags = array() ) {
+function bookacti_send_email_notification( $notification, $tags = array(), $args = array() ) {
 	// Do not send email notification if it is deactivated
 	if( empty( $notification[ 'active' ] ) || empty( $notification[ 'email' ][ 'active' ] ) ) { return false; }
 	
 	$to      = ! empty( $notification[ 'email' ][ 'to' ] ) ? $notification[ 'email' ][ 'to' ] : array();
 	$subject = ! empty( $notification[ 'email' ][ 'subject' ] ) ? str_replace( array_keys( $tags ), array_values( $tags ), $notification[ 'email' ][ 'subject' ] ) : '';
-	$message = ! empty( $notification[ 'email' ][ 'message' ] ) ? wpautop( str_replace( array_keys( $tags ), array_values( $tags ), $notification[ 'email' ][ 'message' ] ) ) : '';
+	$message = ! empty( $notification[ 'email' ][ 'message' ] ) ? $notification[ 'email' ][ 'message' ] : '';
+	
+	// Process booking loops
+	$bookings_to_loop = array_merge( array( array( 'tags' => array_merge( $tags, array( '{booking_list}' => '{_booking_list}', '{booking_list_raw}' => '{_booking_list_raw}' ) ) ) ), ! empty( $args[ 'additional_bookings' ] ) ? $args[ 'additional_bookings' ] : array() );
+	while( $per_booking_content = bookacti_get_string_between( $message, '{for_each_booking}', '{/for_each_booking}' ) ) {
+		$per_booking_content_done = '';
+		foreach( $bookings_to_loop as $_booking ) {
+			if( empty( $_booking[ 'tags' ] ) ) { continue; }
+			$per_booking_content_done .= str_replace( array_keys( $_booking[ 'tags' ] ), array_values( $_booking[ 'tags' ] ), $per_booking_content );
+		}
+		$message = str_replace( '{for_each_booking}' . $per_booking_content . '{/for_each_booking}', $per_booking_content_done, $message );
+	}
+	
+	// Process main booking tags
+	$message = str_replace( array_keys( $tags ), array_values( $tags ), $message );
 	
 	// Do shortcodes
 	while( $shortcode = bookacti_get_string_between( $message, '{shortcode}', '{/shortcode}' ) ) {
@@ -686,7 +900,7 @@ function bookacti_send_email_notification( $notification, $tags = array() ) {
 	$email_data = apply_filters( 'bookacti_email_notification_data', array(
 		'to'          => $to,
 		'subject'     => $subject,
-		'message'     => $message,
+		'message'     => wpautop( $message ),
 		'headers'     => $headers,
 		'attachments' => array()
 	), $notification, $tags );
@@ -833,18 +1047,95 @@ function bookacti_send_email( $to, $subject, $message, $headers, $attachments = 
 
 
 /**
+ * Send booking status changes notification
+ * @since 1.16.0
+ * @param string $status
+ * @param object $booking
+ * @param object $old_booking
+ * @param string $send_to
+ * @param array $notification_args
+ */
+function bookacti_send_booking_status_change_notification( $status, $booking, $old_booking, $send_to = 'both', $notification_args = array() ) {
+	$send_to           = apply_filters( 'bookacti_booking_status_change_notification_recipient', $send_to && in_array( $send_to, array( 'both', 'customer', 'admin' ), true ) ? $send_to : 'both', $status, $booking, $old_booking );
+	$notification_args = apply_filters( 'bookacti_booking_status_change_notification_args', $notification_args, $status, $booking, $old_booking, $send_to );
+	
+	if( $send_to === 'customer' || $send_to === 'both' ) {
+		bookacti_send_notification( 'customer_' . $status . '_booking', $booking->id, 'single', $notification_args );
+	}
+	if( $send_to === 'admin' || $send_to === 'both' ) {
+		bookacti_send_notification( 'admin_' . $status . '_booking', $booking->id, 'single', $notification_args );
+	}
+	
+	do_action( 'bookacti_booking_status_change_notification_sent', $status, $booking, $old_booking, $send_to, $notification_args );
+}
+
+
+/**
+ * Send booking group status changes notification
+ * @since 1.16.0
+ * @param string $status
+ * @param object $booking_group
+ * @param object $old_booking_group
+ * @param string $send_to
+ * @param array $notification_args
+ */
+function bookacti_send_booking_group_status_change_notification( $status, $booking_group, $old_booking_group, $send_to = 'both', $notification_args = array() ) {
+	$send_to           = apply_filters( 'bookacti_booking_group_status_change_notification_recipient', $send_to && in_array( $send_to, array( 'both', 'customer', 'admin' ), true ) ? $send_to : 'both', $status, $booking_group, $old_booking_group );
+	$notification_args = apply_filters( 'bookacti_booking_group_status_change_notification_args', $notification_args, $status, $booking_group, $old_booking_group, $send_to );
+	
+	if( $send_to === 'customer' || $send_to === 'both' ) {
+		bookacti_send_notification( 'customer_' . $status . '_booking', $booking_group->id, 'group', $notification_args );
+	}
+	if( $send_to === 'admin' || $send_to === 'both' ) {
+		bookacti_send_notification( 'admin_' . $status . '_booking', $booking_group->id, 'group', $notification_args );
+	}
+	
+	do_action( 'bookacti_booking_group_status_change_notification_sent', $status, $booking_group, $old_booking_group, $send_to, $notification_args );
+}
+
+
+/**
+ * Send a notification to admin and customer when a booking is rescheduled
+ * @since 1.16.0 (was bookacti_send_notification_when_booking_is_rescheduled)
+ * @param object $booking
+ * @param object $old_booking
+ * @param string $send_to
+ */
+function bookacti_send_booking_rescheduled_notification( $booking, $old_booking, $send_to = 'both' ) {
+	$send_to           = apply_filters( 'bookacti_reschedule_notification_recipient', $send_to && in_array( $send_to, array( 'both', 'customer', 'admin' ), true ) ? $send_to : 'both', $booking, $old_booking );
+	$notification_args = apply_filters( 'bookacti_booking_rescheduled_notification_args', array( 
+		'tags' => array(
+			'{booking_old_start_raw}' => $old_booking->event_start,
+			'{booking_old_end_raw}'   => $old_booking->event_end
+		)
+	), $booking, $old_booking, $send_to );
+	
+	if( $send_to === 'customer' || $send_to === 'both' ) {
+		bookacti_send_notification( 'customer_rescheduled_booking', $booking->id, 'single', $notification_args );
+	}
+	if( $send_to === 'admin' || $send_to === 'both' ) {
+		bookacti_send_notification( 'admin_rescheduled_booking', $booking->id, 'single', $notification_args );
+	}
+	
+	do_action( 'bookacti_booking_rescheduled_notification_sent', $booking, $old_booking, $send_to, $notification_args );
+}
+
+
+/**
  * Send a notification when an event dates change to the customers who booked it, once per event per user, for future bookings only
  * @since 1.14.1 (was bookacti_send_event_rescheduled_notifications)
+ * @version 1.16.0
  * @param object $old_event
  * @param array $old_bookings
  * @param int $delta_seconds_start
  * @param int $delta_seconds_end
  * @param boolean $send_notifications
+ * @return array
  */
 function bookacti_maybe_send_event_rescheduled_notifications( $old_event, $old_bookings = array(), $delta_seconds_start = 0, $delta_seconds_end = 0, $send_notifications = true ) {
 	$timezone = bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' );
-	$now_dt = new DateTime( 'now', new DateTimeZone( $timezone ) );
-	$from = $old_event->repeat_freq && $old_event->repeat_freq !== 'none' ? $now_dt->format( 'Y-m-d H:i:s' ) : '';
+	$now_dt   = new DateTime( 'now', new DateTimeZone( $timezone ) );
+	$from     = $old_event->repeat_freq && $old_event->repeat_freq !== 'none' ? $now_dt->format( 'Y-m-d H:i:s' ) : '';
 	
 	// If $old_bookings is set, retrieve only the given bookings, if they were not already cancelled
 	// else retrieve all cancelled bookings of the given event
@@ -856,12 +1147,13 @@ function bookacti_maybe_send_event_rescheduled_notifications( $old_event, $old_b
 	// Get bookings
 	$bookings_filters = bookacti_format_booking_filters( $bookings_filters );
 	$bookings = bookacti_get_bookings( $bookings_filters );
-	if( ! $bookings ) { return; }
+	if( ! $bookings ) { return array(); }
 	
 	// If there are a lot of scheduled notifications to send, this operation can take a while
 	// So we need to increase the max_execution_time and the memory_limit
 	bookacti_increase_max_execution_time( 'send_event_rescheduled_notifications' );
 	
+	$updated = array( 'bookings' => array() );
 	foreach( $bookings as $booking_id => $booking ) {
 		$old_booking = isset( $old_bookings[ $booking_id ] ) ? $old_bookings[ $booking_id ] : $booking;
 		
@@ -872,27 +1164,51 @@ function bookacti_maybe_send_event_rescheduled_notifications( $old_event, $old_b
 			$delta_seconds_start_di = new DateInterval( 'PT' . abs( $delta_seconds_start ). 'S' );
 			$delta_seconds_end_di   = new DateInterval( 'PT' . abs( $delta_seconds_end ). 'S' );
 			$delta_seconds_start_di->invert = $delta_seconds_start > 0 ? 1 : 0;
-			$delta_seconds_end_di->invert = $delta_seconds_end > 0 ? 1 : 0;
+			$delta_seconds_end_di->invert   = $delta_seconds_end > 0 ? 1 : 0;
 			$old_booking_start_dt->add( $delta_seconds_start_di );
 			$old_booking_end_dt->add( $delta_seconds_end_di );
 			$old_booking->event_start = $old_booking_start_dt->format( 'Y-m-d H:i:s' );
-			$old_booking->event_end = $old_booking_end_dt->format( 'Y-m-d H:i:s' );
+			$old_booking->event_end   = $old_booking_end_dt->format( 'Y-m-d H:i:s' );
+			$old_bookings[ $booking_id ] = $old_booking;
 		}
 		
-		$send = apply_filters( 'bookacti_send_event_rescheduled_notification', $send_notifications, $booking, $old_event, $old_booking, $delta_seconds_start, $delta_seconds_end );
+		$send = apply_filters( 'bookacti_send_event_rescheduled_notification', $send_notifications, $booking, $old_booking, $old_event, $delta_seconds_start, $delta_seconds_end );
 		
-		do_action( 'bookacti_booking_rescheduled', $booking, $old_booking, array( 'is_admin' => true, 'send_notifications' => $send, 'send_to' => 'customer' ) );
-		
-		if( $send ) {
-			do_action( 'bookacti_event_rescheduled_notification_sent', $booking, $old_event, $old_booking, $delta_seconds_start, $delta_seconds_end );
+		$updated[ 'bookings' ][ $booking_id ] = array(
+			'old_event_id'      => $old_booking->event_id,
+			'new_event_id'      => $booking->event_id,
+			'old_event_start'   => $old_booking->event_start,
+			'new_event_start'   => $booking->event_start,
+			'old_event_end'     => $old_booking->event_end,
+			'new_event_end'     => $booking->event_end,
+			'notification_sent' => $send
+		);
+	}
+	
+	$updated = apply_filters( 'bookacti_bookings_rescheduled', array(), array( 'bookings' => $old_bookings, 'booking_groups' => array(), 'groups_bookings' => array() ), array( 'bookings' => $bookings, 'booking_groups' => array(), 'groups_bookings' => array() ) );
+	
+	// Send notifications
+	if( $send_notifications ) {
+		foreach( $updated as $booking_id => $booking_updated_data ) {
+			if( empty( $booking_updated_data[ 'notification_sent' ] )
+			||  empty( $old_bookings[ $booking_id ] )
+			||  empty( $bookings[ $booking_id ] ) ) { continue; }
+			
+			$old_booking = $old_bookings[ $booking_id ];
+			$new_booking = $bookings[ $booking_id ];
+			
+			bookacti_send_booking_rescheduled_notification( $new_booking, $booking, 'customer' );
 		}
 	}
+	
+	return $updated;
 }
 
 
 /**
  * Send a notification when an event is deleted to the customers who booked it
  * @since 1.14.0 (was bookacti_send_event_cancelled_notifications)
+ * @version 1.16.0
  * @param object $event
  * @param array $old_bookings
  * @param boolean $send_notitifications
@@ -916,7 +1232,7 @@ function bookacti_maybe_send_event_cancelled_notifications( $event, $old_booking
 	}
 	
 	// Get bookings
-	$bookings_filters = bookacti_format_booking_filters( $bookings_filters );
+	$bookings_filters = bookacti_format_booking_filters( array_merge( $bookings_filters, array( 'fetch_meta' => true ) ) );
 	$bookings = bookacti_get_bookings( $bookings_filters );
 	if( ! $bookings ) { return; }
 	
@@ -926,12 +1242,13 @@ function bookacti_maybe_send_event_cancelled_notifications( $event, $old_booking
 
 	foreach( $bookings as $booking ) {
 		$old_booking = ! empty( $old_bookings[ $booking->id ] ) ? $old_bookings[ $booking->id ] : $booking;
+		if( $old_booking->state === $booking->state ) { continue; }
+		
+		do_action( 'bookacti_booking_status_changed', $booking->state, $old_booking );
 
 		$send = apply_filters( 'bookacti_send_event_cancelled_notification', $send_notitifications, $booking, $event, $old_booking );
-		
-		do_action( 'bookacti_booking_state_changed', $old_booking, 'cancelled', array( 'is_admin' => true, 'send_notifications' => $send, 'send_to' => 'customer' ) );
-		
 		if( $send ) {
+			bookacti_send_booking_status_change_notification( $booking->state, $booking, $old_booking, 'customer' );
 			do_action( 'bookacti_event_cancelled_notification_sent', $event, $booking, $old_booking );
 		}
 	}
@@ -941,10 +1258,13 @@ function bookacti_maybe_send_event_cancelled_notifications( $event, $old_booking
 /**
  * Send a notification when an event is deleted to the customers who booked it
  * @since 1.14.1 (was bookacti_send_group_of_events_cancelled_notifications)
+ * @version 1.16.0
  * @param array $group_of_events
  * @param array $old_booking_groups
+ * @param array $old_groups_bookings
+ * @param bool $send_notifications
  */
-function bookacti_maybe_send_group_of_events_cancelled_notifications( $group_of_events, $old_booking_groups = array(), $send_notifications = true ) {
+function bookacti_maybe_send_group_of_events_cancelled_notifications( $group_of_events, $old_booking_groups = array(), $old_groups_bookings = array(), $send_notifications = true ) {
 	// If $old_booking_groups is set, retrieve only the given booking groups, if they were not already cancelled
 	// else retrieve all cancelled booking groups of the given event group
 	$booking_group_ids = array();
@@ -958,7 +1278,7 @@ function bookacti_maybe_send_group_of_events_cancelled_notifications( $group_of_
 	}
 	
 	// Get booking groups
-	$booking_groups_filters = bookacti_format_booking_filters( $booking_groups_filters );
+	$booking_groups_filters = bookacti_format_booking_filters( array_merge( $booking_groups_filters, array( 'fetch_meta' => true ) ) );
 	$booking_groups = bookacti_get_booking_groups( $booking_groups_filters );
 	if( ! $booking_groups ) { return; }
 	
@@ -967,14 +1287,16 @@ function bookacti_maybe_send_group_of_events_cancelled_notifications( $group_of_
 	bookacti_increase_max_execution_time( 'send_group_of_events_cancelled_notifications' );
 	
 	foreach( $booking_groups as $booking_group ) {
-		$old_booking_group = ! empty( $old_booking_groups[ $booking_group->id ] ) ? $old_booking_groups[ $booking_group->id ] : $booking_group;
+		$old_booking_group  = ! empty( $old_booking_groups[ $booking_group->id ] ) ? $old_booking_groups[ $booking_group->id ] : $booking_group;
+		$old_group_bookings = ! empty( $old_groups_bookings[ $booking_group->id ] ) ? $old_groups_bookings[ $booking_group->id ] : array();
+		if( $old_booking_group->state === $booking_group->state ) { continue; }
 		
-		$send = apply_filters( 'bookacti_send_group_of_events_cancelled_notification', $send_notifications, $booking_group, $group_of_events, $old_booking_group );
+		do_action( 'bookacti_booking_group_status_changed', $booking_group->state, $old_booking_group, $old_group_bookings );
 		
-		do_action( 'bookacti_booking_group_state_changed', $booking_group->id, array(), 'cancelled', array( 'is_admin' => true, 'send_notifications' => $send, 'send_to' => 'customer' ) );
-		
+		$send = apply_filters( 'bookacti_send_group_of_events_cancelled_notification', $send_notifications, $booking_group, $group_of_events, $old_booking_group, $old_group_bookings );
 		if( $send ) {
-			do_action( 'bookacti_group_of_events_cancelled_notification_sent', $group_of_events, $booking_group, $old_booking_group );
+			bookacti_send_booking_group_status_change_notification( $booking_group->state, $booking_group, $old_booking_group, 'customer' );
+			do_action( 'bookacti_group_of_events_cancelled_notification_sent', $group_of_events, $booking_group, $old_booking_group, $old_group_bookings );
 		}
 	}
 }

@@ -129,16 +129,15 @@ function bookacti_increase_max_execution_time( $context = '' ) {
 /**
  * Get a substring between two specific strings
  * @since 1.7.10
+ * @version 1.16.0
  * @param string $string
  * @param string $start
  * @param string $end
  * @return string
  */
 function bookacti_get_string_between( $string, $start, $end ) {
-	$string = ' ' . $string;
 	$ini = strpos( $string, $start );
-
-	if( $ini == 0 ) { return ''; }
+	if( $ini === false ) { return ''; }
 
 	$ini += strlen( $start );
 	$len = strpos( $string, $end, $ini ) - $ini;
@@ -151,21 +150,22 @@ function bookacti_get_string_between( $string, $start, $end ) {
 /**
  * Encrypt a string
  * @since 1.7.15
- * @version 1.12.7
+ * @version 1.16.0
  * @param string $string
+ * @param $context $string
  * @return string
  */
-function bookacti_encrypt( $string ) {
+function bookacti_encrypt( $string, $context = '' ) {
 	$secret_key = get_option( 'bookacti_secret_key' );
-	$secret_iv = get_option( 'bookacti_secret_iv' );
+	$secret_iv  = get_option( 'bookacti_secret_iv' );
 
 	if( ! $secret_key ) { $secret_key = md5( microtime().rand() ); update_option( 'bookacti_secret_key', $secret_key ); }
-	if( ! $secret_iv )  { $secret_iv = md5( microtime().rand() ); update_option( 'bookacti_secret_iv', $secret_iv ); }
+	if( ! $secret_iv )  { $secret_iv  = md5( microtime().rand() ); update_option( 'bookacti_secret_iv', $secret_iv ); }
 
 	$output = $string;
 	$encrypt_method = 'AES-256-CBC';
-	$key = hash( 'sha256', $secret_key );
-	$iv = substr( hash( 'sha256', $secret_iv ), 0, 16 );
+	$key = hash( 'sha256', $context . $secret_key );
+	$iv  = substr( hash( 'sha256', $context . $secret_iv ), 0, 16 );
 
 	if( function_exists( 'openssl_encrypt' ) && version_compare( phpversion(), '5.3.3', '>=' ) ) {
 		$output = base64_encode( openssl_encrypt( $string, $encrypt_method, $key, 0, $iv ) );
@@ -180,19 +180,21 @@ function bookacti_encrypt( $string ) {
 /**
  * Dencrypt a string
  * @since 1.7.15
+ * @version 1.16.0
  * @param string $string
+ * @param string $context
  * @return string
  */
-function bookacti_decrypt( $string ) {
+function bookacti_decrypt( $string, $context = '' ) {
 	$secret_key = get_option( 'bookacti_secret_key' );
-	$secret_iv = get_option( 'bookacti_secret_iv' );
+	$secret_iv  = get_option( 'bookacti_secret_iv' );
 
 	if( ! $secret_key || ! $secret_iv ) { return $string; }
 
 	$output = $string;
 	$encrypt_method = 'AES-256-CBC';
-	$key = hash( 'sha256', $secret_key );
-	$iv = substr( hash( 'sha256', $secret_iv ), 0, 16 );
+	$key = hash( 'sha256', $context . $secret_key );
+	$iv  = substr( hash( 'sha256', $context . $secret_iv ), 0, 16 );
 
 	if( function_exists( 'openssl_decrypt' ) && version_compare( phpversion(), '5.3.3', '>=' ) ) {
 		$output = openssl_decrypt( base64_decode( $string ), $encrypt_method, $key, 0, $iv );
@@ -392,7 +394,7 @@ function bookacti_is_db_version_outdated() {
 /**
  * Get the variables used with javascript
  * @since 1.8.0
- * @version 1.15.16
+ * @version 1.16.0
  * @return array
  */
 function bookacti_get_js_variables() {
@@ -438,10 +440,7 @@ function bookacti_get_js_variables() {
 		// VARIABLES
 		'ajaxurl'                            => admin_url( 'admin-ajax.php' ),
 		'nonce_query_select2_options'        => wp_create_nonce( 'bookacti_query_select2_options' ),
-		'nonce_cancel_booking'               => wp_create_nonce( 'bookacti_cancel_booking' ),
-		'nonce_refund_booking'               => wp_create_nonce( 'bookacti_refund_booking' ),
-		'nonce_reschedule_booking'           => wp_create_nonce( 'bookacti_reschedule_booking' ),
-
+		
 		'fullcalendar_timezone'              => 'UTC',
 		'fullcalendar_locale'                => bookacti_convert_wp_locale_to_fc_locale( bookacti_get_current_lang_code( true ) ),
 		'current_lang_code'                  => bookacti_get_current_lang_code(),
@@ -500,12 +499,15 @@ function bookacti_get_js_variables() {
 	);
 	
 	// Strings for backend only
-	if( is_admin() ) { 
+	if( is_admin() ) {
 		$bookacti_localized_backend = array(
 			'nonce_dismiss_5stars_rating_notice' => wp_create_nonce( 'bookacti_dismiss_5stars_rating_notice' ),
 			'admin_url'                          => admin_url(),
 			'is_qtranslate'                      => bookacti_get_translation_plugin() === 'qtranslate',
 			'utc_offset'                         => intval( $timezone->getOffset( $current_datetime_utc ) ),
+			'nb_selected'                        => esc_html__( '{nb} selected', 'booking-activities' ),
+			'select_all'                         => esc_html__( 'Select all {nb}', 'booking-activities' ),
+			'unselect_all'                       => esc_html__( 'Clear selection', 'booking-activities' ),
 			'create_new'                         => esc_html__( 'Create new', 'booking-activities' ),
 			'edit_id'                            => esc_html_x( 'id', 'An id is a unique identification number', 'booking-activities' ),
 			'dialog_button_generate_link'        => esc_html__( 'Generate export link', 'booking-activities' ),
@@ -597,7 +599,7 @@ function bookacti_get_active_add_ons( $prefix = '', $exclude = array( 'balau' ) 
 /**
  * Get add-on data by prefix
  * @since 1.7.14
- * @version 1.15.17
+ * @version 1.16.0
  * @param string $prefix
  * @param array $exclude
  * @return array
@@ -610,7 +612,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-display-pack', 
 			'end_of_life' => '', 
 			'download_id' => 482,
-			'min_version' => '1.4.29'
+			'min_version' => '1.5.2'
 		),
 		'banp' => array( 
 			'title'       => 'Notification Pack', 
@@ -618,7 +620,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-notification-pack', 
 			'end_of_life' => '', 
 			'download_id' => 1393,
-			'min_version' => '1.3.1'
+			'min_version' => '1.3.3'
 		),
 		'bapap' => array( 
 			'title'       => 'Prices and Credits', 
@@ -626,7 +628,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-prices-and-credits', 
 			'end_of_life' => '', 
 			'download_id' => 438,
-			'min_version' => '1.8.1'
+			'min_version' => '1.8.7'
 		),
 		'baaf' => array( 
 			'title'       => 'Advanced Forms', 
@@ -634,7 +636,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-advanced-forms', 
 			'end_of_life' => '', 
 			'download_id' => 2705,
-			'min_version' => '1.4.0'
+			'min_version' => '1.4.1'
 		),
 		'baofc' => array( 
 			'title'	      => 'Order for Customers', 
@@ -650,7 +652,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-resource-availability', 
 			'end_of_life' => '', 
 			'download_id' => 29249,
-			'min_version' => '1.1.0'
+			'min_version' => '1.1.2'
 		),
 		'balau' => array( 
 			'title'       => 'Licenses & Updates', 
@@ -715,17 +717,21 @@ function bookacti_get_active_locales( $with_locale = true ) {
 
 
 /**
- * Detect current language with Qtranslate-XT or WPML
- * @version 1.14.0
+ * Get current site language
+ * @version 1.16.0
  * @param boolean $with_locale
  * @return string 
  */
 function bookacti_get_current_lang_code( $with_locale = false ) {
-	$locale    = get_locale();
-	$lang_code = $with_locale ? $locale : substr( $locale, 0, strpos( $locale, '_' ) );
+	$locale     = get_locale();
+	$locale_pos = strpos( $locale, '_' );
+	$lang_code  = $with_locale || $locale_pos === false ? $locale : substr( $locale, 0, $locale_pos );
 	
 	$lang_code = apply_filters( 'bookacti_current_lang_code', $lang_code, $with_locale );
-	if( ! $lang_code ) { $lang_code = $with_locale ? 'en_US' : 'en'; }
+	
+	if( ! $lang_code ) { 
+		$lang_code = $with_locale ? 'en_US' : 'en';
+	}
 	
 	return $lang_code;
 }
@@ -1465,7 +1471,7 @@ function bookacti_help_tip( $tip, $echo = true ){
 /**
  * Create a user selectbox
  * @since 1.3.0
- * @version 1.15.4
+ * @version 1.16.0
  * @param array $raw_args
  * @return string|void
  */
@@ -1477,10 +1483,11 @@ function bookacti_display_user_selectbox( $raw_args ) {
 		'selected' => array(), 'multiple' => 0, 'name' => 'user_id', 'class' => '', 'id' => '',
 		'include' => array(), 'exclude' => array(),
 		'role' => array(), 'role__in' => array(), 'role__not_in' => array(),
+		'no_account' => false,
 		'meta' => true, 'meta_single' => true,
 		'orderby' => 'display_name', 'order' => 'ASC'
 	);
-
+	
 	$args = apply_filters( 'bookacti_user_selectbox_args', wp_parse_args( $raw_args, $defaults ), $raw_args );
 	
 	$is_allowed = current_user_can( 'list_users' ) || current_user_can( 'edit_users' );
@@ -1488,16 +1495,56 @@ function bookacti_display_user_selectbox( $raw_args ) {
 	$args[ 'class' ] = $args[ 'ajax' ] ? 'bookacti-select2-ajax ' . trim( $args[ 'class' ] ) : ( $args[ 'select2' ] ? 'bookacti-select2-no-ajax ' . trim( $args[ 'class' ] ) : trim( $args[ 'class' ] ) );
 	
 	// Format selected user ids
-	if( ! is_array( $args[ 'selected' ] ) ) { $args[ 'selected' ] = array( $args[ 'selected' ] ); }
+	if( ! is_array( $args[ 'selected' ] ) ) { $args[ 'selected' ] = $args[ 'selected' ] || in_array( $args[ 'selected' ], array( 0, '0' ), true ) ? array( $args[ 'selected' ] ) : array(); }
 	$selected_user_ids = bookacti_ids_to_array( $args[ 'selected' ] );
 	
 	if( $args[ 'ajax' ] && $args[ 'selected' ] && $is_allowed ) {
-		$selected_users = $selected_user_ids ? get_users( array( 'include' => $selected_user_ids ) ) : array();
+		$selected_users = $selected_user_ids ? bookacti_get_users_data( array( 'include' => $selected_user_ids ) ) : array();
 		if( $selected_users ) { $users = $selected_users; }
 	}
 	
 	if( $args[ 'multiple' ] && strpos( $args[ 'name' ], '[]' ) === false ) { $args[ 'name' ] .= '[]'; } 
+	
+	$options = array();
+	if( $users ) {
+		foreach( $users as $user ) {
+			$selected_key = array_search( intval( $user->ID ), $selected_user_ids, true );
+			if( $selected_key !== false ) { unset( $selected_user_ids[ $selected_key ] ); }
+			
+			// Build the option label based on the array
+			$label = '';
+			foreach( $args[ 'option_label' ] as $show ) {
+				// If the key contain "||" display the first not empty value
+				if( strpos( $show, '||' ) !== false ) {
+					$keys = explode( '||', $show );
+					$show = $keys[ 0 ];
+					foreach( $keys as $key ) {
+						if( ! empty( $user->{ $key } ) ) { $show = $key; break; }
+					}
+				}
 
+				// Display the value if the key exists, else display the key as is, as a separator
+				if( isset( $user->{ $show } ) ) {
+					$label .= $user->{ $show };
+				} else {
+					$label .= $show;
+				}
+			}
+			$options[] = array( 'id' => $user->ID, 'text' => $label, 'selected' => $selected_key !== false );
+		}
+	}
+	
+	// Retrieve user emails from bookings made without accounts
+	if( $args[ 'no_account' ] && ! $args[ 'ajax' ] && $is_allowed ) {
+		$bookings = bookacti_get_bookings_without_account( array( 'distinct' => true ) );
+		$booking_emails = array();
+		foreach( $bookings as $booking ) {
+			$options[] = array( 'id' => $booking->user_id, 'text' => $booking->user_id, 'selected' => in_array( $booking->user_id, $args[ 'selected' ], true ) );
+		}
+	}
+	
+	$options = apply_filters( 'bookacti_user_selectbox_options', $options, $args, $raw_args );
+	
 	ob_start();
 	?>
 	<input type='hidden' name='<?php echo $args[ 'name' ]; ?>' value=''/>
@@ -1509,57 +1556,42 @@ function bookacti_display_user_selectbox( $raw_args ) {
 		data-placeholder='<?php echo ! empty( $args[ 'placeholder' ] ) ? esc_attr( $args[ 'placeholder' ] ) : ''; ?>'
 		data-sortable='<?php echo ! empty( $args[ 'sortable' ] ) ? 1 : 0; ?>'
 		data-type='users'
+		data-params='{"no_account":<?php echo ! empty( $args[ 'no_account' ] ) ? 1 : 0; ?>}'
 		<?php if( $args[ 'multiple' ] ) { echo ' multiple'; } ?>>
 		<?php if( ! $args[ 'multiple' ] ) {  ?>
 			<option><!-- Used for the placeholder --></option>
 		<?php
 			}
 			// Keep both numeric and string values
-			$selected_user_ids = array_merge( $selected_user_ids, array_filter( $args[ 'selected' ], 'is_string' ) );
-			
+			foreach( $args[ 'selected' ] as $selected ) {
+				if( $selected && ! is_numeric( $selected ) && is_string( $selected ) ) {
+					$selected_user_ids[] = $selected;
+				}
+			}
 			
 			if( $args[ 'allow_current' ] ) {
 				$selected_key = array_search( 'current', $selected_user_ids, true );
 				if( $selected_key !== false ) { unset( $selected_user_ids[ $selected_key ] ); }
-				
-				?><option value='current' <?php if( $selected_key !== false ) { echo 'selected'; } ?> ><?php esc_html_e( 'Current user', 'booking-activities' ); ?></option><?php
+			?>
+				<option value='current' <?php if( $selected_key !== false ) { echo 'selected'; } ?>><?php esc_html_e( 'Current user', 'booking-activities' ); ?></option>
+			<?php
 			}
 
 			do_action( 'bookacti_add_user_selectbox_options', $args, $users );
 			
-			if( $users ) {
-				foreach( $users as $user ) {
-					$selected_key = array_search( intval( $user->ID ), $selected_user_ids, true );
-					if( $selected_key !== false ) { unset( $selected_user_ids[ $selected_key ] ); }
-					
-					// Build the option label based on the array
-					$label = '';
-					foreach( $args[ 'option_label' ] as $show ) {
-						// If the key contain "||" display the first not empty value
-						if( strpos( $show, '||' ) !== false ) {
-							$keys = explode( '||', $show );
-							$show = $keys[ 0 ];
-							foreach( $keys as $key ) {
-								if( ! empty( $user->{ $key } ) ) { $show = $key; break; }
-							}
-						}
-
-						// Display the value if the key exists, else display the key as is, as a separator
-						if( isset( $user->{ $show } ) ) {
-							$label .= $user->{ $show };
-						} else {
-							$label .= $show;
-						}
-					}
+			if( $options ) {
+				foreach( $options as $option ) {
 				?>
-					<option value='<?php echo $user->ID; ?>' <?php if( $selected_key !== false ) { echo 'selected'; } ?> ><?php echo esc_html( $label ); ?></option>
+					<option value='<?php echo esc_attr( $option[ 'id' ] ); ?>' <?php if( ! empty( $option[ 'selected' ] ) ) { echo 'selected'; } ?>><?php echo esc_html( $option[ 'text' ] ); ?></option>
 				<?php
 				}
 			}
-
+			
 			if( $args[ 'allow_tags' ] && $selected_user_ids ) {
 				foreach( $selected_user_ids as $selected_user_id ) {
-					?><option value='<?php echo esc_attr( $selected_user_id ); ?>' selected><?php echo esc_html( $selected_user_id ); ?></option><?php
+				?>
+					<option value='<?php echo esc_attr( $selected_user_id ); ?>' selected><?php echo esc_html( $selected_user_id ); ?></option>
+				<?php
 				}
 			}
 		?>
@@ -1798,6 +1830,49 @@ function bookacti_substr( $string, $offset = 0, $length = null ) {
 
 
 /**
+ * Array replace recursive, but only for associative arrays
+ * @since 1.16.0
+ * @param array $array
+ * @param array $defaults
+ * @param array $recursive_keys
+ * @return array
+ */
+function bookacti_associative_array_replace_recursive( $array, $defaults, $recursive_keys = array() ) {
+	if( ! is_array( $array ) )    { $array = array(); }
+	if( ! is_array( $defaults ) ) { $defaults = array(); }
+	
+	$merged_array = $array;
+	
+	foreach( $defaults as $key => $default_value ) {
+		// Check if the value and the default value are associative arrays
+		$array_value   = isset( $array[ $key ] ) ? $array[ $key ] : array();
+		$array_keys    = is_array( $array_value ) ? array_keys( $array_value ) : array();
+		$defaults_keys = is_array( $default_value ) ? array_keys( $default_value ) : array();
+		$are_assoc     = $array_keys && $defaults_keys && $defaults_keys !== array_keys( $defaults_keys ) && $array_keys !== array_keys( $array_keys );
+		
+		// Keep the array value, except if it is an associative array
+		if( isset( $array[ $key ] ) && ( ! is_array( $array[ $key ] ) || ! $are_assoc ) ) {
+			continue;
+		}
+		
+		// For associative arrays, add the default value of each missing key
+		if( $are_assoc ) {
+			$parent_keys          = array_merge( $recursive_keys, array( $key ) );
+			$merged_array[ $key ] = bookacti_associative_array_replace_recursive( $array_value, $default_value, $parent_keys );
+			continue;
+		}
+		
+		// Add the default value of the missing key
+		if( ! isset( $array[ $key ] ) ) {
+			$merged_array[ $key ] = $default_value;
+		}
+	}
+	
+	return $merged_array;
+}
+
+
+/**
  * Sort array of arrays with a ['order'] index
  * 
  * @param array $a
@@ -1851,36 +1926,48 @@ function bookacti_sort_events_array_by_dates( $array, $sort_by_end = false, $des
 
 /**
  * Sanitize int ids to array
- * @version 1.15.4
+ * @version 1.16.0
  * @param array|int $ids
+ * @param bool|?callable $filter
  * @return array 
  */
-function bookacti_ids_to_array( $ids ) {
+function bookacti_ids_to_array( $ids, $filter = 'empty' ) {
 	if( is_array( $ids ) ){
-		return array_filter( array_unique( array_map( 'intval', array_filter( $ids, 'is_numeric' ) ) ) );
-	} else if( ! empty( $ids ) ){
-		if( is_numeric( $ids ) && intval( $ids ) ) {
-			return array( intval( $ids ) );
-		}
+		$ids = array_unique( array_map( 'intval', array_filter( $ids, 'is_numeric' ) ) );
+	} else if( ! empty( $ids ) && is_numeric( $ids ) ) {
+		$ids = array( intval( $ids ) );
+	} else {
+		$ids = array();
 	}
-	return array();
+	
+	if( $ids && $filter && is_callable( $filter ) ) {
+		$ids = array_filter( $ids, $filter );
+	}
+	
+	return $ids;
 }
 
 /**
  * Sanitize str ids to array
  * @since 1.8.3
+ * @version 1.16.0
  * @param array|string $ids
  * @return array 
  */
-function bookacti_str_ids_to_array( $ids ) {
+function bookacti_str_ids_to_array( $ids, $filter = 'empty' ) {
 	if( is_array( $ids ) ){
-		return array_filter( array_unique( array_map( 'sanitize_title_with_dashes', $ids ) ) );
-	} else if( ! empty( $ids ) ){
-		if( is_string( $ids ) ) {
-			return array( sanitize_title_with_dashes( $ids ) );
-		}
+		$ids = array_unique( array_map( 'sanitize_title_with_dashes', array_filter( $ids, 'is_string' ) ) );
+	} else if( ! empty( $ids ) && is_string( $ids ) ){
+		$ids = array( sanitize_title_with_dashes( $ids ) );
+	} else {
+		$ids = array();
 	}
-	return array();
+	
+	if( $ids && $filter && is_callable( $filter ) ) {
+		$ids = array_filter( $ids, $filter );
+	}
+	
+	return $ids;
 }
 
 

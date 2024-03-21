@@ -696,7 +696,7 @@ function bookacti_get_available_form_action_triggers() {
 /**
  * Format field data according to its type
  * @since 1.5.0
- * @version 1.15.19
+ * @version 1.16.0
  * @param array|string $raw_field_data
  * @param $context "view" or "edit"
  * @return array
@@ -737,7 +737,7 @@ function bookacti_format_form_field_data( $raw_field_data, $context = 'view' ) {
 		$field_meta[ 'group_categories' ] = $group_categories && is_array( $group_categories ) ? $group_categories : ( $had_group_categories ? array( 'none' ) : array() );
 		
 		$status                  = isset( $raw_field_data[ 'status' ] ) ? ( is_string( $raw_field_data[ 'status' ] ) ? array( $raw_field_data[ 'status' ] ) : $raw_field_data[ 'status' ] ) : $default_meta[ 'status' ];
-		$field_meta[ 'status' ]  = is_array( $status ) ? array_intersect( $status, array_keys( bookacti_get_booking_state_labels() ) ) : $default_meta[ 'status' ];
+		$field_meta[ 'status' ]  = is_array( $status ) ? array_intersect( $status, array_keys( bookacti_get_booking_statuses() ) ) : $default_meta[ 'status' ];
 		$field_meta[ 'user_id' ] = isset( $raw_field_data[ 'user_id' ] ) && is_numeric( $raw_field_data[ 'user_id' ] ) ? intval( $raw_field_data[ 'user_id' ] ) : ( isset( $raw_field_data[ 'user_id' ] ) && in_array( $raw_field_data[ 'user_id' ], array( 0, '0', 'current' ), true ) ? $raw_field_data[ 'user_id' ] : $default_meta[ 'user_id' ] );
 		
 		$field_meta[ 'start' ]    = isset( $raw_field_data[ 'start' ] ) && bookacti_sanitize_date( $raw_field_data[ 'start' ] ) ? bookacti_sanitize_date( $raw_field_data[ 'start' ] ) : $default_meta[ 'start' ];
@@ -902,7 +902,7 @@ function bookacti_format_form_field_data( $raw_field_data, $context = 'view' ) {
 /**
  * Sanitize field data according to its type
  * @since 1.5.0
- * @version 1.15.19
+ * @version 1.16.0
  * @param array|string $raw_field_data
  * @return array
  */
@@ -945,7 +945,7 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 		$field_meta[ 'group_categories' ] = $group_categories && is_array( $group_categories ) ? $group_categories : ( $had_group_categories ? array( 'none' ) : array() );
 		
 		$status                  = isset( $raw_field_data[ 'status' ] ) ? ( is_string( $raw_field_data[ 'status' ] ) ? array( $raw_field_data[ 'status' ] ) : $raw_field_data[ 'status' ] ) : $default_meta[ 'status' ];
-		$field_meta[ 'status' ]  = is_array( $status ) ? array_intersect( $status, array_keys( bookacti_get_booking_state_labels() ) ) : $default_meta[ 'status' ];
+		$field_meta[ 'status' ]  = is_array( $status ) ? array_intersect( $status, array_keys( bookacti_get_booking_statuses() ) ) : $default_meta[ 'status' ];
 		$field_meta[ 'user_id' ] = isset( $raw_field_data[ 'user_id' ] ) && is_numeric( $raw_field_data[ 'user_id' ] ) ? intval( $raw_field_data[ 'user_id' ] ) : ( isset( $raw_field_data[ 'user_id' ] ) && in_array( $raw_field_data[ 'user_id' ], array( 0, '0', 'current' ), true ) ? $raw_field_data[ 'user_id' ] : $default_meta[ 'user_id' ] );
 		
 		$field_meta[ 'start' ]    = isset( $raw_field_data[ 'start' ] ) && bookacti_sanitize_date( $raw_field_data[ 'start' ] ) ? bookacti_sanitize_date( $raw_field_data[ 'start' ] ) : $default_meta[ 'start' ];
@@ -1416,16 +1416,16 @@ function bookacti_validate_form_fields( $form_id, $fields_data = array() ) {
 /**
  * Validate reschedule form fields according to values received with $_POST
  * @since 1.15.6
- * @param int $form_id
- * @param array $fields_data
+ * @version 1.16.0
+ * @param array $bookings
  * @return array
  */
-function bookacti_validate_reschedule_form_fields( $booking = array() ) {
+function bookacti_validate_reschedule_form_fields( $bookings = array() ) {
 	$validated = array( 
 		'status'   => 'success',
 		'messages' => array()
 	);
-	return apply_filters( 'bookacti_validate_reschedule_form_fields', $validated, $booking );
+	return apply_filters( 'bookacti_validate_reschedule_form_fields', $validated, $bookings );
 }
 
 
@@ -1685,25 +1685,34 @@ function bookacti_get_register_fields_default_data( $context = 'view' ) {
 // FORM LIST
 
 /**
+ * Get Default form filters
+ * @since 1.16.0
+ * @return array
+ */
+function bookacti_get_default_form_filters() {
+	return apply_filters( 'bookacti_default_form_filters', array(
+		'id'       => array(), 
+		'title'    => '', 
+		'status'   => array(), 
+		'user_id'  => 0, 
+		'active'   => false,
+		'order_by' => array( 'id' ), 
+		'order'    => 'desc',
+		'offset'   => 0,
+		'per_page' => 0
+	));
+}
+
+
+/**
  * Format form filters
  * @since 1.5.0
- * @version 1.12.3
+ * @version 1.16.0
  * @param array $filters 
  * @return array
  */
 function bookacti_format_form_filters( $filters = array() ) {
-
-	$default_filters = apply_filters( 'bookacti_default_form_filters', array(
-		'id'			=> array(), 
-		'title'			=> '', 
-		'status'		=> array(), 
-		'user_id'		=> 0, 
-		'active'		=> false,
-		'order_by'		=> array( 'id' ), 
-		'order'			=> 'desc',
-		'offset'		=> 0,
-		'per_page'		=> 0
-	));
+	$default_filters = bookacti_get_default_form_filters();
 
 	$formatted_filters = array();
 	foreach( $default_filters as $filter => $default_value ) {
@@ -1717,21 +1726,24 @@ function bookacti_format_form_filters( $filters = array() ) {
 
 		// Else, check if its value is correct, or use default
 		if( in_array( $filter, array( 'id' ), true ) ) {
-			if( is_numeric( $current_value ) )	{ $current_value = array( $current_value ); }
-			if( ! is_array( $current_value ) )	{ $current_value = $default_value; }
+			if( is_numeric( $current_value ) ) { $current_value = array( $current_value ); }
+			if( ! is_array( $current_value ) ) { $current_value = $default_value; }
 			else if( ( $i = array_search( 'all', $current_value, true ) ) !== false ) { unset( $current_value[ $i ] ); }
+			$current_value = array_values( bookacti_ids_to_array( $current_value, false ) );
 		
 		} else if( in_array( $filter, array( 'title' ), true ) ) {
 			if( ! is_string( $current_value ) ) { $current_value = $default_value; }
+			$current_value = sanitize_text_field( $current_value );
 		
 		} else if( in_array( $filter, array( 'status' ), true ) ) {
-			if( is_string( $current_value ) )	{ $current_value = array( $current_value ); }
-			if( ! is_array( $current_value ) )	{ $current_value = $default_value; }
+			if( is_string( $current_value ) )  { $current_value = array( $current_value ); }
+			if( ! is_array( $current_value ) ) { $current_value = $default_value; }
 			else if( ( $i = array_search( 'all', $current_value, true ) ) !== false ) { unset( $current_value[ $i ] ); }
+			$current_value = array_values( bookacti_str_ids_to_array( $current_value ) );
 			
 		} else if( in_array( $filter, array( 'active' ), true ) ) {
-				 if( in_array( $current_value, array( true, 'true', 1, '1' ), true ) )	{ $current_value = 1; }
-			else if( in_array( $current_value, array( 0, '0' ), true ) ){ $current_value = 0; }
+				 if( in_array( $current_value, array( true, 'true', 1, '1' ), true ) ) { $current_value = 1; }
+			else if( in_array( $current_value, array( 0, '0' ), true ) ) { $current_value = 0; }
 			if( ! in_array( $current_value, array( 0, 1 ), true ) ) { $current_value = $default_value; }
 		
 		} else if( $filter === 'order_by' ) {
@@ -1743,14 +1755,15 @@ function bookacti_format_form_filters( $filters = array() ) {
 				if( ! in_array( $current_value, $sortable_columns, true ) ) { $current_value = $default_value; }
 				else { $current_value = array( $current_value ); }
 			}
-			if( ! is_array( $current_value ) )				{ $current_value = $default_value; }
+			if( ! is_array( $current_value ) || ! $current_value ) { $current_value = $default_value; }
+			$current_value = array_values( bookacti_str_ids_to_array( $current_value ) );
 			
 		} else if( $filter === 'order' ) {
 			if( ! in_array( $current_value, array( 'asc', 'desc' ), true ) ) { $current_value = $default_value; }
 
 		} else if( in_array( $filter, array( 'user_id', 'offset', 'per_page' ), true ) ) {
-			if( ! is_numeric( $current_value ) ){ $current_value = $default_value; }
-
+			if( ! is_numeric( $current_value ) ) { $current_value = $default_value; }
+			$current_value = intval( $current_value );
 		}
 		
 		$formatted_filters[ $filter ] = $current_value;
@@ -1897,15 +1910,15 @@ function bookacti_display_calendar_field_help() {
 /**
  * Check if user is allowed to manage form
  * @since 1.5.0
- * @version 1.7.17
+ * @version 1.16.0
  * @param int $form_id
  * @param int $user_id
  * @return boolean
  */
 function bookacti_user_can_manage_form( $form_id, $user_id = false ) {
 	$user_can_manage_form = false;
-	$bypass_form_managers_check = apply_filters( 'bookacti_bypass_form_managers_check', false, $user_id );
 	if( ! $user_id ) { $user_id = get_current_user_id(); }
+	$bypass_form_managers_check = apply_filters( 'bookacti_bypass_form_managers_check', false, $user_id );
 	if( is_super_admin( $user_id ) || $bypass_form_managers_check ) { $user_can_manage_form = true; }
 	else {
 		$admins = bookacti_get_form_managers( $form_id );
@@ -1940,7 +1953,7 @@ function bookacti_get_form_managers( $form_ids ) {
 /**
  * Format form managers
  * @since 1.5.0
- * @version 1.8.8
+ * @version 1.16.0
  * @param array $form_managers
  * @return array
  */
@@ -1948,9 +1961,9 @@ function bookacti_format_form_managers( $form_managers = array() ) {
 	$form_managers = bookacti_ids_to_array( $form_managers );
 	
 	// If user is not super admin, add him automatically in the form managers list if he isn't already
-	$bypass_form_managers_check = apply_filters( 'bookacti_bypass_form_managers_check', false );
-	if( ! is_super_admin() && ! $bypass_form_managers_check ) {
-		$user_id = get_current_user_id();
+	$user_id = get_current_user_id();
+	$bypass_form_managers_check = apply_filters( 'bookacti_bypass_form_managers_check', false, $user_id );
+	if( ! is_super_admin( $user_id ) && ! $bypass_form_managers_check ) {
 		if( ! in_array( $user_id, $form_managers, true ) ) {
 			$form_managers[] = $user_id;
 		}

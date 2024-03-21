@@ -1,7 +1,7 @@
 <?php 
 /**
  * Calendar editor dialogs
- * @version 1.15.19
+ * @version 1.16.0
  */
 
 // Exit if accessed directly
@@ -245,7 +245,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			
 			/**
 			 * Display the 'General' tab content of template settings
-			 * @version 1.14.0
+			 * @version 1.16.0
 			 * @param array $params
 			 */
 			function bookacti_fill_template_tab_general( $params = array() ) {
@@ -265,7 +265,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 						'type'    => 'select',
 						'name'    => 'duplicated_template_id',
 						'id'      => 'bookacti-template-duplicated-template-id',
-						'class'   => 'bookacti-template-select-box',
+						'class'   => 'bookacti-template-selectbox',
 						'title'   => esc_html__( 'Duplicate from', 'booking-activities' ),
 						'options' => array( 0 => esc_html__( 'Don\'t duplicate', 'booking-activities' ) ) + $templates_options,
 						'tip'     => esc_html__( 'If you want to duplicate a calendar, select it in the list. It will copy its events, activities list, and its settings but not the bookings made on it.', 'booking-activities' )
@@ -454,11 +454,19 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			/**
 			 * Display the fields in the "Availability" tab of the Activity dialog
 			 * @since 1.4.0
-			 * @version 1.15.11
+			 * @version 1.16.0
 			 * @param array $params
 			 */
 			function bookacti_fill_activity_tab_availability( $params = array() ) {
 				bookacti_display_bara_promo( 'activity' );
+				
+				$template_ids     = array_keys( bookacti_fetch_templates() );
+				$activities       = bookacti_get_activities_by_template( $template_ids );
+				$activity_options = array();
+				foreach( $activities as $activity_id => $activity ) {
+					/* translators: %s = Activity ID */
+					$activity_options[ $activity_id ] = $activity[ 'title' ] ? $activity[ 'title' ] : sprintf( esc_html__( 'Activity #%s', 'booking-activities' ), $activity_id );
+				}
 				
 				do_action( 'bookacti_activity_tab_availability_before', $params );
 			?>
@@ -510,6 +518,30 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 								        . bookacti_help_tip( esc_html__( 'Define when a customer can change a booking (cancel, reschedule). E.g.: "2 days 5 hours 30 minutes", your customers will be able to change the bookings starting in 2 days, 5 hours and 30 minutes at least. They won\'t be allowed to cancel a booking starting tomorrow for example.', 'booking-activities' )
 								        . '<br/>' . esc_html__( 'This parameter applies to the events of this activity only. A global parameter is available in global settings.', 'booking-activities' )
 										. ' ' . esc_html__( 'Leave it empty to use the global value.', 'booking-activities' ), false ),
+							),
+							'reschedule_scope' => array(
+								'type'     => 'select',
+								'name'     => 'reschedule_scope',
+								'id'       => 'bookacti-activity-reschedule-scope',
+								'title'    => esc_html__( 'Can be rescheduled to', 'booking-activities' ),
+								'options'  => array(
+									'form_self'   => esc_html__( 'Same form, same activity', 'booking-activities' ),
+									'form_custom' => esc_html__( 'Same form, specific activities', 'booking-activities' ),
+									'form_any'    => esc_html__( 'Same form, any activities', 'booking-activities' ),
+									'all_self'    => esc_html__( 'All calendars, same activity', 'booking-activities' ),
+									'all_custom'  => esc_html__( 'All calendars, specific activities', 'booking-activities' ),
+									'all_any'     => esc_html__( 'All calendars, any activities', 'booking-activities' ),
+								),
+								'tip'      => esc_html__( 'Allow the customer to reschedule a booking to a different activity.', 'booking-activities' ),
+							),
+							'reschedule_activity_ids' => array(
+								'type'     => 'select',
+								'multiple' => true,
+								'name'     => 'reschedule_activity_ids',
+								'id'       => 'bookacti-activity-reschedule-activity-ids',
+								'class'    => 'bookacti-activity-selectbox bookacti-select2-no-ajax',
+								'title'    => ' ',
+								'options'  => $activity_options
 							)
 						) );
 						bookacti_display_fields( $fields );
@@ -687,7 +719,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 					'type'    => 'select',
 					'name'    => 'template_to_import_activities_from',
 					'id'      => 'template-import-bound-activities',
-					'class'   => 'bookacti-template-select-box',
+					'class'   => 'bookacti-template-selectbox',
 					/* translators: the user is asked to select a calendar to display its bound activities. This is the label of the select box. */
 					'title'   => esc_html__( 'From calendar', 'booking-activities' ),
 					'options' => $templates_options

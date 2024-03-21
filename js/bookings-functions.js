@@ -13,17 +13,13 @@ $j( document ).ready( function() {
 	/**
 	 * Add data to booking actions
 	 * @since 1.7.6
-	 * @version 1.12.0
+	 * @version 1.16.0
 	 * @param {Event} e
 	 * @param {Object} data
 	 */
-	$j( '#bookacti-booking-list, .bookacti-user-booking-list-table' ).on( 'bookacti_booking_action_data', 'tr.bookacti-single-booking, tr.bookacti-booking-group', function( e, data ) {
-		var is_FormData = false;
-		if( typeof data.form_data !== 'undefined' ) { if( data.form_data instanceof FormData ) { is_FormData = true; } }
-		if( is_FormData ) {
+	$j( 'body' ).on( 'bookacti_booking_action_data', function( e, data ) {
+		if( data?.form_data instanceof FormData ) {
 			data.form_data.append( 'locale', bookacti_localized.current_locale );
-		} else {
-			data.locale = bookacti_localized.current_locale;
 		}
 	});
 	
@@ -51,26 +47,16 @@ $j( document ).ready( function() {
 /**
  * Filter the booking list with current filters values
  * @since 1.8.0
- * @version 1.15.15
+ * @version 1.16.0
  * @param {Int} paged
  */
 function bookacti_filter_booking_list( paged ) {
 	paged = paged ? paged : 1;
 	var booking_system = $j( '#bookacti-booking-system-bookings-page' );
 	
-	var data    = bookacti_serialize_object( $j( '#bookacti-booking-list-filters-form' ) );
-	data.paged  = paged;
+	var data    = bookacti_get_booking_list_filters();
 	data.action = 'bookactiGetBookingList';
-	
-	// Select only available templates
-	if( ! data.templates ) {
-		data.templates = [];
-		$j( '#bookacti-booking-filter-templates option' ).each( function() {
-			data.templates.push( $j( this ).val() );
-		});
-	}
-	
-	booking_system.trigger( 'bookacti_filter_booking_list_data', [ data ] );
+	data.paged  = paged;
 	
 	var column_nb = $j( '#bookacti-booking-list thead .manage-column:not(.hidden)' ).length ? $j( '#bookacti-booking-list thead .manage-column:not(.hidden)' ).length : 1;
 	
@@ -97,9 +83,10 @@ function bookacti_filter_booking_list( paged ) {
 				// Update the URL without refreshing the page
 				window.history.pushState( { path: response.new_url }, '', response.new_url );
 				
-				/**
-				 * Trigger after the booking list has been filtered
-				 */
+				// Refresh tooltips and grouped bookings visual frame
+				bookacti_refresh_booking_group_frame();
+				bookacti_init_tooltip();
+				
 				$j( '#bookacti-booking-list' ).trigger( 'bookacti_booking_list_filtered', [ response, data ] );
 
 			} else if( response.status === 'failed' ) {
@@ -205,7 +192,7 @@ function bookacti_unpick_all_events_filter() {
 
 /**
  * Reload bookings booking system according to filters
- * @version 1.15.14
+ * @version 1.16.0
  * @param {HTMLElement} booking_system
  */
 function bookacti_reload_booking_system_according_to_filters( booking_system ) {
@@ -229,7 +216,7 @@ function bookacti_reload_booking_system_according_to_filters( booking_system ) {
 	bookacti.booking_system[ booking_system_id ][ 'activities' ]       = [];
 	bookacti.booking_system[ booking_system_id ][ 'group_categories' ] = [];
 	bookacti.booking_system[ booking_system_id ][ 'status' ]           = selected_status ? selected_status : [];
-	bookacti.booking_system[ booking_system_id ][ 'user_id' ]          = selected_user ? selected_user : 0;
+	bookacti.booking_system[ booking_system_id ][ 'user_id' ]          = selected_user ? [ selected_user ] : [];
 	bookacti.booking_system[ booking_system_id ][ 'start' ]            = selected_from ? selected_from + ' 00:00:00' : '';
 	bookacti.booking_system[ booking_system_id ][ 'end' ]              = selected_end ? selected_end + ' 23:59:59' : '';
 	
@@ -245,58 +232,51 @@ function bookacti_reload_booking_system_according_to_filters( booking_system ) {
 
 /**
  * Init booking actions
- * @version 1.15.4
+ * @version 1.16.0
+ * @param {String} scope
  */
-function bookacti_init_booking_actions() {
-	$j( '.bookacti-user-booking-list-table, .woocommerce-table, #bookacti-booking-list' ).on( 'click', '.bookacti-booking-action, .bookacti-booking-group-action', function ( e ) {
+function bookacti_init_booking_actions( scope ) {
+	if( ! scope ) { scope = '#bookacti-booking-list, .bookacti-user-booking-list-table'; }
+	
+	$j( scope ).on( 'click', '.bookacti-booking-action, .bookacti-booking-group-action', function( e ) {
 		e.preventDefault();
+		var action = $j( this ).data( 'action' );
+		if( ! action ) { return; }
+		
+		bookacti.user_auth_key = $j( this ).data( 'user-auth-key' ) ? $j( this ).data( 'user-auth-key' ) : '';
+		
+		var booking_selection = {
+			'booking_ids': [],
+			'booking_group_ids': [],
+			'all': 0,
+			'filters': {}
+		};
 		
 		// Single Bookings
 		if( $j( this ).hasClass( 'bookacti-booking-action' ) ) {
-
 			var booking_id = $j( this ).data( 'booking-id' );
-			if( $j( this ).hasClass( 'bookacti-cancel-booking' ) ){
-				bookacti_dialog_cancel_booking( booking_id, 'single' );
-			} else if( $j( this ).hasClass( 'bookacti-reschedule-booking' ) ){
-				bookacti_dialog_reschedule_booking( booking_id );
-			} else if( $j( this ).hasClass( 'bookacti-refund-booking' ) ){
-				bookacti_dialog_refund_booking( booking_id, 'single' );
-			} else if( $j( this ).hasClass( 'bookacti-change-booking-state' ) ){
-				bookacti_dialog_change_booking_state( booking_id, 'single' );
-			} else if( $j( this ).hasClass( 'bookacti-change-booking-quantity' ) ){
-				bookacti_dialog_change_booking_quantity( booking_id, 'single' );
-			} else if( $j( this ).hasClass( 'bookacti-delete-booking' ) ){
-				bookacti_dialog_delete_booking( booking_id, 'single' );
+			if( booking_id ) {
+				booking_selection.booking_ids.push( parseInt( booking_id ) );
 			}
-		
 		// Booking Groups
 		} else {
 			var booking_group_id = $j( this ).data( 'booking-group-id' );
-			if( $j( this ).hasClass( 'bookacti-cancel-booking-group' ) ){
-				bookacti_dialog_cancel_booking( booking_group_id, 'group' );
-			} else if( $j( this ).hasClass( 'bookacti-refund-booking-group' ) ){
-				bookacti_dialog_refund_booking( booking_group_id, 'group' );
-			} else if( $j( this ).hasClass( 'bookacti-change-booking-group-state' ) ){
-				bookacti_dialog_change_booking_state( booking_group_id, 'group' );
-			} else if( $j( this ).hasClass( 'bookacti-change-booking-group-quantity' ) ){
-				bookacti_dialog_change_booking_quantity( booking_group_id, 'group' );
-			} else if( $j( this ).hasClass( 'bookacti-show-booking-group-bookings' ) ){
-				bookacti_display_grouped_bookings( booking_group_id );
-			} else if( $j( this ).hasClass( 'bookacti-delete-booking-group' ) ){
-				bookacti_dialog_delete_booking( booking_group_id, 'group' );
+			if( booking_group_id ) {
+				booking_selection.booking_group_ids.push( parseInt( booking_group_id ) );
 			}
-			
 		}
 		
-		// Common action
-		// If it is a link which do not have 'prevent-default' class, just follow the link
+		// If the action is a link that do not have 'prevent-default' class, just follow the link
 		if( $j( this ).attr( 'href' ) && $j( this ).attr( 'href' ) !== '' && ! $j( this ).hasClass( 'prevent-default' ) ) {
 			if( $j( this ).hasClass( '_blank' ) ) {
 				window.open( $j( this ).attr( 'href' ) );
 			} else {
 				location.href = $j( this ).attr( 'href' );
 			}
+			return;
 		}
+		
+		bookacti_trigger_booking_action( action, booking_selection );
 	});
 }
 
@@ -304,14 +284,94 @@ function bookacti_init_booking_actions() {
 /**
  * Init booking bulk actions
  * @since 1.6.0
- * @version 1.8.0
+ * @version 1.16.0
  */
 function bookacti_init_booking_bulk_actions() {
-	$j( 'body' ).on( 'submit', '.bookacti-bookings-bulk-action', function( e ) {
-		if( $j( this ).find( '[name="action"]' ).val() == -1 || $j( this ).find( '[name="action2"]' ).val() == -1 ) {
-			e.preventDefault();
-		}
+	$j( '#bookacti-bookings-container' ).on( 'click', '.bulkactions input[type="submit"]', function( e ) {
+		e.preventDefault();
+		var action = $j( this ).siblings( 'select[name^="action"]' ).val();
+		if( ! action ) { return; }
+		
+		var booking_selection = {
+			'booking_ids': [],
+			'booking_group_ids': [],
+			'all': parseInt( $j( '#bookacti-all-selected' ).val() ) ? 1 : 0,
+			'filters': parseInt( $j( '#bookacti-all-selected' ).val() ) ? bookacti_get_booking_list_filters() : {}
+		};
+		
+		$j( '#bookacti-bookings-container tbody .check-column input[name="booking_ids[]"]:checked' ).each( function() {
+			var booking_id = $j( this ).val();
+			if( booking_id ) {
+				booking_selection.booking_ids.push( parseInt( booking_id ) );
+			}
+		});
+
+		$j( '#bookacti-bookings-container tbody .check-column input[name="booking_group_ids[]"]:checked' ).each( function() {
+			var booking_group_id = $j( this ).val();
+			if( booking_group_id ) {
+				booking_selection.booking_group_ids.push( parseInt( booking_group_id ) );
+			}
+		});
+		
+		bookacti_trigger_booking_action( action, booking_selection );
 	});
+}
+
+
+/**
+ * Trigger a booking action for a booking selection
+ * @since 1.16.0
+ * @param {string} action
+ * @param {object} booking_selection
+ */
+function bookacti_trigger_booking_action( action, booking_selection ) {
+	if( ! booking_selection.booking_ids.length 
+	&&  ! booking_selection.booking_group_ids.length
+	&&  ! ( booking_selection.all && ! $j.isEmptyObject( booking_selection.filters ) ) ) { return; }
+
+	if( action === 'reschedule' ) {
+		bookacti_dialog_reschedule_bookings( booking_selection );
+	} else if( action === 'refund' ) {
+		bookacti_dialog_refund_bookings( booking_selection );
+	} else if( action === 'edit_status' ) {
+		bookacti_dialog_change_bookings_status( booking_selection );
+	} else if( action === 'edit_quantity' ) {
+		bookacti_dialog_change_bookings_quantity( booking_selection );
+	} else if( action === 'send_notification' ) {
+		bookacti_dialog_send_bookings_notification( booking_selection );
+	} else if( action === 'delete' ) {
+		bookacti_dialog_delete_bookings( booking_selection );
+	} else if( action === 'display_grouped_bookings' ) {
+		bookacti_display_grouped_bookings( booking_selection );
+	} else if( action === 'cancel' ) {
+		bookacti_dialog_cancel_bookings( booking_selection );
+	} else {
+		$j( 'body' ).trigger( 'bookacti_trigger_booking_action', [ action, booking_selection ] );
+	}
+}
+
+
+/**
+ * Get booking list filters as a serialized object
+ * @since 1.16.0
+ * @returns {Object}
+ */
+function bookacti_get_booking_list_filters() {
+	var filters = $j( '#bookacti-booking-list-filters-form' ).length ? bookacti_serialize_object( $j( '#bookacti-booking-list-filters-form' ) ) : {};
+	
+	// Select only available templates
+	if( ! $j.isEmptyObject( filters ) ) {
+		if( ! filters.templates ) {
+			filters.templates = [];
+			$j( '#bookacti-booking-filter-templates option' ).each( function() {
+				filters.templates.push( $j( this ).val() );
+			});
+		}
+	}
+	
+	$j( '#bookacti-booking-list-filters-form' ).trigger( 'bookacti_filter_booking_list_data', [ filters ] );
+	
+	return filters;
 }
 
 
@@ -335,73 +395,106 @@ function bookacti_change_export_type_according_to_active_tab() {
 
 
 /**
- * Show bookings of a group
- * @version 1.15.0
- * @param {int} booking_group_id
+ * Show groups bookings
+ * @version 1.16.0
+ * @param {object} booking_selection
  */
-function bookacti_display_grouped_bookings( booking_group_id ) {
-	booking_group_id = typeof booking_group_id !== 'undefined' && $j.isNumeric( booking_group_id ) ? booking_group_id : false;
-	if( ! booking_group_id ) { return; }
-	
-	var group_row = $j( '.bookacti-show-booking-group-bookings[data-booking-group-id="' + booking_group_id + '"]:focus' ).first().closest( 'tr' );
-	
-	group_row.find( '.bookacti-show-booking-group-bookings' ).toggleClass( 'active' );
+function bookacti_display_grouped_bookings( booking_selection ) {
+	// Get the selected booking rows only (ignore "all")
+	var rows = $j();
+	$j.each( booking_selection.booking_group_ids, function( i, booking_group_id ) {
+		rows = rows.add( $j( '.bookacti-booking-group[data-booking-group-id="' + booking_group_id + '"]' ).closest( 'tr, .bookacti-booking-row' ) );
+	});
 	
 	// If already displayed, act like a show / hide switch
-	if( group_row.next().hasClass( 'bookacti-gouped-booking' ) ) { 
-		if( group_row.next().is( ':visible' ) ) {
-			group_row.nextUntil( 'tr:not(.bookacti-gouped-booking)' ).addClass( 'hidden' );
-			if( group_row.nextUntil( 'tr:not(.bookacti-gouped-booking)' ).length % 2 ) {
-				group_row.after( '<tr class="bookacti-gouped-booking hidden dummy"></tr>' ); // Add a dummy tr to keep the alternate background
+	rows.each( function() {
+		var booking_group_id = $j( this ).find( '.bookacti-booking-group' ).addBack( '.bookacti-booking-group' ).data( 'booking-group-id' );
+		if( ! booking_group_id ) { return true; }
+		
+		if( $j( this ).next().hasClass( 'bookacti-gouped-booking' ) ) { 
+			if( $j( this ).next().is( ':visible' ) ) {
+				$j( this ).nextUntil( 'tr:not(.bookacti-gouped-booking)' ).addClass( 'hidden' );
+				if( $j( this ).nextUntil( 'tr:not(.bookacti-gouped-booking)' ).length % 2 ) {
+					$j( this ).after( '<tr class="bookacti-gouped-booking hidden dummy"></tr>' ); // Add a dummy tr to keep the alternate background
+				}
+				$j( this ).find( '.bookacti-show-booking-group-bookings' ).removeClass( 'active' );
+			} else {
+				$j( this ).next( '.bookacti-gouped-booking.hidden.dummy' ).remove();
+				$j( this ).nextUntil( 'tr:not(.bookacti-gouped-booking)' ).removeClass( 'hidden' );
+				$j( this ).find( '.bookacti-show-booking-group-bookings' ).addClass( 'active' );
 			}
-		} else {
-			group_row.next( '.bookacti-gouped-booking.hidden.dummy' ).remove();
-			group_row.nextUntil( 'tr:not(.bookacti-gouped-booking)' ).removeClass( 'hidden' );
+			// Remove the booking group from the selection
+			booking_selection.booking_group_ids = jQuery.grep( booking_selection.booking_group_ids, function( value ) { return value != booking_group_id; } );
+			rows = rows.not( $j( this ) );
 		}
-		return; 
-	}
+	});
+	if( ! rows.length || ! booking_selection.booking_group_ids.length ) { return; }
 	
 	// Columns to display
 	var columns = [];
-	group_row.find( 'td' ).each( function() {
+	rows.first().find( 'td' ).each( function() {
 		var column_id = $j( this ).data( 'column-id' );
 		if( column_id ) { columns.push( column_id ); }
 	});
 	
-	var data = { 
-		'action': 'bookactiGetGroupedBookingsRows',
-		'booking_group_id': booking_group_id,
-		'is_admin': bookacti_localized.is_admin ? 1 : 0,
-		'context': bookacti_localized.is_admin ? 'admin_booking_list' : 'user_booking_list',
-		'columns': columns,
-		'nonce': bookacti_localized.nonce_get_booking_rows
-	};
-	group_row.trigger( 'bookacti_booking_action_data', [ data, booking_group_id, 'group', 'display_grouped_bookings' ] );
+	// Retrieve the grouped bookings of the displayed rows only
+	booking_selection.all     = false;
+	booking_selection.filters = {};
+
+	var data = { 'form_data': new FormData() };
+	data.form_data.append( 'action', 'bookactiGetGroupedBookingsRows' );
+	data.form_data.append( 'booking_selection', JSON.stringify( booking_selection ) );
+	data.form_data.append( 'columns', JSON.stringify( columns ) );
+	data.form_data.append( 'is_admin', bookacti_localized.is_admin ? 1 : 0 );
+	data.form_data.append( 'user_auth_key', typeof bookacti.user_auth_key !== 'undefined' ? bookacti.user_auth_key : '' );
+	data.form_data.append( 'nonce', bookacti_localized.nonce_get_booking_rows );
+
+	$j( 'body' ).trigger( 'bookacti_booking_action_data', [ data, booking_selection, 'display_grouped_bookings' ] );
 	
-	bookacti_booking_row_enter_loading_state( group_row );
+	// Display a loader
+	bookacti_booking_row_enter_loading_state( rows );
 	
 	$j.ajax({
 		url: bookacti_localized.ajaxurl,
 		type: 'POST',
-		data: data,
+		data: data.form_data,
 		dataType: 'json',
+		cache: false,
+		contentType: false,
+		processData: false,
 		success: function( response ) {
 			if( response.status === 'success' ) {
 				// Update the booking list
 				$j( '#bookacti-booking-list-container #the-list tr.no-items' ).remove();
-				group_row.after( response.rows );
-				bookacti_refresh_list_table_hidden_columns();
 				
-				/**
-				 * Trigger after the booking list has been filled.
-				 */
-				$j( '#bookacti-booking-list' ).trigger( 'bookacti_grouped_bookings_displayed' );
+				// Replace the rows
+				if( response.rows ) {
+					var new_rows = $j( response.rows );
+					rows.each( function() {
+						var row_booking_group_id      = $j( this ).find( '.bookacti-booking-group' ).addBack( '.bookacti-booking-group' ).data( 'booking-group-id' );
+						var grouped_bookings_selector = row_booking_group_id ? '.bookacti-gouped-booking[data-booking-group-id="' + row_booking_group_id + '"]' : '';
+						var grouped_bookings_rows     = grouped_bookings_selector ? new_rows.find( grouped_bookings_selector ).addBack( grouped_bookings_selector ).closest( 'tr' ) : $j();
+						if( row_booking_group_id ) {
+							$j( '.bookacti-gouped-booking[data-booking-group-id="' + row_booking_group_id + '"]' ).remove();
+						}
+						if( grouped_bookings_rows.length ) {
+							$j( this ).after( grouped_bookings_rows );
+						}
+					});
+					bookacti_refresh_list_table_hidden_columns();
+					bookacti_init_tooltip();
+				}
+				
+				// Refresh grouped bookings visual frame
+				bookacti_refresh_booking_group_frame();
+				
+				$j( 'body' ).trigger( 'bookacti_grouped_bookings_displayed', [ response ] );
 
 			} else if( response.status === 'failed' ) {
-				var column_nb = $j( '#bookacti-booking-list thead .manage-column:not(.hidden)' ).length ? $j( '#bookacti-booking-list thead .manage-column:not(.hidden)' ).length : 1;
+				var column_nb = $j( '#bookacti-booking-list thead .manage-column:not(.hidden)' ).length ? $j( '#bookacti-booking-list thead .manage-column:not(.hidden)' ).length : columns.length;
 				var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
-				var no_bookings_entry = '<tr class="no-items" ><td class="colspanchange" colspan="' + column_nb + '" >' + error_message + '</td></tr>';
-				group_row.after( no_bookings_entry );
+				var no_bookings_entry = '<tr class="no-items"><td class="colspanchange" colspan="' + column_nb + '">' + error_message + '</td></tr>';
+				rows.after( no_bookings_entry );
 			}
 		},
 		error: function( e ) {
@@ -409,7 +502,7 @@ function bookacti_display_grouped_bookings( booking_group_id ) {
 			console.log( e );
 		},
 		complete: function() {
-			bookacti_booking_row_exit_loading_state( group_row );
+			bookacti_booking_row_exit_loading_state( rows );
 		}
 	});
 }
@@ -417,24 +510,24 @@ function bookacti_display_grouped_bookings( booking_group_id ) {
 
 /**
  * Start booking row loading
- * @version 1.15.0
+ * @version 1.16.0
  * @param {HTMLElement} row
  */
 function bookacti_booking_row_enter_loading_state( row ) {
-	row.find( '.bookacti-booking-state' ).hide();
-	bookacti_add_loading_html( row.find( '.bookacti-booking-state' ), 'after' );
+	row.find( '.bookacti-booking-status' ).hide();
+	bookacti_add_loading_html( row.find( '.bookacti-booking-status' ), 'after' );
 	row.find( '.bookacti-booking-action' ).attr( 'disabled', true );
 }
 
 
 /**
  * Stop booking row loading
- * @version 1.15.0
+ * @version 1.16.0
  * @param {HTMLElement} row
  */
 function bookacti_booking_row_exit_loading_state( row ) {
 	bookacti_remove_loading_html( row );
-	row.find( '.bookacti-booking-state' ).show();
+	row.find( '.bookacti-booking-status' ).show();
 	row.find( '.bookacti-booking-action' ).attr( 'disabled', false );
 }
 
@@ -466,8 +559,8 @@ function bookacti_refresh_booking_group_frame() {
 	$j( '.bookacti-gouped-booking' ).each( function() {
 		if( group_id === $j( this ).data( 'booking-group-id' ) ) { return true; } // skip
 		group_id = $j( this ).data( 'booking-group-id' );
-		$j( '.bookacti-gouped-booking[data-booking-group-id="' + group_id + '"]:not(.hidden):first' ).addClass( 'bookacti-gouped-booking-first' );
-		$j( '.bookacti-gouped-booking[data-booking-group-id="' + group_id + '"]:not(.hidden):last' ).addClass( 'bookacti-gouped-booking-last' );
+		$j( '.bookacti-gouped-booking[data-booking-group-id="' + group_id + '"]:first' ).addClass( 'bookacti-gouped-booking-first' );
+		$j( '.bookacti-gouped-booking[data-booking-group-id="' + group_id + '"]:last' ).addClass( 'bookacti-gouped-booking-last' );
 	});
 }
 

@@ -20,46 +20,43 @@ p.form-field._bookacti_groups_field          { margin-bottom: 0; }
 
 table.woocommerce_order_items ul.bookacti-booking-events-list { margin: 0; }
 
-.bookacti-order-item-action-buttons > div                  { display: inline-block; vertical-align: middle; }
-.bookacti-order-item-action-buttons > div:after            { content: ' | '; vertical-align: middle; }
-.bookacti-order-item-action-buttons > div:last-child:after { content: ''; }
-
 
 /***** FRONTEND WOOCOMMERCE *****/
 
 /* Booking forms */
-.bookacti-success-list.woocommerce a.button,
-.woocommerce div.product.bookacti-activity form.cart .bookacti-success-list.woocommerce .button { float: right; }
-.woocommerce div.product form.cart table.bookacti-total-price-table td      { padding-left: 10px; }
+.product.bookacti-activity form.cart .bookacti-success-list.woocommerce .button,
+.bookacti-success-list.woocommerce a.button               { float: right; }
 .bookacti-success-list.woocommerce li:not(:first-child) a.button.wc-forward { display: none; }
-.woocommerce div.product form.cart .bookacti-calendar table                 { border-width: 0; }
-.woocommerce div.product form.cart .bookacti-calendar table.fc-scrollgrid   { border-width: 1px 0 0 1px; }
+.product form.cart table.bookacti-total-price-table td    { padding-left: 10px; }
+.product form.cart .bookacti-calendar table               { border-width: 0; }
+.product form.cart .bookacti-calendar table.fc-scrollgrid { border-width: 1px 0 0 1px; }
 
 /* Single product page */
-.woocommerce div.product.bookacti-activity form.cart table td.fc-axis      { padding-left: 4px; }
-.woocommerce.single.single-product div.product.bookacti-activity form.cart { width: 100%; }
+.product.bookacti-activity form.cart table td.fc-axis          { padding-left: 4px; }
+.woocommerce.single.single-product.bookacti-activity form.cart { width: 100%; }
 
 	/* Elementor support */
-	.woocommerce div.product.bookacti-activity.elementor form.cart.variations_form .woocommerce-variation-add-to-cart, 
-	.woocommerce div.product.bookacti-activity.elementor form.cart:not(.grouped_form):not(.variations_form) { display: block; }
+	.product.bookacti-activity.elementor form.cart.variations_form .woocommerce-variation-add-to-cart, 
+	.product.bookacti-activity.elementor form.cart:not(.grouped_form):not(.variations_form) { display: block; }
 	
 	/* WC PayPal Payments support */
-	.woocommerce div.product.bookacti-activity #cpsw-payment-request-wrapper,
-	.woocommerce div.product.bookacti-activity .paypal-buttons { display: none !important; }
+	.product.bookacti-activity #cpsw-payment-request-wrapper,
+	.product.bookacti-activity #ppc-button-ppcp-gateway,
+	.product.bookacti-activity .paypal-buttons { display: none !important; }
 	
 	/* WC Stripe support */
-	.woocommerce div.product.bookacti-activity #wc-stripe-payment-request-wrapper,
-	.woocommerce div.product.bookacti-activity #wc-stripe-payment-request-button-separator,
-	.woocommerce div.product.bookacti-activity .wc-stripe-payment-request-wrapper,
-	.woocommerce div.product.bookacti-activity .wc-stripe-payment-request-button-separator { display: none !important; }
+	.product.bookacti-activity #wc-stripe-payment-request-wrapper,
+	.product.bookacti-activity #wc-stripe-payment-request-button-separator,
+	.product.bookacti-activity .wc-stripe-payment-request-wrapper,
+	.product.bookacti-activity .wc-stripe-payment-request-button-separator { display: none !important; }
 	
 	/* WC Payment support */
-	.woocommerce div.product.bookacti-activity #wcpay-payment-request-wrapper,
-	.woocommerce div.product.bookacti-activity #wcpay-payment-request-button-separator,
-	.woocommerce div.product.bookacti-activity .wcpay-payment-request-wrapper,
-	.woocommerce div.product.bookacti-activity .wcpay-payment-request-button-separator { display: none !important; }
+	.product.bookacti-activity #wcpay-payment-request-wrapper,
+	.product.bookacti-activity #wcpay-payment-request-button-separator,
+	.product.bookacti-activity .wcpay-payment-request-wrapper,
+	.product.bookacti-activity .wcpay-payment-request-button-separator { display: none !important; }
 
-	
+
 /* Cart, Checkout */
 .bookacti-order-item-activity td.product-name .wc-item-meta .wc-item-meta-bookacti_booked_events,
 .bookacti-cart-item-activity td.product-name dl.variation dt { float: none; display: block; }
@@ -80,5 +77,6 @@ table.woocommerce_order_items ul.bookacti-booking-events-list { margin: 0; }
 
 
 /* Orders */
+.bookacti-wc-order-item-bookings-attributes { vertical-align: top; }
 .bookacti-wc-order-item-booking-attribute[data-attribute="actions"] .bookacti-wc-order-item-booking-attribute-label { display: none; }
 .bookacti-wc-order-item-booking-attribute[data-attribute="refunds"] .bookacti-wc-order-item-booking-attribute-value { padding: 0 12px; }

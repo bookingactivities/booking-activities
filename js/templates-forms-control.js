@@ -92,6 +92,18 @@ $j( document ).ready( function() {
 	$j( 'body' ).on( 'bookacti_empty_all_dialogs_forms', function( e, scope ) {
 		$j( scope + ' #bookacti-display-activity-user-roles, ' + scope + ' #bookacti-display-group-category-user-roles' ).prop( 'checked', false ).trigger( 'change' );
 	});
+	
+	
+	/**
+	 * Toggle reschedule activity ids field accoding to reschedule scope value - on change
+	 * @since 1.16.0
+	 * @param {Event} e
+	 * @param {Boolean} is_checked
+	 */
+	$j( '#bookacti-activity-reschedule-scope' ).on( 'change', function() {
+		var reschedule_scope = $j( this ).val() || '';
+		$j( '#bookacti-activity-reschedule-activity-ids-container' ).toggle( reschedule_scope.indexOf( 'custom' ) > -1 );
+	});
 });
 
 

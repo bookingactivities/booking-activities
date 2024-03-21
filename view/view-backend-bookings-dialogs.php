@@ -1,7 +1,7 @@
 <?php 
 /**
  * Backend booking dialogs
- * @version 1.15.5
+ * @version 1.16.0
  */
 
 // Exit if accessed directly
@@ -155,31 +155,31 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	</form>
 </div>
 
-<div id='bookacti-change-booking-state-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' style='display:none;' title='<?php esc_html_e( 'Change booking state', 'booking-activities' ); ?>'>
-	<form id='bookacti-change-booking-state-form'>
-		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_change_booking_state' ); ?>'/>
+<div id='bookacti-change-booking-status-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' style='display:none;' title='<?php esc_html_e( 'Change booking status', 'booking-activities' ); ?>'>
+	<form id='bookacti-change-booking-status-form'>
+		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_change_booking_status' ); ?>'/>
 		<fieldset>
-			<legend><?php esc_html_e( 'Booking state', 'booking-activities' ); ?></legend>
+			<legend><?php esc_html_e( 'Booking status', 'booking-activities' ); ?></legend>
 			<div>
-				<label for='bookacti-select-booking-state' ><?php esc_html_e( 'Booking state', 'booking-activities' ); ?></label>
-				<select name='select-booking-state' id='bookacti-select-booking-state' >
+				<label for='bookacti-select-booking-status' ><?php esc_html_e( 'Booking status', 'booking-activities' ); ?></label>
+				<select name='booking_status' id='bookacti-select-booking-status' >
+					<option value=''><?php esc_html_e( 'Do not change', 'booking-activities' ); ?></option>
 					<?php
-					$booking_state_labels   = bookacti_get_booking_state_labels();
-					$allowed_booking_states = apply_filters( 'bookacti_booking_states_you_can_manually_change', array( 'delivered', 'booked', 'pending', 'cancelled', 'refund_requested', 'refunded' ) );
-					foreach( $allowed_booking_states as $state_key ) {
-						$state_label = ! empty( $booking_state_labels[ $state_key ][ 'label' ] ) ? $booking_state_labels[ $state_key ][ 'label' ] : $state_key;
-						echo '<option value="' . esc_attr( $state_key ) . '" >' . $state_label . '</option>';
+					$allowed_statuses = apply_filters( 'bookacti_booking_states_you_can_manually_change', array( 'delivered', 'booked', 'pending', 'cancelled', 'refund_requested', 'refunded' ) );
+					$booking_statuses = array_intersect_key( bookacti_get_booking_statuses(), array_flip( $allowed_statuses ) );
+					foreach( $booking_statuses as $status => $label ) {
+						echo '<option value="' . esc_attr( $status ) . '" >' . esc_html( $label ) . '</option>';
 					}
 					?>
 				</select>
 			</div>
 			<div>
-				<label for='bookacti-send-notifications-on-state-change' ><?php esc_html_e( 'Send notifications', 'booking-activities' ); ?></label>
+				<label for='bookacti-send-notifications-on-status-change'><?php esc_html_e( 'Send notifications', 'booking-activities' ); ?></label>
 				<?php 
 					$args = array(
 						'type'  => 'checkbox',
-						'name'  => 'send-notifications-on-state-change',
-						'id'    => 'bookacti-send-notifications-on-state-change',
+						'name'  => 'send_notifications',
+						'id'    => 'bookacti-send-notifications-on-status-change',
 						'value' => 0,
 						/* Translators: %s is a link to the "Notifications settings" */
 						'tip'   => sprintf( esc_html__( 'Send the booking status change notifications configured in %s.', 'booking-activities' ), '<a href="' . admin_url( 'admin.php?page=bookacti_settings&tab=notifications' ) . '">' . esc_html__( 'Notifications settings', 'booking-activities' ) . '</a>' )
@@ -192,11 +192,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			<legend><?php esc_html_e( 'Payment status', 'booking-activities' ); ?></legend>
 			<div>
 				<label for='bookacti-select-payment-status' ><?php esc_html_e( 'Payment status', 'booking-activities' ); ?></label>
-				<select name='select-payment-status' id='bookacti-select-payment-status' >
+				<select name='payment_status' id='bookacti-select-payment-status'>
+					<option value=''><?php esc_html_e( 'Do not change', 'booking-activities' ); ?></option>
 					<?php
-					$payment_status = bookacti_get_payment_status_labels();
-					foreach( $payment_status as $payment_status_id => $payment_status_data ) {
-						echo '<option value="' . esc_attr( $payment_status_id ) . '" >' . esc_html( $payment_status_data[ 'label' ] ) . '</option>';
+					$payment_statuses = bookacti_get_payment_statuses();
+					foreach( $payment_statuses as $status => $label ) {
+						echo '<option value="' . esc_attr( $status ) . '" >' . esc_html( $label ) . '</option>';
 					}
 					?>
 				</select>
@@ -232,22 +233,70 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 <div id='bookacti-delete-booking-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' style='display:none;' title='<?php esc_html_e( 'Delete a booking', 'booking-activities' ); ?>'>
-	<form id='bookacti-delete-booking-dialog-content'>
-		<input type='hidden' name='action' value='bookactiDeleteBooking'/>
+	<form id='bookacti-delete-booking-form'>
 		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_delete_booking' ); ?>'/>
-		<input type='hidden' name='booking_id' value='0'/>
-		<input type='hidden' name='booking_type' value=''/>
-		<p class='bookacti-dialog-intro bookacti-delete-single-booking-description' >
+		<p class='bookacti-dialog-intro'>
 			<?php esc_html_e( 'Are you sure to delete this booking permanently?', 'booking-activities' ); ?>
 		</p>
 		<p class='bookacti-error'>
 			<span class='dashicons dashicons-warning'></span>
 			<span><?php esc_html_e( 'This action cannot be undone.', 'booking-activities' ); ?></span>
 		</p>
-		<p class='bookacti-dialog-intro bookacti-delete-booking-group-description' style='display:none;'>
-			<?php esc_html_e( 'All the bookings included in this booking group will also be delete.', 'booking-activities' ); ?>
+		<p class='bookacti-dialog-intro' id='bookacti-delete-booking-group-warning' style='display:none;'>
+			<?php esc_html_e( 'All the bookings included in the booking groups will also be delete.', 'booking-activities' ); ?>
 		</p>
 		<?php do_action( 'bookacti_delete_booking_form_after' ); ?>
+	</form>
+</div>
+
+
+<div id='bookacti-send-booking-notification-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' style='display:none;' title='<?php esc_html_e( 'Send booking notification', 'booking-activities' ); ?>'>
+	<form id='bookacti-send-booking-notification-form'>
+		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_send_booking_notification' ); ?>'/>
+		<?php
+			$notifications_ids      = array_keys( bookacti_get_notifications_default_settings() );
+			$notifications_settings = array();
+			$notification_options   = array();
+			foreach( $notifications_ids as $notification_id ) {
+				$notifications_settings[ $notification_id ] = bookacti_get_notification_settings( $notification_id, false );
+			}
+			foreach( $notifications_settings as $notification_id => $notification_settings ) {
+				$notification_options[ $notification_id ] = substr( $notification_id, 0, 6 ) === 'admin_' ? esc_html__( 'Administrator', 'booking-activities' ) : esc_html__( 'Customer', 'booking-activities' );
+				$notification_options[ $notification_id ] .= ' - ';
+				$notification_options[ $notification_id ] .= ! empty( $notification_settings[ 'title' ] ) ? $notification_settings[ 'title' ] : $notification_id;
+			}
+
+			$fields = array(
+				'notification_id' => array(
+					'name'        => 'notification_id',
+					'type'        => 'select',
+					'class'       => 'bookacti-select2-no-ajax',
+					'id'          => 'bookacti-booking-notification-id',
+					'placeholder' => esc_html__( 'Search...', 'booking-activities' ),
+					'attr'        => array( '<select>' => ' data-allow-clear="0"' ),
+					'options'     => $notification_options,
+					'value'       => '', 
+					'title'       => esc_html__( 'Notification', 'booking-activities' ),
+					'tip'         => esc_html__( 'The notification to send.', 'booking-activities' )
+				)
+			);
+			bookacti_display_fields( $fields );
+
+			do_action( 'bookacti_send_booking_notification_form_after' );
+		?>
+		<p class='bookacti-warning'>
+			<span class='dashicons dashicons-warning'></span>
+			<span>
+			<?php 
+				$settings_url = admin_url( 'admin.php?page=bookacti_settings&tab=notifications' );
+				echo sprintf( 
+						/* translators: %s = link to "Booking Activities > Settings > Notifications" */
+						esc_html__( 'The notification is sent according to its settings, so make sure to properly configure it before, in %s.', 'booking-activities' ), 
+						'<a href="' . $settings_url . '">Booking Activities > ' . esc_html__( 'Settings', 'booking-activities' ) . ' > ' . esc_html__( 'Notifications', 'booking-activities' ) . '</a>'
+					);
+			?>
+			</span>
+		</p>
 	</form>
 </div>
 

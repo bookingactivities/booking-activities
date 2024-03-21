@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Init Booking Activities settings
- * @version 1.15.16
+ * @version 1.16.0
  */
 function bookacti_init_settings() { 
 	/* General settings Section - 1 - Misc */
@@ -20,7 +20,7 @@ function bookacti_init_settings() {
 		)
 	);
 	
-	add_settings_field(  
+	add_settings_field(
 		'timezone', 
 		esc_html__( 'Calendars timezone', 'booking-activities' ), 
 		'bookacti_settings_field_timezone_callback', 
@@ -36,7 +36,7 @@ function bookacti_init_settings() {
 		'bookacti_settings_section_general'
 	);
 
-	add_settings_field(  
+	add_settings_field(
 		'default_calendar_view_threshold', 
 		esc_html__( 'Load the "Day" view if the calendar width is less than', 'booking-activities' ), 
 		'bookacti_settings_field_default_calendar_view_threshold_callback', 
@@ -44,15 +44,7 @@ function bookacti_init_settings() {
 		'bookacti_settings_section_general' 
 	);
 	
-	add_settings_field(  
-		'when_events_load', 
-		esc_html__( 'When to load the events?', 'booking-activities' ), 
-		'bookacti_settings_field_when_events_load_callback', 
-		'bookacti_general_settings', 
-		'bookacti_settings_section_general'
-	);
-	
-	add_settings_field(  
+	add_settings_field(
 		'event_load_interval', 
 		esc_html__( 'Load events every', 'booking-activities' ), 
 		'bookacti_settings_field_event_load_interval_callback', 
@@ -60,7 +52,7 @@ function bookacti_init_settings() {
 		'bookacti_settings_section_general'
 	);
 
-	add_settings_field(  
+	add_settings_field(
 		'started_events_bookable', 
 		esc_html__( 'Are started events bookable?', 'booking-activities' ), 
 		'bookacti_settings_field_started_events_bookable_callback', 
@@ -68,7 +60,7 @@ function bookacti_init_settings() {
 		'bookacti_settings_section_general' 
 	);
 
-	add_settings_field(  
+	add_settings_field(
 		'started_groups_bookable', 
 		esc_html__( 'Are started groups of events bookable?', 'booking-activities' ), 
 		'bookacti_settings_field_started_groups_bookable_callback', 
@@ -76,7 +68,7 @@ function bookacti_init_settings() {
 		'bookacti_settings_section_general' 
 	);
 
-	add_settings_field(  
+	add_settings_field(
 		'default_payment_status', 
 		esc_html__( 'Default payment status', 'booking-activities' ), 
 		'bookacti_settings_field_default_payment_status_callback', 
@@ -84,15 +76,15 @@ function bookacti_init_settings() {
 		'bookacti_settings_section_general' 
 	);
 	
-	add_settings_field(  
+	add_settings_field(
 		'default_booking_state', 
-		esc_html__( 'Default booking state', 'booking-activities' ), 
+		esc_html__( 'Default booking status', 'booking-activities' ), 
 		'bookacti_settings_field_default_booking_state_callback', 
 		'bookacti_general_settings', 
 		'bookacti_settings_section_general' 
 	);
 
-	add_settings_field(  
+	add_settings_field(
 		'display_private_columns', 
 		esc_html__( 'Allow private columns in frontend booking lists', 'booking-activities' ), 
 		'bookacti_settings_field_display_private_columns_callback', 
@@ -100,7 +92,7 @@ function bookacti_init_settings() {
 		'bookacti_settings_section_general' 
 	);
 	
-	add_settings_field(  
+	add_settings_field(
 		'delete_data_on_uninstall', 
 		esc_html__( 'Delete data on uninstall', 'booking-activities' ), 
 		'bookacti_settings_field_delete_data_on_uninstall_callback', 
@@ -122,7 +114,7 @@ function bookacti_init_settings() {
 		)
 	);
 	
-	add_settings_field(  
+	add_settings_field(
 		'price_currency_symbol', 
 		esc_html__( 'Currency', 'booking-activities' ), 
 		'bookacti_settings_field_price_currency_symbol_callback', 
@@ -131,7 +123,7 @@ function bookacti_init_settings() {
 	);
 	
 	
-	add_settings_field(  
+	add_settings_field(
 		'price_currency_position', 
 		esc_html__( 'Currency position', 'booking-activities' ), 
 		'bookacti_settings_field_price_currency_position_callback', 
@@ -139,7 +131,7 @@ function bookacti_init_settings() {
 		'bookacti_settings_section_general_price'
 	);
 	
-	add_settings_field(  
+	add_settings_field(
 		'price_thousand_separator', 
 		esc_html__( 'Thousand separator', 'booking-activities' ), 
 		'bookacti_settings_field_price_thousand_separator_callback', 
@@ -147,7 +139,7 @@ function bookacti_init_settings() {
 		'bookacti_settings_section_general_price'
 	);
 	
-	add_settings_field(  
+	add_settings_field(
 		'price_decimal_separator', 
 		esc_html__( 'Decimal separator', 'booking-activities' ), 
 		'bookacti_settings_field_price_decimal_separator_callback', 
@@ -177,39 +169,46 @@ function bookacti_init_settings() {
 		)
 	);
 	
-	add_settings_field(  
-		'allow_customers_to_cancel',                      
-		esc_html__( 'Allow customers to cancel their bookings', 'booking-activities' ),               
-		'bookacti_settings_field_activate_cancel_callback',   
-		'bookacti_cancellation_settings',                     
+	add_settings_field(
+		'allow_customers_to_cancel',
+		esc_html__( 'Allow customers to cancel their bookings', 'booking-activities' ),
+		'bookacti_settings_field_activate_cancel_callback',
+		'bookacti_cancellation_settings',
 		'bookacti_settings_section_cancellation' 
 	);
 	
-	add_settings_field(  
-		'allow_customers_to_reschedule',                      
-		esc_html__( 'Allow customers to reschedule their bookings', 'booking-activities' ),               
-		'bookacti_settings_field_activate_reschedule_callback',   
-		'bookacti_cancellation_settings',                     
-		'bookacti_settings_section_cancellation' 
+	add_settings_field(
+		'allow_customers_to_reschedule',
+		esc_html__( 'Allow customers to reschedule their bookings', 'booking-activities' ),
+		'bookacti_settings_field_activate_reschedule_callback',
+		'bookacti_cancellation_settings',
+		'bookacti_settings_section_cancellation'
 	);
 	
-	add_settings_field(  
+	add_settings_field(
 		'booking_changes_deadline', 
 		/* translators: Followed by a field indicating a number of days, hours and minutes from now. E.g.: "Changes are allowed for bookings starting in at least 2 days, 12 hours, 25 minutes". */
-		esc_html__( 'Changes are allowed for bookings starting in at least', 'booking-activities' ),               
-		'bookacti_settings_field_cancellation_delay_callback',   
-		'bookacti_cancellation_settings',                     
+		esc_html__( 'Changes are allowed for bookings starting in at least', 'booking-activities' ),
+		'bookacti_settings_field_cancellation_delay_callback',
+		'bookacti_cancellation_settings',
 		'bookacti_settings_section_cancellation' 
 	);
 	
-	add_settings_field(  
-		'refund_actions_after_cancellation',                      
-		esc_html__( 'Possible actions customers can take to be refunded', 'booking-activities' ),               
-		'bookacti_settings_field_cancellation_refund_actions_callback',   
-		'bookacti_cancellation_settings',                     
+	add_settings_field(
+		'refund_actions_after_cancellation',
+		esc_html__( 'Possible actions customers can take to be refunded', 'booking-activities' ),
+		'bookacti_settings_field_cancellation_refund_actions_callback',
+		'bookacti_cancellation_settings',
 		'bookacti_settings_section_cancellation' 
 	);
 	
+	add_settings_field(
+		'admin_reschedule_scope',
+		esc_html__( 'Administrators can reschedule bookings to', 'booking-activities' ),
+		'bookacti_settings_field_admin_reschedule_scope_callback',
+		'bookacti_cancellation_settings',
+		'bookacti_settings_section_cancellation' 
+	);
 	
 	
 	/* Notifications settings Section - 1 - General settings */
@@ -325,11 +324,13 @@ add_action( 'admin_menu', 'bookacti_add_screen_options', 20 );
 /**
  * Add booking page columns screen options
  * @since 1.3.0
- * @version 1.6.0
+ * @version 1.16.0
  */
 function bookacti_add_booking_page_screen_option() {
-	$booking_list = new Bookings_List_Table();
-	$booking_list->process_bulk_action();
+	$action = ! empty( $_REQUEST[ 'action' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'action' ] ) : '';
+	if( ! $action || ! in_array( $action, array( 'edit', 'new' ), true ) ) {
+		new Bookings_List_Table();
+	}
 }
 add_action( 'admin_head-booking-activities_page_bookacti_bookings', 'bookacti_add_booking_page_screen_option' );
 
@@ -337,9 +338,11 @@ add_action( 'admin_head-booking-activities_page_bookacti_bookings', 'bookacti_ad
 /**
  * Add form page columns screen options
  * @since 1.5.0
+ * @version 1.16.0
  */
 function bookacti_add_form_page_screen_option() {
-	if( empty( $_REQUEST[ 'action' ] ) || ! in_array( $_REQUEST[ 'action' ], array( 'edit', 'new' ), true ) ) {
+	$action = ! empty( $_REQUEST[ 'action' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'action' ] ) : '';
+	if( ! $action || ! in_array( $action, array( 'edit', 'new' ), true ) ) {
 		new Forms_List_Table();
 	}
 }
@@ -365,7 +368,7 @@ add_filter( 'set-screen-option', 'bookacti_save_screen_options', 10, 3 );
 /**
  * Create a settings page for each notification
  * @since 1.2.1 (was bookacti_fill_notifications_settings_section)
- * @version 1.15.13
+ * @version 1.16.0
  * @param string $notification_id
  */
 function bookacti_fill_notification_settings_page( $notification_id ) {
@@ -383,7 +386,7 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 		</h2>
 		
 		<p>
-			<a href='<?php echo esc_url( '?page=bookacti_settings&tab=notifications' ); ?>' >
+			<a href='<?php echo esc_url( '?page=bookacti_settings&tab=notifications' ); ?>'>
 				<?php esc_html_e( 'Go back to notifications settings', 'booking-activities' ); ?>
 			</a>
 		</p>
@@ -393,10 +396,10 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 		<?php do_action( 'bookacti_notification_settings_page_before', $notification_settings, $notification_id ); ?>
 
 		<h3><?php esc_html_e( 'Global notifications settings', 'booking-activities' ); ?></h3>
-		<table class='form-table' id='bookacti-notification-global-settings<?php echo $recipient === 'admin' ? '-admin' : ''; ?>' >
+		<table class='form-table' id='bookacti-notification-global-settings<?php echo $recipient === 'admin' ? '-admin' : ''; ?>'>
 			<tbody>
 				<tr>
-					<th scope='row' ><?php esc_html_e( 'Enable', 'booking-activities' ); ?></th>
+					<th scope='row'><?php esc_html_e( 'Enable', 'booking-activities' ); ?></th>
 					<td>
 						<?php 
 						$args = array(
@@ -415,14 +418,14 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 		</table>
 
 		<h3><?php esc_html_e( 'Email notifications settings', 'booking-activities' ); ?></h3>
-		<table class='form-table' id='bookacti-notification-email-settings<?php echo $recipient === 'admin' ? '-admin' : ''; ?>' >
+		<table class='form-table' id='bookacti-notification-email-settings<?php echo $recipient === 'admin' ? '-admin' : ''; ?>'>
 			<tbody>
 				<?php 
 				do_action( 'bookacti_notification_settings_page_email_before', $notification_settings, $notification_id );
 
 				if( substr( $notification_id, 0, 8 ) !== 'customer' ) { ?>
 				<tr>
-					<th scope='row' ><?php _e( 'Recipient(s)', 'booking-activities' ); ?></th>
+					<th scope='row'><?php _e( 'Recipient(s)', 'booking-activities' ); ?></th>
 					<td>
 						<?php
 						$args = array(
@@ -438,7 +441,7 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 				</tr>
 				<?php } ?>
 				<tr>
-					<th scope='row' ><?php echo esc_html_x( 'Subject', 'email subject', 'booking-activities' ); ?></th>
+					<th scope='row'><?php echo esc_html_x( 'Subject', 'email subject', 'booking-activities' ); ?></th>
 					<td>
 						<?php 
 						$args = array(
@@ -454,19 +457,19 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 					</td>
 				</tr>
 				<tr>
-					<th scope='row' >
+					<th scope='row'>
 					<?php 
 						echo esc_html_x( 'Email content', 'email message', 'booking-activities' ); 
 						$tags = bookacti_get_notifications_tags( $notification_id );
 						if( $tags ) {
 					?>
-						<div class='bookacti-notifications-tags-list' >
+						<div class='bookacti-notifications-tags-list'>
 							<p><?php esc_html_e( 'Use these tags:', 'booking-activities' ); ?></p>
 					<?php
 							foreach( $tags as $tag => $tip ) {
 								?>
-								<div class='bookacti-notifications-tag' >
-									<code><?php echo $tag; ?></code>
+								<div class='bookacti-notifications-tag'>
+									<span><?php echo str_replace( '}{', '}<br/>{', $tag ); ?></span>
 									<?php bookacti_help_tip( $tip ); ?>
 								</div>
 								<?php
@@ -479,8 +482,8 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 								/* translators: %1$s is the placeholder for Notification Pack add-on link */
 								$tip = sprintf( esc_html__( 'You can set a specific message on events, activities, groups of events and group categories and use it in your notifications thanks to %1$s add-on.', 'booking-activities' ), $addon_link );
 								?>
-								<div class='bookacti-notifications-tag' >
-									<code class='bookacti-notifications-tag-promo' >{specific_message}</code>
+								<div class='bookacti-notifications-tag'>
+									<code class='bookacti-notifications-tag-promo'>{specific_message}</code>
 									<?php bookacti_help_tip( $tip ); ?>
 								</div>
 								<?php
@@ -561,10 +564,10 @@ function bookacti_display_messages_fields() {
 	$messages = bookacti_get_messages( true );
 	foreach( $messages as $message_id => $message ) {
 ?>
-		<div class='bookacti-message-setting' >
+		<div class='bookacti-message-setting'>
 			<em><?php echo $message[ 'description' ] ?></em><br/>
 			<?php if( isset( $message[ 'input_type' ] ) && $message[ 'input_type' ] === 'textarea' ) { ?>
-				<textarea id='bookacti_messages_settings_<?php echo $message_id; ?>' class='bookacti-translatable' name='bookacti_messages_settings[<?php echo $message_id; ?>]' ><?php echo esc_textarea( $message[ 'value' ] ); ?></textarea>
+				<textarea id='bookacti_messages_settings_<?php echo $message_id; ?>' class='bookacti-translatable' name='bookacti_messages_settings[<?php echo $message_id; ?>]'><?php echo esc_textarea( $message[ 'value' ] ); ?></textarea>
 			<?php } else { ?>
 				<input type='text' id='bookacti_messages_settings_<?php echo $message_id; ?>' class='bookacti-translatable' name='bookacti_messages_settings[<?php echo $message_id; ?>]' value='<?php esc_attr_e( $message[ 'value' ] ); ?>' />
 			<?php } ?>
@@ -657,7 +660,7 @@ function bookacti_add_ons_compatibility_error_notice() {
 	}
 	if( ! $outdated_add_ons ) { return; }
 ?>
-	<div class='notice notice-error bookacti-add-ons-compatibility-notice' >
+	<div class='notice notice-error bookacti-add-ons-compatibility-notice'>
 		<p>
 			<?php
 				/* translators: %s = Plugin name (Booking Activities) */
@@ -710,7 +713,7 @@ function bookacti_5stars_rating_notice() {
 				$nb_days			= floor( $install_datetime->diff( $current_datetime )->days );
 				if( $nb_days >= 61 ) {
 					?>
-					<div class='notice notice-info bookacti-5stars-rating-notice is-dismissible' >
+					<div class='notice notice-info bookacti-5stars-rating-notice is-dismissible'>
 						<p>
 							<?php 
 								/* translators: %s: Plugin name */
@@ -723,8 +726,8 @@ function bookacti_5stars_rating_notice() {
 							?>
 						</p>
 						<p>
-							<a class='button' href='<?php echo esc_url( 'https://wordpress.org/support/plugin/booking-activities/reviews?rate=5#new-post' ); ?>' target='_blank' ><?php esc_html_e( 'Ok, I\'ll rate you five stars!', 'booking-activities' ); ?></a>
-							<span class='button' id='bookacti-dismiss-5stars-rating' ><?php esc_html_e( 'I already rated you, hide this message', 'booking-activities' ); ?></span>
+							<a class='button' href='<?php echo esc_url( 'https://wordpress.org/support/plugin/booking-activities/reviews?rate=5#new-post' ); ?>' target='_blank'><?php esc_html_e( 'Ok, I\'ll rate you five stars!', 'booking-activities' ); ?></a>
+							<span class='button' id='bookacti-dismiss-5stars-rating'><?php esc_html_e( 'I already rated you, hide this message', 'booking-activities' ); ?></span>
 						</p>
 					</div>
 					<?php
@@ -857,7 +860,7 @@ add_filter( 'editable_extensions', 'bookacti_add_editable_extensions', 10, 2 );
 /**
  * Search users for AJAX selectbox
  * @since 1.7.19
- * @version 1.15.12
+ * @version 1.16.0
  */
 function bookacti_controller_search_select2_users() {
 	// Check nonce
@@ -868,19 +871,20 @@ function bookacti_controller_search_select2_users() {
 	if( ! current_user_can( 'list_users' ) && ! current_user_can( 'edit_users' ) ) { bookacti_send_json_not_allowed( 'search_select2_users' ); }
 	
 	// Sanitize search
-	$term			= isset( $_REQUEST[ 'term' ] ) ? sanitize_text_field( stripslashes( $_REQUEST[ 'term' ] ) ) : '';
-	$id__in			= ! empty( $_REQUEST[ 'id__in' ] ) ? bookacti_ids_to_array( $_REQUEST[ 'id__in' ] ) : array();
-	$id__not_in		= ! empty( $_REQUEST[ 'id__not_in' ] ) ? bookacti_ids_to_array( $_REQUEST[ 'id__not_in' ] ) : array();
-	$role			= ! empty( $_REQUEST[ 'role' ] ) ? bookacti_str_ids_to_array( $_REQUEST[ 'role' ] ) : array();
-	$role__in		= ! empty( $_REQUEST[ 'role__in' ] ) ? bookacti_str_ids_to_array( $_REQUEST[ 'role__in' ] ) : array();
-	$role__not_in	= ! empty( $_REQUEST[ 'role__not_in' ] ) ? bookacti_str_ids_to_array( $_REQUEST[ 'role__not_in' ] ) : array();
+	$term         = isset( $_REQUEST[ 'term' ] )           ? sanitize_text_field( stripslashes( $_REQUEST[ 'term' ] ) ) : '';
+	$id__in       = ! empty( $_REQUEST[ 'id__in' ] )       ? bookacti_ids_to_array( $_REQUEST[ 'id__in' ] ) : array();
+	$id__not_in   = ! empty( $_REQUEST[ 'id__not_in' ] )   ? bookacti_ids_to_array( $_REQUEST[ 'id__not_in' ] ) : array();
+	$role         = ! empty( $_REQUEST[ 'role' ] )         ? bookacti_str_ids_to_array( $_REQUEST[ 'role' ] ) : array();
+	$role__in     = ! empty( $_REQUEST[ 'role__in' ] )     ? bookacti_str_ids_to_array( $_REQUEST[ 'role__in' ] ) : array();
+	$role__not_in = ! empty( $_REQUEST[ 'role__not_in' ] ) ? bookacti_str_ids_to_array( $_REQUEST[ 'role__not_in' ] ) : array();
+	$no_account   = ! empty( $_REQUEST[ 'no_account' ] );
 	
 	// Check if the search is not empty
-	if( ! $term && ! $id__in && ! $role && ! $role__in ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'empty_query' ), 'search_select2_users' ); }
+	if( ! $term && ! $id__in && ! $role && ! $role__in && ! $no_account ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'empty_query' ), 'search_select2_users' ); }
 	
 	$defaults = array(
-		'name' => isset( $_REQUEST[ 'name' ] ) ? sanitize_title_with_dashes( stripslashes( $_REQUEST[ 'name' ] ) ) : '', // Used for developers to identify the selectbox
-		'id' => isset( $_REQUEST[ 'id' ] ) ? sanitize_title_with_dashes( stripslashes( $_REQUEST[ 'id' ] ) ) : '',		 // Used for developers to identify the selectbox
+		'name' => isset( $_REQUEST[ 'name' ] ) ? sanitize_title_with_dashes( stripslashes( $_REQUEST[ 'name' ] ) ) : '', // For developers to identify the selectbox
+		'id' => isset( $_REQUEST[ 'id' ] ) ? sanitize_title_with_dashes( stripslashes( $_REQUEST[ 'id' ] ) ) : '',		 // For developers to identify the selectbox
 		'search' => $term !== '' ? '*' . esc_attr( $term ) . '*' : '',
 		'search_columns' => array( 'user_login', 'user_url', 'user_email', 'user_nicename', 'display_name' ),
 		'option_label' => array( 'first_name', ' ', 'last_name', ' (', 'user_login', ' / ', 'user_email', ')' ),
@@ -916,6 +920,15 @@ function bookacti_controller_search_select2_users() {
 			}
 		}
 		$options[] = array( 'id' => $user->ID, 'text' => esc_html( $label ) );
+	}
+	
+	// Retrieve user emails from bookings made without accounts
+	if( $no_account && $term ) {
+		$bookings = bookacti_get_bookings_without_account( array( 'emails' => array( $term ), 'like' => true, 'distinct' => true ) );
+		$booking_emails = array();
+		foreach( $bookings as $booking ) {
+			$options[] = array( 'id' => esc_attr( $booking->user_id ), 'text' => esc_html( $booking->user_id ) );
+		}
 	}
 	
 	// Allow plugins to add their values

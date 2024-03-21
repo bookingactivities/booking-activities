@@ -958,7 +958,7 @@ add_action( 'wp_ajax_bookactiBeforeDeleteGroupOfEvents', 'bookacti_controller_be
 /**
  * Delete a group of events with AJAX
  * @since 1.1.0
- * @version 1.15.5
+ * @version 1.16.0
  */
 function bookacti_controller_delete_group_of_events() {
 	// Check nonce
@@ -988,12 +988,20 @@ function bookacti_controller_delete_group_of_events() {
 	$bookings_nb_per_event = array();
 	if( $cancel_bookings ) { 
 		// Get bookings before cancelling them
-		if( $send_notifications ) {
-			$filters = bookacti_format_booking_filters( array( 'event_group_id' => $group_id, 'active' => 1 ) );
-			$old_booking_groups = bookacti_get_booking_groups( $filters );
-			// It is not necessary to filter more the booking groups here because
-			// the notification will be sent only if the booking group is cancelled, 
-			// and the booking group is cancelled only if it has an active booking starting in the future
+		$filters = bookacti_format_booking_filters( array( 'event_group_id' => $group_id, 'active' => 1, 'fetch_meta' => true ) );
+		$old_booking_groups = bookacti_get_booking_groups( $filters );
+		// It is not necessary to filter more the booking groups here because
+		// the notification will be sent only if the booking group is cancelled, 
+		// and the booking group is cancelled only if it has an active booking starting in the future
+		
+		// Get groups bookings
+		$group_ids           = array_keys( $old_booking_groups );
+		$grouped_filters     = $group_ids ? bookacti_format_booking_filters( array( 'in__booking_group_id' => $group_ids, 'fetch_meta' => true ) ) : array();
+		$grouped_bookings    = $grouped_filters ? bookacti_get_bookings( $grouped_filters ) : array();
+		$old_groups_bookings = array();
+		foreach( $grouped_bookings as $booking ) {
+			if( ! isset( $old_groups_bookings[ $booking->group_id ] ) ) { $old_groups_bookings[ $booking->group_id ] = array(); }
+			$old_groups_bookings[ $booking->group_id ][ $booking->id ] = $booking;
 		}
 		
 		// Cancel active and future grouped bookings belonging that (once) belong(ed) to that group of events
@@ -1001,7 +1009,7 @@ function bookacti_controller_delete_group_of_events() {
 		
 		// Maybe send notifications
 		if( $old_booking_groups ) {
-			bookacti_maybe_send_group_of_events_cancelled_notifications( $group, $old_booking_groups, $send_notifications );
+			bookacti_maybe_send_group_of_events_cancelled_notifications( $group, $old_booking_groups, $old_groups_bookings, $send_notifications );
 		}
 		
 		$bookings_nb_per_event = bookacti_get_number_of_bookings_per_event( array( 'templates' => array( $group[ 'template_id' ] ) ) );

@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * AJAX Controller - Get booking system data by interval (events, groups, and bookings) 
  * @since 1.12.0 (was bookacti_controller_fetch_events)
- * @version 1.14.0
+ * @version 1.16.0
  */
 function bookacti_controller_get_booking_system_data_by_interval() {
 	$atts     = isset( $_POST[ 'attributes' ] ) ? ( is_array( $_POST[ 'attributes' ] ) ? $_POST[ 'attributes' ] : ( is_string( $_POST[ 'attributes' ] ) ? bookacti_maybe_decode_json( stripslashes( $_POST[ 'attributes' ] ), true ) : array() ) ) : array();
@@ -20,12 +20,18 @@ function bookacti_controller_get_booking_system_data_by_interval() {
 	
 	$booking_system_data = bookacti_get_booking_system_data( $atts );
 	
-	// Encrypt user id
-	$public_user_id = ! empty( $atts[ 'user_id' ] ) ? $atts[ 'user_id' ] : 0;
-	if( $public_user_id && ( ( is_numeric( $public_user_id ) && strlen( (string) $public_user_id ) < 16 ) || is_email( $public_user_id ) ) ) { $public_user_id = bookacti_encrypt( $public_user_id ); }
+	// Encrypt user_id
+	$public_user_ids = array();
+	if( ! empty( $atts[ 'user_id' ] ) ) {
+		foreach( $atts[ 'user_id' ] as $user_id ) {
+			if( $user_id && ( ( is_numeric( $user_id ) && strlen( (string) $user_id ) < 16 ) || is_email( $user_id ) ) ) { 
+				$public_user_ids[] = bookacti_encrypt( $user_id );
+			}
+		}
+	}
 	
 	// Let plugins define what data should be passed to JS
-	$public_booking_system_data = apply_filters( 'bookacti_public_booking_system_data', array_merge( $booking_system_data, array( 'user_id' => $public_user_id ) ), $atts );
+	$public_booking_system_data = apply_filters( 'bookacti_public_booking_system_data', array_merge( $booking_system_data, array( 'user_id' => $public_user_ids ) ), $atts );
 	
 	bookacti_send_json( array( 
 		'status'              => 'success', 
@@ -39,7 +45,7 @@ add_action( 'wp_ajax_nopriv_bookactiGetBookingSystemDataByInterval', 'bookacti_c
 /**
  * Reload booking system with new attributes via AJAX
  * @since 1.1.0
- * @version 1.14.0
+ * @version 1.16.0
  */
 function bookacti_controller_reload_booking_system() {
 	$atts = isset( $_POST[ 'attributes' ] ) ? ( is_array( $_POST[ 'attributes' ] ) ? $_POST[ 'attributes' ] : ( is_string( $_POST[ 'attributes' ] ) ? bookacti_maybe_decode_json( stripslashes( $_POST[ 'attributes' ] ), true ) : array() ) ) : array();
@@ -51,12 +57,18 @@ function bookacti_controller_reload_booking_system() {
 	// Get HTML elements used by the booking method
 	$html_elements = bookacti_get_booking_method_html( $booking_system_data[ 'method' ], $booking_system_data );
 	
-	// Encrypt user id
-	$public_user_id = ! empty( $atts[ 'user_id' ] ) ? $atts[ 'user_id' ] : 0;
-	if( $public_user_id && ( ( is_numeric( $public_user_id ) && strlen( (string) $public_user_id ) < 16 ) || is_email( $public_user_id ) ) ) { $public_user_id = bookacti_encrypt( $public_user_id ); }
+	// Encrypt user_id
+	$public_user_ids = array();
+	if( ! empty( $atts[ 'user_id' ] ) ) {
+		foreach( $atts[ 'user_id' ] as $user_id ) {
+			if( $user_id && ( ( is_numeric( $user_id ) && strlen( (string) $user_id ) < 16 ) || is_email( $user_id ) ) ) { 
+				$public_user_ids[] = bookacti_encrypt( $user_id );
+			}
+		}
+	}
 	
 	// Let plugins define what data should be passed to JS
-	$public_booking_system_data = apply_filters( 'bookacti_public_booking_system_data', array_merge( $booking_system_data, array( 'user_id' => $public_user_id ) ), $atts );
+	$public_booking_system_data = apply_filters( 'bookacti_public_booking_system_data', array_merge( $booking_system_data, array( 'user_id' => $public_user_ids ) ), $atts );
 	
 	bookacti_send_json( array( 
 		'status'              => 'success', 

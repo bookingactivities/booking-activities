@@ -54,15 +54,14 @@ ul[id$='-select-box-results'] li[aria-disabled='true'] { display: none; }
 .bookacti-list-table ul.striped>:nth-child(odd)    { -webkit-transition: background-color 400ms linear; -ms-transition: background-color 400ms linear; transition: background-color 400ms linear; }
 
 .bookacti-list-table th.sortable a, 
-.bookacti-list-table th.sorted a                   { overflow: visible; white-space: nowrap; }
-.bookacti-list-table th.sortable a span, 
-.bookacti-list-table th.sorted a span              { float: none; display: inline-block; vertical-align: top; }
+.bookacti-list-table th.sorted a                   { position: relative; }
+.bookacti-list-table .sorting-indicators           { position: absolute; right: 0; }
 .bookacti-list-table .sorting-indicator            { display: none !important; }
 .bookacti-list-table th.asc a:focus span.sorting-indicator, 
 .bookacti-list-table th.asc:hover span.sorting-indicator, 
 .bookacti-list-table th.desc a:focus span.sorting-indicator, 
 .bookacti-list-table th.desc:hover span.sorting-indicator, 
-.bookacti-list-table th.sorted .sorting-indicator  { display: inline-block !important; }
+.bookacti-list-table th.sorted .sorting-indicator  { display: block !important; }
 
 .bookacti-list-table .wp-list-table.widefat        { border-collapse: collapse; }
 .bookacti-list-table tbody td                      { vertical-align: middle; }
@@ -147,7 +146,7 @@ ul[id$='-select-box-results'] li[aria-disabled='true'] { display: none; }
 
 .bookacti-notifications-tags-list { max-height: 520px; max-width: 220px; overflow: auto; }
 .bookacti-notifications-tags-list .bookacti-notifications-tag { margin-bottom: 8px; white-space: nowrap; }
-.bookacti-notifications-tag code { font-weight: normal; font-size: 0.8em; }
+.bookacti-notifications-tag > span:first-of-type { font-family: Consolas, Monaco, monospace; direction: ltr; unicode-bidi: embed; font-weight: normal; font-size: 0.8em; background-color: rgba( 0, 0, 0, 0.05 ); padding: 2px 6px; }
 
 .bookacti-settings-tab-messages .form-table th			{ display: none; }
 .bookacti-settings-tab-messages .form-table td			{ padding: 0 0 20px 0; font-size: 13px; }

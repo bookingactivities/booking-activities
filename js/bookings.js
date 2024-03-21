@@ -46,21 +46,21 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Display / Hide the calendar and reload it if the filters has been changed
-	 * @version 1.8.0
+	 * @version 1.16.0
 	 */
 	$j( '#bookacti-pick-event-filter' ).on( 'click', function() {
 		var booking_system = $j( '#bookacti-booking-system-bookings-page' );
 		
 		// Reload events according to filters if they have changed
 		if( ! $j( '#bookacti-booking-system-filter-container' ).is( ':visible' ) ) {
-			var booking_system_id	= booking_system.attr( 'id' );
-			var selected_templates	= $j( '#bookacti-booking-filter-templates' ).val() ? $j( '#bookacti-booking-filter-templates' ).val() : [];
-			var selected_status		= $j( '#bookacti-booking-filter-status' ).val() ? $j( '#bookacti-booking-filter-status' ).val() : [];
-			var selected_user		= $j( '#bookacti-booking-filter-customer' ).val() ? $j( '#bookacti-booking-filter-customer' ).val() : 0;
+			var booking_system_id  = booking_system.attr( 'id' );
+			var selected_templates = $j( '#bookacti-booking-filter-templates' ).val() ? $j( '#bookacti-booking-filter-templates' ).val() : [];
+			var selected_status    = $j( '#bookacti-booking-filter-status' ).val() ? $j( '#bookacti-booking-filter-status' ).val() : [];
+			var selected_user      = $j( '#bookacti-booking-filter-customer' ).val() ? [ $j( '#bookacti-booking-filter-customer' ).val() ] : [];
 			
 			if( ! bookacti_compare_arrays( bookacti.booking_system[ booking_system_id ][ 'calendars' ], selected_templates )
 			||  ! bookacti_compare_arrays( bookacti.booking_system[ booking_system_id ][ 'status' ], selected_status )
-			||  bookacti.booking_system[ booking_system_id ][ 'user_id' ] !== selected_user ) {
+			||  ! bookacti_compare_arrays( bookacti.booking_system[ booking_system_id ][ 'user_id' ], selected_user ) ) {
 				bookacti_reload_booking_system_according_to_filters( booking_system );
 			}
 			
@@ -264,67 +264,6 @@ $j( document ).ready( function() {
 	 */
 	bookacti_refresh_booking_group_frame();
 	
-	/**
-	 * Load tooltip for booking actions retrieved via AJAX and Refresh booking groups frames
-	 * @version 1.8.6
-	 */
-	$j( '#bookacti-booking-list' ).on( 'bookacti_booking_list_filtered bookacti_grouped_bookings_displayed', function(){
-		bookacti_init_tooltip();
-		bookacti_refresh_booking_group_frame();
-	});
-	
-	
-	/**
-	 * Refresh booking groups frames - On delete booking
-	 * @since 1.8.6
-	 */
-	$j( 'body' ).on( 'bookacti_booking_deleted', function() {
-		bookacti_refresh_booking_group_frame();
-	});
-	
-	
-	/**
-	 * Refresh the calendar when a booking has been reschedule
-	 */
-	$j( 'body' ).on( 'bookacti_booking_rescheduled', function(){
-		bookacti_init_tooltip();
-		var booking_system = $j( '#bookacti-booking-system-bookings-page' );
-		bookacti_booking_method_refetch_events( booking_system );
-		bookacti_refresh_booking_numbers( booking_system );
-	});
-	
-	
-	/**
-	 * Refresh bookings number when a booking state or payment status has changed
-	 * @version 1.7.10
-	 * @param {Event} e
-	 * @param {Int} booking_id
-	 * @param {String} booking_type
-	 * @param {String} new_state
-	 * @param {String} old_state
-	 * @param {Boolean} is_bookings_page
-	 * @param {Boolean} active_changed
-	 */
-	$j( 'body' ).on( 'bookacti_booking_state_changed bookacti_payment_status_changed', function( e, booking_id, booking_type, new_state, old_state, is_bookings_page, active_changed ){
-		bookacti_init_tooltip();
-		
-		if( ! active_changed ) { return false; }
-		var booking_system = $j( '#bookacti-booking-system-bookings-page' );
-		bookacti_refresh_booking_numbers( booking_system );
-	});
-	
-	
-	/**
-	 * Refresh bookings number when a booking is refunded or when its quantity changed
-	 * @version 1.7.18
-	 */
-	$j( 'body' ).on( 'bookacti_booking_refunded bookacti_booking_quantity_changed', function(){
-		bookacti_init_tooltip();
-		
-		var booking_system = $j( '#bookacti-booking-system-bookings-page' );
-		bookacti_refresh_booking_numbers( booking_system );
-	});
-	
 	
 	/**
 	 * WP List Table pagination - go to a specific page
@@ -351,5 +290,49 @@ $j( document ).ready( function() {
 		var paged_index = href.indexOf( 'paged=' );
 		var paged = paged_index !== -1 ? href.substr( paged_index + 6 ) : 1;
 		bookacti_filter_booking_list( paged );
+	});
+	
+	
+	/**
+	 * Show the number of selected elements - on change
+	 * @since 1.16.0
+	 */
+	$j( 'body' ).on( 'change', '.bookacti-list-table .check-column input', function() {
+		$j( '#bookacti-bookings-container .bookacti-select-all-container' ).remove();
+		$j( '#bookacti-all-selected' ).val( 0 );
+		
+		var nb_selected = '<span class="bookacti-nb-selected">' + bookacti_localized.nb_selected.replace( '{nb}', $j( '#bookacti-bookings-container tbody .check-column input:checked' ).length ) + '</span>';
+		var select_all  = '<button class="bookacti-select-all button">' + bookacti_localized.select_all.replace( '{nb}', $j( '#bookacti-bookings-container .displaying-num' ).first().text() ) + '</button>';
+		
+		$j( '#bookacti-bookings-container .tablenav .bulkactions' ).append( '<span class="bookacti-select-all-container">' + nb_selected + select_all + '</span>' );
+	});
+	
+	
+	/**
+	 * Select all items of a WP_List_Table according to filters, even those not displayed
+	 * @since 1.16.0
+	 * @param {Event} e
+	 */
+	$j( 'body' ).on( 'click', '#bookacti-booking-list .bookacti-select-all', function( e ) {
+		e.preventDefault();
+		$j( '#bookacti-bookings-container thead .check-column input[type="checkbox"]' ).prop( 'checked', false ).trigger( 'click.wp-toggle-checkboxes' );
+		var nb_selected  = '<span class="bookacti-nb-selected">' + bookacti_localized.nb_selected.replace( '{nb}', $j( '#bookacti-bookings-container .displaying-num' ).first().text() ) + '</span>';
+		var unselect_all = '<button class="bookacti-unselect-all button">' + bookacti_localized.unselect_all + '</button>';
+		$j( '#bookacti-bookings-container .tablenav .bookacti-nb-selected' ).replaceWith( nb_selected );
+		$j( '#bookacti-bookings-container .tablenav .bookacti-select-all' ).replaceWith( unselect_all );
+		$j( '#bookacti-all-selected' ).val( 1 );
+	});
+	
+	
+	/**
+	 * Unselect all items of a WP_List_Table according to filters
+	 * @since 1.16.0
+	 * @param {Event} e
+	 */
+	$j( 'body' ).on( 'click', '#bookacti-booking-list .bookacti-unselect-all', function( e ) {
+		e.preventDefault();
+		$j( '#bookacti-bookings-container thead .check-column input[type="checkbox"]' ).prop( 'checked', true ).trigger( 'click.wp-toggle-checkboxes' );
+		$j( '#bookacti-bookings-container .tablenav .bookacti-select-all-container' ).remove();
+		$j( '#bookacti-all-selected' ).val( 0 );
 	});
 });

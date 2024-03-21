@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Send a new status notification for a booking attached to an order item
  * @since 1.9.0
- * @version 1.15.8
+ * @version 1.16.0
  * @param array $order_item_booking
  * @param string $new_status
  * @param WC_Order $order
@@ -36,7 +36,7 @@ function bookacti_wc_send_order_item_booking_status_notification( $order_item_bo
 	// If the booking status is pending or booked, notify administrator, unless if the administrator made this change
 	$action = isset( $_REQUEST[ 'action' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'action' ] ) : '';
 	$notify_admin = 0;
-	if(  in_array( $new_status, bookacti_get_active_booking_states(), true )
+	if(  in_array( $new_status, bookacti_get_active_booking_statuses(), true )
 	&& ! in_array( $action, array( 'woocommerce_mark_order_status', 'editpost' ) ) ) {
 		$admin_notification = bookacti_get_notification_settings( 'admin_new_booking' );
 		$notify_admin = ! empty( $admin_notification[ 'active_with_wc' ] ) ? 1 : 0;
@@ -300,28 +300,8 @@ add_filter( 'bookacti_notifications_tags_values', 'bookacti_wc_notifications_tag
 
 
 /**
- * Whether to send the BA refund notification when the order (item) is manually refunded
- * @since 1.8.3
- * @version 1.10.0
- * @param string $recipients
- * @param object $booking
- * @param string $status
- * @param array $args
- * @return string
- */
-function bookacti_wc_refund_notification_recipients( $recipients, $booking, $status, $args ) {
-	if( ! empty( $args[ 'refund_action' ] ) && $args[ 'refund_action' ] === 'manual' ) {
-		$recipients = 'customer';
-		if( ! defined( 'BOOKACTI_NOTIFICATION_MANUAL_REFUND' ) ) { define( 'BOOKACTI_NOTIFICATION_MANUAL_REFUND', 1 ); }
-	}
-	return $recipients;
-}
-add_filter( 'bookacti_booking_state_change_notification_recipient', 'bookacti_wc_refund_notification_recipients', 10, 4 );
-
-
-/**
- * Decide whether to send the notification when a manual refund is processed
- * @since 1.8.6
+ * Decide whether to send the notification when a refund is processed via WC
+ * @since 1.16.0 (was bookacti_allow_refund_notification_during_manual_refund)
  * @param boolean $sending_allowed
  * @param array $notification
  * @param array $tags
@@ -331,15 +311,17 @@ add_filter( 'bookacti_booking_state_change_notification_recipient', 'bookacti_wc
  * @param array $args
  * @return boolean
  */
-function bookacti_allow_refund_notification_during_manual_refund( $sending_allowed, $notification, $tags, $locale, $booking, $booking_type, $args ) {
-	if( defined( 'BOOKACTI_NOTIFICATION_MANUAL_REFUND' ) 
-	&&  BOOKACTI_NOTIFICATION_MANUAL_REFUND 
-	&&  $sending_allowed 
+function bookacti_wc_allow_sending_refund_notification( $sending_allowed, $notification, $tags, $locale, $booking, $booking_type, $args ) {
+	if( $sending_allowed 
 	&&  strpos( $notification[ 'id' ], '_refunded' ) !== false
-	&&  empty( $notification[ 'active_with_wc' ] ) ) { $sending_allowed = false; }
+	&&  empty( $notification[ 'active_with_wc' ] )
+	&&  ! empty( $args[ 'refund_action' ] )
+	&&  in_array( $args[ 'refund_action' ], array( 'auto', 'manual' ) ) ) { 
+		$sending_allowed = false;
+	}
 	return $sending_allowed;
 }
-add_filter( 'bookacti_notification_sending_allowed', 'bookacti_allow_refund_notification_during_manual_refund', 10, 7 );
+add_filter( 'bookacti_notification_sending_allowed', 'bookacti_wc_allow_sending_refund_notification', 10, 7 );
 
 
 /**
@@ -362,6 +344,7 @@ add_filter( 'bookacti_send_group_of_events_cancelled_notification_count', 'booka
 /**
  * Add WC message to the refund requested notification sent to administrators
  * @since 1.15.17 (was bookacti_woocommerce_add_refund_request_email_message)
+ * @version 1.16.0
  * @param array $notification
  * @param array $tags
  * @param string $locale
@@ -373,13 +356,24 @@ add_filter( 'bookacti_send_group_of_events_cancelled_notification_count', 'booka
 function bookacti_wc_add_refund_request_email_message( $notification, $tags, $locale, $booking, $booking_type, $args ) {
 	if( strpos( $notification[ 'id' ], 'admin_refund_requested' ) === false || empty( $booking->order_id ) ) { return $notification; }
 	
-	$go_to_order =	'<div style="background-color: #f5faff; padding: 10px; border: 1px solid #abc; margin-bottom: 30px;" >' 
+	$edit_order_url = '';
+	if( class_exists( '\Automattic\WooCommerce\Utilities\OrderUtil' ) ) {
+		$edit_order_url = \Automattic\WooCommerce\Utilities\OrderUtil::get_order_admin_edit_url( absint( $booking->order_id ) );
+	} else {
+		// WooCommerce Backward Compatibility
+		$order = wc_get_order( absint( $booking->order_id ) );
+		if( $order ) {
+			$edit_order_url = $order->get_edit_order_url();
+		}
+	}
+	
+	$go_to_order =	'<div style="background-color: #f5faff; padding: 10px; border: 1px solid #abc; margin-bottom: 30px;">' 
 						. esc_html__( 'Click here to go to the order page and process the refund:', 'booking-activities' ) 
-						. ' <a href="' . \Automattic\WooCommerce\Utilities\OrderUtil::get_order_admin_edit_url( absint( $booking->order_id ) ) . '" target="_blank" >' 
+						. ' <a href="' . $edit_order_url . '" target="_blank">' 
 							. esc_html__( 'Go to refund page', 'booking-activities' ) 
 						. '</a>'
 					. '</div>';
-
+	
 	$notification[ 'email' ][ 'message' ] = $go_to_order . $notification[ 'email' ][ 'message' ];
 	return $notification;
 }

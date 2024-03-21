@@ -282,7 +282,7 @@ function bookacti_serialize_object( form ) {
 /**
  * Init selectbox with AJAX search
  * @since 1.7.19
- * @version 1.15.12
+ * @version 1.16.0
  */
 function bookacti_select2_init() {
 	if( ! $j.fn.select2 ) { return; }
@@ -313,7 +313,8 @@ function bookacti_select2_init() {
 			dataType: 'json',
 			delay: 1000,
 			data: function( params ) {
-				var data_type = $j( this ).data( 'type' ) ? $j( this ).data( 'type' ).trim() : '';
+				var data_type     = $j( this ).data( 'type' ) ? $j( this ).data( 'type' ).trim() : '';
+				var search_params = $j( this ).data( 'params' ) ? JSON.parse( JSON.stringify( $j( this ).data( 'params' ) ) ) : {};
 				var current_options = [];
 				$j( this ).find( 'option' ).each( function() {
 					if( $j( this ).val() !== '' ) {
@@ -321,14 +322,14 @@ function bookacti_select2_init() {
 					}
 				});
 				
-				var data = {
-					action: data_type ? 'bookactiSelect2Query_' + data_type : 'bookactiSelect2Query',
-					term: typeof params.term == 'string' ? params.term : '',
-					options: current_options,
-					name: $j( this ).attr( 'name' ) ? $j( this ).attr( 'name' ) : '',
-					id: $j( this ).attr( 'id' ) ? $j( this ).attr( 'id' ) : '',
-					nonce: bookacti_localized.nonce_query_select2_options
-				};
+				var data = $j.extend( search_params, {
+					"action": data_type ? 'bookactiSelect2Query_' + data_type : 'bookactiSelect2Query',
+					"term": typeof params.term == 'string' ? params.term : '',
+					"options": current_options,
+					"name": $j( this ).attr( 'name' ) ? $j( this ).attr( 'name' ) : '',
+					"id": $j( this ).attr( 'id' ) ? $j( this ).attr( 'id' ) : '',
+					"nonce": bookacti_localized.nonce_query_select2_options
+				});
 				
 				$j( this ).trigger( 'bookacti_select2_query_data', [ data ] );
 				
@@ -417,78 +418,14 @@ function bookacti_select2_sortable_init( selectbox_selector ) {
  * Convert a php date format into a moment.js format
  * http://www.php.net/manual/en/function.date.php
  * http://momentjs.com/docs/#/displaying/format/
- * @version 1.9.0
+ * @version 1.16.0
  */
 function bookacti_init_moment_format_from_php_date_format() {
-	(function( m ) {
-		var formatMap = {
-			d: 'DD',
-			D: 'ddd',
-			j: 'D',
-			l: 'dddd',
-			N: 'E',
-			S: function() {
-				return '[' + this.format( 'Do' ).replace( /\d*/g, '' ) + ']';
-			},
-			w: 'd',
-			z: function() {
-				return this.format( 'DDD' ) - 1;
-			},
-			W: 'W',
-			F: 'MMMM',
-			m: 'MM',
-			M: 'MMM',
-			n: 'M',
-			t: function() {
-				return this.daysInMonth();
-			},
-			L: function() {
-				return this.isLeapYear() ? 1 : 0;
-			},
-			o: 'GGGG',
-			Y: 'YYYY',
-			y: 'YY',
-			a: 'a',
-			A: 'A',
-			B: function() {
-				var thisUTC = this.clone().utc();
-				var swatch = ( ( thisUTC.hours() + 1 ) % 24 ) + ( thisUTC.minutes() / 60 ) + ( thisUTC.seconds() / 3600 );
-				return Math.floor( swatch * 1000 / 24 );
-			},
-			g: 'h',
-			G: 'H',
-			h: 'hh',
-			H: 'HH',
-			i: 'mm',
-			s: 'ss',
-			u: '[u]', // moment doesn't support microseconds
-			e: '[e]', // moment doesn't support timezone litteral format
-			I: function() {
-				return this.isDST() ? 1 : 0;
-			},
-			O: 'ZZ',
-			P: 'Z',
-			T: '[T]', // moment doesn't support timezone litteral format
-			Z: function() {
-				return parseInt( this.format( 'ZZ' ), 10 ) * 36;
-			},
-			c: 'YYYY-MM-DD[T]HH:mm:ssZ',
-			r: 'ddd, DD MMM YYYY HH:mm:ss ZZ',
-			U: 'X'
+	( function( m ) {
+		moment.fn.formatPHP = function( php_format ) {
+			return this.format( bookacti_convert_php_datetime_format_to_moment_js( php_format ) );
 		};
-		
-		moment.fn.formatPHP = function( format ) {
-			var that = this;
-			escape = false;
-
-			return this.format( format.replace( /./g, function( phpStr ) {
-				if( escape ) { escape = false; return '[' + phpStr + ']'; } // Display escaped chars
-				if( phpStr === '\\' ) { escape = true; return ''; } // The next char will be escaped
-				if( typeof formatMap[ phpStr ] === 'undefined' ) { return '[' + phpStr + ']'; } // Display non-used char as is
-				return typeof formatMap[ phpStr ] === 'function' ? formatMap[ phpStr ].call(that) : formatMap[ phpStr ];
-			}));
-		};
-	}( moment ));
+	}( moment ) );
 }
 
 

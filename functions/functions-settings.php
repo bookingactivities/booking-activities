@@ -5,14 +5,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Get default settings values
  * @since 1.3.0 (was bookacti_define_default_settings_constants)
- * @version 1.15.15
+ * @version 1.16.0
  */
 function bookacti_get_default_settings() {
 	$date = new DateTime(); 
 	$tz = $date->getTimezone()->getName();
 	
 	$default = array(
-		'when_events_load'                  => 'after_page_load',
 		'event_load_interval'               => 92,
 		'started_events_bookable'           => false,
 		'started_groups_bookable'           => false,
@@ -31,6 +30,7 @@ function bookacti_get_default_settings() {
 		'allow_customers_to_reschedule'     => true,
 		'booking_changes_deadline'          => 604800, // 7 days
 		'refund_actions_after_cancellation' => array(),
+		'admin_reschedule_scope'            => 'all_self',
 		'notifications_from_name'           => wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ),
 		'notifications_from_email'          => '', // Use the default sender email address (wordpress@...)
 		'notifications_async'               => true,
@@ -302,38 +302,6 @@ function bookacti_settings_field_calendar_localization_callback() {
 
 
 /**
- * Display "When to load the events?" setting
- * @since 1.1.0
- * @version 1.9.0
- */
-function bookacti_settings_field_when_events_load_callback() {
-	$args = array(
-		'type'		=> 'select',
-		'name'		=> 'bookacti_general_settings[when_events_load]',
-		'id'		=> 'when_events_load',
-		'options'	=> array( 
-							'on_page_load' => esc_html__( 'On page load', 'booking-activities' ),
-							'after_page_load' => esc_html__( 'After page load', 'booking-activities' )
-						),
-		'value'		=> bookacti_get_setting_value( 'bookacti_general_settings', 'when_events_load' ),
-		'tip'		=> apply_filters( 'bookacti_when_events_load_tip', esc_html__( 'Choose whether you want to load events when the page is loaded or after.', 'booking-activities' ) )
-	);
-	bookacti_display_field( $args );
-?>
-	<div class='bookacti-backend-settings-only-notice bookacti-warning' style='margin-top: 10px;'>
-		<span class='dashicons dashicons-warning'></span>
-		<span>
-			<?php 
-				/* translators: %s = "After page load" (it's an option name) */
-				echo sprintf( esc_html__( 'You must choose "%s" if you are using a caching sytem (via a plugin, your webhost, a CDN...).', 'booking-activities' ), esc_html__( 'After page load', 'booking-activities' ) );
-			?>
-		</span>
-	</div>
-<?php
-}
-
-
-/**
  * Display Event Load Interval setting
  * @since 1.2.2
  * @version 1.12.2
@@ -392,20 +360,20 @@ function bookacti_settings_field_started_groups_bookable_callback() {
 /**
  * Display "default payment status" setting
  * @since 1.3.0
- * @version 1.15.16
+ * @version 1.16.0
  */
 function bookacti_settings_field_default_payment_status_callback() {
-	$payment_status = bookacti_get_payment_status_labels();
-	$payment_status_array = array();
-	foreach( $payment_status as $payment_status_id => $payment_status_data ) {
-		$payment_status_array[ esc_attr( $payment_status_id ) ] = esc_html( $payment_status_data[ 'label' ] );
+	$statuses = bookacti_get_payment_statuses();
+	$options  = array();
+	foreach( $statuses as $status => $label ) {
+		$options[ $status ] = esc_html( $label );
 	}
 	
 	$args = apply_filters( 'bookacti_settings_default_payment_status_field_args', array(
 		'type'    => 'select',
 		'name'    => 'bookacti_general_settings[default_payment_status]',
 		'id'      => 'default_payment_status',
-		'options' => $payment_status_array,
+		'options' => $options,
 		'value'   => bookacti_get_setting_value( 'bookacti_general_settings', 'default_payment_status' ),
 		'tip'     => esc_html__( 'Choose what payment status a booking should have when a customer complete the booking form.', 'booking-activities' )
 	) );
@@ -415,15 +383,15 @@ function bookacti_settings_field_default_payment_status_callback() {
 
 
 /**
- * Display "default booking state" setting
- * @version 1.15.16
+ * Display "default booking status" setting
+ * @version 1.16.0
  */
 function bookacti_settings_field_default_booking_state_callback() {
-	$booking_state_labels = bookacti_get_booking_state_labels();
-	$allowed_booking_states = array( 'pending', 'booked' );
-	$options = array();
-	foreach( $allowed_booking_states as $state_key ) {
-		$options[ $state_key ] = ! empty( $booking_state_labels[ $state_key ][ 'label' ] ) ? $booking_state_labels[ $state_key ][ 'label' ] : $state_key;
+	$allowed_statuses = array( 'pending', 'booked' );
+	$statuses = array_intersect_key( bookacti_get_booking_statuses(), array_flip( $allowed_statuses ) );
+	$options  = array();
+	foreach( $statuses as $status => $label ) {
+		$options[ esc_attr( $status ) ] = esc_html( $label );
 	}
 
 	$args = apply_filters( 'bookacti_settings_default_booking_status_field_args', array(
@@ -681,13 +649,38 @@ function bookacti_settings_field_cancellation_refund_actions_callback() {
 }
 
 
+/**
+ * Display the Admin reschedule scope option
+ * @since 1.16.0
+ */
+function bookacti_settings_field_admin_reschedule_scope_callback() {
+	$args = array(
+		'type'     => 'select',
+		'name'     => 'bookacti_cancellation_settings[admin_reschedule_scope]',
+		'id'       => 'admin_reschedule_scope',
+		'title'    => esc_html__( 'Administrators can reschedule bookings to', 'booking-activities' ),
+		'options'  => array(
+			'all_self'  => esc_html__( 'All calendars, same activity', 'booking-activities' ),
+			'all_any'   => esc_html__( 'All calendars, any activities', 'booking-activities' ),
+			'form_self' => esc_html__( 'Same form, same activity', 'booking-activities' ),
+			'form_any'  => esc_html__( 'Same form, any activities', 'booking-activities' ),
+		),
+		'value'    => bookacti_get_setting_value( 'bookacti_cancellation_settings', 'admin_reschedule_scope' ),
+		'tip'      => esc_html__( 'Allow the administrators to reschedule a booking to a different activity, from the backend only.', 'booking-activities' )
+		           . '<br/>'  . esc_html__( 'There is an option is the activity settings to allow customers to reschedule their bookings to a different activity. If this option is set, administrators can reschedule to the widest scope.', 'booking-activities' )
+	);
+	bookacti_display_field( $args );
+}
+
+
+
 
 // NOTIFICATIONS SETTINGS 
 
 /**
  * Settings section callback - Notifications - General settings (displayed before settings)
  * @since 1.2.1 (was bookacti_settings_section_notifications_callback in 1.2.0)
- * @version 1.8.6
+ * @version 1.16.0
  */
 function bookacti_settings_section_notifications_general_callback() { 
 	// Display a table of configurable notifications
@@ -711,7 +704,6 @@ function bookacti_settings_section_notifications_general_callback() {
 			<tbody>
 		<?php
 			// Get notifications IDs and their settings
-			$notifications_ids = array();
 			$notifications_settings = array();
 			$notifications_ids = array_keys( bookacti_get_notifications_default_settings() );
 			foreach( $notifications_ids as $notification_id ) {
@@ -1525,7 +1517,7 @@ function bookacti_privacy_exporter_user_data( $email_address, $page = 1 ) {
 /**
  * Export bookings user metadata with WP privacy export tool
  * @since 1.7.0
- * @version 1.14.0
+ * @version 1.16.0
  * @param string $email_address
  * @param int $page
  * @return array
@@ -1596,7 +1588,7 @@ function bookacti_privacy_exporter_bookings_data( $email_address, $page = 1 ) {
 
 			// Set the name / value data to export for each booking
 			$date_format = bookacti_get_message( 'date_format_long' );
-			$states = bookacti_get_booking_state_labels();
+			$statuses = bookacti_get_booking_statuses();
 			foreach( $bookings as $booking ) {
 				$booking_personal_data = array();
 				$booking_meta		= ! empty( $bookings_meta[ $booking->id ] ) ? $bookings_meta[ $booking->id ] : array();
@@ -1618,7 +1610,7 @@ function bookacti_privacy_exporter_bookings_data( $email_address, $page = 1 ) {
 								$value = bookacti_format_datetime( $booking->$key, $date_format );
 								break;
 							case 'state':
-								$value = ! empty( $states[ $booking->$key ][ 'label' ] ) ? $states[ $booking->$key ][ 'label' ] : $booking->$key;
+								$value = ! empty( $statuses[ $booking->$key ] ) ? $statuses[ $booking->$key ] : $booking->$key;
 								break;
 							default:
 								$value = $booking->$key;

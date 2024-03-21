@@ -1,7 +1,7 @@
 <?php 
 /**
  * Frontend and Backend booking dialogs
- * @version 1.15.5
+ * @version 1.16.0
  */
 
 // Exit if accessed directly
@@ -12,10 +12,14 @@ $messages = bookacti_get_messages();
 
 <!-- Frontend and backend - Cancel booking -->
 <div id='bookacti-cancel-booking-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' style='display:none;' title='<?php echo $messages[ 'cancel_dialog_title' ][ 'value' ]; ?>' >
-	<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_cancel_booking' ); ?>'/>
-<?php
-	echo wp_kses_post( wpautop( bookacti_get_message( 'cancel_dialog_content' ) ) );
-?>
+	<form id='bookacti-cancel-booking-form'>
+		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_cancel_booking' ); ?>'/>
+		<?php
+			echo wp_kses_post( wpautop( bookacti_get_message( 'cancel_dialog_content' ) ) );
+		
+			do_action( 'bookacti_cancel_booking_dialog_after' );
+		?>
+	</form>
 </div>
 
 <!-- Frontend and backend - Refund a cancel booking -->
@@ -39,7 +43,7 @@ $messages = bookacti_get_messages();
 			<div id='bookacti-refund-options'></div>
 			<div id='bookacti-refund-message'>
 				<strong><?php echo bookacti_get_message( 'refund_request_dialog_feedback_label' ); ?></strong>
-				<textarea name='refund-message'></textarea>
+				<textarea name='refund_message'></textarea>
 			</div>
 		</div>
 	</form>
@@ -53,7 +57,7 @@ $messages = bookacti_get_messages();
 
 <!-- Frontend and backend - Reschedule booking -->
 <div id='bookacti-reschedule-booking-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' title='<?php echo $messages[ 'reschedule_dialog_title' ][ 'value' ]; ?>'>
-	<form class='bookacti-booking-form bookacti-reschedule-booking-form'>
+	<form id='bookacti-reschedule-booking-form' class='bookacti-booking-form'>
 		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_reschedule_booking' ); ?>'/>
 		<div>
 			<?php

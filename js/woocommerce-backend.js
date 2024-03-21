@@ -55,38 +55,6 @@ $j( document ).ready( function() {
 	
 	
 	/**
-	 * Show / Hide WC field in delete booking dialog
-	 * @version 1.9.0
-	 * @param {Event} e
-	 */
-	$j( '.bookacti-user-booking-list-table, .woocommerce-table, #bookacti-booking-list' ).on( 'click', '.bookacti-booking-action, .bookacti-booking-group-action', function ( e ) {
-		e.preventDefault();
-		// Reset WC fields
-		if( $j( this ).hasClass( 'bookacti-delete-booking' ) || $j( this ).hasClass( 'bookacti-delete-booking-group' ) ) {
-			$j( '.bookacti-delete-wc-order-item-container select' ).val( 'none' );
-		}
-		
-		var has_wc_order = false;
-		// Single Bookings
-		if( $j( this ).hasClass( 'bookacti-delete-booking' ) ) {
-			var booking_id = $j( this ).data( 'booking-id' );
-			if( $j( '.bookacti-view-booking-order[data-booking-id="' + booking_id + '"]' ).length 
-			&&  ! $j( '.bookacti-view-booking-order[data-booking-id="' + booking_id + '"]' ).closest( '.bookacti-gouped-booking' ).length ) { 
-				has_wc_order = true; 
-			}
-			
-		// Booking Groups
-		} else if( $j( this ).hasClass( 'bookacti-delete-booking-group' ) ) {
-			var booking_group_id = $j( this ).data( 'booking-group-id' );
-			if( $j( '.bookacti-view-booking-order[data-booking-group-id="' + booking_group_id + '"]' ).length ) { has_wc_order = true; }
-		}
-		
-		if( has_wc_order ) { $j( '.bookacti-delete-wc-order-item-container' ).show(); } 
-		else { $j( '.bookacti-delete-wc-order-item-container' ).hide(); }
-	});
-	
-	
-	/**
 	 * Calendar field settings: Toggle the WC form actions notices - on change
 	 * @since 1.11.3
 	 */
