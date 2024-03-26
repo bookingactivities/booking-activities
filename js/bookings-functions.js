@@ -232,7 +232,7 @@ function bookacti_reload_booking_system_according_to_filters( booking_system ) {
 
 /**
  * Init booking actions
- * @version 1.16.0
+ * @version 1.16.1
  * @param {String} scope
  */
 function bookacti_init_booking_actions( scope ) {
@@ -276,6 +276,11 @@ function bookacti_init_booking_actions( scope ) {
 			return;
 		}
 		
+		// Do not trigger action if selection is empty
+		if( ! booking_selection.booking_ids.length && ! booking_selection.booking_group_ids.length ) {
+			return;
+		}
+		
 		bookacti_trigger_booking_action( action, booking_selection );
 	});
 }
@@ -284,7 +289,7 @@ function bookacti_init_booking_actions( scope ) {
 /**
  * Init booking bulk actions
  * @since 1.6.0
- * @version 1.16.0
+ * @version 1.16.1
  */
 function bookacti_init_booking_bulk_actions() {
 	$j( '#bookacti-bookings-container' ).on( 'click', '.bulkactions input[type="submit"]', function( e ) {
@@ -312,6 +317,11 @@ function bookacti_init_booking_bulk_actions() {
 				booking_selection.booking_group_ids.push( parseInt( booking_group_id ) );
 			}
 		});
+		
+		// Do not trigger action if selection is empty
+		if( ! booking_selection.booking_ids.length && ! booking_selection.booking_group_ids.length ) {
+			return;
+		}
 		
 		bookacti_trigger_booking_action( action, booking_selection );
 	});
@@ -348,6 +358,17 @@ function bookacti_trigger_booking_action( action, booking_selection ) {
 	} else {
 		$j( 'body' ).trigger( 'bookacti_trigger_booking_action', [ action, booking_selection ] );
 	}
+}
+
+
+/**
+ * Unselect all bookings in booking list
+ * @since 1.16.1
+ */
+function bookacti_unselect_all_bookings() {
+	$j( '#bookacti-bookings-container thead .check-column input[type="checkbox"]' ).prop( 'checked', true ).trigger( 'click.wp-toggle-checkboxes' );
+	$j( '#bookacti-bookings-container .tablenav .bookacti-select-all-container' ).remove();
+	$j( '#bookacti-all-selected' ).val( 0 );
 }
 
 

@@ -394,7 +394,7 @@ function bookacti_is_db_version_outdated() {
 /**
  * Get the variables used with javascript
  * @since 1.8.0
- * @version 1.16.0
+ * @version 1.16.1
  * @return array
  */
 function bookacti_get_js_variables() {
@@ -505,7 +505,9 @@ function bookacti_get_js_variables() {
 			'admin_url'                          => admin_url(),
 			'is_qtranslate'                      => bookacti_get_translation_plugin() === 'qtranslate',
 			'utc_offset'                         => intval( $timezone->getOffset( $current_datetime_utc ) ),
+			/* translators: {nb} is an integer alone or a number of items. E.g. "12 selected", or "12 items selected". */
 			'nb_selected'                        => esc_html__( '{nb} selected', 'booking-activities' ),
+			/* translators: {nb} is a number of items. E.g. "Select all 12 items". */
 			'select_all'                         => esc_html__( 'Select all {nb}', 'booking-activities' ),
 			'unselect_all'                       => esc_html__( 'Clear selection', 'booking-activities' ),
 			'create_new'                         => esc_html__( 'Create new', 'booking-activities' ),

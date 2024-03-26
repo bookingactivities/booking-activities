@@ -1,7 +1,7 @@
 /**
  * Get booking system data by interval (events, groups, and bookings) 
  * @since 1.12.0 (was bookacti_fetch_events)
- * @version 1.14.0
+ * @version 1.16.1
  * @param {HTMLElement} booking_system
  * @param {object} interval
  */
@@ -77,10 +77,22 @@ function bookacti_get_booking_system_data_by_interval( booking_system, interval 
 					$j.extend( true, bookacti.booking_system[ booking_system_id ][ 'booking_lists' ], response.booking_system_data.booking_lists );
 				}
 
+				// Update availability period
+				if( response?.trimmed_period?.start || response?.trimmed_period?.end ) {
+					if( response?.trimmed_period?.start ) {
+						bookacti.booking_system[ booking_system_id ][ 'start' ] = response.trimmed_period.start;
+					}
+					if( response?.trimmed_period?.end ) {
+						bookacti.booking_system[ booking_system_id ][ 'end' ] = response.trimmed_period.end;
+					}
+					bookacti_booking_method_update_availability_period( booking_system );
+				}
+				
 				// Display new events
 				if( response.booking_system_data.events.length ) {
 					bookacti_booking_method_display_events( booking_system, response.booking_system_data.events );
 				}
+
 
 				booking_system.trigger( 'bookacti_booking_system_interval_data_loaded', [ response, original_attributes, attributes, interval ] );
 
@@ -1715,6 +1727,22 @@ function bookacti_booking_method_set_up( booking_system, reload_events ) {
 		bookacti_set_min_and_max_quantity( booking_system );
 		bookacti_fill_picked_events_list( booking_system );
 	}
+}
+
+
+/**
+ * Update the availability period of the booking method
+ * @since 1.16.1
+ * @param {HTMLElement} booking_system
+ */
+function bookacti_booking_method_update_availability_period( booking_system ) {
+	var booking_system_id = booking_system.attr( 'id' );
+	booking_method = bookacti.booking_system[ booking_system_id ][ 'method' ];
+	if( $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) { booking_method = 'calendar'; }
+	
+	var availability_period = bookacti_get_availability_period( booking_system );
+	
+	booking_system.trigger( 'bookacti_booking_method_update_availability_period', [ booking_method, availability_period ] );
 }
 
 

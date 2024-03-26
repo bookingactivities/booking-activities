@@ -97,7 +97,7 @@ function bookacti_get_booking_system( $atts ) {
 /**
  * Get booking system data
  * @since 1.7.4
- * @version 1.15.19
+ * @version 1.16.1
  * @param array $atts (see bookacti_format_booking_system_attributes())
  * @return array
  */
@@ -157,7 +157,7 @@ function bookacti_get_booking_system_data( $atts ) {
 				$groups = bookacti_get_groups_of_events( array( 'templates' => $atts[ 'calendars' ], 'group_categories' => $atts[ 'group_categories' ], 'interval' => $events_interval, 'interval_started' => 1, 'past_events' => $atts[ 'past_events' ] ) );
 				$categories_data = bookacti_get_group_categories( array( 'templates' => $atts[ 'calendars' ], 'group_categories' => $atts[ 'group_categories' ] ) );
 			}
-
+			
 			// Get events
 			if( $atts[ 'groups_only' ] ) {
 				$event_filters = apply_filters( 'bookacti_booking_system_grouped_events_filters', array( 'templates' => $atts[ 'calendars' ], 'activities' => $atts[ 'activities' ], 'past_events' => $atts[ 'past_events' ], 'interval' => $events_interval ), $atts, $groups );
@@ -171,7 +171,7 @@ function bookacti_get_booking_system_data( $atts ) {
 				$event_filters = apply_filters( 'bookacti_booking_system_events_filters', array( 'templates' => $atts[ 'calendars' ], 'activities' => $atts[ 'activities' ], 'past_events' => $atts[ 'past_events' ], 'interval' => $events_interval ), $atts );
 				$events	= bookacti_fetch_events( $event_filters );
 			}
-
+			
 			// Remove events on days off
 			$events_removed = false;
 			$remaining_events_ids = array();
@@ -223,7 +223,28 @@ function bookacti_get_booking_system_data( $atts ) {
 				$events[ 'data' ]   = array_intersect_key( $events[ 'data' ], array_flip( $remaining_events_ids ) );
 				$events[ 'events' ] = array_values( $events[ 'events' ] );
 			}
-
+			
+			// Trim the availability period
+			if( $booking_system_data[ 'trim' ] ) {
+				$interval_start_dt    = new DateTime( $events_interval[ 'start' ] );
+				$interval_end_dt      = new DateTime( $events_interval[ 'end' ] );
+				$is_first_interval    = $start_dt && $interval_start_dt <= $start_dt;
+				$is_last_interval     = $end_dt && $interval_end_dt >= $end_dt;
+				
+				$events_by_start_date = bookacti_sort_events_array_by_dates( $events[ 'events' ] );
+				$events_by_end_date   = bookacti_sort_events_array_by_dates( $events[ 'events' ], true, true );
+				$first_event_dt       = ! empty( $events_by_start_date[ 0 ][ 'start' ] ) ? new DateTime( $events_by_start_date[ 0 ][ 'start' ] ) : null;
+				$last_event_dt        = ! empty( $events_by_end_date[ 0 ][ 'end' ] ) ? new DateTime( $events_by_end_date[ 0 ][ 'end' ] ) : null;
+				
+				if( $is_first_interval && $first_event_dt && $first_event_dt > $start_dt ) {
+					$booking_system_data[ 'start' ] = $first_event_dt->format( 'Y-m-d H:i:s' );
+				}
+				
+				if( $is_last_interval && $last_event_dt && $last_event_dt < $end_dt ) {
+					$booking_system_data[ 'end' ] = $last_event_dt->format( 'Y-m-d H:i:s' );
+				}
+			}
+			
 			// Get the booking list for each events
 			if( $atts[ 'tooltip_booking_list' ] && $events[ 'events' ] && $events[ 'data' ] ) {
 				$booking_filters = array(
@@ -2984,7 +3005,7 @@ function bookacti_get_booking_system_availability_period( $booking_system_data )
 					if( $start_dt >= $end_dt )                                 { $start_dt    = clone $end_dt; break; }
 				}
 			}
-
+			
 			// Trim the availability period
 			$availability_period = array( 
 				'start'    => $start_dt->format( 'Y-m-d H:i:s' ), 
@@ -3442,7 +3463,7 @@ function bookacti_export_events_page( $atts, $calname = '', $caldesc = '', $sequ
 /**
  * Get array of groups of events from raw groups of events from database
  * @since 1.12.0
- * @version 1.14.0
+ * @version 1.16.1
  * @param array $groups Array of objects groups from database
  * @param array $raw_args {
  *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
@@ -3465,6 +3486,8 @@ function bookacti_get_groups_of_events_array_from_db_groups_of_events( $groups, 
 		'data_only'        => 0
 	);
 	$args = wp_parse_args( $raw_args, $default_args );
+	
+	$started_groups_bookable = bookacti_get_setting_value( 'bookacti_general_settings', 'started_groups_bookable' );
 	
 	// Get group ids
 	$group_ids = array();
@@ -3500,7 +3523,7 @@ function bookacti_get_groups_of_events_array_from_db_groups_of_events( $groups, 
 			'events'             => isset( $groups_events[ $group_id ] ) ? $groups_events[ $group_id ] : array(),
 			'settings'           => isset( $groups_meta[ $group_id ] ) ? $groups_meta[ $group_id ] : array(),
 		);
-		$groups_array[ 'data' ][ $group_id ][ 'settings' ][ 'started_groups_bookable' ] = ! empty( $group->started_groups_bookable ) ? 1 : 0;
+		$groups_array[ 'data' ][ $group_id ][ 'settings' ][ 'started_groups_bookable' ] = isset( $group->started_groups_bookable ) && in_array( $group->started_groups_bookable, array( 0, 1, '0', '1', true, false ), true ) ? intval( $group->started_groups_bookable ) : $started_groups_bookable;
 	}
 	
 	if( ! $args[ 'data_only' ] ) { 
@@ -3734,7 +3757,7 @@ function bookacti_get_bounding_events_from_groups_of_events_heuristic( $groups, 
 /**
  * Get occurrences of repeated events
  * @since 1.12.0
- * @version 1.15.6
+ * @version 1.16.1
  * @param object $groups Groups data 
  * @param array $raw_args {
  *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
@@ -3903,12 +3926,14 @@ function bookacti_get_occurrences_of_repeated_groups_of_events( $groups, $raw_ar
 			if( $is_incomplete ) { continue; }
 			
 			// Check if the group is past or has started and include it accordingly
-			$last_event = end( $occurrence_events );
-			$first_event = reset( $occurrence_events );
+			$last_event     = end( $occurrence_events );
+			$first_event    = reset( $occurrence_events );
 			$first_event_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $first_event[ 'start' ], $timezone );
-			$last_event_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $last_event[ 'end' ], $timezone );
-			if( ! $args[ 'past_events' ] && $first_event_dt < $now_dt ) { continue; }
-			if( ! $args[ 'past_events' ] && empty( $group[ 'settings' ][ 'started_groups_bookable' ] ) && $first_event_dt < $now_dt && $last_event_dt > $now_dt ) { continue; }
+			$last_event_dt  = DateTime::createFromFormat( 'Y-m-d H:i:s', $last_event[ 'end' ], $timezone );
+			$has_started    = $first_event_dt < $now_dt;
+			$has_ended      = $last_event_dt <= $now_dt;
+			if( ! $args[ 'past_events' ] && $has_started && ! ( $args[ 'interval_started' ] && ! $has_ended ) ) { continue; }
+			if( ! $args[ 'past_events' ] && ! $args[ 'interval_started' ] && empty( $group[ 'settings' ][ 'started_groups_bookable' ] ) && $has_started && ! $has_ended ) { continue; }
 			
 			if( ! isset( $group_occurrences[ $group_id ] ) ) { $group_occurrences[ $group_id ] = array(); }
 			$group_occurrences[ $group_id ][ $first_event_occurrence_dt->format( 'Y-m-d' ) ] = $occurrence_events;

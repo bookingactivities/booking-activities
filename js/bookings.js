@@ -327,12 +327,11 @@ $j( document ).ready( function() {
 	/**
 	 * Unselect all items of a WP_List_Table according to filters
 	 * @since 1.16.0
+	 * @version 1.16.1
 	 * @param {Event} e
 	 */
 	$j( 'body' ).on( 'click', '#bookacti-booking-list .bookacti-unselect-all', function( e ) {
 		e.preventDefault();
-		$j( '#bookacti-bookings-container thead .check-column input[type="checkbox"]' ).prop( 'checked', true ).trigger( 'click.wp-toggle-checkboxes' );
-		$j( '#bookacti-bookings-container .tablenav .bookacti-select-all-container' ).remove();
-		$j( '#bookacti-all-selected' ).val( 0 );
+		bookacti_unselect_all_bookings();
 	});
 });

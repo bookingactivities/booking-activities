@@ -14,6 +14,27 @@ $j( document ).ready( function() {
 	
 	
 	/**
+	 * Update the calendar valid range
+	 * @since 1.16.1
+	 * @param {Event} e
+	 * @param {String} booking_method
+	 * @param {Object} availability_period
+	 */
+	$j( 'body' ).on( 'bookacti_booking_method_update_availability_period', '.bookacti-booking-system', function( e, booking_method, availability_period ) {
+		if( booking_method === 'calendar' && $j( this ).find( '.bookacti-calendar' ).length ) {
+			var booking_system_id = $j( this ).attr( 'id' );
+			if( typeof bookacti.fc_calendar[ booking_system_id ] !== 'undefined' ) {
+				var valid_range = {
+					start: availability_period.start ? moment.utc( availability_period.start.substr( 0, 10 ) ).format( 'YYYY-MM-DD' ) : null,
+					end: availability_period.end ? moment.utc( availability_period.end.substr( 0, 10 ) ).add( 1, 'days' ).format( 'YYYY-MM-DD' ) : null
+				};
+				bookacti.fc_calendar[ booking_system_id ].setOption( 'validRange', valid_range );
+			}
+		}
+	});
+	
+	
+	/**
 	 * Display the events on the calendar
 	 * @since 1.12.0
 	 * @version 1.15.0
