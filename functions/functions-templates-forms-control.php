@@ -788,7 +788,7 @@ function bookacti_get_group_category_default_meta() {
 /**
  * Sanitize group category data
  * @since 1.1.0
- * @version 1.13.0
+ * @version 1.16.1
  * @param array $raw_data
  * @return array
  */
@@ -800,7 +800,7 @@ function bookacti_sanitize_group_category_data( $raw_data ) {
 	$keys_by_type = array( 
 		'absint' => array( 'id', 'template_id', 'min_bookings_per_user', 'max_bookings_per_user', 'max_users_per_event', 'booking_changes_deadline' ),
 		'str'    => array( 'title' ),
-		'bool'   => array( 'started_groups_bookable' ),
+		'int'    => array( 'started_groups_bookable' ),
 		'array'  => array( 'allowed_roles' )
 	);
 	$data = bookacti_sanitize_values( array_merge( $default_data, $default_meta ), $raw_data, $keys_by_type );

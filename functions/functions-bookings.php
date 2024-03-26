@@ -156,6 +156,7 @@ function bookacti_sanitize_booking_group_data( $data_raw ) {
 /**
  * Get booking filters according to the booking selection
  * @since 1.16.0
+ * @version 1.16.1
  * @param string $booking_type
  * @param string $context
  * @return array
@@ -184,6 +185,12 @@ function bookacti_get_selected_bookings_filters( $booking_type = 'both' ) {
 		if( $booking_type === 'both' && $filters_raw ) {
 			$filters_raw[ 'booking_group_id_operator' ] = 'OR';
 		}
+	} else {
+		$booking_ids       = isset( $booking_selection[ 'booking_ids' ] ) ? bookacti_ids_to_array( $booking_selection[ 'booking_ids' ] ) : array();
+		$booking_group_ids = isset( $booking_selection[ 'booking_group_ids' ] ) ? bookacti_ids_to_array( $booking_selection[ 'booking_group_ids' ] ) : array();
+		if( ! $booking_ids && ! $booking_group_ids ) {
+			$filters_raw = array();
+		}
 	}
 	
 	$filters = $filters_raw ? bookacti_format_booking_filters( $filters_raw ) : array();
@@ -195,13 +202,17 @@ function bookacti_get_selected_bookings_filters( $booking_type = 'both' ) {
 /**
  * Get bookings according to the booking selection
  * @since 1.16.0
+ * @version 1.16.1
+ * @param boolean $no_cache
  * @return array
  */
-function bookacti_get_selected_bookings() {
+function bookacti_get_selected_bookings( $no_cache = false ) {
 	$booking_selection = isset( $_REQUEST[ 'booking_selection' ] ) ? ( is_array( $_REQUEST[ 'booking_selection' ] ) ? $_REQUEST[ 'booking_selection' ] : ( is_string( $_REQUEST[ 'booking_selection' ] ) ? bookacti_maybe_decode_json( stripslashes( $_REQUEST[ 'booking_selection' ] ), true ) : array() ) ) : array();
 	$selection_hash    = md5( json_encode( $booking_selection ) );
-	$selected_bookings = wp_cache_get( 'selected_bookings_' . $selection_hash, 'bookacti' );
-	if( $selected_bookings ) { return $selected_bookings; }
+	if( ! $no_cache ) {
+		$selected_bookings = wp_cache_get( 'selected_bookings_' . $selection_hash, 'bookacti' );
+		if( $selected_bookings ) { return $selected_bookings; }
+	}
 	
 	// Bookings
 	$bookings_filters = bookacti_get_selected_bookings_filters( 'single' );

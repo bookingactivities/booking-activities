@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 6.5
 Requires PHP: 5.3
-Stable tag: 1.16.0
+Stable tag: 1.16.1
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -321,6 +321,15 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.16.1 - 2024/03/26 =
+* Fix - Notifications not sent after changing a booking (even if "Send notifications" option was ON)
+* Fix - Prevent performing any booking action if no bookings are selected
+* Fix - Browser may hang after deleting a lot of bookings (bookings were correctly deleted)
+* Fix - Site setting "Are started groups of events bookable?" was not taken into account (but group category setting was)
+* Fix - Started group events were not grayed out if not bookable
+* Fix - Make "Trim" option compatible with "Show only first event of groups" option
+* Dev - Update some js scripts dependencies
 
 = 1.16.0 - 2024/03/21 =
 * Bookings bulk actions, reschedule scope - **[See the user-friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-16-bookings-bulk-actions-reschedule-scope-etc/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**

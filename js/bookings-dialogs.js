@@ -119,7 +119,7 @@ function bookacti_dialog_update_bookings_calendar_settings() {
 						}
 						
 					},
-					error: function( e ){
+					error: function( e ) {
 						$j( '#bookacti-bookings-calendar-settings-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>AJAX error while trying to update calendar settings</li></ul></div>' );
 						console.log( 'AJAX error while trying to update calendar settings' );
 						console.log( e );
@@ -148,6 +148,7 @@ function bookacti_dialog_update_bookings_calendar_settings() {
 /**
  * Cancel bookings dialog
  * @since 1.16.0
+ * @version 1.16.1
  * @param {Object} booking_selection
  */
 function bookacti_dialog_cancel_bookings( booking_selection ) {
@@ -229,6 +230,7 @@ function bookacti_dialog_cancel_bookings( booking_selection ) {
 								bookacti_refresh_list_table_hidden_columns();
 							}
 							rows.remove();
+							bookacti_unselect_all_bookings();
 							
 							$j( 'body' ).trigger( 'bookacti_bookings_cancelled', [ response, booking_selection ] );
 							
@@ -273,6 +275,7 @@ function bookacti_dialog_cancel_bookings( booking_selection ) {
 /**
  * Refund bookings
  * @since 1.16.0
+ * @version 1.16.1
  * @param {Object} booking_selection
  */
 function bookacti_dialog_refund_bookings( booking_selection ) {
@@ -404,6 +407,7 @@ function bookacti_dialog_refund_bookings( booking_selection ) {
 										bookacti_init_tooltip();
 									}
 									rows.remove();
+									bookacti_unselect_all_bookings();
 									
 									// Notify user that his booking has been refunded
 									if( response.message ) {
@@ -429,7 +433,7 @@ function bookacti_dialog_refund_bookings( booking_selection ) {
 									console.log( response );
 								}
 							},
-							error: function( e ){
+							error: function( e ) {
 								console.log( 'AJAX ' + bookacti_localized.error );
 								console.log( e );
 							},
@@ -500,6 +504,7 @@ function bookacti_dialog_refund_confirmation( message ) {
 /**
  * Change Bookings Status
  * @since 1.16.0
+ * @version 1.16.1
  * @param {Object} booking_selection
  */
 function bookacti_dialog_change_bookings_status( booking_selection ) {
@@ -590,6 +595,7 @@ function bookacti_dialog_change_bookings_status( booking_selection ) {
 								bookacti_init_tooltip();
 							}
 							rows.remove();
+							bookacti_unselect_all_bookings();
 							
 							// Update booking status
 							if( new_booking_status ) {
@@ -648,6 +654,7 @@ function bookacti_dialog_change_bookings_status( booking_selection ) {
 /**
  * Change Bookings quantity
  * @since 1.16.0
+ * @version 1.16.1
  * @param {Object} booking_selection
  */
 function bookacti_dialog_change_bookings_quantity( booking_selection ) {
@@ -732,6 +739,7 @@ function bookacti_dialog_change_bookings_quantity( booking_selection ) {
 								bookacti_init_tooltip();
 							}
 							rows.remove();
+							bookacti_unselect_all_bookings();
 							
 							// Trigger a hook for booking quantity changes
 							$j( 'body' ).trigger( 'bookacti_bookings_quantity_changed', [ response, booking_selection, new_quantity ] );
@@ -783,6 +791,7 @@ function bookacti_dialog_change_bookings_quantity( booking_selection ) {
 /**
  * Reschedule bookings dialog
  * @since 1.16.0
+ * @version 1.16.1
  * @param {Object} booking_selection
  */
 function bookacti_dialog_reschedule_bookings( booking_selection ) {
@@ -951,6 +960,7 @@ function bookacti_dialog_reschedule_bookings( booking_selection ) {
 								bookacti_init_tooltip();
 							}
 							rows.remove();
+							bookacti_unselect_all_bookings();
 							
 							// Refresh bookings calendar
 							if( $j( '#bookacti-booking-system-bookings-page' ).length ) {
@@ -1102,6 +1112,7 @@ function bookacti_dialog_send_bookings_notification( booking_selection ) {
 /**
  * Delete bookings (groups)
  * @since 1.16.0
+ * @version 1.16.1
  * @param {Object} booking_selection
  */
 function bookacti_dialog_delete_bookings( booking_selection ) {
@@ -1164,12 +1175,13 @@ function bookacti_dialog_delete_bookings( booking_selection ) {
 							$j( '#bookacti-delete-booking-dialog' ).dialog( 'close' );
 							
 							// Remove the rows
-							rows.animate( {'opacity': 0}, function() { rows.children('td, th').animate({ 'padding': 0 }).wrapInner('<div></div>').children().slideUp(function() { rows.remove(); }); });
+							rows.animate( { 'opacity': 0 }, function() { rows.remove(); } );
 							
 							// Remove the grouped booking rows
 							$j.each( booking_selection.booking_group_ids, function( i, booking_group_id ) {
 								$j( '.bookacti-gouped-booking[data-booking-group-id="' + booking_group_id + '"]' ).remove();
 							});
+							bookacti_unselect_all_bookings();
 							
 							// Trigger a hook when the bookings are deleted
 							$j( 'body' ).trigger( 'bookacti_bookings_deleted', [ response, booking_selection ] );
