@@ -11,7 +11,7 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 	/**
 	 * Forms WP_List_Table
 	 * @since 1.5.0
-	 * @version 1.16.0
+	 * @version 1.16.2
 	 */
 	class Forms_List_Table extends WP_List_Table {
 		
@@ -210,14 +210,14 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 		
 		/**
 		 * Fill "Title" column and add action buttons
-		 * @version 1.16.0
+		 * @version 1.16.2
 		 * @access public
 		 * @param array $item
 		 * @return string
 		 */
 		public function column_title( $item ) {
-			$form_id	= $item[ 'id' ];
-			$actions	= array();
+			$form_id = $item[ 'id' ];
+			$actions = array();
 			
 			if( current_user_can( 'bookacti_edit_forms' ) ) {
 				if( $item[ 'active_raw' ] ) {
@@ -247,19 +247,32 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 				$actions[ $action_id ] = '<span class="' . $action_id . '">' . $link . '</span>';
 			}
 			
-			return sprintf( '%1$s%2$s %3$s', $item[ 'title' ], $primary_data_html, $this->row_actions( $actions, false ) );
+			// Display an error message if the form author cannot manage displayed templates
+			$errors = '';
+			if( ! empty( $item[ 'errors' ] ) ) {
+				$errors .= '<div class="bookacti-error"><span class="dashicons dashicons-warning"></span><span><ul class="bookacti-error-list"><li>';
+				$errors .= implode( '<li>', $item[ 'errors' ] );
+				$errors .= '</ul></span></div>';
+			}
+			
+			return sprintf( '%1$s%2$s %3$s', $item[ 'title' ], $primary_data_html, $this->row_actions( $actions, false ) ) . $errors;
 		}
 		
 		
 		/**
 		 * Get form list items. Parameters can be passed in the URL.
-		 * @version 1.15.5
+		 * @version 1.16.2
 		 * @access public
 		 * @return array
 		 */
 		public function get_form_list_items() {
-			$forms = bookacti_get_forms( $this->filters );
+			$forms    = bookacti_get_forms( $this->filters );
+			$form_ids = $forms ? array_keys( $forms ) : array();
+			
+			$forms_calendar = $form_ids ? bookacti_get_forms_field_data_by_name( $form_ids, 'calendar' ) : array();
+			
 			$can_edit_forms = current_user_can( 'bookacti_edit_forms' );
+			$can_edit_users = current_user_can( 'edit_users' );
 			
 			$date_format      = get_option( 'date_format' );
 			$utc_timezone_obj = new DateTimeZone( 'UTC' );
@@ -288,6 +301,9 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 				// Author name
 				$user_object = get_user_by( 'id', $form->user_id );
 				$author = $user_object ? $user_object->display_name : $form->user_id;
+				if( $can_edit_users && $form->user_id ) {
+					$author = '<a href="' . get_edit_user_link( $form->user_id ) . '">' . $author . '</a>';
+				}
 				
 				// Creation date
 				$creation_date_raw = ! empty( $form->creation_date ) ? bookacti_sanitize_datetime( $form->creation_date ) : '';
@@ -304,15 +320,31 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 				}
 				$primary_data_html .= '</div>';
 				
+				// Check calendar permissions
+				$calendar_field = isset( $forms_calendar[ $form->id ] ) ? $forms_calendar[ $form->id ] : array();
+				$template_ids   = ! empty( $calendar_field[ 'calendars' ] ) ? array_values( bookacti_ids_to_array( $calendar_field[ 'calendars' ] ) ) : array();
+				$can_manage_calendars = bookacti_user_can_manage_template( $template_ids, intval( $form->user_id ) );
+				
+				// Errors
+				$errors = array();
+				if( ! $can_manage_calendars ) {
+					$docs_link      = 'https://booking-activities.fr/en/docs/user-documentation/advanced-use-of-booking-activities/give-access-rights-to-calendars-and-bookings-to-your-collaborators/';
+					$docs_link_html = '<a href="' . $docs_link . '" target="_blank">' . esc_html__( 'documentation', 'booking-activities' ) . '</a>';
+					/* translators: %1$s = "Administrator", %2$s = "Users", %3$s = "All users", %4$s = "Role", %5$s = Link to the "documentation" */
+					$errors[ 'calendars_not_allowed' ] = sprintf( esc_html__( 'Some events may not be displayed because the form author is not "%1$s" (%2$s > %3$s > the author > %4$s), or does not have permission to manage the displayed calendars (%5$s).', 'booking-activities' ), _x( 'Administrator', 'User role' ), __( 'Users' ), __( 'All Users' ), __( 'Role' ), $docs_link_html );
+				}
+				
 				$form_item = apply_filters( 'bookacti_form_list_form_columns', array( 
 					'id'                => $id,
 					'title'             => $title,
 					'shortcode'         => $shortcode,
 					'author'            => $author,
+					'user_id'           => $form->user_id,
 					'date'              => $creation_date,
 					'status'            => $form->status,
 					'active'            => $active,
 					'active_raw'        => $form->active,
+					'errors'            => $errors,
 					'primary_data'      => $primary_data,
 					'primary_data_html' => $primary_data_html
 				), $form );

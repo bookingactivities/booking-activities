@@ -1394,7 +1394,7 @@ add_action( 'load-booking-activities_page_bookacti_forms', 'bookacti_controller_
 /**
  * AJAX Controller - Update a booking form
  * @since 1.5.0
- * @version 1.16.0
+ * @version 1.16.2
  */
 function bookacti_controller_update_form() {
 	// Check nonce and capabilities
@@ -1410,13 +1410,22 @@ function bookacti_controller_update_form() {
 	$managers_array = isset( $_REQUEST[ 'form-managers' ] ) ? bookacti_ids_to_array( $_REQUEST[ 'form-managers' ] ) : array();
 	$form_managers  = bookacti_format_form_managers( $managers_array );
 	
+	// Update author ID (Administrators only)
+	$user_id = -1;
+	if( current_user_can( 'administrator' ) || is_super_admin() ) {
+		$author_id = ! empty( $_REQUEST[ 'author' ] ) ? intval( $_REQUEST[ 'author' ] ) : 0;
+		if( $author_id && ( user_can( $author_id, 'bookacti_create_forms' ) || user_can( $author_id, 'bookacti_edit_forms' ) ) ) {
+			$user_id = $author_id;
+		}
+	}
+	
 	// Update the form
-	$updated = bookacti_update_form( $form_id, $form_title, -1, '', 'publish', 1 );
+	$updated = bookacti_update_form( $form_id, $form_title, $user_id, '', 'publish', 1 );
 
 	// Feedback error
 	if( $updated === false ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'query_failed' ), 'update_form' ); }
 
-	// Insert Managers
+	// Update Managers
 	bookacti_update_managers( 'form', $form_id, $form_managers );
 	
 	do_action( 'bookacti_form_updated', $form_id );

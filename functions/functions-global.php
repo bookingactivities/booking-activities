@@ -1473,7 +1473,7 @@ function bookacti_help_tip( $tip, $echo = true ){
 /**
  * Create a user selectbox
  * @since 1.3.0
- * @version 1.16.0
+ * @version 1.16.2
  * @param array $raw_args
  * @return string|void
  */
@@ -1527,7 +1527,8 @@ function bookacti_display_user_selectbox( $raw_args ) {
 
 				// Display the value if the key exists, else display the key as is, as a separator
 				if( isset( $user->{ $show } ) ) {
-					$label .= $user->{ $show };
+					$value  = maybe_unserialize( $user->{ $show } );
+					$label .= is_array( $value ) ? implode( ',', $value ) : $value;
 				} else {
 					$label .= $show;
 				}

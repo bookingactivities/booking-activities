@@ -41,7 +41,7 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 
 /**
  * Check if user is allowed to manage template
- * @version 1.16.0
+ * @version 1.16.2
  * @param int|array $template_ids
  * @param int|false $user_id False for current user
  * @return boolean
@@ -54,7 +54,7 @@ function bookacti_user_can_manage_template( $template_ids, $user_id = false ) {
 	else {
 		$admins = bookacti_get_template_managers( $template_ids );
 		if( $admins ) {
-			if( in_array( $user_id, $admins, true ) ) { $user_can_manage_template = true; }
+			if( in_array( intval( $user_id ), $admins, true ) ) { $user_can_manage_template = true; }
 		}
 	}
 
@@ -64,7 +64,7 @@ function bookacti_user_can_manage_template( $template_ids, $user_id = false ) {
 
 /**
  * Check if user is allowed to manage activity
- * @version 1.16.0
+ * @version 1.16.2
  * @param int|array $activity_ids
  * @param int|false $user_id False for current user
  * @param array|false $admins False to retrieve the activity managers
@@ -78,7 +78,7 @@ function bookacti_user_can_manage_activity( $activity_ids, $user_id = false, $ad
 	else {
 		$admins = $admins === false ? bookacti_get_activity_managers( $activity_ids ) : $admins;
 		if( $admins ) {
-			if( in_array( $user_id, $admins, true ) ) { $user_can_manage_activity = true; }
+			if( in_array( intval( $user_id ), $admins, true ) ) { $user_can_manage_activity = true; }
 		}
 	}
 
@@ -88,37 +88,53 @@ function bookacti_user_can_manage_activity( $activity_ids, $user_id = false, $ad
 
 /**
  * Get template managers
- * @version 1.9.2
+ * @version 1.16.2
  * @param int|array $template_ids
  * @return array
  */
 function bookacti_get_template_managers( $template_ids ) {
-	$managers = bookacti_get_managers( 'template', $template_ids );
+	$template_ids = bookacti_ids_to_array( $template_ids );
+	$managers     = $template_ids ? bookacti_get_managers( 'template', $template_ids ) : array();
 	
-	$merged_managers = array();
-	foreach( $managers as $user_ids ) {
-		$merged_managers = array_merge( $merged_managers, bookacti_ids_to_array( $user_ids ) );
+	$i = 0;
+	$intersect_managers = array();
+	foreach( $template_ids as $template_id ) {
+		$manager_ids = ! empty( $managers[ $template_id ] ) ? bookacti_ids_to_array( $managers[ $template_id ] ) : array();
+		if( $i === 0 ) {
+			$intersect_managers = $manager_ids;
+		} else {
+			$intersect_managers = array_intersect( $intersect_managers, $manager_ids );
+		}
+		++$i;
 	}
 	
-	return array_unique( $merged_managers );
+	return array_values( bookacti_ids_to_array( $intersect_managers ) );
 }
 
 
 /**
  * Get activity managers
- * @version 1.9.2
+ * @version 1.16.2
  * @param int|array $activity_ids
  * @return array
  */
 function bookacti_get_activity_managers( $activity_ids ) {	
-	$managers = bookacti_get_managers( 'activity', $activity_ids );
+	$activity_ids = bookacti_ids_to_array( $activity_ids );
+	$managers     = $activity_ids ? bookacti_get_managers( 'activity', $activity_ids ) : array();
 	
-	$merged_managers = array();
-	foreach( $managers as $user_ids ) {
-		$merged_managers = array_merge( $merged_managers, bookacti_ids_to_array( $user_ids ) );
+	$i = 0;
+	$intersect_managers = array();
+	foreach( $activity_ids as $activity_id ) {
+		$manager_ids = ! empty( $managers[ $activity_id ] ) ? bookacti_ids_to_array( $managers[ $activity_id ] ) : array();
+		if( $i === 0 ) {
+			$intersect_managers = $manager_ids;
+		} else {
+			$intersect_managers = array_intersect( $intersect_managers, $manager_ids );
+		}
+		++$i;
 	}
 	
-	return array_unique( $merged_managers );
+	return array_values( bookacti_ids_to_array( $intersect_managers ) );
 }
 
 

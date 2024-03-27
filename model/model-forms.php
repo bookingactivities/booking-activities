@@ -2,18 +2,17 @@
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-
 // FORMS
 
 /**
  * Get forms according to filters
  * @since 1.5.0
+ * @version 1.16.2
  * @global wpdb $wpdb
  * @param array $filters Use bookacti_format_form_filters() before
  * @return array
  */
 function bookacti_get_forms( $filters = array() ) {
-		
 	global $wpdb;
 	
 	$query	= ' SELECT DISTINCT F.* ' 
@@ -86,7 +85,12 @@ function bookacti_get_forms( $filters = array() ) {
 	if( $variables ) {
 		$query = $wpdb->prepare( $query, $variables );
 	}
-	$forms = $wpdb->get_results( $query, OBJECT );
+	$results = $wpdb->get_results( $query, OBJECT );
+	
+	$forms = array();
+	foreach( $results as $result ) {
+		$forms[ $result->id ] = $result;
+	}
 	
 	return $forms;
 }
@@ -478,6 +482,53 @@ function bookacti_get_form_field_by_name( $form_id, $field_name ) {
 	}
 	
 	return $field;
+}
+
+
+/**
+ * Get fields by name per form
+ * @since 1.16.2
+ * @global wpdb $wpdb
+ * @param int $form_ids
+ * @param string $field_name
+ * @return array
+ */
+function bookacti_get_forms_field_by_name( $form_ids, $field_name ) {
+	global $wpdb;
+	
+	$query = 'SELECT id as field_id, form_id, name, type, title, label, options, value, placeholder, tip, required, active FROM ' . BOOKACTI_TABLE_FORM_FIELDS . ' as FF '
+	       . ' WHERE FF.form_id IN ( %d ';
+	
+	$array_count = count( $form_ids );
+	if( $array_count >= 2 ) {
+		for( $i=1; $i<$array_count; ++$i ) {
+			$query .= ', %d ';
+		}
+	}
+	
+	$query .= ') AND FF.name = %s ';
+	
+	$variables = array_merge( $form_ids, array( $field_name ) );
+	
+	if( $variables ) {
+		$query = $wpdb->prepare( $query, $variables );
+	}
+	
+	$results = $wpdb->get_results( $query, ARRAY_A );
+	if( ! $results ) { return array(); }
+	
+	$forms_fields = array();
+	foreach( $results as $result ) {
+		$form_id = intval( $result[ 'form_id' ] );
+		if( isset( $forms_fields[ $form_id ] ) ) { continue; }
+		$field = array();
+		foreach( $result as $field_key => $field_value ) {
+			$field[ $field_key ] = maybe_unserialize( $field_value );
+		}
+		$forms_fields[ $form_id ] = $field;
+	}
+	
+	return $forms_fields;
 }
 
 

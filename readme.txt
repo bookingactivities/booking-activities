@@ -322,6 +322,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.16.2 =
+* Feature - Allow administrators to change the booking form authors
+* Tweak - Display an error message in the booking forms list if events cannot be displayed because the form author cannot manage the displayed calendars
+* Dev - Check if user can manage all activities or all templates instead of one of them when multiple ids are passed
+
 = 1.16.1 - 2024/03/26 =
 * Fix - Notifications not sent after changing a booking (even if "Send notifications" option was ON)
 * Fix - Prevent performing any booking action if no bookings are selected
