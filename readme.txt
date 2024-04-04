@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 6.5
 Requires PHP: 5.3
-Stable tag: 1.16.1
+Stable tag: 1.16.2
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -322,10 +322,14 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.16.2 =
-* Feature - Allow administrators to change the booking form authors
-* Tweak - Display an error message in the booking forms list if events cannot be displayed because the form author cannot manage the displayed calendars
-* Dev - Check if user can manage all activities or all templates instead of one of them when multiple ids are passed
+= 1.16.2 - 2024/04/04 =
+* Feature - Allow administrators to change the booking forms author
+* Feature - Filter the booking form list by ID, title and author
+* Tweak - Display an error message in the booking forms list if the form author is not allowed to manage the displayed calendars
+* Tweak - Hide weeks on Day Grid views if all the days are empty if "Trim" option is active
+* Fix - Notification not sent to administrators when an administrator reschedule a booking
+* Fix - Incorrect booking status displayed in WC notification after completing a failed order
+* Dev - Remove data conversion for updates from versions prior or equal to 1.14.3 (you need to update Booking Activities to 1.15 before updating it to 1.16)
 
 = 1.16.1 - 2024/03/26 =
 * Fix - Notifications not sent after changing a booking (even if "Send notifications" option was ON)

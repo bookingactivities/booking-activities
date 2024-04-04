@@ -1851,7 +1851,7 @@ function bookacti_display_form_managers_meta_box( $form_raw ) {
 			'id'        => 'bookacti-form-author',
 			'fullwidth' => 1,
 			'options'   => array(
-				'option_label' => array( 'display_name', ' (', 'user_login', ') - ', 'roles' ),
+				'option_label' => array( 'display_name', ' (#', 'ID', ' - ', 'user_login', ') - ', 'roles' ),
 				'selected'     => array( $user_id ),
 				'role__in'     => $author_role_in ? $author_role_in : array( 'none' ),
 				'meta'         => false,

@@ -394,7 +394,7 @@ function bookacti_is_db_version_outdated() {
 /**
  * Get the variables used with javascript
  * @since 1.8.0
- * @version 1.16.1
+ * @version 1.16.2
  * @return array
  */
 function bookacti_get_js_variables() {
@@ -472,6 +472,7 @@ function bookacti_get_js_variables() {
 		'selected_events'                    => $messages[ 'selected_events' ][ 'value' ],
 		'avail'                              => $messages[ 'avail' ][ 'value' ],
 		'avails'                             => $messages[ 'avails' ][ 'value' ],
+		'no_events'                          => $messages[ 'no_events' ][ 'value' ],
 		'hide_availability_fixed'            => apply_filters( 'bookacti_hide_availability_fixed', 0 ), // Threshold above which availability is masked. 0 to always show availability.
 
 		'dialog_button_ok'                   => esc_html__( 'OK', 'booking-activities' ),

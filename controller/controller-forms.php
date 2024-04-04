@@ -34,7 +34,7 @@ add_action( 'bookacti_display_form_field_calendar', 'bookacti_display_form_field
 /**
  * Display the form field 'login'
  * @since 1.5.0
- * @version 1.15.5
+ * @version 1.16.2
  * @param string $html
  * @param array $field
  * @param string $instance_id
@@ -117,7 +117,7 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 					</div>
 					<div class='bookacti-form-field-content' >
 					<?php 
-						$args = array(
+						$email_args = apply_filters( 'bookacti_form_field_login_email', array(
 							'type'        => 'email',
 							'name'        => 'email',
 							'value'       => ! empty( $_REQUEST[ 'email' ] ) ? esc_attr( sanitize_text_field( $_REQUEST[ 'email' ] ) ) : '',
@@ -125,8 +125,8 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 							'class'       => 'bookacti-form-field bookacti-email',
 							'placeholder' => esc_attr( $field[ 'placeholder' ][ 'email' ] ),
 							'required'    => $field[ 'required_fields' ][ 'email' ] ? 1 : 0
-						);
-						bookacti_display_field( $args );
+						), $field, $instance_id, $context );
+						bookacti_display_field( $email_args );
 					?>
 					</div>
 					<?php do_action( 'bookacti_login_field_after_email', $field, $instance_id, $context ); ?>
@@ -145,7 +145,7 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 					</div>
 					<div class='bookacti-form-field-content' >
 					<?php 
-						$args = array(
+						$password_args = apply_filters( 'bookacti_form_field_login_password', array(
 							'type'        => 'password',
 							'name'        => 'password',
 							'value'       => ! empty( $_REQUEST[ 'password' ] ) ? esc_attr( sanitize_text_field( $_REQUEST[ 'password' ] ) ) : '',
@@ -153,8 +153,8 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 							'class'       => 'bookacti-form-field bookacti-password',
 							'placeholder' => esc_attr( $field[ 'placeholder' ][ 'password' ] ),
 							'required'    => $field[ 'required_fields' ][ 'password' ] ? 1 : 0
-						);
-						bookacti_display_field( $args );
+						), $field, $instance_id, $context );
+						bookacti_display_field( $password_args );
 						
 						if( empty( $field[ 'generate_password' ] ) && $field[ 'min_password_strength' ] > 1 ) {
 							if( wp_script_is( 'password-strength-meter', 'registered' ) ) { wp_enqueue_script( 'password-strength-meter' ); }
@@ -221,14 +221,14 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 					</div>
 					<div class='bookacti-form-field-content'>
 					<?php
-						$args = array(
+						$remember_args = apply_filters( 'bookacti_form_field_login_remember', array(
 							'type'	=> 'checkbox',
 							'name'	=> 'remember',
 							'value'	=> ! empty( $_REQUEST[ 'remember' ] ) || ! empty( $field[ 'placeholder' ][ 'remember' ] ) ? 1 : 0,
 							'id'	=> $field_id . '-remember',
 							'class'	=> 'bookacti-form-field bookacti-remember'
-						);
-						bookacti_display_field( $args );
+						), $field, $instance_id, $context );
+						bookacti_display_field( $remember_args );
 					?>
 					</div>
 					<?php do_action( 'bookacti_login_field_after_remember', $field, $instance_id, $context ); ?>
@@ -267,7 +267,7 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 									<?php } ?>
 									<div class='bookacti-form-field-content' >
 									<?php 
-										$args = array(
+										$register_field_args = array(
 											'type'        => $register_field[ 'type' ],
 											'name'        => esc_attr( $register_field_name ),
 											'value'       => ! empty( $_REQUEST[ $register_field_name ] ) ? esc_attr( sanitize_text_field( $_REQUEST[ $register_field_name ] ) ) : ( isset( $register_field[ 'value' ] ) ? esc_attr( $register_field[ 'value' ] ) : '' ),
@@ -278,10 +278,11 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 											'required'    => $field[ 'required_fields' ][ $register_field_name ] ? 1 : 0
 										);
 										if( $register_field[ 'type' ] === 'checkbox' ) { 
-											$args[ 'label' ] = esc_html( $field[ 'label' ][ $register_field_name ] ); 
-											$args[ 'tip' ]   = esc_html( $field[ 'tip' ][ $register_field_name ] ); 
+											$register_field_args[ 'label' ] = esc_html( $field[ 'label' ][ $register_field_name ] ); 
+											$register_field_args[ 'tip' ]   = esc_html( $field[ 'tip' ][ $register_field_name ] ); 
 										}
-										bookacti_display_field( $args );
+										$register_field_args = apply_filters( 'bookacti_register_field', $register_field_args, $register_field, $field, $instance_id, $context );
+										bookacti_display_field( $register_field_args );
 									?>
 									</div>
 									<?php do_action( 'bookacti_register_field_after_' . $register_field_name, $register_field, $field, $instance_id, $context ); ?>

@@ -951,7 +951,7 @@ function bookacti_format_booking_system_url_attributes( $atts = array() ) {
 /**
  * Get booking system fields default data
  * @since 1.5.0
- * @version 1.16.0
+ * @version 1.16.2
  * @param array $fields
  * @return array
  */
@@ -1223,7 +1223,7 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 			'type'  => 'checkbox',
 			'name'  => 'trim',
 			'title' => esc_html__( 'Trim empty days', 'booking-activities' ),
-			'tip'   => esc_html__( 'Make the calendar start at the first displayed event and end at the last one.', 'booking-activities' )
+			'tip'   => esc_html__( 'Make the calendar start at the first displayed event and end at the last one. Also hides empty weeks on Day Grid views.', 'booking-activities' )
 		);
 	}
 	

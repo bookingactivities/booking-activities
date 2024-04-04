@@ -1,7 +1,7 @@
 /**
  * Get booking system data by interval (events, groups, and bookings) 
  * @since 1.12.0 (was bookacti_fetch_events)
- * @version 1.16.1
+ * @version 1.16.2
  * @param {HTMLElement} booking_system
  * @param {object} interval
  */
@@ -32,9 +32,9 @@ function bookacti_get_booking_system_data_by_interval( booking_system, interval 
 				if( $j.isEmptyObject( bookacti.booking_system[ booking_system_id ][ 'events' ] ) ) {
 					bookacti.booking_system[ booking_system_id ][ 'events' ] = response.booking_system_data.events;
 				} else {
-					$j.extend( bookacti.booking_system[ booking_system_id ][ 'events' ], response.booking_system_data.events );
+					bookacti.booking_system[ booking_system_id ][ 'events' ] = bookacti.booking_system[ booking_system_id ][ 'events' ].concat( response.booking_system_data.events );
 				}
-
+				
 				// Extend or replace the events data array if it was empty
 				if( $j.isEmptyObject( bookacti.booking_system[ booking_system_id ][ 'events_data' ] ) ) {
 					bookacti.booking_system[ booking_system_id ][ 'events_data' ] = response.booking_system_data.events_data;

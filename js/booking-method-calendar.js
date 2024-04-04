@@ -50,6 +50,18 @@ $j( document ).ready( function() {
 	
 	
 	/**
+	 * Hide rows without any events on Day Grid views - on bookacti_booking_system_interval_data_loaded
+	 * @since 1.16.2
+	 */
+	$j( 'body' ).on( 'bookacti_booking_system_interval_data_loaded', '.bookacti-booking-system', function() {
+		var booking_system_id = $j( this ).attr( 'id' );
+		if( parseInt( bookacti.booking_system[ booking_system_id ][ 'trim' ] ) ) {
+			bookacti_fc_hide_daygrid_empty_rows( $j( this ) );
+		}
+	});
+	
+	
+	/**
 	 * Refetch events on calendar
 	 * @since 1.11.3
 	 * @version 1.15.0
@@ -243,7 +255,7 @@ $j( document ).ready( function() {
 
 /**
  * Initialize the calendar
- * @version 1.15.8
+ * @version 1.16.2
  * @param {HTMLElement} booking_system
  * @param {boolean} reload_events
  */
@@ -412,7 +424,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		
 		/**
 		 * Called after the calendar’s date range has been initially set or changed in some way and the DOM has been updated.
-		 * @version 1.15.0
+		 * @version 1.16.2
 		 * @param {Object} info {
 		 *  @type {Date} start                A Date for the beginning of the range the calendar needs events for.
 		 *  @type {Date} end                  A Date for the end of the range the calendar needs events for. Note: This value is exclusive.
@@ -424,16 +436,23 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		 */
 		datesSet: function( info ){ 
 			// Maybe fetch the events on the view (if not already)
+			var new_events_interval = {};
 			if( bookacti.booking_system[ booking_system_id ][ 'load_events' ] === true ) {
 				var interval = { 
 					'start': moment.utc( moment.utc( info.view.currentStart ).clone().locale( 'en' ).format( 'YYYY-MM-DD' ) + ' 00:00:00' ), 
 					'end': moment.utc( moment.utc( info.view.currentEnd ).clone().subtract( 1, 'days' ).locale( 'en' ).format( 'YYYY-MM-DD' ) + ' 23:59:59' )
 				};
-				var new_interval = bookacti_get_interval_of_events( booking_system, interval );
-				if( ! $j.isEmptyObject( new_interval ) ) { bookacti_get_booking_system_data_by_interval( booking_system, new_interval ); }
+				new_events_interval = bookacti_get_interval_of_events( booking_system, interval );
+				if( ! $j.isEmptyObject( new_events_interval ) ) {
+					bookacti_get_booking_system_data_by_interval( booking_system, new_events_interval );
+				}
 			}
 			
-			booking_system.trigger( 'bookacti_calendar_view_render', [ info ] );
+			if( $j.isEmptyObject( new_events_interval ) && parseInt( bookacti.booking_system[ booking_system_id ][ 'trim' ] ) ) {
+				bookacti_fc_hide_daygrid_empty_rows( booking_system );
+			}
+			
+			booking_system.trigger( 'bookacti_calendar_view_render', [ info, new_events_interval ] );
 		},
 		
 		
@@ -903,4 +922,56 @@ function bookacti_exit_calendar_loading_state( calendar ) {
 	calendar.find( '.fc-toolbar button:not(.bookacti-was-disabled)' ).attr( 'disabled', false );
 	calendar.find( '.fc-toolbar button.bookacti-was-disabled' ).removeClass( 'bookacti-was-disabled' );
 	calendar.find( '.bookacti-loading-overlay' ).remove();
+}
+
+
+/**
+ * Hide rows without any events on Day Grid views
+ * @version 1.16.2
+ * @param {HTMLElement} booking_system
+ */
+function bookacti_fc_hide_daygrid_empty_rows( booking_system ) {
+	var booking_system_id = booking_system.attr( 'id' );
+	if( typeof bookacti.fc_calendar[ booking_system_id ] === 'undefined' ) { return; }
+	if( typeof bookacti.fc_calendar[ booking_system_id ].view.type.indexOf( 'dayGrid' ) < 0 ) { return; }
+	
+	var calendar = booking_system.find( '.bookacti-calendar' );
+	if( ! calendar.length ) { return; }
+	if( ! calendar.find( '.fc-daygrid-body' ).length ) { return; }
+	
+	var fc_events = bookacti.fc_calendar[ booking_system_id ].getEvents();
+	
+	calendar.find( 'tr.bookacti-no-events-row' ).remove();
+	calendar.find( '.fc-daygrid-body > table > tbody > tr' ).show();
+		
+	calendar.find( '.fc-daygrid-body > table > tbody > tr' ).each( function() {
+		var are_days_empty = true;
+		$j( this ).find( '> td' ).each( function() {
+			var date = $j( this ).data( 'date' );
+			if( ! date ) { return true; } // continue
+			
+			// Check if an event exists
+			var has_events = false;
+			$j.each( fc_events, function( i, fc_event ) {
+				if( fc_event.startStr.substr( 0, 10 ) === date ) {
+					has_events = true;
+					return false; // break
+				}
+			});
+			
+			if( ! $j( this ).hasClass( 'fc-day-disabled' ) && has_events ) {
+				are_days_empty = false;
+				return false; // break
+			}
+		});
+		if( are_days_empty && ! $j( this ).find( '.fc-daygrid-month-start' ).length ) {
+			$j( this ).hide();
+		}
+	});
+	
+	if( ! calendar.find( '.fc-daygrid-body > table > tbody > tr:visible' ).length ) {
+		var colspan   = calendar.find( '.fc-daygrid-body > table > tbody > tr:first > td' ).length;
+		var no_events = typeof bookacti_localized.no_events !== 'undefined' ? bookacti_localized.no_events : 'No events.';
+		calendar.find( '.fc-daygrid-body > table > tbody' ).append( '<tr class="bookacti-no-events-row" colspan="' + colspan + '"><td><div class="bookacti-no-events">' + no_events + '</div></td></tr>' );
+	}
 }
