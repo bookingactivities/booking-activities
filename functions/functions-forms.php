@@ -433,6 +433,57 @@ function bookacti_get_form_field_data_by_name( $form_id, $field_name, $raw = fal
 
 
 /**
+ * Get the desired forms field data as an array. The field name must be unique, only the first will be retrieved.
+ * @since 1.16.2
+ * @param array $form_ids
+ * @param string $field_name
+ * @param boolean $raw
+ * @return array
+ */
+function bookacti_get_forms_field_data_by_name( $form_ids, $field_name, $raw = false ) {
+	$forms_field_data = array();
+	
+	$forms_field = bookacti_get_forms_field_by_name( $form_ids, $field_name );
+	if( $forms_field ) {
+		$form_id_per_field = array();
+		foreach( $forms_field as $field ) {
+			$form_id_per_field[ intval( $field[ 'field_id' ] ) ] = intval( $field[ 'form_id' ] );
+		}
+		$field_ids = bookacti_ids_to_array( array_keys( $form_id_per_field ) );
+		
+		// Add form field metadata 
+		$fields_meta = $field_ids ? bookacti_get_metadata( 'form_field', $field_ids ) : array();
+		if( $fields_meta ) {
+			foreach( $fields_meta as $field_id => $field_meta ) {
+				if( ! is_array( $field_meta ) || ! isset( $form_id_per_field[ $field_id ] ) ) { continue; }
+				$form_id = $form_id_per_field[ $field_id ];
+				if( ! isset( $forms_field[ $form_id ] ) ) { continue; }
+				$forms_field[ $form_id ] = array_merge( $forms_field[ $form_id ], $field_meta );
+			}
+		}
+	}
+	
+	foreach( $form_ids as $form_id ) {
+		$field      = isset( $forms_field[ $form_id ] ) ? $forms_field[ $form_id ] : array();
+		$field_data = apply_filters( 'bookacti_form_field', $field );
+
+		// Cache data
+		wp_cache_set( 'form_field_data_' . $field_name . '_' . $form_id, $field_data, 'bookacti' );
+		if( ! empty( $field[ 'field_id' ] ) ) {
+			wp_cache_set( 'form_field_data_' . $field[ 'field_id' ], $field_data, 'bookacti' );
+		}
+
+		// Format data
+		if( ! $raw && $field_data ) { $field_data = bookacti_format_form_field_data( $field_data ); }
+
+		$forms_field_data[ $form_id ] = $field_data;
+	}
+	
+	return $forms_field_data;
+}
+
+
+/**
  * Get the default common for field data
  * @since 1.5.3
  * @version 1.14.0
@@ -1780,7 +1831,7 @@ function bookacti_format_form_filters( $filters = array() ) {
 /**
  * Display 'managers' metabox content for forms
  * @since 1.5.0
- * @version 1.15.6
+ * @version 1.16.2
  * @param array $form_raw
  */
 function bookacti_display_form_managers_meta_box( $form_raw ) {
@@ -1789,26 +1840,53 @@ function bookacti_display_form_managers_meta_box( $form_raw ) {
 	$role_in      = apply_filters( 'bookacti_managers_roles', array_merge( bookacti_get_roles_by_capabilities( $capabilities ), $capabilities ), 'form' );
 	$role_not_in  = apply_filters( 'bookacti_managers_roles_exceptions', array( 'administrator' ), 'form' );
 	
-	$fields = array( 'form-managers' => array( 
-		'type'      => 'user_id', 
-		'name'      => 'form-managers',
-		'id'        => 'bookacti-form-managers', 
-		'fullwidth' => 1, 
-		'options'   => array(
-			'option_label' => array( 'display_name', ' (', 'user_login', ')' ),
-			'selected'     => $manager_ids,
-			'role__in'     => $role_in ? $role_in : array( 'none' ),
-			'role__not_in' => $role_not_in,
-			'meta'         => false,
-			'multiple'     => 1,
-			'ajax'         => 0
+	$user_id             = intval( $form_raw[ 'user_id' ] );
+	$author_capabilities = array( 'bookacti_create_forms', 'bookacti_edit_forms' );
+	$author_role_in      = apply_filters( 'bookacti_author_roles', array_merge( bookacti_get_roles_by_capabilities( $author_capabilities ), $author_capabilities ), 'form' );
+	
+	$fields = array(
+		'author' => array(
+			'type'      => 'user_id',
+			'name'      => 'author',
+			'id'        => 'bookacti-form-author',
+			'fullwidth' => 1,
+			'options'   => array(
+				'option_label' => array( 'display_name', ' (#', 'ID', ' - ', 'user_login', ') - ', 'roles' ),
+				'selected'     => array( $user_id ),
+				'role__in'     => $author_role_in ? $author_role_in : array( 'none' ),
+				'meta'         => false,
+				'multiple'     => 0,
+				'ajax'         => 0
+			),
+			'title'     => esc_html__( 'Author', 'booking-activities' ),
+			'tip'       => esc_html__( 'Select the form author. The author must be allowed to manage all the calendars displayed in this form, otherwise, their events won\'t be displayed. If you are not sure, set the form author to an administrator.', 'booking-activities' )
 		),
-		'title'     => esc_html__( 'Who can manage this form?', 'booking-activities' ),
-		'tip'       => esc_html__( 'Choose who is allowed to access this form.', 'booking-activities' )
-					. '<br/>' . sprintf( esc_html__( 'These roles already have this privilege: %s.', 'booking-activities' ), '<code>' . implode( '</code>, <code>', array_intersect_key( bookacti_get_roles(), array_flip( $role_not_in ) ) ) . '</code>' )
-					. '<br/>' . sprintf( esc_html__( 'If the selectbox is empty, it means that no other users have these capabilities: %s.', 'booking-activities' ), '<code>' . implode( '</code>, <code>', $capabilities ) . '</code>' )
-					. ' ' . sprintf( esc_html__( 'If you want to grant a user these capabilities, use a plugin such as %1$s.', 'booking-activities' ), '<a href="https://wordpress.org/plugins/user-role-editor/" target="_blank" >User Role Editor</a>' )
-	) );
+		'form-managers' => array( 
+			'type'      => 'user_id',
+			'name'      => 'form-managers',
+			'id'        => 'bookacti-form-managers',
+			'fullwidth' => 1,
+			'options'   => array(
+				'option_label' => array( 'display_name', ' (', 'user_login', ')' ),
+				'selected'     => $manager_ids,
+				'role__in'     => $role_in ? $role_in : array( 'none' ),
+				'role__not_in' => $role_not_in,
+				'meta'         => false,
+				'multiple'     => 1,
+				'ajax'         => 0
+			),
+			'title'     => esc_html__( 'Who can manage this form?', 'booking-activities' ),
+			'tip'       => esc_html__( 'Choose who is allowed to access this form.', 'booking-activities' )
+						. '<br/>' . sprintf( esc_html__( 'These roles already have this privilege: %s.', 'booking-activities' ), '<code>' . implode( '</code>, <code>', array_intersect_key( bookacti_get_roles(), array_flip( $role_not_in ) ) ) . '</code>' )
+						. '<br/>' . sprintf( esc_html__( 'If the selectbox is empty, it means that no other users have these capabilities: %s.', 'booking-activities' ), '<code>' . implode( '</code>, <code>', $capabilities ) . '</code>' )
+						. ' ' . sprintf( esc_html__( 'If you want to grant a user these capabilities, use a plugin such as %1$s.', 'booking-activities' ), '<a href="https://wordpress.org/plugins/user-role-editor/" target="_blank" >User Role Editor</a>' )
+		)
+	);
+	
+	if( ! current_user_can( 'administrator' ) && ! is_super_admin() ) {
+		unset( $fields[ 'author' ] );
+	}
+	
 	bookacti_display_fields( $fields );
 }
 
@@ -1960,7 +2038,7 @@ function bookacti_get_form_managers( $form_ids ) {
 function bookacti_format_form_managers( $form_managers = array() ) {
 	$form_managers = bookacti_ids_to_array( $form_managers );
 	
-	// If user is not super admin, add him automatically in the form managers list if he isn't already
+	// If user is not super admin, add the user automatically in the form managers list
 	$user_id = get_current_user_id();
 	$bypass_form_managers_check = apply_filters( 'bookacti_bypass_form_managers_check', false, $user_id );
 	if( ! is_super_admin( $user_id ) && ! $bypass_form_managers_check ) {

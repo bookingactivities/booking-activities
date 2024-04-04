@@ -203,14 +203,11 @@ add_action( 'woocommerce_order_status_completed', 'bookacti_wc_update_completed_
 /**
  * Update the bookings of a failed order to "Booked" or "Pending" when it turns to an active status
  * @since 1.9.0 (was bookacti_turn_failed_order_bookings_status_to_complete)
- * @version 1.15.8
+ * @version 1.16.2
  * @param int $order_id
- * @param string $old_status
- * @param string $new_status
  * @param WC_order $order
  */
-function bookacti_wc_update_failed_order_bookings_to_complete( $order_id, $old_status, $new_status, $order = null ) {
-	if( $old_status !== 'failed' || ! in_array( $new_status, array( 'completed', 'pending', 'on-hold', 'processing' ), true ) ) { return; }
+function bookacti_wc_update_failed_order_bookings_to_complete( $order_id, $order = null ) {
 	if( ! $order ) { $order = wc_get_order( $order_id ); }
 
 	if( $order->get_date_paid() ) {
@@ -221,17 +218,20 @@ function bookacti_wc_update_failed_order_bookings_to_complete( $order_id, $old_s
 		$payment_status = 'owed';
 	}
 	
-	// Change state of all bookings of the order from 'pending' to 'booked'
+	// Change status of all bookings of the order from 'pending' to 'booked'
 	$new_data = array(
 		'order_id'       => $order_id,
 		'status'         => $booking_status,
 		'payment_status' => $payment_status,
 		'active'         => 'auto',
-		'is_new_order'   => $new_status !== 'pending'
+		'is_new_order'   => current_action() !== 'woocommerce_order_status_failed_to_pending'
 	);
 	bookacti_wc_update_order_items_bookings( $order, $new_data, array( 'in__status' => array( 'pending', 'cancelled', 'in_cart', 'removed', 'expired' ) ) );
 }
-add_action( 'woocommerce_order_status_changed', 'bookacti_wc_update_failed_order_bookings_to_complete', 5, 4 );
+add_action( 'woocommerce_order_status_failed_to_pending', 'bookacti_wc_update_failed_order_bookings_to_complete', 5, 2 );
+add_action( 'woocommerce_order_status_failed_to_on-hold', 'bookacti_wc_update_failed_order_bookings_to_complete', 5, 2 );
+add_action( 'woocommerce_order_status_failed_to_processing', 'bookacti_wc_update_failed_order_bookings_to_complete', 5, 2 );
+add_action( 'woocommerce_order_status_failed_to_completed', 'bookacti_wc_update_failed_order_bookings_to_complete', 5, 2 );
 
 
 /**

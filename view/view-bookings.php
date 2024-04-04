@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking list page
- * @version 1.16.0
+ * @version 1.16.2
  */
 
 // Exit if accessed directly
@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 <div class='wrap'>
 	<h1 class='wp-heading-inline'><?php esc_html_e( 'Bookings', 'booking-activities' ); ?></h1>
 	<?php do_action( 'bookacti_booking_list_page_header' ); ?>
-	<hr class='wp-header-end'>
+	<hr class='wp-header-end'/>
 
 	<?php
 	// Check if the user has available calendars
@@ -52,18 +52,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	}
 	?>
 	
-	<div id='bookacti-bookings-container' >
-		<div id='bookacti-bookings-filters-container' >
+	<div id='bookacti-bookings-container'>
+		<div id='bookacti-bookings-filters-container'>
 			<form id='bookacti-booking-list-filters-form' action=''>
 				<input type='hidden' name='page' value='bookacti_bookings'/>
 				<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_get_booking_list' ); ?>'/>
 				<?php
 					// Display sorting data
-					if( ! empty( $_REQUEST[ 'orderby' ] ) || ! empty( $_REQUEST[ 'order_by' ] ) ) {
-						$order_by = ! empty( $_REQUEST[ 'order_by' ] ) ? $_REQUEST[ 'order_by' ] : $_REQUEST[ 'orderby' ];
-						if( ! is_array( $order_by ) ) {
-							$order_by = array( $order_by );
-						}
+					$order_by = ! empty( $_REQUEST[ 'order_by' ] ) ? $_REQUEST[ 'order_by' ] : ( ! empty( $_REQUEST[ 'orderby' ] ) ? $_REQUEST[ 'orderby' ] : array() );
+					$order_by = array_values( bookacti_str_ids_to_array( $order_by ) );
+					if( $order_by ) {
 						$i=0;
 						foreach( $order_by as $column_name ) {
 							if( $i === 0 ) {
@@ -73,13 +71,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							++$i;
 						}
 					}
-					if( ! empty( $_REQUEST[ 'order' ] ) ) {
-						echo '<input type="hidden" name="order" value="' . esc_attr( $_REQUEST[ 'order' ] ) . '" />';
+					$order = ! empty( $_REQUEST[ 'order' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'order' ] ) : '';
+					if( $order ) {
+						echo '<input type="hidden" name="order" value="' . esc_attr( $order ) . '" />';
 					}
-					if( ! empty( $_REQUEST[ 'group_by' ] ) ) {
-						echo '<input type="hidden" name="group_by" value="' . esc_attr( $_REQUEST[ 'group_by' ] ) . '" />';
+					$group_by = ! empty( $_REQUEST[ 'group_by' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'group_by' ] ) : '';
+					if( $group_by ) {
+						echo '<input type="hidden" name="group_by" value="' . esc_attr( $group_by ) . '" />';
 					}
-
+					
 					do_action( 'bookacti_before_booking_filters' );
 				?>
 				<div id='bookacti-templates-filter-container' class='bookacti-filter-container' style='<?php if( count( $templates_select_options ) < 2 ) { echo 'display:none;'; } ?>'>

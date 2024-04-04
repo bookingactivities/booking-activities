@@ -69,8 +69,9 @@ body.booking-activities_page_bookacti_forms label[for='bookacti_form_publish-hid
 
 
 /* Metaboxes */
-#poststuff #bookacti_form_publish .inside	{ margin: 0; padding: 0; }
-#bookacti-form-wc-integration-tuto img		{ width: 100%; max-width: 720px; }
+#poststuff #bookacti_form_publish .inside { margin: 0; padding: 0; }
+#bookacti-form-wc-integration-tuto img    { width: 100%; max-width: 720px; }
+#bookacti-form-author-container           { margin-bottom: 20px; }
 
 
 

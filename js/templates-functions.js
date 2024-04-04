@@ -749,7 +749,7 @@ function bookacti_update_create_form_link_url() {
 /**
  * Get calendar editor data by interval (events and bookings) 
  * @since 1.12.0 (was bookacti_fetch_events_on_calendar_editor)
- * @version 1.15.5
+ * @version 1.16.2
  * @param {object} interval
  */
 function bookacti_get_calendar_editor_data_by_interval( interval ) {
@@ -789,7 +789,7 @@ function bookacti_get_calendar_editor_data_by_interval( interval ) {
 				if( $j.isEmptyObject( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events' ] ) ) {
 					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events' ] = response.events;
 				} else {
-					$j.extend( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events' ], response.events );
+					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events' ] = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events' ].concat( response.events );
 				}
 				
 				// Extend or replace the events data array if it was empty
