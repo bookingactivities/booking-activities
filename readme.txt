@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 6.5
 Requires PHP: 5.3
-Stable tag: 1.16.2
+Stable tag: 1.16.3
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -321,6 +321,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.16.3 - 2024/04/05 =
+* Feature - Filter the booking list by booking (group) ID
+* Fix - Weeks may be hidden even if they have events if "Trim" option is active
+* Fix - "Show only first event of groups" option should be hidden when Group Category = None
 
 = 1.16.2 - 2024/04/04 =
 * Feature - Allow administrators to change the booking forms author

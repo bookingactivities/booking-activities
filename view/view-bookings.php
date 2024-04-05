@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking list page
- * @version 1.16.2
+ * @version 1.16.3
  */
 
 // Exit if accessed directly
@@ -75,18 +75,35 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					if( $order ) {
 						echo '<input type="hidden" name="order" value="' . esc_attr( $order ) . '" />';
 					}
-					$group_by = ! empty( $_REQUEST[ 'group_by' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'group_by' ] ) : '';
+					$group_by = ! empty( $_REQUEST[ 'group_by' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'group_by' ] ) : 'booking_group';
 					if( $group_by ) {
 						echo '<input type="hidden" name="group_by" value="' . esc_attr( $group_by ) . '" />';
 					}
 					
 					do_action( 'bookacti_before_booking_filters' );
 				?>
+				<div id='bookacti-booking-id-filter-container' class='bookacti-filter-container'>
+					<div id='bookacti-booking-id-filter-title' class='bookacti-filter-title'>
+						<?php esc_html_e( 'Booking ID', 'booking-activities' ); ?>
+					</div>
+					<div id='bookacti-booking-id-filter-content' class='bookacti-bookings-filter-content'>
+						<?php
+							$booking_id       = ! empty( $_REQUEST[ 'booking_id' ] ) ? intval( $_REQUEST[ 'booking_id' ] ) : '';
+							$booking_group_id = ! empty( $_REQUEST[ 'booking_group_id' ] ) ? intval( $_REQUEST[ 'booking_group_id' ] ) : '';
+						?>
+						<div id='bookacti-booking-id-filter-input-container'>
+							<input type='number' name='booking_id' id='bookacti-booking-filter-booking-id' value='<?php echo $booking_id; ?>' placeholder='<?php esc_html_e( 'Booking ID', 'booking-activities' ); ?>' min='1'/>
+						</div>
+						<div id='bookacti-booking-group-id-filter-input-container'>
+							<input type='number' name='booking_group_id' id='bookacti-booking-filter-booking-group-id' value='<?php echo $booking_group_id; ?>' placeholder='<?php esc_html_e( 'Booking group ID', 'booking-activities' ); ?>' min='1'/>
+						</div>
+					</div>
+				</div>
 				<div id='bookacti-templates-filter-container' class='bookacti-filter-container' style='<?php if( count( $templates_select_options ) < 2 ) { echo 'display:none;'; } ?>'>
 					<div id='bookacti-templates-filter-title' class='bookacti-filter-title'>
 						<?php esc_html_e( 'Calendars', 'booking-activities' ); ?>
 					</div>
-					<div id='bookacti-templates-filter-content'  class='bookacti-filter-content'>
+					<div id='bookacti-templates-filter-content' class='bookacti-filter-content'>
 					<?php
 						$args = array(
 							'type'        => 'select',

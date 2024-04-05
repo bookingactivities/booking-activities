@@ -11,6 +11,12 @@
 .bookacti-filter-content select[multiple]        { height: 66px; box-sizing: border-box; padding: 0; margin: 0; }
 .bookacti-filter-content select[multiple] option { height: 22px; box-sizing: border-box; padding: 2px 4px; margin: 0; }
 
+#bookacti-booking-id-filter-content input                { min-height: 32px; }
+#bookacti-booking-id-filter-input-container              { margin-bottom: 2px; }
+#bookacti-booking-group-id-filter-input-container        { display: flex; align-items: center; }
+#bookacti-booking-group-id-filter-input-container:before { content: '\0021AA'; width: 10px; display: inline-block; font-style: italic; font-size: .8em; }
+#bookacti-booking-filter-booking-group-id                { width: 140px; }
+
 #bookacti-event-filter-container          { margin: 20px 0 0 0; }
 #bookacti-event-filter-container a        { text-align: center; overflow: hidden; text-overflow: ellipsis; vertical-align: middle; height: 32px; line-height: 32px; }
 #bookacti-pick-event-filter-instruction   { vertical-align: middle; margin-left: 8px; }

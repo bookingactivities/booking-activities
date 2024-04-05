@@ -24,6 +24,18 @@ $j( document ).ready( function() {
 	
 	
 	/**
+	 * Filter booking list by booking (group) ID
+	 * @since 1.16.3
+	 */
+	$j( '#bookacti-booking-filter-booking-id, #bookacti-booking-filter-booking-group-id' ).on( 'change', function() {
+		if( $j( this ).attr( 'id' ) === 'bookacti-booking-filter-booking-group-id' ) { $j( '#bookacti-booking-filter-booking-id' ).val( '' ); }
+		else if( $j( this ).attr( 'id' ) === 'bookacti-booking-filter-booking-id' )  { $j( '#bookacti-booking-filter-booking-group-id' ).val( '' ); }
+		
+		if( $j( '#bookacti-submit-filter-button' ).data( 'ajax' ) ) { bookacti_filter_booking_list(); }
+	});
+	
+	
+	/**
 	 * Display or hide activities filter according to selected templates - on change
 	 * @version 1.15.9
 	 */
@@ -134,8 +146,8 @@ $j( document ).ready( function() {
 	
 	
 	/**
-	 *  Retrict calendars date according to date filter
-	 *  @version 1.8.0
+	 * Restrict calendars date according to date filter
+	 * @version 1.8.0
 	 */
 	$j( '#bookacti-booking-filter-dates-from, #bookacti-booking-filter-dates-to' ).on( 'change', function() {
 		bookacti_unpick_all_events_filter();
