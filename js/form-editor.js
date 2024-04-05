@@ -117,13 +117,13 @@ $j( document ).ready( function() {
 	/**
 	 * Calendar field settings: Toggle the groups options - on change
 	 * @since 1.8.0
-	 * @version 1.15.19
+	 * @version 1.16.3
 	 */
 	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'select#bookacti-group_categories', function() {
 		if( $j( this ).val() === 'none' ) { 
-			$j( '#bookacti-groups_only-container, #bookacti-groups_single_events-container, #bookacti-groups_first_event_only' ).hide();
+			$j( '#bookacti-groups_only-container, #bookacti-groups_single_events-container, #bookacti-groups_first_event_only-container' ).hide();
 		} else {
-			$j( '#bookacti-groups_only-container, #bookacti-groups_single_events-container, #bookacti-groups_first_event_only' ).show();
+			$j( '#bookacti-groups_only-container, #bookacti-groups_single_events-container, #bookacti-groups_first_event_only-container' ).show();
 		}
 	});
 	

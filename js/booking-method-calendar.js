@@ -50,12 +50,13 @@ $j( document ).ready( function() {
 	
 	
 	/**
-	 * Hide rows without any events on Day Grid views - on bookacti_booking_system_interval_data_loaded
+	 * Hide rows without any events on Day Grid views - on bookacti_fc_events_added
 	 * @since 1.16.2
+	 * @version 1.16.3
 	 */
-	$j( 'body' ).on( 'bookacti_booking_system_interval_data_loaded', '.bookacti-booking-system', function() {
+	$j( 'body' ).on( 'bookacti_fc_events_added', '.bookacti-booking-system', function() {
 		var booking_system_id = $j( this ).attr( 'id' );
-		if( parseInt( bookacti.booking_system[ booking_system_id ][ 'trim' ] ) ) {
+		if( parseInt( bookacti.booking_system?.[ booking_system_id ]?.[ 'trim' ] ) ) {
 			bookacti_fc_hide_daygrid_empty_rows( $j( this ) );
 		}
 	});
@@ -255,7 +256,7 @@ $j( document ).ready( function() {
 
 /**
  * Initialize the calendar
- * @version 1.16.2
+ * @version 1.16.3
  * @param {HTMLElement} booking_system
  * @param {boolean} reload_events
  */
@@ -424,7 +425,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		
 		/**
 		 * Called after the calendar’s date range has been initially set or changed in some way and the DOM has been updated.
-		 * @version 1.16.2
+		 * @version 1.16.3
 		 * @param {Object} info {
 		 *  @type {Date} start                A Date for the beginning of the range the calendar needs events for.
 		 *  @type {Date} end                  A Date for the end of the range the calendar needs events for. Note: This value is exclusive.
@@ -448,7 +449,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 				}
 			}
 			
-			if( $j.isEmptyObject( new_events_interval ) && parseInt( bookacti.booking_system[ booking_system_id ][ 'trim' ] ) ) {
+			if( $j.isEmptyObject( new_events_interval ) && parseInt( bookacti.booking_system?.[ booking_system_id ]?.[ 'trim' ] ) ) {
 				bookacti_fc_hide_daygrid_empty_rows( booking_system );
 			}
 			
@@ -774,7 +775,7 @@ function bookacti_fc_get_events_by_groupId( booking_system, groupId ) {
 /**
  * Fill calendar with events
  * @since 1.15.0 (was bookacti_display_events_on_calendar)
- * @version 1.15.1
+ * @version 1.16.3
  * @param {HTMLElement} booking_system
  * @param {Object} events
  */
@@ -795,6 +796,8 @@ function bookacti_fc_add_events( booking_system, events ) {
 	booking_system.trigger( 'bookacti_fc_events', [ source ] );
 	
 	bookacti.fc_calendar[ booking_system_id ].addEventSource( source );
+	
+	booking_system.trigger( 'bookacti_fc_events_added', [ source ] );
 }
 
 

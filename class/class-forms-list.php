@@ -261,7 +261,7 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 		
 		/**
 		 * Get form list items. Parameters can be passed in the URL.
-		 * @version 1.16.2
+		 * @version 1.16.3
 		 * @access public
 		 * @return array
 		 */
@@ -330,8 +330,11 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 				if( ! $can_manage_calendars ) {
 					$docs_link      = 'https://booking-activities.fr/en/docs/user-documentation/advanced-use-of-booking-activities/give-access-rights-to-calendars-and-bookings-to-your-collaborators/';
 					$docs_link_html = '<a href="' . $docs_link . '" target="_blank">' . esc_html__( 'documentation', 'booking-activities' ) . '</a>';
-					/* translators: %1$s = "Administrator", %2$s = "Users", %3$s = "All users", %4$s = "Role", %5$s = Link to the "documentation" */
-					$errors[ 'calendars_not_allowed' ] = sprintf( esc_html__( 'Some events may not be displayed because the form author is not "%1$s" (%2$s > %3$s > the author > %4$s), or does not have permission to manage the displayed calendars (%5$s).', 'booking-activities' ), _x( 'Administrator', 'User role' ), __( 'Users' ), __( 'All Users' ), __( 'Role' ), $docs_link_html );
+					$errors[ 'calendars_not_allowed' ] = sprintf( 
+						/* translators: %1$s = "Administrator", %2$s = "Users", %3$s = "All users", %4$s = "Role", %5$s = Link to the "documentation" */
+						esc_html__( 'Some events may not be displayed because the form author is not "%1$s" (%2$s > %3$s > the author > %4$s), or does not have permission to manage the displayed calendars (%5$s).', 'booking-activities' ), 
+						_x( 'Administrator', 'User role' ), __( 'Users' ), __( 'All Users' ), __( 'Role' ), $docs_link_html
+					);
 				}
 				
 				$form_item = apply_filters( 'bookacti_form_list_form_columns', array( 
