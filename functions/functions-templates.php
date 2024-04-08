@@ -144,7 +144,7 @@ function bookacti_get_activity_managers( $activity_ids ) {
 
 /**
  * Retrieve template activities list
- * @version 1.15.0
+ * @version 1.16.4
  * @param array $activities see bookacti_get_activities_by_template
  * @param int $template_id
  * @return string 
@@ -165,19 +165,20 @@ function bookacti_get_template_activities_list( $activities, $template_id = 0 ) 
 	
 	ob_start();
 	foreach( $ordered_activities as $activity ) {
-		$title = $activity[ 'title' ];
+		$title    = $activity[ 'title' ];
 		$duration = $activity[ 'duration' ] ? $activity[ 'duration' ] : '000.01:00:00';
+		$color    = isset( $activity[ 'settings' ][ 'text_color' ] ) ? sanitize_hex_color( $activity[ 'settings' ][ 'text_color' ] ) : '#fff';
 		?>
 		<div class='bookacti-activity' data-activity-id='<?php echo esc_attr( $activity[ 'id' ] ); ?>'>
 			<div class='bookacti-activity-visibility dashicons dashicons-visibility' data-activity-visible='1'></div>
 			<div class='bookacti-activity-container'>
 				<div
 					class='bookacti-activity-draggable'
-					data-event='{"title": "<?php echo htmlentities( esc_attr( $title ), ENT_QUOTES ); ?>", "duration": "<?php echo esc_attr( $duration ); ?>", "color": "<?php echo esc_attr( $activity[ 'color' ] ); ?>", "extendedProps": { "activity_id": <?php echo intval( $activity[ 'id' ] ); ?> } }' 
+					data-event='{"title": "<?php echo htmlentities( esc_attr( $title ), ENT_QUOTES ); ?>", "duration": "<?php echo esc_attr( $duration ); ?>", "textColor": "<?php echo esc_attr( $color ) ?>", "color": "<?php echo esc_attr( $activity[ 'color' ] ); ?>", "extendedProps": { "activity_id": <?php echo intval( $activity[ 'id' ] ); ?> } }' 
 					data-activity-id='<?php echo esc_attr( $activity[ 'id' ] ); ?>'
 					data-duration='<?php echo esc_attr( $duration ); ?>'
 					title='<?php esc_attr_e( $title ); ?>'
-					style='border-color:<?php echo esc_attr( $activity[ 'color' ] ); ?>; background-color:<?php echo esc_attr( $activity[ 'color' ] ); ?>'
+					style='border-color:<?php echo esc_attr( $activity[ 'color' ] ); ?>; background-color:<?php echo esc_attr( $activity[ 'color' ] );?>;  color: <?php echo esc_attr( $color ); ?>'
 				>
 					<?php echo $title; ?>
 				</div>

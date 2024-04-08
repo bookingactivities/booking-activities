@@ -322,6 +322,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.16.4 =
+* Fix - Change activity text color in calendar editor according to Display Pack add-on settings
+* Dev - Use CSS classes to hide empty weeks when "Trim" option is active, so developers can change their appearance
+
 = 1.16.3 - 2024/04/05 =
 * Feature - Filter the booking list by booking (group) ID
 * Fix - Weeks may be hidden even if they have events if "Trim" option is active
