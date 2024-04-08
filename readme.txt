@@ -323,6 +323,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 == Changelog ==
 
 = 1.16.4 =
+* Fix - "At the earliest" option was based on events ending time instead of their starting time
 * Fix - Change activity text color in calendar editor according to Display Pack add-on settings
 * Dev - Use CSS classes to hide empty weeks when "Trim" option is active, so developers can change their appearance
 
