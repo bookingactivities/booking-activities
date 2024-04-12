@@ -308,12 +308,19 @@ $j( document ).ready( function() {
 	/**
 	 * Show the number of selected elements - on change
 	 * @since 1.16.0
+	 * @version 1.16.4
 	 */
-	$j( 'body' ).on( 'change', '.bookacti-list-table .check-column input', function() {
+	$j( 'body' ).on( 'click', '.bookacti-list-table .check-column input', function() {
+		var nb_checked = $j( '#bookacti-bookings-container tbody .check-column input:checked' ).length;
+		if( ! nb_checked ) {
+			bookacti_unselect_all_bookings();
+			return;
+		}
+		
 		$j( '#bookacti-bookings-container .bookacti-select-all-container' ).remove();
 		$j( '#bookacti-all-selected' ).val( 0 );
 		
-		var nb_selected = '<span class="bookacti-nb-selected">' + bookacti_localized.nb_selected.replace( '{nb}', $j( '#bookacti-bookings-container tbody .check-column input:checked' ).length ) + '</span>';
+		var nb_selected = '<span class="bookacti-nb-selected">' + bookacti_localized.nb_selected.replace( '{nb}', nb_checked ) + '</span>';
 		var select_all  = '<button class="bookacti-select-all button">' + bookacti_localized.select_all.replace( '{nb}', $j( '#bookacti-bookings-container .displaying-num' ).first().text() ) + '</button>';
 		
 		$j( '#bookacti-bookings-container .tablenav .bulkactions' ).append( '<span class="bookacti-select-all-container">' + nb_selected + select_all + '</span>' );

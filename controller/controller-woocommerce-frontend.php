@@ -989,8 +989,89 @@ add_action( 'wp_loaded', 'bookacti_remove_expired_product_from_cart', 100, 0 );
 
 
 /**
+ * Make sure that cart items quantity match booking quantity
+ * @since 1.16.4
+ * @param array $session_cart
+ */
+function bookacti_wc_check_session_cart_items_quantity_consistency( $session_cart ) {
+	$cart_items          = array_filter( $session_cart->get_cart_contents() );
+	$cart_items_bookings = bookacti_wc_get_cart_items_bookings( $cart_items );
+	$has_changed         = false;
+	
+	foreach( $cart_items_bookings as $cart_item_key => $cart_item_bookings ) {
+		$cart_item          = ! empty( $cart_items[ $cart_item_key ] ) ? $cart_items[ $cart_item_key ] : array();
+		$cart_item_quantity = ! empty( $cart_item[ 'quantity' ] ) ? intval( $cart_item[ 'quantity' ] ) : 0;
+		if( ! $cart_item_quantity ) { continue; }
+
+		$booking_quantity = 0;
+		foreach( $cart_item_bookings as $cart_item_booking ) {
+			foreach( $cart_item_booking[ 'bookings' ] as $booking ) {
+				$qty = intval( $booking->quantity );
+				if( $booking_quantity < $qty ) {
+					$booking_quantity = $qty;
+				}
+			}
+		}
+		$matching_quantity = apply_filters( 'bookacti_wc_cart_item_matching_booking_quantity', $booking_quantity, $cart_item, $cart_item_bookings );
+		if( $cart_item_quantity === $matching_quantity ) { continue; }
+
+		$cart_items[ $cart_item_key ][ 'quantity' ] = $matching_quantity;
+		$has_changed = true;
+	}
+	
+	// Remove in_cart bookings that are no longer in cart
+	$removed = bookacti_wc_update_in_cart_bookings_status_not_in_cart_items( $cart_items );
+	
+	if( $has_changed ) {
+		$session_cart->set_cart_contents( apply_filters( 'woocommerce_cart_contents_changed', $cart_items ) );
+	}
+}
+add_action( 'woocommerce_cart_loaded_from_session', 'bookacti_wc_check_session_cart_items_quantity_consistency', 10, 1 );
+
+
+/**
+ * Check if the cart items quantity is consistent with the bookings quantity
+ * @since 1.16.4
+ * @global WooCommerce $woocommerce
+ */
+function bookacti_wc_check_cart_items_quantity_consistency() {
+	global $woocommerce;
+	$cart_items          = $woocommerce->cart->get_cart();
+	$cart_items_bookings = bookacti_wc_get_cart_items_bookings( $cart_items );
+	foreach( $cart_items_bookings as $cart_item_key => $cart_item_bookings ) {
+		$cart_item          = ! empty( $cart_items[ $cart_item_key ] ) ? $cart_items[ $cart_item_key ] : array();
+		$cart_item_quantity = ! empty( $cart_item[ 'quantity' ] ) ? intval( $cart_item[ 'quantity' ] ) : 0;
+		if( ! $cart_item_quantity ) { continue; }
+		
+		$booking_quantity = 0;
+		foreach( $cart_item_bookings as $cart_item_booking ) {
+			foreach( $cart_item_booking[ 'bookings' ] as $booking ) {
+				$qty = intval( $booking->quantity );
+				if( $booking_quantity < $qty ) {
+					$booking_quantity = $qty;
+				}
+			}
+		}
+		$matching_quantity = apply_filters( 'bookacti_wc_cart_item_matching_booking_quantity', $booking_quantity, $cart_item, $cart_item_bookings );
+		if( $cart_item_quantity === $matching_quantity ) { continue; }
+		
+		$_product      = apply_filters( 'woocommerce_cart_item_product', $cart_item[ 'data' ], $cart_item, $cart_item_key );
+		$product_title = is_a( $_product, 'WC_Product' ) ? $_product->get_title() : '';
+		
+		/* translators: %s = the product title. */
+		$message = sprintf( esc_html__( '"%s" item quantity does not match the booking quantity. Please change the item quantity in cart, or remove it from cart and make the booking again.', 'booking-activities' ), $product_title );
+		wc_add_notice( $message, 'error' );
+	}
+	
+	// Remove in_cart bookings that are no longer in cart
+	bookacti_wc_update_in_cart_bookings_status_not_in_cart_items( $cart_items );
+}
+add_action( 'woocommerce_check_cart_items', 'bookacti_wc_check_cart_items_quantity_consistency' );
+
+
+/**
  * If quantity changes in cart, temporarily book the extra quantity if possible
- * @version 1.15.15
+ * @version 1.16.4
  * @global WooCommerce $woocommerce
  * @param int $new_quantity
  * @param string $cart_item_key
@@ -1044,7 +1125,18 @@ function bookacti_update_quantity_in_cart( $new_quantity, $cart_item_key ) {
 		// Update the cart item bookings quantity
 		if( $response[ 'status' ] === 'success' && $new_quantity !== $old_quantity ) {
 			$updated = true;
-			if( $new_quantity ) { $updated = bookacti_wc_update_cart_item_bookings_quantity( $cart_item_key, $new_quantity ); }
+			if( $new_quantity ) {
+				// Check the current booking quantity
+				$has_same_quantity = true;
+				foreach( $cart_item_bookings as $cart_item_booking ) {
+					foreach( $cart_item_booking[ 'bookings' ] as $booking ) {
+						if( $new_quantity !== intval( $booking->quantity ) ) {
+							$has_same_quantity = false;
+						}
+					}
+				}
+				$updated = $has_same_quantity ? true : bookacti_wc_update_cart_item_bookings_quantity( $cart_item_key, $new_quantity );
+			}
 			
 			// If the quantity is 0, remove the cart item, but only change the booking status to "removed" if the cart item was 'in_cart'
 			else {

@@ -239,7 +239,7 @@ add_filter( 'bookacti_notifications_tags', 'bookacti_wc_notifications_tags', 15,
 /**
  * Set WC notifications tags values
  * @since 1.6.0
- * @version 1.15.19
+ * @version 1.16.4
  * @param array $tags
  * @param object $booking
  * @param string $booking_type
@@ -275,8 +275,11 @@ function bookacti_wc_notifications_tags_values( $tags, $booking, $booking_type, 
 	$tags[ '{product_title}' ]        = $order_item_name !== '' ? apply_filters( 'bookacti_translate_text_external', $order_item_name, '', true, array( 'domain' => 'woocommerce', 'object_type' => 'order_item', 'object_id' => $item_id, 'field' => 'title', 'order_id' => $order_id ) ) : $order_item_name;
 	$tags[ '{order_status}' ]         = wc_get_order_status_name( $order->get_status() );
 	$tags[ '{order_payment_status}' ] = $order->get_date_paid() ? esc_html__( 'Paid', 'booking-activities' ) : esc_html__( 'Owed', 'booking-activities' );
-	$tags[ '{price}' ]                = bookacti_format_price( $item_price, array( 'currency_symbol' => $currency_symbol ) );
-	$tags[ '{price_raw}' ]            = $item_price;
+	
+	if( empty( $booking->booking_pass_id ) ) {
+		$tags[ '{price_raw}' ] = $item_price;
+		$tags[ '{price}' ]     = bookacti_format_price( $item_price, array( 'currency_symbol' => $currency_symbol ) );
+	}
 	
 	if( strpos( $notification[ 'id' ], 'refund' ) !== false ) {
 		$coupon_code = '';
@@ -296,7 +299,7 @@ function bookacti_wc_notifications_tags_values( $tags, $booking, $booking_type, 
 	
 	return $tags;
 }
-add_filter( 'bookacti_notifications_tags_values', 'bookacti_wc_notifications_tags_values', 15, 4 );
+add_filter( 'bookacti_notifications_tags_values', 'bookacti_wc_notifications_tags_values', 100, 4 );
 
 
 /**

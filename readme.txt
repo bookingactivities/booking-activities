@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 6.5
 Requires PHP: 5.3
-Stable tag: 1.16.3
+Stable tag: 1.16.4
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -322,9 +322,12 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.16.4 =
+= 1.16.4 - 2024/04/12 =
 * Fix - "At the earliest" option was based on events ending time instead of their starting time
 * Fix - Change activity text color in calendar editor according to Display Pack add-on settings
+* Fix - Make sure cart item quantity matches booking quantity and prevent checkout otherwise
+* Fix - Incorrect {price_raw} and {price} notification tags value when used with WooCommerce and Booking Activities add-ons
+* Fix - Hide "Select all ... items" button when no bookings are selected in backend booking list
 * Dev - Use CSS classes to hide empty weeks when "Trim" option is active, so developers can change their appearance
 
 = 1.16.3 - 2024/04/05 =
