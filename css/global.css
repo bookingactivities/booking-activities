@@ -217,6 +217,9 @@ fieldset legend .bookacti-show-hide-advanced-options { cursor: pointer; color: #
 .bookacti-calendar .fc-view.fc-timegrid td, .bookacti-calendar .fc-view.fc-daygrid td { margin: 0 !important; padding: 0 !important; overflow: visible !important; }
 .bookacti-calendar .fc-event-time, .bookacti-calendar .fc-timegrid-slot-label { text-transform: lowercase; }
 
+.bookacti-calendar .bookacti-daygrid-week-empty:not(.bookacti-daygrid-week-month-start),
+.bookacti-calendar .bookacti-daygrid-week-disabled { display: none; }
+
 /* Header */
 .bookacti-picked-events-list-title	{ font-weight: bolder; }
 .bookacti-calendar-narrow-width .fc-header-toolbar                     { flex-wrap: wrap; flex-direction: row; }

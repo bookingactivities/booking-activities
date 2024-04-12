@@ -149,8 +149,8 @@ function bookacti_load_template_calendar() {
 		height:                  'auto',
 		contentHeight:           'auto',
 		nowIndicator:            false,
-		weekNumbers:	         false,
-		navLinks:		         true,
+		weekNumbers:             false,
+		navLinks:                true,
 		slotEventOverlap:        false,
 		dayMaxEvents:            false,
 		moreLinkClick:           'popover',
@@ -485,7 +485,7 @@ function bookacti_load_template_calendar() {
 			}
 			
 			// Display start and end time in spans
-			var time_format	= 'LT';
+			var time_format = 'LT';
 			if( info.view.type.indexOf( 'timeGrid' ) > -1 ) {
 				// Remove trailing AM/PM in Time Grid views
 				var lt_format = moment.localeData().longDateFormat( 'LT' );
@@ -645,7 +645,7 @@ function bookacti_load_template_calendar() {
 			if( typeof info.event.extendedProps.activity_id === 'undefined' ) { info.revert(); return; }
 			
 			var activity_id   = parseInt( info.event.extendedProps.activity_id );
-			var activity_data = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'activities_data' ][ activity_id ];		
+			var activity_data = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'activities_data' ][ activity_id ];
 			
 			// If the activity was not found, return false
 			if( ! activity_data ) { info.revert(); return; }

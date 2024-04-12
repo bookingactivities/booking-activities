@@ -94,20 +94,34 @@ function bookacti_get_products_titles( $search = '' ) {
 /**
  * Update all in cart bookings to "removed"
  * @since 1.9.0
+ * @version 1.16.4
  * @global wpdb $wpdb
+ * @param int $user_id
  * @return int
  */
-function bookacti_wc_update_in_cart_bookings_to_removed() {
+function bookacti_wc_update_in_cart_bookings_to_removed( $user_id = 0 ) {
 	global $wpdb;
 	
-	$query_bookings	= 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS 
-					. ' SET state = "removed", active = 0 '
-					. ' WHERE state = "in_cart" ';
+	$query_bookings = 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS 
+	                . ' SET state = "removed", active = 0 '
+	                . ' WHERE state = "in_cart" ';
+	
+	if( $user_id ) {
+		$query_bookings .= ' AND user_id = %s ';
+		$query_bookings = $wpdb->prepare( $query_bookings, $user_id );
+	}
+	
 	$updated_bookings = $wpdb->query( $query_bookings );
 	
-	$query_booking_groups	= 'UPDATE ' . BOOKACTI_TABLE_BOOKING_GROUPS
-							. ' SET state = "removed", active = 0 '
-							. ' WHERE state = "in_cart" ';
+	$query_booking_groups = 'UPDATE ' . BOOKACTI_TABLE_BOOKING_GROUPS
+	                      . ' SET state = "removed", active = 0 '
+	                      . ' WHERE state = "in_cart" ';
+	
+	if( $user_id ) {
+		$query_booking_groups .= ' AND user_id = %s ';
+		$query_booking_groups = $wpdb->prepare( $query_booking_groups, $user_id );
+	}
+	
 	$updated_booking_groups = $wpdb->query( $query_booking_groups );
 	
 	return intval( $updated_bookings ) + intval( $updated_booking_groups );

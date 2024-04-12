@@ -1726,7 +1726,7 @@ function bookacti_picked_group_of_events_exists( $picked_event_group, $occurrenc
 /**
  * Check if an event can be book with the given form
  * @since 1.12.0 (was bookacti_is_event_available_on_form)
- * @version 1.15.6
+ * @version 1.16.4
  * @param array $picked_event
  * @param array $event_data
  * @param int $form_id
@@ -1832,7 +1832,7 @@ function bookacti_is_picked_event_available_on_form( $picked_event, $event_data,
 			$validated[ 'message' ] = esc_html__( 'You cannot book a past event.', 'booking-activities' );
 			return $validated;
 		}
-	
+		
 		// Check if the event is in the availability period
 		$calendar_start_dt = ! empty( $availability_period[ 'start' ] ) ? new DateTime( $availability_period[ 'start' ], $timezone ) : false;
 		$calendar_end_dt   = ! empty( $availability_period[ 'end' ] ) ? new DateTime( $availability_period[ 'end' ], $timezone ) : false;
@@ -1844,11 +1844,11 @@ function bookacti_is_picked_event_available_on_form( $picked_event, $event_data,
 			$validated[ 'message' ] = sprintf( esc_html__( 'You cannot book an event starting before %s.', 'booking-activities' ), $datetime_formatted );
 			return $validated;
 		}
-		if( $calendar_end_dt && $event_end_dt > $calendar_end_dt ) {
-			$validated[ 'error' ] = 'event_ends_after_availability_period';
+		if( $calendar_end_dt && $event_start_dt > $calendar_end_dt ) {
+			$validated[ 'error' ] = 'event_starts_after_availability_period';
 			$datetime_formatted = bookacti_format_datetime( $calendar_end_dt->format( 'Y-m-d H:i:s' ), $date_format );
 			/* translators: %s is a formatted date and time (e.g.: "January 20, 2018 10:53 am") */
-			$validated[ 'message' ] = sprintf( esc_html__( 'You cannot book an event taking place after %s.', 'booking-activities' ), $datetime_formatted );
+			$validated[ 'message' ] = sprintf( esc_html__( 'You cannot book an event starting after %s.', 'booking-activities' ), $datetime_formatted );
 			return $validated;
 		}
 	}
@@ -1862,7 +1862,7 @@ function bookacti_is_picked_event_available_on_form( $picked_event, $event_data,
 /**
  * Check if a group of events can be book with the given form
  * @since 1.12.0 (was bookacti_is_group_of_events_available_on_form)
- * @version 1.15.6
+ * @version 1.16.4
  * @param array $picked_event_group
  * @param array $group_data
  * @param int $form_id
@@ -1954,6 +1954,7 @@ function bookacti_is_picked_group_of_events_available_on_form( $picked_event_gro
 		$last_picked_event       = end( $picked_event_group[ 'events' ] );
 		$first_picked_event      = reset( $picked_event_group[ 'events' ] );
 		$group_start_dt          = new DateTime( $first_picked_event[ 'start' ], $timezone );
+		$group_last_start_dt     = new DateTime( $last_picked_event[ 'start' ], $timezone );
 		$group_end_dt            = new DateTime( $last_picked_event[ 'end' ], $timezone );
 		$current_time            = new DateTime( 'now', $timezone );
 		$date_format             = bookacti_get_message( 'date_format_long' );
@@ -1976,11 +1977,11 @@ function bookacti_is_picked_group_of_events_available_on_form( $picked_event_gro
 			$validated[ 'message' ] = sprintf( esc_html__( 'You cannot book a group if any of its events starts before %s.', 'booking-activities' ), $datetime_formatted );
 			return $validated;
 		}
-		if( $calendar_end_dt && $group_end_dt > $calendar_end_dt ) {
-			$validated[ 'error' ] = 'group_of_events_ends_after_availability_period';
+		if( $calendar_end_dt && $group_last_start_dt > $calendar_end_dt ) {
+			$validated[ 'error' ] = 'group_of_events_starts_after_availability_period';
 			$datetime_formatted = bookacti_format_datetime( $calendar_end_dt->format( 'Y-m-d H:i:s' ), $date_format );
 			/* translators: %s is a formatted date (e.g.: "January 20, 2018 10:53 am") */
-			$validated[ 'message' ] = sprintf( esc_html__( 'You cannot book a group if any of its events takes place after %s.', 'booking-activities' ), $datetime_formatted );
+			$validated[ 'message' ] = sprintf( esc_html__( 'You cannot book a group if any of its events starts after %s.', 'booking-activities' ), $datetime_formatted );
 			return $validated;
 		}
 	}	

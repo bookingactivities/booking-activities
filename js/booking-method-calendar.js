@@ -930,7 +930,7 @@ function bookacti_exit_calendar_loading_state( calendar ) {
 
 /**
  * Hide rows without any events on Day Grid views
- * @version 1.16.2
+ * @version 1.16.4
  * @param {HTMLElement} booking_system
  */
 function bookacti_fc_hide_daygrid_empty_rows( booking_system ) {
@@ -945,10 +945,11 @@ function bookacti_fc_hide_daygrid_empty_rows( booking_system ) {
 	var fc_events = bookacti.fc_calendar[ booking_system_id ].getEvents();
 	
 	calendar.find( 'tr.bookacti-no-events-row' ).remove();
-	calendar.find( '.fc-daygrid-body > table > tbody > tr' ).show();
+	calendar.find( '.fc-daygrid-body > table > tbody > tr' ).removeClass( 'bookacti-daygrid-week-month-start bookacti-daygrid-week-disabled bookacti-daygrid-week-empty' );
 		
 	calendar.find( '.fc-daygrid-body > table > tbody > tr' ).each( function() {
-		var are_days_empty = true;
+		var are_days_empty    = true;
+		var are_days_disabled = true;
 		$j( this ).find( '> td' ).each( function() {
 			var date = $j( this ).data( 'date' );
 			if( ! date ) { return true; } // continue
@@ -962,13 +963,21 @@ function bookacti_fc_hide_daygrid_empty_rows( booking_system ) {
 				}
 			});
 			
-			if( ! $j( this ).hasClass( 'fc-day-disabled' ) && has_events ) {
-				are_days_empty = false;
-				return false; // break
+			if( ! $j( this ).hasClass( 'fc-day-disabled' ) ) {
+				are_days_disabled = false;
+				if( has_events ) {
+					are_days_empty = false;
+				}
 			}
 		});
-		if( are_days_empty && ! $j( this ).find( '.fc-daygrid-month-start' ).length ) {
-			$j( this ).hide();
+		if( $j( this ).find( '.fc-daygrid-month-start' ).length ) {
+			$j( this ).addClass( 'bookacti-daygrid-week-month-start' );
+		}
+		if( are_days_disabled ) {
+			$j( this ).addClass( 'bookacti-daygrid-week-disabled' );
+		}
+		if( are_days_empty ) {
+			$j( this ).addClass( 'bookacti-daygrid-week-empty' );
 		}
 	});
 	

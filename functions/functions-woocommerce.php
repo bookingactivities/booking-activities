@@ -398,6 +398,41 @@ function bookacti_wc_update_cart_item_bookings_status( $cart_item_key, $new_stat
 
 
 /**
+ * Update in_cart bookings status to removed if they are no longer in cart
+ * @since 1.16.4
+ * @param array $cart_items
+ * @param string $new_status
+ * @return int
+ */
+function bookacti_wc_update_in_cart_bookings_status_not_in_cart_items( $cart_items, $new_status = 'removed' ) {
+	$customer_id = is_user_logged_in() ? get_current_user_id() : WC()->session->get_customer_id();
+	if( ! $customer_id ) { return 0; }
+	
+	$not_in__booking_id = $not_in__booking_group_id = array();
+	foreach( $cart_items as $cart_item ) {
+		$cart_item_bookings = bookacti_maybe_decode_json( $cart_item[ '_bookacti_options' ][ 'bookings' ], true );
+		foreach( $cart_item_bookings as $cart_item_booking ) {
+			if( $cart_item_booking[ 'type' ] === 'single' ) {
+				$not_in__booking_id[] = intval( $cart_item_booking[ 'id' ] );
+			}
+			else if( $cart_item_booking[ 'type' ] === 'group' ) {
+				$not_in__booking_group_id[] = intval( $cart_item_booking[ 'id' ] );
+			}
+		}
+	}
+	
+	$filters  = bookacti_format_booking_filters( array( 'user_id' => $customer_id, 'status' => array( 'in_cart' ), 'not_in__booking_id' => $not_in__booking_id, 'not_in__booking_group_id' => $not_in__booking_group_id ) );
+	$bookings = bookacti_get_bookings( $filters );
+	$groups   = bookacti_get_booking_groups( $filters );
+	
+	$updated_bookings_nb = $bookings ? bookacti_update_bookings_status( array_keys( $bookings ), $new_status ) : 0;
+	$updated_groups_nb   = $groups ? bookacti_update_booking_groups_status( array_keys( $groups ), $new_status ) : 0;
+	
+	return intval( $updated_bookings_nb ) + intval( $updated_groups_nb );
+}
+
+
+/**
  * Load WooCommerce cart from a WP_REST_Request
  * @param WP_REST_Request $request
  * @since 1.16.0
