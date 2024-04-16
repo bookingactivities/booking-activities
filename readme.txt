@@ -324,6 +324,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 = 1.16.5 =
 * Fix - "Booking form location on product pages" option is now compatible with WP Blocks
+* Tweak - Encapsulate the cart form in a div when "Booking form location on product pages" option is set to "Full width" (non blocks)
 
 = 1.16.4 - 2024/04/12 =
 * Fix - "At the earliest" option was based on events ending time instead of their starting time
