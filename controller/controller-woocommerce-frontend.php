@@ -247,6 +247,47 @@ add_action( 'woocommerce_before_single_product_summary', 'bookacti_move_add_to_c
 
 
 /**
+ * Move the add-to-cart form block below the multiple columns block on product pages
+ * @since 1.16.5
+ * @global WC_Product $product
+ * @param array $parsed_block
+ * @param array $source_block
+ * @param WP_Block $parent_block
+ * @return array
+ */
+function bookacti_wc_move_add_to_cart_form_block( $parsed_block, $source_block, $parent_block ) {
+	global $product;
+	if( ! $product ) { return $parsed_block; }
+	if( ! ( ! empty( $parsed_block[ 'attrs' ][ 'className' ] ) && $parsed_block[ 'attrs' ][ 'className' ] === 'woocommerce product' ) ) { return $parsed_block; }
+	if( ! bookacti_product_is_activity( $product ) ) { return $parsed_block; }
+	if( bookacti_get_setting_value( 'bookacti_products_settings', 'wc_product_pages_booking_form_location' ) !== 'form_below' ) { return $parsed_block; }
+	
+	// Find blocks
+	$add_to_cart_form_block = bookacti_find_parsed_block_recursively( $parsed_block, 'woocommerce/add-to-cart-form' );
+	$product_details_block  = bookacti_find_parsed_block_recursively( $parsed_block, 'woocommerce/product-details' );
+	$columns_block          = bookacti_find_parsed_block_recursively( $parsed_block, 'core/columns' );
+	if( ! $add_to_cart_form_block ) {
+		$add_to_cart_form_block = (array) new WP_Block_Parser_Block( 'woocommerce/add-to-cart-form', array(), array(), '', array() );
+	}
+	
+	// Remove add-to-cart form block from undesired positions
+	if( $product_details_block || $columns_block ) {
+		$parsed_block = bookacti_remove_parsed_block_recursively( $parsed_block, 'woocommerce/add-to-cart-form' );
+	}
+	
+	// Insert add-to-cart form block at the desired position
+	if( $product_details_block ) {
+		$parsed_block = bookacti_insert_parsed_block_recursively( $parsed_block, $add_to_cart_form_block, 'woocommerce/product-details', 'before', true );
+	} else if( $columns_block ) {
+		$parsed_block = bookacti_insert_parsed_block_recursively( $parsed_block, $add_to_cart_form_block, 'core/columns', 'after', true );
+	}
+	
+	return $parsed_block;
+}
+add_filter( 'render_block_data', 'bookacti_wc_move_add_to_cart_form_block', 100, 3 );
+
+
+/**
  * Add booking forms to single product page (front-end)
  * @version 1.15.17
  * @global WC_Product $product
@@ -990,6 +1031,7 @@ add_action( 'wp_loaded', 'bookacti_remove_expired_product_from_cart', 100, 0 );
 
 /**
  * Make sure that cart items quantity match booking quantity
+ * TEMP FIX - https://github.com/woocommerce/woocommerce/issues/46483
  * @since 1.16.4
  * @param array $session_cart
  */
@@ -1031,6 +1073,7 @@ add_action( 'woocommerce_cart_loaded_from_session', 'bookacti_wc_check_session_c
 
 /**
  * Check if the cart items quantity is consistent with the bookings quantity
+ * TEMP FIX - https://github.com/woocommerce/woocommerce/issues/46483
  * @since 1.16.4
  * @global WooCommerce $woocommerce
  */

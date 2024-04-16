@@ -322,6 +322,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.16.5 =
+* Fix - "Booking form location on product pages" option is now compatible with WP Blocks
+
 = 1.16.4 - 2024/04/12 =
 * Fix - "At the earliest" option was based on events ending time instead of their starting time
 * Fix - Change activity text color in calendar editor according to Display Pack add-on settings
