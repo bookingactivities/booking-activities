@@ -1766,6 +1766,167 @@ function bookacti_get_loading_html() {
 }
 
 
+// BLOCK
+
+/**
+ * Return the first occurence of a parsed block recursively
+ * @since 1.16.5
+ * @param array $parsed_block
+ * @param string $block_name
+ * @return array
+ */
+function bookacti_find_parsed_block_recursively( $parsed_block, $block_name ) {
+	$desired_block = array();
+	if( $parsed_block[ 'blockName' ] === $block_name ) {
+		$desired_block = $parsed_block;
+	} else if( ! empty( $parsed_block[ 'innerBlocks' ] ) ) {
+		// Find the desired block recursively in child blocks
+		foreach( $parsed_block[ 'innerBlocks' ] as $i => $inner_block ) {
+			$desired_block = bookacti_find_parsed_block_recursively( $inner_block, $block_name );
+			if( $desired_block ) {
+				break;
+			}
+		}
+	}
+	return $desired_block;
+}
+
+
+/**
+ * Remove parsed blocks by name recursively
+ * @since 1.16.5
+ * @param array $parsed_block
+ * @param string $block_name
+ * @param boolean $once
+ * @return array
+ */
+function bookacti_remove_parsed_block_recursively( $parsed_block, $block_name, $once = false ) {
+	if( $parsed_block[ 'blockName' ] === $block_name ) {
+		$parsed_block = (array) new WP_Block_Parser_Block( '', array(), array(), '', array() );
+	} else if( ! empty( $parsed_block[ 'innerBlocks' ] ) ) {
+		$deleted = false;
+		
+		// Apply this function recursively to all child blocks
+		$removed_inner_blocks_positions = array();
+		foreach( $parsed_block[ 'innerBlocks' ] as $i => $inner_block ) {
+			$parsed_block[ 'innerBlocks' ][ $i ] = bookacti_remove_parsed_block_recursively( $inner_block, $block_name, $once );
+			
+			if( ! $parsed_block[ 'innerBlocks' ][ $i ][ 'blockName' ] ) {
+				$removed_inner_blocks_positions[] = $i;
+				unset( $parsed_block[ 'innerBlocks' ][ $i ] );
+				$deleted = true;
+				if( $once ) {
+					break;
+				}
+			}
+		}
+		
+		if( $removed_inner_blocks_positions ) {
+			// Find the innerContent entries corresponding to the old blocks (innerContent has one non-string entry per block)
+			$old_inner_content_positions = array();
+			foreach( $parsed_block[ 'innerContent' ] as $i => $innerContent ) {
+				if( ! is_string( $innerContent ) ) {
+					$old_inner_content_positions[] = $i;
+				}
+			}
+			
+			// Remove the innerContent corresponding to the deleted blocks
+			foreach( $removed_inner_blocks_positions as $removed_block_pos ) {
+				$key = $removed_block_pos;
+				if( ! isset( $old_inner_content_positions[ $removed_block_pos ] ) ) {
+					$keys = array_keys( $old_inner_content_positions );
+					$key  = end( $keys );
+				}
+				$pos = $old_inner_content_positions[ $key ];
+				unset( $parsed_block[ 'innerContent' ][ $pos ] );
+				unset( $old_inner_content_positions[ $key ] );
+			}
+			
+			// Both innerBlocks and innerContent must have consistent sequential numeric indexes
+			$parsed_block[ 'innerBlocks' ]  = array_values( $parsed_block[ 'innerBlocks' ] );
+			$parsed_block[ 'innerContent' ] = array_values( $parsed_block[ 'innerContent' ] );
+		}
+	}
+	return $parsed_block;
+}
+
+
+/**
+ * Insert a parsed block after a specific block recursively
+ * @since 1.16.5
+ * @param array $parsed_block
+ * @param array $parsed_block_to_add
+ * @param string $block_name
+ * @param string $position
+ * @param boolean $once
+ * @return array
+ */
+function bookacti_insert_parsed_block_recursively( $parsed_block, $parsed_block_to_add, $block_name = '', $position = 'after', $once = false ) {
+	if( $parsed_block[ 'innerBlocks' ] ) {
+		$added = false;
+		
+		// Apply this function recursively to all child blocks
+		foreach( $parsed_block[ 'innerBlocks' ] as $i => $inner_block ) {
+			if( ! empty( $inner_block[ 'innerBlocks' ] ) ) {
+				$parsed_block[ 'innerBlocks' ][ $i ] = bookacti_insert_parsed_block_recursively( $inner_block, $parsed_block_to_add, $block_name, $position, $once );
+				if( count( $parsed_block[ 'innerBlocks' ][ $i ][ 'innerBlocks' ] ) !== count( $inner_block[ 'innerBlocks' ] ) ) {
+					$added = true;
+					if( $once ) {
+						break;
+					}
+				}
+			}
+		}
+		
+		// Create the new innerBlocks array and save the new block positions in that array
+		$new_inner_blocks = array();
+		$new_inner_blocks_positions = array();
+		$i = 0;
+		foreach( $parsed_block[ 'innerBlocks' ] as $inner_block ) {
+			if( ( ! $once || ! $added ) && $inner_block[ 'blockName' ] === $block_name ) {
+				if( $position === 'before' ) {
+					$new_inner_blocks[] = $parsed_block_to_add;
+					$new_inner_blocks[] = $inner_block;
+					$new_inner_blocks_positions[] = $i;
+				} else {
+					$new_inner_blocks[] = $inner_block;
+					$new_inner_blocks[] = $parsed_block_to_add;
+					$new_inner_blocks_positions[] = $i + 1;
+				}
+				$added = true;
+				$i += 2;
+			} else {
+				$new_inner_blocks[] = $inner_block;
+				++$i;
+			}
+		}
+		
+		$inserted_nb = max( 0, abs( count( $new_inner_blocks ) - count( $parsed_block[ 'innerBlocks' ] ) ) );
+		if( $inserted_nb ) {
+			// Find the innerContent entries corresponding to the old blocks (innerContent has one non-string entry per block)
+			$old_inner_content_positions = array();
+			foreach( $parsed_block[ 'innerContent' ] as $i => $innerContent ) {
+				if( ! is_string( $innerContent ) ) {
+					$old_inner_content_positions[] = $i;
+				}
+			}
+			
+			// Insert a innerContent entry for each new block at their corresponding position
+			$inserted = 0;
+			$default_pos = end( $old_inner_content_positions ) ? end( $old_inner_content_positions ) : 0;
+			foreach( $new_inner_blocks_positions as $new_block_pos ) {
+				$pos = isset( $old_inner_content_positions[ $new_block_pos ] ) ? $old_inner_content_positions[ $new_block_pos ] : $default_pos;
+				array_splice( $parsed_block[ 'innerContent' ], $pos + $inserted, 0, 'null' );
+				++$inserted;
+			}
+			$parsed_block[ 'innerContent' ] = array_map( function( $value ) { return $value === 'null' ? null : $value; }, $parsed_block[ 'innerContent' ] );
+		}
+		
+		$parsed_block[ 'innerBlocks' ] = $new_inner_blocks;
+	}
+	
+	return $parsed_block;
+}
 
 
 // FORMATING AND SANITIZING

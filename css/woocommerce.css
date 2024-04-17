@@ -32,6 +32,8 @@ table.woocommerce_order_items ul.bookacti-booking-events-list { margin: 0; }
 .product form.cart .bookacti-calendar table.fc-scrollgrid { border-width: 1px 0 0 1px; }
 
 /* Single product page */
+.bookacti-wc-fullwidth-cart-form,
+.bookacti-wc-fullwidth-cart-form form.cart                     { display: block; clear: both; width: 100%; }
 .product.bookacti-activity form.cart table td.fc-axis          { padding-left: 4px; }
 .woocommerce.single.single-product.bookacti-activity form.cart { width: 100%; }
 

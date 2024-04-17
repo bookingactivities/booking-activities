@@ -80,7 +80,7 @@ add_action( 'wp_ajax_bookactiGetBookingList', 'bookacti_controller_get_booking_l
 /**
  * AJAX Controller - Cancel bookings
  * @since 1.16.0
- * @version 1.16.1
+ * @version 1.16.5
  */
 function bookacti_controller_cancel_bookings() {
 	// Check nonce
@@ -133,7 +133,7 @@ function bookacti_controller_cancel_bookings() {
 		if( empty( $new_selected_bookings[ 'bookings' ][ $booking_id ] ) ) { continue; }
 		$new_booking = $new_selected_bookings[ 'bookings' ][ $booking_id ];
 		if( $booking->state !== $new_booking->state ) {
-			do_action( 'bookacti_booking_status_changed', $new_booking->state, $booking );
+			do_action( 'bookacti_booking_status_changed', $new_booking->state, $booking, array() );
 			bookacti_send_booking_status_change_notification( $new_booking->state, $new_booking, $booking );
 		}
 		$updated[ 'bookings' ][ $booking_id ] = array(
@@ -146,7 +146,7 @@ function bookacti_controller_cancel_bookings() {
 		$new_booking_group = $new_selected_bookings[ 'booking_groups' ][ $group_id ];
 		$group_bookings    = isset( $groups_bookings[ $group_id ] ) ? $groups_bookings[ $group_id ] : array();
 		if( $booking_group->state !== $new_booking_group->state ) {
-			do_action( 'bookacti_booking_group_status_changed', $new_booking_group->state, $booking_group, $group_bookings );
+			do_action( 'bookacti_booking_group_status_changed', $new_booking_group->state, $booking_group, $group_bookings, array() );
 			bookacti_send_booking_group_status_change_notification( $new_booking_group->state, $new_booking_group, $booking_group );
 		}
 		$updated[ 'booking_groups' ][ $group_id ] = array(
@@ -390,7 +390,7 @@ add_action( 'wp_ajax_nopriv_bookactiRefundBookings', 'bookacti_controller_refund
 /**
  * AJAX Controller - Change bookings status
  * @since 1.16.0
- * @version 1.16.1
+ * @version 1.16.5
  */
 function bookacti_controller_change_bookings_status() {
 	// Check nonce
@@ -474,7 +474,7 @@ function bookacti_controller_change_bookings_status() {
 		if( empty( $new_selected_bookings[ 'bookings' ][ $booking_id ] ) ) { continue; }
 		$new_booking = $new_selected_bookings[ 'bookings' ][ $booking_id ];
 		if( $booking->state !== $new_booking->state ) {
-			do_action( 'bookacti_booking_status_changed', $new_booking->state, $booking );
+			do_action( 'bookacti_booking_status_changed', $new_booking->state, $booking, array() );
 			if( $send_notifications ) {
 				bookacti_send_booking_status_change_notification( $new_booking->state, $new_booking, $booking );
 			}
@@ -494,7 +494,7 @@ function bookacti_controller_change_bookings_status() {
 		$new_booking_group = $new_selected_bookings[ 'booking_groups' ][ $group_id ];
 		$group_bookings    = isset( $groups_bookings[ $group_id ] ) ? $groups_bookings[ $group_id ] : array();
 		if( $booking_group->state !== $new_booking_group->state ) {
-			do_action( 'bookacti_booking_group_status_changed', $new_booking_group->state, $booking_group, $group_bookings );
+			do_action( 'bookacti_booking_group_status_changed', $new_booking_group->state, $booking_group, $group_bookings, array() );
 			if( $send_notifications ) {
 				bookacti_send_booking_group_status_change_notification( $new_booking_group->state, $new_booking_group, $booking_group );
 			}
@@ -1199,12 +1199,13 @@ add_action( 'wp_ajax_bookactiGetGroupedBookingsRows', 'bookacti_controller_get_g
 /**
  * Trigger bookacti_booking_status_changed for each bookings of a group
  * @since 1.16.0 (was bookacti_trigger_booking_state_change_for_each_booking_of_a_group)
+ * @version 1.16.5
  * @param string $new_status
  * @param object $booking_group
  * @param array $grouped_bookings
  * @param array $args
  */
-function bookacti_trigger_group_bookings_status_changed_hook( $new_status, $booking_group, $grouped_bookings, $args ) {
+function bookacti_trigger_group_bookings_status_changed_hook( $new_status, $booking_group, $grouped_bookings, $args = array() ) {
 	if( ! $new_status ) { return; }
 	$args[ 'booking_group_status_changed' ] = true;
 	foreach( $grouped_bookings as $grouped_booking ) {

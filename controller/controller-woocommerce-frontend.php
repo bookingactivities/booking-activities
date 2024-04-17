@@ -227,23 +227,66 @@ add_filter( 'woocommerce_product_single_add_to_cart_text', 'bookacti_change_add_
 /**
  * Move the add-to-cart form below the product summary
  * @since 1.7.16
- * @version 1.8.2
+ * @version 1.16.5
  */
 function bookacti_move_add_to_cart_form_below_product_summary() {
 	global $product;
 	if( ! $product ) { return; }
+	if( has_action( 'woocommerce_after_single_product_summary', 'woocommerce_template_single_add_to_cart' ) ) { return; }
 	if( ! bookacti_product_is_activity( $product ) ) { return; }
-	
 	if( bookacti_get_setting_value( 'bookacti_products_settings', 'wc_product_pages_booking_form_location' ) !== 'form_below' ) { return; }
 	
 	$priority = has_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_add_to_cart' );
 	if( $priority === false ) { return; }
-	if( has_action( 'woocommerce_after_single_product_summary', 'woocommerce_template_single_add_to_cart' ) ) { return; }
 	
 	remove_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_add_to_cart', $priority );
 	add_action( 'woocommerce_after_single_product_summary', 'woocommerce_template_single_add_to_cart', 5 );
+	
+	add_action( 'woocommerce_before_add_to_cart_form', function() { echo '<div class="bookacti-wc-fullwidth-cart-form">'; } );
+	add_action( 'woocommerce_after_add_to_cart_form',  function() { echo '</div>'; } );
 }
 add_action( 'woocommerce_before_single_product_summary', 'bookacti_move_add_to_cart_form_below_product_summary', 10 );
+
+
+/**
+ * Move the add-to-cart form block below the multiple columns block on product pages
+ * @since 1.16.5
+ * @global WC_Product $product
+ * @param array $parsed_block
+ * @param array $source_block
+ * @param WP_Block $parent_block
+ * @return array
+ */
+function bookacti_wc_move_add_to_cart_form_block( $parsed_block, $source_block, $parent_block ) {
+	global $product;
+	if( ! $product ) { return $parsed_block; }
+	if( ! ( ! empty( $parsed_block[ 'attrs' ][ 'className' ] ) && $parsed_block[ 'attrs' ][ 'className' ] === 'woocommerce product' ) ) { return $parsed_block; }
+	if( ! bookacti_product_is_activity( $product ) ) { return $parsed_block; }
+	if( bookacti_get_setting_value( 'bookacti_products_settings', 'wc_product_pages_booking_form_location' ) !== 'form_below' ) { return $parsed_block; }
+	
+	// Find blocks
+	$add_to_cart_form_block = bookacti_find_parsed_block_recursively( $parsed_block, 'woocommerce/add-to-cart-form' );
+	$product_details_block  = bookacti_find_parsed_block_recursively( $parsed_block, 'woocommerce/product-details' );
+	$columns_block          = bookacti_find_parsed_block_recursively( $parsed_block, 'core/columns' );
+	if( ! $add_to_cart_form_block ) {
+		$add_to_cart_form_block = (array) new WP_Block_Parser_Block( 'woocommerce/add-to-cart-form', array(), array(), '', array() );
+	}
+	
+	// Remove add-to-cart form block from undesired positions
+	if( $product_details_block || $columns_block ) {
+		$parsed_block = bookacti_remove_parsed_block_recursively( $parsed_block, 'woocommerce/add-to-cart-form' );
+	}
+	
+	// Insert add-to-cart form block at the desired position
+	if( $product_details_block ) {
+		$parsed_block = bookacti_insert_parsed_block_recursively( $parsed_block, $add_to_cart_form_block, 'woocommerce/product-details', 'before', true );
+	} else if( $columns_block ) {
+		$parsed_block = bookacti_insert_parsed_block_recursively( $parsed_block, $add_to_cart_form_block, 'core/columns', 'after', true );
+	}
+	
+	return $parsed_block;
+}
+add_filter( 'render_block_data', 'bookacti_wc_move_add_to_cart_form_block', 100, 3 );
 
 
 /**
@@ -990,12 +1033,14 @@ add_action( 'wp_loaded', 'bookacti_remove_expired_product_from_cart', 100, 0 );
 
 /**
  * Make sure that cart items quantity match booking quantity
+ * TEMP FIX - https://github.com/woocommerce/woocommerce/issues/46483
  * @since 1.16.4
+ * @version 1.16.5
  * @param array $session_cart
  */
 function bookacti_wc_check_session_cart_items_quantity_consistency( $session_cart ) {
 	$cart_items          = array_filter( $session_cart->get_cart_contents() );
-	$cart_items_bookings = bookacti_wc_get_cart_items_bookings( $cart_items );
+	$cart_items_bookings = $cart_items ? bookacti_wc_get_cart_items_bookings( $cart_items ) : array();
 	$has_changed         = false;
 	
 	foreach( $cart_items_bookings as $cart_item_key => $cart_item_bookings ) {
@@ -1020,7 +1065,7 @@ function bookacti_wc_check_session_cart_items_quantity_consistency( $session_car
 	}
 	
 	// Remove in_cart bookings that are no longer in cart
-	$removed = bookacti_wc_update_in_cart_bookings_status_not_in_cart_items( $cart_items );
+	bookacti_wc_update_in_cart_bookings_status_not_in_cart_items( $cart_items );
 	
 	if( $has_changed ) {
 		$session_cart->set_cart_contents( apply_filters( 'woocommerce_cart_contents_changed', $cart_items ) );
@@ -1031,13 +1076,15 @@ add_action( 'woocommerce_cart_loaded_from_session', 'bookacti_wc_check_session_c
 
 /**
  * Check if the cart items quantity is consistent with the bookings quantity
+ * TEMP FIX - https://github.com/woocommerce/woocommerce/issues/46483
  * @since 1.16.4
+ * @version 1.16.5
  * @global WooCommerce $woocommerce
  */
 function bookacti_wc_check_cart_items_quantity_consistency() {
 	global $woocommerce;
 	$cart_items          = $woocommerce->cart->get_cart();
-	$cart_items_bookings = bookacti_wc_get_cart_items_bookings( $cart_items );
+	$cart_items_bookings = $cart_items ? bookacti_wc_get_cart_items_bookings( $cart_items ) : array();
 	foreach( $cart_items_bookings as $cart_item_key => $cart_item_bookings ) {
 		$cart_item          = ! empty( $cart_items[ $cart_item_key ] ) ? $cart_items[ $cart_item_key ] : array();
 		$cart_item_quantity = ! empty( $cart_item[ 'quantity' ] ) ? intval( $cart_item[ 'quantity' ] ) : 0;
