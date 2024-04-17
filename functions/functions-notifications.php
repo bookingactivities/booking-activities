@@ -1208,7 +1208,7 @@ function bookacti_maybe_send_event_rescheduled_notifications( $old_event, $old_b
 /**
  * Send a notification when an event is deleted to the customers who booked it
  * @since 1.14.0 (was bookacti_send_event_cancelled_notifications)
- * @version 1.16.0
+ * @version 1.16.5
  * @param object $event
  * @param array $old_bookings
  * @param boolean $send_notitifications
@@ -1244,7 +1244,7 @@ function bookacti_maybe_send_event_cancelled_notifications( $event, $old_booking
 		$old_booking = ! empty( $old_bookings[ $booking->id ] ) ? $old_bookings[ $booking->id ] : $booking;
 		if( $old_booking->state === $booking->state ) { continue; }
 		
-		do_action( 'bookacti_booking_status_changed', $booking->state, $old_booking );
+		do_action( 'bookacti_booking_status_changed', $booking->state, $old_booking, array() );
 
 		$send = apply_filters( 'bookacti_send_event_cancelled_notification', $send_notitifications, $booking, $event, $old_booking );
 		if( $send ) {
@@ -1258,7 +1258,7 @@ function bookacti_maybe_send_event_cancelled_notifications( $event, $old_booking
 /**
  * Send a notification when an event is deleted to the customers who booked it
  * @since 1.14.1 (was bookacti_send_group_of_events_cancelled_notifications)
- * @version 1.16.0
+ * @version 1.16.5
  * @param array $group_of_events
  * @param array $old_booking_groups
  * @param array $old_groups_bookings
@@ -1291,7 +1291,7 @@ function bookacti_maybe_send_group_of_events_cancelled_notifications( $group_of_
 		$old_group_bookings = ! empty( $old_groups_bookings[ $booking_group->id ] ) ? $old_groups_bookings[ $booking_group->id ] : array();
 		if( $old_booking_group->state === $booking_group->state ) { continue; }
 		
-		do_action( 'bookacti_booking_group_status_changed', $booking_group->state, $old_booking_group, $old_group_bookings );
+		do_action( 'bookacti_booking_group_status_changed', $booking_group->state, $old_booking_group, $old_group_bookings, array() );
 		
 		$send = apply_filters( 'bookacti_send_group_of_events_cancelled_notification', $send_notifications, $booking_group, $group_of_events, $old_booking_group, $old_group_bookings );
 		if( $send ) {

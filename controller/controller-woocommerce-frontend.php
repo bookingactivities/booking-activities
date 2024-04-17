@@ -1035,11 +1035,12 @@ add_action( 'wp_loaded', 'bookacti_remove_expired_product_from_cart', 100, 0 );
  * Make sure that cart items quantity match booking quantity
  * TEMP FIX - https://github.com/woocommerce/woocommerce/issues/46483
  * @since 1.16.4
+ * @version 1.16.5
  * @param array $session_cart
  */
 function bookacti_wc_check_session_cart_items_quantity_consistency( $session_cart ) {
 	$cart_items          = array_filter( $session_cart->get_cart_contents() );
-	$cart_items_bookings = bookacti_wc_get_cart_items_bookings( $cart_items );
+	$cart_items_bookings = $cart_items ? bookacti_wc_get_cart_items_bookings( $cart_items ) : array();
 	$has_changed         = false;
 	
 	foreach( $cart_items_bookings as $cart_item_key => $cart_item_bookings ) {
@@ -1064,7 +1065,7 @@ function bookacti_wc_check_session_cart_items_quantity_consistency( $session_car
 	}
 	
 	// Remove in_cart bookings that are no longer in cart
-	$removed = bookacti_wc_update_in_cart_bookings_status_not_in_cart_items( $cart_items );
+	bookacti_wc_update_in_cart_bookings_status_not_in_cart_items( $cart_items );
 	
 	if( $has_changed ) {
 		$session_cart->set_cart_contents( apply_filters( 'woocommerce_cart_contents_changed', $cart_items ) );
@@ -1077,12 +1078,13 @@ add_action( 'woocommerce_cart_loaded_from_session', 'bookacti_wc_check_session_c
  * Check if the cart items quantity is consistent with the bookings quantity
  * TEMP FIX - https://github.com/woocommerce/woocommerce/issues/46483
  * @since 1.16.4
+ * @version 1.16.5
  * @global WooCommerce $woocommerce
  */
 function bookacti_wc_check_cart_items_quantity_consistency() {
 	global $woocommerce;
 	$cart_items          = $woocommerce->cart->get_cart();
-	$cart_items_bookings = bookacti_wc_get_cart_items_bookings( $cart_items );
+	$cart_items_bookings = $cart_items ? bookacti_wc_get_cart_items_bookings( $cart_items ) : array();
 	foreach( $cart_items_bookings as $cart_item_key => $cart_item_bookings ) {
 		$cart_item          = ! empty( $cart_items[ $cart_item_key ] ) ? $cart_items[ $cart_item_key ] : array();
 		$cart_item_quantity = ! empty( $cart_item[ 'quantity' ] ) ? intval( $cart_item[ 'quantity' ] ) : 0;

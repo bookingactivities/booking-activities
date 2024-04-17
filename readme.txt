@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 6.5
 Requires PHP: 5.3
-Stable tag: 1.16.4
+Stable tag: 1.16.5
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -322,7 +322,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.16.5 =
+= 1.16.5 - 2024/04/17 =
+* Fix - PHP error when changing booking group status
+* Fix - PHP warning when cart contains non activity products, or when cart content is null
 * Fix - "Booking form location on product pages" option is now compatible with WP Blocks
 * Tweak - Encapsulate the cart form in a div when "Booking form location on product pages" option is set to "Full width" (non blocks)
 
