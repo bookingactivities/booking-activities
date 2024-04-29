@@ -439,19 +439,23 @@ function bookacti_wc_update_in_cart_bookings_status_not_in_cart_items( $cart_ite
  * Load WooCommerce cart from a WP_REST_Request
  * @param WP_REST_Request $request
  * @since 1.16.0
+ * @version 1.16.6
  * @param WP_REST_Request $request
  * @return boolean
  */
 function bookacti_wc_load_cart_from_rest_request( $request ) {
-	$cart_token = $request->get_header( 'Cart-Token' );
-	if( $cart_token && JsonWebToken::validate( $cart_token, '@' . wp_salt() ) ) {
-		// Overrides the core session class.
-		add_filter(
-			'woocommerce_session_handler',
-			function() {
-				return SessionHandler::class;
-			}
-		);
+	if( class_exists( 'Automattic\WooCommerce\StoreApi\Utilities\JsonWebToken' )
+	&&  class_exists( 'Automattic\WooCommerce\StoreApi\SessionHandler' ) ) {
+		$cart_token = $request->get_header( 'Cart-Token' );
+		if( $cart_token && Automattic\WooCommerce\StoreApi\Utilities\JsonWebToken::validate( $cart_token, '@' . wp_salt() ) ) {
+			// Overrides the core session class.
+			add_filter(
+				'woocommerce_session_handler',
+				function() {
+					return 'Automattic\WooCommerce\StoreApi\SessionHandler';
+				}
+			);
+		}
 	}
 	
 	if( ! did_action( 'woocommerce_load_cart_from_session' ) && function_exists( 'wc_load_cart' ) ) {
@@ -2398,49 +2402,49 @@ function bookacti_refund_selected_bookings_with_coupon( $selected_bookings, $ref
 /**
  * Check if a coupon code can be used
  * @since 1.11.3
- * @global boolean $bookacti_wc_return_coupon_error_code
+ * @version 1.16.6
  * @param string $coupon_code
  * @return WP_Error|true
  */
 function bookacti_wc_is_coupon_code_valid( $coupon_code ) {
-	global $bookacti_wc_return_coupon_error_code;
+	$coupon        = new WC_Coupon( $coupon_code );   
+	$error_code    = 0;
+	$error_message = '';
 	
-	$wc_discounts = class_exists( 'WC_Discounts' ) ? new WC_Discounts() : false;
-	$coupon = new WC_Coupon( $coupon_code );   
+	// Check if the coupon exists and is published
+	if( ( ! $coupon->get_id() && ! $coupon->get_virtual() ) || 'trash' === $coupon->get_status() ) {
+		$error_code = WC_Coupon::E_WC_COUPON_NOT_EXIST;
+	}
 
-	$bookacti_wc_return_coupon_error_code = true; // Get error code instead of error message
-	$valid = $wc_discounts ? $wc_discounts->is_coupon_valid( $coupon ) : true;
-	$bookacti_wc_return_coupon_error_code = false;
-
-	// Only check the following errors: does not exist, is expired, or is used
-	if( is_wp_error( $valid ) && is_numeric( $valid->get_error_message() ) ) {
-		$coupon_error_code = intval( $valid->get_error_message() );
-		if( in_array( $coupon_error_code, array( WC_Coupon::E_WC_COUPON_NOT_EXIST, WC_Coupon::E_WC_COUPON_EXPIRED, WC_Coupon::E_WC_COUPON_USAGE_LIMIT_REACHED, WC_Coupon::E_WC_COUPON_USAGE_LIMIT_COUPON_STUCK, WC_Coupon::E_WC_COUPON_USAGE_LIMIT_COUPON_STUCK_GUEST ), true ) ) {
-			$coupon_class = 'bookacti-refund-coupon-not-valid bookacti-refund-coupon-error-' . $coupon_error_code;
-			$coupon_error_message = apply_filters( 'woocommerce_coupon_error', $coupon->get_coupon_error( $coupon_error_code ), $coupon_error_code, $coupon );
-			return new WP_Error( $coupon_error_code, $coupon_error_message );
+	// Check if the coupon has been already used
+	if( ! $error_code && $coupon->get_usage_limit() ) {
+		$usage_count           = $coupon->get_usage_count();
+		$data_store            = $coupon->get_data_store();
+		$tentative_usage_count = is_callable( array( $data_store, 'get_tentative_usage_count' ) ) ? $data_store->get_tentative_usage_count( $coupon->get_id() ) : 0;
+		if( $usage_count + $tentative_usage_count >= $coupon->get_usage_limit() ) {
+			$error_code = WC_Coupon::E_WC_COUPON_USAGE_LIMIT_REACHED;
 		}
 	}
 	
-	return true;
+	// Check if the coupon is expired
+	if( ! $error_code && $coupon->get_date_expires() && time() > $coupon->get_date_expires()->getTimestamp() ) {
+		$error_code = WC_Coupon::E_WC_COUPON_EXPIRED;
+	}
+	
+	// Check if the coupon has been disabled by a third-party plugin
+	if( ! $error_code && ! apply_filters( 'woocommerce_coupon_is_valid', true, $coupon ) ) {
+		$error_code = WC_Coupon::E_WC_COUPON_INVALID_FILTERED;
+	}
+	
+	// Get the corresponding error message
+	if( $error_code ) {
+		$error_message = is_numeric( $error_code ) ? $coupon->get_coupon_error( $error_code ) : $error_code;
+		$error_code    = is_numeric( $error_code ) ? intval( $error_code ) : 0;
+		$error_message = apply_filters( 'woocommerce_coupon_error', $error_message, $error_code, $coupon );
+	}
+	
+	return apply_filters( 'bookacti_wc_is_coupon_code_valid', $error_message ? new WP_Error( $error_code, $error_message ) : true, $coupon, $coupon_code );
 }
-
-
-/**
- * Return the code of the coupon error instead of the message if the global $bookacti_return_coupon_error_code is set to true
- * @since 1.11.3
- * @global boolean $bookacti_wc_return_coupon_error_code
- * @param string $message
- * @param int $code
- * @param WC_Coupon $coupon
- * @return string|int
- */
-function bookacti_wc_coupon_error_return_code( $message, $code, $coupon ) {
-	global $bookacti_wc_return_coupon_error_code;
-	if( ! empty( $bookacti_wc_return_coupon_error_code ) ) { return $code; }
-	return $message;
-}
-add_filter( 'woocommerce_coupon_error', 'bookacti_wc_coupon_error_return_code', 1000, 3 );
 
 
 /**

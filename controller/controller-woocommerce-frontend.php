@@ -889,7 +889,7 @@ function bookacti_add_timeout_to_cart() {
 	
 	global $woocommerce;
 	
-	// Check if cart contains at least one item with the 'in_cart' state
+	// Check if cart contains at least one item with an 'in_cart' booking
 	$is_in_cart = false;
 	$cart_items_bookings = bookacti_wc_get_cart_items_bookings();
 	if( $cart_items_bookings ) {
