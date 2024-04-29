@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 6.5
 Requires PHP: 5.3
-Stable tag: 1.16.5
+Stable tag: 1.16.6
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -321,6 +321,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.16.6 - 2024/04/29 =
+* Fix - PHP error when loading a booking list including a booking refunded with a WC coupon on the backend
 
 = 1.16.5 - 2024/04/17 =
 * Fix - PHP error when changing booking group status
