@@ -212,7 +212,7 @@ function bookacti_get_activity_default_meta() {
 		'max_bookings_per_user'     => 0,
 		'max_users_per_event'       => 0,
 		'booking_changes_deadline'  => '',
-		'reschedule_scope'	        => '',
+		'reschedule_scope'          => '',
 		'reschedule_activity_ids'   => array(),
 		'allowed_roles'             => array()
 	));
@@ -412,7 +412,7 @@ function bookacti_sanitize_event_data( $raw_data ) {
 /**
  * Sanitize (group of) events repeat data
  * @since 1.12.0
- * @version 1.13.0
+ * @version 1.16.7
  * @param array $object_data see bookacti_get_group_of_events_default_data or bookacti_get_event_default_data
  * @param string $object_type "event" or "group"
  * @return array
@@ -485,11 +485,11 @@ function bookacti_sanitize_repeat_data( $object_data, $object_type = 'event' ) {
 		$bounding_events = $object_type === 'event' ? bookacti_get_occurrences_of_repeated_event( (object) $data, array( 'past_events' => true, 'bounding_only' => true ) ) : $group_occurrences_bounding_events;
 		if( $bounding_events ) {
 			$bounding_events_keys = array_keys( $bounding_events );
-			$last_key = end( $bounding_events_keys );
+			$last_key  = end( $bounding_events_keys );
 			$first_key = reset( $bounding_events_keys );
 			$bounding_dates = array( 
 				'start' => substr( $bounding_events[ $first_key ][ 'start' ], 0, 10 ), 
-				'end' => substr( $bounding_events[ $last_key ][ 'start' ], 0, 10 )
+				'end'   => substr( $bounding_events[ $last_key ][ 'start' ], 0, 10 )
 			);
 			
 			// Replace repeat period with events bounding dates
@@ -498,15 +498,15 @@ function bookacti_sanitize_repeat_data( $object_data, $object_type = 'event' ) {
 			
 			// Make the event starts on the first occurrence
 			if( $object_type === 'event' ) {
-				$repeat_from_dt = DateTime::createFromFormat( 'Y-m-d', $data[ 'repeat_from' ] );
-				$start_date_dt = DateTime::createFromFormat( 'Y-m-d', substr( $data[ 'start' ], 0, 10 ) );
-				$offset_interval = $start_date_dt->diff( $repeat_from_dt );
-				$start_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $data[ 'start' ] );
-				$end_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $data[ 'end' ] );
+				$repeat_from_dt  = DateTime::createFromFormat( 'Y-m-d', $data[ 'repeat_from' ] );
+				$start_date_dt   = DateTime::createFromFormat( 'Y-m-d', substr( $data[ 'start' ], 0, 10 ) );
+				$offset_interval = bookacti_php_date_interval_in_seconds( $start_date_dt->diff( $repeat_from_dt ) );
+				$start_dt        = DateTime::createFromFormat( 'Y-m-d H:i:s', $data[ 'start' ] );
+				$end_dt          = DateTime::createFromFormat( 'Y-m-d H:i:s', $data[ 'end' ] );
 				$start_dt->add( $offset_interval );
 				$end_dt->add( $offset_interval );
 				$data[ 'start' ] = $start_dt->format( 'Y-m-d H:i:s' );
-				$data[ 'end' ] = $end_dt->format( 'Y-m-d H:i:s' );
+				$data[ 'end' ]   = $end_dt->format( 'Y-m-d H:i:s' );
 			}
 			
 			// The repeat period may have changed, so, check the consistency again between the event date and the new repeat period
@@ -561,7 +561,7 @@ function bookacti_sanitize_repeat_data( $object_data, $object_type = 'event' ) {
 /**
  * Make sure the event date and its repeat period are consistent
  * @since 1.11.0
- * @version 1.12.0
+ * @version 1.16.7
  * @param array $data see bookacti_get_group_of_events_default_data or bookacti_get_event_default_data
  * @param string $object_type "event" or "group"
  * @return array
@@ -570,7 +570,7 @@ function bookacti_sanitize_event_date_and_repeat_period( $data, $object_type = '
 	if( $data[ 'repeat_freq' ] !== 'none' && $data[ 'repeat_from' ] && $data[ 'repeat_to' ] ) {
 		// Make sure repeat from is before repeat to
 		$repeat_from_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $data[ 'repeat_from' ] . ' 00:00:00' );
-		$repeat_to_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $data[ 'repeat_to' ] . ' 23:59:59' );
+		$repeat_to_dt   = DateTime::createFromFormat( 'Y-m-d H:i:s', $data[ 'repeat_to' ] . ' 23:59:59' );
 		if( $repeat_from_dt > $repeat_to_dt ) { 
 			$data[ 'repeat_from' ] = $data[ 'repeat_to' ]; 
 			$repeat_from_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $data[ 'repeat_from' ] . ' 00:00:00' );
@@ -580,25 +580,25 @@ function bookacti_sanitize_event_date_and_repeat_period( $data, $object_type = '
 		if( $object_type === 'event' ) {
 			$start_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $data[ 'start' ] );
 			if( $start_dt < $repeat_from_dt || $start_dt > $repeat_to_dt ) { 
-				$end_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $data[ 'end' ] );
+				$end_dt              = DateTime::createFromFormat( 'Y-m-d H:i:s', $data[ 'end' ] );
 				$repeat_from_date_dt = DateTime::createFromFormat( 'Y-m-d', $data[ 'repeat_from' ] );
-				$start_date_dt = DateTime::createFromFormat( 'Y-m-d', substr( $data[ 'start' ], 0, 10 ) );
-				$offset_interval = $start_date_dt->diff( $repeat_from_date_dt );
+				$start_date_dt       = DateTime::createFromFormat( 'Y-m-d', substr( $data[ 'start' ], 0, 10 ) );
+				$offset_interval     = bookacti_php_date_interval_in_seconds( $start_date_dt->diff( $repeat_from_date_dt ) );
 				$start_dt->add( $offset_interval );
 				$end_dt->add( $offset_interval );
-				$data[ 'start' ] = $start_dt->format( 'Y-m-d H:i:s' );
-				$data[ 'end' ] = $end_dt->format( 'Y-m-d H:i:s' );
+				$data[ 'start' ]     = $start_dt->format( 'Y-m-d H:i:s' );
+				$data[ 'end' ]       = $end_dt->format( 'Y-m-d H:i:s' );
 			}
 		}
 	}
 
 	// Check if the monthly repetition type is valid
 	if( $data[ 'repeat_freq' ] === 'monthly' && $data[ 'repeat_on' ] && isset( $data[ 'start' ] ) ) {
-		$start_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $data[ 'start' ] );
-		$nth_in_month = intval( $start_dt->format( 'j' ) );
+		$start_dt      = DateTime::createFromFormat( 'Y-m-d H:i:s', $data[ 'start' ] );
+		$nth_in_month  = intval( $start_dt->format( 'j' ) );
 		$days_in_month = intval( $start_dt->format( 't' ) );
-		if( $data[ 'repeat_on' ] === 'last_day_of_month' && $nth_in_month !== $days_in_month )		{ $data[ 'repeat_on' ] = 'nth_day_of_month'; }
-		if( $data[ 'repeat_on' ] === 'last_day_of_week' && $nth_in_month < ( $days_in_month - 6 ) )	{ $data[ 'repeat_on' ] = 'nth_day_of_week'; }
+		if( $data[ 'repeat_on' ] === 'last_day_of_month' && $nth_in_month !== $days_in_month )      { $data[ 'repeat_on' ] = 'nth_day_of_month'; }
+		if( $data[ 'repeat_on' ] === 'last_day_of_week' && $nth_in_month < ( $days_in_month - 6 ) ) { $data[ 'repeat_on' ] = 'nth_day_of_week'; }
 	}
 	
 	return $data;
@@ -682,8 +682,8 @@ function bookacti_sanitize_group_of_events_data( $raw_data ) {
 	$raw_events = isset( $raw_data[ 'events' ] ) ? ( is_array( $raw_data[ 'events' ] ) ? $raw_data[ 'events' ] : ( is_string( $raw_data[ 'events' ] ) ? bookacti_maybe_decode_json( stripslashes( $raw_data[ 'events' ] ), true ) : array() ) ) : array();
 	$event_default_data = array( 'id' => 0, 'activity_id' => 0, 'start' => '', 'end' => '' );
 	$event_keys_by_type = array( 
-		'absint'	=> array( 'id', 'activity_id', 'template_id' ),
-		'datetime'	=> array( 'start', 'end' ),
+		'absint'   => array( 'id', 'activity_id', 'template_id' ),
+		'datetime' => array( 'start', 'end' ),
 	);
 	
 	$data[ 'events' ] = array();
