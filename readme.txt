@@ -322,7 +322,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.16.7 =
+= 1.16.7 - 2024/05/01 =
 * Tweak - If "Show only first event of groups" option is ON, display only the groups starting with the selected event in the dialog to select a group of events
 * Fix - Groups of events may be incorrectly generated
 * Fix - Improve compatibility between "Trim" option and "Show only first event of groups" option
