@@ -2087,7 +2087,7 @@ function bookacti_get_events_array_from_db_events( $events, $raw_args = array() 
 /**
  * Keep only the first and the last events
  * @since 1.8.0
- * @version 1.13.0
+ * @version 1.16.7
  * @param array $events
  * @param array $raw_args {
  *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
@@ -2122,10 +2122,10 @@ function bookacti_get_bounding_events_from_db_events( $events, $raw_args = array
 		// For repeated events, generate the first and the last occurrence of the interval
 		if( ! empty( $event->repeat_freq ) && $event->repeat_freq !== 'none' && ! empty( $event->repeat_from ) && ! empty( $event->repeat_to ) ) { 
 			$event_start_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $event->start );
-			$event_end_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $event->end );
-			$duration = $event_start_dt->diff( $event_end_dt, true );
-			$from_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $event->repeat_from . ' ' . $event_start_dt->format( 'H:i:s' ) );
-			$to_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $event->repeat_to . ' ' . $event_start_dt->format( 'H:i:s' ) );
+			$event_end_dt   = DateTime::createFromFormat( 'Y-m-d H:i:s', $event->end );
+			$duration       = bookacti_php_date_interval_in_seconds( $event_start_dt->diff( $event_end_dt, true ) );
+			$from_dt        = DateTime::createFromFormat( 'Y-m-d H:i:s', $event->repeat_from . ' ' . $event_start_dt->format( 'H:i:s' ) );
+			$to_dt          = DateTime::createFromFormat( 'Y-m-d H:i:s', $event->repeat_to . ' ' . $event_start_dt->format( 'H:i:s' ) );
 			$to_dt->add( $duration );
 			
 			// Skip that event if it is fully included in bounding dates
@@ -2171,7 +2171,7 @@ function bookacti_get_bounding_events_from_db_events( $events, $raw_args = array
 /**
  * Get occurrences of repeated events
  * @since 1.8.4 (was bookacti_get_occurences_of_repeated_event)
- * @version 1.15.11
+ * @version 1.16.7
  * @param object $event Event data 
  * @param array $raw_args {
  *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
@@ -2212,7 +2212,7 @@ function bookacti_get_occurrences_of_repeated_event( $event, $raw_args = array()
 	$interval_end      = ! empty( $args[ 'interval' ][ 'end' ] ) ? new DateTime( $args[ 'interval' ][ 'end' ], $timezone ) : false;
 	$event_start       = new DateTime( $event->start, $timezone );
 	$event_end         = new DateTime( $event->end, $timezone );
-	$event_duration    = $event_start->diff( $event_end );
+	$event_duration    = bookacti_php_date_interval_in_seconds( $event_start->diff( $event_end ) );
 	$event_start_time  = substr( $event->start, 11 );
 	$repeat_exceptions = ! empty( $event->repeat_exceptions ) && is_array( $event->repeat_exceptions ) ? $event->repeat_exceptions : array();
 	
@@ -2282,7 +2282,7 @@ function bookacti_get_occurrences_of_repeated_event( $event, $raw_args = array()
 /**
  * Get the event repeat from and to DateTime, and the repeat interval DateInterval (or callable)
  * @since 1.8.0
- * @version 1.15.6
+ * @version 1.16.7
  * @param object $event
  * @param array $args See bookacti_get_occurrences_of_repeated_event documentation
  * @return array {
@@ -2324,7 +2324,7 @@ function bookacti_get_event_repeat_data( $event, $args ) {
 		$current_date     = $current_time->format( 'Y-m-d' );
 		$repeat_from      = new DateTime( $current_date . ' 00:00:00', $timezone );
 		$event_end        = new DateTime( $event->end, $timezone );
-		$event_duration   = $event_start->diff( $event_end );
+		$event_duration   = bookacti_php_date_interval_in_seconds( $event_start->diff( $event_end ) );
 		$event_start_time = substr( $event->start, 11 );
 		
 		$first_potential_event_start = new DateTime( $current_date . ' ' . $event_start_time, $timezone );
@@ -2937,7 +2937,7 @@ function bookacti_get_availability_period( $absolute_period = array(), $relative
 /**
  * Get booking system trimmed availability period
  * @since 1.13.0
- * @version 1.16.0
+ * @version 1.16.7
  * @param array $booking_system_data
  * @return array
  */
@@ -2959,7 +2959,7 @@ function bookacti_get_booking_system_availability_period( $booking_system_data )
 		// Get bounding events
 		if( $booking_system_data[ 'groups_only' ] ) {
 			$bounding_groups = ! in_array( 'none', $booking_system_data[ 'group_categories' ], true ) ? bookacti_get_groups_of_events( array( 'templates' => $booking_system_data[ 'calendars' ], 'group_categories' => $booking_system_data[ 'group_categories' ], 'interval' => $availability_period, 'interval_started' => 1, 'past_events' => $booking_system_data[ 'past_events' ], 'data_only' => 1 ) ) : array();
-			$bounding_events = bookacti_get_bounding_events_from_groups_of_events_heuristic( $bounding_groups, array( 'past_events' => $booking_system_data[ 'past_events' ], 'interval' => $availability_period ) );
+			$bounding_events = bookacti_get_bounding_events_from_groups_of_events_heuristic( $bounding_groups, array( 'past_events' => $booking_system_data[ 'past_events' ], 'interval' => $availability_period, 'groups_first_event_only' => $booking_system_data[ 'groups_first_event_only' ] ) );
 		} else if( $booking_system_data[ 'bookings_only' ] ) {
 			$bounding_events = bookacti_fetch_booked_events( array( 'bounding_only' => 1, 'templates' => $booking_system_data[ 'calendars' ], 'activities' => $booking_system_data[ 'activities' ], 'status' => $booking_system_data[ 'status' ], 'users' => $booking_system_data[ 'user_id' ], 'past_events' => $booking_system_data[ 'past_events' ], 'interval' => $availability_period ) );
 		} else {
@@ -3635,7 +3635,7 @@ function bookacti_fetch_events_of_group_of_events_occurrences( $groups_occurrenc
 /**
  * Get the bounding dates of groups of events without generating their occurrences. The result is theorical and may not be accurate.
  * @since 1.12.0 (was bookacti_fetch_grouped_events)
- * @version 1.13.0
+ * @version 1.16.7
  * @global wpdb $wpdb
  * @param array $groups See bookacti_get_groups_of_events
  * @param array $raw_args {
@@ -3648,8 +3648,9 @@ function bookacti_get_bounding_events_from_groups_of_events_heuristic( $groups, 
 	if( empty( $groups[ 'data' ] ) ) { return array(); }
 	
 	$default_args = array(
-		'interval'    => array(),
-		'past_events' => 1
+		'interval'                => array(),
+		'past_events'             => 1,
+		'groups_first_event_only' => 0
 	);
 	$args = wp_parse_args( $raw_args, $default_args );
 	
@@ -3687,10 +3688,10 @@ function bookacti_get_bounding_events_from_groups_of_events_heuristic( $groups, 
 			);
 
 			$dummy_args = array( 
-				'interval' => $args[ 'interval' ],
+				'interval'        => $args[ 'interval' ],
 				'skip_exceptions' => 1,
-				'past_events' => 1, // Get past occurrences too, we need to make the past / started groups check later to take the whole group into account
-				'bounding_only' => 1
+				'past_events'     => 1, // Get past occurrences too, we need to make the past / started groups check later to take the whole group into account
+				'bounding_only'   => $args[ 'groups_first_event_only' ] ? 0 : 1
 			);
 
 			// Include started groups
@@ -3712,9 +3713,9 @@ function bookacti_get_bounding_events_from_groups_of_events_heuristic( $groups, 
 				// Compute the events of the group from their first event
 				foreach( $group[ 'events' ] as $group_event ) {
 					$group_event_start_dt = new DateTime( $group_event[ 'start' ], $timezone );
-					$group_event_end_dt = new DateTime( $group_event[ 'end' ], $timezone );
-					$delta = $first_event_start_dt->diff( $group_event_start_dt, true );
-					$duration = $group_event_start_dt->diff( $group_event_end_dt, true );
+					$group_event_end_dt   = new DateTime( $group_event[ 'end' ], $timezone );
+					$delta    = bookacti_php_date_interval_in_seconds( $first_event_start_dt->diff( $group_event_start_dt, true ) );
+					$duration = bookacti_php_date_interval_in_seconds( $group_event_start_dt->diff( $group_event_end_dt, true ) );
 					$desired_event_start_dt = clone $first_event_occurrence_dt;
 					$desired_event_start_dt = $desired_event_start_dt->add( $delta );
 					$desired_event_end_dt = clone $desired_event_start_dt;
@@ -3722,12 +3723,21 @@ function bookacti_get_bounding_events_from_groups_of_events_heuristic( $groups, 
 					
 					$desired_event = array_merge( $group_event, array( 'start' => $desired_event_start_dt->format( 'Y-m-d H:i:s' ), 'end' => $desired_event_end_dt->format( 'Y-m-d H:i:s' ) ) );
 					$grouped_events[] = $desired_event;
+					
+					if( $args[ 'groups_first_event_only' ] ) { break; }
 				}
 			}
 			
 		// For non repeated groups, get their events
 		} else {
-			$grouped_events = array_merge( $grouped_events, $group[ 'events' ] );
+			$group_events = $group[ 'events' ];
+			if( $args[ 'groups_first_event_only' ] ) {
+				$group_events = array();
+				if( ! empty( $group[ 'events' ] ) ) {
+					$group_events[] = reset( $group[ 'events' ] );
+				}
+			}
+			$grouped_events = array_merge( $grouped_events, $group_events );
 		}
 	}
 	
@@ -3758,7 +3768,7 @@ function bookacti_get_bounding_events_from_groups_of_events_heuristic( $groups, 
 /**
  * Get occurrences of repeated events
  * @since 1.12.0
- * @version 1.16.1
+ * @version 1.16.7
  * @param object $groups Groups data 
  * @param array $raw_args {
  *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
@@ -3831,7 +3841,7 @@ function bookacti_get_occurrences_of_repeated_groups_of_events( $groups, $raw_ar
 		$first_event    = reset( $group[ 'events' ] );
 		$first_event_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $first_event[ 'start' ], $timezone );
 		$last_event_dt  = DateTime::createFromFormat( 'Y-m-d H:i:s', $last_event[ 'end' ], $timezone );
-		$group_duration = $first_event_dt->diff( $last_event_dt, true );
+		$group_duration = bookacti_php_date_interval_in_seconds( $first_event_dt->diff( $last_event_dt, true ) );
 		$repeat_to_dt->add( $group_duration );
 		$repeat_to_dt->setTime( 23, 59, 59 );
 		
@@ -3900,9 +3910,9 @@ function bookacti_get_occurrences_of_repeated_groups_of_events( $groups, $raw_ar
 			// Compute the events of the group from their first event
 			foreach( $group[ 'events' ] as $group_event ) {
 				$group_event_start_dt = new DateTime( $group_event[ 'start' ] );
-				$group_event_end_dt = new DateTime( $group_event[ 'end' ] );
-				$delta = $first_event_start_dt->diff( $group_event_start_dt, true );
-				$duration = $group_event_start_dt->diff( $group_event_end_dt, true );
+				$group_event_end_dt   = new DateTime( $group_event[ 'end' ] );
+				$delta    = bookacti_php_date_interval_in_seconds( $first_event_start_dt->diff( $group_event_start_dt, true ) );
+				$duration = bookacti_php_date_interval_in_seconds( $group_event_start_dt->diff( $group_event_end_dt, true ) );
 				$desired_event_start_dt = clone $first_event_occurrence_dt;
 				$desired_event_start_dt = $desired_event_start_dt->add( $delta );
 				$desired_event_end_dt = clone $desired_event_start_dt;

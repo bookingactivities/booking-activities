@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 6.5
 Requires PHP: 5.3
-Stable tag: 1.16.6
+Stable tag: 1.16.7
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -321,6 +321,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.16.7 - 2024/05/01 =
+* Tweak - If "Show only first event of groups" option is ON, display only the groups starting with the selected event in the dialog to select a group of events
+* Fix - Groups of events may be incorrectly generated
+* Fix - Improve compatibility between "Trim" option and "Show only first event of groups" option
 
 = 1.16.6 - 2024/04/29 =
 * Fix - PHP error when loading a booking list including a booking refunded with a WC coupon on the backend

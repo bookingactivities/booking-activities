@@ -476,7 +476,7 @@ function bookacti_event_click( booking_system, event ) {
 	var group_ids = [];
 	var groups_nb = 0;
 	if( booking_system_id !== 'bookacti-booking-system-reschedule' ) {
-		groups = bookacti_get_event_groups( booking_system, event );
+		groups    = bookacti_get_event_groups( booking_system, event );
 		groups_nb = bookacti_get_event_groups_nb( groups );
 		group_ids = Object.keys( groups );
 	}
@@ -509,7 +509,7 @@ function bookacti_event_click( booking_system, event ) {
 /**
  * Get the groups of an event
  * @since 1.12.0 (was bookacti_get_event_group_ids)
- * @version 1.15.0
+ * @version 1.16.7
  * @param {HTMLElement} booking_system
  * @param {(FullCalendar.EventApi|Object)} event
  * @returns {Object}
@@ -522,9 +522,10 @@ function bookacti_get_event_groups( booking_system, event ) {
 	else if( typeof event.id === 'undefined' || typeof event.start === 'undefined' || typeof event.end === 'undefined' ) { return groups; }
 	
 	var booking_system_id = booking_system.attr( 'id' );
-	var event_id    = typeof event.groupId !== 'undefined' ? parseInt( event.groupId ) : parseInt( event.id );
-	var event_start = moment.utc( event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
-	var event_end   = moment.utc( event.end ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
+	var event_id          = typeof event.groupId !== 'undefined' ? parseInt( event.groupId ) : parseInt( event.id );
+	var event_start       = moment.utc( event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
+	var event_end         = moment.utc( event.end ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
+	var first_event_only  = bookacti.booking_system[ booking_system_id ]?.[ 'groups_first_event_only' ];
 	
 	$j.each( bookacti.booking_system[ booking_system_id ][ 'groups_events' ], function( group_id, group_occurrences ) {
 		$j.each( group_occurrences, function( group_date, group_events ) {
@@ -534,6 +535,9 @@ function bookacti_get_event_groups( booking_system, event ) {
 				&&  group_event[ 'end' ] === event_end ) {
 					if( typeof groups[ group_id ] === 'undefined' ) { groups[ group_id ] = {}; }
 					groups[ group_id ][ group_date ] = group_events;
+					return false; // Break the loop
+				}
+				if( first_event_only && parseInt( first_event_only ) ) {
 					return false; // Break the loop
 				}
 			});

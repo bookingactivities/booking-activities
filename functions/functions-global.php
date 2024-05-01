@@ -2322,6 +2322,24 @@ function bookacti_format_delay( $seconds, $precision = 3 ) {
 
 
 /**
+ * Convert a DateInterval to a DateInterval with seconds only
+ * @since 1.16.7
+ * @param DateInterval $interval
+ * @return DateInterval
+ */
+function bookacti_php_date_interval_in_seconds( $interval ) {
+	$days          = is_numeric( $interval->format( '%a' ) ) ? abs( intval( $interval->format( '%a' ) ) ) : 0;
+	$hours         = is_numeric( $interval->h ) ? abs( intval( $interval->h ) ) : 0;
+	$minutes       = is_numeric( $interval->i ) ? abs( intval( $interval->i ) ) : 0;
+	$seconds       = is_numeric( $interval->s ) ? abs( intval( $interval->s ) ) : 0;
+	$total_seconds = $days * 86400 + $hours * 3600 + $minutes * 60 + $seconds;
+	$new_interval  = new DateInterval( 'PT' . $total_seconds . 'S' );
+	$new_interval->invert = $interval->invert;
+	return $new_interval;
+}
+
+
+/**
  * Check if a string is valid JSON
  * 
  * @since 1.1.0
