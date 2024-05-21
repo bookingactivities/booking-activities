@@ -117,10 +117,13 @@ $j( document ).ready( function() {
 	/**
 	 * Refresh picked events list - after booking system reloaded
 	 * @since 1.12.0
+	 * @version 1.16.8
 	 * @param {Event} e
+	 * @param {Object} response
 	 * @param {Object} original_attributes
+	 * @param {Object} attributes
 	 */
-	$j( 'body' ).on( 'bookacti_booking_system_reloaded', '.bookacti-booking-system', function( e, original_attributes ) {
+	$j( 'body' ).on( 'bookacti_booking_system_reloaded', '.bookacti-booking-system', function( e, response, original_attributes, attributes ) {
 		if( $j( this ).find( '.bookacti-calendar' ).length ) {
 			bookacti_refresh_picked_events_on_calendar( $j( this ) );
 		}
@@ -930,7 +933,7 @@ function bookacti_exit_calendar_loading_state( calendar ) {
 
 /**
  * Hide rows without any events on Day Grid views
- * @version 1.16.4
+ * @version 1.16.8
  * @param {HTMLElement} booking_system
  */
 function bookacti_fc_hide_daygrid_empty_rows( booking_system ) {
@@ -985,5 +988,7 @@ function bookacti_fc_hide_daygrid_empty_rows( booking_system ) {
 		var colspan   = calendar.find( '.fc-daygrid-body > table > tbody > tr:first > td' ).length;
 		var no_events = typeof bookacti_localized.no_events !== 'undefined' ? bookacti_localized.no_events : 'No events.';
 		calendar.find( '.fc-daygrid-body > table > tbody' ).append( '<tr class="bookacti-no-events-row" colspan="' + colspan + '"><td><div class="bookacti-no-events">' + no_events + '</div></td></tr>' );
+	} else {
+		bookacti_booking_method_rerender_events( booking_system );
 	}
 }

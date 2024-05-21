@@ -2402,7 +2402,7 @@ function bookacti_refund_selected_bookings_with_coupon( $selected_bookings, $ref
 /**
  * Check if a coupon code can be used
  * @since 1.11.3
- * @version 1.16.6
+ * @version 1.16.8
  * @param string $coupon_code
  * @return WP_Error|true
  */
@@ -2432,7 +2432,7 @@ function bookacti_wc_is_coupon_code_valid( $coupon_code ) {
 	}
 	
 	// Check if the coupon has been disabled by a third-party plugin
-	if( ! $error_code && ! apply_filters( 'woocommerce_coupon_is_valid', true, $coupon ) ) {
+	if( ! $error_code && ! apply_filters( 'woocommerce_coupon_is_valid', true, $coupon, null ) ) {
 		$error_code = WC_Coupon::E_WC_COUPON_INVALID_FILTERED;
 	}
 	

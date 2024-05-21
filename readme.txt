@@ -322,6 +322,12 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.16.8 =
+* Tweak - Add {calendar_title} notification tag
+* Fix - PHP error with some WC add-ons due to missing third argument in woocommerce_coupon_is_valid hook 
+* Fix - Multiday events may not be correctly rendered in Day Grid views with Trim option
+* Dev - Add template_title, template_active, creation_date and expiration_date parameters to booking group objects
+
 = 1.16.7 - 2024/05/01 =
 * Tweak - If "Show only first event of groups" option is ON, display only the groups starting with the selected event in the dialog to select a group of events
 * Fix - Groups of events may be incorrectly generated

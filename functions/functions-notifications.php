@@ -357,7 +357,7 @@ function bookacti_sanitize_notification_settings( $args, $notification_id = '' )
 /**
  * Get notifications tags
  * @since 1.2.0
- * @version 1.16.0
+ * @version 1.16.8
  * @param string $notification_id Optional.
  * @return array
  */
@@ -380,6 +380,7 @@ function bookacti_get_notifications_tags( $notification_id = '' ) {
 		'{activity_id}'            => esc_html__( 'Activity or Group Category ID', 'booking-activities' ),
 		'{activity_title}'         => esc_html__( 'Activity or Group Category title', 'booking-activities' ),
 		'{calendar_id}'            => esc_html__( 'Calendar ID', 'booking-activities' ),
+		'{calendar_title}'         => esc_html__( 'Calendar title', 'booking-activities' ),
 		'{user_firstname}'         => esc_html__( 'The user first name', 'booking-activities' ),
 		'{user_lastname}'          => esc_html__( 'The user last name', 'booking-activities' ),
 		'{user_email}'             => esc_html__( 'The user email address', 'booking-activities' ),
@@ -521,6 +522,7 @@ function bookacti_get_notifications_tags_values( $booking, $booking_type, $notif
 		$booking_data[ '{booking_payment_status}' ] = bookacti_format_payment_status( $booking->payment_status );
 		$booking_data[ '{booking_quantity}' ]       = $booking->quantity;
 		$booking_data[ '{calendar_id}' ]            = $booking->template_id;
+		$booking_data[ '{calendar_title}' ]         = ! empty( $booking->template_title ) ? apply_filters( 'bookacti_translate_text', $booking->template_title ) : '';
 		$booking_data[ '{refund_message}' ]         = ! empty( $booking->refund_message ) ? $booking->refund_message : '';
 		
 		$user_ical_key = '';
