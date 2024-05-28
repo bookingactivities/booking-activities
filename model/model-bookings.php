@@ -2411,7 +2411,7 @@ function bookacti_update_booking_groups_bookings_quantity( $group_ids, $new_quan
 /**
  * Get booking groups according to filters
  * @since 1.3.0 (was bookacti_get_booking_groups_by_group_of_events)
- * @version 1.16.0
+ * @version 1.16.8
  * @global wpdb $wpdb
  * @param array $filters Use bookacti_format_booking_filters() before
  * @return array
@@ -2432,16 +2432,18 @@ function bookacti_get_booking_groups( $filters ) {
 	$query = 'SELECT BG.id, BG.group_date, BG.event_group_id, BG.user_id, BG.order_id, BG.form_id, BG.state, BG.payment_status, BG.active, IFNULL( NULLIF( BG.category_id, 0 ), EG.category_id ) as category_id,'
 	       . ' EG.title as group_title, EG.active as event_group_active,'
 	       . ' C.title as category_title, C.template_id, C.active as category_active,'
-	       . ' B.start, B.end, B.last_start, B.quantity, B.bookings_nb, B.booking_ids ';
-
+	       . ' T.title as template_title, T.active as template_active,'
+	       . ' B.start, B.end, B.last_start, B.quantity, B.bookings_nb, B.booking_ids, B.creation_date, B.expiration_date ';
+	
 	$query .= ' FROM ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' as BG ' 
 	       . ' LEFT JOIN ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as EG ON BG.event_group_id = EG.id '
-	       . ' LEFT JOIN ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' as C ON IFNULL( NULLIF( BG.category_id, 0 ), EG.category_id ) = C.id ';
+	       . ' LEFT JOIN ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' as C ON IFNULL( NULLIF( BG.category_id, 0 ), EG.category_id ) = C.id '
+	       . ' LEFT JOIN ' . BOOKACTI_TABLE_TEMPLATES . ' as T ON C.template_id = T.id ';
 
 	// Get the first and the last event of the booking group and keep respectively their start and end datetime
 	// Get the max booking quantity
 	$query .= ' LEFT JOIN ( '
-	           . ' SELECT group_id as booking_group_id, ' . $bw_compat_query . ' as booking_ids, COUNT( id ) as bookings_nb, MAX( quantity ) as quantity, MIN( event_start ) as start, MAX( event_end ) as end, MAX( event_start ) as last_start '
+	           . ' SELECT group_id as booking_group_id, ' . $bw_compat_query . ' as booking_ids, COUNT( id ) as bookings_nb, MAX( quantity ) as quantity, MIN( event_start ) as start, MAX( event_end ) as end, MAX( event_start ) as last_start, MIN( creation_date ) as creation_date, MIN( expiration_date ) as expiration_date '
 	           . ' FROM ' . BOOKACTI_TABLE_BOOKINGS 
 	           . ' GROUP BY group_id'
 	       . ' ) as B ON BG.id = B.booking_group_id ';
