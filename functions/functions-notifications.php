@@ -589,7 +589,7 @@ function bookacti_get_notifications_tags_values( $booking, $booking_type, $notif
 /**
  * Send a notification
  * @since 1.2.1 (was bookacti_send_email in 1.2.0)
- * @version 1.16.0
+ * @version 1.16.9
  * @param string $notification_id The notification identifier. It must exists as a key in "bookacti_notifications_default_settings".
  * @param int $booking_id         Main booking (group) ID
  * @param string $booking_type    Main booking type ("single" or "group")
@@ -701,10 +701,15 @@ function bookacti_send_notification( $notification_id, $booking_id, $booking_typ
 					$added_booking_uids[] = $_booking_iud;
 					$_booking_object      = ! empty( $args[ 'additional_bookings' ][ $i ][ 'booking' ] ) ? $args[ 'additional_bookings' ][ $i ][ 'booking' ] : ( $_booking_type === 'group' ? bookacti_get_booking_group_by_id( $_booking[ 'id' ], true ) : bookacti_get_booking_by_id( $_booking[ 'id' ], true ) );
 					if( $_booking_object ) {
-						$_tags = bookacti_get_notifications_tags_values( $_booking_object, $_booking_type, $notification, array_diff_key( $args, array( 'additional_bookings' => array() ) ) );
+						$_tags_args = $args;
+						unset( $_tags_args[ 'additional_bookings' ] );
+						if( ! empty( $_booking[ 'tags' ] ) ) {
+							$_tags_args[ 'tags' ] = $_booking[ 'tags' ];
+						}
+						
 						$args[ 'additional_bookings' ][ $i ][ 'type' ]    = $_booking_type;
 						$args[ 'additional_bookings' ][ $i ][ 'booking' ] = $_booking_object;
-						$args[ 'additional_bookings' ][ $i ][ 'tags' ]    = ! empty( $_booking[ 'tags' ] ) ? array_merge( $_tags, $_booking[ 'tags' ] ) : $_tags;
+						$args[ 'additional_bookings' ][ $i ][ 'tags' ]    = bookacti_get_notifications_tags_values( $_booking_object, $_booking_type, $notification, $_tags_args );
 						continue;
 					}
 				}
@@ -1126,7 +1131,7 @@ function bookacti_send_booking_rescheduled_notification( $booking, $old_booking,
 /**
  * Send a notification when an event dates change to the customers who booked it, once per event per user, for future bookings only
  * @since 1.14.1 (was bookacti_send_event_rescheduled_notifications)
- * @version 1.16.0
+ * @version 1.16.9
  * @param object $old_event
  * @param array $old_bookings
  * @param int $delta_seconds_start
@@ -1199,7 +1204,7 @@ function bookacti_maybe_send_event_rescheduled_notifications( $old_event, $old_b
 			$old_booking = $old_bookings[ $booking_id ];
 			$new_booking = $bookings[ $booking_id ];
 			
-			bookacti_send_booking_rescheduled_notification( $new_booking, $booking, 'customer' );
+			bookacti_send_booking_rescheduled_notification( $new_booking, $old_booking, 'customer' );
 		}
 	}
 	

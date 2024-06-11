@@ -50,6 +50,68 @@ add_filter( 'render_block_data', 'bookacti_wc_blocks_move_add_to_cart_form', 100
 // CART
 
 /**
+ * Register WC Store API endpoint for Cart Item to add cart item data
+ * @since 1.16.9
+ */
+function bookacti_wc_store_api_register_endpoint_cart_item() {
+	if( ! did_action( 'woocommerce_blocks_loaded' ) ) { return; }
+	
+	woocommerce_store_api_register_endpoint_data(
+		array(
+			'endpoint'        => 'cart-item', // Automattic\WooCommerce\StoreApi\Schemas\V1\CartItemSchema::IDENTIFIER
+			'namespace'       => 'booking-activities',
+			'data_callback'   => function( $cart_item ) {
+				$is_booking         = false;
+				$status             = '';
+				$expiration_dt      = null;
+				$cart_item_bookings = bookacti_wc_get_cart_item_bookings( $cart_item[ 'key' ] );
+				
+				if( ! empty( $cart_item_bookings[ 0 ][ 'bookings' ] ) ) {
+					// All bookings should have the same status and expiration date
+					foreach( $cart_item_bookings[ 0 ][ 'bookings' ] as $booking ) {
+						$status = $booking->state;
+						if( ! empty( $booking->expiration_date ) ) {
+							$booking_expiration = new DateTime( $booking->expiration_date, new DateTimeZone( 'UTC' ) );
+							if( ! $expiration_dt || ( $expiration_dt && $booking_expiration < $expiration_dt ) ) { 
+								$expiration_dt = clone $booking_expiration;
+							}
+						}
+					}
+					$is_booking = true;
+				}
+				if( ! $expiration_dt || ! in_array( $status, array( 'in_cart', 'pending' ), true ) ) { 
+					$expiration_dt = null;
+				}
+				
+				return array(
+					'is_booking'      => $is_booking,
+					'booking_status'  => $status ? $status : '',
+					'expiration_date' => $expiration_dt ? $expiration_dt->format( 'Y-m-d\TH_i_s' ) : ''
+				);
+			},
+			'schema_callback' => function() {
+				return array(
+					'properties' => array(
+						'is_booking' => array(
+							'type' => 'boolean'
+						),
+						'booking_status' => array(
+							'type' => 'string'
+						),
+						'expiration_date' => array(
+							'type' => 'string'
+						)
+					),
+				);
+			},
+			'schema_type'     => ARRAY_A,
+		)
+	);
+}
+add_action( 'init', 'bookacti_wc_store_api_register_endpoint_cart_item' );
+
+
+/**
  * If quantity changes in cart via Strore API, temporarily book the extra quantity if possible
  * TEMP FIX - Waiting for a quantity validation filter (https://github.com/woocommerce/woocommerce/pull/45489)
  * @since 1.16.0

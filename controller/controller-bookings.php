@@ -830,7 +830,7 @@ add_action( 'wp_ajax_nopriv_bookactiGetRescheduleBookingSystemData', 'bookacti_c
 /**
  * AJAX Controller - Reschedule bookings
  * @since 1.16.0
- * @version 1.16.2
+ * @version 1.16.9
  */
 function bookacti_controller_reschedule_bookings() {
 	// Check nonce
@@ -949,8 +949,8 @@ function bookacti_controller_reschedule_bookings() {
 
 		$old_booking = $selected_bookings[ 'bookings' ][ $booking_id ];
 		$new_booking = $new_selected_bookings[ 'bookings' ][ $booking_id ];
-
-		bookacti_send_booking_rescheduled_notification( $new_booking, $booking );
+		
+		bookacti_send_booking_rescheduled_notification( $new_booking, $old_booking );
 	}
 	
 	$context     = ! empty( $_POST[ 'context' ] ) ? sanitize_title_with_dashes( $_POST[ 'context' ] ) : ( $is_admin ? 'admin_booking_list' : 'user_booking_list' );

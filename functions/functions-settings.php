@@ -929,7 +929,7 @@ function bookacti_settings_section_messages_callback() {
 /**
  * Get all default messages
  * @since 1.2.0
- * @version 1.15.4
+ * @version 1.16.9
  */
 function bookacti_get_default_messages() {
 	$wp_date_format_link = '<a href="https://wordpress.org/support/article/formatting-date-and-time/" target="_blank" >' .  esc_html__( 'Formatting Date and Time', 'booking-activities' ) . '</a>';
@@ -986,12 +986,16 @@ function bookacti_get_default_messages() {
 			/* translators: This particle is used right after the quantity of available bookings. Put the singular here. E.g.: 1 avail. . */
 			'value'			=> esc_html_x( 'avail.', 'Short for availability [singular noun]', 'booking-activities' ),
 			/* translators: %s can be either "singular" or "plural" */
-			'description'	=> sprintf( esc_html__( 'Particle displayed after the number of available places onto the events (%s).', 'booking-activities' ), esc_html__( 'singular', 'booking-activities' ) )
+			'description'	=> sprintf( esc_html__( 'Particle displayed after the number of available places on events (%s).', 'booking-activities' ), esc_html__( 'singular', 'booking-activities' ) )
 		),
 		'avails' => array(
 			/* translators: This particle is used right after the quantity of available bookings. Put the plural here. E.g.: 2 avail. . */
 			'value'			=> esc_html_x( 'avail.', 'Short for availabilities [plural noun]', 'booking-activities' ),
-			'description'	=> sprintf( esc_html__( 'Particle displayed after the number of available places onto the events (%s).', 'booking-activities' ), esc_html__( 'plural', 'booking-activities' ) )
+			'description'	=> sprintf( esc_html__( 'Particle displayed after the number of available places on events (%s).', 'booking-activities' ), esc_html__( 'plural', 'booking-activities' ) )
+		),
+		'not_bookable' => array(
+			'value'			=> esc_html_x( 'unavail.', 'Short for unavailable', 'booking-activities' ),
+			'description'	=> esc_html__( 'Message displayed on events that are not bookable even though they are not full.', 'booking-activities' )
 		),
 		'booking_success' => array(
 			'value'			=> esc_html__( 'Your reservation has been processed!', 'booking-activities' ),

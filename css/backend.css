@@ -97,12 +97,14 @@ ul[id$='-select-box-results'] li[aria-disabled='true'] { display: none; }
 .bookacti-available-places.bookacti-booked, 
 .bookacti-available-places.bookacti-not-booked,
 .bookacti-available-places.bookacti-full, 
+.bookacti-available-places.bookacti-not-bookable, 
 .bookacti-available-places.bookacti-no-availability,
 #bookacti-template-calendar .bookacti-available-places.bookacti-booked { color: #fff; }
 
 #bookacti-template-calendar .bookacti-available-places.bookacti-booked, 
 #bookacti-template-calendar .bookacti-available-places.bookacti-not-booked		{ background-color: #4ead3b; }
 #bookacti-template-calendar .bookacti-available-places.bookacti-full, 
+#bookacti-template-calendar .bookacti-available-places.bookacti-not-bookable, 
 #bookacti-template-calendar .bookacti-available-places.bookacti-no-availability	{ background-color: #ab3b3b; }
 #bookacti-template-calendar .bookacti-available-places.bookacti-booked			{ background-color: #e39102; }
 

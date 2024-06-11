@@ -70,6 +70,13 @@ table.woocommerce_order_items ul.bookacti-booking-events-list { margin: 0; }
 .woocommerce_order_items .bookacti-price-container { display: inline-block; vertical-align: baseline; float: none; }
 .woocommerce_order_items .bookacti-price-container { background-color:rgba(0,0,0,0.3); }
 
+.wc-block-cart-items__row .bookacti-countdown-container:before,
+.wc-block-cart-items__row .bookacti-wc-cart-item-status:before { content: ' - '; }
+.wc-block-cart-items__row .bookacti-countdown-container,
+.wc-block-cart-items__row .bookacti-wc-cart-item-status        { display: inline; font-size: .75em; font-style: italic; }
+.wc-block-components-order-summary-item__description .bookacti-countdown-container,
+.wc-block-components-order-summary-item__description .bookacti-wc-cart-item-status { margin-top: 8px; font-size: 1em; font-style: italic; }
+
 
 /* My Account */
 .woocommerce a.button.bookacti-booking-group-action,
