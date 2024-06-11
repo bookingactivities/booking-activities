@@ -1552,49 +1552,24 @@ function bookacti_get_bookings_number_for_a_single_grouped_event( booking_system
 
 /**
  * Get a div with event available places
- * @version 1.15.5
+ * @version 1.16.9
  * @param {HTMLElement} booking_system
  * @param {(FullCalendar.EventApi|Object)} event
  * @returns {String}
  */
 function bookacti_get_event_availability_div( booking_system, event ) {
 	var booking_system_id = booking_system.attr( 'id' );
-	var attributes        = bookacti.booking_system[ booking_system_id ];
+	var bookings_only     = bookacti.booking_system[ booking_system_id ][ 'bookings_only' ] == 1 ? true : false;
 	var available_places  = bookacti_get_event_availability( booking_system, event );
 	
-	var event_id = typeof event.groupId !== 'undefined' ? parseInt( event.groupId ) : parseInt( event.id );
-	var activity_id = 0;
-	var total_availability = 0;
-	if( typeof attributes[ 'events_data' ][ event_id ] !== 'undefined' ) {
-		if( typeof attributes[ 'events_data' ][ event_id ][ 'activity_id' ] !== 'undefined' ) {
-			activity_id = bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event_id ][ 'activity_id' ];
-		}
-		if( typeof attributes[ 'events_data' ][ event_id ][ 'availability' ] !== 'undefined' ) {
-			total_availability = bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event_id ][ 'availability' ];
-		}
-	}
+	var event_id           = typeof event.groupId !== 'undefined' ? parseInt( event.groupId ) : parseInt( event.id );
+	var activity_id        = bookacti.booking_system[ booking_system_id ][ 'events_data' ]?.[ event_id ]?.[ 'activity_id' ];
+	var total_availability = bookacti.booking_system[ booking_system_id ][ 'events_data' ]?.[ event_id ]?.[ 'availability' ];
+	var unit_name          = available_places === 1 ? bookacti.booking_system[ booking_system_id ][ 'activities_data' ]?.[ activity_id ]?.[ 'settings' ]?.[ 'unit_name_singular' ] : bookacti.booking_system[ booking_system_id ][ 'activities_data' ]?.[ activity_id ]?.[ 'settings' ]?.[ 'unit_name_plural' ];
+	var avail              = available_places > 1 ? bookacti_localized.avails : bookacti_localized.avail;
 	
-	var unit_name = '';
-	if( activity_id ) {
-		var activity_data = bookacti.booking_system[ booking_system_id ][ 'activities_data' ][ activity_id ];
-		if( activity_data !== undefined ) {
-			if( activity_data[ 'settings' ] !== undefined ) {
-				if( typeof activity_data[ 'settings' ][ 'unit_name_plural' ] !== 'undefined'
-				&&  typeof activity_data[ 'settings' ][ 'unit_name_singular' ] !== 'undefined' 
-				&&  typeof activity_data[ 'settings' ][ 'show_unit_in_availability' ] !== 'undefined' ) {
-					if( parseInt( activity_data[ 'settings' ][ 'show_unit_in_availability' ] ) ) {
-						if( available_places === 1 ) {
-							unit_name = activity_data[ 'settings' ][ 'unit_name_singular' ];
-						} else {
-							unit_name = activity_data[ 'settings' ][ 'unit_name_plural' ];
-						}
-					}
-				}
-			}
-		}
-	}
-	
-	var avail = available_places > 1 ? bookacti_localized.avails : bookacti_localized.avail;
+	if( ! total_availability ) { total_availability = 0; }
+	if( ! unit_name )          { unit_name = ''; }
 	
 	// Detect if the event is available or full, and if it is booked or not
 	var availability_classes = available_places < total_availability ? 'bookacti-booked' : 'bookacti-not-booked';
@@ -1602,17 +1577,33 @@ function bookacti_get_event_availability_div( booking_system, event ) {
 	
 	// Maybe hide event availability
 	var hide_availability_class	= '';
-	var bookings_only     = bookacti.booking_system[ booking_system_id ][ 'bookings_only' ] == 1 ? true : false;
-	var percent_remaining = parseInt( ( available_places / total_availability ) * 100 );
+	var percent_remaining = total_availability ? parseInt( ( available_places / total_availability ) * 100 ) : 0;
 	var percent_threshold = parseInt( bookacti.booking_system[ booking_system_id ][ 'hide_availability' ] );
 	var fixed_threshold   = parseInt( bookacti_localized.hide_availability_fixed );
 	var hide_percent      = percent_threshold < 100 && percent_remaining > percent_threshold;
 	var hide_fixed        = fixed_threshold > 0 && available_places > fixed_threshold;
 	
-	if( ! bookings_only 
-	&& ( ( fixed_threshold <= 0 && hide_percent ) || ( percent_threshold >= 100 && hide_fixed ) || ( hide_percent && hide_fixed ) ) ) {
-		available_places = '';
-		hide_availability_class	= 'bookacti-hide-availability';
+	if( ! bookings_only ) {
+		if( ( fixed_threshold <= 0 && hide_percent ) || ( percent_threshold >= 100 && hide_fixed ) || ( hide_percent && hide_fixed ) ) {
+			available_places        = '';
+			hide_availability_class	= 'bookacti-hide-availability';
+		}
+		
+		// If the event or its group is not available, set the number of available places to 0
+		var is_available = bookacti_is_event_available( booking_system, event );
+		if( ! is_available && available_places > 0 ) { 
+			availability_classes += ' bookacti-not-bookable';
+			if( bookacti_localized.not_bookable ) {
+				available_places = '';
+				unit_name        = '';
+				avail            = bookacti_localized.not_bookable;
+			} else {
+				available_places = 0;
+				unit_name        = bookacti.booking_system[ booking_system_id ][ 'activities_data' ]?.[ activity_id ]?.[ 'settings' ]?.[ 'unit_name_plural' ];
+				avail            = bookacti_localized.avails;
+				if( ! unit_name ) { unit_name = ''; }
+			}
+		}
 	}
 	
 	var unit_name_class = '';

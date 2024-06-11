@@ -12,7 +12,7 @@ if( ! isset( $GLOBALS[ 'global_bookacti_wc' ] ) ) { $GLOBALS[ 'global_bookacti_w
 
 /**
  * Add woocommerce related translations
- * @version 1.16.0
+ * @version 1.16.9
  * @param array $translation_array
  * @param array $messages
  * @return array
@@ -21,6 +21,10 @@ function bookacti_woocommerce_translation_array( $translation_array, $messages )
 	$translation_array[ 'expired' ]                         = esc_html__( 'expired', 'booking-activities' );
 	$translation_array[ 'days' ]                            = esc_html__( 'days', 'booking-activities' );
 	$translation_array[ 'day' ]                             = esc_html_x( 'day', 'singular of days','booking-activities' );
+	/* translators: %s = real time countdown (e.g.: 5:23 -> 5:22 -> 5:21...) */
+	$translation_array[ 'cart_item_expires' ]               = esc_html__( 'This item expires in %s', 'booking-activities' );
+	$translation_array[ 'cart_item_expired' ]               = esc_html__( 'This item has expired.', 'booking-activities' );
+	$translation_array[ 'cart_item_pending' ]               = esc_html__( 'This item is pending payment.', 'booking-activities' );
 	$translation_array[ 'error_cart_expired' ]              = esc_html__( 'Your cart has expired.', 'booking-activities' );
 	$translation_array[ 'add_product_to_cart_button_text' ] = esc_html__( 'Add to cart', 'woocommerce' );
 	$translation_array[ 'add_booking_to_cart_button_text' ] = ! empty( $messages[ 'booking_form_submit_button' ][ 'value' ] ) ? $messages[ 'booking_form_submit_button' ][ 'value' ] : esc_html__( 'Book', 'booking-activities' );
@@ -149,6 +153,18 @@ function bookacti_change_customer_id_to_user_id( $user_login, $user ) {
 	}
 }
 add_action( 'wp_login', 'bookacti_change_customer_id_to_user_id', 20, 2 );
+
+
+/**
+ * Init session cookie if the session cookie handler exists.
+ * @since 1.16.9
+ */
+function bookacti_wc_init_session_cookie() {
+	if( is_callable( array( WC()->session, 'init_session_cookie' ) ) ) {
+		WC()->session->init_session_cookie();
+	}
+}
+add_action( 'bookacti_user_logged_in', 'bookacti_wc_init_session_cookie' );
 
 
 
@@ -1366,7 +1382,7 @@ add_action( 'woocommerce_before_cart', 'bookacti_wc_temp_fix_display_wc_notices_
 /**
  * Display the custom metadata in cart and checkout
  * @since 1.9.0 (was bookacti_get_item_data)
- * @version 1.16.0
+ * @version 1.16.9
  * @param array $item_data
  * @param array $cart_item
  * @return array
@@ -1378,7 +1394,14 @@ function bookacti_wc_cart_item_meta_formatted( $item_data, $cart_item ) {
 	if( empty( $cart_items_bookings[ 'temp_key' ] ) ) { return $item_data; }
 	$cart_item_bookings = $cart_items_bookings[ 'temp_key' ];
 	
-	$cart_item_bookings_attributes = bookacti_wc_get_item_bookings_attributes( $cart_item_bookings );
+	// Check if the attributes are retireved by the Store API
+	$context   = '';
+	$backtrace = debug_backtrace( !DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 4 );
+	if( isset( $backtrace[ 3 ][ 'class' ] ) && $backtrace[ 3 ][ 'class' ] === 'Automattic\WooCommerce\StoreApi\Schemas\V1\CartItemSchema' ) {
+		$context = 'store_api';
+	}
+	
+	$cart_item_bookings_attributes = bookacti_wc_get_item_bookings_attributes( $cart_item_bookings, $context );
 	if( ! $cart_item_bookings_attributes ) { return $item_data; }
 	
 	$hidden_cart_item_bookings_attributes = bookacti_wc_get_hidden_cart_item_bookings_attributes();

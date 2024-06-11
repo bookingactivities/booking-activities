@@ -214,11 +214,25 @@ $j( document ).ready( function() {
 	// CART
 	
 	/**
-	 * Create a countdown on cart
+	 * Refresh cart expiration countdown every second
+	 * @version 1.16.9
 	 */
-	if( $j( '.bookacti-countdown' ).length ) {
-		setInterval( bookacti_countdown, 1000 );
-	}
+	setInterval( bookacti_wc_refresh_countdown, 1000 );
+	
+	
+	/**
+	 * Refresh cart and checkout when countdown ends
+	 * @since 1.16.9
+	 * @param {Event} e
+	 * @param {HTMLElement} countdown_div
+	 */
+	$j( 'body' ).on( 'bookacti_wc_countdown_expired', function( e, countdown_div ) {
+		// Update cart and checkout
+		setTimeout( function() { 
+			$j( 'body' ).trigger( 'wc_update_cart' );
+			$j( 'body' ).trigger( 'update_checkout' );
+		}, 1000 );
+	});
 	
 	
 	
@@ -369,12 +383,16 @@ function bookacti_fill_product_variation_form( form_container, variation, form_h
 
 
 /**
- * Create a countdown on cart items
- * @version 1.8.0
+ * Refresh cart expiration countdown
+ * @since 1.16.9 (was bookacti_countdown)
  */
-function bookacti_countdown() {
+function bookacti_wc_refresh_countdown() {
+	if( ! $j( '.bookacti-countdown' ).length ) { return; }
+	
 	$j( '.bookacti-countdown' ).each( function() {
-		if( $j( this ).hasClass( 'bookacti-expired' ) ) { $j( this ).html( bookacti_localized.expired ); return true; } // continue
+		if( $j( this ).hasClass( 'bookacti-expired' ) ) {
+			return true; // continue
+		}
 			
 		var expiration_date = $j( this ).data( 'expiration-date' );
 		if( ! expiration_date ) { return true; } // continue
@@ -414,76 +432,12 @@ function bookacti_countdown() {
 
 		if( days === 0 && hours === 0 && minutes === 0 && seconds === 0 ) {
 			countdown = bookacti_localized.expired;
-			$j( this ).addClass( 'bookacti-expired' );
-			var countdown_div = this;
-			setTimeout( function() { bookacti_refresh_cart_after_expiration( countdown_div ); }, 2000 );
+			var countdown_div = $j( this );
+			countdown_div.addClass( 'bookacti-expired' );
+			
+			$j( 'body' ).trigger( 'bookacti_wc_countdown_expired', [ countdown_div ] );
 		}
 
 		$j( this ).html( countdown );
-	});
-}
-
-
-/**
- * Refresh cart after expiration
- * @version 1.8.0
- * @param {HTMLElement} countdown
- */
-function bookacti_refresh_cart_after_expiration( countdown ) {
-	var is_checkout = $j( countdown ).closest( '.checkout' ).length;
-	var woodiv = $j( countdown ).closest( '.woocommerce' );
-	var url = woodiv.find( 'form' ).attr( 'action' );
-	
-	if( $j( countdown ).closest( '.bookacti-cart-expiration-container' ).length ) {
-		$j( countdown ).closest( '.bookacti-cart-expiration-container' ).html( bookacti_localized.error_cart_expired );
-	}
-	
-	if( ! is_checkout ) {
-		if( $j( countdown ).hasClass( 'bookacti-cart-expiration' ) ) {
-			woodiv.find( '.bookacti-cart-item-expires-with-cart' ).closest( '.cart_item' ).empty();
-		} else {
-			$j( countdown ).closest( '.cart_item' ).empty();
-		}
-		woodiv.find( '.cart-subtotal .amount, .shipping .amount, .order-total .amount, .includes_tax .amount' ).empty();
-	}
-
-	$j.ajax({
-		url: url,
-		type: 'POST',
-		data: {},
-		dataType: 'html',
-		success: function( response ) {
-			// Tell woocommerce to update checkout
-			if( is_checkout ) {
-				$j( 'body' ).trigger( 'update_checkout' );
-				return;
-			}
-			
-			// If cart doesn't contains items anymore, update the whole woocommerce div 
-			if( $j( response ).find( '.woocommerce form' ).length <= 0 ) {
-				woodiv.html( $j( response ).find( '.woocommerce' ).html() );
-				return;
-			}
-			
-			// Copy error messages
-			if( $j( response ).find( '.woocommerce-error' ).length ) {
-				if( woodiv.find( '.woocommerce-error' ).length ){
-					$j( response ).find( '.woocommerce-error li' ).clone().appendTo( woodiv.find( '.woocommerce-error' ) );
-				} else {
-					$j( response ).find( '.woocommerce-error' ).clone().prependTo( woodiv );
-				}
-			}
-
-			// Replace totals amounts
-			woodiv.find( '.cart-subtotal .amount' ).html( $j( response ).find( '.cart-subtotal .amount' ).html() );
-			woodiv.find( '.shipping .amount' ).html( $j( response ).find( '.shipping .amount' ).html() );
-			woodiv.find( '.order-total .amount' ).html( $j( response ).find( '.order-total .amount' ).html() );
-			woodiv.find( '.includes_tax .amount' ).html( $j( response ).find( '.includes_tax .amount' ).html() );
-		},
-		error: function( e ) {
-			console.log( 'AJAX ' + bookacti_localized.error );
-			console.log( e );
-		},
-		complete: function() {}
 	});
 }

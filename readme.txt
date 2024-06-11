@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 6.5
 Requires PHP: 5.3
-Stable tag: 1.16.8
+Stable tag: 1.16.9
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -321,6 +321,12 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.16.9 - 2024/06/11 =
+* Tweak - Display "unavail." on events that cannot be booked even though they are not full. This text can be customized in the Settings > Messages tab.
+* Fix - WooCommerce cart expiration countdown is now visible in WC cart block
+* Fix - Old booking data were not passed to reschedule notification
+* Lib - Update FullCalendar to 6.1.14
 
 = 1.16.8 - 2024/05/28 =
 * Tweak - Add {calendar_title} notification tag

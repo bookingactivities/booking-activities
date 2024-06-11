@@ -672,3 +672,34 @@ function bookacti_number_format( number, decimals, decimal_separator, thousand_s
 
 	return formatted_number;
 }
+
+
+/**
+ * Get a substring between two specific strings
+ * @since 1.16.9
+ * @param {String} str
+ * @param {String} start
+ * @param {String} end
+ * @returns {String}
+ */
+function bookacti_get_string_between( str, start, end ) {
+	if( typeof str !== 'string'   && ! ( str instanceof String ) )   { str = ''; };
+	if( typeof start !== 'string' && ! ( start instanceof String ) ) { start = ''; };
+	if( typeof end !== 'string'   && ! ( end instanceof String ) )   { end = ''; };
+	
+	var ini = start !== '' ? str.indexOf( start ) : -1;
+	var start_not_found = false;
+	if( ini < 0 ) { ini = 0; start_not_found = true; }
+	
+	ini += start.length;
+	len = end !== '' && ini <= str.length ? str.indexOf( end, ini ) : -1;
+	var end_not_found = false;
+	if( len < 0 ) { len = str.length; end_not_found = true; }
+	else { len -= ini; }
+	
+	if( ( start !== '' && start_not_found ) || ( end !== '' && end_not_found ) ) {
+		return '';
+	}
+	
+	return str.substring( ini, len );
+}

@@ -129,19 +129,27 @@ function bookacti_increase_max_execution_time( $context = '' ) {
 /**
  * Get a substring between two specific strings
  * @since 1.7.10
- * @version 1.16.0
+ * @version 1.16.9
  * @param string $string
  * @param string $start
  * @param string $end
  * @return string
  */
-function bookacti_get_string_between( $string, $start, $end ) {
-	$ini = strpos( $string, $start );
-	if( $ini === false ) { return ''; }
+function bookacti_get_string_between( $string, $start = '', $end = '' ) {
+	$ini = $start !== '' ? strpos( $string, $start ) : false;
+	$start_not_found = false;
+	if( $ini === false ) { $ini = 0; $start_not_found = true; }
 
 	$ini += strlen( $start );
-	$len = strpos( $string, $end, $ini ) - $ini;
-
+	$len = $end !== '' && $ini <= strlen( $string ) ? strpos( $string, $end, $ini ) : false;
+	$end_not_found = false;
+	if( $len === false ) { $len = strlen( $string ); $end_not_found = true; }
+	else { $len -= $ini; }
+	
+	if( ( $start !== '' && $start_not_found ) || ( $end !== '' && $end_not_found ) ) {
+		return '';
+	}
+	
 	return substr( $string, $ini, $len );
 }
 
@@ -470,9 +478,10 @@ function bookacti_get_js_variables() {
 		'single_event'                       => $messages[ 'choose_group_dialog_single_event' ][ 'value' ],
 		'selected_event'                     => $messages[ 'selected_event' ][ 'value' ],
 		'selected_events'                    => $messages[ 'selected_events' ][ 'value' ],
+		'no_events'                          => $messages[ 'no_events' ][ 'value' ],
 		'avail'                              => $messages[ 'avail' ][ 'value' ],
 		'avails'                             => $messages[ 'avails' ][ 'value' ],
-		'no_events'                          => $messages[ 'no_events' ][ 'value' ],
+		'not_bookable'                       => $messages[ 'not_bookable' ][ 'value' ],
 		'hide_availability_fixed'            => apply_filters( 'bookacti_hide_availability_fixed', 0 ), // Threshold above which availability is masked. 0 to always show availability.
 
 		'dialog_button_ok'                   => esc_html__( 'OK', 'booking-activities' ),
@@ -2372,7 +2381,7 @@ function bookacti_maybe_decode_json( $string, $assoc = false ) {
 /**
  * Sanitize the values of an array
  * @since 1.5.0
- * @version 1.12.3
+ * @version 1.16.9
  * @param array $default_data
  * @param array $raw_data
  * @param array $keys_by_type
@@ -2457,7 +2466,7 @@ function bookacti_sanitize_values( $default_data, $raw_data, $keys_by_type, $san
 
 		// Sanitize array of ids
 		else if( in_array( $key, $keys_by_type[ 'array_ids' ], true ) ) { 
-			$sanitized_data[ $key ] = is_numeric( $raw_data[ $key ] ) || is_array( $raw_data[ $key ] ) ? bookacti_ids_to_array( $raw_data[ $key ] ) : $default_value;
+			$sanitized_data[ $key ] = is_numeric( $raw_data[ $key ] ) || is_array( $raw_data[ $key ] ) ? array_values( bookacti_ids_to_array( $raw_data[ $key ] ) ) : $default_value;
 		}
 
 		// Sanitize boolean
@@ -2728,7 +2737,7 @@ function bookacti_get_roles_by_capabilities( $capabilities = array() ) {
 /**
  * Programmatically logs a user in
  * @since 1.5.0
- * @version 1.12.4
+ * @version 1.16.9
  * @param string $username
  * @param boolean $remember
  * @return bool True if the login was successful; false if it wasn't
@@ -2743,6 +2752,10 @@ function bookacti_log_user_in( $username, $remember = false ) {
 
 	if( is_a( $user, 'WP_User' ) ) {
 		wp_set_current_user( $user->ID, $user->user_login );
+		wp_set_auth_cookie( $user->ID, true );
+		
+		do_action( 'bookacti_user_logged_in', $user->ID );
+		
 		if( is_user_logged_in() ) { return true; }
 	}
 	

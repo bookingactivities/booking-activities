@@ -280,6 +280,7 @@ fieldset legend .bookacti-show-hide-advanced-options { cursor: pointer; color: #
 .bookacti-available-places.bookacti-booked, 
 .bookacti-available-places.bookacti-not-booked      { background-color: rgba( 0, 0, 0, 0.4 ); }
 .bookacti-available-places.bookacti-full, 
+.bookacti-available-places.bookacti-not-bookable, 
 .bookacti-available-places.bookacti-no-availability { background-color: rgba( 255, 0, 0, 0.4 ); }
 .bookacti-available-places > span                   { display: inline-block; }
 .bookacti-available-places-unit-name.bookacti-has-unit-name,

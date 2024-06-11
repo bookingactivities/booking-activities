@@ -611,6 +611,7 @@ function bookacti_wc_set_cart_expiration_date( $expiration_date, $user_id = 0 ) 
 /**
  * Get timeout for a cart item
  * @since 1.9.0 (was bookacti_get_cart_item_timeout)
+ * @version 1.16.9
  * @global woocommerce $woocommerce
  * @param string $cart_item_key
  * @return string
@@ -643,7 +644,7 @@ function bookacti_wc_get_cart_item_countdown_html( $cart_item_key ) {
 				. '</div>';
 
 	} else if( $status === 'pending' ) {
-		$timeout = '<div class="bookacti-cart-item-state bookacti-cart-item-state-pending">' . esc_html__( 'Pending payment', 'booking-activities' ) . '</div>';
+		$timeout = '<div class="bookacti-wc-cart-item-status bookacti-wc-cart-item-status-pending">' . esc_html__( 'Pending payment', 'booking-activities' ) . '</div>';
 	}
 
 	return $timeout;
@@ -711,38 +712,47 @@ function bookacti_wc_get_displayed_product_price( $product, $price = '', $qty = 
 /**
  * Build a user-friendly events list based on item bookings
  * @since 1.9.0
- * @version 1.15.7
+ * @version 1.16.9
  * @param array $item_bookings
  * @param boolean $show_quantity
+ * @param string $context
  * @return string
  */
-function bookacti_wc_get_item_bookings_events_list_html( $item_bookings, $show_quantity = true ) {
+function bookacti_wc_get_item_bookings_events_list_html( $item_bookings, $show_quantity = true, $context = '' ) {
 	if( ! $item_bookings ) { return ''; }
 	
 	$list = '';
 	foreach( $item_bookings as $item_booking ) {
+		if( empty( $item_booking[ 'bookings' ] ) ) { continue; }
+		
 		$sorted_bookings = bookacti_sort_events_array_by_dates( $item_booking[ 'bookings' ], false, false, array( 'start' => 'event_start', 'end' => 'event_end' ) );
-		$list .= ! empty( $item_booking[ 'bookings' ] ) ? bookacti_get_formatted_booking_events_list( $sorted_bookings, $show_quantity, false ) : '';
+		
+		if( $context === 'store_api' ) {
+			$list .= bookacti_get_formatted_booking_events_list_raw( $sorted_bookings, $show_quantity );
+		} else {
+			$list .= bookacti_get_formatted_booking_events_list( $sorted_bookings, $show_quantity, false );
+		}
 	}
 	
 	// Wrap the list only if it is not empty
-	if( $list ) {
+	if( $list && $context !== 'store_api' ) {
 		$list = '<ul class="bookacti-booking-events-list bookacti-custom-scrollbar" style="clear:both;" >' . $list . '</ul>';
 	}
 	
-	return apply_filters( 'bookacti_wc_item_bookings_events_list_html', $list, $item_bookings, $show_quantity );
+	return apply_filters( 'bookacti_wc_item_bookings_events_list_html', $list, $item_bookings, $show_quantity, $context );
 }
 
 
 /**
  * Get array of displayed attributes per booking
  * @since 1.9.0
- * @version 1.16.0
+ * @version 1.16.9
  * @global boolean $bookacti_is_email
  * @param array $item_bookings
+ * @param string $context
  * @return array
  */
-function bookacti_wc_get_item_bookings_attributes( $item_bookings ) {
+function bookacti_wc_get_item_bookings_attributes( $item_bookings, $context = '' ) {
 	$bookings_attributes = array();
 	if( ! $item_bookings ) { return $bookings_attributes; }
 	
@@ -771,7 +781,7 @@ function bookacti_wc_get_item_bookings_attributes( $item_bookings ) {
 			// Booking events
 			$booking_attributes[ 'events' ] = array( 
 				'label' => esc_html( _n( 'Event', 'Events', count( $item_booking[ 'bookings' ] ), 'booking-activities' ) ), 
-				'value' => bookacti_wc_get_item_bookings_events_list_html( array( $item_booking ) ),
+				'value' => bookacti_wc_get_item_bookings_events_list_html( array( $item_booking ), true, $context ),
 				'fullwidth' => 1
 			);
 		
@@ -789,7 +799,7 @@ function bookacti_wc_get_item_bookings_attributes( $item_bookings ) {
 			}
 		
 			// Allow plugins to add more item booking attributes to be displayed (before the booking actions)
-			$booking_attributes = apply_filters( 'bookacti_wc_item_booking_attributes', $booking_attributes, $item_booking );
+			$booking_attributes = apply_filters( 'bookacti_wc_item_booking_attributes', $booking_attributes, $item_booking, $context );
 		
 			// Display admin actions
 			$is_order_edit_page = ( ! empty( $_REQUEST[ 'action' ] ) 
@@ -828,7 +838,7 @@ function bookacti_wc_get_item_bookings_attributes( $item_bookings ) {
 		}
 	}
 	
-	return apply_filters( 'bookacti_wc_item_bookings_attributes', $bookings_attributes, $item_bookings );
+	return apply_filters( 'bookacti_wc_item_bookings_attributes', $bookings_attributes, $item_bookings, $context );
 }
 
 
