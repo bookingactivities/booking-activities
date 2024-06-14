@@ -5,12 +5,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Define translation plugin
  * @since 1.14.0
+ * @version 1.16.10
  * @param string $translation_plugin
  * @return string
  */
 function bookacti_define_translation_plugin( $translation_plugin = '' ) {
 	if( ! $translation_plugin ) {
 			if( class_exists( 'SitePress' ) )      { $translation_plugin = 'wpml'; }
+	   else if( class_exists( 'Polylang' ) )       { $translation_plugin = 'wpml'; } // try to use Polylang's WPML compat API
 	   else if( class_exists( 'QTX_Translator' ) ) { $translation_plugin = 'qtranslate'; }
 	}
 	return $translation_plugin;
@@ -306,6 +308,7 @@ add_filter( 'bookacti_ajax_select2_products_options', 'bookacti_wpml_select2_rem
 /**
  * WPML's function for switch_to_locale
  * @since 1.14.0
+ * @version 1.16.10
  * @param string $locale
  * @return string
  */

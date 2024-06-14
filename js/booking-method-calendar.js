@@ -933,7 +933,7 @@ function bookacti_exit_calendar_loading_state( calendar ) {
 
 /**
  * Hide rows without any events on Day Grid views
- * @version 1.16.8
+ * @version 1.16.10
  * @param {HTMLElement} booking_system
  */
 function bookacti_fc_hide_daygrid_empty_rows( booking_system ) {
@@ -959,8 +959,11 @@ function bookacti_fc_hide_daygrid_empty_rows( booking_system ) {
 			
 			// Check if an event exists
 			var has_events = false;
+			var day_date   = moment.utc( date );
 			$j.each( fc_events, function( i, fc_event ) {
-				if( fc_event.startStr.substr( 0, 10 ) === date ) {
+				var day_start = moment.utc( fc_event.startStr.substr( 0, 10 ) + ' 00:00:00' );
+				var day_end   = moment.utc( fc_event.endStr.substr( 0, 10 ) + ' 23:59:59' );
+				if( day_date.isBetween( day_start, day_end, 'second', '[]' ) ) {
 					has_events = true;
 					return false; // break
 				}

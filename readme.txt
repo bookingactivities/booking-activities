@@ -322,6 +322,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.16.10 =
+* Fix - Multiday events may not be correctly rendered in Day Grid views with Trim option
+
 = 1.16.9 - 2024/06/11 =
 * Tweak - Display "unavail." on events that cannot be booked even though they are not full. This text can be customized in the Settings > Messages tab.
 * Fix - WooCommerce cart expiration countdown is now visible in WC cart block
