@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 6.5
 Requires PHP: 5.3
-Stable tag: 1.16.9
+Stable tag: 1.16.10
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -322,7 +322,8 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.16.10 =
+= 1.16.10 - 2024/06/19 =
+* Tweak - Try to support Polylang via its compatibility API with WPML
 * Fix - Multiday events may not be correctly rendered in Day Grid views with Trim option
 
 = 1.16.9 - 2024/06/11 =
