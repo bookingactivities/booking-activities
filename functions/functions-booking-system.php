@@ -97,7 +97,7 @@ function bookacti_get_booking_system( $atts ) {
 /**
  * Get booking system data
  * @since 1.7.4
- * @version 1.16.1
+ * @version 1.16.11
  * @param array $atts (see bookacti_format_booking_system_attributes())
  * @return array
  */
@@ -128,10 +128,26 @@ function bookacti_get_booking_system_data( $atts ) {
 		$booking_system_data[ 'end' ]   = $availability_period[ 'end_last' ];
 		
 		// Check if the availability period starts before it ends
+		$is_valid_availability_period = true;
 		$start_dt = $booking_system_data[ 'start' ] ? new DateTime( $booking_system_data[ 'start' ] ) : '';
 		$end_dt   = $booking_system_data[ 'end' ] ? new DateTime( $booking_system_data[ 'end' ] ) : '';
 		if( ( $start_dt && $end_dt && $start_dt >= $end_dt )
 		||  ( $booking_system_data[ 'trim' ] && $booking_system_data[ 'start' ] === $booking_system_data[ 'end' ] ) ) { 
+			$is_valid_availability_period = false;
+		}
+		
+		// Get the interval of events to retrieve
+		$events_interval = array();
+		if( $is_valid_availability_period ) {
+			$min_interval = ! empty( $booking_system_data[ 'events_min_interval' ][ 'start' ] ) && ! empty( $booking_system_data[ 'events_min_interval' ][ 'end' ] ) ? array( 
+				'start' => $booking_system_data[ 'events_min_interval' ][ 'start' ], 
+				'end'   => $booking_system_data[ 'events_min_interval' ][ 'end' ]
+			) : array();
+			$events_interval = bookacti_get_new_interval_of_events( $availability_period, $min_interval, false, $atts[ 'past_events' ] );
+		}
+		
+		// If the event interval is empty, the calendar is empty, so do not retrieve any data
+		if( ! $events_interval ) {
 			$booking_system_data[ 'no_events' ] = 1;
 			$booking_system_data[ 'start' ] = $booking_system_data[ 'end' ] = $now;
 		}
@@ -144,14 +160,7 @@ function bookacti_get_booking_system_data( $atts ) {
 			$groups          = array( 'groups' => array(), 'data' => array() );
 			$events          = array( 'events' => array(), 'data' => array() );
 			$booking_lists   = array();
-			$min_interval    = ! empty( $booking_system_data[ 'events_min_interval' ][ 'start' ] ) && ! empty( $booking_system_data[ 'events_min_interval' ][ 'end' ] ) ? array( 
-				'start' => $booking_system_data[ 'events_min_interval' ][ 'start' ], 
-				'end'   => $booking_system_data[ 'events_min_interval' ][ 'end' ]
-			) : array();
-
-			// Get the interval of events to retrieve
-			$events_interval = bookacti_get_new_interval_of_events( $availability_period, $min_interval, false, $atts[ 'past_events' ] );
-
+			
 			// Get groups and group categories
 			if( ! in_array( 'none', $atts[ 'group_categories' ], true ) ) {
 				$groups = bookacti_get_groups_of_events( array( 'templates' => $atts[ 'calendars' ], 'group_categories' => $atts[ 'group_categories' ], 'interval' => $events_interval, 'interval_started' => 1, 'past_events' => $atts[ 'past_events' ] ) );

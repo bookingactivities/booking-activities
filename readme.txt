@@ -322,6 +322,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.16.11 =
+* Fix - Events may be displayed twice if the calendar opening was a past date, and if "Past events" option was OFF
+
 = 1.16.10 - 2024/06/19 =
 * Tweak - Try to support Polylang via its compatibility API with WPML
 * Fix - Multiday events may not be correctly rendered in Day Grid views with Trim option
