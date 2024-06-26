@@ -5,6 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Declare support for WC specific features (HPOS, blocks, etc.) for Booking Activities and its add-ons
  * @since 1.16.0 (was bookacti_wc_support_hpos)
+ * @version 1.16.11
  */
 function bookacti_wc_declare_compatibility() {
 	if( ! class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) { return; }
@@ -16,6 +17,7 @@ function bookacti_wc_declare_compatibility() {
 		if( ! bookacti_is_plugin_active( $plugin[ 'plugin_name' ] . '/' . $plugin[ 'plugin_name' ] . '.php' ) ) { continue; }
 		\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', $plugin[ 'plugin_name' ] . '/' . $plugin[ 'plugin_name' ] . '.php', true );
 		\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'cart_checkout_blocks', $plugin[ 'plugin_name' ] . '/' . $plugin[ 'plugin_name' ] . '.php', false );
+		\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'product_block_editor', $plugin[ 'plugin_name' ] . '/' . $plugin[ 'plugin_name' ] . '.php', false );
 	}
 }
 add_action( 'before_woocommerce_init', 'bookacti_wc_declare_compatibility' );
