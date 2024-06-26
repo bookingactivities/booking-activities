@@ -259,13 +259,13 @@ fieldset legend .bookacti-show-hide-advanced-options { cursor: pointer; color: #
 
 /* Tiny events */
 .bookacti-calendar .fc-view.fc-timegrid .bookacti-tiny-event:not(.bookacti-wide-event) .bookacti-available-places-unit-name,
-.bookacti-calendar .fc-view.fc-timegrid .bookacti-tiny-event:not(.bookacti-wide-event) .bookacti-available-places-avail-particle,
+.bookacti-calendar .fc-view.fc-timegrid .bookacti-tiny-event:not(.bookacti-wide-event) .bookacti-available-places:not(.bookacti-not-bookable) .bookacti-available-places-avail-particle,
 
 /* Narrow events */
 .bookacti-calendar .fc-view.fc-timegrid .bookacti-narrow-event .bookacti-event-time-separator,
 .bookacti-calendar .fc-view.fc-timegrid .bookacti-narrow-event .bookacti-event-time-end,
 .bookacti-calendar .bookacti-narrow-event .bookacti-available-places-unit-name,
-.bookacti-calendar .bookacti-narrow-event .bookacti-available-places-avail-particle { display: none; }
+.bookacti-calendar .bookacti-narrow-event .bookacti-available-places:not(.bookacti-not-bookable) .bookacti-available-places-avail-particle { display: none; }
 	
 	
 /* Availability */
