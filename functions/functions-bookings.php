@@ -467,7 +467,7 @@ function bookacti_get_activities_html_for_booking_page( $template_ids, $activity
 /**
  * Get Default booking filters
  * @since 1.6.0
- * @version 1.15.13
+ * @version 1.16.12
  * @return array
  */
 function bookacti_get_default_booking_filters() {
@@ -490,6 +490,8 @@ function bookacti_get_default_booking_filters() {
 		'to'                         => '',
 		'end_from'                   => '',
 		'end_to'                     => '',
+		'created_from'               => '',
+		'created_to'                 => '',
 		'active'                     => false,
 		'group_by'                   => '',
 		'order_by'                   => array( 'creation_date', 'id', 'event_start' ), 
@@ -524,7 +526,7 @@ function bookacti_get_default_booking_filters() {
 /**
  * Format booking filters
  * @since 1.3.0
- * @version 1.16.0
+ * @version 1.16.12
  * @param array $filters 
  * @return array
  */
@@ -538,9 +540,9 @@ function bookacti_format_booking_filters( $filters = array() ) {
 		$current_value = $filters[ $filter ];
 		
 		// Specific pre-format
-		if( in_array( $filter, array( 'from', 'end_from' ), true ) ) {
+		if( in_array( $filter, array( 'from', 'end_from', 'created_from' ), true ) ) {
 			if( bookacti_sanitize_date( $current_value ) ) { $current_value = bookacti_sanitize_date( $current_value ) . ' 00:00:00'; }
-		} else if( in_array( $filter, array( 'to', 'end_to' ), true ) ) {
+		} else if( in_array( $filter, array( 'to', 'end_to', 'created_to' ), true ) ) {
 			if( bookacti_sanitize_date( $current_value ) ) { $current_value = bookacti_sanitize_date( $current_value ) . ' 23:59:59'; }
 		}
 		
@@ -591,7 +593,7 @@ function bookacti_format_booking_filters( $filters = array() ) {
 			if( ! is_numeric( $current_value ) ) { $current_value = $default_value; }
 			$current_value = intval( $current_value );
 
-		} else if( in_array( $filter, array( 'event_start', 'event_end', 'from', 'to' ), true ) ) {
+		} else if( in_array( $filter, array( 'event_start', 'event_end', 'from', 'to', 'end_from', 'end_to', 'created_from', 'created_to' ), true ) ) {
 			$current_value = bookacti_sanitize_datetime( $current_value );
 			if( ! $current_value ) { $current_value = $default_value; }
 
