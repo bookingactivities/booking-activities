@@ -1321,7 +1321,7 @@ function bookacti_display_field( $args ) {
 /**
  * Format arguments to display a proper field
  * @since 1.2.0
- * @version 1.15.16
+ * @version 1.16.12
  * @param array $raw_args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'attr', 'value', 'multiple', 'tip', 'required']
  * @return array|false
  */
@@ -1387,7 +1387,7 @@ function bookacti_format_field_args( $raw_args ) {
 
 	// Make sure checkboxes have their value as an array
 	if( $args[ 'type' ] === 'checkboxes' || ( $args[ 'multiple' ] && $args[ 'type' ] !== 'file' ) ){
-		if( ! is_array( $args[ 'value' ] ) ) { $args[ 'value' ] = array( $args[ 'value' ] ); }
+		if( ! is_array( $args[ 'value' ] ) ) { $args[ 'value' ] = $args[ 'value' ] !== '' ? array( $args[ 'value' ] ) : array(); }
 	}
 
 	// Make sure 'number' has min and max

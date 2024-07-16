@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 6.6
 Requires PHP: 5.3
-Stable tag: 1.16.11
+Stable tag: 1.16.12
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -321,6 +321,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.16.12 - 2024/07/16 =
+* Dev - Add booking filter "created_from" and "created_to" (as URL parameter only, no GUI)
+* Lib - Update FullCalendar to 6.1.15
 
 = 1.16.11 - 2024/06/26 =
 * Fix - Events may be displayed twice if the calendar opening was a past date, and if "Past events" option was OFF
