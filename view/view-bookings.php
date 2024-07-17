@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking list page
- * @version 1.16.3
+ * @version 1.16.13
  */
 
 // Exit if accessed directly
@@ -57,6 +57,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			<form id='bookacti-booking-list-filters-form' action=''>
 				<input type='hidden' name='page' value='bookacti_bookings'/>
 				<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_get_booking_list' ); ?>'/>
+				<input type='hidden' name='created_from' value='<?php echo ! empty( $_REQUEST[ 'created_from' ] ) ? esc_attr( $_REQUEST[ 'created_from' ] ) : ''; ?>'/>
+				<input type='hidden' name='created_to' value='<?php echo ! empty( $_REQUEST[ 'created_to' ] ) ? esc_attr( $_REQUEST[ 'created_to' ] ) : ''; ?>'/>
 				<?php
 					// Display sorting data
 					$order_by = ! empty( $_REQUEST[ 'order_by' ] ) ? $_REQUEST[ 'order_by' ] : ( ! empty( $_REQUEST[ 'orderby' ] ) ? $_REQUEST[ 'orderby' ] : array() );
