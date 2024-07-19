@@ -24,8 +24,8 @@
 #bookacti-bookings-calendar-settings      { margin-left: 3px; vertical-align: text-bottom; cursor: pointer; color: #565d61; }
 #bookacti-picked-events-actions-container { vertical-align: top; }
 
-#bookacti-actions-filter-container input			{ display: block; margin: auto; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; }
-#bookacti-actions-filter-container input:last-child	{ margin-bottom: 0; }
+#bookacti-actions-filter-container input            { display: block; margin: auto; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; }
+#bookacti-actions-filter-container input:last-child { margin-bottom: 0; }
 
 label[for="bookacti-booking-filter-dates-from"],
 label[for="bookacti-booking-filter-dates-to"] { display: inline-block; vertical-align: middle; width: 40px; max-width: 40px; }
@@ -129,10 +129,10 @@ label[for="bookacti-booking-filter-dates-to"] + input#bookacti-booking-filter-da
 #bookacti-booking-list-container .column-actions       { width: 250px; }
 
 @media screen and ( max-width: 1280px ) {
-	#bookacti-booking-list-container .column-quantity	{ width: 30px; }
+	#bookacti-booking-list-container .column-quantity { width: 30px; }
 	#bookacti-booking-list-container .column-payment_status,
-	#bookacti-booking-list-container .column-state		{ width: 40px; }
-	#bookacti-booking-list-container .column-actions	{ width: 106px; }
+	#bookacti-booking-list-container .column-state    { width: 40px; }
+	#bookacti-booking-list-container .column-actions  { width: 106px; }
 }
 
 #bookacti-booking-list-container .column-id .bookacti-booking-group-id::before { content: '\0021AA  '; }
@@ -154,7 +154,7 @@ label[for="bookacti-booking-filter-dates-to"] + input#bookacti-booking-filter-da
 .wp-admin a.bookacti-show-booking-group-bookings.active:after { color: #fff; }
 #bookacti-booking-list-container .bookacti-gouped-booking:not(.hidden) .check-column   { border-left: 2px solid #3689b1; }
 #bookacti-booking-list-container .bookacti-gouped-booking:not(.hidden) .column-actions { border-right: 2px solid #3689b1; }
-#bookacti-booking-list-container tbody#the-list > .bookacti-gouped-booking-last td,		
+#bookacti-booking-list-container tbody#the-list > .bookacti-gouped-booking-last td,
 #bookacti-booking-list-container tbody#the-list > .bookacti-gouped-booking-last th     { border-bottom: 2px solid #3689b1 !important; }
 #bookacti-booking-list-container tbody#the-list > .bookacti-gouped-booking-first td,
 #bookacti-booking-list-container tbody#the-list > .bookacti-gouped-booking-first th,

@@ -2,37 +2,37 @@
 .bookacti-nav-tab-wrapper { margin-bottom: 16px !important; }
 .bookacti-tip.dashicons-editor-help:before { color: #565d61; }
 
-.bookacti-disabled		{ cursor: auto; pointer-events: none; opacity: 0.5; }
-.bookacti-hide-fields	{ display: none; }
-.bookacti-show-fields	{ display: block; }
+.bookacti-disabled    { cursor: auto; pointer-events: none; opacity: 0.5; }
+.bookacti-hide-fields { display: none; }
+.bookacti-show-fields { display: block; }
 
 .wp-admin select.bookacti-select[multiple]:hover        { color: initial; }
 .wp-admin select.bookacti-select[multiple] option:hover { color: #007cba; }
 
 ul[id$='-select-box-results'] li[aria-disabled='true'] { display: none; }
 
-.bookacti-error > span, .bookacti-warning > span, .bookacti-info > span, .bookacti-sos > span		{ display: table-cell; vertical-align: middle; }
-.bookacti-error > .dashicons,.bookacti-warning > .dashicons, .bookacti-info > .dashicons, .bookacti-sos > .dashicons{ font-size: 1.5em; padding-right: 10px; }
-.bookacti-error a, .bookacti-warning a, .bookacti-info a, .bookacti-sos a							{ color: #0073aa; text-decoration: none; }
-.bookacti-error a:hover, .bookacti-warning a:hover, .bookacti-info a:hover, .bookacti-sos a:hover	{ color: #00a0d2; }
-.bookacti-error > .dashicons		{ color: #b81c23; }
-.bookacti-warning > .dashicons		{ color: #f89b2f; }
-.bookacti-info > .dashicons			{ color: #00a0d2; }
-.bookacti-sos						{ width: auto; height: auto; }
-.bookacti-sos > .dashicons			{ color: #ca4a1f; text-align: center; width: auto; max-width: 50px; }
-.bookacti-sos > .dashicons:after	{ content: attr( data-label ); display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-transform: uppercase; font-size: 10px; font-weight: bold; font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif; }
+.bookacti-error > span, .bookacti-warning > span, .bookacti-info > span, .bookacti-sos > span { display: table-cell; vertical-align: middle; }
+.bookacti-error > .dashicons,.bookacti-warning > .dashicons, .bookacti-info > .dashicons, .bookacti-sos > .dashicons { font-size: 1.5em; padding-right: 10px; }
+.bookacti-error a, .bookacti-warning a, .bookacti-info a, .bookacti-sos a                         { color: #0073aa; text-decoration: none; }
+.bookacti-error a:hover, .bookacti-warning a:hover, .bookacti-info a:hover, .bookacti-sos a:hover { color: #00a0d2; }
+.bookacti-error > .dashicons     { color: #b81c23; }
+.bookacti-warning > .dashicons   { color: #f89b2f; }
+.bookacti-info > .dashicons      { color: #00a0d2; }
+.bookacti-sos                    { width: auto; height: auto; }
+.bookacti-sos > .dashicons       { color: #ca4a1f; text-align: center; width: auto; max-width: 50px; }
+.bookacti-sos > .dashicons:after { content: attr( data-label ); display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-transform: uppercase; font-size: 10px; font-weight: bold; font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif; }
 
-.wp-core-ui .button.bookacti-delete-button			{ color: #a00; border-color: #a00; }
-.wp-core-ui .button.bookacti-delete-button:hover	{ color: #dc3232; border-color: #dc3232; }
-.wp-core-ui .button.bookacti-delete-button:focus	{ border-color: #dc3232; color: #dc3232; box-shadow: 0 0 0 1px #dc3232; }
+.wp-core-ui .button.bookacti-delete-button       { color: #a00; border-color: #a00; }
+.wp-core-ui .button.bookacti-delete-button:hover { color: #dc3232; border-color: #dc3232; }
+.wp-core-ui .button.bookacti-delete-button:focus { border-color: #dc3232; color: #dc3232; box-shadow: 0 0 0 1px #dc3232; }
 
-.bookacti-addon-promo			{ border: 2px solid #52b7e9; border-radius: 3px; padding: 10px; text-align: center; }
-.bookacti-addon-promo .button	{ margin-top: 10px; }
+.bookacti-addon-promo         { border: 2px solid #52b7e9; border-radius: 3px; padding: 10px; text-align: center; }
+.bookacti-addon-promo .button { margin-top: 10px; }
 
-#bookacti-fatal-error			{ margin: 1em; }
+#bookacti-fatal-error  { margin: 1em; }
 
-.bookacti-help-list		{ list-style-type: disc; padding-inline-start: 20px; }
-.bookacti-help-list ul	{ list-style-type: circle; padding-inline-start: 20px; margin-top: 3px; }
+.bookacti-help-list    { list-style-type: disc; padding-inline-start: 20px; }
+.bookacti-help-list ul { list-style-type: circle; padding-inline-start: 20px; margin-top: 3px; }
 
 .bookacti-add-ons-compatibility-notice li { list-style-type: disc; margin-left: 30px;  }
 
@@ -102,11 +102,11 @@ ul[id$='-select-box-results'] li[aria-disabled='true'] { display: none; }
 #bookacti-template-calendar .bookacti-available-places.bookacti-booked { color: #fff; }
 
 #bookacti-template-calendar .bookacti-available-places.bookacti-booked, 
-#bookacti-template-calendar .bookacti-available-places.bookacti-not-booked		{ background-color: #4ead3b; }
+#bookacti-template-calendar .bookacti-available-places.bookacti-not-booked      { background-color: #4ead3b; }
 #bookacti-template-calendar .bookacti-available-places.bookacti-full, 
 #bookacti-template-calendar .bookacti-available-places.bookacti-not-bookable, 
-#bookacti-template-calendar .bookacti-available-places.bookacti-no-availability	{ background-color: #ab3b3b; }
-#bookacti-template-calendar .bookacti-available-places.bookacti-booked			{ background-color: #e39102; }
+#bookacti-template-calendar .bookacti-available-places.bookacti-no-availability { background-color: #ab3b3b; }
+#bookacti-template-calendar .bookacti-available-places.bookacti-booked          { background-color: #e39102; }
 
 
 /***** SETTINGS *****/
@@ -121,14 +121,14 @@ ul[id$='-select-box-results'] li[aria-disabled='true'] { display: none; }
 
 #bookacti_refund_actions { display: inline-block; }
 
-.bookacti-settings-table		{ border-collapse: collapse; border: 1px solid #e5e5e5; background-color: #fff; -webkit-box-shadow: 0 1px 1px rgba(0,0,0,.04); box-shadow: 0 1px 1px rgba(0,0,0,.04); }
-.bookacti-settings-table th		{ text-align: left; padding: 10px; border-bottom: 1px solid #e1e1e1; }
-.bookacti-settings-table td		{ vertical-align: middle; padding: 5px 10px; }
+.bookacti-settings-table     { border-collapse: collapse; border: 1px solid #e5e5e5; background-color: #fff; -webkit-box-shadow: 0 1px 1px rgba(0,0,0,.04); box-shadow: 0 1px 1px rgba(0,0,0,.04); }
+.bookacti-settings-table th  { text-align: left; padding: 10px; border-bottom: 1px solid #e1e1e1; }
+.bookacti-settings-table td  { vertical-align: middle; padding: 5px 10px; }
 .bookacti-settings-table tbody tr:nth-child( 2n+1 )	{ background-color: #f9f9f9; }
-.bookacti-settings-table img	{ max-height: 24px; max-width: 24px; }
+.bookacti-settings-table img { max-height: 24px; max-width: 24px; }
 
-.bookacti-settings-table .dashicons-yes:before	{ color: #3cb371; }
-.bookacti-settings-table .dashicons-no:before	{ color: #cd5c5c; }
+.bookacti-settings-table .dashicons-yes:before { color: #3cb371; }
+.bookacti-settings-table .dashicons-no:before  { color: #cd5c5c; }
 
 .bookacti-settings-section-price { display: none; }
 
@@ -137,31 +137,31 @@ ul[id$='-select-box-results'] li[aria-disabled='true'] { display: none; }
 .bookacti-settings-table .bookacti-notifications-list-column-value-title a { text-decoration: none; font-weight: bold; }
 .bookacti-notifications-list-column-value-actions .button { vertical-align: middle; }
 
-#bookacti-notifications-list-column-active			{ width: 1px; }
-.bookacti-notifications-list-column-value-active	{ text-align: center; }
+#bookacti-notifications-list-column-active       { width: 1px; }
+.bookacti-notifications-list-column-value-active { text-align: center; }
 
-.bookacti-notifications-list-column-value-actions a .dashicons:before		{ color: #565d61; }
+.bookacti-notifications-list-column-value-actions a .dashicons:before       { color: #565d61; }
 .bookacti-notifications-list-column-value-actions a .dashicons:hover:before { color: #418fb6; }
 
-#bookacti-banp-promo				{ max-width: 500px; margin-top: 20px; }
-.bookacti-notifications-tag-promo	{ background: #ffff78; }
+#bookacti-banp-promo              { max-width: 500px; margin-top: 20px; }
+.bookacti-notifications-tag-promo { background: #ffff78; }
 
 .bookacti-notifications-tags-list { max-height: 520px; max-width: 220px; overflow: auto; }
 .bookacti-notifications-tags-list .bookacti-notifications-tag { margin-bottom: 8px; white-space: nowrap; }
 .bookacti-notifications-tag > span:first-of-type { font-family: Consolas, Monaco, monospace; direction: ltr; unicode-bidi: embed; font-weight: normal; font-size: 0.8em; background-color: rgba( 0, 0, 0, 0.05 ); padding: 2px 6px; }
 
-.bookacti-settings-tab-messages .form-table th			{ display: none; }
-.bookacti-settings-tab-messages .form-table td			{ padding: 0 0 20px 0; font-size: 13px; }
+.bookacti-settings-tab-messages .form-table th { display: none; }
+.bookacti-settings-tab-messages .form-table td { padding: 0 0 20px 0; font-size: 13px; }
 
-.bookacti-message-setting		{ margin-bottom: 20px; }
-.bookacti-message-setting input	{ margin-top: 6px; }
+.bookacti-message-setting       { margin-bottom: 20px; }
+.bookacti-message-setting input { margin-top: 6px; }
 
-.bookacti_checkbox	{ display: inline-block; margin-right: 20px; padding: 1px; min-width: 100px; max-width: 100px; box-sizing: border-box; overflow: hidden; white-space: nowrap; }
+.bookacti_checkbox { display: inline-block; margin-right: 20px; padding: 1px; min-width: 100px; max-width: 100px; box-sizing: border-box; overflow: hidden; white-space: nowrap; }
 #bookacti_refund_actions .bookacti_checkbox { max-width: none; overflow: visible; }
 
-.bookacti-licenses-settings-description				{ margin-bottom: 40px; }
-.bookacti-licenses-settings-description strong		{ font-size: 14px; }
-.bookacti-licenses-settings-description + .submit	{ display: none; }
+.bookacti-licenses-settings-description           { margin-bottom: 40px; }
+.bookacti-licenses-settings-description strong    { font-size: 14px; }
+.bookacti-licenses-settings-description + .submit { display: none; }
 
 
 /* Tabs */

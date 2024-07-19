@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 6.6
 Requires PHP: 5.3
-Stable tag: 1.16.12
+Stable tag: 1.16.13
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -321,6 +321,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.16.13 - 2024/07/17 =
+* Fix - Error message not displayed in the booking forms list if the form author user has been deleted
+* Fix - Booking bulk action did not take into account the "created_from" and "created_to" filters
 
 = 1.16.12 - 2024/07/16 =
 * Dev - Add booking filter "created_from" and "created_to" (as URL parameter only, no GUI)

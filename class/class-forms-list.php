@@ -11,7 +11,7 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 	/**
 	 * Forms WP_List_Table
 	 * @since 1.5.0
-	 * @version 1.16.2
+	 * @version 1.16.13
 	 */
 	class Forms_List_Table extends WP_List_Table {
 		
@@ -261,7 +261,7 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 		
 		/**
 		 * Get form list items. Parameters can be passed in the URL.
-		 * @version 1.16.3
+		 * @version 1.16.13
 		 * @access public
 		 * @return array
 		 */
@@ -273,6 +273,13 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 			
 			$can_edit_forms = current_user_can( 'bookacti_edit_forms' );
 			$can_edit_users = current_user_can( 'edit_users' );
+			
+			// Get author users
+			$user_ids = array();
+			foreach( $forms as $form ) {
+				if( $form->user_id && is_numeric( $form->user_id ) && ! in_array( $form->user_id, $user_ids, true ) ){ $user_ids[] = $form->user_id; }
+			}
+			$users = $user_ids ? bookacti_get_users_data( array( 'include' => $user_ids ) ) : array();
 			
 			$date_format      = get_option( 'date_format' );
 			$utc_timezone_obj = new DateTimeZone( 'UTC' );
@@ -299,10 +306,10 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 				$shortcode = "<input type='text' onfocus='this.select();' readonly='readonly' value='" . esc_attr( '[bookingactivities_form form="' . $id . '"]' ) . "' class='large-text code'>";
 				
 				// Author name
-				$user_object = get_user_by( 'id', $form->user_id );
-				$author = $user_object ? $user_object->display_name : $form->user_id;
-				if( $can_edit_users && $form->user_id ) {
-					$author = '<a href="' . get_edit_user_link( $form->user_id ) . '">' . $author . '</a>';
+				$user_object = ! empty( $users[ $form->user_id ] ) ? $users[ $form->user_id ] : null;
+				$author      = $user_object ? $user_object->display_name : esc_html( __( 'Unknown user', 'booking-activities' ) . ' (' . $form->user_id . ')' );
+				if( $can_edit_users && $user_object ) {
+					$author = '<a href="' . get_edit_user_link( $user_object->ID ) . '">' . $author . '</a>';
 				}
 				
 				// Creation date
@@ -323,7 +330,7 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 				// Check calendar permissions
 				$calendar_field = isset( $forms_calendar[ $form->id ] ) ? $forms_calendar[ $form->id ] : array();
 				$template_ids   = ! empty( $calendar_field[ 'calendars' ] ) ? array_values( bookacti_ids_to_array( $calendar_field[ 'calendars' ] ) ) : array();
-				$can_manage_calendars = bookacti_user_can_manage_template( $template_ids, intval( $form->user_id ) );
+				$can_manage_calendars = $user_object ? bookacti_user_can_manage_template( $template_ids, intval( $user_object->ID ) ) : false;
 				
 				// Errors
 				$errors = array();
