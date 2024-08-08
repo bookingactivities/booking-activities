@@ -97,54 +97,64 @@ $j( document ).ready( function() {
 	});
 
 
-	if( $j( '.woocommerce form.cart .single_add_to_cart_button' ).length ) {
-		/**
-		 * Add to cart dynamic check
-		 * @version 1.15.0
-		 */
-		$j( '.woocommerce form.cart' ).on( 'submit', function() { 
-			var form = $j( this );
-			
-			var proceed_to_validation = false;
+	/**
+	 * Add to cart dynamic check
+	 * @version 1.16.14
+	 */
+	$j( '.woocommerce form.cart' ).on( 'submit', function() { 
+		var form = $j( this );
+		if( ! form.find( '.single_add_to_cart_button' ).length ) { return; }
 
-			if( form.hasClass( 'variations_form' ) ) {
-				var variation_id = form.find( '.variation_id' ).val();
-				if( variation_id !== '' && typeof variation_id !== 'undefined' ) {
-					proceed_to_validation = bookacti.is_variation_activity[ variation_id ];
-				}
-			} else if( form.find( '.bookacti-booking-system-container' ).length ) {
-				proceed_to_validation = true;
+		var proceed_to_validation = false;
+
+		if( form.hasClass( 'variations_form' ) ) {
+			var variation_id = form.find( '.variation_id' ).val();
+			if( variation_id !== '' && typeof variation_id !== 'undefined' ) {
+				proceed_to_validation = bookacti.is_variation_activity[ variation_id ];
+			}
+		} else if( form.find( '.bookacti-booking-system-container' ).length ) {
+			proceed_to_validation = true;
+		}
+
+		if( proceed_to_validation ) {
+			// Submit Add to cart form only once at a time
+			var submit_button = form.find( 'button[type="submit"]' );
+			var was_disabled  = submit_button.attr( 'disabled' );
+			if( form.hasClass( 'bookacti-adding-to-cart' ) ) { 
+				submit_button.attr( 'disabled', true );
+				bookacti_add_loading_html( submit_button, 'after' );
+				return false;
 			}
 
-			if( proceed_to_validation ) {
-				// Submit Add to cart form only once at a time
-				if( form.hasClass( 'bookacti-adding-to-cart' ) ) { 
-					form.find( 'button[type="submit"]' ).attr( 'disabled', true ); 
-					return false;
-				}
-				
-				if( form.find( '.bookacti-booking-system' ).length ) {
-					// Submit form if all is OK
-					var is_valid = bookacti_validate_picked_events( form.find( '.bookacti-booking-system' ), form.find( 'input.qty' ).val() );
-					if( is_valid ) {
-						// Trigger action before sending form
-						var data = { 'form_data': new FormData( form.get(0) ) };
-						
-						form.trigger( 'bookacti_before_submit_booking_form', [ data ] );
-						
-						if( ! ( data.form_data instanceof FormData ) ) { return false; }
-						
-						form.addClass( 'bookacti-adding-to-cart' );
-						return true;
-					} else {
-						// Scroll to error message
-						bookacti_scroll_to( form.find( '.bookacti-booking-system-container .bookacti-notices' ), 500, 'middle' );
-						return false; // Prevent form submission
-					}
+			if( form.find( '.bookacti-booking-system' ).length ) {
+				// Submit form if all is OK
+				var is_valid = bookacti_validate_picked_events( form.find( '.bookacti-booking-system' ), form.find( 'input.qty' ).val() );
+				if( is_valid ) {
+					// Trigger action before sending form
+					var data = { 'form_data': new FormData( form.get(0) ) };
+
+					form.trigger( 'bookacti_before_submit_booking_form', [ data ] );
+
+					if( ! ( data.form_data instanceof FormData ) ) { return false; }
+
+					form.addClass( 'bookacti-adding-to-cart' );
+					
+					// Reactivate Add to cart button after 10 seconds (to improve compatibility with custom AJAX add to cart)
+					setTimeout( function() {
+						form.removeClass( 'bookacti-adding-to-cart' );
+						submit_button.attr( 'disabled', was_disabled ? true : false );
+						bookacti_remove_loading_html( submit_button.next( '.bookacti-loading-container' ) );
+					}, 10000 );
+					
+					return true;
+				} else {
+					// Scroll to error message
+					bookacti_scroll_to( form.find( '.bookacti-booking-system-container .bookacti-notices' ), 500, 'middle' );
+					return false; // Prevent form submission
 				}
 			}
-		});
-	}
+		}
+	});
 
 
 	/**
