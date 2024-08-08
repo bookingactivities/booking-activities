@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 6.6
 Requires PHP: 5.3
-Stable tag: 1.16.13
+Stable tag: 1.16.14
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -321,6 +321,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.16.14 - 2024/08/08 =
+* Tweak - Reactivate WC add to cart button on product page after 10 seconds to improve compatibility with third-party AJAX add to cart
 
 = 1.16.13 - 2024/07/17 =
 * Fix - Error message not displayed in the booking forms list if the form author user has been deleted

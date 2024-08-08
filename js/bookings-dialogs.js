@@ -1270,7 +1270,7 @@ function bookacti_dialog_export_bookings() {
 /**
  * Generate the URL to export bookings
  * @since 1.6.0
- * @version 1.16.0
+ * @version 1.16.14
  * @param {string} reset_key
  */
 function bookacti_generate_export_bookings_url( reset_key ) {
@@ -1288,7 +1288,7 @@ function bookacti_generate_export_bookings_url( reset_key ) {
 	data.reset_key       = reset_key ? 1 : 0;
 	data.booking_filters = bookacti_get_booking_list_filters();
 	
-	$j( '#bookacti-export-bookings-form' ).trigger( 'bookacti_export_bookings_url_data', [ data, reset_key ] );
+	$j( 'body' ).trigger( 'bookacti_export_bookings_url_data', [ data, reset_key ] );
 	
 	$j.ajax({
 		url: ajaxurl,
@@ -1300,10 +1300,10 @@ function bookacti_generate_export_bookings_url( reset_key ) {
 				$j( '#bookacti_export_bookings_url_secret' ).val( response.url );
 				$j( '#bookacti-export-bookings-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-success-list"><li>' + response.message + '</li></ul></div>' ).show();
 				
-				$j( '#bookacti-export-bookings-url-container' ).data( 'export-type', data.export_type );
+				$j( '#bookacti-export-bookings-url-container' ).data( 'export-type', data?.export_type );
 				$j( '#bookacti-export-bookings-url-container' ).show();
 				
-				$j( '#bookacti-form-editor' ).trigger( 'bookacti_export_bookings_url', [ response ] );
+				$j( 'body' ).trigger( 'bookacti_export_bookings_url', [ response ] );
 
 			} else if( response.status === 'failed' ) {
 				var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
