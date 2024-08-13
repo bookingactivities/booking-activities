@@ -2105,46 +2105,26 @@ function bookacti_update_order_bookings_on_order_refund( $refund ) {
 /**
  * Create coupons to refund selected bookings (1 coupon per user)
  * @since 1.16.0 (was bookacti_refund_booking_with_coupon)
+ * @version 1.16.15
  * @param array $selected_bookings
  * @param string $booking_type Determine if the given id is a booking id or a booking group. Accepted values are 'single' or 'group'.
  * @param string $refund_message
  * @return array
  */
 function bookacti_refund_selected_bookings_with_coupon( $selected_bookings, $refund_message = '' ) {
-	// Include & load API classes
-	if( ! class_exists( 'WC_API_Coupons' ) ) {
-		WC()->api->includes();
-		WC()->api->register_resources( new WC_API_Server( '/' ) );
+	if( ! class_exists( 'WC_Coupon' ) ) {
+		return array( 
+			'status'  => 'failed', 
+			'error'   => 'coupon_api_not_loaded',
+			'message' => esc_html__( 'The coupon API failed to be loaded.', 'booking-activities' )
+		);
 	}
 	
-	// Coupon data
 	$coupons_data = array();
-	$default_coupon_data = array( 
-		'coupon' => array(
-			'type'                         => 'fixed_cart',
-			'code'                         => '',
-			'amount'                       => 0,
-			'individual_use'               => false,
-			'product_ids'                  => array(),
-			'exclude_product_ids'          => array(),
-			'usage_limit'                  => 1,
-			'usage_limit_per_user'         => '',
-			'limit_usage_to_x_items'       => '',
-			'usage_count'                  => '',
-			'expiry_date'                  => '',
-			'enable_free_shipping'         => false,
-			'product_category_ids'         => array(),
-			'exclude_product_category_ids' => array(),
-			'exclude_sale_items'           => false,
-			'minimum_amount'               => '',
-			'maximum_amount'               => '',
-			'customer_emails'              => array(),
-			'description'                  => ''
-		)
-	);
 	
 	// Sort bookings by user (to create only one coupon per user)
-	$selected_bookings_per_user = bookacti_sort_selected_bookings_by_user( $selected_bookings );
+	$selected_bookings_per_user   = bookacti_sort_selected_bookings_by_user( $selected_bookings );
+	$already_refunded_with_coupon = false;
 	
 	foreach( $selected_bookings_per_user as $user_id => $user_selected_bookings ) {
 		// Calculate coupon amount
@@ -2168,7 +2148,7 @@ function bookacti_refund_selected_bookings_with_coupon( $selected_bookings, $ref
 			}
 			// Backward compatibility
 			if( ! $existing_coupon_code ) { $existing_coupon_code = wc_get_order_item_meta( $item_id, 'bookacti_refund_coupon', true ); }
-			if( $existing_coupon_code ) { continue; }
+			if( $existing_coupon_code )   { $already_refunded_with_coupon = true; continue; }
 			
 			$item_refund_amount = bookacti_wc_get_item_remaining_refund_amount( $item );
 			if( $item_refund_amount ) {
@@ -2201,7 +2181,7 @@ function bookacti_refund_selected_bookings_with_coupon( $selected_bookings, $ref
 			}
 			// Backward compatibility
 			if( ! $existing_coupon_code ) { $existing_coupon_code = wc_get_order_item_meta( $item_id, 'bookacti_refund_coupon', true ); }
-			if( $existing_coupon_code ) { continue; }
+			if( $existing_coupon_code )   { $already_refunded_with_coupon = true; continue; }
 			
 			$item_refund_amount = bookacti_wc_get_item_remaining_refund_amount( $item );
 			if( $item_refund_amount ) {
@@ -2257,102 +2237,104 @@ function bookacti_refund_selected_bookings_with_coupon( $selected_bookings, $ref
 		}
 		
 		// Coupon data
-		$coupon_data_n = $default_coupon_data;
-		$coupon_data_n[ 'coupon' ][ 'amount' ]          = $coupon_amount;
-		$coupon_data_n[ 'coupon' ][ 'customer_emails' ] = array_filter( array_unique( $customer_emails ) );
-		$coupon_data_n[ 'coupon' ][ 'description' ]     = $coupon_description;
-		$coupon_data_n[ 'refund_data' ]                 = $refund_data;
+		$coupon_data_n = array(
+			'discount_type'      => 'fixed_cart',
+			'usage_limit'        => 1,
+			'amount'             => $coupon_amount,
+			'email_restrictions' => array_filter( array_unique( $customer_emails ) ),
+			'description'        => $coupon_description,
+			'refund_data'        => $refund_data
+		);
 		
 		$coupons_data[] = $coupon_data_n;
 	}
 	
 	if( ! $coupons_data ) {
+		if( $already_refunded_with_coupon ) {
+			return array( 
+				'status'  => 'failed', 
+				'error'   => 'bookings_already_refunded_with_coupon',
+				'message' => esc_html__( 'The selected bookings have already been refunded with a coupon.', 'booking-activities' )
+			);
+		}
+		
 		return array( 
 			'status'  => 'failed', 
 			'error'   => 'no_bookings_to_refund_with_coupon',
 			'message' => esc_html__( 'The selected bookings cannot be refunded with a coupon.', 'booking-activities' )
 		);
 	}
-
-	// Grant user cap to create coupons
-	$current_user = wp_get_current_user();
-	$user_basically_can_publish_shop_coupons      = current_user_can( 'publish_shop_coupons' );
-	$user_basically_can_read_private_shop_coupons = current_user_can( 'read_private_shop_coupons' );
-	if( ! $user_basically_can_publish_shop_coupons )      { $current_user->add_cap( 'publish_shop_coupons' ); }
-	if( ! $user_basically_can_read_private_shop_coupons ) { $current_user->add_cap( 'read_private_shop_coupons' ); }
 	
 	$return_data = array( 'coupons' => array(), 'booking_ids' => array(), 'booking_group_ids' => array() );
-	$wp_errors   = array();
 	
 	foreach( $coupons_data as $coupon_data ) {
 		$refund_data = $coupon_data[ 'refund_data' ];
 		unset( $coupon_data[ 'refund_data' ] );
 		
 		// Generate coupon code and create the coupon
-		$i = 1;
-		$coupon = array();
+		$i             = 1;
 		$user_id_str   = is_numeric( $refund_data[ 'user_id' ] ) ? $refund_data[ 'user_id' ] : substr( hash( 'sha256', $refund_data[ 'user_id' ] ), 0, 8 );
 		$code_template = apply_filters( 'bookacti_wc_refund_coupon_code_template', 'R{user_id}N{refund_number}' );
 		$code_template = str_replace( '{user_id}', '%1$s', $code_template );
 		$code_template = str_replace( '{refund_number}', '%2$s', $code_template );
 
 		$coupon_data = apply_filters( 'bookacti_wc_refund_coupon_data', $coupon_data, $refund_data );
-
-		do {
-			// For the first occurrence, try to use the code that may have been changed with 'bookacti_refund_coupon_data' hook
-			$coupon_data[ 'coupon' ][ 'code' ] = apply_filters( 'bookacti_wc_refund_coupon_code', sprintf( $code_template, $user_id_str, $i ), $coupon_data, $refund_data );
-			$coupon = WC()->api->WC_API_Coupons->create_coupon( $coupon_data );
-			$i++;
-		}
-		while( is_wp_error( $coupon ) && $coupon->get_error_code() === 'woocommerce_api_coupon_code_already_exists' );
 		
-		if( $coupon && ! is_wp_error( $coupon ) ) {
-			// Format the refunded date
-			$refund_date = DateTime::createFromFormat( 'Y-m-d\TH:i:s\Z', $coupon[ 'coupon' ][ 'created_at' ] );
-			if( ! is_a( $refund_date, 'DateTime' ) ) { $refund_date = new DateTime(); }
-			$utc_timezone_obj = new DateTimeZone( 'UTC' );
-			$refund_date->setTimezone( $utc_timezone_obj );
-			$refund_date = $refund_date->format( 'Y-m-d H:i:s' );
-			
-			// Update bookings (group) refunds records
-			$refund_data_per_type = array( 'single' => $refund_data[ 'bookings' ], 'group' => $refund_data[ 'booking_groups' ] );
-			foreach( $refund_data_per_type as $booking_type => $bookings_refund_data ) {
-				foreach( $bookings_refund_data as $booking_id => $booking_refund_data ) {
-					$_selected_booking = array( 
-						'bookings'        => $booking_type === 'single' ? $selected_bookings[ 'bookings' ][ $booking_id ] : array(),
-						'booking_groups'  => $booking_type === 'group' ? $selected_bookings[ 'booking_groups' ][ $booking_id ] : array(),
-						'groups_bookings' => $booking_type === 'group' && isset( $selected_bookings[ 'groups_bookings' ][ $booking_id ] ) ? $selected_bookings[ 'groups_bookings' ][ $booking_id ] : array()
-					);
-					
-					$booking = $booking_type === 'group' ? $selected_bookings[ 'booking_groups' ][ $booking_id ] : $selected_bookings[ 'bookings' ][ $booking_id ];
-					$refunds = ! empty( $booking->refunds ) && is_array( $booking->refunds ) ? $booking->refunds : array();
-					
-					$refunds[ $coupon[ 'coupon' ][ 'code' ] ] = apply_filters( 'bookacti_wc_booking_refund_coupon_data', array( 
-						'date'     => $refund_date, 
-						'quantity' => $booking_refund_data[ 'quantity' ], 
-						'amount'   => $coupon[ 'coupon' ][ 'amount' ], 
-						'method'   => 'coupon', 
-						'coupon'   => $coupon[ 'coupon' ][ 'code' ]
-					), $coupon, $coupon_data, $booking_refund_data, $_selected_booking );
-					
-					bookacti_update_metadata( $booking_type === 'group' ? 'booking_group' : 'booking', $booking_id, array( 'refunds' => $refunds ) );
-				}
-			}
-			
-			$return_data[ 'booking_ids' ]       = bookacti_ids_to_array( array_merge( $return_data[ 'booking_ids' ], array_keys( $refund_data[ 'bookings' ] ) ) );
-			$return_data[ 'booking_group_ids' ] = bookacti_ids_to_array( array_merge( $return_data[ 'booking_group_ids' ], array_keys( $refund_data[ 'booking_groups' ] ) ) );
-			$return_data[ 'coupons' ][] = array(
-				'code'        => $coupon[ 'coupon' ][ 'code' ],
-				'amount'      => $coupon_data[ 'coupon' ][ 'amount' ],
-				'price'       => html_entity_decode( wc_price( $coupon_data[ 'coupon' ][ 'amount' ] ) ),
-				'coupon'      => $coupon,
-				'coupon_data' => $coupon_data,
-				'refund_data' => $refund_data
-			);
-			
-		} else if( is_wp_error( $coupon ) ) {
-			$wp_errors[] = $coupon;
+		do {
+			$coupon_data[ 'code' ] = apply_filters( 'bookacti_wc_refund_coupon_code', sprintf( $code_template, $user_id_str, $i ), $coupon_data, $refund_data );
+			$code_already_exists   = wc_get_coupon_id_by_code( $coupon_data[ 'code' ] );
+			++$i;
 		}
+		while( $code_already_exists );
+		
+		// Create the coupon
+		$coupon = new WC_Coupon();
+		foreach( $coupon_data as $key => $value ) {
+			if( method_exists( $coupon, 'set_' . $key ) ) {
+				$coupon->{ 'set_' . $key }( $value );
+			}
+		}
+		$coupon_id     = $coupon->save();
+		$coupon_code   = $coupon->get_code( 'edit' );
+		$coupon_amount = $coupon->get_amount( 'edit' );
+		$coupon_dt     = $coupon->get_date_created( 'edit' );
+		$coupon_dt->setTimezone( new DateTimeZone( 'UTC' ) );
+		
+		// Update bookings (group) refunds records
+		$refund_data_per_type = array( 'single' => $refund_data[ 'bookings' ], 'group' => $refund_data[ 'booking_groups' ] );
+		foreach( $refund_data_per_type as $booking_type => $bookings_refund_data ) {
+			foreach( $bookings_refund_data as $booking_id => $booking_refund_data ) {
+				$_selected_booking = array( 
+					'bookings'        => $booking_type === 'single' ? $selected_bookings[ 'bookings' ][ $booking_id ] : array(),
+					'booking_groups'  => $booking_type === 'group' ? $selected_bookings[ 'booking_groups' ][ $booking_id ] : array(),
+					'groups_bookings' => $booking_type === 'group' && isset( $selected_bookings[ 'groups_bookings' ][ $booking_id ] ) ? $selected_bookings[ 'groups_bookings' ][ $booking_id ] : array()
+				);
+
+				$booking = $booking_type === 'group' ? $selected_bookings[ 'booking_groups' ][ $booking_id ] : $selected_bookings[ 'bookings' ][ $booking_id ];
+				$refunds = ! empty( $booking->refunds ) && is_array( $booking->refunds ) ? $booking->refunds : array();
+
+				$refunds[ $coupon_code ] = apply_filters( 'bookacti_wc_booking_refund_coupon_data', array( 
+					'date'     => $coupon_dt->format( 'Y-m-d H:i:s' ), 
+					'quantity' => $booking_refund_data[ 'quantity' ], 
+					'amount'   => $coupon_amount, 
+					'method'   => 'coupon', 
+					'coupon'   => $coupon_code
+				), $coupon, $coupon_data, $booking_refund_data, $_selected_booking );
+
+				bookacti_update_metadata( $booking_type === 'group' ? 'booking_group' : 'booking', $booking_id, array( 'refunds' => $refunds ) );
+			}
+		}
+
+		$return_data[ 'booking_ids' ]       = bookacti_ids_to_array( array_merge( $return_data[ 'booking_ids' ], array_keys( $refund_data[ 'bookings' ] ) ) );
+		$return_data[ 'booking_group_ids' ] = bookacti_ids_to_array( array_merge( $return_data[ 'booking_group_ids' ], array_keys( $refund_data[ 'booking_groups' ] ) ) );
+		$return_data[ 'coupons' ][] = array(
+			'code'        => $coupon_code,
+			'amount'      => $coupon_amount,
+			'price'       => html_entity_decode( wc_price( $coupon_amount ) ),
+			'coupon'      => $coupon,
+			'coupon_data' => $coupon_data,
+			'refund_data' => $refund_data
+		);
 	}
 	
 	// Return data
@@ -2391,20 +2373,11 @@ function bookacti_refund_selected_bookings_with_coupon( $selected_bookings, $ref
 		$return_data[ 'message' ] .= '<span><em>' . esc_html__( 'You can use your coupon code the next time you place an order.', 'booking-activities' ) . '</em></span>';
 	} 
 	else {
-		$return_data[ 'status' ]    = 'failed';
-		$return_data[ 'error' ]     = 'cannot_create_coupon';
-		$return_data[ 'wp_errors' ] = $wp_errors;
-		$messages = array();
-		foreach( $wp_errors as $wp_error ) {
-			$messages[] = $wp_error->get_error_message();
-		}
-		$return_data[ 'message' ] = implode( '</li><li>', array_unique( $messages ) );
+		$return_data[ 'status' ]  = 'failed';
+		$return_data[ 'error' ]   = 'cannot_create_coupon';
+		$return_data[ 'message' ] = esc_html__( 'The coupon code could not be generated.', 'booking-activities' );
 	}
 	
-	// Remove user cap to create coupon
-	if( ! $user_basically_can_publish_shop_coupons )      { $current_user->remove_cap( 'publish_shop_coupons' ); }
-	if( ! $user_basically_can_read_private_shop_coupons ) { $current_user->remove_cap( 'read_private_shop_coupons' ); }
-
 	return $return_data;
 }
 
