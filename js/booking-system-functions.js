@@ -1552,7 +1552,7 @@ function bookacti_get_bookings_number_for_a_single_grouped_event( booking_system
 
 /**
  * Get a div with event available places
- * @version 1.16.9
+ * @version 1.16.16
  * @param {HTMLElement} booking_system
  * @param {(FullCalendar.EventApi|Object)} event
  * @returns {String}
@@ -1565,11 +1565,13 @@ function bookacti_get_event_availability_div( booking_system, event ) {
 	var event_id           = typeof event.groupId !== 'undefined' ? parseInt( event.groupId ) : parseInt( event.id );
 	var activity_id        = bookacti.booking_system[ booking_system_id ][ 'events_data' ]?.[ event_id ]?.[ 'activity_id' ];
 	var total_availability = bookacti.booking_system[ booking_system_id ][ 'events_data' ]?.[ event_id ]?.[ 'availability' ];
+	var show_unit_name     = bookacti.booking_system[ booking_system_id ][ 'activities_data' ]?.[ activity_id ]?.[ 'settings' ]?.[ 'show_unit_in_availability' ];
+	    show_unit_name     = typeof show_unit_name === 'undefined' ? 0 : parseInt( show_unit_name );
 	var unit_name          = available_places === 1 ? bookacti.booking_system[ booking_system_id ][ 'activities_data' ]?.[ activity_id ]?.[ 'settings' ]?.[ 'unit_name_singular' ] : bookacti.booking_system[ booking_system_id ][ 'activities_data' ]?.[ activity_id ]?.[ 'settings' ]?.[ 'unit_name_plural' ];
 	var avail              = available_places > 1 ? bookacti_localized.avails : bookacti_localized.avail;
 	
-	if( ! total_availability ) { total_availability = 0; }
-	if( ! unit_name )          { unit_name = ''; }
+	if( ! total_availability )            { total_availability = 0; }
+	if( ! unit_name || ! show_unit_name ) { unit_name = ''; }
 	
 	// Detect if the event is available or full, and if it is booked or not
 	var availability_classes = available_places < total_availability ? 'bookacti-booked' : 'bookacti-not-booked';
@@ -1601,7 +1603,7 @@ function bookacti_get_event_availability_div( booking_system, event ) {
 				available_places = 0;
 				unit_name        = bookacti.booking_system[ booking_system_id ][ 'activities_data' ]?.[ activity_id ]?.[ 'settings' ]?.[ 'unit_name_plural' ];
 				avail            = bookacti_localized.avails;
-				if( ! unit_name ) { unit_name = ''; }
+				if( ! unit_name || ! show_unit_name ) { unit_name = ''; }
 			}
 		}
 	}

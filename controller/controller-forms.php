@@ -34,7 +34,7 @@ add_action( 'bookacti_display_form_field_calendar', 'bookacti_display_form_field
 /**
  * Display the form field 'login'
  * @since 1.5.0
- * @version 1.16.2
+ * @version 1.16.16
  * @param string $html
  * @param array $field
  * @param string $instance_id
@@ -300,9 +300,10 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 			if( ! empty( $field[ 'login_button' ] ) ) {
 				$login_button_label    = esc_attr( $field[ 'login_button_label' ] );
 				$register_button_label = esc_attr( $field[ 'register_button_label' ] );
+				$input_type            = ! is_user_logged_in() && ( ! empty( $field[ 'login_first' ] ) || $context === 'login_form' ) ? 'submit' : 'button';
 			?>
 			<div class='bookacti-form-field-login-field-container bookacti-login-field-submit-button' id='<?php echo $field_id; ?>-submit-button' style='display:none;'>
-				<input type='button' value='<?php echo $login_button_label; ?>' class='bookacti-login-button button' data-login-label='<?php echo $login_button_label; ?>' data-register-label='<?php echo $register_button_label; ?>'/>
+				<input type='<?php echo esc_attr( $input_type ); ?>' value='<?php echo $login_button_label; ?>' class='bookacti-login-button button' data-login-label='<?php echo $login_button_label; ?>' data-register-label='<?php echo $register_button_label; ?>'/>
 			</div>
 			<?php } ?>
 		</div>
