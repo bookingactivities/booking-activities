@@ -2,10 +2,10 @@
 Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
-Requires at least: 3.6
+Requires at least: 4.1
 Tested up to: 6.6
-Requires PHP: 5.3
-Stable tag: 1.16.15
+Requires PHP: 5.6
+Stable tag: 1.16.16
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -148,7 +148,7 @@ Then feel free to tell us if you miss a feature, if you find a bug or anything t
 = Requirements =
 
 * **WordPress**: 3.6 or later
-* **PHP**: 5.3 or later
+* **PHP**: 5.6 or later
 * **MySQL**: 5.7.22 or later (or MariaDB 10.5.4 or later)
 * **WooCommerce**: 3.x or later
 * *Booking Activities can be used without WooCommerce*
@@ -321,6 +321,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.16.16 - 2024/09/05 =
+* Tweak - Increase PHP version requirement to 5.6 or later
+* Tweak - Change the login button type from "button" to "submit" when only the login field is displayed
+* Fix - Unit name was displayed in availability area even if "Show unit in availability" option was OFF
 
 = 1.16.15 - 2024/08/13 =
 * Fix - PHP error when generating coupon as a refund for a booking if WC was 9.0+ and WC Legacy REST API plugin was not installed
