@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 4.1
 Tested up to: 6.6
 Requires PHP: 5.6
-Stable tag: 1.16.16
+Stable tag: 1.16.17
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
