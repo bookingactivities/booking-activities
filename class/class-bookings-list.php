@@ -10,7 +10,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 	
 	/**
 	 * Bookings WP_List_Table
-	 * @version 1.16.0
+	 * @version 1.16.17
 	 */
 	class Bookings_List_Table extends WP_List_Table {
 		
@@ -676,23 +676,6 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		 */
 		public function get_default_primary_column_name() {
 			return apply_filters( 'bookacti_booking_list_primary_column', 'customer', $this->screen );
-		}
-		
-		
-		/**
-		 * Display pagination inside a form to allow to jump to a page
-		 * @since 1.5.0
-		 * @version 1.8.0
-		 * @param string $which
-		 */
-		protected function pagination( $which ) {
-			if( $which !== 'top' ) { parent::pagination( $which ); return; }
-			?>
-			<form action='<?php echo add_query_arg( 'paged', '%d', $this->url ); ?>' class='bookacti-list-table-go-to-page-form' >
-				<input type='hidden' name='page' value='bookacti_bookings' />
-				<?php parent::pagination( $which ); ?>
-			</form>
-			<?php 
 		}
 		
 		

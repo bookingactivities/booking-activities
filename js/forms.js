@@ -78,16 +78,16 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Perform the desired action on form submission
-	 * @version 1.9.0
+	 * @version 1.16.17
 	 * @param {Event} e
 	 */
 	$j( 'body' ).on( 'submit', '.bookacti-booking-form', function( e ) {
 		// Prevent submission
 		e.preventDefault();
 		
-		// Retrieve the info required to show the desired events
 		var booking_system = $j( this ).find( '.bookacti-form-field-type-calendar .bookacti-booking-system' );
-
+		if( ! booking_system.length ) { return; }
+		
 		// Perform action defined in Calendar field settings
 		bookacti_perform_form_action( booking_system );
 		

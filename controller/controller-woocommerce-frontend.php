@@ -899,7 +899,7 @@ add_action( 'woocommerce_checkout_order_review', 'bookacti_add_timeout_to_cart',
 
 /**
  * Add the timeout to each cart item
- * @ersion 1.9.0
+ * @version 1.16.17
  * @param string $remove_link
  * @param string $cart_item_key
  * @return string
@@ -911,7 +911,7 @@ function bookacti_add_timeout_to_cart_item( $remove_link, $cart_item_key ) {
 	$countdown_html = bookacti_wc_get_cart_item_countdown_html( $cart_item_key );
 	if( ! $countdown_html ) { return $remove_link; }
 	
-	return '<div class="bookacti-remove-cart-item-container">' . $remove_link . '</div>' . $countdown_html;
+	return $remove_link . $countdown_html;
 }
 add_filter( 'woocommerce_cart_item_remove_link', 'bookacti_add_timeout_to_cart_item', 10, 2 );
 

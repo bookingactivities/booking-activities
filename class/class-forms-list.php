@@ -11,7 +11,7 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 	/**
 	 * Forms WP_List_Table
 	 * @since 1.5.0
-	 * @version 1.16.13
+	 * @version 1.16.17
 	 */
 	class Forms_List_Table extends WP_List_Table {
 		
@@ -571,22 +571,6 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 		 */
 		public function get_default_primary_column_name() {
 			return apply_filters( 'bookacti_form_list_primary_column', 'title', $this->screen );
-		}
-		
-		
-		/**
-		 * Display pagination inside a form to allow to jump to a page
-		 * @version 1.5.4
-		 * @param string $which
-		 */
-		protected function pagination( $which ) {
-			if( $which !== 'top' ) { parent::pagination( $which ); return; }
-			?>
-				<form action='<?php echo esc_url( add_query_arg( 'paged', '%d' ) ); ?>' class='bookacti-list-table-go-to-page-form' >
-					<input type='hidden' name='page' value='bookacti_forms' />
-					<?php parent::pagination( $which ); ?>
-				</form>
-			<?php 
 		}
 		
 		

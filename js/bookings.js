@@ -279,14 +279,21 @@ $j( document ).ready( function() {
 	
 	/**
 	 * WP List Table pagination - go to a specific page
-	 * @version 1.8.0
+	 * @version 1.16.17
 	 * @param {Event} e
 	 */
-	$j( 'body' ).on( 'submit', '.bookacti-list-table-go-to-page-form', function( e ){
+	$j( '#bookacti-bookings-container' ).on( 'change', '#current-page-selector', function( e ) {
 		if( ! $j( '#bookacti-submit-filter-button' ).data( 'ajax' ) ) { return; }
-		e.preventDefault();
-		var paged = $j( this ).find( '.current-page' ).val();
-		bookacti_filter_booking_list( paged );
+		
+		// Clear the timeout
+		if( typeof bookacti_booking_list_paged_monitor !== 'undefined' ) { 
+			if( bookacti_booking_list_paged_monitor ) { clearTimeout( bookacti_booking_list_paged_monitor ); }
+		}
+		
+		var paged = $j( this ).val();
+		bookacti_booking_list_paged_monitor = setTimeout( function() {
+			bookacti_filter_booking_list( paged );
+		}, 750 );
 	});
 	
 	
