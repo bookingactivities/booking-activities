@@ -301,6 +301,7 @@ add_filter( 'bookacti_default_messages', 'bookacti_wc_default_messages', 10, 1 )
 /**
  * Add WC notice to Default booking status settings
  * @since 1.15.16
+ * @version 1.16.17
  * @param array $args
  * @return array
  */
@@ -330,13 +331,13 @@ function bookacti_wc_settings_default_booking_status_field_args( $args ) {
 					);
 				?>
 				</th>
-				<td><?php esc_html_e( 'Order', 'booking-activities' ); ?>: <strong><?php esc_html_e( 'Completed', 'woocommerce' ); ?></strong><br/><?php esc_html_e( 'Bookings', 'booking-activities' ); ?>: <strong><?php esc_html_e( 'Booked', 'booking-activities' ); ?></strong> and <strong><?php esc_html_e( 'Paid', 'booking-activities' ); ?></strong></td>
-				<td><?php esc_html_e( 'Order', 'booking-activities' ); ?>: <strong><?php esc_html_e( 'Processing', 'woocommerce' ); ?></strong><br/><?php esc_html_e( 'Bookings', 'booking-activities' ); ?>: <strong><?php esc_html_e( 'Pending', 'booking-activities' ); ?></strong> and <strong><?php esc_html_e( 'Due', 'booking-activities' ); ?></strong></td>
+				<td><?php esc_html_e( 'Order', 'booking-activities' ); ?>: <strong><?php esc_html_e( 'Completed', 'woocommerce' ); ?></strong><br/><?php esc_html_e( 'Bookings', 'booking-activities' ); ?>: <strong><?php esc_html_e( 'Booked', 'booking-activities' ); ?></strong> & <strong><?php esc_html_e( 'Paid', 'booking-activities' ); ?></strong></td>
+				<td><?php esc_html_e( 'Order', 'booking-activities' ); ?>: <strong><?php esc_html_e( 'Processing', 'woocommerce' ); ?></strong><br/><?php esc_html_e( 'Bookings', 'booking-activities' ); ?>: <strong><?php esc_html_e( 'Pending', 'booking-activities' ); ?></strong> & <strong><?php esc_html_e( 'Due', 'booking-activities' ); ?></strong></td>
 			</tr>
 			<tr>
 				<th><?php esc_html_e( 'Else', 'booking-activities' ); ?></th>
-				<td><?php esc_html_e( 'Order', 'booking-activities' ); ?>: <strong><?php esc_html_e( 'Processing', 'woocommerce' ); ?></strong><br/><?php esc_html_e( 'Bookings', 'booking-activities' ); ?>: <strong><?php esc_html_e( 'Booked', 'booking-activities' ); ?></strong> and <strong><?php esc_html_e( 'Paid', 'booking-activities' ); ?></strong></td>
-				<td><?php esc_html_e( 'Order', 'booking-activities' ); ?>: <strong><?php esc_html_e( 'Processing', 'woocommerce' ); ?></strong><br/><?php esc_html_e( 'Bookings', 'booking-activities' ); ?>: <strong><?php esc_html_e( 'Pending', 'booking-activities' ); ?></strong> and <strong><?php esc_html_e( 'Due', 'booking-activities' ); ?></strong></td>
+				<td><?php esc_html_e( 'Order', 'booking-activities' ); ?>: <strong><?php esc_html_e( 'Processing', 'woocommerce' ); ?></strong><br/><?php esc_html_e( 'Bookings', 'booking-activities' ); ?>: <strong><?php esc_html_e( 'Booked', 'booking-activities' ); ?></strong> & <strong><?php esc_html_e( 'Paid', 'booking-activities' ); ?></strong></td>
+				<td><?php esc_html_e( 'Order', 'booking-activities' ); ?>: <strong><?php esc_html_e( 'Processing', 'woocommerce' ); ?></strong><br/><?php esc_html_e( 'Bookings', 'booking-activities' ); ?>: <strong><?php esc_html_e( 'Pending', 'booking-activities' ); ?></strong> & <strong><?php esc_html_e( 'Due', 'booking-activities' ); ?></strong></td>
 			</tr>
 		</table>
 		<style>

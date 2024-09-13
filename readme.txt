@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 4.1
 Tested up to: 6.6
 Requires PHP: 5.6
-Stable tag: 1.16.16
+Stable tag: 1.16.17
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -321,6 +321,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.16.17 - 2024/09/13 =
+* Fix - PHP error when a logged in user tries to validate the log in form
+* Fix - AJAX pagination in admin booking list
+* Dev - Remove div container for WC cart item remove link to improve compatibility with third party plugins
 
 = 1.16.16 - 2024/09/05 =
 * Tweak - Increase PHP version requirement to 5.6 or later

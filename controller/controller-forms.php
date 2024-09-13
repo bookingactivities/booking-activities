@@ -735,7 +735,7 @@ add_action( 'wp_ajax_nopriv_bookactiForgottenPassword', 'bookacti_controller_for
 /**
  * AJAX Controller - Check if login form is correct and then register / log the user in
  * @since 1.8.0
- * @version 1.14.0
+ * @version 1.16.17
  */
 function bookacti_controller_validate_login_form() {
 	$return_array = array(
@@ -752,7 +752,7 @@ function bookacti_controller_validate_login_form() {
 	// Check if the user is already logged in
 	if( is_user_logged_in() ) {
 		$return_array[ 'error' ] = 'already_logged_in';
-		$return_array[ 'message' ][ 'already_logged_in' ] = esc_html__( 'You are already logged in.', 'booking-activities' ) . ' ' . esc_html__( 'Please reload the page and try again.', 'booking-activities' );
+		$return_array[ 'messages' ][ 'already_logged_in' ] = esc_html__( 'You are already logged in.', 'booking-activities' ) . ' ' . esc_html__( 'Please reload the page and try again.', 'booking-activities' );
 		$return_array[ 'message' ] = implode( '</li><li>', $return_array[ 'messages' ] );
 		bookacti_send_json( $return_array, 'submit_login_form' );
 	}
