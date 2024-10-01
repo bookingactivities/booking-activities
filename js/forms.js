@@ -159,7 +159,7 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Change picked events list, set min and max quantity, and refresh total price field - on booking form quantity change
-	 * @version 1.15.18
+	 * @version 1.16.18
 	 */
 	$j( 'body' ).on( 'keyup mouseup change', '.bookacti-booking-form input.bookacti-quantity, .bookacti-form-fields input.bookacti-quantity', function() {
 		var qty_input = $j( this );
@@ -174,7 +174,7 @@ $j( document ).ready( function() {
 		bookacti_quantity_change_monitor = setTimeout( function() {
 			var booking_system = form.find( '.bookacti-booking-system' );
 			if( booking_system.length ) {
-				bookacti_set_min_and_max_quantity( booking_system );
+				bookacti_set_min_and_max_quantity( booking_system, false );
 				bookacti_fill_picked_events_list( booking_system );
 			}
 			

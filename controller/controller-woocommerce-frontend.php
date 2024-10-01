@@ -1368,6 +1368,39 @@ add_action( 'woocommerce_cart_item_restored', 'bookacti_restore_bookings_of_remo
 
 
 /**
+ * Helper to change the cart items' price
+ * @since 1.16.18
+ * @global boolean $bookacti_wc_calculate_totals
+ * @param WC_Cart $cart
+ */
+function bookacti_wc_update_cart_items_price( $cart ) {
+	if( ! has_filter( 'bookacti_wc_cart_item_price' ) ) { return; }
+	
+	// Make sure not to run this function twice
+	global $bookacti_wc_calculate_totals;
+	if( ! empty( $bookacti_wc_calculate_totals ) ) { return; }
+	$bookacti_wc_calculate_totals = true;
+	
+	$cart_items_bookings = bookacti_wc_get_cart_items_bookings( $cart->cart_contents );
+	
+	foreach( $cart->cart_contents as $cart_item_key => $cart_item ) {
+		if( empty( $cart_items_bookings[ $cart_item_key ] ) ) { continue; }
+		
+		$_product        = apply_filters( 'woocommerce_cart_item_product', $cart_item[ 'data' ], $cart_item, $cart_item_key );
+		$cart_item_price = apply_filters( 'bookacti_wc_cart_item_price', false, $cart_item, $cart_items_bookings[ $cart_item_key ], $_product, $cart_item_key );
+		
+		if( $cart_item_price === false ) { continue; }
+		
+		if( wc_format_decimal( $cart_item_price ) !== wc_format_decimal( $_product->get_price() ) )  {
+			$_product->set_price( $cart_item_price );
+			$_product->save();
+		}
+	}
+}
+add_action( 'woocommerce_before_calculate_totals', 'bookacti_wc_update_cart_items_price', 100, 1 );
+
+
+/**
  * Display WC notices after failing to restore a cart item (on cart page up to 10 seconds after the error occured)
  * @since 1.15.11
  */
@@ -1653,7 +1686,7 @@ add_filter( 'woocommerce_cart_item_subtotal', 'bookacti_wc_cart_item_displayed_s
 /**
  * Check bookings availability before validating checkout in case that "in_cart" state is not active
  * @since 1.3.0
- * @version 1.16.0
+ * @version 1.16.18
  * @global WooCommerce $woocommerce
  * @param array $posted_data An array of posted data.
  * @param WP_Error $errors
@@ -1692,9 +1725,10 @@ function bookacti_availability_check_before_checkout( $posted_data, $errors = nu
 	
 	// Prevent checkout if a booking has been removed from cart
 	if( $nb_deleted_cart_item ) {
-		$expired_message = sprintf( esc_html( _n(	'%d product has expired and has been automatically removed from cart.', 
-													'%d products have expired and have been automatically removed from cart.', 
-													$nb_deleted_cart_item, 'booking-activities' ) ), $nb_deleted_cart_item );
+		$expired_message = sprintf( esc_html( _n( 
+			'%d product has expired and has been automatically removed from cart.', 
+			'%d products have expired and have been automatically removed from cart.', 
+			$nb_deleted_cart_item, 'booking-activities' ) ), $nb_deleted_cart_item );
 		$errors->add( 'expired_booking', $expired_message );
 	}
 }
