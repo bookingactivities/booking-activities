@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Get array of woocommerce products and product variations titles ordered by ids
  * @since 1.7.10
- * @version 1.12.4
+ * @version 1.16.18
  * @global wpdb $wpdb
  * @param string $product_search
  * @return array
@@ -35,7 +35,7 @@ function bookacti_get_products_titles( $search = '' ) {
 		}
 	}
 	
-	$query	= 'SELECT DISTINCT P.ID as id, P.post_title as title, P.post_excerpt as variations_title, P.post_type, T.name as product_type, P.post_parent as parent FROM ' . $wpdb->posts . ' as P '
+	$query	= 'SELECT DISTINCT P.ID as id, P.post_title as title, P.post_excerpt as variations_title, P.post_type, T.slug as product_type, P.post_parent as parent FROM ' . $wpdb->posts . ' as P '
 			. ' LEFT JOIN ' . $wpdb->term_relationships . ' as TR ON TR.object_id = P.ID '
 			. ' LEFT JOIN ' . $wpdb->term_taxonomy . ' as TT ON TT.term_taxonomy_id = TR.term_taxonomy_id AND TT.taxonomy = "product_type" '
 			. ' LEFT JOIN ' . $wpdb->terms . ' as T ON T.term_id = TT.term_id '
@@ -77,7 +77,7 @@ function bookacti_get_products_titles( $search = '' ) {
 		
 		// Remove variations if their parent variable product doesn't exist
 		foreach( $products_array as $product_id => $product ) {
-			if( ! isset( $product[ 'type' ] ) || ! isset( $product[ 'type' ] ) ) { unset( $products_array[ $product_id ] ); }
+			if( ! isset( $product[ 'type' ] ) ) { unset( $products_array[ $product_id ] ); }
 		}
 	}
 	

@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 4.1
 Tested up to: 6.6
 Requires PHP: 5.6
-Stable tag: 1.16.17
+Stable tag: 1.16.18
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -321,6 +321,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.16.18 - 2024/10/01 =
+* Tweak - Do not automatically change the quantity value according to min and max after the customer manually changed it
+* Dev - Add the bookacti_wc_cart_item_price hook to change a cart item price having a booking
+* Dev - Improve product selectbox compatibility with different variable product types
 
 = 1.16.17 - 2024/09/13 =
 * Fix - PHP error when a logged in user tries to validate the log in form

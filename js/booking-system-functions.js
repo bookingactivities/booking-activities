@@ -1130,10 +1130,12 @@ function bookacti_get_min_and_max_quantity( booking_system ) {
 
 /**
  * Set min and max quantity on the quantity field
- * @version 1.12.4
+ * @version 1.16.18
  * @param {HTMLElement} booking_system
+ * @param {Boolean} change_val
  */
-function bookacti_set_min_and_max_quantity( booking_system ) {
+function bookacti_set_min_and_max_quantity( booking_system, change_val ) {
+	change_val = typeof change_val === 'undefined' ? 1 : parseInt( change_val );
 	var qty_data = bookacti_get_min_and_max_quantity( booking_system );
 	var form = booking_system.closest( 'form' ).length ? booking_system.closest( 'form' ) : booking_system.closest( '.bookacti-form-fields' );
 	qty_data.field = form.find( 'input[name="quantity"]' );
@@ -1147,7 +1149,7 @@ function bookacti_set_min_and_max_quantity( booking_system ) {
 	
 	// Limit the max quantity
 	if( old_quantity > qty_data.max ) {
-		qty_data.value = qty_data.max;
+		if( change_val ) { qty_data.value = qty_data.max; }
 	}
 	
 	// Force a min quantity
@@ -1155,7 +1157,7 @@ function bookacti_set_min_and_max_quantity( booking_system ) {
 		// If min required bookings is higher than available places, 
 		// keep the higher amount to feedback that there are not enough places
 		if( qty_data.min > qty_data.avail ) { qty_data.max = qty_data.min; }
-		qty_data.value = qty_data.min;
+		if( change_val ) { qty_data.value = qty_data.min; }
 	}
 	
 	// Reset quantity field min and max attributes
@@ -1168,7 +1170,9 @@ function bookacti_set_min_and_max_quantity( booking_system ) {
 	// Set min, max and value attributes
 	qty_data.field.attr( 'max', qty_data.max );
 	qty_data.field.attr( 'min', qty_data.min );
-	qty_data.field.val( qty_data.value );
+	if( change_val ) {
+		qty_data.field.val( qty_data.value );
+	}
 	
 	if( old_quantity !== parseInt( qty_data.value ) ) {
 		qty_data.field.trigger( 'bookacti_quantity_updated', [ old_quantity, qty_data ] );
