@@ -1556,7 +1556,7 @@ function bookacti_get_bookings_number_for_a_single_grouped_event( booking_system
 
 /**
  * Get a div with event available places
- * @version 1.16.16
+ * @version 1.16.20
  * @param {HTMLElement} booking_system
  * @param {(FullCalendar.EventApi|Object)} event
  * @returns {String}
@@ -1599,15 +1599,17 @@ function bookacti_get_event_availability_div( booking_system, event ) {
 		var is_available = bookacti_is_event_available( booking_system, event );
 		if( ! is_available && available_places > 0 ) { 
 			availability_classes += ' bookacti-not-bookable';
-			if( bookacti_localized.not_bookable ) {
-				available_places = '';
-				unit_name        = '';
-				avail            = bookacti_localized.not_bookable;
-			} else {
-				available_places = 0;
-				unit_name        = bookacti.booking_system[ booking_system_id ][ 'activities_data' ]?.[ activity_id ]?.[ 'settings' ]?.[ 'unit_name_plural' ];
-				avail            = bookacti_localized.avails;
-				if( ! unit_name || ! show_unit_name ) { unit_name = ''; }
+			if( bookacti_localized.not_bookable !== '{current}' ) {
+				if( bookacti_localized.not_bookable ) {
+					available_places = '';
+					unit_name        = '';
+					avail            = bookacti_localized.not_bookable;
+				} else {
+					available_places = 0;
+					unit_name        = bookacti.booking_system[ booking_system_id ][ 'activities_data' ]?.[ activity_id ]?.[ 'settings' ]?.[ 'unit_name_plural' ];
+					avail            = bookacti_localized.avails;
+					if( ! unit_name || ! show_unit_name ) { unit_name = ''; }
+				}
 			}
 		}
 	}

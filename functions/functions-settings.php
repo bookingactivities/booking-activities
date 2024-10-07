@@ -929,7 +929,7 @@ function bookacti_settings_section_messages_callback() {
 /**
  * Get all default messages
  * @since 1.2.0
- * @version 1.16.9
+ * @version 1.16.20
  */
 function bookacti_get_default_messages() {
 	$wp_date_format_link = '<a href="https://wordpress.org/support/article/formatting-date-and-time/" target="_blank" >' .  esc_html__( 'Formatting Date and Time', 'booking-activities' ) . '</a>';
@@ -995,7 +995,7 @@ function bookacti_get_default_messages() {
 		),
 		'not_bookable' => array(
 			'value'			=> esc_html_x( 'unavail.', 'Short for unavailable', 'booking-activities' ),
-			'description'	=> esc_html__( 'Message displayed on events that are not bookable even though they are not full.', 'booking-activities' )
+			'description'	=> esc_html__( 'Message displayed on events that are not bookable even though they are not full. Set it to "{current}" to display the current availability.', 'booking-activities' )
 		),
 		'booking_success' => array(
 			'value'			=> esc_html__( 'Your reservation has been processed!', 'booking-activities' ),

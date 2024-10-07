@@ -2,7 +2,7 @@
 
 /**
  * Choose a group of events dialog
- * @version 1.16.9
+ * @version 1.16.20
  * @param {HTMLElement} booking_system
  * @param {Object} groups
  * @param {(FullCalendar.EventApi|Object)} event
@@ -101,9 +101,9 @@ function bookacti_dialog_choose_group_of_events( booking_system, groups, event )
 			var booking_html = bookings === 1 ? bookacti_localized.booking : bookacti_localized.bookings;
 			avail_html = bookings + ' ' + booking_html;
 		} else {
-			var avail_nb = ! is_available && availability > 0 ? 0 : availability;
+			var avail_nb = ! is_available && availability > 0 && bookacti_localized.not_bookable !== '{current}' ? 0 : availability;
 			var avail    = avail_nb === 1 ? bookacti_localized.avail : bookacti_localized.avails;
-			avail_html   = ! is_available && availability > 0 && bookacti_localized.not_bookable ? bookacti_localized.not_bookable : avail_nb + ' ' + avail;
+			avail_html   = ! is_available && availability > 0 && bookacti_localized.not_bookable && bookacti_localized.not_bookable !== '{current}' ? bookacti_localized.not_bookable : avail_nb + ' ' + avail;
 		}
 		
 		var single_label = {
@@ -236,9 +236,9 @@ function bookacti_dialog_choose_group_of_events( booking_system, groups, event )
 				var booking_html = group_bookings === 1 ? bookacti_localized.booking : bookacti_localized.bookings;
 				avail_html = group_bookings + ' ' + booking_html;
 			} else {
-				var avail_nb = ! is_available && availability > 0 ? 0 : availability;
+				var avail_nb = ! is_available && group_availability > 0 && bookacti_localized.not_bookable !== '{current}' ? 0 : group_availability;
 				var avail    = avail_nb === 1 ? bookacti_localized.avail : bookacti_localized.avails;
-				avail_html = ! is_available && group_availability > 0 && bookacti_localized.not_bookable ? bookacti_localized.not_bookable : avail_nb + ' ' + avail;
+				avail_html   = ! is_available && group_availability > 0 && bookacti_localized.not_bookable && bookacti_localized.not_bookable !== '{current}' ? bookacti_localized.not_bookable : avail_nb + ' ' + avail;
 			}
 
 			var group_label = {
