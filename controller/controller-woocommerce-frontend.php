@@ -1580,14 +1580,13 @@ add_filter( 'woocommerce_cart_item_name', 'bookacti_add_timeout_to_cart_item_in_
 
 /**
  * Cart item price display
- * @since 1.15.15
- * @version 1.16.0
+ * @since 1.16.20 (was bookacti_wc_cart_item_price)
  * @param string $default_unit_price
  * @param array $cart_item
  * @param string $cart_item_key
  * @return string
  */
-function bookacti_wc_cart_item_price( $default_unit_price, $cart_item, $cart_item_key ) { 
+function bookacti_wc_cart_item_price_html( $default_unit_price, $cart_item, $cart_item_key ) { 
 	$cart_item_bookings = bookacti_wc_get_cart_item_bookings( $cart_item_key );
 	if( ! $cart_item_bookings ) { return $default_unit_price; }
 	
@@ -1626,7 +1625,7 @@ function bookacti_wc_cart_item_price( $default_unit_price, $cart_item, $cart_ite
 	
 	return ob_get_clean();
 }
-add_filter( 'woocommerce_cart_item_price', 'bookacti_wc_cart_item_price', 100, 3 );
+add_filter( 'woocommerce_cart_item_price', 'bookacti_wc_cart_item_price_html', 100, 3 );
 
 
 /**

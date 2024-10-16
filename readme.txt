@@ -322,8 +322,8 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.16.20 - 2024/10/01 =
-* Tweak - Display the grayed out number of places (like before 1.16.9) if "unavail." text is empty in Settings > Messages tab.
+= 1.16.20 - 2024/10/16 =
+* Tweak - Display the grayed out number of places (like before 1.16.9) if "unavail." text is set to "{current}" in Settings > Messages tab.
 
 = 1.16.19 - 2024/10/01 =
 * Dev - Bump version to refresh WP repository

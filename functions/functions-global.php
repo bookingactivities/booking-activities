@@ -2381,7 +2381,7 @@ function bookacti_maybe_decode_json( $string, $assoc = false ) {
 /**
  * Sanitize the values of an array
  * @since 1.5.0
- * @version 1.16.9
+ * @version 1.16.20
  * @param array $default_data
  * @param array $raw_data
  * @param array $keys_by_type
@@ -2390,7 +2390,7 @@ function bookacti_maybe_decode_json( $string, $assoc = false ) {
  */
 function bookacti_sanitize_values( $default_data, $raw_data, $keys_by_type, $sanitized_data = array() ) {
 	// Sanitize the keys-by-type array
-	$allowed_types = array( 'int', 'absint', 'float', 'absfloat', 'numeric', 'bool', 'str', 'str_id', 'str_html', 'color', 'array', 'array_ids', 'datetime', 'date' );
+	$allowed_types = array( 'int', 'absint', 'float', 'absfloat', 'numeric', 'bool', 'str', 'str_id', 'str_html', 'color', 'array', 'array_ids', 'array_str_ids', 'datetime', 'date' );
 	foreach( $allowed_types as $allowed_type ) {
 		if( ! isset( $keys_by_type[ $allowed_type ] ) ) { $keys_by_type[ $allowed_type ] = array(); }
 	}
@@ -2426,12 +2426,12 @@ function bookacti_sanitize_values( $default_data, $raw_data, $keys_by_type, $san
 
 		// Sanitize floats
 		if( in_array( $key, $keys_by_type[ 'float' ], true ) ) { 
-			$sanitized_data[ $key ] = is_numeric( $raw_data[ $key ] ) ? foatval( $raw_data[ $key ] ) : $default_value;
+			$sanitized_data[ $key ] = is_numeric( $raw_data[ $key ] ) ? floatval( $raw_data[ $key ] ) : $default_value;
 		}
 
 		// Sanitize absolute floats
 		if( in_array( $key, $keys_by_type[ 'absfloat' ], true ) ) { 
-			$sanitized_data[ $key ] = is_numeric( $raw_data[ $key ] ) ? abs( foatval( $raw_data[ $key ] ) ) : $default_value;
+			$sanitized_data[ $key ] = is_numeric( $raw_data[ $key ] ) ? abs( floatval( $raw_data[ $key ] ) ) : $default_value;
 		}
 
 		// Sanitize numeric
@@ -2467,6 +2467,11 @@ function bookacti_sanitize_values( $default_data, $raw_data, $keys_by_type, $san
 		// Sanitize array of ids
 		else if( in_array( $key, $keys_by_type[ 'array_ids' ], true ) ) { 
 			$sanitized_data[ $key ] = is_numeric( $raw_data[ $key ] ) || is_array( $raw_data[ $key ] ) ? array_values( bookacti_ids_to_array( $raw_data[ $key ] ) ) : $default_value;
+		}
+
+		// Sanitize array of str ids
+		else if( in_array( $key, $keys_by_type[ 'array_str_ids' ], true ) ) { 
+			$sanitized_data[ $key ] = is_string( $raw_data[ $key ] ) || is_array( $raw_data[ $key ] ) ? array_values( bookacti_str_ids_to_array( $raw_data[ $key ] ) ) : $default_value;
 		}
 
 		// Sanitize boolean
