@@ -252,6 +252,28 @@ function bookacti_update_form( $form_id, $title = '', $user_id = -1, $creation_d
 
 
 /**
+ * Update forms' author id
+ * @since 1.16.21
+ * @global wpdb $wpdb
+ * @param int $old_user_id
+ * @param int $new_user_id
+ * @return int|false
+ */
+function bookacti_update_forms_user_id( $old_user_id, $new_user_id ) {
+	global $wpdb;
+	
+	$query = 'UPDATE ' . BOOKACTI_TABLE_FORMS
+	       . ' SET user_id = %d '
+	       . ' WHERE user_id = %d ';
+	
+	$query   = $wpdb->prepare( $query, $new_user_id, $old_user_id );
+	$updated = $wpdb->query( $query );
+	
+	return $updated;
+}
+
+
+/**
  * Activate a form
  * @since 1.5.0
  * @global wpdb $wpdb

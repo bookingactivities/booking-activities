@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 4.1
 Tested up to: 6.6
 Requires PHP: 5.6
-Stable tag: 1.16.20
+Stable tag: 1.16.21
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -321,6 +321,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.16.21 - 2024/10/18 =
+* Tweak - Reassign the bookings' owner and booking forms' author to the selected user when a user is deleted
+* Fix - Block Cart item total may be incorrect when changing quantity if price was set dynamically with add-ons
 
 = 1.16.20 - 2024/10/16 =
 * Tweak - Display the grayed out number of places (like before 1.16.9) if "unavail." text is set to "{current}" in Settings > Messages tab.

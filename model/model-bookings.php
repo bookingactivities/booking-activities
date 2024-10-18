@@ -2994,6 +2994,28 @@ function bookacti_update_export( $export_id, $raw_args = array() ) {
 
 
 /**
+ * Update exports' user ID
+ * @since 1.16.21
+ * @global wpdb $wpdb
+ * @param int $old_user_id
+ * @param int $new_user_id
+ * @return int|false
+ */
+function bookacti_update_exports_user_id( $old_user_id, $new_user_id ) {
+	global $wpdb;
+	
+	$query = 'UPDATE ' . BOOKACTI_TABLE_EXPORTS
+	       . ' SET user_id = %d '
+	       . ' WHERE user_id = %d ';
+	
+	$query   = $wpdb->prepare( $query, $new_user_id, $old_user_id );
+	$updated = $wpdb->query( $query );
+	
+	return $updated;
+}
+
+
+/**
  * Delete expired exports
  * @since 1.8.0
  * @global wpdb $wpdb
