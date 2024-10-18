@@ -115,6 +115,7 @@ add_action( 'init', 'bookacti_wc_store_api_register_endpoint_cart_item' );
  * If quantity changes in cart via Strore API, temporarily book the extra quantity if possible
  * TEMP FIX - Waiting for a quantity validation filter (https://github.com/woocommerce/woocommerce/pull/45489)
  * @since 1.16.0
+ * @version 1.16.21
  * @param mixed $result
  * @param WP_REST_Server $server
  * @param WP_REST_Request $request
@@ -127,9 +128,18 @@ function bookacti_wc_store_api_update_cart_item_quantity( $result, $server, $req
 	$desired_quantity = intval( $request->get_param( 'quantity' ) );
 	if( ! $cart_item_key || ! $desired_quantity ) { return $result; }
 	
+	// Do not calculate total now, it will be calculated on woocommerce_stock_amount_cart_item
+	$removed_hook = remove_action( 'woocommerce_before_calculate_totals', 'bookacti_wc_update_cart_items_price', 100 );
+	
+	// Load WooCommerce cart from a WP_REST_Request
 	$cart = bookacti_wc_load_cart_from_rest_request( $request );
-	if( ! $cart ) { return $result; }
-	$item = $cart->get_cart_item( $cart_item_key );
+	
+	// Add back the hook we removed earlier
+	if( $removed_hook ) {
+		add_action( 'woocommerce_before_calculate_totals', 'bookacti_wc_update_cart_items_price', 100, 1 );
+	}
+	
+	$item = $cart ? $cart->get_cart_item( $cart_item_key ) : false;
 	if( ! $item ) { return $result; }
 	
 	// Trigger woocommerce_stock_amount_cart_item like in the normal process to update cart quantity 

@@ -597,6 +597,31 @@ function bookacti_add_user_contact_methods( $methods, $user ) {
 add_filter( 'user_contactmethods', 'bookacti_add_user_contact_methods', 100, 2 );
 
 
+/**
+ * Update bookings' owner, forms' author, and any user_id when the user is deleted
+ * @since 1.16.21
+ * @param int $user_id
+ * @param int $reassign_user_id
+ * @param WP_User $user
+ */
+function bookacti_controller_deleted_user_update_objects( $user_id, $reassign_user_id, $user ) {
+	// Reassign deleted user bookings to the selected user, or to the user email
+	$reassign_user_id    = intval( $reassign_user_id );
+	$new_booking_user_id = $reassign_user_id ? $reassign_user_id : $user->user_email;
+	if( $new_booking_user_id ) {
+		bookacti_update_bookings_user_id( $new_booking_user_id, $user_id );
+	}
+	
+	// Replace old user ID with the new one
+	if( $reassign_user_id ) {
+		bookacti_update_managers_user_id( $user_id, $reassign_user_id );
+		bookacti_update_forms_user_id( $user_id, $reassign_user_id );
+		bookacti_update_exports_user_id( $user_id, $reassign_user_id );
+	}
+}
+add_action( 'delete_user', 'bookacti_controller_deleted_user_update_objects', 10, 3 );
+
+
 
 
 // CUSTOM LINKS
