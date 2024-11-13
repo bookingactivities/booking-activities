@@ -112,7 +112,7 @@ add_action( 'init', 'bookacti_wc_store_api_register_endpoint_cart_item' );
 
 
 /**
- * If quantity changes in cart via Strore API, temporarily book the extra quantity if possible
+ * If quantity changes in cart via Store API, temporarily book the extra quantity if possible
  * TEMP FIX - Waiting for a quantity validation filter (https://github.com/woocommerce/woocommerce/pull/45489)
  * @since 1.16.0
  * @version 1.16.21

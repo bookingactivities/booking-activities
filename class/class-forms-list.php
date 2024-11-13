@@ -11,7 +11,7 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 	/**
 	 * Forms WP_List_Table
 	 * @since 1.5.0
-	 * @version 1.16.17
+	 * @version 1.16.22
 	 */
 	class Forms_List_Table extends WP_List_Table {
 		
@@ -137,21 +137,24 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 		
 		
 		/**
-		 * Get the screen property
-		 * @access public
-		 * @return WP_Screen
+		 * Get the number of rows to display per page
+		 * @since 1.16.22
+		 * @return int
 		 */
-		private function get_wp_screen() {
-		   if( empty( $this->screen ) ) {
-			  $this->screen = get_current_screen();
-		   }
-		   return $this->screen;
+		public function get_rows_number_per_page() {
+			$screen_option  = $this->screen ? $this->screen->get_option( 'per_page', 'option' ) : '';
+			$screen_default = $this->screen ? $this->screen->get_option( 'per_page', 'default' ) : 0;
+			$option_name    = $screen_option ? $screen_option : 'bookacti_forms_per_page';
+			$option_default = $screen_default && intval( $screen_default ) > 0 ? intval( $screen_default ) : 20;
+			$per_page       = $option_name ? $this->get_items_per_page( $option_name, $option_default ) : $option_default;
+			
+			return $per_page;
 		}
 		
 		
 		/**
 		 * Prepare the items to be displayed in the list
-		 * @version 1.16.0
+		 * @version 1.16.22
 		 * @access public
 		 * @param array $filters
 		 * @param boolean $no_pagination
@@ -164,12 +167,7 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 			
 			if( ! $no_pagination ) {
 				// Get the number of forms to display per page
-				$screen        = $this->get_wp_screen();
-				$screen_option = $screen->get_option( 'per_page', 'option' );
-				$per_page      = intval( get_user_meta( get_current_user_id(), $screen_option, true ) );
-				if( empty ( $per_page ) || $per_page < 1 ) {
-					$per_page = $screen->get_option( 'per_page', 'default' );
-				}
+				$per_page = $this->get_rows_number_per_page();
 
 				// Set pagination
 				$this->set_pagination_args( array(
