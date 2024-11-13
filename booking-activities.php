@@ -3,13 +3,15 @@
  * Plugin Name: Booking Activities
  * Plugin URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Description: Booking system specialized in activities (sports, cultural, leisure, events...). Works great with WooCommerce.
- * Version: 1.16.21
+ * Version: 1.16.22
  * Author: Booking Activities Team
  * Author URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Text Domain: booking-activities
  * Domain Path: /languages/
+ * Requires at least: 4.1
+ * Requires PHP: 5.6
  * WC requires at least: 3.0
- * WC tested up to: 9.3
+ * WC tested up to: 9.4
  * License: GPL3
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  * 
@@ -40,12 +42,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 // GLOBALS AND CONSTANTS
-if( ! defined( 'BOOKACTI_VERSION' ) )     { define( 'BOOKACTI_VERSION', '1.16.21' ); }
+if( ! defined( 'BOOKACTI_VERSION' ) )     { define( 'BOOKACTI_VERSION', '1.16.22' ); }
 if( ! defined( 'BOOKACTI_PLUGIN_NAME' ) ) { define( 'BOOKACTI_PLUGIN_NAME', 'booking-activities' ); }
 if( ! defined( 'BOOKACTI_PATH' ) )        { define( 'BOOKACTI_PATH', __DIR__ ); }
 
-// HEADER STRINGS (For translation)
-esc_html__( 'Booking system specialized in activities (sports, cultural, leisure, events...). Works great with WooCommerce.', 'booking-activities' );
+
 
 
 // INCLUDE LANGUAGES FILES
@@ -55,7 +56,7 @@ esc_html__( 'Booking system specialized in activities (sports, cultural, leisure
  * @version 1.8.0
  * @param string $locale
  */
-function bookacti_load_textdomain( $locale = '' ) { 
+function bookacti_load_textdomain( $locale = '' ) {
 	if( ! $locale ) {
 		$locale = function_exists( 'determine_locale' ) ? determine_locale() : ( is_admin() && function_exists( 'get_user_locale' ) ? get_user_locale() : get_locale() );
 		$locale = apply_filters( 'plugin_locale', $locale, 'booking-activities' );

@@ -10,7 +10,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 	
 	/**
 	 * Bookings WP_List_Table
-	 * @version 1.16.17
+	 * @version 1.16.22
 	 */
 	class Bookings_List_Table extends WP_List_Table {
 		
@@ -682,18 +682,16 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		/**
 		 * Get the number of rows to display per page
 		 * @since 1.6.0
-		 * @version 1.8.0
+		 * @version 1.16.22
 		 * @return int
 		 */
 		public function get_rows_number_per_page() {
-			$screen_option_name = $this->screen->get_option( 'per_page', 'option' );
-			if( ! $screen_option_name ) { $screen_option_name = 'bookacti_bookings_per_page'; }
+			$screen_option  = $this->screen ? $this->screen->get_option( 'per_page', 'option' ) : '';
+			$screen_default = $this->screen ? $this->screen->get_option( 'per_page', 'default' ) : 0;
+			$option_name    = $screen_option ? $screen_option : 'bookacti_bookings_per_page';
+			$option_default = $screen_default && intval( $screen_default ) > 0 ? intval( $screen_default ) : 20;
+			$per_page       = $option_name ? $this->get_items_per_page( $option_name, $option_default ) : $option_default;
 			
-			$per_page = intval( get_user_meta( get_current_user_id(), $screen_option_name, true ) );
-			if( ! $per_page || $per_page < 1 ) {
-				$per_page_default = $this->screen->get_option( 'per_page', 'default' );
-				$per_page = $per_page_default ? $per_page_default : 10;
-			}
 			return $per_page;
 		}
 		
