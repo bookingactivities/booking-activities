@@ -3,6 +3,48 @@
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
+ * Load or reload Booking Activities language files
+ * @version 1.8.0
+ * @param string $locale
+ */
+function bookacti_load_textdomain( $locale = '' ) {
+	if( ! $locale ) {
+		$locale = function_exists( 'determine_locale' ) ? determine_locale() : ( is_admin() && function_exists( 'get_user_locale' ) ? get_user_locale() : get_locale() );
+		$locale = apply_filters( 'plugin_locale', $locale, 'booking-activities' );
+	}
+	
+	unload_textdomain( 'booking-activities' );
+	// Load .mo from wp-content/languages/booking-activities/
+	load_textdomain( 'booking-activities', WP_LANG_DIR . '/booking-activities/booking-activities-' . $locale . '.mo' );
+	// Load .mo from wp-content/languages/plugins/
+	// Fallback on .mo from wp-content/plugins/booking-activities/languages
+	load_plugin_textdomain( 'booking-activities', false, plugin_basename( dirname( __FILE__ ) ) . '/languages/' ); 
+}
+add_action( 'init', 'bookacti_load_textdomain', 5 );
+
+
+// Backward compatibility
+if( version_compare( get_bloginfo( 'version' ), '6.7', '<' ) ) {
+	add_action( 'bookacti_locale_switched', 'bookacti_load_textdomain', 10, 1 );
+	add_action( 'bookacti_locale_restored', 'bookacti_load_textdomain', 10, 1 );
+	
+	add_filter( 'bookacti_switch_locale_callback', function( $callback ) {
+		$translation_plugin = bookacti_get_translation_plugin();
+		if( $translation_plugin === 'wpml' )            { $callback = 'bookacti_wpml_switch_locale'; }
+		else if( $translation_plugin === 'qtranslate' ) { $callback = 'bookacti_qtranxf_switch_locale'; }
+		return $callback;
+	} );
+	
+	add_filter( 'bookacti_restore_locale_callback', function( $callback ) {
+		$translation_plugin = bookacti_get_translation_plugin();
+		if( $translation_plugin === 'wpml' )            { $callback = 'bookacti_wpml_restore_locale'; }
+		else if( $translation_plugin === 'qtranslate' ) { $callback = 'bookacti_qtranxf_restore_locale'; }
+		return $callback;
+	} );
+}
+
+
+/**
  * Define translation plugin
  * @since 1.14.0
  * @version 1.16.10
@@ -305,71 +347,9 @@ function bookacti_wpml_select2_remove_translated_products( $options, $args ) {
 add_filter( 'bookacti_ajax_select2_products_options', 'bookacti_wpml_select2_remove_translated_products', 100, 2 );
 
 
-/**
- * WPML's function for switch_to_locale
- * @since 1.14.0
- * @version 1.16.10
- * @param string $locale
- * @return string
- */
-function bookacti_wpml_switch_locale( $locale ) {
-	$lang_code = strpos( $locale, '_' ) !== false ? substr( $locale, 0, strpos( $locale, '_' ) ) : $locale;
-	do_action( 'wpml_switch_language', $lang_code );
-	return bookacti_get_current_lang_code( true );
-}
-add_filter( 'bookacti_switch_locale_callback', function( $callback ) { return bookacti_get_translation_plugin() === 'wpml' ? 'bookacti_wpml_switch_locale' : $callback; } );
-
-
-/**
- * WPML's function for restore_previous_locale
- * @since 1.14.0
- * @return string
- */
-function bookacti_wpml_restore_locale() {
-	do_action( 'wpml_switch_language', null );
-	return bookacti_get_current_lang_code( true );
-}
-add_filter( 'bookacti_restore_locale_callback', function( $callback ) { return bookacti_get_translation_plugin() === 'wpml' ? 'bookacti_wpml_restore_locale' : $callback; } );
-
-
 
 
 // QTRANSLATE-XT
-
-/**
- * qTranslate-XT's function for switch_to_locale
- * @since 1.14.0
- * @version 1.14.1
- * @global array $q_config
- * @param string $locale
- * @return string
- */
-function bookacti_qtranxf_switch_locale( $locale ) {
-	global $q_config;
-	switch_to_locale( $locale );
-	$lang_code = substr( $locale, 0, strpos( $locale, '_' ) );
-	$q_config[ 'language' ] = $lang_code;
-	return $locale;
-}
-add_filter( 'bookacti_switch_locale_callback', function( $callback ) { return bookacti_get_translation_plugin() === 'qtranslate' ? 'bookacti_qtranxf_switch_locale' : $callback; } );
-
-
-/**
- * qTranslate-XT's function for restore_previous_locale
- * @since 1.14.1
- * @global array $q_config
- * @return string
- */
-function bookacti_qtranxf_restore_locale() {
-	global $q_config;
-	$locale = restore_previous_locale();
-	if( ! $locale ) { $locale = get_locale(); }
-	$lang_code = substr( $locale, 0, strpos( $locale, '_' ) );
-	$q_config[ 'language' ] = $lang_code;
-	return $locale;
-}
-add_filter( 'bookacti_restore_locale_callback', function( $callback ) { return bookacti_get_translation_plugin() === 'qtranslate' ? 'bookacti_qtranxf_restore_locale' : $callback; } );
-
 
 /**
  * TEMP FIX - Do not translate cron option, as it may prevent cron jobs from being deleted

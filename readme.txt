@@ -3,7 +3,7 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
 Tested up to: 6.7
-Stable tag: 1.16.22
+Stable tag: 1.16.23
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -319,6 +319,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.16.23 - 2024/11/14 =
+* Fix - Some texts may not be translated after switching / restoring language with WPML, Polylang or qTranslate-XT with Wordpress 6.7
 
 = 1.16.22 - 2024/11/13 =
 * Fix - Row number per page may be incorrect in List Tables
