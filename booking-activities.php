@@ -3,7 +3,7 @@
  * Plugin Name: Booking Activities
  * Plugin URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Description: Booking system specialized in activities (sports, cultural, leisure, events...). Works great with WooCommerce.
- * Version: 1.16.22
+ * Version: 1.16.23
  * Author: Booking Activities Team
  * Author URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Text Domain: booking-activities
@@ -42,38 +42,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 // GLOBALS AND CONSTANTS
-if( ! defined( 'BOOKACTI_VERSION' ) )     { define( 'BOOKACTI_VERSION', '1.16.22' ); }
+if( ! defined( 'BOOKACTI_VERSION' ) )     { define( 'BOOKACTI_VERSION', '1.16.23' ); }
 if( ! defined( 'BOOKACTI_PLUGIN_NAME' ) ) { define( 'BOOKACTI_PLUGIN_NAME', 'booking-activities' ); }
 if( ! defined( 'BOOKACTI_PATH' ) )        { define( 'BOOKACTI_PATH', __DIR__ ); }
-
-
-
-
-// INCLUDE LANGUAGES FILES
-
-/**
- * Load or reload Booking Activities language files
- * @version 1.8.0
- * @param string $locale
- */
-function bookacti_load_textdomain( $locale = '' ) {
-	if( ! $locale ) {
-		$locale = function_exists( 'determine_locale' ) ? determine_locale() : ( is_admin() && function_exists( 'get_user_locale' ) ? get_user_locale() : get_locale() );
-		$locale = apply_filters( 'plugin_locale', $locale, 'booking-activities' );
-	}
-	
-	unload_textdomain( 'booking-activities' );
-	// Load .mo from wp-content/languages/booking-activities/
-	load_textdomain( 'booking-activities', WP_LANG_DIR . '/booking-activities/booking-activities-' . $locale . '.mo' );
-	// Load .mo from wp-content/languages/plugins/
-	// Fallback on .mo from wp-content/plugins/booking-activities/languages
-	load_plugin_textdomain( 'booking-activities', false, plugin_basename( dirname( __FILE__ ) ) . '/languages/' ); 
-}
-add_action( 'init', 'bookacti_load_textdomain', 5 );
-add_action( 'bookacti_locale_switched', 'bookacti_load_textdomain', 10, 1 );
-add_action( 'bookacti_locale_restored', 'bookacti_load_textdomain', 10, 1 );
-
-
 
 
 // INCLUDE PHP FUNCTIONS

@@ -322,6 +322,53 @@ function bookacti_settings_wpml_register_translatable_texts_callback() {
 }
 
 
+/**
+ * WPML's function for switch_to_locale
+ * @since 1.14.0
+ * @version 1.16.23
+ * @global array $bookacti_wpml_stack
+ * @param string $locale
+ * @return string
+ */
+function bookacti_wpml_switch_locale( $locale ) {
+	global $bookacti_wpml_stack;
+	if( ! $bookacti_wpml_stack ) { $bookacti_wpml_stack = array(); }
+	
+	$old_locale = bookacti_get_current_lang_code( true );
+	
+	$lang_code = strpos( $locale, '_' ) !== false ? substr( $locale, 0, strpos( $locale, '_' ) ) : $locale;
+	do_action( 'wpml_switch_language', $lang_code );
+	
+	$new_locale = bookacti_get_current_lang_code( true );
+	
+	if( $new_locale !== $old_locale ) {
+		$bookacti_wpml_stack[] = $old_locale;
+	}
+	
+	return $new_locale;
+}
+
+
+/**
+ * WPML's function for restore_previous_locale
+ * @since 1.14.0
+ * @version 1.16.23
+ * @return string
+ */
+function bookacti_wpml_restore_locale() {
+	global $bookacti_wpml_stack;
+	if( ! $bookacti_wpml_stack ) { $bookacti_wpml_stack = array(); }
+	
+	$old_locale = $bookacti_wpml_stack ? array_pop( $bookacti_wpml_stack ) : null;
+	$lang_code  = $old_locale && strpos( (string) $old_locale, '_' ) !== false ? substr( $old_locale, 0, strpos( $old_locale, '_' ) ) : $old_locale;
+	do_action( 'wpml_switch_language', $lang_code );
+	
+	$new_locale = bookacti_get_current_lang_code( true );
+	
+	return $new_locale;
+}
+
+
 
 
 // qTranslate-XT
@@ -341,6 +388,39 @@ function bookacti_translate_text_with_qtranslate( $text, $lang = '', $fallback =
 	$flags = $fallback ? 0 : $qtranslate_show_empty;
 	
 	return apply_filters( 'translate_text', $text, $lang, $flags );
+}
+
+
+/**
+ * qTranslate-XT's function for switch_to_locale
+ * @since 1.14.0
+ * @version 1.14.1
+ * @global array $q_config
+ * @param string $locale
+ * @return string
+ */
+function bookacti_qtranxf_switch_locale( $locale ) {
+	global $q_config;
+	switch_to_locale( $locale );
+	$lang_code = substr( $locale, 0, strpos( $locale, '_' ) );
+	$q_config[ 'language' ] = $lang_code;
+	return $locale;
+}
+
+
+/**
+ * qTranslate-XT's function for restore_previous_locale
+ * @since 1.14.1
+ * @global array $q_config
+ * @return string
+ */
+function bookacti_qtranxf_restore_locale() {
+	global $q_config;
+	$locale = restore_previous_locale();
+	if( ! $locale ) { $locale = get_locale(); }
+	$lang_code = substr( $locale, 0, strpos( $locale, '_' ) );
+	$q_config[ 'language' ] = $lang_code;
+	return $locale;
 }
 
 
