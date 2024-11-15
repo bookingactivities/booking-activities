@@ -181,7 +181,7 @@ add_action( 'woocommerce_system_status_tool_executed', 'bookacti_wc_controller_r
 function bookacti_wc_update_completed_order_bookings( $order_id, $order = null ) {
 	if( ! $order ) { $order = wc_get_order( $order_id ); }
 	
-	// Change state of all bookings of the order from 'pending' to 'booked'
+	// Change status of all bookings of the order from 'pending' to 'booked'
 	$new_data = array(
 		'order_id'           => $order_id,
 		'status'             => 'booked',
@@ -198,6 +198,51 @@ function bookacti_wc_update_completed_order_bookings( $order_id, $order = null )
 	bookacti_cancel_order_remaining_bookings( $order_id );
 }
 add_action( 'woocommerce_order_status_completed', 'bookacti_wc_update_completed_order_bookings', 5, 2 );
+
+
+/**
+ * Update the bookings of an order to "Pending" when it turns "Partially paid" (beta support for some deposit plugins)
+ * @since 1.16.24
+ * @param int $order_id
+ * @param WC_Order $order
+ * @param string $booking_status
+ * @param string $payment_status
+ * @param boolean $force_status_notification
+ */
+function bookacti_wc_update_partially_paid_order_bookings( $order_id, $order = null ) {
+	// Remove custom code given to customers in the past
+	$hook_name = current_action();
+	$priority  = has_action( $hook_name, 'bookacti_wc_update_completed_order_bookings' );
+	if( is_numeric( $priority ) ) {
+		remove_action( $hook_name, 'bookacti_wc_update_completed_order_bookings', $priority );
+	}
+	
+	if( ! $order ) { $order = wc_get_order( $order_id ); }
+	
+	// Get order user ID  or email
+	$customer_id = $order->get_user_id( 'edit' );
+	$user_email  = $order->get_billing_email( 'edit' );
+	$user_id     = is_numeric( $customer_id ) && $customer_id ? intval( $customer_id ) : ( $user_email ? $user_email : apply_filters( 'bookacti_unknown_user_id', 'unknown_user' ) );
+	
+	// Change status of all bookings of the order from 'in_cart' to 'pending'
+	$new_data = apply_filters( 'bookacti_wc_partially_paid_order_bookings_data', array(
+		'order_id'           => $order_id,
+		'user_id'            => $user_id,
+		'status'             => 'pending',
+		'payment_status'     => 'owed',
+		'active'             => 'auto',
+		'is_order_completed' => true // Used for deferring notifications to woocommerce_order_status_changed
+	), $order );
+	
+	bookacti_wc_update_order_items_bookings( $order, $new_data, array( 'in__status' => array( 'in_cart' ) ) );
+	
+	// It is possible that pending bookings remain bound to the order if the user change his mind after he placed the order, but before he paid it.
+	// He then changed his cart, placed a new order, paid it, and only part of the old order is booked (or even nothing), the rest is still 'pending'
+	// Then we just turn 'pending' booking bound to this order to 'cancelled'
+	bookacti_cancel_order_remaining_bookings( $order_id );
+}
+add_action( 'woocommerce_order_status_pending_to_partially-paid', 'bookacti_wc_update_partially_paid_order_bookings', 4, 2 );
+add_action( 'woocommerce_order_status_pending_to_partial-payment', 'bookacti_wc_update_partially_paid_order_bookings', 4, 2 );
 
 
 /**
@@ -317,10 +362,10 @@ function bookacti_wc_payment_complete_order_status( $order_status, $order_id ) {
 	// such as "woocommerce_order_status_pending_to_processing" and "woocommerce_order_status_changed"
 	} else if( $has_activities ) {
 		$new_data = array(
-			'order_id' => $order_id,
-			'status' => 'pending',
+			'order_id'       => $order_id,
+			'status'         => 'pending',
 			'payment_status' => 'owed',
-			'active' => 'auto'
+			'active'         => 'auto'
 		);
 		bookacti_wc_update_order_items_bookings( $order, $new_data, array( 'in__status' => array( 'pending', 'in_cart' ) ) );
 
@@ -331,6 +376,7 @@ function bookacti_wc_payment_complete_order_status( $order_status, $order_id ) {
 	return $order_status;
 }
 add_filter( 'woocommerce_payment_complete_order_status', 'bookacti_wc_payment_complete_order_status', 20, 2 );
+add_filter( 'wc_deposits_order_fully_paid_status', 'bookacti_wc_payment_complete_order_status', 20, 2 );
 
 
 /**

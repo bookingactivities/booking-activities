@@ -320,6 +320,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.16.24 =
+* Feature - Add compatibility with some deposit plugins for WooCommerce (Beta)
+
 = 1.16.23 - 2024/11/14 =
 * Fix - Some texts may not be translated after switching / restoring language with WPML, Polylang or qTranslate-XT with Wordpress 6.7
 
