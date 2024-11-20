@@ -90,13 +90,20 @@
 .bookacti-groups-of-events-list > div       { margin-top: 15px; }
 .bookacti-group-of-events-option label      { display: inline; margin: 0; padding-left: 10px; }
 .rtl .bookacti-group-of-events-option label { padding-left: 0; padding-right: 10px; }
-.bookacti-group-availability                { font-size: 0.8em; font-style: italic; }
+
 .bookacti-group-of-events-option input      { display: inline-block; margin: 0; }
 .bookacti-group-of-events-option input[name="group_of_events"][disabled] + label { opacity: 0.5; }
 .bookacti-group-of-events-list .bookacti-booking-event-duration { font-size: smaller; font-style: italic; }
 .bookacti-group-of-events-list .bookacti-booking-event-title    { font-weight: 600; }
 
-/* Dialog */
+.bookacti-group-availability-container                                 { display: inline-block; vertical-align: middle; }
+.bookacti-group-availability-container .bookacti-available-places      { margin-left: 10px; padding: 4px 6px; line-height: 1.2em; background-color: #000; color: #fff; font-size: 0.85em; border-radius: 3px; }
+.rtl .bookacti-group-availability-container .bookacti-available-places { margin-left: 0; margin-right: 10px; }
+
+
+
+
+/** DIALOGS **/
 .bookacti-dialog .ui-widget-header,
 .bookacti-dialog .bookacti-tabs.ui-widget.ui-widget-content,
 .bookacti-dialog .ui-dialog-buttonpane.ui-widget-content,
@@ -124,9 +131,6 @@
 }
 
 
-/** DIALOGS **/
-
-/** DIALOGS **/
 .bookacti-input-warning { border-color: #d80 !important; }
 .bookacti-input-error   { border-color: #f00 !important; }
 .bookacti-form-error    { color: #f00; font-style: italic; }
@@ -269,13 +273,13 @@ fieldset legend .bookacti-show-hide-advanced-options { cursor: pointer; color: #
 	
 	
 /* Availability */
-.bookacti-availability-container                                   { white-space: nowrap; display: block; position: absolute; bottom: 0; right: 0; z-index: 5; overflow: hidden; }
-.bookacti-availability-container .bookacti-available-places        { height: 100%; padding: 2px 3px; line-height: 1.2em; background-color: #000; color: #fff; text-align: right; font-size: 0.85em; border-radius: 3px 0 0 0; }
-.bookacti-availability-container .bookacti-bookings                { padding: 1px 0 1px 1px; }
-.bookacti-availability-container .bookacti-total-availability      { padding: 1px 1px 1px 0; }
-.bookacti-availability-container .bookacti-active-bookings-number,
-.bookacti-availability-container .bookacti-available-places-number { font-weight: bold; font-size: larger; }
-.bookacti-availability-container.bookacti-hide-availability        { display: none; }
+.bookacti-availability-container                              { white-space: nowrap; display: block; position: absolute; bottom: 0; right: 0; z-index: 5; overflow: hidden; }
+.bookacti-availability-container .bookacti-available-places   { height: 100%; padding: 2px 3px; line-height: 1.2em; background-color: #000; color: #fff; text-align: right; font-size: 0.85em; border-radius: 3px 0 0 0; }
+.bookacti-availability-container .bookacti-bookings           { padding: 1px 0 1px 1px; }
+.bookacti-availability-container .bookacti-total-availability { padding: 1px 1px 1px 0; }
+.bookacti-active-bookings-number,
+.bookacti-available-places-number                             { font-weight: bold; font-size: larger; }
+.bookacti-availability-container.bookacti-hide-availability   { display: none; }
 
 .bookacti-available-places.bookacti-booked, 
 .bookacti-available-places.bookacti-not-booked      { background-color: rgba( 0, 0, 0, 0.4 ); }

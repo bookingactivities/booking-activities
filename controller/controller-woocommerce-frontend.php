@@ -2066,7 +2066,7 @@ add_filter( 'bookacti_user_booking_list_default_columns', 'bookacti_reorder_wooc
 /**
  * Add WC data to the user booking list
  * @since 1.7.12 (was bookacti_fill_wc_price_column_in_booking_list)
- * @version 1.16.0
+ * @version 1.16.24
  * @param array $booking_list_items
  * @param array $bookings
  * @param array $booking_groups
@@ -2182,8 +2182,8 @@ function bookacti_add_wc_data_to_user_booking_list_items( $booking_list_items, $
 				$coupon_error_label = is_wp_error( $coupon_valid ) ? $coupon_valid->get_error_message() : '';
 				
 				$coupon_label = sprintf( esc_html__( 'Refunded with coupon %s', 'booking-activities' ), '<span class="bookacti-refund-coupon-code ' . esc_attr( $coupon_class ) . '">' . strtoupper( $coupon_code ) . '</span>' );
-				$coupon_tip = $coupon_error_label ? $coupon_label . '<br/>' . $coupon_error_label : $coupon_label;
-				$booking_list_items[ $booking_id ][ 'status' ] = '<span class="bookacti-booking-status bookacti-booking-status-refunded bookacti-converted-to-coupon bookacti-tip" data-booking-status="refunded" data-tip="' . esc_attr( $coupon_tip ) . '" >' . $coupon_label . '</span>';
+				$coupon_tip   = $coupon_error_label ? $coupon_label . '<br/>' . $coupon_error_label : $coupon_label;
+				$booking_list_items[ $booking_id ][ 'status' ] = '<span class="bookacti-booking-status bookacti-booking-status-refunded bookacti-converted-to-coupon bookacti-tip" data-booking-status="refunded" data-tip="' . esc_attr( $coupon_tip ) . '" aria-label="' . esc_attr( $coupon_tip ) . '">' . $coupon_label . '</span>';
 			}
 
 			// Filter refund actions

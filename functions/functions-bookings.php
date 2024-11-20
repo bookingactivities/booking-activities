@@ -1690,7 +1690,7 @@ function bookacti_get_booking_actions_by_booking( $booking, $admin_or_front = 'b
 
 /**
  * Get booking actions html
- * @version 1.16.0
+ * @version 1.16.24
  * @param object|int $booking
  * @param string $admin_or_front Can be "both", "admin", "front". Default "both".
  * @param array $actions
@@ -1708,11 +1708,12 @@ function bookacti_get_booking_actions_html( $booking, $admin_or_front = 'both', 
 	$auth_key = ! empty( $_REQUEST[ 'user_auth_key' ] ) ? sanitize_text_field( $_REQUEST[ 'user_auth_key' ] ) : '';
 	
 	$actions_html_array	= array();
-	foreach( $actions as $action_id => $action ){
+	foreach( $actions as $action_id => $action ) {
 			$action_html = '<a '
 			             . 'href="' . esc_url( $action[ 'link' ] ) . '" '
 			             . 'id="bookacti-booking-action-' . esc_attr( $action_id . '-' . $booking->id ) . '" '
 			             . 'class="button ' . esc_attr( $action[ 'class' ] ) . ' bookacti-booking-action bookacti-tip" '
+			             . 'aria-label="' . esc_attr( esc_html( $action[ 'label' ] ) ) . '" '
 			             . 'data-action="' . esc_attr( $action_id ) . '" '
 			             . 'data-tip="' . esc_attr( $action[ 'description' ] ) . '" '
 			             . 'data-user-auth-key="' . esc_attr( $auth_key ) . '" '
@@ -1725,7 +1726,7 @@ function bookacti_get_booking_actions_html( $booking, $admin_or_front = 'both', 
 			$action_html .= '</a>';
 			$actions_html_array[ $action_id ] = $action_html;
 	}
-
+	
 	// Return the array of html actions
 	if( $return_array ) {
 		return apply_filters( 'bookacti_booking_actions_html_array', $actions_html_array, $booking, $admin_or_front );
@@ -1880,7 +1881,7 @@ function bookacti_get_booking_group_actions_by_booking_group( $booking_group, $g
 
 /**
  * Get booking group actions html
- * @version 1.16.0
+ * @version 1.16.24
  * @param array|int $booking_group
  * @param array $group_bookings
  * @param string $admin_or_front Can be "both", "admin", "front. Default "both".
@@ -1912,6 +1913,7 @@ function bookacti_get_booking_group_actions_html( $booking_group, $group_booking
 		             . 'href="' . esc_url( $action[ 'link' ] ) . '" '
 		             . 'id="bookacti-booking-group-action-' . esc_attr( $action_id . '-' . $booking_group_id ) . '" '
 		             . 'class="button ' . esc_attr( $action[ 'class' ] ) . ' bookacti-booking-group-action bookacti-tip" '
+					 . 'aria-label="' . esc_attr( esc_html( $action[ 'label' ] ) ) . '" '
 		             . 'data-action="' . esc_attr( $action_id ) . '" '
 		             . 'data-tip="' . esc_attr( $action[ 'description' ] ) . '" '
 		             . 'data-user-auth-key="' . esc_attr( $auth_key ) . '" '
@@ -2823,6 +2825,7 @@ function bookacti_get_payment_statuses() {
 /**
  * Get booking status HTML
  * @since 1.16.0 (was bookacti_format_booking_state)
+ * @version 1.16.24
  * @param string $status
  * @param boolean $icon_only
  * @return string
@@ -2836,7 +2839,7 @@ function bookacti_format_booking_status( $status, $icon_only = false ) {
 	$content = '<label>' . esc_html( $label ) . '</label>';
 	
 	if( $icon_only ) {
-		$atts    = ' data-tip="' . esc_attr( esc_html( $label ) ) . '"';
+		$atts    = ' data-tip="' . esc_attr( esc_html( $label ) ) . '" aria-label="' . esc_attr( esc_html( $label ) ) . '"';
 		$class  .= ' bookacti-tip';
 		$content = '';
 	}
@@ -2850,7 +2853,7 @@ function bookacti_format_booking_status( $status, $icon_only = false ) {
 /**
  * Get payment status HTML
  * @since 1.8.0
- * @version 1.16.0
+ * @version 1.16.24
  * @param string $status
  * @param boolean $icon_only
  * @return string
@@ -2864,7 +2867,7 @@ function bookacti_format_payment_status( $status, $icon_only = false ) {
 	$content = '<label>' . esc_html( $label ) . '</label>';
 	
 	if( $icon_only ) {
-		$atts    = 'data-tip="' . esc_attr( esc_html( $label ) ) . '"';
+		$atts    = 'data-tip="' . esc_attr( esc_html( $label ) ) . '" aria-label="' . esc_attr( esc_html( $label ) ) . '"';
 		$class  .= ' bookacti-tip';
 		$content = '';
 	}

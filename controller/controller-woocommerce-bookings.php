@@ -680,7 +680,7 @@ add_filter( 'woocommerce_email_order_items_table', 'bookacti_order_items_unset_e
 /**
  * Add WC data to the booking list
  * @since 1.6.0 (was bookacti_woocommerce_fill_booking_list_custom_columns before)
- * @version 1.16.0
+ * @version 1.16.24
  * @param array $booking_list_items
  * @param array $bookings
  * @param array $booking_groups
@@ -817,7 +817,7 @@ function bookacti_add_wc_data_to_booking_list_items( $booking_list_items, $booki
 				/* translators: %s is the coupon code used for the refund */
 				$coupon_label = sprintf( esc_html__( 'Refunded with coupon %s', 'booking-activities' ), strtoupper( $coupon_code ) );
 				if( $coupon_error_label ) { $coupon_label .= '<br/>' . $coupon_error_label; }
-				$booking_list_items[ $booking_id ][ 'state' ] = '<span class="bookacti-booking-status bookacti-booking-status-refunded bookacti-converted-to-coupon bookacti-tip" data-booking-status="refunded" data-tip="' . esc_attr( $coupon_label ) . '" ></span><span class="bookacti-refund-coupon-code ' . esc_attr( $coupon_class ) . ' bookacti-custom-scrollbar">' . strtoupper( $coupon_code ) . '</span>';
+				$booking_list_items[ $booking_id ][ 'state' ] = '<span class="bookacti-booking-status bookacti-booking-status-refunded bookacti-converted-to-coupon bookacti-tip" data-booking-status="refunded" data-tip="' . esc_attr( $coupon_label ) . '" aria-label="' . esc_attr( $coupon_label ) . '"></span><span class="bookacti-refund-coupon-code ' . esc_attr( $coupon_class ) . ' bookacti-custom-scrollbar">' . strtoupper( $coupon_code ) . '</span>';
 			}
 
 			// Filter refund actions
