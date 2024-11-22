@@ -3,7 +3,7 @@
  * Plugin Name: Booking Activities
  * Plugin URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Description: Booking system specialized in activities (sports, cultural, leisure, events...). Works great with WooCommerce.
- * Version: 1.16.23
+ * Version: 1.16.24
  * Author: Booking Activities Team
  * Author URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Text Domain: booking-activities
@@ -42,7 +42,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 // GLOBALS AND CONSTANTS
-if( ! defined( 'BOOKACTI_VERSION' ) )     { define( 'BOOKACTI_VERSION', '1.16.23' ); }
+if( ! defined( 'BOOKACTI_VERSION' ) )     { define( 'BOOKACTI_VERSION', '1.16.24' ); }
 if( ! defined( 'BOOKACTI_PLUGIN_NAME' ) ) { define( 'BOOKACTI_PLUGIN_NAME', 'booking-activities' ); }
 if( ! defined( 'BOOKACTI_PATH' ) )        { define( 'BOOKACTI_PATH', __DIR__ ); }
 
@@ -437,10 +437,10 @@ add_action( 'init', 'bookacti_check_version', 5 );
  * @version 1.12.3
  */
 function bookacti_create_menu() {
-    // Add a menu and submenus
-    $icon_url = 'dashicons-calendar-alt';
-    add_menu_page( 'Booking Activities', 'Booking Activities', 'bookacti_manage_booking_activities', 'booking-activities', null, $icon_url, '58.5' );
-    add_submenu_page( 'booking-activities', 'Booking Activities', esc_html( _x( 'Home', 'Landing page tab name', 'booking-activities' ) ), 'bookacti_manage_booking_activities', 'booking-activities', 'bookacti_landing_page' );
+	// Add a menu and submenus
+	$icon_url = 'dashicons-calendar-alt';
+	add_menu_page( 'Booking Activities', 'Booking Activities', 'bookacti_manage_booking_activities', 'booking-activities', null, $icon_url, '58.5' );
+	add_submenu_page( 'booking-activities', 'Booking Activities', esc_html( _x( 'Home', 'Landing page tab name', 'booking-activities' ) ), 'bookacti_manage_booking_activities', 'booking-activities', 'bookacti_landing_page' );
 	add_submenu_page( 'booking-activities', esc_html__( 'Calendar editor', 'booking-activities' ), esc_html__( 'Calendar editor', 'booking-activities' ), 'bookacti_manage_templates', 'bookacti_calendars', 'bookacti_templates_page' );
 	add_submenu_page( 'booking-activities', esc_html__( 'Booking forms', 'booking-activities' ), esc_html__( 'Booking forms', 'booking-activities' ), 'bookacti_manage_forms', 'bookacti_forms', 'bookacti_forms_page' );
 	add_submenu_page( 'booking-activities', esc_html__( 'Bookings', 'booking-activities' ), esc_html__( 'Bookings', 'booking-activities' ), 'bookacti_manage_bookings', 'bookacti_bookings', 'bookacti_bookings_page' );
@@ -472,13 +472,13 @@ function bookacti_templates_page() {
  */
 function bookacti_forms_page() {
 	
-	$can_create_form	= current_user_can( 'bookacti_create_forms' );
-	$can_edit_form		= current_user_can( 'bookacti_edit_forms' );
-	$load_form_editor	= false;
+	$can_create_form  = current_user_can( 'bookacti_create_forms' );
+	$can_edit_form    = current_user_can( 'bookacti_edit_forms' );
+	$load_form_editor = false;
 	
 	if( ! empty( $_GET[ 'action' ] ) ) {
-		if(		( $_GET[ 'action' ] === 'new' && $can_create_form )
-			||	( $_GET[ 'action' ] === 'edit' && ! empty( $_GET[ 'form_id' ] ) && is_numeric( $_GET[ 'form_id' ] ) && $can_edit_form ) ) {
+		if(    ( $_GET[ 'action' ] === 'new' && $can_create_form )
+			|| ( $_GET[ 'action' ] === 'edit' && ! empty( $_GET[ 'form_id' ] ) && is_numeric( $_GET[ 'form_id' ] ) && $can_edit_form ) ) {
 			$load_form_editor = true;
 		}
 	}

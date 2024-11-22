@@ -619,7 +619,7 @@ add_action( 'wp_ajax_bookactiChangeBookingsQuantity', 'bookacti_controller_chang
 /**
  * AJAX Controller - Get reschedule booking system data by booking selection
  * @since 1.8.0 (was bookacti_controller_get_booking_data)
- * @version 1.16.0
+ * @version 1.16.24
  */
 function bookacti_controller_get_reschedule_booking_system_data() {
 	$is_admin          = current_user_can( 'bookacti_edit_bookings' ) && ! empty( $_POST[ 'is_admin' ] );
@@ -658,9 +658,6 @@ function bookacti_controller_get_reschedule_booking_system_data() {
 			$calendar_fields_data[ $form_id ] = $calendar_field_data;
 		}
 	}
-	if( ! $is_admin && ! $calendar_fields_data ) {
-		bookacti_send_json( array( 'status' => 'failed', 'error' => 'invalid_form_id', 'message' => esc_html__( 'Invalid form ID.', 'booking-activities' ) ), 'get_reschedule_booking_system_data' );
-	}
 	
 	// Get booking system data based on calendar form field data
 	$admin_reschedule_scope = bookacti_get_setting_value( 'bookacti_cancellation_settings', 'admin_reschedule_scope' );
@@ -678,7 +675,7 @@ function bookacti_controller_get_reschedule_booking_system_data() {
 	$atts[ 'auto_load' ]                = 0;
 	
 	// Find the calendars and activities corresponding to the reschedule scope
-	$_any_nb = $all_nb = 0;
+	$_any_nb = $all_nb = $form_without_calendars_nb = 0;
 	$allowed_activities_per_booking = $allowed_calendars_per_booking = array();
 	foreach( $bookings as $booking_id => $booking ) {
 		$form_id       = ! empty( $booking->form_id ) ? intval( $booking->form_id ) : 0;
@@ -723,8 +720,12 @@ function bookacti_controller_get_reschedule_booking_system_data() {
 		
 		if( strpos( $reschedule_scope, 'all_' ) !== false ) {
 			++$all_nb;
-		} else if( strpos( $reschedule_scope, 'form_' ) !== false && ! empty( $calendar_fields_data[ $form_id ][ 'calendars' ] ) ) {
-			$allowed_calendars_per_booking[ $booking_id ] = $calendar_fields_data[ $form_id ][ 'calendars' ];
+		} else if( strpos( $reschedule_scope, 'form_' ) !== false ) {
+			if( ! empty( $calendar_fields_data[ $form_id ][ 'calendars' ] ) ) {
+				$allowed_calendars_per_booking[ $booking_id ] = $calendar_fields_data[ $form_id ][ 'calendars' ];
+			} else {
+				++$form_without_calendars_nb;
+			}
 		}
 	}
 	
@@ -747,23 +748,31 @@ function bookacti_controller_get_reschedule_booking_system_data() {
 	
 	// Display events from all calendars if the reschedule scope is set accordingly
 	if( count( $bookings ) === $all_nb ) {
-		$forms = $form_ids ? bookacti_get_forms( bookacti_format_form_filters( array( 'id' => $form_ids ) ) ) : array();
+		$atts[ 'form_id' ]      = 0;
+		$forms                  = $form_ids ? bookacti_get_forms( bookacti_format_form_filters( array( 'id' => $form_ids ) ) ) : array();
 		$templates_per_activity = bookacti_fetch_activities_with_templates_association();
 		
-		$allowed_calendars_per_user = $allowed_calendars_per_form = array();
-		foreach( $forms as $form ) {
-			$form_id = ! empty( $form->id ) ? intval( $form->id ) : 0;
-			$form_author_id = ! empty( $form->user_id ) ? intval( $form->user_id ) : 0;
-			if( $form_author_id && ! isset( $allowed_calendars_per_user[ $form_author_id ] ) ) {
-				$allowed_calendars_per_user[ $form_author_id ] = bookacti_ids_to_array( array_keys( bookacti_fetch_templates( array(), $form_author_id ) ) );
+		$all_calendar_ids = bookacti_ids_to_array( array_keys( bookacti_fetch_templates( array(), 0 ) ) );
+		$allowed_calendars_per_user = $allowed_calendars_per_form = $allowed_calendars_for_current_user = array();
+		if( ! current_user_can( 'bookacti_edit_bookings' ) ) {
+			foreach( $forms as $form ) {
+				$form_id = ! empty( $form->id ) ? intval( $form->id ) : 0;
+				$form_author_id = ! empty( $form->user_id ) ? intval( $form->user_id ) : 0;
+				if( $form_author_id && ! isset( $allowed_calendars_per_user[ $form_author_id ] ) ) {
+					$allowed_calendars_per_user[ $form_author_id ] = bookacti_ids_to_array( array_keys( bookacti_fetch_templates( array(), $form_author_id ) ) );
+				}
 				$allowed_calendars_per_form[ $form_id ] = $allowed_calendars_per_user[ $form_author_id ];
 			}
+		} else {
+			$allowed_calendars_for_current_user = bookacti_ids_to_array( array_keys( bookacti_fetch_templates() ) );
 		}
 		
 		foreach( $bookings as $booking_id => $booking ) {
 			$form_id = ! empty( $booking->form_id ) ? intval( $booking->form_id ) : 0;
-			if( isset( $allowed_calendars_per_form[ $form_id ] ) ) {
-				$allowed_calendars_per_booking[ $booking_id ] = $allowed_calendars_per_form[ $form_id ];
+			if( ! current_user_can( 'bookacti_edit_bookings' ) ) {
+				$allowed_calendars_per_booking[ $booking_id ] = isset( $allowed_calendars_per_form[ $form_id ] ) ? $allowed_calendars_per_form[ $form_id ] : $all_calendar_ids;
+			} else {
+				$allowed_calendars_per_booking[ $booking_id ] = $allowed_calendars_for_current_user;
 			}
 			
 			if( empty( $allowed_activities_per_booking[ $booking_id ] ) ) { continue; }
@@ -796,6 +805,10 @@ function bookacti_controller_get_reschedule_booking_system_data() {
 	// Keep only the calendars that are compatible with all the selected bookings
 	$atts[ 'calendars' ] = $allowed_calendars ? array_values( bookacti_ids_to_array( $allowed_calendars ) ) : array();
 	if( ! $atts[ 'calendars' ] ) {
+		if( $form_without_calendars_nb ) {
+			bookacti_send_json( array( 'status' => 'failed', 'error' => 'invalid_form', 'message' => esc_html__( 'The selected booking\'s booking form could not be retrieved.', 'booking-activities' ) ), 'get_reschedule_booking_system_data' );
+		}
+		
 		bookacti_send_json( array( 'status' => 'failed', 'error' => 'no_calendars', 'message' => esc_html__( 'Invalid booking selection.', 'booking-activities' ) . ' ' . esc_html__( 'No calendars match all the selected bookings.', 'booking-activities' ) ), 'get_reschedule_booking_system_data' );
 	}
 	
@@ -830,7 +843,7 @@ add_action( 'wp_ajax_nopriv_bookactiGetRescheduleBookingSystemData', 'bookacti_c
 /**
  * AJAX Controller - Reschedule bookings
  * @since 1.16.0
- * @version 1.16.9
+ * @version 1.16.24
  */
 function bookacti_controller_reschedule_bookings() {
 	// Check nonce
@@ -872,7 +885,7 @@ function bookacti_controller_reschedule_bookings() {
 	// Check if each booking can be rescheduled to the picked event
 	foreach( $bookings as $booking_id => $booking ) {
 		// Check if the desired event is eligible according to the current booking
-		$can_be_rescheduled	= bookacti_booking_can_be_rescheduled_to( $booking, $picked_events[ 0 ][ 'id' ], $picked_events[ 0 ][ 'start' ], $picked_events[ 0 ][ 'end' ], ! $is_admin );
+		$can_be_rescheduled = bookacti_booking_can_be_rescheduled_to( $booking, $picked_events[ 0 ][ 'id' ], $picked_events[ 0 ][ 'start' ], $picked_events[ 0 ][ 'end' ], ! $is_admin );
 		if( $can_be_rescheduled[ 'status' ] !== 'success' ) {
 			bookacti_send_json( $can_be_rescheduled, 'reschedule_booking' );
 		}
@@ -880,7 +893,6 @@ function bookacti_controller_reschedule_bookings() {
 		// Validate picked events
 		$reschedule_form_values = apply_filters( 'bookacti_reschedule_booking_form_values', array(
 			'quantity' => intval( $booking->quantity ),
-			'form_id'  => ! empty( $booking->form_id ) && ! current_user_can( 'bookacti_edit_bookings' ) ? $booking->form_id : 0,
 			'is_admin' => $is_admin, 
 			'context'  => 'reschedule', 
 		), $booking, $picked_events );
@@ -1353,7 +1365,7 @@ function bookacti_controller_generate_export_bookings_url() {
 	$export_url = '';
 	
 	// Add the URL attributes
-	if( $url_atts )	{ 
+	if( $url_atts ) { 
 		$home_url  = home_url();
 		$export_id = bookacti_insert_export( array( 'type' => 'booking_' . $export_type, 'user_id' => $current_user_id, 'args' => $url_atts ) );
 		$short_url_atts = array(
