@@ -320,9 +320,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.16.24 =
+= 1.16.24 - 2024/11/22 =
 * Feature - Add compatibility with some deposit plugins for WooCommerce (Beta)
+* Fix - Events not appearing on reschedule calendar under certain circumstances
 * Fix - Add aria-label for booking status icons and booking action buttons
+* Fix - Clean possibly corrupted repeated events
 * Dev - Improve availability div HTML structure in the group of events selection dialog
 
 = 1.16.23 - 2024/11/14 =

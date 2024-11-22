@@ -395,12 +395,12 @@ function bookacti_is_booking_in_delay( $booking, $context = '' ) {
 	if( $booking->group_id ) {
 		$category_data = ! empty( $booking->category_id ) ? bookacti_get_metadata( 'group_category', $booking->category_id ) : array();
 		if( isset( $category_data[ 'booking_changes_deadline' ] ) && is_numeric( $category_data[ 'booking_changes_deadline' ] ) ) {
-			$delay_specific	= floatval( $category_data[ 'booking_changes_deadline' ] );
+			$delay_specific = floatval( $category_data[ 'booking_changes_deadline' ] );
 		}
 	} else {
 		$activity_data = ! empty( $booking->activity_id ) ? bookacti_get_metadata( 'activity', $booking->activity_id ) : array();
 		if( isset( $activity_data[ 'booking_changes_deadline' ] ) && is_numeric( $activity_data[ 'booking_changes_deadline' ] ) ) {
-			$delay_specific	= floatval( $activity_data[ 'booking_changes_deadline' ] );
+			$delay_specific = floatval( $activity_data[ 'booking_changes_deadline' ] );
 		}
 	}
 
@@ -621,7 +621,7 @@ function bookacti_format_booking_filters( $filters = array() ) {
 				'activity_id', 
 				'creation_date' 
 			);
-			if( is_string( $current_value ) )	{ 
+			if( is_string( $current_value ) ) { 
 				if( ! in_array( $current_value, $sortable_columns, true ) ) { $current_value = $default_value; }
 				else { $current_value = array( $current_value ); }
 			}
@@ -858,7 +858,7 @@ function bookacti_booking_can_be_cancelled( $booking, $is_frontend = true, $allo
 	// Get booking
 	if( is_numeric( $booking ) ) { $booking = bookacti_get_booking_by_id( $booking, true ); }
 	
-	$is_allowed	= true;
+	$is_allowed = true;
 	if( ! $booking ) { $is_allowed = false; }
 	else {
 		if( ! current_user_can( 'bookacti_edit_bookings' ) || $is_frontend ) {
@@ -886,7 +886,7 @@ function bookacti_booking_can_be_rescheduled( $booking, $is_frontend = true ) {
 	// Get booking
 	if( is_numeric( $booking ) ) { $booking = bookacti_get_booking_by_id( $booking, true ); }
 	
-	$is_allowed	= $booking ? true : false;
+	$is_allowed = $booking ? true : false;
 	
 	if( $booking && ( ! current_user_can( 'bookacti_edit_bookings' ) || $is_frontend ) ) {
 		$is_reschedule_allowed = bookacti_get_setting_value( 'bookacti_cancellation_settings', 'allow_customers_to_reschedule' );
@@ -904,7 +904,7 @@ function bookacti_booking_can_be_rescheduled( $booking, $is_frontend = true ) {
 /**
  * Check if a booking can be rescheduled to another event
  * @since 1.1.0
- * @version 1.16.0
+ * @version 1.16.24
  * @param object|int $booking
  * @param int $event_id
  * @param string $event_start
@@ -991,9 +991,9 @@ function bookacti_booking_can_be_rescheduled_to( $booking, $event_id, $event_sta
 							$return_array[ 'message' ] = ! empty( $form_validated[ 'message' ] ) ? $form_validated[ 'message' ] : esc_html__( 'The desired event is not in the same booking form as the booked event.', 'booking-activities' );
 						}
 					} else if( strpos( $reschedule_scope, 'all_' ) !== false ) {
-						$form                 = $form_id ? bookacti_get_form_data( $form_id ) : array();
+						$form                 = $form_id && ! $is_admin ? bookacti_get_form_data( $form_id ) : array();
 						$form_author_id       = ! empty( $form[ 'user_id' ] ) ? intval( $form[ 'user_id' ] ) : 0;
-						$allowed_template_ids = $form_author_id ? bookacti_ids_to_array( array_keys( bookacti_fetch_templates( array(), $form_author_id ) ) ) : array();
+						$allowed_template_ids = bookacti_ids_to_array( array_keys( bookacti_fetch_templates( array(), $form_author_id ) ) );
 						if( ! in_array( $event_template_id, $allowed_template_ids, true ) ) {
 							$return_array[ 'status' ]  = 'failed';
 							$return_array[ 'error' ]   = 'reschedule_to_not_allowed_calendar';
@@ -1481,7 +1481,7 @@ function bookacti_booking_group_quantity_can_be_changed( $bookings, $new_quantit
 		} else {
 			/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or increase the quantity.' */
 			$response[ 'messages' ][ 'qty_inf_to_min' ] .= ' ' . sprintf( esc_html__( 'but the minimum number of reservations required per user is %1$s.', 'booking-activities' ), $min_quantity );
-		}	
+		}
 		/* translators: %1$s is a variable quantity. */
 		$response[ 'messages' ][ 'qty_inf_to_min' ] .= $min_quantity - $qty_already_booked_with_other_bookings > 0 ? ' ' . sprintf( esc_html__( 'Please choose another event or increase the quantity to %1$s.', 'booking-activities' ), $min_quantity - $qty_already_booked_with_other_bookings ) : ' ' . esc_html__( 'Please choose another event.', 'booking-activities' );
 	}
@@ -1737,7 +1737,7 @@ function bookacti_get_booking_actions_html( $booking, $admin_or_front = 'both', 
 	// Add a container
 	if( $with_container ) {
 		$actions_html = '<div class="bookacti-booking-actions" data-booking-id="' . esc_attr( $booking->id ) . '" >'
-		              .	$actions_html
+		              . $actions_html
 		              . '</div>';
 	}
 
@@ -1907,13 +1907,13 @@ function bookacti_get_booking_group_actions_html( $booking_group, $group_booking
 	
 	$auth_key = ! empty( $_REQUEST[ 'user_auth_key' ] ) ? sanitize_text_field( $_REQUEST[ 'user_auth_key' ] ) : '';
 
-	$actions_html_array	= array();
+	$actions_html_array = array();
 	foreach( $actions as $action_id => $action ) {
 		$action_html = '<a '
 		             . 'href="' . esc_url( $action[ 'link' ] ) . '" '
 		             . 'id="bookacti-booking-group-action-' . esc_attr( $action_id . '-' . $booking_group_id ) . '" '
 		             . 'class="button ' . esc_attr( $action[ 'class' ] ) . ' bookacti-booking-group-action bookacti-tip" '
-					 . 'aria-label="' . esc_attr( esc_html( $action[ 'label' ] ) ) . '" '
+		             . 'aria-label="' . esc_attr( esc_html( $action[ 'label' ] ) ) . '" '
 		             . 'data-action="' . esc_attr( $action_id ) . '" '
 		             . 'data-tip="' . esc_attr( $action[ 'description' ] ) . '" '
 		             . 'data-user-auth-key="' . esc_attr( $auth_key ) . '" '
@@ -1923,7 +1923,7 @@ function bookacti_get_booking_group_actions_html( $booking_group, $group_booking
 			$action_html .= esc_html( $action[ 'label' ] ); 
 		}
 
-		$action_html	.= '</a>';
+		$action_html .= '</a>';
 		$actions_html_array[] = $action_html;
 	}
 
@@ -1937,7 +1937,7 @@ function bookacti_get_booking_group_actions_html( $booking_group, $group_booking
 	// Add a container
 	if( $with_container ) {
 		$actions_html = '<div class="bookacti-booking-group-actions" data-booking-group-id="' . esc_attr( $booking_group_id ) . '" >' 
-		              .	$actions_html
+		              . $actions_html
 		              . '</div>';
 	}
 
@@ -2205,16 +2205,16 @@ function bookacti_convert_bookings_to_ical( $filters = array(), $args_raw = arra
 		if( ! isset( $occurrence_counter[ $item[ 'event_id' ] ] ) ) { $occurrence_counter[ $item[ 'event_id' ] ] = 0; }
 		++$occurrence_counter[ $item[ 'event_id' ] ];
 
-		$uid			= $item[ 'event_id' ] . '-' . $occurrence_counter[ $item[ 'event_id' ] ];
-		$event_start	= new DateTime( $item[ 'start_date_raw' ], $timezone_obj );
-		$event_end		= new DateTime( $item[ 'end_date_raw' ], $timezone_obj );
+		$uid         = $item[ 'event_id' ] . '-' . $occurrence_counter[ $item[ 'event_id' ] ];
+		$event_start = new DateTime( $item[ 'start_date_raw' ], $timezone_obj );
+		$event_end   = new DateTime( $item[ 'end_date_raw' ], $timezone_obj );
 		$event_start->setTimezone( $utc_timezone_obj );
 		$event_end->setTimezone( $utc_timezone_obj );
 		
 		$events_tags[ $index ][ '{booking_list}' ] = $events_tags[ $index ][ '{booking_list}' ] ? '<table>' . $events_tags[ $index ][ '{booking_list}' ] . '</table>' : '';
 		
-		$summary	= $args[ 'vevent_summary' ] ? str_replace( array_keys( $events_tags[ $index ] ), array_values( $events_tags[ $index ] ), $args[ 'vevent_summary' ] ) : '';
-		$description= $args[ 'vevent_description' ] ? str_replace( array_keys( $events_tags[ $index ] ), array_values( $events_tags[ $index ] ), $args[ 'vevent_description' ] ) : '';
+		$summary     = $args[ 'vevent_summary' ] ? str_replace( array_keys( $events_tags[ $index ] ), array_values( $events_tags[ $index ] ), $args[ 'vevent_summary' ] ) : '';
+		$description = $args[ 'vevent_description' ] ? str_replace( array_keys( $events_tags[ $index ] ), array_values( $events_tags[ $index ] ), $args[ 'vevent_description' ] ) : '';
 		
 		$vevents[ $index ] = apply_filters( 'bookacti_bookings_ical_vevent', array(
 			'UID'         => $uid,
@@ -2926,10 +2926,10 @@ function bookacti_get_user_booking_list_columns_labels() {
  */
 function bookacti_get_user_booking_list_default_columns() {
 	$columns = apply_filters( 'bookacti_user_booking_list_default_columns', array(
-		10	=> 'booking_id',
-		20	=> 'events',
-		30	=> 'quantity',
-		40	=> 'status',
+		10  => 'booking_id',
+		20  => 'events',
+		30  => 'quantity',
+		40  => 'status',
 		100 => 'actions'
 	) );
 
@@ -2947,11 +2947,11 @@ function bookacti_get_user_booking_list_default_columns() {
  */
 function bookacti_get_event_booking_list_default_columns() {
 	$columns = apply_filters( 'bookacti_event_booking_list_default_columns', array(
-		10	=> 'booking_id',
-		20	=> 'status',
-		30	=> 'payment_status',
-		40	=> 'quantity',
-		50	=> 'customer_display_name'
+		10 => 'booking_id',
+		20 => 'status',
+		30 => 'payment_status',
+		40 => 'quantity',
+		50 => 'customer_display_name'
 	) );
 	
 	// Order columns
@@ -3279,7 +3279,7 @@ function bookacti_get_user_booking_list( $filters, $columns = array(), $per_page
 	++$bookacti_booking_list_count;
 	
 	// Total number of bookings to display
-	$bookings_nb = bookacti_get_number_of_booking_rows( $filters );	
+	$bookings_nb = bookacti_get_number_of_booking_rows( $filters );
 	
 	// Pagination
 	$page_nb               = ! empty( $_GET[ 'bookacti_booking_list_paged_' . $bookacti_booking_list_count ] ) ? intval( $_GET[ 'bookacti_booking_list_paged_' . $bookacti_booking_list_count ] ) : 1;
