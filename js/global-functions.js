@@ -5,10 +5,10 @@ $j( document ).ready( function() {
 	/**
 	 * Move option to the bottom of the sortable selectbox when it is selected - on select2:select
 	 * Do it only once
-	 * @since 1.15.4
+	 * @since 1.16.25
 	 * @param {Object} e
 	 */
-	$j( 'body' ).on( 'select2:select', '.bookacti-select2-ajax[data-sortable="1"], .bookacti-select2-no-ajax[data-sortable="1"]', function( e ) {
+	$j( 'body' ).on( 'select2:select', 'select.bookacti-select2-ajax[data-sortable="1"], select.bookacti-select2-no-ajax[data-sortable="1"]', function( e ) {
 		if( typeof e.params === 'undefined' ) { return; }
 		if( typeof e.params.data === 'undefined' ) { return; }
 		if( typeof e.params.data.id === 'undefined' ) { return; }
@@ -282,7 +282,7 @@ function bookacti_serialize_object( form ) {
 /**
  * Init selectbox with AJAX search
  * @since 1.7.19
- * @version 1.16.0
+ * @version 1.16.25
  */
 function bookacti_select2_init() {
 	if( ! $j.fn.select2 ) { return; }
@@ -303,10 +303,10 @@ function bookacti_select2_init() {
 	$j( 'body' ).trigger( 'bookacti_select2_init_data', [ select2_data ] );
 	
 	// Without AJAX search
-	$j( '.bookacti-select2-no-ajax:not(.select2-hidden-accessible)' ).select2( select2_data );
+	$j( 'select.bookacti-select2-no-ajax:not(.select2-hidden-accessible)' ).select2( select2_data );
 	
 	// With AJAX search
-	$j( '.bookacti-select2-ajax:not(.select2-hidden-accessible)' ).select2( $j.extend( true, select2_data, {
+	$j( 'select.bookacti-select2-ajax:not(.select2-hidden-accessible)' ).select2( $j.extend( true, select2_data, {
 		minimumResultsForSearch: 0,
 		ajax: {
 			url: bookacti_localized.ajaxurl,
@@ -358,7 +358,7 @@ function bookacti_select2_init() {
 		}
 	} ));
 	
-	$j( 'body' ).on( 'select2:open', '.bookacti-select2-ajax', function() { 
+	$j( 'body' ).on( 'select2:open', 'select.bookacti-select2-ajax', function() { 
 		$j( 'input.select2-search__field' ).attr( 'placeholder', bookacti_localized.select2_search_placeholder.replace( '{nb}', Math.max( select2_data.minimumInputLength, 3 ) ) );
 	});
 	
