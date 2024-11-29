@@ -3,7 +3,7 @@
 /** GLOBAL **/
 
 /* Select2 */
-.bookacti-select2-no-ajax, .bookacti-select2-ajax { transition: none !important; }
+select.bookacti-select2-no-ajax, select.bookacti-select2-ajax { transition: none !important; }
 .bookacti-user-selectbox { width: 100%; }
 .select2-dropdown        { z-index: 3999999 !important; }
 .bookacti-select2-selection.select2-selection--single      { margin: 0; }
@@ -16,7 +16,7 @@
 .rtl .bookacti-select2-selection.select2-selection--multiple .select2-selection__clear { right: auto; left: 2px; }
 .bookacti-form-field-container .select2-container--default .select2-selection--single  { border-radius: 0; }
 .bookacti-select2-dropdown .select2-results__option[aria-disabled="true"]:not(.loading-results) { display: none; }
-.select2-hidden-accessible[data-sortable="1"] + .select2-container .bookacti-select2-selection.select2-selection--multiple .select2-selection__choice { cursor: move; }
+select.select2-hidden-accessible[data-sortable="1"] + .select2-container .bookacti-select2-selection.select2-selection--multiple .select2-selection__choice { cursor: move; }
 
 /* Radio box */
 .bookacti-custom-radio-button		{ display: inline-block; margin: 0 0.5em 0.5em 0; }

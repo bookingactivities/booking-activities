@@ -760,8 +760,8 @@ function bookacti_format_form_field_data( $raw_field_data, $context = 'view' ) {
 	$default_meta = bookacti_get_default_form_fields_meta( $raw_field_data[ 'name' ], $context );
 	if( ! $default_data ) { return array(); }
 	
-	$field_data	= array();
-	$field_meta	= array();
+	$field_data = array();
+	$field_meta = array();
 	
 	// Format field-specific data and metadata
 	if( $raw_field_data[ 'name' ] === 'calendar' ) {
@@ -1192,8 +1192,8 @@ function bookacti_display_form_field( $field, $instance_id = '', $context = 'dis
 	if( empty( $field[ 'name' ] ) ) { return ''; }
 	
 	if( ! $instance_id ) { $instance_id = rand(); }
-	$field_id	= ! empty( $field[ 'id' ] ) ? esc_attr( $field[ 'id' ] ) : esc_attr( 'bookacti-form-field-' . $field[ 'type' ] . '-' . $field[ 'field_id' ] . '-' . $instance_id );
-	$field_class= 'bookacti-form-field-container';
+	$field_id       = ! empty( $field[ 'id' ] ) ? esc_attr( $field[ 'id' ] ) : esc_attr( 'bookacti-form-field-' . $field[ 'type' ] . '-' . $field[ 'field_id' ] . '-' . $instance_id );
+	$field_class    = 'bookacti-form-field-container';
 	$field_css_data = '';
 	if( ! empty( $field[ 'name' ] ) )     { $field_class .= ' bookacti-form-field-name-' . sanitize_title_with_dashes( esc_attr( $field[ 'name' ] ) ); $field_css_data .= ' data-field-name="' . esc_attr( $field[ 'name' ] ) . '"'; } 
 	if( ! empty( $field[ 'type' ] ) )     { $field_class .= ' bookacti-form-field-type-' . sanitize_title_with_dashes( esc_attr( $field[ 'type' ] ) ); $field_css_data .= ' data-field-type="' . esc_attr( $field[ 'type' ] ) . '"'; } 
@@ -1350,12 +1350,12 @@ function bookacti_register_a_new_user( $login_values, $login_data ) {
 
 	// Let third party modify initial user data
 	$new_user_data = apply_filters( 'bookacti_register_user_data', array(
-		'user_login'	=> $username,
-		'user_pass'		=> ! empty( $login_data[ 'generate_password' ] ) ? wp_generate_password( 24 ) : $login_values[ 'password' ],
-		'user_email'	=> $login_values[ 'email' ],
-		'first_name'	=> ! empty( $login_values[ 'first_name' ] ) ? $login_values[ 'first_name' ] : '',
-		'last_name'		=> ! empty( $login_values[ 'last_name' ] ) ? $login_values[ 'last_name' ] : '',
-		'role'			=> $login_data[ 'new_user_role' ] === 'default' ? get_option( 'default_role' ) : $login_data[ 'new_user_role' ]
+		'user_login' => $username,
+		'user_pass'  => ! empty( $login_data[ 'generate_password' ] ) ? wp_generate_password( 24 ) : $login_values[ 'password' ],
+		'user_email' => $login_values[ 'email' ],
+		'first_name' => ! empty( $login_values[ 'first_name' ] ) ? $login_values[ 'first_name' ] : '',
+		'last_name'  => ! empty( $login_values[ 'last_name' ] ) ? $login_values[ 'last_name' ] : '',
+		'role'       => $login_data[ 'new_user_role' ] === 'default' ? get_option( 'default_role' ) : $login_data[ 'new_user_role' ]
 	), $login_values );
 
 	// Create the user
@@ -1436,13 +1436,13 @@ function bookacti_validate_form_fields( $form_id, $fields_data = array() ) {
 	}
 	
 	$validated = array( 
-		'status' => 'success',
+		'status'   => 'success',
 		'messages' => array()
 	);
 	
 	// Make sure that form data exist
 	if( ! $fields_data ) { 
-		$validated[ 'status' ]	= 'failed';
+		$validated[ 'status' ] = 'failed';
 		$validated[ 'messages' ][ 'invalid_form_id' ] = esc_html__( 'Invalid form ID.', 'booking-activities' );
 		
 	} else {
@@ -1455,7 +1455,7 @@ function bookacti_validate_form_fields( $form_id, $fields_data = array() ) {
 			}
 		}
 		if( $has_terms && empty( $_POST[ 'terms' ] ) ) {
-			$validated[ 'status' ]	= 'failed';
+			$validated[ 'status' ] = 'failed';
 			$validated[ 'messages' ][ 'terms_not_agreed' ] = esc_html__( 'You must agree to the terms and conditions.', 'booking-activities' );
 		}
 	}
@@ -1508,11 +1508,11 @@ function bookacti_sanitize_form_field_order( $form_id, $field_order ) {
 	$intersect = array_intersect( $field_order, $existing_field_ids );
 	
 	// Add existing missing field ids to field order
-	$diff	= array_diff( $existing_field_ids, $intersect );
-	$merge	= array_merge( $intersect, $diff );
+	$diff  = array_diff( $existing_field_ids, $intersect );
+	$merge = array_merge( $intersect, $diff );
 	
 	// Sanitize strings to integers
-	$map	= array_map( 'intval', $merge );
+	$map    = array_map( 'intval', $merge );
 	$filter = array_filter( $map );
 	
 	return array_values( $filter );
@@ -1593,43 +1593,43 @@ function bookacti_sort_form_fields_array( $form_id, $fields, $remove_unordered_f
 function bookacti_get_log_in_fields_default_data( $context = 'view' ) {
 	$defaults = array(
 		'email' => array( 
-			'name'			=> 'email', 
-			'type'			=> 'text', 
-			'label'			=> esc_html__( 'Email', 'booking-activities' ), 
-			'placeholder'	=> '', 
-			'tip'			=> '', 
-			'value'			=> '', 
-			'required'		=> 1, 
-			'displayed'		=> 1
+			'name'        => 'email', 
+			'type'        => 'text', 
+			'label'       => esc_html__( 'Email', 'booking-activities' ), 
+			'placeholder' => '', 
+			'tip'         => '', 
+			'value'       => '', 
+			'required'    => 1, 
+			'displayed'   => 1
 		),
 		'password' => array( 
-			'name'			=> 'password', 
-			'type'			=> 'password', 
-			'label'			=> esc_html__( 'Password', 'booking-activities' ), 
-			'placeholder'	=> '', 
-			'tip'			=> '', 
-			'value'			=> '', 
-			'required'		=> 1, 
-			'displayed'		=> 1
+			'name'        => 'password', 
+			'type'        => 'password', 
+			'label'       => esc_html__( 'Password', 'booking-activities' ), 
+			'placeholder' => '', 
+			'tip'         => '', 
+			'value'       => '', 
+			'required'    => 1, 
+			'displayed'   => 1
 		),
 		'forgotten_password' => array( 
-			'name'			=> 'forgotten_password', 
-			'type'			=> 'link', 
-			'label'			=> esc_html__( 'Forgot your password?', 'booking-activities' ), 
-			'placeholder'	=> '', 
-			'tip'			=> '', 
-			'value'			=> '', 
-			'required'		=> 0, 
-			'displayed'		=> 1
+			'name'        => 'forgotten_password', 
+			'type'        => 'link', 
+			'label'       => esc_html__( 'Forgot your password?', 'booking-activities' ), 
+			'placeholder' => '', 
+			'tip'         => '', 
+			'value'       => '', 
+			'required'    => 0, 
+			'displayed'   => 1
 		),
 		'remember' => array( 
-			'name'			=> 'remember', 
-			'type'			=> 'checkbox', 
-			'label'			=> esc_html__( 'Remember me', 'booking-activities' ), 
-			'placeholder'	=> 0, 
-			'tip'			=> '', 
-			'required'		=> 0, 
-			'displayed'		=> 0
+			'name'        => 'remember', 
+			'type'        => 'checkbox', 
+			'label'       => esc_html__( 'Remember me', 'booking-activities' ), 
+			'placeholder' => 0, 
+			'tip'         => '', 
+			'required'    => 0, 
+			'displayed'   => 0
 		)
 	);
 	
@@ -1648,28 +1648,28 @@ function bookacti_get_log_in_fields_default_data( $context = 'view' ) {
 function bookacti_get_login_type_field_default_options( $keys = array(), $context = 'view' ) {
 	$login_types = apply_filters( 'bookacti_login_type_field_default_options', array(
 		'my_account' => array( 
-			'value'			=> 'my_account', 
-			'title'			=> esc_html__( 'Log in', 'booking-activities' ), 
-			'label'			=> esc_html__( 'Log in', 'booking-activities' ), 
-			'placeholder'	=> '', 
-			'tip'			=> '', 
-			'displayed'		=> 1
+			'value'       => 'my_account', 
+			'title'       => esc_html__( 'Log in', 'booking-activities' ), 
+			'label'       => esc_html__( 'Log in', 'booking-activities' ), 
+			'placeholder' => '', 
+			'tip'         => '', 
+			'displayed'   => 1
 		),
 		'new_account' => array( 
-			'value'			=> 'new_account', 
-			'title'			=> esc_html__( 'Create an account', 'booking-activities' ), 
-			'label'			=> esc_html__( 'Create an account', 'booking-activities' ), 
-			'placeholder'	=> '', 
-			'tip'			=> '', 
-			'displayed'		=> 1
+			'value'       => 'new_account', 
+			'title'       => esc_html__( 'Create an account', 'booking-activities' ), 
+			'label'       => esc_html__( 'Create an account', 'booking-activities' ), 
+			'placeholder' => '', 
+			'tip'         => '', 
+			'displayed'   => 1
 		),
 		'no_account' => array( 
-			'value'			=> 'no_account', 
-			'title'			=> esc_html__( 'Book without account', 'booking-activities' ), 
-			'label'			=> esc_html__( 'Book without account', 'booking-activities' ), 
-			'placeholder'	=> '', 
-			'tip'			=> '',  
-			'displayed'		=> 1
+			'value'       => 'no_account', 
+			'title'       => esc_html__( 'Book without account', 'booking-activities' ), 
+			'label'       => esc_html__( 'Book without account', 'booking-activities' ), 
+			'placeholder' => '', 
+			'tip'         => '',  
+			'displayed'   => 1
 		)
 	), $keys, $context );
 	
@@ -1696,34 +1696,34 @@ function bookacti_get_login_type_field_default_options( $keys = array(), $contex
 function bookacti_get_register_fields_default_data( $context = 'view' ) {
 	$defaults = array(
 		'first_name' => array( 
-			'name'			=> 'first_name', 
-			'type'			=> 'text', 
-			'label'			=> esc_html__( 'First name', 'booking-activities' ), 
-			'placeholder'	=> '', 
-			'tip'			=> '', 
-			'value'			=> '', 
-			'required'		=> 0, 
-			'displayed'		=> 1
+			'name'        => 'first_name', 
+			'type'        => 'text', 
+			'label'       => esc_html__( 'First name', 'booking-activities' ), 
+			'placeholder' => '', 
+			'tip'         => '', 
+			'value'       => '', 
+			'required'    => 0, 
+			'displayed'   => 1
 		),
 		'last_name' => array( 
-			'name'			=> 'last_name', 
-			'type'			=> 'text', 
-			'label'			=> esc_html__( 'Last name', 'booking-activities' ), 
-			'placeholder'	=> '', 
-			'tip'			=> '', 
-			'value'			=> '', 
-			'required'		=> 0, 
-			'displayed'		=> 1
+			'name'        => 'last_name', 
+			'type'        => 'text', 
+			'label'       => esc_html__( 'Last name', 'booking-activities' ), 
+			'placeholder' => '', 
+			'tip'         => '', 
+			'value'       => '', 
+			'required'    => 0, 
+			'displayed'   => 1
 		),
 		'phone' => array( 
-			'name'			=> 'phone', 
-			'type'			=> 'tel', 
-			'label'			=> esc_html__( 'Phone number', 'booking-activities' ), 
-			'placeholder'	=> '', 
-			'tip'			=> '', 
-			'value'			=> '', 
-			'required'		=> 0, 
-			'displayed'		=> 1
+			'name'        => 'phone', 
+			'type'        => 'tel', 
+			'label'       => esc_html__( 'Phone number', 'booking-activities' ), 
+			'placeholder' => '', 
+			'tip'         => '', 
+			'value'       => '', 
+			'required'    => 0, 
+			'displayed'   => 1
 		)
 	);
 	
@@ -1802,7 +1802,7 @@ function bookacti_format_form_filters( $filters = array() ) {
 				'id', 
 				'title'
 			);
-			if( is_string( $current_value ) )	{ 
+			if( is_string( $current_value ) ) { 
 				if( ! in_array( $current_value, $sortable_columns, true ) ) { $current_value = $default_value; }
 				else { $current_value = array( $current_value ); }
 			}
