@@ -1983,6 +1983,108 @@ function bookacti_is_utf8( $string ) {
 
 
 /**
+ * Encode to UTF-8
+ * @since 1.16.26
+ * @param string $string
+ * @param boolean $check
+ * @return string
+ */
+function bookacti_utf8_encode( $string, $check = true ) {
+	if( $check && bookacti_is_utf8( $string ) ) {
+		return $string;
+	}
+	if( function_exists( 'mb_convert_encoding' ) ) {
+		return mb_convert_encoding( $string, 'UTF-8', 'ISO-8859-1' );
+	}
+	else if( function_exists( 'iconv' ) ) {
+		return iconv( 'ISO-8859-1', 'UTF-8', $string );
+	}
+	return bookacti_iso8859_1_to_utf8( $string );
+}
+
+
+/**
+ * Decode UTF-8
+ * @since 1.16.26
+ * @param string $string
+ * @param boolean $check
+ * @return string
+ */
+function bookacti_utf8_decode( $string, $check = true ) {
+	if( $check && ! bookacti_is_utf8( $string ) ) {
+		return $string;
+	}
+	if( function_exists( 'mb_convert_encoding' ) ) {
+		return mb_convert_encoding( $string, 'ISO-8859-1', 'UTF-8' );
+	}
+	else if( function_exists( 'iconv' ) ) {
+		return iconv( 'UTF-8', 'ISO-8859-1', $string );
+	}
+	return bookacti_utf8_to_iso8859_1( $string );
+}
+
+
+/**
+ * Replacement for utf8_encode
+ * https://github.com/symfony/polyfill-php72/blob/v1.30.0/Php72.php#L24-L38
+ * @since 1.16.26
+ * @param string $s
+ * @return string
+ */
+function bookacti_iso8859_1_to_utf8( $s ) {
+    $s .= $s;
+	$len = \strlen($s);
+
+	for ($i = $len >> 1, $j = 0; $i < $len; ++$i, ++$j) {
+		switch (true) {
+			case $s[$i] < "\x80": $s[$j] = $s[$i]; break;
+			case $s[$i] < "\xC0": $s[$j] = "\xC2"; $s[++$j] = $s[$i]; break;
+			default: $s[$j] = "\xC3"; $s[++$j] = \chr(\ord($s[$i]) - 64); break;
+		}
+	}
+
+	return substr($s, 0, $j);
+}
+
+
+/**
+ * Replacement for utf8_decode
+ * https://github.com/symfony/polyfill-php72/blob/v1.30.0/Php72.php#L40-L68
+ * @since 1.16.26
+ * @param string $s
+ * @return string
+ */
+function bookacti_utf8_to_iso8859_1( $s ) {
+    $s = (string) $s;
+	$len = \strlen($s);
+
+	for ($i = 0, $j = 0; $i < $len; ++$i, ++$j) {
+		switch ($s[$i] & "\xF0") {
+			case "\xC0":
+			case "\xD0":
+				$c = (\ord($s[$i] & "\x1F") << 6) | \ord($s[++$i] & "\x3F");
+				$s[$j] = $c < 256 ? \chr($c) : '?';
+				break;
+
+			case "\xF0":
+				++$i;
+				// no break
+
+			case "\xE0":
+				$s[$j] = '?';
+				$i += 2;
+				break;
+
+			default:
+				$s[$j] = $s[$i];
+		}
+	}
+
+	return substr($s, 0, $j);
+}
+
+
+/**
  * Use mb_substr if available, else use a regex
  * @since 1.6.0
  * @param string $string
@@ -2186,7 +2288,7 @@ function bookacti_format_array_for_export( $array, $display_keys = false, $type 
 
 /**
  * Format datetime to be displayed in a human comprehensible way
- * @version 1.8.6
+ * @version 1.16.26
  * @param string $datetime Date format "Y-m-d H:i:s" is expected
  * @param string $format 
  * @return string
@@ -2205,7 +2307,7 @@ function bookacti_format_datetime( $datetime, $format = '' ) {
 		$datetime = apply_filters( 'date_i18n', wp_date( $format, $timestamp, new DateTimeZone( 'UTC' ) ), $format, $timestamp, false );
 
 		// Encode to UTF8 to avoid any bad display of special chars
-		if( ! bookacti_is_utf8( $datetime ) ) { $datetime = utf8_encode( $datetime ); }
+		$datetime = bookacti_utf8_encode( $datetime );
 	}
 	return $datetime;
 }
