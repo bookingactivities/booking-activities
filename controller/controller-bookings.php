@@ -1494,8 +1494,8 @@ function bookacti_export_bookings_page() {
 	
 	} else if( $export_type === 'ical' ) { 
 		$ical_args = apply_filters( 'bookacti_export_bookings_ical_args', array( 
-			'vevent_summary'               => isset( $args[ 'vevent_summary' ] ) ? bookacti_utf8_encode( urldecode( trim( $args[ 'vevent_summary' ] ) ) ) : $user_settings[ 'vevent_summary' ],
-			'vevent_description'           => isset( $args[ 'vevent_description' ] ) ? bookacti_utf8_encode( urldecode( str_replace( array( '%0A', '%250A' ), '\n', trim( $args[ 'vevent_description' ] ) ) ) ) : $user_settings[ 'vevent_description' ],
+			'vevent_summary'               => isset( $args[ 'vevent_summary' ] ) ? bookacti_utf8_decode( urldecode( trim( $args[ 'vevent_summary' ] ) ) ) : $user_settings[ 'vevent_summary' ],
+			'vevent_description'           => isset( $args[ 'vevent_description' ] ) ? bookacti_utf8_decode( urldecode( str_replace( array( '%0A', '%250A' ), '\n', trim( $args[ 'vevent_description' ] ) ) ) ) : $user_settings[ 'vevent_description' ],
 			'tooltip_booking_list_columns' => $columns,
 			'booking_list_header'          => ! empty( $args[ 'booking_list_header' ] ) ? 1 : 0,
 			'raw'                          => ! empty( $args[ 'raw' ] ) ? 1 : 0,
