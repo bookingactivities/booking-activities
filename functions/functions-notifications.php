@@ -1131,7 +1131,7 @@ function bookacti_send_booking_rescheduled_notification( $booking, $old_booking,
 /**
  * Send a notification when an event dates change to the customers who booked it, once per event per user, for future bookings only
  * @since 1.14.1 (was bookacti_send_event_rescheduled_notifications)
- * @version 1.16.9
+ * @version 1.16.27
  * @param object $old_event
  * @param array $old_bookings
  * @param int $delta_seconds_start
@@ -1192,11 +1192,11 @@ function bookacti_maybe_send_event_rescheduled_notifications( $old_event, $old_b
 		);
 	}
 	
-	$updated = apply_filters( 'bookacti_bookings_rescheduled', array(), array( 'bookings' => $old_bookings, 'booking_groups' => array(), 'groups_bookings' => array() ), array( 'bookings' => $bookings, 'booking_groups' => array(), 'groups_bookings' => array() ) );
+	$updated = apply_filters( 'bookacti_bookings_rescheduled', $updated, array( 'bookings' => $old_bookings, 'booking_groups' => array(), 'groups_bookings' => array() ), array( 'bookings' => $bookings, 'booking_groups' => array(), 'groups_bookings' => array() ) );
 	
 	// Send notifications
-	if( $send_notifications ) {
-		foreach( $updated as $booking_id => $booking_updated_data ) {
+	if( $send_notifications && ! empty( $updated[ 'bookings' ] ) ) {
+		foreach( $updated[ 'bookings' ] as $booking_id => $booking_updated_data ) {
 			if( empty( $booking_updated_data[ 'notification_sent' ] )
 			||  empty( $old_bookings[ $booking_id ] )
 			||  empty( $bookings[ $booking_id ] ) ) { continue; }
@@ -1204,7 +1204,7 @@ function bookacti_maybe_send_event_rescheduled_notifications( $old_event, $old_b
 			$old_booking = $old_bookings[ $booking_id ];
 			$new_booking = $bookings[ $booking_id ];
 			
-			bookacti_send_booking_rescheduled_notification( $new_booking, $old_booking, 'customer' );
+			bookacti_send_booking_rescheduled_notification( $new_booking, $old_booking );
 		}
 	}
 	
@@ -1215,7 +1215,7 @@ function bookacti_maybe_send_event_rescheduled_notifications( $old_event, $old_b
 /**
  * Send a notification when an event is deleted to the customers who booked it
  * @since 1.14.0 (was bookacti_send_event_cancelled_notifications)
- * @version 1.16.5
+ * @version 1.16.27
  * @param object $event
  * @param array $old_bookings
  * @param boolean $send_notitifications
@@ -1255,7 +1255,7 @@ function bookacti_maybe_send_event_cancelled_notifications( $event, $old_booking
 
 		$send = apply_filters( 'bookacti_send_event_cancelled_notification', $send_notitifications, $booking, $event, $old_booking );
 		if( $send ) {
-			bookacti_send_booking_status_change_notification( $booking->state, $booking, $old_booking, 'customer' );
+			bookacti_send_booking_status_change_notification( $booking->state, $booking, $old_booking );
 			do_action( 'bookacti_event_cancelled_notification_sent', $event, $booking, $old_booking );
 		}
 	}

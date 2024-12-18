@@ -3,7 +3,7 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
 Tested up to: 6.7
-Stable tag: 1.16.26
+Stable tag: 1.16.27
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -319,6 +319,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.16.27 - 2024/12/18 =
+* Fix - Reschedule notifications were not sent after moving a booked event in the calendar editor
 
 = 1.16.26 - 2024/12/11 =
 * Dev - Replace deprecated UTF8 PHP functions as of PHP 8.2
