@@ -110,7 +110,7 @@ function bookacti_filter_booking_list( paged ) {
 
 /**
  * Change template-related filters
- * @version 1.15.6
+ * @version 1.16.28
  */
 function bookacti_update_template_related_filters() {
 	// Update activities filter
@@ -142,7 +142,10 @@ function bookacti_update_template_related_filters() {
 	});
 	
 	// Refresh select2
-	if( $j( '#bookacti-booking-filter-activities' ).hasClass( 'select2-hidden-accessible' ) ) { $j( '#bookacti-booking-filter-activities' ).select2( 'destroy' ); bookacti_select2_init(); }
+	if( $j( '#bookacti-booking-filter-activities' ).hasClass( 'select2-hidden-accessible' ) ) { 
+		bookacti_select2_destroy( $j( '#bookacti-booking-filter-activities' ) ); 
+		bookacti_select2_init();
+	}
 }
 
 
