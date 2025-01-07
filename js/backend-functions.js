@@ -342,7 +342,7 @@ function bookacti_fill_fields_from_array( fields, field_prefix, scope ) {
 
 /**
  * Switch a selectbox to multiple
- * @version 1.16.0
+ * @version 1.16.28
  * @param {HTMLElement} checkbox
  */
 function bookacti_switch_select_to_multiple( checkbox ) {
@@ -395,8 +395,7 @@ function bookacti_switch_select_to_multiple( checkbox ) {
 	}
 	
 	if( $j( 'select#' + select_id ).hasClass( 'select2-hidden-accessible' ) ) {
-		if( ! $j.fn.select2 ) { return; }
-		$j( 'select#' + select_id ).select2( 'destroy' );
+		bookacti_select2_destroy( $j( 'select#' + select_id ) );
 		bookacti_select2_init();
 	}
 	
@@ -407,7 +406,7 @@ function bookacti_switch_select_to_multiple( checkbox ) {
 /**
  * Fill item boxes
  * @since 1.8.3
- * @version 1.15.4
+ * @version 1.16.28
  * @param {HTMLElement} selectbox
  * @param {Array} item_ids
  * @param {string} item_type
@@ -462,7 +461,10 @@ function bookacti_fill_items_selectbox( selectbox, item_ids, item_type ) {
 						selectbox.find( '.bookacti-unknown-item[value="' + option.id + '"]' ).html( option.text ).removeClass( 'bookacti-unknown-item' );
 					});
 					// Refresh select2
-					if( selectbox.hasClass( 'select2-hidden-accessible' ) ) { selectbox.select2( 'destroy' ); bookacti_select2_init(); }
+					if( selectbox.hasClass( 'select2-hidden-accessible' ) ) { 
+						bookacti_select2_destroy( selectbox ); 
+						bookacti_select2_init();
+					}
 				}
 			
 			} else if( response.status === 'failed' ) {
@@ -484,7 +486,7 @@ function bookacti_fill_items_selectbox( selectbox, item_ids, item_type ) {
 
 /**
  * Show or hide activities depending on the selected template
- * @version 1.8.6
+ * @version 1.16.28
  * @param {array} template_ids
  * @param {HTMLElement} options
  */
@@ -537,7 +539,10 @@ function bookacti_show_hide_template_related_options( template_ids, options ) {
 	});
 	
 	// Refresh select2
-	if( options.parent( 'select' ).hasClass( 'select2-hidden-accessible' ) ) { options.parent( 'select' ).select2( 'destroy' ); bookacti_select2_init(); }
+	if( options.parent( 'select' ).hasClass( 'select2-hidden-accessible' ) ) {
+		bookacti_select2_destroy( options.parent( 'select' ) );
+		bookacti_select2_init();
+	}
 }
 
 

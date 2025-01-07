@@ -414,6 +414,20 @@ function bookacti_select2_sortable_init( selectbox_selector ) {
 
 
 /**
+ * Destroy select2 selectbox
+ * @since 1.16.28
+ * @param {HTMLElement|String} element
+ */
+function bookacti_select2_destroy( element ) {
+	if( ! $j.fn.select2 ) { return; }
+	if( ! $j( element ).length ) { return; }
+	if( ! $j( element ).hasClass( 'select2-hidden-accessible' ) ) { return; }
+	
+	$j( element ).select2( 'destroy' );
+}
+
+
+/**
  * Init a new moment function: moment.formatPHP 
  * Convert a php date format into a moment.js format
  * http://www.php.net/manual/en/function.date.php
