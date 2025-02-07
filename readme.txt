@@ -320,6 +320,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.16.29 - 2025/02/07 =
+* Tweak - Add "Customer order note" column in booking export
+* Tweak - Add {customer_order_note} notification tag
+* Fix - Expired and removed bookings were not automatically deleted from database if cart expiration option was not active
+
 = 1.16.28 - 2025/01/07 =
 * Dev - Add checks before removing select2 from a selectbox to prevent JS errors
 

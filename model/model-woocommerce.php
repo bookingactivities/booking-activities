@@ -389,8 +389,8 @@ function bookacti_deactivate_expired_bookings() {
 		$last_error = $wpdb->last_error;
 	}
 	
-	if( ! $expired_bookings && $last_error ){ return $last_error; }
-	if( $expired_bookings === false )		{ return false; }
+	if( ! $expired_bookings && $last_error ) { return $last_error; }
+	if( $expired_bookings === false )        { return false; }
 	
 	// Check if expired bookings belong to groups
 	$expired_ids = array();
@@ -453,6 +453,7 @@ function bookacti_deactivate_expired_bookings() {
 /**
  * Delete expired bookings few days after their expiration date
  * @since 1.7.4
+ * @version 1.16.29
  * @global wpdb $wpdb
  * @param int $delay
  * @return array|false
@@ -463,7 +464,7 @@ function bookacti_delete_expired_bookings( $delay = 10 ) {
 	// Get expired booking and booking groups ids
 	$query	= 'SELECT id, group_id '
 			. ' FROM ' . BOOKACTI_TABLE_BOOKINGS
-			. ' WHERE expiration_date <= DATE_SUB( UTC_TIMESTAMP(), INTERVAL %d DAY ) '
+			. ' WHERE ( expiration_date <= DATE_SUB( UTC_TIMESTAMP(), INTERVAL %d DAY ) OR expiration_date IS NULL ) '
 			. ' AND state IN ( "expired", "removed" ) '
 			. ' AND active = 0 ';
 	$query	= $wpdb->prepare( $query, $delay );
@@ -477,7 +478,7 @@ function bookacti_delete_expired_bookings( $delay = 10 ) {
 			$expired_group_ids[] = $expired_booking->group_id;
 		}
 	}
-		
+	
 	// Bookings
 	$expired_ids = apply_filters( 'bookacti_expired_bookings_to_delete', $expired_ids );
 	$return = $expired_ids;
@@ -488,7 +489,7 @@ function bookacti_delete_expired_bookings( $delay = 10 ) {
 		}
 		
 		// Delete expired bookings
-		$query= 'DELETE FROM ' . BOOKACTI_TABLE_BOOKINGS . ' WHERE id IN( ' . $ids_placeholder_list . ' );';
+		$query = 'DELETE FROM ' . BOOKACTI_TABLE_BOOKINGS . ' WHERE id IN( ' . $ids_placeholder_list . ' );';
 		$query = $wpdb->prepare( $query, $expired_ids );
 		$deleted = $wpdb->query( $query );
 		
