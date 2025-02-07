@@ -3,7 +3,7 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
 Tested up to: 6.7
-Stable tag: 1.16.28
+Stable tag: 1.16.29
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
