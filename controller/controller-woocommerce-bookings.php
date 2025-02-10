@@ -203,6 +203,7 @@ add_action( 'woocommerce_order_status_completed', 'bookacti_wc_update_completed_
 /**
  * Update the bookings of an order to "Pending" when it turns "Partially paid" (beta support for some deposit plugins)
  * @since 1.16.24
+ * @version 1.16.30
  * @param int $order_id
  * @param WC_Order $order
  * @param string $booking_status
@@ -218,6 +219,7 @@ function bookacti_wc_update_partially_paid_order_bookings( $order_id, $order = n
 	}
 	
 	if( ! $order ) { $order = wc_get_order( $order_id ); }
+	if( ! $order ) { return; }
 	
 	// Get order user ID  or email
 	$customer_id = $order->get_user_id( 'edit' );

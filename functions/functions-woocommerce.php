@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Add bookings to cart item or merge the bookings to an existing cart item
  * @since 1.9.0
- * @version 1.15.11
+ * @version 1.16.30
  * @global woocommerce $woocommerce
  * @param array $product_bookings_data
  * @return array
@@ -15,19 +15,40 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 function bookacti_wc_add_bookings_to_cart( $product_bookings_data ) {
 	$return_array = array( 'status' => 'failed', 'bookings' => array(), 'booking_ids' => array(), 'booking_group_ids' => array() );
 	
-	// Check if one of the cart items is identical
 	global $woocommerce;
-	$cart_contents = $woocommerce->cart->get_cart();
-	foreach( $cart_contents as $cart_item_key => $cart_item ) {
+	$cart_items          = $woocommerce->cart->get_cart();
+	$cart_items_bookings = bookacti_wc_get_cart_items_bookings( $cart_items );
+	
+	// Check if one of the cart items is identical
+	foreach( $cart_items as $cart_item_key => $cart_item ) {
 		// Same product
 		if( $product_bookings_data[ 'product_id' ] !== $cart_item[ 'product_id' ] ) { continue; }
+		
 		// Same variation
 		if( ( empty( $product_bookings_data[ 'variation_id' ] ) && ! empty( $cart_item[ 'variation_id' ] ) )
 		||  ( ! empty( $product_bookings_data[ 'variation_id' ] ) && ( empty( $cart_item[ 'variation_id' ] ) || $product_bookings_data[ 'variation_id' ] !== $cart_item[ 'variation_id' ] ) ) ) { continue; }
-		// Same booked events
-		$cart_item_events = bookacti_wc_get_cart_item_picked_events( $cart_item_key );
+		
+		// Same status and same events
+		$cart_item_bookings = isset( $cart_items_bookings[ $cart_item_key ] ) ? $cart_items_bookings[ $cart_item_key ] : array();
+		$cart_item_events   = array();
+		foreach( $cart_item_bookings as $cart_item_booking ) {
+			foreach( $cart_item_booking[ 'bookings' ] as $booking ) {
+				if( ! ( isset( $booking->state ) && $booking->state === 'in_cart' ) ) { continue; }
+				$cart_item_events[] = array(
+					'group_id'   => $cart_item_booking[ 'type' ] === 'group' && ! empty( $booking->event_group_id ) ? $booking->event_group_id : 0,
+					'group_date' => $cart_item_booking[ 'type' ] === 'group' && ! empty( $booking->group_date ) ? $booking->group_date : '',
+					'id'         => ! empty( $booking->event_id ) ? $booking->event_id : 0,
+					'start'      => ! empty( $booking->event_start ) ? $booking->event_start : '',
+					'end'        => ! empty( $booking->event_end ) ? $booking->event_end : '',
+				);
+			}
+		}
 		if( ! $cart_item_events ) { continue; }
+		
+		// Same booked events
+		$cart_item_events = bookacti_format_picked_events( $cart_item_events );
 		if( bookacti_diff_picked_events( $product_bookings_data[ 'picked_events' ], $cart_item_events ) ) { continue; }
+		
 		// Same Third-party data
 		if( ! apply_filters( 'bookacti_merge_cart_item', true, $cart_item, $product_bookings_data ) ) { continue; }
 		
@@ -225,41 +246,6 @@ function bookacti_wc_get_cart_item_bookings( $cart_item_key, $filters = array() 
 
 
 /**
- * Format cart item booked events like a picked events array
- * @since 1.9.0
- * @version 1.12.0
- * @global woocommerce $woocommerce
- * @param string $cart_item_key
- * @param boolean $one_entry_per_group
- * @return array
- */
-function bookacti_wc_get_cart_item_picked_events( $cart_item_key, $one_entry_per_group = false ) {
-	global $woocommerce;
-	$item = $woocommerce->cart->get_cart_item( $cart_item_key );
-	if( ! $item ) { return array(); }
-	if( empty( $item[ '_bookacti_options' ][ 'bookings' ] ) ) { return array(); }
-	
-	$cart_item_bookings = bookacti_wc_get_cart_item_bookings( $cart_item_key );
-	if( ! $cart_item_bookings ) { return ''; }
-	
-	$events = array();
-	foreach( $cart_item_bookings as $cart_item_booking ) {
-		foreach( $cart_item_booking[ 'bookings' ] as $booking ) {
-			$events[] = array(
-				'group_id'   => $cart_item_booking[ 'type' ] === 'group' && ! empty( $booking->event_group_id ) ? $booking->event_group_id : 0,
-				'group_date' => $cart_item_booking[ 'type' ] === 'group' && ! empty( $booking->group_date ) ? $booking->group_date : '',
-				'id'         => ! empty( $booking->event_id ) ? $booking->event_id : 0,
-				'start'      => ! empty( $booking->event_start ) ? $booking->event_start : '',
-				'end'        => ! empty( $booking->event_end ) ? $booking->event_end : '',
-			);
-		}
-	}
-	
-	return bookacti_format_picked_events( $events, $one_entry_per_group );
-}
-
-
-/**
  * Check if we can update the quantity of a cart item bookings
  * @since 1.9.0
  * @version 1.15.11
@@ -400,7 +386,7 @@ function bookacti_wc_update_cart_item_bookings_status( $cart_item_key, $new_stat
 /**
  * Update in_cart bookings status to removed if they are no longer in cart
  * @since 1.16.4
- * @version 1.16.5
+ * @version 1.16.30
  * @param array $cart_items
  * @param string $new_status
  * @return int
@@ -424,12 +410,24 @@ function bookacti_wc_update_in_cart_bookings_status_not_in_cart_items( $cart_ite
 		}
 	}
 	
-	$filters  = bookacti_format_booking_filters( array( 'user_id' => $customer_id, 'status' => array( 'in_cart' ), 'not_in__booking_id' => $not_in__booking_id, 'not_in__booking_group_id' => $not_in__booking_group_id ) );
+	$filters  = bookacti_format_booking_filters( array( 'user_id' => $customer_id, 'status' => array( 'in_cart' ), 'not_in__booking_id' => $not_in__booking_id, 'not_in__booking_group_id' => $not_in__booking_group_id, 'fetch_meta' => true ) );
 	$bookings = bookacti_get_bookings( $filters );
 	$groups   = bookacti_get_booking_groups( $filters );
 	
 	$updated_bookings_nb = $bookings ? bookacti_update_bookings_status( array_keys( $bookings ), $new_status ) : 0;
 	$updated_groups_nb   = $groups ? bookacti_update_booking_groups_status( array_keys( $groups ), $new_status ) : 0;
+	
+	if( $new_status === 'removed' && ( $bookings || $groups ) && ( $updated_bookings_nb || $updated_groups_nb ) ) {
+		$group_filters      = $groups ? bookacti_format_booking_filters( array( 'in__booking_group_id' => array_keys( $groups ), 'fetch_meta' => true ) ) : array();
+		$groups_bookings    = $group_filters ? bookacti_get_bookings( $group_filters ) : array();
+		$bookings_per_group = array();
+		foreach( $groups_bookings as $booking ) {
+			if( ! isset( $bookings_per_group[ $booking->group_id ] ) ) { $bookings_per_group[ $booking->group_id ] = array(); }
+			$bookings_per_group[ $booking->group_id ][] = $booking;
+		}
+		
+		do_action( 'bookacti_wc_in_cart_bookings_not_in_cart_items_removed', $updated_bookings_nb ? $bookings : array(), $updated_groups_nb ? $groups : array(), $updated_groups_nb ? $bookings_per_group : array() );
+	}
 	
 	return intval( $updated_bookings_nb ) + intval( $updated_groups_nb );
 }
@@ -936,22 +934,22 @@ function bookacti_wc_get_item_booking_actions_html( $item_booking, $return_array
 	// Get the array of possible actions
 	$actions = bookacti_wc_get_item_booking_actions( $item_booking );
 	
-	$actions_html = '';
-	$actions_html_array	= array();
+	$actions_html         = '';
+	$actions_html_array   = array();
 	$booking_action_class = $item_booking[ 'type' ] === 'group' ? ' bookacti-booking-group-action' : ' bookacti-booking-action';
 	
 	foreach( $actions as $action_id => $action ) {
-			$action_html = '<a '
-							. 'href="' . esc_url( $action[ 'link' ] ) . '" '
-							. 'id="' . $booking_action_class . '-' . esc_attr( $action_id ) . '-' . $item_booking[ 'id' ] . '" '
-							. 'class="button ' . esc_attr( $action[ 'class' ] ) . $booking_action_class . ' tips" '
-							. 'data-action="' . esc_attr( $action_id ) . '" '
-							. 'data-tip="' . esc_attr( $action[ 'description' ] ) . '" '
-							. 'data-booking-type="' . $item_booking[ 'type' ] . '" '
-							. 'data-booking-id="' . $item_booking[ 'id' ] . '" >'
-							.	esc_html( $action[ 'label' ] )
-						. '</a>';
-			$actions_html_array[ $action_id ] = $action_html;
+		$action_html = '<a '
+			. 'href="' . esc_url( $action[ 'link' ] ) . '" '
+			. 'id="' . $booking_action_class . '-' . esc_attr( $action_id ) . '-' . $item_booking[ 'id' ] . '" '
+			. 'class="button ' . esc_attr( $action[ 'class' ] ) . $booking_action_class . ' tips" '
+			. 'data-action="' . esc_attr( $action_id ) . '" '
+			. 'data-tip="' . esc_attr( $action[ 'description' ] ) . '" '
+			. 'data-booking-type="' . $item_booking[ 'type' ] . '" '
+			. 'data-booking-id="' . $item_booking[ 'id' ] . '" >'
+			. esc_html( $action[ 'label' ] )
+		. '</a>';
+		$actions_html_array[ $action_id ] = $action_html;
 	}
 
 	// Return the array of html actions
@@ -1356,7 +1354,7 @@ function bookacti_wc_get_order_items_by_bookings( $booking_ids = array(), $booki
 		'booking_group_ids' => array_map( 'intval', $booking_group_ids )
 	);
 	
-	foreach( $orders as $order ) {		
+	foreach( $orders as $order ) {
 		$items = $order->get_items();
 		if( ! $items ) { continue; }
 		
@@ -1559,7 +1557,7 @@ function bookacti_wc_booking_actions_per_order_id( $booking_actions, $order_id )
 	if( isset( $booking_actions[ 'view-order' ] ) ) { $booking_actions[ 'view-order' ][ 'link' ] = get_edit_post_link( $order_id ); }
 
 	// Check cancel / reschedule
-	if( ! current_user_can( 'bookacti_edit_bookings' ) && $order->get_status() === 'pending' )	{ 
+	if( ! current_user_can( 'bookacti_edit_bookings' ) && $order->get_status() === 'pending' ) { 
 		if( isset( $booking_actions[ 'cancel' ] ) )     { unset( $booking_actions[ 'cancel' ] ); } 
 		if( isset( $booking_actions[ 'reschedule' ] ) ) { unset( $booking_actions[ 'reschedule' ] ); }
 	}
@@ -1915,7 +1913,7 @@ function bookacti_update_order_bookings_on_items_refund( $refund ) {
 		if( ! $refunded_qty || ! $refunded_amount ) { continue; }
 		
 		$refunded_items[ $item_id ]        = $order_items[ $item_id ];
-		$items_refunded_qty[ $item_id ]	   = $refunded_qty;
+		$items_refunded_qty[ $item_id ]    = $refunded_qty;
 		$items_refunded_amount[ $item_id ] = $refunded_amount;
 	}
 	

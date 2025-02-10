@@ -104,7 +104,7 @@ function bookacti_change_customer_id_to_user_id( $user_login, $user ) {
 	}
 
 	// Update the cart expiration date if the user is logged in
-	$is_per_product_expiration	= bookacti_get_setting_value( 'bookacti_cart_settings', 'is_cart_expiration_per_product' );
+	$is_per_product_expiration = bookacti_get_setting_value( 'bookacti_cart_settings', 'is_cart_expiration_per_product' );
 	if( ! $is_per_product_expiration ) {
 		$cart_expiration_date = bookacti_get_cart_expiration_date_per_user( $user->ID );
 		update_user_meta( $user->ID, 'bookacti_expiration_cart', $cart_expiration_date );
@@ -306,7 +306,7 @@ function bookacti_add_booking_system_in_single_product_page() {
 				$form_id   = $variation->get_meta( 'bookacti_variable_form' );
 				if( $form_id ) { 
 					$form_instance_id = 'bookacti-wc-form-fields-product-variation-' . $default_variation_id;
-				}	
+				}
 			}
 		}
 
@@ -357,7 +357,7 @@ function bookacti_add_booking_system_in_single_product_page() {
 				</script>
 			<?php
 			}
-		?>			
+		?>
 	</div>
 	<?php
 }
@@ -752,15 +752,15 @@ function bookacti_set_timeout_to_cart_item( $cart_item_key, $product_id, $quanti
 	if( $is_per_product_expiration ) { return; }
 
 	global $woocommerce;
-	$reset_timeout_on_change	= bookacti_get_setting_value( 'bookacti_cart_settings', 'reset_cart_timeout_on_change' );
-	$timeout					= bookacti_get_setting_value( 'bookacti_cart_settings', 'cart_timeout' );
-	$cart_expiration_date		= bookacti_wc_get_cart_expiration_date();
-	$expiration_date			= date( 'Y-m-d H:i:s', strtotime( '+' . $timeout . ' minutes' ) );
+	$reset_timeout_on_change = bookacti_get_setting_value( 'bookacti_cart_settings', 'reset_cart_timeout_on_change' );
+	$timeout                 = bookacti_get_setting_value( 'bookacti_cart_settings', 'cart_timeout' );
+	$cart_expiration_date    = bookacti_wc_get_cart_expiration_date();
+	$expiration_date         = date( 'Y-m-d H:i:s', strtotime( '+' . $timeout . ' minutes' ) );
 
 	// Reset cart timeout and its items timeout
-	if(	$reset_timeout_on_change 
-	||	! $cart_expiration_date
-	||	strtotime( $cart_expiration_date ) <= time()
+	if( $reset_timeout_on_change 
+	||  ! $cart_expiration_date
+	||  strtotime( $cart_expiration_date ) <= time()
 	||  $woocommerce->cart->get_cart_contents_count() === $quantity ) {
 
 		// Reset global cart timeout
@@ -813,8 +813,8 @@ function bookacti_add_to_cart_message_html( $message, $products ) {
 	}
 	
 	$cart_item_bookings = bookacti_wc_get_cart_item_bookings( $global_bookacti_wc[ 'added_cart_item_key' ] );
-	$expiration_date	= ! empty( $cart_item_bookings[ 0 ][ 'bookings' ][ 0 ]->expiration_date ) ? $cart_item_bookings[ 0 ][ 'bookings' ][ 0 ]->expiration_date : bookacti_wc_get_new_cart_item_expiration_date();
-	$remaining_time		= bookacti_get_formatted_time_before_expiration( $expiration_date );
+	$expiration_date    = ! empty( $cart_item_bookings[ 0 ][ 'bookings' ][ 0 ]->expiration_date ) ? $cart_item_bookings[ 0 ][ 'bookings' ][ 0 ]->expiration_date : bookacti_wc_get_new_cart_item_expiration_date();
+	$remaining_time     = bookacti_get_formatted_time_before_expiration( $expiration_date );
 
 	$message .= '<br/>' . str_replace( '{time}', $remaining_time, $temporary_book_message );
 	
@@ -918,7 +918,7 @@ add_filter( 'woocommerce_cart_item_remove_link', 'bookacti_add_timeout_to_cart_i
 
 /**
  * Delete cart items if they are expired
- * @version 1.14.0
+ * @version 1.16.30
  * @global WooCommerce $woocommerce
  */
 function bookacti_remove_expired_product_from_cart() {
@@ -989,9 +989,11 @@ function bookacti_remove_expired_product_from_cart() {
 	// Display feedback to tell user that (part of) his cart has expired
 	if( $nb_deleted_cart_item > 0 ) {
 		/* translators: %d is a variable number of products */
-		$message = sprintf( esc_html( _n(	'%d product has expired and has been automatically removed from cart.', 
-											'%d products have expired and have been automatically removed from cart.', 
-											$nb_deleted_cart_item, 'booking-activities' ) ), $nb_deleted_cart_item );
+		$message = sprintf( esc_html( _n(
+			'%d product has expired and has been automatically removed from cart.', 
+			'%d products have expired and have been automatically removed from cart.', 
+			$nb_deleted_cart_item, 'booking-activities' )
+		), $nb_deleted_cart_item );
 		if( ! wc_has_notice( $message, 'error' ) ) { wc_add_notice( $message, 'error' ); }
 	}
 }
@@ -1010,10 +1012,15 @@ add_action( 'wp_loaded', 'bookacti_remove_expired_product_from_cart', 100, 0 );
  * Make sure that cart items quantity match booking quantity
  * TEMP FIX - https://github.com/woocommerce/woocommerce/issues/46483
  * @since 1.16.4
- * @version 1.16.5
+ * @version 1.16.30
  * @param array $session_cart
  */
 function bookacti_wc_check_session_cart_items_quantity_consistency( $session_cart ) {
+	// Do not process on AJAX calls and on CRON jobs to avoid expired cache
+	$is_ajax = function_exists( 'wp_doing_ajax' ) ? wp_doing_ajax() : defined( 'DOING_AJAX' );
+	$is_cron = function_exists( 'wp_doing_cron' ) ? wp_doing_cron() : defined( 'DOING_CRON' );
+	if( $is_ajax || $is_cron ) { return; }
+	
 	$cart_items          = array_filter( $session_cart->get_cart_contents() );
 	$cart_items_bookings = $cart_items ? bookacti_wc_get_cart_items_bookings( $cart_items ) : array();
 	$has_changed         = false;
@@ -1053,10 +1060,15 @@ add_action( 'woocommerce_cart_loaded_from_session', 'bookacti_wc_check_session_c
  * Check if the cart items quantity is consistent with the bookings quantity
  * TEMP FIX - https://github.com/woocommerce/woocommerce/issues/46483
  * @since 1.16.4
- * @version 1.16.5
+ * @version 1.16.30
  * @global WooCommerce $woocommerce
  */
 function bookacti_wc_check_cart_items_quantity_consistency() {
+	// Do not process on AJAX calls and on CRON jobs to avoid expired cache
+	$is_ajax = function_exists( 'wp_doing_ajax' ) ? wp_doing_ajax() : defined( 'DOING_AJAX' );
+	$is_cron = function_exists( 'wp_doing_cron' ) ? wp_doing_cron() : defined( 'DOING_CRON' );
+	if( $is_ajax || $is_cron ) { return; }
+	
 	global $woocommerce;
 	$cart_items          = $woocommerce->cart->get_cart();
 	$cart_items_bookings = $cart_items ? bookacti_wc_get_cart_items_bookings( $cart_items ) : array();
@@ -1483,11 +1495,11 @@ function bookacti_define_label_of_item_data( $label, $name ) {
 	
 	// Backward compatibility
 	if( $label === '_bookacti_booking_id' 
-	||  $label === 'bookacti_booking_id' )			{ $label = esc_html__( 'Booking', 'booking-activities' ); }
+	||  $label === 'bookacti_booking_id' )       { $label = esc_html__( 'Booking', 'booking-activities' ); }
 	if( $label === '_bookacti_booking_group_id' 
-	||  $label === 'bookacti_booking_group_id' )	{ $label = esc_html__( 'Booking group', 'booking-activities' ); }
-	if( $label === '_bookacti_refund_method' )		{ $label = esc_html__( 'Refund method', 'booking-activities' ); }
-	if( $label === 'bookacti_refund_coupon' )		{ $label = esc_html__( 'Coupon code', 'booking-activities' ); }
+	||  $label === 'bookacti_booking_group_id' ) { $label = esc_html__( 'Booking group', 'booking-activities' ); }
+	if( $label === '_bookacti_refund_method' )   { $label = esc_html__( 'Refund method', 'booking-activities' ); }
+	if( $label === 'bookacti_refund_coupon' )    { $label = esc_html__( 'Coupon code', 'booking-activities' ); }
 	
 	return $label;
 }
@@ -1505,10 +1517,10 @@ add_filter( 'woocommerce_attribute_label', 'bookacti_define_label_of_item_data',
 function bookacti_wc_number_of_bookings_per_event_per_user_query_include_current_user_in_cart_bookings( $query, $events ) {
 	global $wpdb;
 	$current_user_id = apply_filters( 'bookacti_current_user_id', get_current_user_id() );
-	$search		= 'LEFT JOIN ' . BOOKACTI_TABLE_BOOKINGS . ' as B ON B.event_id = E.id AND B.active = 1';
-	$replace	= 'LEFT JOIN ' . BOOKACTI_TABLE_BOOKINGS . ' as B ON B.event_id = E.id AND ( B.active = 1 OR ( B.state = "in_cart" AND B.user_id = %s ) )';
-	$replace	= $wpdb->prepare( $replace, $current_user_id );
-	$query		= str_replace( $search, $replace, $query );
+	$search  = 'LEFT JOIN ' . BOOKACTI_TABLE_BOOKINGS . ' as B ON B.event_id = E.id AND B.active = 1';
+	$replace = 'LEFT JOIN ' . BOOKACTI_TABLE_BOOKINGS . ' as B ON B.event_id = E.id AND ( B.active = 1 OR ( B.state = "in_cart" AND B.user_id = %s ) )';
+	$replace = $wpdb->prepare( $replace, $current_user_id );
+	$query   = str_replace( $search, $replace, $query );
 	return $query;
 }
 add_filter( 'bookacti_number_of_bookings_per_event_per_user_query', 'bookacti_wc_number_of_bookings_per_event_per_user_query_include_current_user_in_cart_bookings', 10, 2 );
@@ -1771,12 +1783,12 @@ function bookacti_wc_checkout_create_one_order_item_per_booking( $order, $data )
 		}
 		
 		// Add the rests in the first item totals
-		$default_taxes_total_rest	= ! empty( $item_taxes[ 'total' ] ) && ! empty( $default_taxes[ 'total' ] ) ? wc_round_tax_total( array_sum( $item_taxes[ 'total' ] ) - ( array_sum( $default_taxes[ 'total' ] ) * $nb_bookings ), $price_decimals ) : 0;
-		$default_taxes_subtotal_rest= ! empty( $item_taxes[ 'subtotal' ] ) && ! empty( $default_taxes[ 'subtotal' ] ) ? wc_round_tax_total( array_sum( $item_taxes[ 'subtotal' ] ) - ( array_sum( $default_taxes[ 'subtotal' ] ) * $nb_bookings ), $price_decimals ) : 0;
+		$default_taxes_total_rest    = ! empty( $item_taxes[ 'total' ] ) && ! empty( $default_taxes[ 'total' ] ) ? wc_round_tax_total( array_sum( $item_taxes[ 'total' ] ) - ( array_sum( $default_taxes[ 'total' ] ) * $nb_bookings ), $price_decimals ) : 0;
+		$default_taxes_subtotal_rest = ! empty( $item_taxes[ 'subtotal' ] ) && ! empty( $default_taxes[ 'subtotal' ] ) ? wc_round_tax_total( array_sum( $item_taxes[ 'subtotal' ] ) - ( array_sum( $default_taxes[ 'subtotal' ] ) * $nb_bookings ), $price_decimals ) : 0;
 		$first_item_taxes = $default_taxes;
 		foreach( $first_item_taxes as $i => $taxes ) {
 			foreach( $taxes as $tax_id => $amount ) {
-				if( $i === 'total' )	{ $first_item_taxes[ $i ][ $tax_id ] += $default_taxes_total_rest; break; }
+				if( $i === 'total' )    { $first_item_taxes[ $i ][ $tax_id ] += $default_taxes_total_rest; break; }
 				if( $i === 'subtotal' ) { $first_item_taxes[ $i ][ $tax_id ] += $default_taxes_subtotal_rest; break; }
 			}
 		}
@@ -2312,7 +2324,7 @@ function bookacti_display_my_account_dashboard_links() {
 					. esc_html__( 'Bookings', 'booking-activities' ) 
 				. '</a>' );
 		?>
-	</p>	
+	</p>
 <?php
 }
 add_action( 'woocommerce_account_dashboard', 'bookacti_display_my_account_dashboard_links', 20 );
