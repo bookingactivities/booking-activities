@@ -2089,7 +2089,7 @@ function bookacti_sanitize_bookings_export_settings( $raw_settings ) {
 /**
  * Get bookings export event tags
  * @since 1.8.0
- * @version 1.14.0
+ * @version 1.16.31
  * @return array
  */
 function bookacti_get_bookings_export_event_tags() {
@@ -2107,6 +2107,7 @@ function bookacti_get_bookings_export_event_tags() {
 		'{activity_title}'           => esc_html__( 'Activity title', 'booking-activities' ),
 		'{calendar_id}'              => esc_html__( 'Calendar ID', 'booking-activities' ),
 		'{calendar_title}'           => esc_html__( 'Calendar title', 'booking-activities' ),
+		'{booking_count}'            => esc_html__( 'Number of active individual bookings', 'booking-activities' ),
 		'{booking_list}'             => esc_html__( 'Event booking list (table)', 'booking-activities' ),
 		'{booking_list_raw}'         => esc_html__( 'Event booking list (csv)', 'booking-activities' )
 	) );
@@ -2235,7 +2236,7 @@ function bookacti_convert_bookings_to_ical( $filters = array(), $args_raw = arra
 /**
  * Get the events tags values
  * @since 1.8.0
- * @version 1.15.11
+ * @version 1.16.31
  * @param array $booking_items
  * @param array $args
  * @return array
@@ -2279,6 +2280,7 @@ function bookacti_get_bookings_export_events_tags_values( $booking_items, $args 
 				'{activity_title}'           => $item[ 'activity_title' ],
 				'{calendar_id}'              => $item[ 'template_id' ],
 				'{calendar_title}'           => $item[ 'template_title' ],
+				'{booking_count}'            => 0,
 				'{booking_list}'             => $has_booking_list && ! empty( $args[ 'booking_list_header' ] ) ? '<tr><th>' . implode( '</th><th>', $booking_list_headers ) . '</th></tr>' : '',
 				'{booking_list_raw}'         => $has_booking_list && ! empty( $args[ 'booking_list_header' ] ) ? implode( ', ', str_replace( ',', '', array_map( 'strip_tags', $booking_list_headers ) ) ) : ''
 			);
@@ -2287,7 +2289,8 @@ function bookacti_get_bookings_export_events_tags_values( $booking_items, $args 
 		// Increment booking quantity
 		if( $item[ 'booking_active' ] && empty( $qty_ack[ $item[ 'booking_id' ] ] ) ) {
 			$events_tags[ $index ][ '{event_booked_quantity}' ] += intval( $item[ 'quantity' ] );
-			$events_tags[ $index ][ '{event_availability}' ] -= intval( $item[ 'quantity' ] );
+			$events_tags[ $index ][ '{event_availability}' ]    -= intval( $item[ 'quantity' ] );
+			$events_tags[ $index ][ '{booking_count}' ]         += 1;
 			$qty_ack[ $item[ 'booking_id' ] ] = true; // Make sure each booking is counted only once
 		}
 		

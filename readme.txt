@@ -3,7 +3,7 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
 Tested up to: 6.7
-Stable tag: 1.16.30
+Stable tag: 1.16.31
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -319,6 +319,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.16.31 - 2025/02/17 =
+* Tweak - Use the Bookings custom page title as tab label and page title in WC My Account
+* Tweak - Add {booking_count} tag in iCal booking export settings and in notification tags
+* Fix - Booking notifications were not send when WC orders turned to Partially Paid (with a deposit plugin)
 
 = 1.16.30 - 2025/02/10 =
 * Fix - Cart items may be deleted right after a booking was added to cart

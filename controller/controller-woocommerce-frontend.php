@@ -2233,7 +2233,7 @@ add_action( 'bookacti_activate', 'bookacti_add_bookings_endpoint', 10 );
 /**
  * Set the Bookings page title in WC account
  * @since 1.8.9
- * @version 1.14.0
+ * @version 1.16.31
  * @global WP_Query $wp_query
  * @param string $title
  * @param int $post_id
@@ -2242,9 +2242,15 @@ add_action( 'bookacti_activate', 'bookacti_add_bookings_endpoint', 10 );
 function bookacti_wc_account_bookings_page_title( $title, $post_id = null ) {
 	global $wp_query;
 	$is_endpoint = isset( $wp_query->query_vars[ 'bookings' ] );
+	
 	if( $is_endpoint && ! is_admin() && is_main_query() && in_the_loop() && is_account_page() ) {
-		$title = esc_html__( 'Bookings', 'booking-activities' );
+		// Get custom page title
+		$page_id    = intval( bookacti_get_setting_value( 'bookacti_account_settings', 'wc_my_account_bookings_page_id' ) );
+		$page       = $page_id > 0 ? get_page( $page_id ) : null;
+		$page_title = $page && ! empty( $page->post_title ) ? esc_html( apply_filters( 'bookacti_translate_text_external', $page->post_title, false, true, array( 'domain' => 'wordpress', 'object_type' => 'page', 'object_id' => $page_id, 'field' => 'post_title' ) ) ) : '';
+		$title      = $page_title ? $page_title : esc_html__( 'Bookings', 'booking-activities' );
 	}
+	
 	return $title;
 }
 add_filter( 'the_title', 'bookacti_wc_account_bookings_page_title', 10, 2 );
@@ -2253,19 +2259,25 @@ add_filter( 'the_title', 'bookacti_wc_account_bookings_page_title', 10, 2 );
 /**
  * Add the "Bookings" tab to the My Account menu
  * @since 1.7.16
+ * @version 1.16.31
  * @param array $tabs
  * @return array
  */
 function bookacti_add_bookings_tab_to_my_account_menu( $tabs ) {
 	$page_id = intval( bookacti_get_setting_value( 'bookacti_account_settings', 'wc_my_account_bookings_page_id' ) );
 	if( $page_id < 0 ) { return $tabs; }
-
+	
+	// Get custom page title
+	$page       = $page_id > 0 ? get_page( $page_id ) : null;
+	$page_title = $page && ! empty( $page->post_title ) ? esc_html( apply_filters( 'bookacti_translate_text_external', $page->post_title, false, true, array( 'domain' => 'wordpress', 'object_type' => 'page', 'object_id' => $page_id, 'field' => 'post_title' ) ) ) : '';
+	$title      = $page_title ? $page_title : esc_html__( 'Bookings', 'booking-activities' );
+	
 	$inserted = false;
 	$new_tabs = array();
 	foreach( $tabs as $tab_key => $tab_title ) {
 		// Insert the "Bookings" tab before the "Logout" tab
 		if( $tab_key === 'customer-logout' && ! $inserted ) {
-			$new_tabs[ 'bookings' ] = esc_html__( 'Bookings', 'booking-activities' );
+			$new_tabs[ 'bookings' ] = $title;
 			$inserted = true;
 		}
 
@@ -2273,14 +2285,14 @@ function bookacti_add_bookings_tab_to_my_account_menu( $tabs ) {
 
 		// Insert the "Bookings" tab after the "Orders" tab
 		if( $tab_key === 'orders' && ! $inserted ) {
-			$new_tabs[ 'bookings' ] = esc_html__( 'Bookings', 'booking-activities' );
+			$new_tabs[ 'bookings' ] = $title;
 			$inserted = true;
 		}
 	}
-
+	
 	// Insert the "Bookings" tab at the end if it hasn't been yet
 	if( ! $inserted ) {
-		$new_tabs[ 'bookings' ] = esc_html__( 'Bookings', 'booking-activities' );
+		$new_tabs[ 'bookings' ] = $title;
 	}
 
 	return $new_tabs;

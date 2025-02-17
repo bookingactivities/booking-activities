@@ -297,7 +297,7 @@ function bookacti_init_settings() {
 	register_setting( 'bookacti_notifications_settings', 'bookacti_notifications_settings' );
 	register_setting( 'bookacti_messages_settings', 'bookacti_messages_settings' );
 	register_setting( 'bookacti_licenses_settings', 'bookacti_licenses_settings' );
-		
+	
 	/* Allow plugins to add settings and sections */
 	do_action( 'bookacti_add_settings' );
 }
@@ -403,11 +403,11 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 					<td>
 						<?php 
 						$args = array(
-							'type'	=> 'checkbox',
-							'name'	=> 'bookacti_notification[active]',
-							'id'	=> 'bookacti_notification_active',
-							'value'	=> $notification_settings[ 'active' ] ? $notification_settings[ 'active' ] : 0,
-							'tip'	=> esc_html__( 'Enable or disable this automatic notification.', 'booking-activities' )
+							'type'  => 'checkbox',
+							'name'  => 'bookacti_notification[active]',
+							'id'    => 'bookacti_notification_active',
+							'value' => $notification_settings[ 'active' ] ? $notification_settings[ 'active' ] : 0,
+							'tip'   => esc_html__( 'Enable or disable this automatic notification.', 'booking-activities' )
 						);
 						bookacti_display_field( $args );
 						?>
@@ -429,11 +429,11 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 					<td>
 						<?php
 						$args = array(
-							'type'	=> 'text',
-							'name'	=> 'bookacti_notification[email][to]',
-							'id'	=> 'bookacti_notification_email_to',
-							'value'	=> is_array( $notification_settings[ 'email' ][ 'to' ] ) ? implode( ',', $notification_settings[ 'email' ][ 'to' ] ) : strval( $notification_settings[ 'email' ][ 'to' ] ),
-							'tip'	=> esc_html__( 'Recipient(s) email address(es) (comma separated).', 'booking-activities' )
+							'type'  => 'text',
+							'name'  => 'bookacti_notification[email][to]',
+							'id'    => 'bookacti_notification_email_to',
+							'value' => is_array( $notification_settings[ 'email' ][ 'to' ] ) ? implode( ',', $notification_settings[ 'email' ][ 'to' ] ) : strval( $notification_settings[ 'email' ][ 'to' ] ),
+							'tip'   => esc_html__( 'Recipient(s) email address(es) (comma separated).', 'booking-activities' )
 						);
 						bookacti_display_field( $args );
 						?>
@@ -445,12 +445,12 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 					<td>
 						<?php 
 						$args = array(
-							'type'	=> 'text',
-							'name'	=> 'bookacti_notification[email][subject]',
-							'id'	=> 'bookacti_notification_email_subject' . ( $recipient === 'admin' ? '_admin' : '' ),
-							'class'	=> 'bookacti-translatable',
-							'value'	=> $notification_settings[ 'email' ][ 'subject' ] ? $notification_settings[ 'email' ][ 'subject' ] : '',
-							'tip'	=> esc_html__( 'The email subject.', 'booking-activities' )
+							'type'  => 'text',
+							'name'  => 'bookacti_notification[email][subject]',
+							'id'    => 'bookacti_notification_email_subject' . ( $recipient === 'admin' ? '_admin' : '' ),
+							'class' => 'bookacti-translatable',
+							'value' => $notification_settings[ 'email' ][ 'subject' ] ? $notification_settings[ 'email' ][ 'subject' ] : '',
+							'tip'   => esc_html__( 'The email subject.', 'booking-activities' )
 						);
 						bookacti_display_field( $args );
 						?>
@@ -497,13 +497,13 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 					<td>
 						<?php 
 						$args = array(
-							'type'	=> 'editor',
-							'name'	=> 'bookacti_notification[email][message]',
-							'id'	=> 'bookacti_notification_email_message' . ( $recipient === 'admin' ? '_admin' : '' ),
-							'class'	=> 'bookacti-translatable',
-							'height'=> 470,
-							'options'=> array( 'default_editor' => wp_default_editor() ),
-							'value'	=> $notification_settings[ 'email' ][ 'message' ] ? $notification_settings[ 'email' ][ 'message' ] : ''
+							'type'    => 'editor',
+							'name'    => 'bookacti_notification[email][message]',
+							'id'      => 'bookacti_notification_email_message' . ( $recipient === 'admin' ? '_admin' : '' ),
+							'class'   => 'bookacti-translatable',
+							'height'  => 470,
+							'options' => array( 'default_editor' => wp_default_editor() ),
+							'value'   => $notification_settings[ 'email' ][ 'message' ] ? $notification_settings[ 'email' ][ 'message' ] : ''
 						);
 						bookacti_display_field( $args );
 						?>
@@ -528,7 +528,7 @@ function bookacti_controller_update_notification() {
 	$option_page = ! empty( $_POST[ 'option_page' ] ) ? sanitize_title_with_dashes( $_POST[ 'option_page' ] ) : '';
 	
 	// Check nonce
-	$is_nonce_valid	= check_ajax_referer( $option_page, 'nonce', false );
+	$is_nonce_valid = check_ajax_referer( $option_page, 'nonce', false );
 	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'update_notification' ); }
 	
 	// Check capabilities
@@ -648,9 +648,9 @@ add_filter( 'plugin_action_links_booking-activities/booking-activities.php', 'bo
  */
 function bookacti_meta_links_in_plugins_table( $links, $file ) {
    if ( $file == BOOKACTI_PLUGIN_NAME . '/' . BOOKACTI_PLUGIN_NAME . '.php' ) {
-		$links[ 'docs' ]	= '<a href="' . esc_url( 'https://booking-activities.fr/en/documentation/user-documentation/?utm_source=plugin&utm_medium=plugin&utm_content=plugin-list' ) . '" title="' . esc_attr( __( 'View Booking Activities Documentation', 'booking-activities' ) ) . '" target="_blank" >' . esc_html__( 'Docs', 'booking-activities' ) . '</a>';
-		$links[ 'report' ]	= '<a href="' . esc_url( 'https://github.com/bookingactivities/booking-activities/issues/' ) . '" title="' . esc_attr( __( 'Report a bug or request a feature', 'booking-activities' ) ) . '" target="_blank" >' . esc_html__( 'Report & Request', 'booking-activities' ) . '</a>';
-		$links[ 'contact' ]	= '<a href="' . esc_url( 'https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=plugin-list#contact' ) . '" title="' . esc_attr( __( 'Contact us directly', 'booking-activities' ) ) . '" target="_blank" >' . esc_html__( 'Contact us', 'booking-activities' ) . '</a>';
+		$links[ 'docs' ]    = '<a href="' . esc_url( 'https://booking-activities.fr/en/documentation/user-documentation/?utm_source=plugin&utm_medium=plugin&utm_content=plugin-list' ) . '" title="' . esc_attr( __( 'View Booking Activities Documentation', 'booking-activities' ) ) . '" target="_blank" >' . esc_html__( 'Docs', 'booking-activities' ) . '</a>';
+		$links[ 'report' ]  = '<a href="' . esc_url( 'https://github.com/bookingactivities/booking-activities/issues/' ) . '" title="' . esc_attr( __( 'Report a bug or request a feature', 'booking-activities' ) ) . '" target="_blank" >' . esc_html__( 'Report & Request', 'booking-activities' ) . '</a>';
+		$links[ 'contact' ] = '<a href="' . esc_url( 'https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=plugin-list#contact' ) . '" title="' . esc_attr( __( 'Contact us directly', 'booking-activities' ) ) . '" target="_blank" >' . esc_html__( 'Contact us', 'booking-activities' ) . '</a>';
 	}
 	return $links;
 }
@@ -733,9 +733,9 @@ function bookacti_5stars_rating_notice() {
 		if( current_user_can( 'bookacti_manage_booking_activities' ) ) {
 			$install_date = get_option( 'bookacti-install-date' );
 			if( ! empty( $install_date ) ) {
-				$install_datetime	= DateTime::createFromFormat( 'Y-m-d H:i:s', $install_date );
-				$current_datetime	= new DateTime();
-				$nb_days			= floor( $install_datetime->diff( $current_datetime )->days );
+				$install_datetime = DateTime::createFromFormat( 'Y-m-d H:i:s', $install_date );
+				$current_datetime = new DateTime();
+				$nb_days          = floor( $install_datetime->diff( $current_datetime )->days );
 				if( $nb_days >= 61 ) {
 					?>
 					<div class='notice notice-info bookacti-5stars-rating-notice is-dismissible'>
@@ -797,8 +797,8 @@ function bookacti_admin_footer_text( $footer_text ) {
 		return $footer_text;
 	}
 	
-	$current_screen	= get_current_screen();
-	$bookacti_pages	= bookacti_get_screen_ids();
+	$current_screen = get_current_screen();
+	$bookacti_pages = bookacti_get_screen_ids();
 	
 	// Check to make sure we're on a BA admin page.
 	if( isset( $current_screen->id ) && in_array( $current_screen->id, $bookacti_pages ) ) {
@@ -889,7 +889,7 @@ add_filter( 'editable_extensions', 'bookacti_add_editable_extensions', 10, 2 );
  */
 function bookacti_controller_search_select2_users() {
 	// Check nonce
-	$is_nonce_valid	= check_ajax_referer( 'bookacti_query_select2_options', 'nonce', false );
+	$is_nonce_valid = check_ajax_referer( 'bookacti_query_select2_options', 'nonce', false );
 	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'search_select2_users' ); }
 	
 	// Check permission
@@ -909,7 +909,7 @@ function bookacti_controller_search_select2_users() {
 	
 	$defaults = array(
 		'name' => isset( $_REQUEST[ 'name' ] ) ? sanitize_title_with_dashes( stripslashes( $_REQUEST[ 'name' ] ) ) : '', // For developers to identify the selectbox
-		'id' => isset( $_REQUEST[ 'id' ] ) ? sanitize_title_with_dashes( stripslashes( $_REQUEST[ 'id' ] ) ) : '',		 // For developers to identify the selectbox
+		'id' => isset( $_REQUEST[ 'id' ] ) ? sanitize_title_with_dashes( stripslashes( $_REQUEST[ 'id' ] ) ) : '',       // For developers to identify the selectbox
 		'search' => $term !== '' ? '*' . esc_attr( $term ) . '*' : '',
 		'search_columns' => array( 'user_login', 'user_url', 'user_email', 'user_nicename', 'display_name' ),
 		'option_label' => array( 'first_name', ' ', 'last_name', ' (', 'user_login', ' / ', 'user_email', ')' ),

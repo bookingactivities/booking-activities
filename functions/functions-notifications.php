@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Array of configurable notifications
  * @since 1.2.1 (was bookacti_get_emails_default_settings in 1.2.0)
- * @version 1.16.0
+ * @version 1.16.31
  * @return array
  */
 function bookacti_get_notifications_default_settings() {
@@ -25,7 +25,7 @@ function bookacti_get_notifications_default_settings() {
 					'to'      => array( $admin_email ),
 					'subject' => esc_html__( 'New booking!', 'booking-activities' ),
 					'message' => /* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an administrator receives when a booking is made */
-								__( '<p>You have new booking(s)!</p>{for_each_booking}<p>{booking_list}</p><p>Customer info: {user_firstname} {user_lastname} ({user_email})</p><p>Booking status: <strong>{booking_status}</strong>.</p><p><a href="{booking_admin_url}">Click here</a> to edit this booking (ID: {booking_id}).</p>{/for_each_booking}', 'booking-activities' ) 
+								__( '<p>You have {booking_count} new booking(s)!</p>{for_each_booking}<hr/><p>{booking_list}</p><p>Customer info: {user_firstname} {user_lastname} ({user_email})</p><p>Booking status: <strong>{booking_status}</strong>.</p><p><a href="{booking_admin_url}">Click here</a> to edit this booking (ID: {booking_id}).</p>{/for_each_booking}', 'booking-activities' ) 
 				)
 			),
 		'admin_cancelled_booking' => 
@@ -357,7 +357,7 @@ function bookacti_sanitize_notification_settings( $args, $notification_id = '' )
 /**
  * Get notifications tags
  * @since 1.2.0
- * @version 1.16.8
+ * @version 1.16.31
  * @param string $notification_id Optional.
  * @return array
  */
@@ -368,6 +368,7 @@ function bookacti_get_notifications_tags( $notification_id = '' ) {
 		'{booking_title}'          => esc_html__( 'The event / group of events title.', 'booking-activities' ),
 		'{booking_quantity}'       => esc_html__( 'Booking quantity. If bookings of a same group happen to have different quantities, the higher is displayed.', 'booking-activities' ),
 		'{booking_total_qty}'      => esc_html__( 'For booking groups, this is the bookings sum. For single bookings, this is the same as {booking_quantity}.', 'booking-activities' ),
+		'{booking_count}'          => esc_html__( 'Number of active individual bookings or booking groups', 'booking-activities' ),
 		'{booking_status}'         => esc_html__( 'Current booking status.', 'booking-activities' ),
 		'{booking_payment_status}' => esc_html__( 'Current booking status.', 'booking-activities' ),
 		'{booking_event_id}'       => esc_html__( 'Booking event ID. For booking groups, the group of events ID is used.', 'booking-activities' ),
@@ -422,7 +423,7 @@ function bookacti_get_notifications_tags( $notification_id = '' ) {
 /**
  * Get notifications tags and values corresponding to given booking
  * @since 1.2.0
- * @version 1.16.0
+ * @version 1.16.31
  * @param object $booking
  * @param string $booking_type 'group' or 'single'
  * @param array $notification
@@ -450,6 +451,7 @@ function bookacti_get_notifications_tags_values( $booking, $booking_type, $notif
 			
 			$booking_data[ '{booking_total_qty}' ] = 0;
 			foreach( $bookings as $grouped_booking ) { $booking_data[ '{booking_total_qty}' ] += intval( $grouped_booking->quantity ); }
+			$booking_data[ '{booking_count}' ]     = 1;
 			$booking_data[ '{booking_title}' ]     = ! empty( $booking->group_title ) ? apply_filters( 'bookacti_translate_text', $booking->group_title ) : '';
 			$booking_data[ '{booking_event_id}' ]  = $booking->event_group_id;
 			$booking_data[ '{booking_start}' ]     = bookacti_format_datetime( $booking->start, $datetime_format );
@@ -467,6 +469,7 @@ function bookacti_get_notifications_tags_values( $booking, $booking_type, $notif
 			$bookings = array( $booking );
 			
 			$booking_data[ '{booking_total_qty}' ] = $booking->quantity;
+			$booking_data[ '{booking_count}' ]     = 1;
 			$booking_data[ '{booking_title}' ]     = ! empty( $booking->event_title ) ? apply_filters( 'bookacti_translate_text', $booking->event_title ) : '';
 			$booking_data[ '{booking_event_id}' ]  = $booking->event_id;
 			$booking_data[ '{booking_start}' ]     = bookacti_format_datetime( $booking->event_start, $datetime_format );
@@ -495,6 +498,7 @@ function bookacti_get_notifications_tags_values( $booking, $booking_type, $notif
 			foreach( $args[ 'additional_bookings' ] as $additional_booking ) {
 				$_bookings = $additional_booking[ 'type' ] === 'group' ? bookacti_get_booking_group_bookings_by_id( $additional_booking[ 'id' ] ) : array( $additional_booking[ 'booking' ] );
 				if( $_bookings ) {
+					++$booking_data[ '{booking_count}' ];
 					$_sorted_bookings                  = bookacti_sort_events_array_by_dates( $_bookings, false, false, array( 'start' => 'event_start', 'end' => 'event_end' ) );
 					$booking_data[ '{booking_list}' ] .= bookacti_get_formatted_booking_events_list( $_sorted_bookings, true, false );
 					$_booking_list_raw                 = bookacti_get_formatted_booking_events_list_raw( $_sorted_bookings );
