@@ -982,6 +982,7 @@ add_action( 'wp_ajax_nopriv_bookactiRescheduleBookings', 'bookacti_controller_re
 /**
  * AJAX Controller - Send a notification for bookings (groups)
  * @since 1.16.0
+ * @version 1.16.31
  */
 function bookacti_controller_send_bookings_notification() {
 	// Check nonce
@@ -1034,7 +1035,7 @@ function bookacti_controller_send_bookings_notification() {
 	
 	$sent_nb = count( $sent[ 'bookings' ] ) + count( $sent[ 'booking_groups' ] );
 	/* translators: %s = number of notifications sent */
-	$message = sprintf( esc_html__( '%s notifications have been sent.', 'booking-activities' ), $sent_nb );
+	$message = sprintf( esc_html( _n( '%s notification has been sent.', '%s notifications have been sent.', $sent_nb, 'booking-activities' ) ), $sent_nb );
 	$async   = apply_filters( 'bookacti_allow_async_notifications', bookacti_get_setting_value( 'bookacti_notifications_settings', 'notifications_async' ) );
 	if( $async ) {
 		/* translators: %s = link labelled "Trigger manually" */

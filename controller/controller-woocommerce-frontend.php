@@ -2268,7 +2268,6 @@ function bookacti_add_bookings_tab_to_my_account_menu( $tabs ) {
 	if( $page_id < 0 ) { return $tabs; }
 	
 	// Get custom page title
-	$page_id    = intval( bookacti_get_setting_value( 'bookacti_account_settings', 'wc_my_account_bookings_page_id' ) );
 	$page       = $page_id > 0 ? get_page( $page_id ) : null;
 	$page_title = $page && ! empty( $page->post_title ) ? esc_html( apply_filters( 'bookacti_translate_text_external', $page->post_title, false, true, array( 'domain' => 'wordpress', 'object_type' => 'page', 'object_id' => $page_id, 'field' => 'post_title' ) ) ) : '';
 	$title      = $page_title ? $page_title : esc_html__( 'Bookings', 'booking-activities' );
