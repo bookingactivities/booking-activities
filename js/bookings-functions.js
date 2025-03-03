@@ -235,13 +235,22 @@ function bookacti_reload_booking_system_according_to_filters( booking_system ) {
 
 /**
  * Init booking actions
- * @version 1.16.1
- * @param {String} scope
+ * @version 1.16.32
+ * @param {String} scope_selector
  */
-function bookacti_init_booking_actions( scope ) {
-	if( ! scope ) { scope = '#bookacti-booking-list, .bookacti-user-booking-list-table'; }
+function bookacti_init_booking_actions( scope_selector ) {
+	if( ! scope_selector ) { scope_selector = '#bookacti-booking-list, .bookacti-user-booking-list-table'; }
 	
-	$j( scope ).on( 'click', '.bookacti-booking-action, .bookacti-booking-group-action', function( e ) {
+	// Build selector string
+	var scopes   = scope_selector.split( ',' );
+	var selector = '';
+	scopes.map( function( scope ) {
+		if( selector ) { selector += ', '; }
+		selector += scope.trim() + ' .bookacti-booking-action, ';
+		selector += scope.trim() + ' .bookacti-booking-group-action';
+	});
+	
+	$j( 'body' ).on( 'click', selector, function( e ) {
 		e.preventDefault();
 		var action = $j( this ).data( 'action' );
 		if( ! action ) { return; }

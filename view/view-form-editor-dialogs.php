@@ -213,7 +213,7 @@ foreach( $fields_default as $field_name => $field_data ) {
 		/**
 		 * Display the content of the "Actions" tab of the "Calendar" dialog
 		 * @since 1.7.0
-		 * @version 1.14.0
+		 * @version 1.16.32
 		 * @param array $params
 		 */
 		function bookacti_fill_calendar_dialog_actions_tab( $params ) {
@@ -228,7 +228,7 @@ foreach( $fields_default as $field_name => $field_data ) {
 					'id'      => 'bookacti-form_action',
 					'options' => apply_filters( 'bookacti_form_action_options', array( 
 						'default'         => esc_html__( 'Make a booking (default)', 'booking-activities' ),
-						'redirect_to_url' => esc_html__( 'Redirect to a URL', 'booking-activities' )
+						'redirect_to_url' => esc_html__( 'Redirect to a URL (no bookings made)', 'booking-activities' )
 					), $params ),
 					'tip'		=> esc_html__( 'What action should this form perform?', 'booking-activities' )
 				);

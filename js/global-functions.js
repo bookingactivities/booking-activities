@@ -282,7 +282,7 @@ function bookacti_serialize_object( form ) {
 /**
  * Init selectbox with AJAX search
  * @since 1.7.19
- * @version 1.16.25
+ * @version 1.16.32
  */
 function bookacti_select2_init() {
 	if( ! $j.fn.select2 ) { return; }
@@ -295,7 +295,7 @@ function bookacti_select2_init() {
 		minimumResultsForSearch: 1,
 		minimumInputLength: 0,
 		width: 'element',
-		dropdownAutoWidth: true,
+		dropdownAutoWidth: false, // Temp fix https://github.com/woocommerce/woocommerce/issues/56009
 		dropdownParent: $j( this ).closest( '.bookacti-backend-dialog' ).length ? $j( this ).closest( '.bookacti-backend-dialog' ) : $j( 'body' ),
 		escapeMarkup: function( text ) { return text; }
 	};
@@ -612,7 +612,7 @@ function bookacti_is_url_external( url ) {
 /**
  * Format price with the correct format (currency, separators, decimals)
  * @since 1.12.4
- * @version 1.15.15
+ * @version 1.16.32
  * @param {Int|Float} price_raw
  * @param {Float} args_raw
  * @returns {string}
@@ -634,7 +634,7 @@ function bookacti_format_price( price_raw, args_raw ) {
 		'plain_text':         true
 	}, args_raw );
 	
-	$j( 'body' ).trigger( 'bookacti_formatted_price_args', { args, args_raw, price_raw } );
+	$j( 'body' ).trigger( 'bookacti_formatted_price_args', [ args, args_raw, price_raw ] );
 	
 	args.formatted_amount = bookacti_number_format( Math.abs( price ), args.decimals, args.decimal_separator, args.thousand_separator );
 	
@@ -651,7 +651,7 @@ function bookacti_format_price( price_raw, args_raw ) {
 		args.formatted_price += args.price_format.replace( '%2$s', args.formatted_amount ).replace( '%1$s', args.currency_symbol );
 	}
 	
-	$j( 'body' ).trigger( 'bookacti_formatted_price', { args, price_raw, args_raw } );
+	$j( 'body' ).trigger( 'bookacti_formatted_price', [ args, price_raw, args_raw ] );
 	
 	return args.formatted_price;
 }

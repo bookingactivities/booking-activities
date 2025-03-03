@@ -333,12 +333,13 @@ add_filter( 'bookacti_sanitized_field_data', 'bookacti_sanitize_wc_field_data', 
 /**
  * Add new possible actions when the user clicks an event
  * @since 1.7.0
+ * @version 1.16.32
  * @param array $options
  * @param array $params
  * @return array
  */
 function bookacti_add_wc_form_action_options( $options ) {
-	$options[ 'redirect_to_product_page' ] = esc_html__( 'Redirect to a product page', 'booking-activities' );
+	$options[ 'redirect_to_product_page' ] = esc_html__( 'Redirect to a product page (no bookings made)', 'booking-activities' );
 	$options[ 'add_product_to_cart' ] = esc_html__( 'Add a product to cart', 'booking-activities' );
 	return $options;
 }

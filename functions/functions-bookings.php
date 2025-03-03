@@ -998,7 +998,7 @@ function bookacti_booking_can_be_rescheduled_to( $booking, $event_id, $event_sta
 							$return_array[ 'status' ]  = 'failed';
 							$return_array[ 'error' ]   = 'reschedule_to_not_allowed_calendar';
 							$return_array[ 'message' ] = esc_html__( 'The desired event does not belong to the same calendar as the booked event.', 'booking-activities' ) . ' ' 
-													   . esc_html__( 'You cannot replace the booked event with an event from this calendar.', 'booking-activities' );
+							                           . esc_html__( 'You cannot replace the booked event with an event from this calendar.', 'booking-activities' );
 						}
 					}
 				}
@@ -1707,7 +1707,7 @@ function bookacti_get_booking_actions_html( $booking, $admin_or_front = 'both', 
 	
 	$auth_key = ! empty( $_REQUEST[ 'user_auth_key' ] ) ? sanitize_text_field( $_REQUEST[ 'user_auth_key' ] ) : '';
 	
-	$actions_html_array	= array();
+	$actions_html_array = array();
 	foreach( $actions as $action_id => $action ) {
 			$action_html = '<a '
 			             . 'href="' . esc_url( $action[ 'link' ] ) . '" '
