@@ -2,14 +2,14 @@
 # This file is distributed under the GPL3.
 msgid ""
 msgstr ""
-"Project-Id-Version: Booking Activities 1.16.31\n"
+"Project-Id-Version: Booking Activities 1.16.32\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/booking-activities\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-02-17T12:02:10+00:00\n"
+"POT-Creation-Date: 2025-03-03T15:32:59+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.11.0-alpha-e30b356\n"
 "X-Domain: booking-activities\n"
@@ -1375,39 +1375,39 @@ msgstr ""
 msgid "The products must be configured as \"%1$s\" in the product data (%2$s)."
 msgstr ""
 
-#: controller/controller-woocommerce-forms.php:341
-msgid "Redirect to a product page"
+#: controller/controller-woocommerce-forms.php:342
+msgid "Redirect to a product page (no bookings made)"
 msgstr ""
 
-#: controller/controller-woocommerce-forms.php:342
+#: controller/controller-woocommerce-forms.php:343
 msgid "Add a product to cart"
 msgstr ""
 
-#: controller/controller-woocommerce-forms.php:357
-#: controller/controller-woocommerce-forms.php:403
+#: controller/controller-woocommerce-forms.php:358
+#: controller/controller-woocommerce-forms.php:404
 msgid "Bound product"
 msgstr ""
 
-#: controller/controller-woocommerce-forms.php:504
+#: controller/controller-woocommerce-forms.php:505
 msgid "The calendar field data couldn't be retrieved."
 msgstr ""
 
-#: controller/controller-woocommerce-forms.php:512
+#: controller/controller-woocommerce-forms.php:513
 msgid "You cannot add a product to cart with this form."
 msgstr ""
 
 #. translators: %s = The event title and dates. E.g.: No product is bound to "Basketball (Sep, 22nd - 3:00 PM to 6:00 PM)".
-#: controller/controller-woocommerce-forms.php:582
+#: controller/controller-woocommerce-forms.php:583
 msgid "No product is bound to \"%s\"."
 msgstr ""
 
 #. translators: %d = The product ID. %s = The event title and dates. E.g.: The product (#56) bound to "Basketball (Sep, 22nd - 3:00 PM to 6:00 PM)" cannot be found.
-#: controller/controller-woocommerce-forms.php:591
+#: controller/controller-woocommerce-forms.php:592
 msgid "The product (#%1$s) bound to \"%2$s\" cannot be found."
 msgstr ""
 
 #. translators: %d = The product ID. %s = The event title and dates. E.g.: An error occurred while trying to add the product (#56) bound to "Basketball (Sep, 22nd - 3:00 PM to 6:00 PM)" to cart.
-#: controller/controller-woocommerce-forms.php:648
+#: controller/controller-woocommerce-forms.php:649
 msgid "An error occurred while trying to add the product (#%1$s) bound to \"%2$s\" to cart."
 msgstr ""
 
@@ -4781,7 +4781,7 @@ msgid "Make a booking (default)"
 msgstr ""
 
 #: view/view-form-editor-dialogs.php:231
-msgid "Redirect to a URL"
+msgid "Redirect to a URL (no bookings made)"
 msgstr ""
 
 #: view/view-form-editor-dialogs.php:233
