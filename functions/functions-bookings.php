@@ -3267,7 +3267,7 @@ function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
 /**
  * Display a booking list
  * @since 1.7.6
- * @version 1.8.3
+ * @version 1.16.33
  * @param array $filters
  * @param array $columns
  * @param int $per_page
@@ -3285,6 +3285,7 @@ function bookacti_get_user_booking_list( $filters, $columns = array(), $per_page
 	$bookings_nb = bookacti_get_number_of_booking_rows( $filters );
 	
 	// Pagination
+	if( ! $per_page ) { $per_page = 9999; }
 	$page_nb               = ! empty( $_GET[ 'bookacti_booking_list_paged_' . $bookacti_booking_list_count ] ) ? intval( $_GET[ 'bookacti_booking_list_paged_' . $bookacti_booking_list_count ] ) : 1;
 	$page_max              = ceil( $bookings_nb / intval( $per_page ) );
 	$filters[ 'per_page' ] = intval( $per_page );
@@ -3294,7 +3295,7 @@ function bookacti_get_user_booking_list( $filters, $columns = array(), $per_page
 	
 	ob_start();
 	?>
-	<div id='bookacti-user-booking-list-<?php echo $bookacti_booking_list_count; ?>' class='bookacti-user-booking-list' data-user-id='<?php echo $filters[ 'user_id' ] ? $filters[ 'user_id' ] : ''; ?>' >
+	<div id='bookacti-user-booking-list-<?php echo $bookacti_booking_list_count; ?>' class='bookacti-user-booking-list <?php echo empty( $booking_list_items ) ? 'bookacti-no-items' : '' ?>' data-user-id='<?php echo $filters[ 'user_id' ] ? $filters[ 'user_id' ] : ''; ?>' >
 		<?php
 			echo bookacti_get_user_booking_list_table_html( $booking_list_items, $columns );
 		
@@ -3343,6 +3344,7 @@ function bookacti_get_user_booking_list( $filters, $columns = array(), $per_page
 /**
  * Get the booking list table HTML
  * @since 1.8.0
+ * @version 1.16.33
  * @param array $booking_items
  * @param array $columns
  * @return array
@@ -3351,7 +3353,7 @@ function bookacti_get_user_booking_list_table_html( $booking_items, $columns = a
 	if( ! $columns ) { $columns = bookacti_get_user_booking_list_default_columns(); }
 	ob_start();
 	?>
-	<table class='bookacti-user-booking-list-table'>
+	<table class='bookacti-user-booking-list-table <?php echo empty( $booking_items ) ? 'bookacti-no-items' : '' ?>'>
 		<thead>
 			<tr>
 			<?php

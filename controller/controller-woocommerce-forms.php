@@ -749,3 +749,47 @@ function bookacti_wc_reset_password_notification_callback( $callback ) {
 	return 'bookacti_wc_send_reset_password_notification';
 }
 add_filter( 'bookacti_reset_password_notification_callback', 'bookacti_wc_reset_password_notification_callback', 10, 1 );
+
+
+/**
+ * Replace default login link with WC My Account page
+ * @since 1.6.33
+ * @param string $link
+ * @param boolean|string $redirect
+ * @param boolean $url_only
+ * @return string
+ */
+function bookacti_wc_login_link( $link, $redirect, $url_only ) {
+	$my_account_page_id = get_option( 'woocommerce_myaccount_page_id' );
+	$login_url          = $my_account_page_id ? get_permalink( $my_account_page_id ) : '';
+
+	if( $login_url ) {
+		if( $redirect ) {
+			$redirect_url = is_string( $redirect ) ? $redirect : home_url( $_SERVER[ 'REQUEST_URI' ] );
+			$login_url    = add_query_arg( array( 'redirect_to' => urlencode( $redirect_url ) ), $login_url );
+		}
+
+		$link = $url_only ? $login_url : '<a href="' . esc_url( $login_url ) . '">' . esc_html__( 'Log in', 'booking-activities' ) . '</a>';
+	}
+	
+	return $link;
+}
+add_filter( 'bookacti_login_link', 'bookacti_wc_login_link', 10, 3 );
+
+
+/**
+ * Redirect users to the desired page
+ * @since 1.16.33
+ * @param string $redirect
+ * @param object $user
+ * @return string
+ */
+function bookacti_wc_login_form_redirect( $redirect, $user = null ) {
+	if( ! empty( $_GET[ 'redirect_to' ] ) ) { 
+		$redirect = wp_unslash( rawurldecode( $_GET[ 'redirect_to' ] ) );
+	}
+	
+	return $redirect;
+}
+add_filter( 'woocommerce_login_redirect', 'bookacti_wc_login_form_redirect', 10, 2 ); 
+add_filter( 'woocommerce_registration_redirect', 'bookacti_wc_login_form_redirect', 10, 2 ); 

@@ -870,7 +870,7 @@ add_action( 'wp_ajax_nopriv_bookactiSubmitLoginForm', 'bookacti_controller_valid
 /**
  * AJAX Controller - Check if booking form is correct and then book the event, or send the error message
  * @since 1.5.0
- * @version 1.15.15
+ * @version 1.16.33
  */
 function bookacti_controller_validate_booking_form() {
 	$return_array = array(
@@ -987,13 +987,18 @@ function bookacti_controller_validate_booking_form() {
 			if( is_email( $return_array[ 'user_id' ] ) ) {
 				$user = get_user_by( 'email', $return_array[ 'user_id' ] );
 				if( is_a( $user, 'WP_User' ) ) {
+					$current_url    = ! empty( $_POST[ 'current_url' ] ) ? sanitize_url( $_POST[ 'current_url' ] ) : ( ! empty( $_SERVER[ 'HTTP_REFERER' ] ) ? sanitize_url( $_SERVER[ 'HTTP_REFERER' ] ) : '' );
+					$login_url      = bookacti_get_login_link( $current_url, true );
+					$login_field_id = ! empty( $login_field[ 'field_id' ] ) ? $login_field[ 'field_id' ] : '';
+					
 					$return_array[ 'error' ] = 'user_already_exists';
 					$return_array[ 'messages' ][ 'user_already_exists' ] = sprintf(
 						/* translators: %s = "Log in" link. */
 						esc_html__( 'This email address is associated with an account (%s). In order to make a booking without account, you need to choose an email address that is not associated with any account.', 'booking-activities' ),
-						'<a href="' . wp_login_url( home_url( $_SERVER[ 'REQUEST_URI' ] ) ) . '">' . esc_html__( 'Log in', 'booking-activities' ) . '</a>'
+						'<a href="' . $login_url . '" class="bookacti-login-link" data-field-id="' . $login_field_id . '">' . esc_html__( 'Log in', 'booking-activities' ) . '</a>'
 					);
 					$return_array[ 'message' ] = implode( '</li><li>', $return_array[ 'messages' ] );
+					
 					bookacti_send_json( $return_array, 'submit_booking_form' );
 				}
 			}
@@ -1467,7 +1472,7 @@ function bookacti_controller_duplicate_form() {
 		return;
 	}
 	
-	// Gget original form data
+	// Get original form data
 	$original_form_data_raw = bookacti_get_form_data( $original_form_id, true );
 	$original_form_data = $original_form_data_raw ? bookacti_sanitize_form_data( $original_form_data_raw ) : array();
 	if( ! $original_form_data ) {

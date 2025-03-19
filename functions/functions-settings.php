@@ -1155,6 +1155,7 @@ function bookacti_get_screen_ids() {
  * Check if the current page is a Booking Activities screen
  * @since 1.7.0
  * @version 1.8.0
+ * @param string $screen
  * @return boolean
  */
 function bookacti_is_booking_activities_screen( $screen = '' ) {

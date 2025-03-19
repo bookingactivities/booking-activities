@@ -37,6 +37,32 @@ $j( document ).ready( function() {
 	
 	
 	/**
+	 * Switch to "Log in" tab - on click on "Log in" link
+	 * @since 1.16.33
+	 * @param {Event} e
+	 */
+	$j( 'body' ).on( 'click', '.bookacti-login-link', function( e ) {
+		var field_id    = $j( this ).data( 'field-id' );
+		var login_field = $j( this ).closest( '.bookacti-booking-form, .bookacti-form-fields' ).find( '.bookacti-form-field-id-' + field_id );
+		var button      = login_field.find( '.bookacti-login-type-my_account input[type="radio"]' );
+		
+		if( button.length ) {
+			// Do not redirect to log in page
+			e.preventDefault();
+			
+			// Open "Log in" tab
+			button.trigger( 'click' );
+			
+			// Scroll to log in form
+			bookacti_scroll_to( login_field, 500, 'middle' );
+			
+			// Remove error message
+			$j( this ).closest( '.bookacti-booking-form, .bookacti-form-fields' ).find( '.bookacti-notices' ).empty();
+		}
+	});
+	
+	
+	/**
 	 * Login type: Show / Hide register fields on load
 	 * @since 1.5.0
 	 * @version 1.6.0
@@ -337,7 +363,7 @@ function bookacti_check_password_strength( password_field, password_confirm_fiel
 /**
  * Submit login form
  * @since 1.8.0
- * @version 1.15.15
+ * @version 1.16.33
  * @param {HTMLElement} submit_button
  */
 function bookacti_submit_login_form( submit_button ) {
@@ -392,6 +418,7 @@ function bookacti_submit_login_form( submit_button ) {
 	
 	// Change action
 	data.form_data.set( 'action', 'bookactiSubmitLoginForm' );
+	data.form_data.set( 'current_url', window.location.href );
 	
 	// Display a loader after the submit button
 	bookacti_add_loading_html( submit_button, 'after' );
@@ -455,7 +482,7 @@ function bookacti_submit_login_form( submit_button ) {
 /**
  * Submit booking form
  * @since 1.7.6 (was bookacti_sumbit_booking_form)
- * @version 1.15.14
+ * @version 1.16.33
  * @param {HTMLElement} form
  */
 function bookacti_submit_booking_form( form ) {
@@ -524,6 +551,7 @@ function bookacti_submit_booking_form( form ) {
 	
 	// Change action
 	data.form_data.set( 'action', 'bookactiSubmitBookingForm' );
+	data.form_data.set( 'current_url', window.location.href );
 	
 	bookacti_start_loading_booking_system( booking_system );
 
