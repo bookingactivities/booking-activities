@@ -318,7 +318,7 @@ tr.bookacti-booking-list-selected-row                             { background-c
 	.bookacti-user-booking-list-table td:first-child *              { display: inline-block; vertical-align: middle; }
 	.bookacti-user-booking-list-table td:before                     { content: attr(data-column-label) ":"; float: left; margin-right: 6px; font-weight: 700; vertical-align: middle; }
 	.bookacti-user-booking-list-table td:first-child:before         { content: ''; }
-	.bookacti-user-booking-list-table td:first-child.bookacti-column-booking_id:before { content: '\2013'; float: none; margin-right: 0; }
+	.bookacti-user-booking-list-table td:first-child.bookacti-column-booking_id:before { content: '\2013'; float: none; width: auto; margin-right: 0; }
 	.bookacti-user-booking-list-table td:first-child.bookacti-column-booking_id:after  { content: '\2013'; vertical-align: middle; }
 	.bookacti-user-booking-list-table td.bookacti-column-booking_id .bookacti-booking-group-indicator        { display: inline-block; margin-left: 5px; }
 	.rtl .bookacti-user-booking-list-table td.bookacti-column-booking_id .bookacti-booking-group-indicator   { margin-left: 0; margin-right: 5px; }

@@ -19,6 +19,29 @@ function bookacti_is_plugin_active( $plugin_path_and_name ) {
 
 
 /**
+ * Get login link or URL
+ * @since 1.16.33
+ * @param boolean|string $redirect
+ * @param boolean $url_only
+ * @return string
+ */
+function bookacti_get_login_link( $redirect = true, $url_only = false ) {
+	$redirect_url = '';
+	if( $redirect ) {
+		$redirect_url = is_string( $redirect ) ? $redirect : home_url( $_SERVER[ 'REQUEST_URI' ] );
+	}
+	
+	$link = wp_login_url( $redirect_url );
+	
+	if( ! $url_only ) {
+		$link = '<a href="' . esc_url( $link ) . '">' . esc_html__( 'Log in', 'booking-activities' ) . '</a>';
+	}
+	
+	return apply_filters( 'bookacti_login_link', $link, $redirect, $url_only );
+}
+
+
+/**
  * Display an admin notice
  * @since 1.7.18
  * @param array $array composed of a type and a message

@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking Activities landing page
- * @version 1.15.11
+ * @version 1.16.33
  */
 
 // Exit if accessed directly
@@ -14,12 +14,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 <div id='bookacti-landing-container'>
 	<div id='bookacti-add-ons'>	
-		<div id='bookacti-add-ons-intro' >
+		<div id='bookacti-add-ons-intro'>
 			<h3><?php esc_html_e( 'Make the most of Booking Activities', 'booking-activities' ); ?></h3>
-			<p><?php esc_html_e( 'You can extend Booking Activities functionnalities with the following official add-ons. Pick the ones you are interested in and just give them a try, you have a 30-day money back guarantee. ', 'booking-activities' ); ?></p>
+			<p><?php esc_html_e( 'You can extend the functionality of Booking Activities with the following official add-ons. Choose the ones you like and try them out, you get a 30-day money back guarantee.', 'booking-activities' ); ?></p>
 		</div>
 		
-		<div id='bookacti-add-ons-container' >
+		<div id='bookacti-add-ons-container'>
 		<?php
 			$add_ons = array(
 				'resource-availability' => array( 
@@ -151,23 +151,23 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		<div id='bookacti-add-ons-guarantees'>
 			<div id='bookacti-add-ons-guarantees-intro'>
 				<h3><?php esc_html_e( 'Benefit from the best guarantees', 'booking-activities' ); ?></h3>
-				<p><?php esc_html_e( "Our customers satisfaction is what keep us moving in the right direction. We adapt our products according to your feedbacks in order to meet your needs. So just give a try to Booking Activities and its add-ons. If they do not meet your expectations, you will just have to tell us. This is the very reason why Booking Activities is completely free and we offer a 30-day money back guarantee on all our add-ons.", 'booking-activities' ); ?></p>
+				<p><?php esc_html_e( 'Our customers\' satisfaction is what keeps us moving in the right direction. We adapt our products based on your feedback to meet your needs. So give Booking Activities and its add-ons a try. If they don\'t meet your expectations, just let us know. That\'s why Booking Activities is completely free and we offer a 30-day money-back guarantee on all our add-ons.', 'booking-activities' ); ?></p>
 			</div>
 			<div id='bookacti-add-ons-guarantees-container'>
 				<div class='bookacti-add-ons-guarantee'>
 					<div class='bookacti-add-ons-guarantee-picto'><span class="dashicons dashicons-lock"></span></div>
 					<h4><?php esc_html_e( 'Secure Payments', 'booking-activities' ); ?></h4>
-					<div class='bookacti-add-ons-guarantee-description' ><?php esc_html_e( 'Online payments are secured by PayPal and Stripe', 'booking-activities' ); ?></div>
+					<div class='bookacti-add-ons-guarantee-description'><?php esc_html_e( 'Online payments are secured by PayPal and Stripe', 'booking-activities' ); ?></div>
 				</div>
 				<div class='bookacti-add-ons-guarantee'>
-					<div class='bookacti-add-ons-guarantee-picto' ><span class="dashicons dashicons-money"></span></div>
+					<div class='bookacti-add-ons-guarantee-picto'><span class="dashicons dashicons-money"></span></div>
 					<h4><?php esc_html_e( '30-Day money back guarantee', 'booking-activities' ); ?></h4>
-					<div class='bookacti-add-ons-guarantee-description' ><?php esc_html_e( 'If you are not satisfied you will be 100% refunded', 'booking-activities' ); ?></div>
+					<div class='bookacti-add-ons-guarantee-description'><?php esc_html_e( 'If you are not satisfied you will be 100% refunded', 'booking-activities' ); ?></div>
 				</div>
 				<div class='bookacti-add-ons-guarantee'>
-					<div class='bookacti-add-ons-guarantee-picto' ><span class="dashicons dashicons-email-alt"></span></div>
+					<div class='bookacti-add-ons-guarantee-picto'><span class="dashicons dashicons-email-alt"></span></div>
 					<h4><?php esc_html_e( 'Ready to help', 'booking-activities' ); ?></h4>
-					<div class='bookacti-add-ons-guarantee-description' ><?php /* translators: %s = support email address) */ echo sprintf( esc_html__( 'Contact us at %s, we answer within 48h', 'booking-activities' ), 'contact@booking-activities.fr' ); ?></div>
+					<div class='bookacti-add-ons-guarantee-description'><?php /* translators: %s = support email address) */ echo sprintf( esc_html__( 'Contact us at %s, we answer within 48h', 'booking-activities' ), 'contact@booking-activities.fr' ); ?></div>
 				</div>
 			</div>
 		</div>

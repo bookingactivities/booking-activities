@@ -1540,7 +1540,7 @@ function bookacti_get_form_fields_order( $form_id ) {
 /**
  * Sort fields array by field order
  * @since 1.5.0
- * @version 1.14.0
+ * @version 1.16.33
  * @param int $form_id
  * @param array $fields
  * @param boolean $remove_unordered_fields Whether to remove the fields that are not in the field order array 
@@ -1557,7 +1557,7 @@ function bookacti_sort_form_fields_array( $form_id, $fields, $remove_unordered_f
 		foreach( $field_order as $field_id ) {
 			foreach( $fields as $i => $field ) {
 				if( empty( $field[ 'field_id' ] ) ) { continue; }
-				if( $field[ 'field_id' ] !== $field_id ) { continue; }
+				if( intval( $field[ 'field_id' ] ) !== intval( $field_id ) ) { continue; }
 				if( $keep_keys ) { $ordered_fields[ $i ] = $fields[ $i ]; }
 				else { $ordered_fields[] = $fields[ $i ]; }
 				unset( $remaining_fields[ $i ] );
