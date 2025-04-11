@@ -107,27 +107,26 @@ function bookacti_send_json_not_allowed( $action = '' ) {
 
 /**
  * Write logs to log files
- * @version 1.8.0
+ * @version 1.16.34
  * @param string $message
  * @param string $filename
  * @return int
  */
 function bookacti_log( $message = '', $filename = 'debug' ) {
-	if( is_array( $message ) || is_object( $message ) ) { $message = print_r( $message, true ); }
-	if( is_bool( $message ) ) { $message = $message ? 'true' : 'false'; }
-
-	$file = WP_PLUGIN_DIR . '/' . BOOKACTI_PLUGIN_NAME . '/log/' . $filename . '.log'; 
+	if( is_array( $message ) || is_object( $message ) ) { 
+		$message = print_r( $message, true ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_print_r
+	}
+	
+	if( is_bool( $message ) ) { 
+		$message = $message ? 'true' : 'false';
+	}
+	
+	$file = BOOKACTI_PATH . '/log/' . $filename . '.log'; 
 
 	$time = date( 'Y-m-d H:i:s' );
 	$log = $time . ' - ' . $message . PHP_EOL;
 
-	$handle	= fopen( $file, 'a' );
-
-	$write = 0;
-	if( $handle !== false ) {
-		$write	= fwrite( $handle, $log );
-		fclose( $handle );
-	}
+	$write = error_log( $log, 3, $file ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 
 	return $write;
 }
