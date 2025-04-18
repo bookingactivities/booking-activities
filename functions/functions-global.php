@@ -110,21 +110,21 @@ function bookacti_send_json_not_allowed( $action = '' ) {
  * @version 1.16.34
  * @param string $message
  * @param string $filename
- * @return int
+ * @return boolean
  */
 function bookacti_log( $message = '', $filename = 'debug' ) {
 	if( is_array( $message ) || is_object( $message ) ) { 
 		$message = print_r( $message, true ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_print_r
 	}
-	
+
 	if( is_bool( $message ) ) { 
 		$message = $message ? 'true' : 'false';
 	}
-	
+
 	$file = BOOKACTI_PATH . '/log/' . $filename . '.log'; 
 
-	$time = date( 'Y-m-d H:i:s' );
-	$log = $time . ' - ' . $message . PHP_EOL;
+	$time = gmdate( 'Y-m-d H:i:s' );
+	$log  = $time . ' - ' . $message . PHP_EOL;
 
 	$write = error_log( $log, 3, $file ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 

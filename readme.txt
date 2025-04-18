@@ -3,7 +3,7 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
 Tested up to: 6.8
-Stable tag: 1.16.33
+Stable tag: 1.16.34
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -320,7 +320,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.16.34 =
+= 1.16.34 - 2025/04/18 =
+* Fix - Hide WC Payments quick payments buttons on activity product pages (the booking needs to be added to cart first)
+* Fix - Apply z-index to Booking Activities' select2 selectboxes only
+* Dev - Refactor bookacti_log function to use error_log instead of fwrite, and gmdate instead of date
 * Lib - Update FullCalendar to 6.1.17
 
 = 1.16.33 - 2025/03/19 =
