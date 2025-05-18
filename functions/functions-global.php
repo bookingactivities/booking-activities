@@ -730,36 +730,19 @@ function bookacti_get_translation_plugin() {
 
 
 /**
- * Get array of active languages
- * @since 1.14.0
- * @global array $q_config
- * @param boolean $with_locale
- * @return array
- */
-function bookacti_get_active_locales( $with_locale = true ) {
-	$locales = get_available_languages();
-	
-	// Strip country codes from default locales array
-	if( $locales && ! $with_locale ) {
-		foreach( $locales as $i => $locale ) {
-			$locales[ $i ] = strpos( $locale, '_' ) !== false ? substr( $locale, 0, strpos( $locale, '_' ) ) : $locale;
-		}
-	}
-	
-	return apply_filters( 'bookacti_active_locales', $locales, $with_locale );
-}
-
-
-/**
  * Get current site language
- * @version 1.16.0
+ * @version 1.16.35
+ * @global string $bookacti_locale
  * @param boolean $with_locale
  * @return string 
  */
 function bookacti_get_current_lang_code( $with_locale = false ) {
-	$locale     = get_locale();
-	$locale_pos = strpos( $locale, '_' );
-	$lang_code  = $with_locale || $locale_pos === false ? $locale : substr( $locale, 0, $locale_pos );
+	global $bookacti_locale;
+	
+	// If the language is temporarily switched use $bookacti_locale, else, use get_locale()
+	$locale    = $bookacti_locale ? $bookacti_locale : get_locale();
+	$i         = strpos( $locale, '_' );
+	$lang_code = $with_locale ? $locale : substr( $locale, 0, $i !== false ? $i : null );
 	
 	$lang_code = apply_filters( 'bookacti_current_lang_code', $lang_code, $with_locale );
 	
@@ -774,16 +757,22 @@ function bookacti_get_current_lang_code( $with_locale = false ) {
 /**
  * Get site default locale
  * @since 1.12.2
- * @version 1.14.0
+ * @version 1.16.35
  * @param boolean $with_locale Whether to return also country code
  * @return string
  */
 function bookacti_get_site_default_locale( $with_locale = true ) {
 	$locale = get_locale();
-	if( ! $with_locale ) { $locale = substr( $locale, 0, strpos( $locale, '_' ) ); }
-
+	if( ! $with_locale ) {
+		$i      = strpos( $locale, '_' );
+		$locale = substr( $locale, 0, $i !== false ? $i : null );
+	}
+	
 	$locale = apply_filters( 'bookacti_site_default_locale', $locale, $with_locale );
-	if( ! $locale ) { $locale = $with_locale ? 'en_US' : 'en'; }
+	
+	if( ! $locale ) {
+		$locale = $with_locale ? 'en_US' : 'en';
+	}
 	
 	return $locale;
 }
@@ -861,25 +850,18 @@ function bookacti_get_site_locale( $country_code = true ) {
 /**
  * Switch Booking Activities locale
  * @since 1.2.0
- * @version 1.14.0
+ * @version 1.16.35
  * @global string $bookacti_locale
  * @param string $locale
- * @return boolean
+ * @return string|false
  */
 function bookacti_switch_locale( $locale ) {
 	$callback = apply_filters( 'bookacti_switch_locale_callback', 'switch_to_locale', $locale );
 	if( ! function_exists( $callback ) ) { return false; }
 	
-	// Convert lang code to locale
-	if( $callback === 'switch_to_locale' && strpos( $locale, '_' ) === false ) {
-		$len = strlen( $locale );
-		$has_locale = false;
-		$available_locales = get_available_languages();
-		foreach( $available_locales as $available_locale ) {
-			if( substr( $available_locale, 0, $len ) === $locale ) { $locale = $available_locale; $has_locale = true; break; }
-		}
-		if( ! $has_locale ) { return false; }
-	}
+	// Convert lang code to locale and check if locale is installed
+	$locale = bookacti_is_available_locale( $locale );
+	if( ! $locale ) { return false; }
 	
 	$switched_locale = call_user_func( $callback, $locale );
 	
@@ -927,15 +909,46 @@ function bookacti_restore_locale() {
 /**
  * Set plugin_locale to $bookacti_locale if defined
  * @since 1.14.0
+ * @version 1.16.35
  * @global string $bookacti_locale
  * @param string $locale
  * @return string
  */
 function bookacti_set_plugin_locale( $locale ) {
 	global $bookacti_locale;
-	return ! empty( $bookacti_locale ) ? $bookacti_locale : $locale;
+	return $bookacti_locale ? $bookacti_locale : $locale;
 }
 add_filter( 'plugin_locale', 'bookacti_set_plugin_locale', 100, 1 );
+
+
+/**
+ * Check if a locale exists and is installed
+ * @since 1.16.35
+ * @param string $locale
+ * @return string|false
+ */
+function bookacti_is_available_locale( $locale ) {
+	$is_available        = false;
+	$installed_locales   = array_values( get_available_languages() );
+	$installed_locales[] = 'en_US'; // Installed by default
+	
+	if( in_array( $locale, $installed_locales, true ) ) {
+		$is_available = $locale;
+		
+	} else {
+		// Try to find locale from lang code
+		$i         = strpos( $locale, '_' );
+		$lang_code = $i ? substr( $locale, 0, $i ) : $locale;
+		foreach( $installed_locales as $installed_locale ) {
+			if( $installed_locale === $lang_code || strpos( $installed_locale, $lang_code . '_' ) === 0 ) {
+				$is_available = $installed_locale;
+				break;
+			}
+		}
+	}
+	
+	return apply_filters( 'bookacti_is_available_locale', $is_available, $locale );
+}
 
 
 /**
