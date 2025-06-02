@@ -320,7 +320,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.16.35 =
+= 1.16.35 - 2025/06/02 =
 * Tweak - Declare Booking Activities compatible with WooCommerce cart and checkout blocks (after more than a year of beta testing)
 * Fix - Translations may not be loaded in specific configurations
 
