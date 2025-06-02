@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Load or reload Booking Activities language files
- * @version 1.8.0
+ * @version 1.16.35
  * @param string $locale
  */
 function bookacti_load_textdomain( $locale = '' ) {
@@ -13,12 +13,16 @@ function bookacti_load_textdomain( $locale = '' ) {
 		$locale = apply_filters( 'plugin_locale', $locale, 'booking-activities' );
 	}
 	
-	unload_textdomain( 'booking-activities' );
+	// Check if locale is installed
+	$locale = bookacti_is_available_locale( $locale );
+	if( ! $locale ) { return; }
+	
+	unload_textdomain( 'booking-activities', true );
 	// Load .mo from wp-content/languages/booking-activities/
 	load_textdomain( 'booking-activities', WP_LANG_DIR . '/booking-activities/booking-activities-' . $locale . '.mo' );
 	// Load .mo from wp-content/languages/plugins/
 	// Fallback on .mo from wp-content/plugins/booking-activities/languages
-	load_plugin_textdomain( 'booking-activities', false, plugin_basename( dirname( __FILE__ ) ) . '/languages/' ); 
+	load_plugin_textdomain( 'booking-activities', false, plugin_basename( BOOKACTI_PATH ) . '/languages/' ); 
 }
 add_action( 'init', 'bookacti_load_textdomain', 5 );
 
@@ -119,53 +123,19 @@ add_filter( 'bookacti_translate_text_external', 'bookacti_translate_external_tex
 
 
 /**
- * Get active locales with plugin
- * @since 1.14.0
- * @version 1.15.12
- * @global array $q_config
- * @param array $locales
- * @param boolean $with_locale
- * @return array
- */
-function bookacti_active_locales_with_plugin( $locales, $with_locale ) {
-	$plugin = bookacti_get_translation_plugin();
-	
-	if( $plugin === 'wpml' ) {
-		$languages = apply_filters( 'wpml_active_languages', array() );
-		if( $languages ) {
-			$locales = array();
-			foreach( $languages as $lang_code => $locale_data ) {
-				if( $locale_data[ 'active' ] ) { $locales[] = $with_locale ? $locale_data[ 'default_locale' ] : $lang_code; }
-			}
-		}
-	} 
-	else if( $plugin === 'qtranslate' ) {
-		$languages = function_exists( 'qtranxf_getSortedLanguages' ) ? qtranxf_getSortedLanguages() : array();
-		if( $languages ) {
-			$locales = $languages;
-			if( $with_locale ) {
-				global $q_config;
-				foreach( $locales as $i => $lang_code ) {
-					if( ! empty( $q_config[ 'locale' ][ $lang_code ] ) ) { $locales[ $i ] = $q_config[ 'locale' ][ $lang_code ]; }
-				}
-			}
-		}
-	}
-	
-	return $locales;
-}
-add_filter( 'bookacti_active_locales', 'bookacti_active_locales_with_plugin', 10, 2 );
-
-
-/**
  * Get current lang code with plugin
  * @since 1.14.0
+ * @global string $bookacti_locale
  * @global array $q_config
  * @param string $lang_code
  * @param boolean $with_locale
  * @return string
  */
 function bookacti_current_lang_code_with_plugin( $lang_code, $with_locale ) {
+	// Skip if language is temporarily switched
+	global $bookacti_locale;
+	if( $bookacti_locale ) { return $lang_code; }
+	
 	$plugin = bookacti_get_translation_plugin();
 	
 	if( $plugin === 'wpml' ) {

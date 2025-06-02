@@ -202,15 +202,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					<?php
 						$selected_user = isset( $_REQUEST[ 'user_id' ] ) ? sanitize_text_field( $_REQUEST[ 'user_id' ] ) : array();
 						$args = apply_filters( 'bookacti_booking_list_user_selectbox_args', array(
-							'name'				=> 'user_id',
-							'id'				=> 'bookacti-booking-filter-customer',
-							'show_option_all'	=> esc_html__( 'All', 'booking-activities' ),
-							'option_label'		=> array( 'first_name', ' ', 'last_name', ' (', 'user_login', ' / ', 'user_email', ')' ),
-							'selected'			=> $selected_user,
-							'no_account'		=> 1,
-							'allow_clear'		=> 1,
-							'allow_tags'		=> 1,
-							'echo'				=> 1
+							'name'            => 'user_id',
+							'id'              => 'bookacti-booking-filter-customer',
+							'show_option_all' => esc_html__( 'All', 'booking-activities' ),
+							'option_label'    => array( 'first_name', ' ', 'last_name', ' (', 'user_login', ' / ', 'user_email', ')' ),
+							'selected'        => $selected_user,
+							'no_account'      => 1,
+							'allow_clear'     => 1,
+							'allow_tags'      => 1,
+							'echo'            => 1
 						));
 						bookacti_display_user_selectbox( $args );
 					?>
@@ -218,7 +218,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				</div>
 				<?php
 					do_action( 'bookacti_after_booking_filters' );
-					$user_calendar_settings	= bookacti_format_bookings_calendar_settings( get_user_meta( get_current_user_id(), 'bookacti_bookings_calendar_settings', true ) );
+					$user_calendar_settings = bookacti_format_bookings_calendar_settings( get_user_meta( get_current_user_id(), 'bookacti_bookings_calendar_settings', true ) );
 				?>
 				<div id='bookacti-actions-filter-container' class='bookacti-filter-container'>
 					<div class='bookacti-filter-title' >
