@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * AJAX Controller - Change default template
- * @version	1.12.0
+ * @version	1.16.36
  */
 function bookacti_controller_switch_template() {
 	$template_id = intval( $_POST[ 'template_id' ] );
@@ -15,7 +15,7 @@ function bookacti_controller_switch_template() {
 	$is_nonce_valid = check_ajax_referer( 'bookacti_edit_template', 'nonce', false );
 	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'switch_template' ); }
 
-	$is_allowed = current_user_can( 'bookacti_edit_templates' ) && bookacti_user_can_manage_template( $template_id );
+	$is_allowed = current_user_can( 'bookacti_read_templates' ) && bookacti_user_can_manage_template( $template_id );
 	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'switch_template' ); }
 	
 	$atts = isset( $_POST[ 'attributes' ] ) ? ( is_array( $_POST[ 'attributes' ] ) ? $_POST[ 'attributes' ] : ( is_string( $_POST[ 'attributes' ] ) ? bookacti_maybe_decode_json( stripslashes( $_POST[ 'attributes' ] ), true ) : array() ) ) : array();

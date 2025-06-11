@@ -1160,11 +1160,14 @@ function bookacti_stop_template_loading( force_exit ) {
 
 /**
  * Display tuto if there is no more activities available
- * @version 1.11.0
+ * @version 1.16.36
  */
 function bookacti_display_activity_tuto_if_no_activity_available() {
 	if( $j( '#bookacti-template-first-activity-container' ).length ) {
 		$j( '#bookacti-template-first-activity-container' ).toggle( $j( '.bookacti-activity' ).length <= 0 );
+	}
+	if( $j( '#bookacti-template-no-activity' ).length ) {
+		$j( '#bookacti-template-no-activity' ).toggle( $j( '.bookacti-activity' ).length <= 0 );
 	}
 }
 
