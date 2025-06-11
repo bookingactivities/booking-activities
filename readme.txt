@@ -3,7 +3,7 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
 Tested up to: 6.8
-Stable tag: 1.16.35
+Stable tag: 1.16.36
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -319,6 +319,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.16.36 - 2025/06/11 =
+* Fix - Allow users with bookacti_read_templates permission to view activities and events and their settings in calendar editor
 
 = 1.16.35 - 2025/06/02 =
 * Tweak - Declare Booking Activities compatible with WooCommerce cart and checkout blocks (after more than a year of beta testing)
