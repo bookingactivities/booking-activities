@@ -51,6 +51,7 @@ add_action( 'init', 'bookacti_controller_send_async_notifications', 100 );
 /**
  * Send async notifications
  * @since 1.16.0
+ * @version 1.16.37
  */
 function bookacti_send_async_notifications() {
 	$nb_sent = array();
@@ -60,7 +61,7 @@ function bookacti_send_async_notifications() {
 	define( 'BOOKACTI_SENDING_ASYNC_NOTIFICATIONS', 1 );
 	
 	$alloptions = wp_load_alloptions();
-	$async_notifications = isset( $alloptions[ 'bookacti_async_notifications' ] ) ? maybe_unserialize( $alloptions[ 'bookacti_async_notifications' ] ) : array();
+	$async_notifications = isset( $alloptions[ 'bookacti_async_notifications' ] ) ? maybe_unserialize( $alloptions[ 'bookacti_async_notifications' ] ) : get_option( 'bookacti_async_notifications', array() );
 	
 	// Remove the async notifications from db right after retrieving them
 	update_option( 'bookacti_async_notifications', array() );

@@ -63,7 +63,7 @@ function bookacti_delete_settings() {
 
 /**
  * Get setting value
- * @version 1.14.0
+ * @version 1.16.37
  * @param string $setting_group
  * @param string $setting_name
  * @param boolean $raw
@@ -74,9 +74,7 @@ function bookacti_get_setting_value( $setting_group, $setting_name, $raw = false
 	$settings = array();
 	if( $raw ) {
 		$alloptions = wp_load_alloptions(); // get_option() calls wp_load_alloptions() itself, so there is no overhead at runtime 
-		if( isset( $alloptions[ $setting_group ] ) ) {
-			$settings = maybe_unserialize( $alloptions[ $setting_group ] );
-		}
+		$settings = isset( $alloptions[ $setting_group ] ) ? maybe_unserialize( $alloptions[ $setting_group ] ) : get_option( $setting_group, array() );
 	}
 
 	// Else, get message settings through a normal get_option
@@ -1071,7 +1069,7 @@ function bookacti_get_default_messages() {
 /**
  * Get all custom messages
  * @since 1.2.0
- * @version 1.14.0
+ * @version 1.16.37
  * @param boolean $raw Whether to retrieve the raw value from database or the option parsed through get_option
  * @return array
  */
@@ -1080,9 +1078,7 @@ function bookacti_get_messages( $raw = false ) {
 	$saved_messages = array();
 	if( $raw ) {
 		$alloptions = wp_load_alloptions(); // get_option() calls wp_load_alloptions() itself, so there is no overhead at runtime 
-		if( isset( $alloptions[ 'bookacti_messages_settings' ] ) ) {
-			$saved_messages = maybe_unserialize( $alloptions[ 'bookacti_messages_settings' ] );
-		}
+		$saved_messages = isset( $alloptions[ 'bookacti_messages_settings' ] ) ? maybe_unserialize( $alloptions[ 'bookacti_messages_settings' ] ) : get_option( 'bookacti_messages_settings', array() );
 	}
 
 	// Else, get message settings through a normal get_option

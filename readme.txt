@@ -320,6 +320,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.16.37 =
+* Dev - Fallback to get_option when using wp_load_alloptions in case autoload is off
+
 = 1.16.36 - 2025/06/11 =
 * Fix - Allow users with bookacti_read_templates permission to view activities and events and their settings in calendar editor
 
