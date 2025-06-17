@@ -7,24 +7,20 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Get all translatable texts
  * @since 1.14.0
- * @version 1.15.0
+ * @version 1.16.37
  * @return array
  */
 function bookacti_get_translatable_texts() {
 	// Get data to translate in the default language
 	$lang_switched = bookacti_switch_locale( bookacti_get_site_default_locale() );
 	
-	$texts      = array();
-	$alloptions = wp_load_alloptions();
+	$texts             = array();
+	$alloptions        = wp_load_alloptions();
+	$notifications_raw = bookacti_get_notifications_data();
 	
 	// Get Notifications strings
-	$notifications_raw = array();
-	foreach( $alloptions as $option_key => $option_value ) {
-		if( substr( $option_key, 0, 32 ) !== 'bookacti_notifications_settings_' ) { continue; }
+	foreach( $notifications_raw as $notification_id => $notification_raw ) {
 		$notification_texts = array();
-		$notification_id    = substr( $option_key, 32 );
-		$notification_raw   = maybe_unserialize( $option_value );
-		$notifications_raw[ $notification_id ] = $notification_raw;
 		
 		if( ! empty( $notification_raw[ 'email' ][ 'subject' ] ) ) { $texts[] = array( 'value' => $notification_raw[ 'email' ][ 'subject' ], 'string_name' => 'Notification - ' . $notification_id . ' - email subject' ); }
 		if( ! empty( $notification_raw[ 'email' ][ 'message' ] ) ) { $texts[] = array( 'value' => $notification_raw[ 'email' ][ 'message' ], 'string_name' => 'Notification - ' . $notification_id . ' - email message' ); }

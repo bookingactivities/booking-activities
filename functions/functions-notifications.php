@@ -218,9 +218,42 @@ function bookacti_get_notification_default_settings( $notification_id ) {
 
 
 /**
+ * Get notification data
+ * @since 1.16.37
+ * @param string $notification_id
+ * @return array
+ */
+function bookacti_get_notification_data( $notification_id ) {
+	$notifications = bookacti_get_notifications_data();
+	
+	return isset( $notifications[ $notification_id ] ) ? $notifications[ $notification_id ] : array();
+}
+
+
+/**
+ * Get notifications data
+ * @since 1.16.37
+ * @return array
+ */
+function bookacti_get_notifications_data() {
+	$notifications = wp_cache_get( 'notifications_data', 'bookacti' );
+	
+	if( $notifications === false ) {
+		$notifications = bookacti_get_notifications();
+		$notifications = apply_filters( 'bookacti_notifications_data_raw', $notifications ? $notifications : array() );
+		
+		// Cache data
+		wp_cache_set( 'notifications_data', $notifications, 'bookacti' );
+	}
+	
+	return apply_filters( 'bookacti_notifications_data', $notifications );
+}
+
+
+/**
  * Get notification settings
  * @since 1.2.1 (was bookacti_get_email_settings in 1.2.0)
- * @version 1.15.13
+ * @version 1.16.37
  * @param string $notification_id
  * @param boolean $raw
  * @return array
@@ -234,9 +267,7 @@ function bookacti_get_notification_settings( $notification_id, $raw = true ) {
 	// Get raw value from database
 	if( $raw ) {
 		$alloptions = wp_load_alloptions(); // get_option() calls wp_load_alloptions() itself, so there is no overhead at runtime 
-		if( isset( $alloptions[ 'bookacti_notifications_settings_' . $notification_id ] ) ) {
-			$notification_settings = maybe_unserialize( $alloptions[ 'bookacti_notifications_settings_' . $notification_id ] );
-		}
+		$notification_settings = isset( $alloptions[ 'bookacti_notifications_settings_' . $notification_id ] ) ? maybe_unserialize( $alloptions[ 'bookacti_notifications_settings_' . $notification_id ] ) : get_option( 'bookacti_notifications_settings_' . $notification_id, array() );
 	} 
 	
 	// Else, get notification settings through a normal get_option
@@ -593,7 +624,7 @@ function bookacti_get_notifications_tags_values( $booking, $booking_type, $notif
 /**
  * Send a notification
  * @since 1.2.1 (was bookacti_send_email in 1.2.0)
- * @version 1.16.9
+ * @version 1.16.37
  * @param string $notification_id The notification identifier. It must exists as a key in "bookacti_notifications_default_settings".
  * @param int $booking_id         Main booking (group) ID
  * @param string $booking_type    Main booking type ("single" or "group")
@@ -620,7 +651,7 @@ function bookacti_send_notification( $notification_id, $booking_id, $booking_typ
 	if( $allow_async && $async ) {
 		// Temporarily save the notification settings in order to send it later
 		$alloptions = wp_load_alloptions();
-		$async_notifications   = isset( $alloptions[ 'bookacti_async_notifications' ] ) ? maybe_unserialize( $alloptions[ 'bookacti_async_notifications' ] ) : array();
+		$async_notifications   = isset( $alloptions[ 'bookacti_async_notifications' ] ) ? maybe_unserialize( $alloptions[ 'bookacti_async_notifications' ] ) : get_option( 'bookacti_async_notifications', array() );
 		if( ! is_array( $async_notifications ) ) { $async_notifications = array(); }
 		$async_notifications[] = array( 
 			'notification_id' => $notification_id,

@@ -239,7 +239,7 @@ function bookacti_decrypt( $string, $context = '' ) {
 /**
  * Generate CSV file
  * @since 1.8.0
- * @version 1.14.3
+ * @version 1.16.37
  * @param array $items
  * @param array $headers
  * @return string
@@ -258,7 +258,7 @@ function bookacti_generate_csv( $items, $headers = array() ) {
 	foreach( $headers as $title ) {
 		if( $count ) { echo ','; }
 		++$count;
-		$title = html_entity_decode( strip_tags( $title ) );
+		$title = html_entity_decode( strip_tags( $title ), ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401, 'UTF-8' );
 		if( strpos( $title, ',' ) !== false || strpos( $title, PHP_EOL ) !== false ) { $title = '"' . str_replace( '"', '""', $title ) . '"'; }
 		echo $title;
 	}
@@ -271,7 +271,7 @@ function bookacti_generate_csv( $items, $headers = array() ) {
 			if( $count ) { echo ','; }
 			++$count;
 			if( ! isset( $item[ $column_name ] ) ) { continue; }
-			$content = html_entity_decode( strip_tags( $item[ $column_name ] ) );
+			$content = html_entity_decode( strip_tags( $item[ $column_name ] ), ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401, 'UTF-8' );
 			if( strpos( $content, ',' ) !== false || strpos( $content, PHP_EOL ) !== false ) { $content = '"' . str_replace( '"', '""', $content ) . '"'; }
 			echo $content;
 		}
@@ -2636,7 +2636,7 @@ function bookacti_sanitize_values( $default_data, $raw_data, $keys_by_type, $san
 /**
  * Escape illegal caracters in ical properties
  * @since 1.6.0
- * @version 1.15.16
+ * @version 1.16.37
  * @param string $value
  * @param string $property_name
  * @return string
@@ -2646,7 +2646,7 @@ function bookacti_sanitize_ical_property( $value, $property_name = '' ) {
 	$eol = $is_desc ? '\n' : ' ';
 	$value = trim( $value );                               // Remove whitespaces at the start and at the end of the string
 	$value = ! $is_desc ? strip_tags( $value ) : $value;   // Remove PHP and HTML elements
-	$value = html_entity_decode( $value );                 // Decode html entities first because semicolons will be escaped
+	$value = html_entity_decode( $value, ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401, 'UTF-8' ); // Decode html entities first because semicolons will be escaped
 	$value = preg_replace( '/([\,;])/', '\\\$1', $value ); // Escape illegal caracters in ical properties
 	$value = preg_replace( '/\r|\n/', $eol, $value );      // Replace End of lines with a whitespace or a \n in DESCRIPTION
 	$value = preg_replace( '/\s{2,}/', ' ', $value );      // Replace multiple whitespaces with a single space
