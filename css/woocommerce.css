@@ -63,14 +63,7 @@ table.woocommerce_order_items ul.bookacti-booking-events-list { margin: 0; }
 
 
 /* Cart, Checkout */
-.bookacti-order-item-activity td.product-name .wc-item-meta .wc-item-meta-bookacti_booked_events,
-.bookacti-cart-item-activity td.product-name dl.variation dt { float: none; display: block; }
-
-.bookacti-cart-item-activity dd > p:first-child,
-.bookacti-cart-item-activity .bookacti-price-container,
-.bookacti-order-item-activity td.product-name .wc-item-meta .wc-item-meta-label,
-.bookacti-order-item-activity .bookacti-price-container,
-.woocommerce_order_items .bookacti-price-container { display: inline-block; vertical-align: baseline; float: none; }
+.bookacti-cart-item-activity dd > p:first-child    { margin: 0; }
 .woocommerce_order_items .bookacti-price-container { background-color:rgba(0,0,0,0.3); }
 
 .wc-block-cart-items__row .bookacti-countdown-container:before,
@@ -84,11 +77,3 @@ table.woocommerce_order_items ul.bookacti-booking-events-list { margin: 0; }
 /* My Account */
 .woocommerce a.button.bookacti-booking-group-action,
 .woocommerce a.button.bookacti-booking-action { margin: 5px; }
-
-.bookacti-booking-refunds-meta > li strong:first-child:after { content: ':'; }
-
-
-/* Orders */
-.bookacti-wc-order-item-bookings-attributes { vertical-align: top; }
-.bookacti-wc-order-item-booking-attribute[data-attribute="actions"] .bookacti-wc-order-item-booking-attribute-label { display: none; }
-.bookacti-wc-order-item-booking-attribute[data-attribute="refunds"] .bookacti-wc-order-item-booking-attribute-value { padding: 0 12px; }

@@ -167,9 +167,6 @@ label[for="bookacti-booking-filter-dates-to"] + input#bookacti-booking-filter-da
 
 .bookacti-payment-status.bookacti-tip,
 .bookacti-booking-status.bookacti-tip     { padding: 0; }
-.bookacti-payment-status,
-.bookacti-booking-status                  { font-weight: bold; }
-.bookacti-booking-status label            { display: inline; vertical-align: middle; margin: 0; font-weight: initial; }
 
 .bookacti-payment-status-paid,
 .bookacti-booking-status-booked,

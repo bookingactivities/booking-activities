@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Get array of woocommerce products and product variations titles ordered by ids
  * @since 1.7.10
- * @version 1.16.18
+ * @version 1.16.38
  * @global wpdb $wpdb
  * @param string $product_search
  * @return array
@@ -40,13 +40,13 @@ function bookacti_get_products_titles( $search = '' ) {
 			. ' LEFT JOIN ' . $wpdb->term_taxonomy . ' as TT ON TT.term_taxonomy_id = TR.term_taxonomy_id AND TT.taxonomy = "product_type" '
 			. ' LEFT JOIN ' . $wpdb->terms . ' as T ON T.term_id = TT.term_id '
 			. ' WHERE ( ( P.post_type = "product" AND T.name IS NOT NULL ) OR P.post_type = "product_variation" )'
-			. ' AND P.post_status = "publish"';
+			. ' AND P.post_status IN ( "publish", "private", "draft", "pending", "future" )';
 	
 	if( $search ) {
 		$search_conditions = $search_product_id ? 'ID = %d' : 'P.post_title LIKE %s OR ( P.post_type = "product_variation" AND P.post_excerpt LIKE %s )';
 		
 		// Include the variations' parents so the user knows to what product it belongs
-		$parent_ids_query = 'SELECT P.post_parent FROM ' . $wpdb->posts . ' as P WHERE P.post_type = "product_variation" AND P.post_status = "publish" AND ' . $search_conditions;
+		$parent_ids_query = 'SELECT P.post_parent FROM ' . $wpdb->posts . ' as P WHERE P.post_type = "product_variation" AND P.post_status IN ( "publish", "private", "draft", "pending", "future" ) AND ' . $search_conditions;
 		
 		$query .= ' AND ( ' . $search_conditions . ' OR ID IN ( ' . $parent_ids_query . ' ) )';
 		

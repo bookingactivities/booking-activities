@@ -1427,7 +1427,7 @@ add_action( 'woocommerce_before_cart', 'bookacti_wc_temp_fix_display_wc_notices_
 /**
  * Display the custom metadata in cart and checkout
  * @since 1.9.0 (was bookacti_get_item_data)
- * @version 1.16.9
+ * @version 1.16.38
  * @param array $item_data
  * @param array $cart_item
  * @return array
@@ -1439,14 +1439,7 @@ function bookacti_wc_cart_item_meta_formatted( $item_data, $cart_item ) {
 	if( empty( $cart_items_bookings[ 'temp_key' ] ) ) { return $item_data; }
 	$cart_item_bookings = $cart_items_bookings[ 'temp_key' ];
 	
-	// Check if the attributes are retireved by the Store API
-	$context   = '';
-	$backtrace = debug_backtrace( !DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 4 );
-	if( isset( $backtrace[ 3 ][ 'class' ] ) && $backtrace[ 3 ][ 'class' ] === 'Automattic\WooCommerce\StoreApi\Schemas\V1\CartItemSchema' ) {
-		$context = 'store_api';
-	}
-	
-	$cart_item_bookings_attributes = bookacti_wc_get_item_bookings_attributes( $cart_item_bookings, $context );
+	$cart_item_bookings_attributes = bookacti_wc_get_item_bookings_attributes( $cart_item_bookings, 'cart' );
 	if( ! $cart_item_bookings_attributes ) { return $item_data; }
 	
 	$hidden_cart_item_bookings_attributes = bookacti_wc_get_hidden_cart_item_bookings_attributes();
@@ -1455,8 +1448,8 @@ function bookacti_wc_cart_item_meta_formatted( $item_data, $cart_item ) {
 		foreach( $cart_item_bookings_attribute as $cart_item_booking_attribute_name => $cart_item_booking_attribute ) {
 			if( in_array( $cart_item_booking_attribute_name, $hidden_cart_item_bookings_attributes, true ) ) { continue; }
 			$item_data[] = array(
-				'key' => $cart_item_booking_attribute[ 'label' ] ? $cart_item_booking_attribute[ 'label' ] : $cart_item_booking_attribute_name,
-				'value' => $cart_item_booking_attribute[ 'value' ]
+				'key'   => ! empty( $cart_item_booking_attribute[ 'label' ] ) ? $cart_item_booking_attribute[ 'label' ] : $cart_item_booking_attribute_name,
+				'value' => ! empty( $cart_item_booking_attribute[ 'value' ] ) ? $cart_item_booking_attribute[ 'value' ] : ''
 			);
 		}
 	}
@@ -1964,7 +1957,7 @@ add_action( 'woocommerce_checkout_order_processed', 'bookacti_wc_checkout_order_
 /**
  * Format the order item meta values to display
  * @since 1.0.4 (was bookacti_format_order_item_meta)
- * @version 1.16.0
+ * @version 1.16.38
  * @param string $html
  * @param WC_Order_Item $item
  * @param array $args
@@ -1981,15 +1974,28 @@ function bookacti_wc_order_item_meta_formatted( $formatted_meta, $item ) {
 		// Format bookings data to be displayed
 		// Add 'bookacti_booking_id', 'bookacti_booking_group_id' for Backward compatibility with orders made before BA 1.9.0
 		if( in_array( $meta->key, array( 'bookacti_bookings', 'bookacti_booking_id', 'bookacti_booking_group_id' ), true ) ) {
-			$item_id = $item->get_id();
-			$order_items_bookings = bookacti_wc_get_order_items_bookings( array( $item ) );
-			$order_item_bookings = ! empty( $order_items_bookings[ $item_id ] ) ? $order_items_bookings[ $item_id ] : bookacti_wc_format_order_item_bookings_ids( $item );
-			$meta->display_key = esc_html( _n( 'Booking', 'Bookings', count( $order_item_bookings ), 'booking-activities' ) );
-			$meta->display_value = bookacti_wc_get_item_bookings_attributes_html( $order_item_bookings );
+			$item_id                       = $item->get_id();
+			$order_items_bookings          = bookacti_wc_get_order_items_bookings( array( $item ) );
+			$order_item_bookings           = ! empty( $order_items_bookings[ $item_id ] ) ? $order_items_bookings[ $item_id ] : bookacti_wc_format_order_item_bookings_ids( $item );
+			$order_item_bookings_attributes = bookacti_wc_get_item_bookings_attributes( $order_item_bookings, 'order' );
+			
+			foreach( $order_item_bookings_attributes as $order_item_bookings_attribute ) {
+				foreach( $order_item_bookings_attribute as $order_item_booking_attribute_name => $order_item_booking_attribute ) {
+					$formatted_meta[ 'bookacti_' . $order_item_booking_attribute_name ] = (object) array(
+						'key'           => $order_item_booking_attribute_name,
+						'value'         => ! empty( $order_item_booking_attribute[ 'value' ] ) ? $order_item_booking_attribute[ 'value' ] : '',
+						'display_key'   => ! empty( $order_item_booking_attribute[ 'label' ] ) ? $order_item_booking_attribute[ 'label' ] : $order_item_booking_attribute_name,
+						'display_value' => ! empty( $order_item_booking_attribute[ 'value' ] ) ? $order_item_booking_attribute[ 'value' ] : ''
+					);
+				}
+			}
+			
+			unset( $formatted_meta[ $meta_id ] );
 		}
 		// Remove the other bookacti_ attributes (Backward compatibility)
 		else { unset( $formatted_meta[ $meta_id ] ); }
 	}
+	
 	return $formatted_meta;
 }
 add_filter( 'woocommerce_order_item_get_formatted_meta_data', 'bookacti_wc_order_item_meta_formatted', 10, 2 );
@@ -2023,22 +2029,6 @@ function bookacti_add_class_to_activity_order_item( $classes, $item, $order ) {
 	return $classes;
 }
 add_filter( 'woocommerce_order_item_class', 'bookacti_add_class_to_activity_order_item', 10, 3 );
-
-
-/**
- * Add CSS for a proper display of additional prices in WooCommerce emails
- * @since 1.15.15
- * @param string $css
- * @param WC_Email $email
- * @return string
- */
-function bookacti_wc_emails_additional_css( $css, $email = null ) {
-	ob_start(); ?>
-		.bookacti-price-container { <?php echo bookacti_get_inline_price_container_css(); ?> }
-	<?php
-	return $css . ob_get_clean();
-}
-add_filter( 'woocommerce_email_styles', 'bookacti_wc_emails_additional_css', 10, 2 );
 
 
 
