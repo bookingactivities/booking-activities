@@ -633,7 +633,7 @@ function bookacti_get_active_add_ons( $prefix = '', $exclude = array( 'balau' ) 
 /**
  * Get add-on data by prefix
  * @since 1.7.14
- * @version 1.16.0
+ * @version 1.16.38
  * @param string $prefix
  * @param array $exclude
  * @return array
@@ -662,7 +662,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-prices-and-credits', 
 			'end_of_life' => '', 
 			'download_id' => 438,
-			'min_version' => '1.8.7'
+			'min_version' => '1.8.28'
 		),
 		'baaf' => array( 
 			'title'       => 'Advanced Forms', 
@@ -670,7 +670,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-advanced-forms', 
 			'end_of_life' => '', 
 			'download_id' => 2705,
-			'min_version' => '1.4.1'
+			'min_version' => '1.5.3'
 		),
 		'baofc' => array( 
 			'title'	      => 'Order for Customers', 
@@ -686,7 +686,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-resource-availability', 
 			'end_of_life' => '', 
 			'download_id' => 29249,
-			'min_version' => '1.1.2'
+			'min_version' => '1.2.2'
 		),
 		'balau' => array( 
 			'title'       => 'Licenses & Updates', 
@@ -2767,16 +2767,6 @@ function bookacti_format_price( $price_raw, $args_raw = array() ) {
 	}
 
 	return apply_filters( 'bookacti_formatted_price', str_replace( array( "\t", "\r", "\n" ), '', trim( ob_get_clean() ) ), $amount, $price_raw, $args_raw );
-}
-
-
-/**
- * Get the inline CSS for the price container
- * @since 1.15.15
- * @return string
- */
-function bookacti_get_inline_price_container_css() {
-	return apply_filters( 'bookacti_inline_price_container_css', 'display:inline-block;vertical-align:middle;margin-left:10px;padding:5px;font-weight:bolder;border-radius:3px;border:1px solid #fff;background-color:rgba(0,0,0,0.3);color:#fff;' );
 }
 
 

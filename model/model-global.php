@@ -394,6 +394,7 @@ function bookacti_delete_metadata( $object_type, $object_id, $metadata_key_array
 /**
  * Get notifications data from database
  * @since 1.16.37
+ * @version 1.16.38
  * @param boolean $raw
  * @return array
  */
@@ -410,15 +411,19 @@ function bookacti_get_notifications() {
 	$notifications = array();
 	if( $results ) {
 		foreach( $results as $result ) {
+			if( ! ( ! empty( $result->option_name ) && substr( $result->option_name, 0, strlen( 'bookacti_notifications_settings_' ) ) === 'bookacti_notifications_settings_' ) ) { continue; }
+			
 			$notification_id = substr( $result->option_name, strlen( 'bookacti_notifications_settings_' ) );
-			$notification    = maybe_unserialize( $result->option_value );
+			$notification    = ! empty( $result->option_value ) ? maybe_unserialize( $result->option_value ) : false;
+			
+			if( ! ( $notification && is_array( $notification ) ) ) { continue; }
+			
 			$notifications[ $notification_id ] = array_merge( $notification, array( 'id' => $notification_id ) );
 		}
 	}
 	
 	return $notifications;
 }
-
 
 
 

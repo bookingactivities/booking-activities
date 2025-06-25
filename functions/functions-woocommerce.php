@@ -708,43 +708,186 @@ function bookacti_wc_get_displayed_product_price( $product, $price = '', $qty = 
 // CART AND ORDER
 
 /**
- * Build a user-friendly events list based on item bookings
- * @since 1.9.0
- * @version 1.16.9
- * @param array $item_bookings
+ * Get booking events list as WC item attributes
+ * @since 1.9.0 (was bookacti_wc_get_item_bookings_events_list_html)
+ * @version 1.16.38
+ * @param array $item_booking
  * @param boolean $show_quantity
  * @param string $context
- * @return string
+ * @return array
  */
-function bookacti_wc_get_item_bookings_events_list_html( $item_bookings, $show_quantity = true, $context = '' ) {
-	if( ! $item_bookings ) { return ''; }
+function bookacti_wc_get_item_booking_events_attributes( $item_booking, $show_quantity = true, $context = '' ) {
+	// Get the custom formatting values
+	$messages            = bookacti_get_messages();
+	$datetime_format     = isset( $messages[ 'date_format_short' ][ 'value' ] )   ? $messages[ 'date_format_short' ][ 'value' ] : '';
+	$time_format         = isset( $messages[ 'time_format' ][ 'value' ] )         ? $messages[ 'time_format' ][ 'value' ] : '';
+	$date_time_separator = isset( $messages[ 'date_time_separator' ][ 'value' ] ) ? $messages[ 'date_time_separator' ][ 'value' ] : '';
+	$dates_separator     = isset( $messages[ 'dates_separator' ][ 'value' ] )     ? $messages[ 'dates_separator' ][ 'value' ] : '';
+	$quantity_separator  = isset( $messages[ 'quantity_separator' ][ 'value' ] )  ? $messages[ 'quantity_separator' ][ 'value' ] : '';
 	
-	$list = '';
-	foreach( $item_bookings as $item_booking ) {
-		if( empty( $item_booking[ 'bookings' ] ) ) { continue; }
+	// Sort the bookings by dates
+	$sorted_bookings = bookacti_sort_events_array_by_dates( $item_booking[ 'bookings' ], false, false, array( 'start' => 'event_start', 'end' => 'event_end' ) );
+	
+	// Format events
+	$group_title = '';
+	$formatted_events = array();
+	foreach( $sorted_bookings as $booking ) {
+		// Get the group title if it is a group of events
+		if( ! empty( $booking->group_id ) && ! $group_title ) {
+			$group_title = ! empty( $booking->group_title ) ? apply_filters( 'bookacti_translate_text', $booking->group_title ) : sprintf( esc_html__( 'Booking group #%d', 'booking-activities' ), $booking->group_id );
+		}
 		
-		$sorted_bookings = bookacti_sort_events_array_by_dates( $item_booking[ 'bookings' ], false, false, array( 'start' => 'event_start', 'end' => 'event_end' ) );
+		$start = isset( $booking->event_start ) ? bookacti_sanitize_datetime( $booking->event_start ) : '';
+		$end   = isset( $booking->event_end ) ? bookacti_sanitize_datetime( $booking->event_end ) : '';
 		
-		if( $context === 'store_api' ) {
-			$list .= bookacti_get_formatted_booking_events_list_raw( $sorted_bookings, $show_quantity );
-		} else {
-			$list .= bookacti_get_formatted_booking_events_list( $sorted_bookings, $show_quantity, false );
+		// Format the event duration
+		$duration = '';
+		if( $start && $end ) {
+			$start_and_end_same_day = substr( $start, 0, 10 ) === substr( $end, 0, 10 );
+			
+			$event_start = bookacti_format_datetime( $start, $datetime_format );
+			$event_end   = $start_and_end_same_day ? bookacti_format_datetime( $end, $time_format ) : bookacti_format_datetime( $end, $datetime_format );
+			$separator   = $start_and_end_same_day ? $date_time_separator : $dates_separator;
+			
+			$duration = $event_start . $separator . $event_end;
+		}
+		
+		$formatted_events[] = array( 
+			'uid'      => 'booking_' . $booking->id,
+			'title'    => ! empty( $booking->event_title ) ? apply_filters( 'bookacti_translate_text', $booking->event_title ) : '',
+			'start'    => isset( $booking->event_start ) ? bookacti_sanitize_datetime( $booking->event_start ) : '',
+			'end'      => isset( $booking->event_end ) ? bookacti_sanitize_datetime( $booking->event_end ) : '',
+			'quantity' => isset( $booking->quantity ) ? intval( $booking->quantity ) : '',
+			'duration' => $duration
+		);
+	}
+	
+	// Add a default row to visually simulate a parent
+	$events_attributes = array( 
+		'bookings' => array( 
+			'label' => esc_html( _n( 'Event', 'Events', count( $item_booking[ 'bookings' ] ), 'booking-activities' ) ), 
+			'value' => $group_title ? $group_title : '&nbsp;',
+		)
+	);
+	
+	// Add one line per event
+	foreach( $formatted_events as $i => $event ) {
+		if( ! $event[ 'title' ] && ! $event[ 'duration' ] ) { continue; }
+		
+		$value = '';
+		
+		if( $event[ 'title' ] ) {
+			$value .= $event[ 'title' ];
+			if( $event[ 'duration' ] ) {
+				$value .= ' ';
+			}
+		}
+		
+		if( $event[ 'duration' ] ) {
+			$value .= $event[ 'duration' ];
+		}
+
+		if( $event[ 'quantity' ] && $show_quantity ) {
+			$value .= $quantity_separator . $event[ 'quantity' ];
+		}
+		
+		if( count( $item_booking[ 'bookings' ] ) > 1 ) {
+			$events_attributes[ $event[ 'uid' ] ] = array( 
+				'label' => '&nbsp;&nbsp;&nbsp;&nbsp;&bull;', 
+				'value' => $value
+			);
+		}
+		else {
+			$events_attributes[ 'bookings' ][ 'value' ] = $value;
 		}
 	}
 	
-	// Wrap the list only if it is not empty
-	if( $list && $context !== 'store_api' ) {
-		$list = '<ul class="bookacti-booking-events-list bookacti-custom-scrollbar" style="clear:both;" >' . $list . '</ul>';
+	return apply_filters( 'bookacti_wc_item_booking_events_attributes', $events_attributes, $item_booking, $show_quantity, $context );
+}
+
+
+/**
+ * Get booking refunds as WC item attributes
+ * @since 1.16.38
+ * @param array $refunds
+ * @param string $context
+ * @return string
+ */
+function bookacti_wc_get_item_booking_refunds_attributes( $refunds, $context = '' ) {
+	$html = '';
+	if( ! $refunds ) { return $html; }
+	
+	$utc_timezone_obj = new DateTimeZone( 'UTC' );
+	$timezone = function_exists( 'wp_timezone_string' ) ? wp_timezone_string() : get_option( 'timezone_string' );
+	try { $timezone_obj = new DateTimeZone( $timezone ); }
+	catch ( Exception $ex ) { $timezone_obj = clone $utc_timezone_obj; }
+	
+	// Add a default row to visually simulate a parent
+	$refunds_attributes = array();
+	
+	foreach( $refunds as $i => $refund ) {
+		$refund_id      = $i;
+		$date_formatted = '';
+		if( ! empty( $refund[ 'date' ] ) && bookacti_sanitize_datetime( $refund[ 'date' ] ) ) { 
+			$datetime_obj = DateTime::createFromFormat( 'Y-m-d H:i:s', $refund[ 'date' ], $utc_timezone_obj );
+			$datetime_obj->setTimezone( $timezone_obj );
+			$date_formatted = bookacti_format_datetime( $datetime_obj->format( 'Y-m-d H:i:s' ) );
+		}
+		
+		$refund_attributes = array(
+			// Add a default row to visually simulate a parent
+			'refund_' . $refund_id => array( 
+				'label' => esc_html__( 'Refund', 'booking-activities' ), 
+				'value' => '&nbsp;',
+			),
+			'refund_' . $refund_id . '_date' => array(
+				'label' => '&nbsp;&nbsp;&nbsp;&nbsp;' . esc_html__( 'Date', 'booking-activities' ),
+				'value' => $date_formatted,
+			),
+			'refund_' . $refund_id . '_quantity' => array(
+				'label' => '&nbsp;&nbsp;&nbsp;&nbsp;' . esc_html__( 'Quantity', 'booking-activities' ),
+				'value' => ! empty( $refund[ 'quantity' ] ) ? $refund[ 'quantity' ] : '',
+			),
+			'refund_' . $refund_id . '_method' => array(
+				'label' => '&nbsp;&nbsp;&nbsp;&nbsp;' . esc_html__( 'Method', 'booking-activities' ),
+				'value' => ! empty( $refund[ 'method' ] ) ? bookacti_get_refund_label( $refund[ 'method' ] ) : '',
+			)
+		);
+		
+		if( isset( $refund[ 'coupon' ] ) ) {
+			// Check if the coupon code is valid
+			$coupon_code        = strtoupper( $refund[ 'coupon' ] );
+			$coupon_valid       = $coupon_code ? bookacti_wc_is_coupon_code_valid( $coupon_code ) : true;
+			$coupon_class       = is_wp_error( $coupon_valid ) ? 'bookacti-refund-coupon-not-valid bookacti-refund-coupon-error-' . esc_attr( $coupon_valid->get_error_code() ) : 'bookacti-refund-coupon-valid';
+			$coupon_error_label = is_wp_error( $coupon_valid ) ? $coupon_valid->get_error_message() : '';
+
+			$coupon_tip   = $coupon_error_label ? esc_attr( $coupon_error_label ) : $coupon_code;
+			$coupon_label = '<span class="bookacti-refund-coupon-code ' . esc_attr( $coupon_class ) . '" title="' . $coupon_tip . '">' . $coupon_code . '</span>';
+
+			$refund_attributes[ 'refund_' . $refund_id . '_coupon' ] = array(
+				'label' => '&nbsp;&nbsp;&nbsp;&nbsp;' . esc_html__( 'Coupon code', 'booking-activities' ),
+				'value' => $coupon_label
+			);
+		}
+		
+		if( isset( $refund[ 'amount' ] ) )	{ 
+			$refund_attributes[ 'refund_' . $refund_id . '_amount' ] = array(
+				'label' => '&nbsp;&nbsp;&nbsp;&nbsp;' . esc_html__( 'Amount', 'booking-activities' ),
+				'value' => bookacti_format_price( $refund[ 'amount' ], array( 'plain_text' => true ) )
+			);
+		}
+		
+		$refunds_attributes = array_merge( $refunds_attributes, $refund_attributes );
 	}
 	
-	return apply_filters( 'bookacti_wc_item_bookings_events_list_html', $list, $item_bookings, $show_quantity, $context );
+	return apply_filters( 'bookacti_wc_item_booking_refunds_attributes', $refunds_attributes, $refunds, $context );
 }
 
 
 /**
  * Get array of displayed attributes per booking
  * @since 1.9.0
- * @version 1.16.9
+ * @version 1.16.38
  * @global boolean $bookacti_is_email
  * @param array $item_bookings
  * @param string $context
@@ -762,7 +905,7 @@ function bookacti_wc_get_item_bookings_attributes( $item_bookings, $context = ''
 			'id' => array( 
 				'label' => $item_booking[ 'type' ] === 'group' ? esc_html__( 'Booking group ID', 'booking-activities' ) : esc_html__( 'Booking ID', 'booking-activities' ), 
 				'value' => $item_booking[ 'id' ],
-				'type' => $item_booking[ 'type' ]
+				'type'  => $item_booking[ 'type' ]
 			)
 		);
 		
@@ -777,23 +920,12 @@ function bookacti_wc_get_item_bookings_attributes( $item_bookings, $context = ''
 			}
 		
 			// Booking events
-			$booking_attributes[ 'events' ] = array( 
-				'label' => esc_html( _n( 'Event', 'Events', count( $item_booking[ 'bookings' ] ), 'booking-activities' ) ), 
-				'value' => bookacti_wc_get_item_bookings_events_list_html( array( $item_booking ), true, $context ),
-				'fullwidth' => 1
-			);
-		
+			$booking_attributes += bookacti_wc_get_item_booking_events_attributes( $item_booking, true, $context );
+			
 			// Refund data
 			if( ! empty( $item_booking[ 'bookings' ][ 0 ]->refunds ) ) {
-				$refunds_formatted = bookacti_format_booking_refunds( $item_booking[ 'bookings' ][ 0 ]->refunds );
-				$refunds_html = bookacti_get_booking_refunds_html( $refunds_formatted );
-				if( $refunds_html ) {
-					$booking_attributes[ 'refunds' ] = array( 
-						'label' => esc_html( _n( 'Refund', 'Refunds', count( $refunds_formatted ), 'booking-activities' ) ), 
-						'value' => $refunds_html,
-						'fullwidth' => 1
-					);
-				}
+				$refunds_formatted   = bookacti_format_booking_refunds( $item_booking[ 'bookings' ][ 0 ]->refunds );
+				$booking_attributes += bookacti_wc_get_item_booking_refunds_attributes( $refunds_formatted, $context );
 			}
 		
 			// Allow plugins to add more item booking attributes to be displayed (before the booking actions)
@@ -810,7 +942,6 @@ function bookacti_wc_get_item_bookings_attributes( $item_bookings, $context = ''
 					$booking_attributes[ 'actions' ] = array( 
 						'label' => esc_html( _n( 'Action', 'Actions', count( $actions_html_array ), 'booking-activities' ) ),
 						'value' => implode( ' | ', $actions_html_array ),
-						'fullwidth' => 1
 					);
 				}
 			}
@@ -824,7 +955,6 @@ function bookacti_wc_get_item_bookings_attributes( $item_bookings, $context = ''
 					$booking_attributes[ 'actions' ] = array( 
 						'label' => esc_html( _n( 'Action', 'Actions', count( $actions_html_array ), 'booking-activities' ) ),
 						'value' => implode( ' | ', $actions_html_array ),
-						'fullwidth' => 1
 					);
 				}
 			}
@@ -837,56 +967,6 @@ function bookacti_wc_get_item_bookings_attributes( $item_bookings, $context = ''
 	}
 	
 	return apply_filters( 'bookacti_wc_item_bookings_attributes', $bookings_attributes, $item_bookings, $context );
-}
-
-
-/**
- * Get array of displayed attributes per item per booking
- * @since 1.9.0
- * @version 1.16.0
- * @param array $item_bookings
- * @return array
- */
-function bookacti_wc_get_item_bookings_attributes_html( $item_bookings ) {
-	$html = '';
-	if( ! $item_bookings ) { return $html; }
-	
-	$bookings_attributes = bookacti_wc_get_item_bookings_attributes( $item_bookings );
-	if( ! $bookings_attributes ) { return $html; }
-	
-	$i = 0;
-	$last_i = count( $bookings_attributes );
-	$text_dir = is_rtl() ? 'right' : 'left';
-	$margin_dir = is_rtl() ? 'left' : 'right';
-	
-	$html .= '<div class="bookacti-wc-order-item-bookings-attributes" style="clear: both; border: none; padding: 0; margin-' . $text_dir . ': 15px; text-align: ' . $text_dir . ';">';
-	foreach( $bookings_attributes as $booking_attributes ) {
-		$i++;
-		$container_margin = $i !== $last_i ? 'margin-bottom:25px;' : '';
-		$classes = ! empty( $booking_attributes[ 'id' ] ) ? ( $booking_attributes[ 'id' ][ 'type' ] === 'group' ? 'bookacti-booking-group' : 'bookacti-single-booking' ) : '';
-		$attr_booking_id = ! empty( $booking_attributes[ 'id' ] ) ? ( $booking_attributes[ 'id' ][ 'type' ] === 'group' ? 'data-booking-group-id="' . $booking_attributes[ 'id' ][ 'value' ] . '"' : 'data-booking-id="' . $booking_attributes[ 'id' ][ 'value' ] . '"' ) : '';
-		$html .= '<div class="bookacti-wc-order-item-booking-attributes bookacti-booking-row ' . $classes . '" ' . $attr_booking_id . ' style="' . $container_margin . '">';
-		foreach( $booking_attributes as $booking_attribute_id => $booking_attribute ) {
-			if( $booking_attribute[ 'label' ] === '' && $booking_attribute[ 'value' ] === '' ) { continue; }
-			$fullwidth_class = ! empty( $booking_attribute[ 'fullwidth' ] ) ? 'bookacti-fullwidth-label' : '';
-			$fullwidth_style = ! empty( $booking_attribute[ 'fullwidth' ] ) ? '' : 'display: inline-block; vertical-align:middle;';
-			$label_style = $booking_attribute[ 'label' ] === '' ? 'display: none;' : $fullwidth_style . ' margin-' . $margin_dir . ': .25em;';
-			$html .= '<div class="bookacti-wc-order-item-booking-attribute" data-attribute="' . $booking_attribute_id . '">'
-						. '<div class="bookacti-wc-order-item-booking-attribute-label ' . $fullwidth_class . '" style="' . $label_style . '">'
-							. '<strong>' . $booking_attribute[ 'label' ] . ':</strong>'
-						. '</div>'
-						. '<div class="bookacti-wc-order-item-booking-attribute-value" style="' . $fullwidth_style . '">' 
-							. $booking_attribute[ 'value' ] 
-						. '</div>'
-					. '</div>';
-		}
-		$html .= '</div>';
-	}
-	$html .= '</div>';
-	
-	$html = apply_filters( 'bookacti_wc_item_bookings_attributes_html', $html, $bookings_attributes, $item_bookings );
-	
-	return $html;
 }
 
 
@@ -2772,14 +2852,14 @@ function bookacti_settings_section_wc_account_callback() {}
 /**
  * Setting for: Bookings page in My Account
  * @since 1.7.16
- * @version 1.14.0
+ * @version 1.16.38
  */
 function bookacti_settings_wc_my_account_bookings_page_id_callback() {
 	$options = array(
 		'-1' => esc_html__( 'Disabled' ),
 		'0'  => esc_html__( 'Default booking list', 'booking-activities' ),
 	);
-	$pages = get_pages( array( 'sort_column' => 'menu_order', 'sort_order' => 'ASC' ) );
+	$pages = get_pages( array( 'sort_column' => 'menu_order', 'sort_order' => 'ASC', 'post_status' => array( 'publish', 'private', 'draft', 'pending', 'future' ) ) );
 	foreach( $pages as $page ) {
 		$options[ $page->ID ] = $page->post_title ? apply_filters( 'bookacti_translate_text_external', $page->post_title, false, true, array( 'domain' => 'wordpress', 'object_type' => 'page', 'object_id' => $page->ID, 'field' => 'post_title' ) ) : $page->post_title;
 	}

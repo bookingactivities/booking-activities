@@ -3,7 +3,7 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
 Tested up to: 6.8
-Stable tag: 1.16.37
+Stable tag: 1.16.38
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -319,6 +319,13 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.16.38 - 2025/06/25 =
+* Tweak - Standardize display of WC item meta in cart, orders, and emails, for all WC versions
+* Tweak - Allow displaying the content of a private, draft or pending page in WooCommerce My Account Bookings tab
+* Tweak - Allow selecting private, draft or pending WC products in calendar settings selectboxes
+* Fix - Add robustness checks when retrieving notification settings in case of corrupted data
+* Lib - Update select2 library to 4.0.13
 
 = 1.16.37 - 2025/06/17 =
 * Fix - With PHP version < 8.1 characters &#039; may appear in booking exports

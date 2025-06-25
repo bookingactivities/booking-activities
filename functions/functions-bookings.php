@@ -2714,71 +2714,6 @@ function bookacti_format_booking_refunds( $refunds, $booking_id = 0, $booking_ty
 }
 
 
-/**
- * Get formatted booking refunds
- * @since 1.9.0
- * @version 1.11.0
- * @param array $refunds
- * @return string
- */
-function bookacti_get_booking_refunds_html( $refunds ) {
-	$html = '';
-	if( ! $refunds ) { return $html; }
-	
-	$utc_timezone_obj = new DateTimeZone( 'UTC' );
-	$timezone = function_exists( 'wp_timezone_string' ) ? wp_timezone_string() : get_option( 'timezone_string' );
-	try { $timezone_obj = new DateTimeZone( $timezone ); }
-	catch ( Exception $ex ) { $timezone_obj = clone $utc_timezone_obj; }
-	
-	foreach( $refunds as $i => $refund ) {
-		$refund_id = $i;
-		
-		$date_formatted = '';
-		if( ! empty( $refund[ 'date' ] ) && bookacti_sanitize_datetime( $refund[ 'date' ] ) ) { 
-			$datetime_obj = DateTime::createFromFormat( 'Y-m-d H:i:s', $refund[ 'date' ], $utc_timezone_obj );
-			$datetime_obj->setTimezone( $timezone_obj );
-			$date_formatted = bookacti_format_datetime( $datetime_obj->format( 'Y-m-d H:i:s' ) );
-		}
-		
-		$html .= '<div class="bookacti-booking-refund">';
-		
-		if( count( $refunds ) > 1 ) { 
-			/* translators: %s is the refund ID */
-			$html .= '<span>' . sprintf( esc_html__( 'Refund #%s', 'booking-activities' ), '<strong>' . $refund_id . '</strong></span>' );
-		}
-		
-		$displayed_lines = apply_filters( 'bookacti_booking_refund_displayed_data', array(
-			'date' => array(
-				'label' => esc_html__( 'Date', 'booking-activities' ),
-				'value' => $date_formatted,
-			),
-			'quantity' => array(
-				'label' => esc_html__( 'Quantity', 'booking-activities' ),
-				'value' => ! empty( $refund[ 'quantity' ] ) ? $refund[ 'quantity' ] : '',
-			),
-			'method' => array(
-				'label' => esc_html__( 'Method', 'booking-activities' ),
-				'value' => ! empty( $refund[ 'method' ] ) ? bookacti_get_refund_label( $refund[ 'method' ] ) : '',
-			)
-		), $refund, $refund_id );
-		
-		$metadata = '';
-		foreach( $displayed_lines as $displayed_line ) {
-			if( $displayed_line[ 'value' ] === '' ) { continue; }
-			$metadata .= '<li><strong>' . $displayed_line[ 'label' ] . '</strong> ' . $displayed_line[ 'value' ];
-		}
-		
-		if( $metadata ) { $html .= '<ul class="bookacti-booking-refunds-meta">' . $metadata . '</ul>'; }
-		
-		$html .= '</div>';
-	}
-	
-	if( $html ) { $html = '<div class="bookacti-booking-refunds bookacti-custom-scrollbar" style="clear: both;">' . $html . '</div>'; }
-	
-	return apply_filters( 'bookacti_booking_refunds_html', $html, $refunds );
-}
-
-
 
 
 // BOOKING STATUSES
@@ -2828,7 +2763,7 @@ function bookacti_get_payment_statuses() {
 /**
  * Get booking status HTML
  * @since 1.16.0 (was bookacti_format_booking_state)
- * @version 1.16.24
+ * @version 1.16.38
  * @param string $status
  * @param boolean $icon_only
  * @return string
@@ -2837,17 +2772,17 @@ function bookacti_format_booking_status( $status, $icon_only = false ) {
 	$statuses = bookacti_get_booking_statuses();
 	$label    = isset( $statuses[ $status ] ) ? $statuses[ $status ] : $status;
 	
-	$atts    = 'title="' . esc_attr( esc_html( $label ) ) . '"';
-	$class   = 'bookacti-booking-status bookacti-booking-status-' . esc_attr( $status );
-	$content = '<label>' . esc_html( $label ) . '</label>';
+	$atts    = ' title="' . esc_attr( $label ) . '"';
+	$class   = 'bookacti-booking-status bookacti-booking-status-' . $status;
+	$content = $label;
 	
 	if( $icon_only ) {
-		$atts    = ' data-tip="' . esc_attr( esc_html( $label ) ) . '" aria-label="' . esc_attr( esc_html( $label ) ) . '"';
+		$atts    = ' data-tip="' . esc_attr( $label ) . '" aria-label="' . esc_attr( $label ) . '"';
 		$class  .= ' bookacti-tip';
 		$content = '';
 	}
 	
-	$html = '<span class="' . $class . '" data-booking-status="' . esc_attr( $status ) . '"' . $atts . '>' . $content . '</span>';
+	$html = '<span class="' . esc_attr( $class ) . '" data-booking-status="' . esc_attr( $status ) . '"' . $atts . '>' . esc_html( $content ) . '</span>';
 	
 	return apply_filters( 'bookacti_booking_status_html', $html, $status, $icon_only );
 }
@@ -2856,7 +2791,7 @@ function bookacti_format_booking_status( $status, $icon_only = false ) {
 /**
  * Get payment status HTML
  * @since 1.8.0
- * @version 1.16.24
+ * @version 1.16.38
  * @param string $status
  * @param boolean $icon_only
  * @return string
@@ -2865,17 +2800,17 @@ function bookacti_format_payment_status( $status, $icon_only = false ) {
 	$statuses = bookacti_get_payment_statuses();
 	$label    = isset( $statuses[ $status ] ) ? $statuses[ $status ] : $status;
 	
-	$atts    = 'title="' . esc_attr( esc_html( $label ) ) . '"';
-	$class   = 'bookacti-payment-status bookacti-payment-status-' . esc_attr( $status );
-	$content = '<label>' . esc_html( $label ) . '</label>';
+	$atts    = ' title="' . esc_attr( $label ) . '"';
+	$class   = 'bookacti-payment-status bookacti-payment-status-' . $status;
+	$content = $label;
 	
 	if( $icon_only ) {
-		$atts    = 'data-tip="' . esc_attr( esc_html( $label ) ) . '" aria-label="' . esc_attr( esc_html( $label ) ) . '"';
+		$atts    = ' data-tip="' . esc_attr( $label ) . '" aria-label="' . esc_attr( $label ) . '"';
 		$class  .= ' bookacti-tip';
 		$content = '';
 	}
 	
-	$html = '<span class="' . $class . '" data-payment-status="' . esc_attr( $status ) . '" ' . $atts . '>' . $content . '</span>';
+	$html = '<span class="' . esc_attr( $class ) . '" data-payment-status="' . esc_attr( $status ) . '" ' . $atts . '>' . esc_html( $content ) . '</span>';
 
 	return apply_filters( 'bookacti_payment_status_html', $html, $status, $icon_only );
 }
