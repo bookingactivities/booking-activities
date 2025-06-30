@@ -3,7 +3,7 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
 Tested up to: 6.8
-Stable tag: 1.16.38
+Stable tag: 1.16.39
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -319,6 +319,12 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.16.39 - 2025/06/30 =
+* Fix - Since 1.16.38, order items booking meta were saved and displayed twice after updating the order (the fix applies to future orders only, for existing orders you need to delete the undesired meta manually)
+* Dev - Standardize group of events availability check in JS in one function bookacti_is_group_of_events_available
+* Dev - Add bookacti_calendar_event_data_transform JS hook
+* Lib - Update FullCalendar to 6.1.18
 
 = 1.16.38 - 2025/06/25 =
 * Tweak - Standardize display of WC item meta in cart, orders, and emails, for all WC versions

@@ -1060,6 +1060,7 @@ function bookacti_wc_get_hidden_cart_item_bookings_attributes() {
 /**
  * Format order item bookings ids array
  * @since 1.9.0
+ * @version 1.16.39
  * @param array|WC_Order_Item_Product $order_item
  * @return array
  */
@@ -1083,7 +1084,7 @@ function bookacti_wc_format_order_item_bookings_ids( $order_item ) {
 		$order_item_bookings_ids = bookacti_maybe_decode_json( $order_item[ 'bookacti_bookings' ], true );
 	}
 
-	return $order_item_bookings_ids;
+	return is_array( $order_item_bookings_ids ) ? $order_item_bookings_ids : array();
 }
 
 

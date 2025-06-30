@@ -259,7 +259,7 @@ $j( document ).ready( function() {
 
 /**
  * Initialize the calendar
- * @version 1.16.3
+ * @version 1.16.39
  * @param {HTMLElement} booking_system
  * @param {boolean} reload_events
  */
@@ -325,6 +325,19 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		 */
 		events: function( info, successCallback, failureCallback ) {
 			successCallback( [] );
+		},
+		
+		
+		/**
+		 * Transform custom data into a standard Event object
+		 * @since 1.16.39
+		 * @param {Object} eventData
+		 * @returns {Object}
+		 */
+		eventDataTransform: function( eventData ) {
+			booking_system.trigger( 'bookacti_calendar_event_data_transform', [ eventData ] );
+			
+			return eventData;
 		},
 		
 		
