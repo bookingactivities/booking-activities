@@ -1957,7 +1957,7 @@ add_action( 'woocommerce_checkout_order_processed', 'bookacti_wc_checkout_order_
 /**
  * Format the order item meta values to display
  * @since 1.0.4 (was bookacti_format_order_item_meta)
- * @version 1.16.38
+ * @version 1.16.39
  * @param string $html
  * @param WC_Order_Item $item
  * @param array $args
@@ -1981,9 +1981,9 @@ function bookacti_wc_order_item_meta_formatted( $formatted_meta, $item ) {
 			
 			foreach( $order_item_bookings_attributes as $order_item_bookings_attribute ) {
 				foreach( $order_item_bookings_attribute as $order_item_booking_attribute_name => $order_item_booking_attribute ) {
-					$formatted_meta[ 'bookacti_' . $order_item_booking_attribute_name ] = (object) array(
-						'key'           => $order_item_booking_attribute_name,
-						'value'         => ! empty( $order_item_booking_attribute[ 'value' ] ) ? $order_item_booking_attribute[ 'value' ] : '',
+					$formatted_meta[] = (object) array(
+						'key'           => '', // Do not set any key or value to make sure these values are not saved, they are for display purposes only
+						'value'         => '',
 						'display_key'   => ! empty( $order_item_booking_attribute[ 'label' ] ) ? $order_item_booking_attribute[ 'label' ] : $order_item_booking_attribute_name,
 						'display_value' => ! empty( $order_item_booking_attribute[ 'value' ] ) ? $order_item_booking_attribute[ 'value' ] : ''
 					);
