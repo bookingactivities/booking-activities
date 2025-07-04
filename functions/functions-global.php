@@ -633,7 +633,7 @@ function bookacti_get_active_add_ons( $prefix = '', $exclude = array( 'balau' ) 
 /**
  * Get add-on data by prefix
  * @since 1.7.14
- * @version 1.16.38
+ * @version 1.16.40
  * @param string $prefix
  * @param array $exclude
  * @return array
@@ -646,7 +646,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-display-pack', 
 			'end_of_life' => '', 
 			'download_id' => 482,
-			'min_version' => '1.5.2'
+			'min_version' => '1.5.9'
 		),
 		'banp' => array( 
 			'title'       => 'Notification Pack', 
@@ -662,7 +662,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-prices-and-credits', 
 			'end_of_life' => '', 
 			'download_id' => 438,
-			'min_version' => '1.8.28'
+			'min_version' => '1.8.29'
 		),
 		'baaf' => array( 
 			'title'       => 'Advanced Forms', 
@@ -686,7 +686,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-resource-availability', 
 			'end_of_life' => '', 
 			'download_id' => 29249,
-			'min_version' => '1.2.2'
+			'min_version' => '1.2.3'
 		),
 		'balau' => array( 
 			'title'       => 'Licenses & Updates', 

@@ -1449,8 +1449,26 @@ function bookacti_is_event_available( booking_system, event ) {
 		}
 	}
 	
+	return is_available;
+}
+
+
+/**
+ * Check if an event is in one available group at least
+ * @since 1.16.40
+ * @param {HTMLElement} booking_system
+ * @param {(FullCalendar.EventApi|Object)} event
+ * @returns {Boolean}
+ */
+function bookacti_is_event_in_available_group( booking_system, event ) {
+	// Check if the event is part of a group
+	var groups       = bookacti_get_event_groups( booking_system, event );
+	var groups_nb    = bookacti_get_event_groups_nb( groups );
+	var is_in_group  = groups_nb > 0;
+	var is_available = false;
+	
 	// Check if at least one group is available
-	if( is_in_group && ! is_available ) {
+	if( is_in_group ) {
 		$j.each( groups, function( group_id, groups_per_date ) {
 			$j.each( groups_per_date, function( group_date, group_events ) {
 				is_available = bookacti_is_group_of_events_available( booking_system, group_id, group_date );
@@ -1580,7 +1598,7 @@ function bookacti_get_bookings_number_for_a_single_grouped_event( booking_system
 
 /**
  * Get a div with event available places
- * @version 1.16.24
+ * @version 1.16.40
  * @param {HTMLElement} booking_system
  * @param {(FullCalendar.EventApi|Object)} event
  * @returns {String}
@@ -1621,8 +1639,9 @@ function bookacti_get_event_availability_div( booking_system, event ) {
 		}
 		
 		// If the event or its group is not available, set the number of available places to 0
-		var is_available = bookacti_is_event_available( booking_system, event );
-		if( ! is_available && event_availability > 0 ) { 
+		var is_available        = bookacti_is_event_available( booking_system, event );
+		var has_available_group = bookacti_is_event_in_available_group( booking_system, event );
+		if( ! is_available && ! has_available_group && event_availability > 0 ) { 
 			availability_classes += ' bookacti-not-bookable';
 			if( bookacti_localized.not_bookable !== '{current}' ) {
 				if( bookacti_localized.not_bookable ) {
