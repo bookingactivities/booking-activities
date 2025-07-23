@@ -526,7 +526,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		 * Add classes to the event
 		 * It is called every time the associated event data changes
 		 * @since 1.15.0
-		 * @since 1.15.16
+		 * @since 1.16.40
 		 * @param {Object} info {
 		 *  @type {FullCalendar.EventApi} event
 		 *  @type {String} timeText
@@ -572,8 +572,11 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 			// If the event or its group is not available, disable the event
 			var bookings_only = bookacti.booking_system[ booking_system_id ][ 'bookings_only' ] == 1 ? true : false;
 			if( ! bookings_only ) {
-				var is_available = bookacti_is_event_available( booking_system, info.event );
-				if( ! is_available ) { return_object.class_names.push( 'bookacti-event-unavailable' ); }
+				var is_available        = bookacti_is_event_available( booking_system, info.event );
+				var has_available_group = bookacti_is_event_in_available_group( booking_system, info.event );
+				if( ! is_available && ! has_available_group ) {
+					return_object.class_names.push( 'bookacti-event-unavailable' );
+				}
 			}
 			
 			// Add classes to the event according to its expected size

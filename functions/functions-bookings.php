@@ -904,7 +904,7 @@ function bookacti_booking_can_be_rescheduled( $booking, $is_frontend = true ) {
 /**
  * Check if a booking can be rescheduled to another event
  * @since 1.1.0
- * @version 1.16.24
+ * @version 1.16.40
  * @param object|int $booking
  * @param int $event_id
  * @param string $event_start
@@ -984,11 +984,13 @@ function bookacti_booking_can_be_rescheduled_to( $booking, $event_id, $event_sta
 				if( $return_array[ 'status' ] !== 'failed' ) {
 					if( strpos( $reschedule_scope, 'form_' ) !== false ) {
 						$picked_event   = bookacti_format_picked_event( array( 'id' => $event_id, 'start' => $event_start, 'end' => $event_end ) );
-						$form_validated = $form_id ? bookacti_is_picked_event_available_on_form( $picked_event, (array) $event, $form_id ) : array( 'status' => 'failed' );
+						$form_validated = $form_id ? bookacti_is_picked_event_available_on_form( $picked_event, (array) $event, $form_id ) : array( 'status' => 'failed', 'messages' => array() );
 						if( $form_validated[ 'status' ] !== 'success' ) {
+							reset( $form_validated[ 'messages' ] );
+							$error = key( $form_validated[ 'messages' ] );
 							$return_array[ 'status' ]  = 'failed';
-							$return_array[ 'error' ]   = ! empty( $form_validated[ 'error' ] ) ? $form_validated[ 'error' ] : 'reschedule_to_different_form';
-							$return_array[ 'message' ] = ! empty( $form_validated[ 'message' ] ) ? $form_validated[ 'message' ] : esc_html__( 'The desired event is not in the same booking form as the booked event.', 'booking-activities' );
+							$return_array[ 'error' ]   = $error ? $error : 'reschedule_to_different_form';
+							$return_array[ 'message' ] = ! empty( $form_validated[ 'messages' ][ $error ][ 0 ] ) ? $form_validated[ 'messages' ][ $error ][ 0 ] : esc_html__( 'The desired event is not in the same booking form as the booked event.', 'booking-activities' );
 						}
 					} else if( strpos( $reschedule_scope, 'all_' ) !== false ) {
 						$form                 = $form_id && ! $is_admin ? bookacti_get_form_data( $form_id ) : array();

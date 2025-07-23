@@ -2,7 +2,6 @@
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-
 // PRODUCTS
 
 /**
@@ -35,12 +34,12 @@ function bookacti_get_products_titles( $search = '' ) {
 		}
 	}
 	
-	$query	= 'SELECT DISTINCT P.ID as id, P.post_title as title, P.post_excerpt as variations_title, P.post_type, T.slug as product_type, P.post_parent as parent FROM ' . $wpdb->posts . ' as P '
-			. ' LEFT JOIN ' . $wpdb->term_relationships . ' as TR ON TR.object_id = P.ID '
-			. ' LEFT JOIN ' . $wpdb->term_taxonomy . ' as TT ON TT.term_taxonomy_id = TR.term_taxonomy_id AND TT.taxonomy = "product_type" '
-			. ' LEFT JOIN ' . $wpdb->terms . ' as T ON T.term_id = TT.term_id '
-			. ' WHERE ( ( P.post_type = "product" AND T.name IS NOT NULL ) OR P.post_type = "product_variation" )'
-			. ' AND P.post_status IN ( "publish", "private", "draft", "pending", "future" )';
+	$query = 'SELECT DISTINCT P.ID as id, P.post_title as title, P.post_excerpt as variations_title, P.post_type, T.slug as product_type, P.post_parent as parent FROM ' . $wpdb->posts . ' as P '
+	       . ' LEFT JOIN ' . $wpdb->term_relationships . ' as TR ON TR.object_id = P.ID '
+	       . ' LEFT JOIN ' . $wpdb->term_taxonomy . ' as TT ON TT.term_taxonomy_id = TR.term_taxonomy_id AND TT.taxonomy = "product_type" '
+	       . ' LEFT JOIN ' . $wpdb->terms . ' as T ON T.term_id = TT.term_id '
+	       . ' WHERE ( ( P.post_type = "product" AND T.name IS NOT NULL ) OR P.post_type = "product_variation" )'
+	       . ' AND P.post_status IN ( "publish", "private", "draft", "pending", "future" )';
 	
 	if( $search ) {
 		$search_conditions = $search_product_id ? 'ID = %d' : 'P.post_title LIKE %s OR ( P.post_type = "product_variation" AND P.post_excerpt LIKE %s )';
@@ -138,13 +137,13 @@ function bookacti_wc_update_in_cart_bookings_to_removed( $user_id = 0 ) {
 function bookacti_wc_update_event_in_cart_bookings_to_removed( $event_id ) {
 	global $wpdb;
 
-	$query	= 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS . ' as B '
-			. ' SET B.state = "removed", B.active = 0 '
-			. ' WHERE B.event_id = %d '
-			. ' AND B.state = "in_cart" ';
+	$query = 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS . ' as B '
+	       . ' SET B.state = "removed", B.active = 0 '
+	       . ' WHERE B.event_id = %d '
+	       . ' AND B.state = "in_cart" ';
 	
-	$query		= $wpdb->prepare( $query, $event_id );
-	$removed	= $wpdb->query( $query );
+	$query   = $wpdb->prepare( $query, $event_id );
+	$removed = $wpdb->query( $query );
 
 	return $removed;
 }
@@ -161,23 +160,23 @@ function bookacti_wc_update_group_of_events_in_cart_bookings_to_removed( $event_
 	global $wpdb;
 
 	// Single Bookings
-	$query	= 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS . ' as B '
-			. ' LEFT JOIN ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' as G ON B.group_id = G.id '
-			. ' SET B.state = "removed", B.active = 0 '
-			. ' WHERE B.state = "in_cart" '
-			. ' AND G.event_group_id = %d ';
+	$query = 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS . ' as B '
+	       . ' LEFT JOIN ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' as G ON B.group_id = G.id '
+	       . ' SET B.state = "removed", B.active = 0 '
+	       . ' WHERE B.state = "in_cart" '
+	       . ' AND G.event_group_id = %d ';
 
-	$query		= $wpdb->prepare( $query, $event_group_id );
-	$removed1	= $wpdb->query( $query );
+	$query    = $wpdb->prepare( $query, $event_group_id );
+	$removed1 = $wpdb->query( $query );
 	
 	// Booking Groups
-	$query	= 'UPDATE ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' as B '
-			. ' SET B.state = "removed", B.active = 0 '
-			. ' WHERE B.state = "in_cart" '
-			. ' AND B.event_group_id = %d ';
+	$query = 'UPDATE ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' as B '
+	       . ' SET B.state = "removed", B.active = 0 '
+	       . ' WHERE B.state = "in_cart" '
+	       . ' AND B.event_group_id = %d ';
 
-	$query		= $wpdb->prepare( $query, $event_group_id );
-	$removed2	= $wpdb->query( $query );
+	$query    = $wpdb->prepare( $query, $event_group_id );
+	$removed2 = $wpdb->query( $query );
 	
 	return intval( $removed1 ) + intval( $removed2 );
 }
@@ -192,9 +191,9 @@ function bookacti_wc_update_group_of_events_in_cart_bookings_to_removed( $event_
 function bookacti_get_booking_order_id( $booking_id ) {
 	global $wpdb;
 
-	$query		= 'SELECT order_id FROM ' . BOOKACTI_TABLE_BOOKINGS . ' WHERE id = %d';
-	$prep		= $wpdb->prepare( $query, $booking_id );
-	$order_id	= $wpdb->get_var( $prep );
+	$query    = 'SELECT order_id FROM ' . BOOKACTI_TABLE_BOOKINGS . ' WHERE id = %d';
+	$prep     = $wpdb->prepare( $query, $booking_id );
+	$order_id = $wpdb->get_var( $prep );
 
 	return $order_id;
 }
@@ -202,6 +201,7 @@ function bookacti_get_booking_order_id( $booking_id ) {
 
 /**
  * Reset bookings expiration dates that are currently in cart
+ * @version 1.16.40
  * @global wpdb $wpdb
  * @param int|string $user_id
  * @param array $booking_id_array
@@ -211,12 +211,12 @@ function bookacti_get_booking_order_id( $booking_id ) {
 function bookacti_update_in_cart_bookings_expiration_date( $user_id, $booking_id_array, $expiration_date ) {
 	global $wpdb;
 
-	$query	= 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS 
-			. ' SET expiration_date = %s '
-			. ' WHERE user_id = %s '
-			. ' AND expiration_date > UTC_TIMESTAMP() '
-			. ' AND state = "in_cart" '
-			. ' AND active = 1 ';
+	$query = 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS 
+	       . ' SET expiration_date = %s '
+	       . ' WHERE user_id = %s '
+	       . ' AND expiration_date > UTC_TIMESTAMP() '
+	       . ' AND state = "in_cart" '
+	       . ' AND active = 1 ';
 
 	if( ! empty( $booking_id_array ) ) {
 		$query  .= ' AND ( id = %d ';
@@ -231,8 +231,8 @@ function bookacti_update_in_cart_bookings_expiration_date( $user_id, $booking_id
 	$first_variables = array( $expiration_date, $user_id );
 	$variables_array = array_merge( $first_variables, $booking_id_array );
 
-	$prep_query	= $wpdb->prepare( $query, $variables_array );
-	$updated	= $wpdb->query( $prep_query );
+	$query   = $wpdb->prepare( $query, $variables_array );
+	$updated = $wpdb->query( $query );
 
 	return $updated;
 }
@@ -240,6 +240,7 @@ function bookacti_update_in_cart_bookings_expiration_date( $user_id, $booking_id
 
 /**
  * Get cart expiration of a specified user. Return null if there is no activity in cart
+ * @version 1.16.40
  * @global wpdb $wpdb
  * @param int|string $user_id
  * @return string|null
@@ -247,109 +248,21 @@ function bookacti_update_in_cart_bookings_expiration_date( $user_id, $booking_id
 function bookacti_get_cart_expiration_date_per_user( $user_id ) {
 	global $wpdb;
 
-	$query		= 'SELECT expiration_date FROM ' . BOOKACTI_TABLE_BOOKINGS 
-				. ' WHERE user_id = %s ' 
-				. ' AND ( state = "in_cart" OR state = "pending" ) ' 
-				. ' ORDER BY expiration_date DESC ' 
-				. ' LIMIT 1 ';
-	$query_prep	= $wpdb->prepare( $query, $user_id );
-	$exp_date	= $wpdb->get_var( $query_prep );
+	$query = 'SELECT expiration_date FROM ' . BOOKACTI_TABLE_BOOKINGS 
+	       . ' WHERE user_id = %s ' 
+	       . ' AND ( state = "in_cart" OR state = "pending" ) ' 
+	       . ' ORDER BY expiration_date DESC ' 
+	       . ' LIMIT 1 ';
+	$query    = $wpdb->prepare( $query, $user_id );
+	$exp_date = $wpdb->get_var( $query );
 
 	return $exp_date;
 }
 
 
 /**
- * Turn 'pending' bookings of an order to 'cancelled'
- * @since 1.9.0 (was bookacti_cancel_order_pending_bookings)
- * @global wpdb $wpdb
- * @param int $order_id
- * @param array $not_booking_ids
- * @param array $not_booking_group_ids
- * @return int|false
- */
-function bookacti_cancel_order_remaining_bookings( $order_id, $not_booking_ids = array(), $not_booking_group_ids = array() ) {
-	// Do not cancel bookings attached to the order
-	$order = wc_get_order( $order_id );
-	if( $order ) { 
-		$items = $order->get_items();
-		if( $items ) {
-			foreach( $items as $item_id => $item ) {
-				$order_item_bookings_ids = bookacti_wc_format_order_item_bookings_ids( $item );
-				if( ! $order_item_bookings_ids ) { continue; }
-				foreach( $order_item_bookings_ids as $order_item_booking_id ) {
-					if( $order_item_booking_id[ 'type' ] === 'single' ) { $not_booking_ids[] = $order_item_booking_id[ 'id' ]; }
-					else if( $order_item_booking_id[ 'type' ] === 'group' ) { $not_booking_group_ids[] = $order_item_booking_id[ 'id' ]; }
-				}
-			}
-		}
-	}
-	
-	global $wpdb;
-	
-	// Turn bookings state to 'cancelled'
-	$query	= 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS 
-			. ' SET order_id = NULL, state = "cancelled", active = 0 '
-			. ' WHERE order_id = %d ';
-	
-	$variables = array( $order_id );
-	
-	if( $not_booking_ids ) {
-		$query .= ' AND id NOT IN ( %d ';
-		$array_count = count( $not_booking_ids );
-		if( $array_count >= 2 ) {
-			for( $i=1; $i<$array_count; ++$i ) {
-				$query  .= ', %d ';
-			}
-		}
-		$query  .= ') ';
-		$variables = array_merge( $variables, $not_booking_ids );
-	}
-	
-	if( $not_booking_group_ids ) {
-		$query .= ' AND group_id NOT IN ( %d ';
-		$array_count = count( $not_booking_group_ids );
-		if( $array_count >= 2 ) {
-			for( $i=1; $i<$array_count; ++$i ) {
-				$query  .= ', %d ';
-			}
-		}
-		$query  .= ') ';
-		$variables = array_merge( $variables, $not_booking_group_ids );
-	}
-	
-	$query = $wpdb->prepare( $query, $variables );
-	$nb_cancelled = $wpdb->query( $query );
-	
-	// Turn booking groups state to 'cancelled'
-	$query	= 'UPDATE ' . BOOKACTI_TABLE_BOOKING_GROUPS
-			. ' SET order_id = NULL, state = "cancelled", active = 0 '
-			. ' WHERE order_id = %d ';
-	
-	$variables = array( $order_id );
-	
-	if( $not_booking_group_ids ) {
-		$query .= ' AND id NOT IN ( %d ';
-		$array_count = count( $not_booking_group_ids );
-		if( $array_count >= 2 ) {
-			for( $i=1; $i<$array_count; ++$i ) {
-				$query  .= ', %d ';
-			}
-		}
-		$query  .= ') ';
-		$variables = array_merge( $variables, $not_booking_group_ids );
-	}
-	
-	$query = $wpdb->prepare( $query, $variables );
-	$wpdb->query( $query );
-	
-	return $nb_cancelled;
-}
-
-
-/**
  * Deactivate expired bookings
- * @version	1.12.0
+ * @version 1.12.0
  * @global wpdb $wpdb
  * @return array|string|false
  */
@@ -362,14 +275,14 @@ function bookacti_deactivate_expired_bookings() {
 	
 	if( ! $last_error ) {
 		// Get expired in cart bookings
-		$query	= 'SELECT B.id, B.group_id '
-				. ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B '
-				. ' LEFT JOIN ' . $wpdb->prefix . 'woocommerce_sessions as S ON B.user_id = S.session_key '
-				. ' WHERE B.state = "in_cart" '
-				// Expired with Booking Activities expiration system
-				. ' AND ( ( B.expiration_date <= UTC_TIMESTAMP() AND B.active = 1 )'
-				// Expired with WC session expiration system
-				. ' OR ( S.session_expiry IS NULL OR S.session_expiry <= UNIX_TIMESTAMP( UTC_TIMESTAMP() ) ) )';
+		$query = 'SELECT B.id, B.group_id '
+		       . ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B '
+		       . ' LEFT JOIN ' . $wpdb->prefix . 'woocommerce_sessions as S ON B.user_id = S.session_key '
+		       . ' WHERE B.state = "in_cart" '
+		       // Expired with Booking Activities expiration system
+		       . ' AND ( ( B.expiration_date <= UTC_TIMESTAMP() AND B.active = 1 )'
+		       // Expired with WC session expiration system
+		       . ' OR ( S.session_expiry IS NULL OR S.session_expiry <= UNIX_TIMESTAMP( UTC_TIMESTAMP() ) ) )';
 
 		$expired_bookings = $wpdb->get_results( $query );
 		$last_error = $wpdb->last_error;
@@ -380,11 +293,11 @@ function bookacti_deactivate_expired_bookings() {
 		// Set a transient to avoid repeating the same error
 		set_transient( 'bookacti_wc_incompatible_collations', 1 );
 		
-		$query	= 'SELECT B.id, B.group_id '
-				. ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B '
-				. ' WHERE B.state = "in_cart" '
-				. ' AND B.expiration_date <= UTC_TIMESTAMP() '
-				. ' AND B.active = 1 ';
+		$query = 'SELECT B.id, B.group_id '
+		       . ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B '
+		       . ' WHERE B.state = "in_cart" '
+		       . ' AND B.expiration_date <= UTC_TIMESTAMP() '
+		       . ' AND B.active = 1 ';
 		$expired_bookings = $wpdb->get_results( $query );
 		$last_error = $wpdb->last_error;
 	}
@@ -406,16 +319,16 @@ function bookacti_deactivate_expired_bookings() {
 	
 	$return = $expired_ids;
 	
-	// Turn bookings state to 'expired' (or 'cancelled' if the booking is part of an order)
+	// Turn bookings status to 'expired'
 	if( $expired_ids ) {
-		$query	= 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS . ' '
-				. ' SET active = 0, state = IF( ISNULL( NULLIF( order_id, 0 ) ), "expired", "cancelled" ) '
-				. ' WHERE id IN ( %d';
+		$query = 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS . ' '
+		       . ' SET active = 0, state = "expired" '
+		       . ' WHERE id IN ( %d';
 		for( $i=1,$len=count($expired_ids); $i < $len; ++$i ) {
 			$query .= ', %d';
 		}
 		$query .= ' ) ';
-		$query	= $wpdb->prepare( $query, $expired_ids );
+		$query  = $wpdb->prepare( $query, $expired_ids );
 		$deactivated = $wpdb->query( $query );
 		
 		if( $deactivated === false ) { $return = false; }
@@ -427,16 +340,16 @@ function bookacti_deactivate_expired_bookings() {
 		}
 	}
 	
-	// Turn booking groups state to 'expired' (or 'cancelled' if the booking group is part of an order)
+	// Turn booking groups status to 'expired'
 	if( $return !== false && $expired_group_ids ) {
-		$query	= 'UPDATE ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' '
-				. ' SET active = 0, state = IF( ISNULL( NULLIF( order_id, 0 ) ), "expired", "cancelled" ) '
-				. ' WHERE id IN ( %d';
+		$query = 'UPDATE ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' '
+		       . ' SET active = 0, state = "expired" '
+		       . ' WHERE id IN ( %d';
 		for( $i=1,$len=count($expired_group_ids); $i < $len; ++$i ) {
 			$query .= ', %d';
 		}
 		$query .= ' ) ';
-		$query	= $wpdb->prepare( $query, $expired_group_ids );
+		$query = $wpdb->prepare( $query, $expired_group_ids );
 		$deactivated = $wpdb->query( $query );
 		
 		if( $deactivated === false ) { $return = false; }
@@ -462,12 +375,12 @@ function bookacti_delete_expired_bookings( $delay = 10 ) {
 	global $wpdb;
 	
 	// Get expired booking and booking groups ids
-	$query	= 'SELECT id, group_id '
-			. ' FROM ' . BOOKACTI_TABLE_BOOKINGS
-			. ' WHERE ( expiration_date <= DATE_SUB( UTC_TIMESTAMP(), INTERVAL %d DAY ) OR expiration_date IS NULL ) '
-			. ' AND state IN ( "expired", "removed" ) '
-			. ' AND active = 0 ';
-	$query	= $wpdb->prepare( $query, $delay );
+	$query = 'SELECT id, group_id '
+	       . ' FROM ' . BOOKACTI_TABLE_BOOKINGS
+	       . ' WHERE ( expiration_date <= DATE_SUB( UTC_TIMESTAMP(), INTERVAL %d DAY ) OR expiration_date IS NULL ) '
+	       . ' AND state IN ( "expired", "removed" ) '
+	       . ' AND active = 0 ';
+	$query = $wpdb->prepare( $query, $delay );
 	$expired_bookings = $wpdb->get_results( $query );
 	
 	$expired_ids = array();
@@ -527,7 +440,7 @@ function bookacti_delete_expired_bookings( $delay = 10 ) {
 
 
 /**
- * Turn 'in_cart' bookings to 'removed'
+ * Turn all 'in_cart' bookings to 'removed'
  * @since 1.7.3 (was bookacti_cancel_in_cart_bookings)
  * @global wpdb $wpdb
  * @return int|false
@@ -535,7 +448,7 @@ function bookacti_delete_expired_bookings( $delay = 10 ) {
 function bookacti_turn_in_cart_bookings_to_removed() {
 	global $wpdb;
 
-	$query = 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS . ' SET active = 0, state = "removed" WHERE state = "in_cart";';
+	$query   = 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS . ' SET active = 0, state = "removed" WHERE state = "in_cart";';
 	$updated = $wpdb->query( $query );
 
 	return $updated;
@@ -544,7 +457,7 @@ function bookacti_turn_in_cart_bookings_to_removed() {
 
 /**
  * Get booking group order id
- * 
+ * @version 1.16.40
  * @global wpdb $wpdb
  * @param int $booking_group_id
  * @return int|null
@@ -552,9 +465,9 @@ function bookacti_turn_in_cart_bookings_to_removed() {
 function bookacti_get_booking_group_order_id( $booking_group_id ) {
 	global $wpdb;
 
-	$query		= 'SELECT order_id FROM ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' WHERE id = %d';
-	$prep		= $wpdb->prepare( $query, $booking_group_id );
-	$order_id	= $wpdb->get_var( $prep );
+	$query    = 'SELECT order_id FROM ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' WHERE id = %d';
+	$query    = $wpdb->prepare( $query, $booking_group_id );
+	$order_id = $wpdb->get_var( $query );
 
 	return $order_id;
 }
@@ -571,14 +484,14 @@ function bookacti_get_booking_group_order_id( $booking_group_id ) {
 function bookacti_delete_order_item_booking_meta( $item_id ) {
 	global $wpdb;
 	
-	$query	= 'DELETE FROM ' . $wpdb->prefix . 'woocommerce_order_itemmeta '
-			. 'WHERE order_item_id = %d '
-			. 'AND meta_key != %s '
-			. 'AND meta_key LIKE %s';
+	$query = 'DELETE FROM ' . $wpdb->prefix . 'woocommerce_order_itemmeta '
+	       . 'WHERE order_item_id = %d '
+	       . 'AND meta_key != %s '
+	       . 'AND meta_key LIKE %s';
 	
 	$variables = array( $item_id, 'bookacti_bookings', '%' . $wpdb->esc_like( 'bookacti' ) . '%' );
 	
-	$query = $wpdb->prepare( $query, $variables );
+	$query   = $wpdb->prepare( $query, $variables );
 	$deleted = $wpdb->query( $query );
 	
 	return apply_filters( 'bookacti_delete_wc_order_item_booking_meta', $deleted, $item_id );

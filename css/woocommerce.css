@@ -50,6 +50,7 @@ table.woocommerce_order_items ul.bookacti-booking-events-list { margin: 0; }
 	.product.bookacti-activity .wcpay-express-checkout-wrapper { display: none !important; }
 	
 	/* WC Stripe support */
+	.product.bookacti-activity #wc-stripe-express-checkout-element,
 	.product.bookacti-activity #wc-stripe-payment-request-wrapper,
 	.product.bookacti-activity #wc-stripe-payment-request-button-separator,
 	.product.bookacti-activity .wc-stripe-payment-request-wrapper,
@@ -63,8 +64,10 @@ table.woocommerce_order_items ul.bookacti-booking-events-list { margin: 0; }
 
 
 /* Cart, Checkout */
-.bookacti-cart-item-activity dd > p:first-child    { margin: 0; }
-.woocommerce_order_items .bookacti-price-container { background-color:rgba(0,0,0,0.3); }
+.bookacti-cart-item-activity th.product-name dl.variation dt,
+.bookacti-cart-item-activity td.product-name dl.variation dt { float: none; display: block; font-weight: bold; }
+.bookacti-cart-item-activity dd                              { margin: 0; }
+.bookacti-cart-item-activity dd > p:first-child              { margin: 0; font-weight: normal; }
 
 .wc-block-cart-items__row .bookacti-countdown-container:before,
 .wc-block-cart-items__row .bookacti-wc-cart-item-status:before { content: ' - '; }
