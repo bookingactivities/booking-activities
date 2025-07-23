@@ -221,6 +221,7 @@ function bookacti_translate_text_with_wpml( $text, $lang = '', $fallback = true,
 /**
  * Translate a non-Booking Activities string into the desired language with WPML (default to current site language)
  * @since 1.14.0
+ * @version 1.16.40
  * @param string $text
  * @param string $lang Optional. Two letter lang id (e.g. fr or en) or locale id (e.g. fr_FR or en_US).
  * @param boolean $fallback Optional. False to display empty string if the text doesn't exist in the desired language. True to display the text of another existing language.
@@ -240,12 +241,12 @@ function bookacti_translate_external_text_with_wpml( $text, $lang = '', $fallbac
 		// WP options
 		if( $args[ 'field' ] === 'blogname' ) { $translated_text = apply_filters( 'wpml_translate_single_string', $text, 'WP', 'Blog Title', $lang ); }
 		
-		// Posts
-		if( intval( $args[ 'object_id' ] ) && in_array( $args[ 'object_type' ], array( 'page', 'post' ), true ) ) {
+		// Posts & Terms
+		if( intval( $args[ 'object_id' ] ) ) {
 			$translated_object_id = apply_filters( 'wpml_object_id', intval( $args[ 'object_id' ] ), $args[ 'object_type' ], false, $lang );
 			if( $translated_object_id ) {
-				$translated_post = get_post( $translated_object_id );
-				if( isset( $translated_post->{ $args[ 'field' ] } ) ) {
+				$translated_post = taxonomy_exists( $args[ 'object_type' ] ) ? get_term( $translated_object_id ) : get_post( $translated_object_id );
+				if( $translated_post && isset( $translated_post->{ $args[ 'field' ] } ) ) {
 					$translated_text = $fallback && ! $translated_post->{ $args[ 'field' ] } ? $text : $translated_post->{ $args[ 'field' ] };
 				}
 			}
@@ -259,7 +260,7 @@ function bookacti_translate_external_text_with_wpml( $text, $lang = '', $fallbac
 /**
  * Translate a WooCommerce string into the desired language with WPML (default to current site language)
  * @since 1.14.0
- * @version 1.15.17
+ * @version 1.16.40
  * @param string $text
  * @param string $lang Optional. Two letter lang id (e.g. fr or en) or locale id (e.g. fr_FR or en_US).
  * @param boolean $fallback Optional. False to display empty string if the text doesn't exist in the desired language. True to display the text of another existing language.
@@ -274,7 +275,8 @@ function bookacti_translate_wc_text_with_wpml( $translated_text, $text, $lang, $
 		$translated_object_id = apply_filters( 'wpml_object_id', intval( $args[ 'object_id' ] ), $args[ 'object_type' ], false, $lang );
 		if( $translated_object_id ) {
 			$product         = wc_get_product( $translated_object_id );
-			$meta_value      = $product->get_meta( $args[ 'field' ] );
+			$property        = substr( $args[ 'field' ], 0, 5 ) === 'post_' && ! in_array( $args[ 'field' ], array( 'post_type', 'post_password' ), true ) ? strtolower( substr( $args[ 'field' ], 5 ) ) : strtolower( $args[ 'field' ] );
+			$meta_value      = method_exists( $product, 'get_' . $property ) ? call_user_func( array( $product, 'get_' . $property ) ) : $product->get_meta( $args[ 'field' ] );
 			$translated_text = $fallback && ! $meta_value ? $text : $meta_value;
 		}
 	}

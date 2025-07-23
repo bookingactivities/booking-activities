@@ -320,8 +320,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.16.40 =
-* Dev - Dissociate the event availability check and its groups of events availability check in JS
+= 1.16.40 - 2025/07/23 =
+* Tweak - Improve cart item meta display with WC classic cart
+* Tweak - Set unexpectedly removed order item booking status to "removed" instead of "cancelled"
+* Dev - Dissociate event availability check and groups of events availability check in JS
 * Dev - Replace all JS hooks used to change group of events dialog option HTML with the a unique hook bookacti_group_of_events_option
 * Dev - Process all checks when checking if the selected event is available on a specific form instead of stopping after the first failure (to improve compatibility with 
 

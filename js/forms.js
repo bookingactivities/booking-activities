@@ -482,7 +482,7 @@ function bookacti_submit_login_form( submit_button ) {
 /**
  * Submit booking form
  * @since 1.7.6 (was bookacti_sumbit_booking_form)
- * @version 1.16.33
+ * @version 1.16.40
  * @param {HTMLElement} form
  */
 function bookacti_submit_booking_form( form ) {
@@ -594,7 +594,7 @@ function bookacti_submit_booking_form( form ) {
 			if( message ) {
 				// Fill error message
 				error_div.empty().append( message ).show();
-				if( ! redirect_url ) {
+				if( response.status !== 'success' || ! redirect_url ) {
 					// Scroll to error message
 					bookacti_scroll_to( error_div, 500, 'middle' );
 				}

@@ -1395,6 +1395,79 @@ function bookacti_wc_remove_order_item_bookings( $item, $item_bookings_ids_to_de
 
 
 /**
+ * Set order bookings status to 'removed' if they have no corresponding order item
+ * @since 1.16.40 (was bookacti_cancel_order_remaining_bookings)
+ * @param int $order_id
+ * @return int
+ */
+function bookacti_wc_remove_order_bookings_not_in_order_items( $order_id ) {
+	$nb_removed            = 0;
+	$not_booking_ids       = array();
+	$not_booking_group_ids = array();
+	$removed_bookings      = array();
+	$removed_groups        = array();
+	
+	// Do not remove bookings attached to the order
+	$order = wc_get_order( $order_id );
+	if( $order ) {
+		$items = $order->get_items();
+		if( $items ) {
+			foreach( $items as $item_id => $item ) {
+				$order_item_bookings_ids = bookacti_wc_format_order_item_bookings_ids( $item );
+				if( ! $order_item_bookings_ids ) { continue; }
+				foreach( $order_item_bookings_ids as $order_item_booking_id ) {
+					     if( $order_item_booking_id[ 'type' ] === 'single' ) { $not_booking_ids[]       = $order_item_booking_id[ 'id' ]; }
+					else if( $order_item_booking_id[ 'type' ] === 'group' )  { $not_booking_group_ids[] = $order_item_booking_id[ 'id' ]; }
+				}
+			}
+		}
+	}
+	
+	// Get bookings
+	$filters  = bookacti_format_booking_filters( array( 'in__order_id' => array( $order_id ), 'not_in__booking_id' => $not_booking_ids, 'not_in__booking_group_id' => $not_booking_group_ids, 'fetch_meta' => true ) );
+	$bookings = bookacti_get_bookings( $filters );
+	$groups   = bookacti_get_booking_groups( $filters );
+	
+	// Get grouped bookings
+	$group_filters      = $groups ? bookacti_format_booking_filters( array( 'in__booking_group_id' => array_keys( $groups ), 'fetch_meta' => true ) ) : array();
+	$groups_bookings    = $group_filters ? bookacti_get_bookings( $group_filters ) : array();
+	$bookings_per_group = array();
+	foreach( $groups_bookings as $booking ) {
+		if( ! isset( $bookings_per_group[ $booking->group_id ] ) ) { $bookings_per_group[ $booking->group_id ] = array(); }
+		$bookings_per_group[ $booking->group_id ][] = $booking;
+	}
+	
+	// Set orphan bookings status to "removed"
+	if( $bookings ) {
+		foreach( $bookings as $booking ) {
+			$new_data = array( 'order_id' => null, 'status' => 'removed', 'active' => 0 );
+			$updated  = bookacti_update_booking( array_merge( (array) $booking, $new_data ) );
+
+			if( $updated ) {
+				$removed_bookings[ $booking->id ] = $booking;
+			}
+		}
+	}
+	
+	// Set orphan booking groups status to "removed"
+	if( $groups ) {
+		foreach( $groups as $group ) {
+			$new_data = array( 'order_id' => null, 'status' => 'removed', 'active' => 0 );
+			$updated  = bookacti_update_booking_group( array_merge( (array) $group, $new_data ) );
+
+			if( $updated ) {
+				$removed_groups[ $group->id ] = $group;
+			}
+		}
+	}
+	
+	do_action( 'bookacti_wc_order_bookings_not_in_order_items_removed', $order_id, $removed_bookings, $removed_groups, array_intersect_key( $bookings_per_group, $removed_groups ) );
+	
+	return count( $removed_bookings ) + count( $removed_groups );
+}
+
+
+/**
  * Get order items holding one of the desired booking or booking group ID
  * @since 1.9.0
  * @version 1.11.2
