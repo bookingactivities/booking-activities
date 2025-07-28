@@ -1598,7 +1598,7 @@ function bookacti_get_bookings_number_for_a_single_grouped_event( booking_system
 
 /**
  * Get a div with event available places
- * @version 1.16.40
+ * @version 1.16.41
  * @param {HTMLElement} booking_system
  * @param {(FullCalendar.EventApi|Object)} event
  * @returns {String}
@@ -1607,7 +1607,7 @@ function bookacti_get_event_availability_div( booking_system, event ) {
 	var booking_system_id  = booking_system.attr( 'id' );
 	var bookings_only      = bookacti.booking_system[ booking_system_id ][ 'bookings_only' ] == 1 ? true : false;
 	var event_availability = bookacti_get_event_availability( booking_system, event );
-	var available_places   = event_availability;
+	var available_places   = event_availability < 0 && ! bookacti_localized?.is_admin ? 0 : event_availability;
 	
 	var event_id           = typeof event.groupId !== 'undefined' ? parseInt( event.groupId ) : parseInt( event.id );
 	var activity_id        = bookacti.booking_system[ booking_system_id ][ 'events_data' ]?.[ event_id ]?.[ 'activity_id' ];
