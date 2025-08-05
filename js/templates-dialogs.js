@@ -785,9 +785,9 @@ function bookacti_dialog_update_event( fc_event ) {
 	buttons.push( delete_button );
 
 	// UNBIND button
-	var unbind_button =	{};
+	var unbind_button = {};
 	if( event_data.repeat_freq !== 'none' ) {
-		unbind_button =	{
+		unbind_button = {
 			text: bookacti_localized.dialog_button_unbind,
 			'class': 'bookacti-dialog-unbind-button bookacti-dialog-left-button',
 			click: function() {

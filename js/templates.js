@@ -168,9 +168,9 @@ function bookacti_load_template_calendar() {
 		dragRevertDuration:      0,
 		
 		validRange: {
-            start: availability_period.start ? moment.utc( availability_period.start.substr( 0, 10 ) ).format( 'YYYY-MM-DD' ) : null,
-            end:   availability_period.end ? moment.utc( availability_period.end.substr( 0, 10 ) ).add( 1, 'days' ).format( 'YYYY-MM-DD' ) : null
-        },
+			start: availability_period.start ? moment.utc( availability_period.start.substr( 0, 10 ) ).format( 'YYYY-MM-DD' ) : null,
+			end:   availability_period.end ? moment.utc( availability_period.end.substr( 0, 10 ) ).add( 1, 'days' ).format( 'YYYY-MM-DD' ) : null
+		},
 		
 		customButtons: {
 			goTo: {
@@ -381,7 +381,7 @@ function bookacti_load_template_calendar() {
 			// Add data to the event element
 			$j( info.el ).data( 'event-id', event_id ? event_id : '' ).attr( 'data-event-id', event_id ? event_id : '' );
 			$j( info.el ).data( 'event-start', event_start_formatted ).attr( 'data-event-start', event_start_formatted );
-			$j( info.el ).data( 'event-end', event_end_formatted ).attr( 'data-event-end', event_end_formatted );			
+			$j( info.el ).data( 'event-end', event_end_formatted ).attr( 'data-event-end', event_end_formatted );
 			$j( info.el ).data( 'activity-id', activity_id ? activity_id : '' ).attr( 'data-activity-id', activity_id ? activity_id : '' );
 
 			booking_system.trigger( 'bookacti_calendar_editor_event_did_mount', [ info ] );
@@ -498,7 +498,7 @@ function bookacti_load_template_calendar() {
 				'class': 'fc-event-time', 
 				'html': '<span class="bookacti-event-time-start">' + moment.utc( info.event.start ).format( time_format ) + '</span>' 
 				      + '<span class="bookacti-event-time-separator"> - </span>' 
-					  + '<span class="bookacti-event-time-end">' + moment.utc( info.event.end ).format( time_format ) + '</span>'
+				      + '<span class="bookacti-event-time-end">' + moment.utc( info.event.end ).format( time_format ) + '</span>'
 			} );
 			return_object.domNodes.push( time_div[ 0 ] );
 			

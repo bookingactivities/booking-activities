@@ -297,12 +297,12 @@ function bookacti_validate_event_form() {
 		'send':              false
 	};
     
-    if( valid_form.isRepetitionValid && valid_form.isGeneralValid ) { valid_form.send = true; }
+	if( valid_form.isRepetitionValid && valid_form.isGeneralValid ) { valid_form.send = true; }
     
 	// Allow third party to change results
 	$j( '#bookacti-event-data-dialog' ).trigger( 'bookacti_validate_event_form', [ valid_form ] );
 	
-    return valid_form.send;
+	return valid_form.send;
 }
 
 
@@ -486,12 +486,12 @@ function bookacti_validate_group_of_events_form() {
 		'send':              false
 	};
     
-    if( valid_form.isRepetitionValid && valid_form.isGeneralValid ) { valid_form.send = true; }
+	if( valid_form.isRepetitionValid && valid_form.isGeneralValid ) { valid_form.send = true; }
     
 	// Allow third party to change results
 	$j( '#bookacti-group-of-events-dialog' ).trigger( 'bookacti_validate_group_of_events_form', [ valid_form ] );
 	
-    return valid_form.send;
+	return valid_form.send;
 }
 
 

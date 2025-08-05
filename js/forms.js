@@ -7,11 +7,11 @@ $j( document ).ready( function() {
 	 * @version 1.12.4
 	 */
 	$j( 'body' ).on( 'keyup mouseup change', '.bookacti-booking-form input[name=password], .bookacti-form-fields input[name=password]', function() {
-		var password_field			= $j( this );
-		var password_confirm_field	= null;
-		var password_strength_meter	= $j( this ).closest( '.bookacti-form-field-container' ).find( '.bookacti-password-strength-meter' );
-		var forbidden_words			= [];
-		var login_type				= password_field.closest( 'form, .bookacti-form-fields' ).find( 'input[name="login_type"]:checked' ).val();
+		var password_field          = $j( this );
+		var password_confirm_field  = null;
+		var password_strength_meter = $j( this ).closest( '.bookacti-form-field-container' ).find( '.bookacti-password-strength-meter' );
+		var forbidden_words         = [];
+		var login_type              = password_field.closest( 'form, .bookacti-form-fields' ).find( 'input[name="login_type"]:checked' ).val();
 		
 		if( password_strength_meter.length && login_type === 'new_account' ) {
 			var pwd_strength = bookacti_check_password_strength( password_field, password_confirm_field, password_strength_meter, forbidden_words );
@@ -257,14 +257,14 @@ $j( document ).ready( function() {
  * @param {HTMLElement} login_field_container
  */
 function bookacti_show_hide_register_fields( login_field_container ) {
-	var login_type			= login_field_container.find( 'input[name="login_type"]:checked' ).val();
-	var password_strength	= login_field_container.find( '.bookacti-password-strength' );
-	var password_forgotten	= login_field_container.find( '.bookacti-forgotten-password' );
-	var password_field		= login_field_container.find( '.bookacti-login-field-password' );
-	var remember_field		= login_field_container.find( '.bookacti-login-field-remember' );
-	var register_fieldset	= login_field_container.find( '.bookacti-register-fields' );
-	var login_button		= login_field_container.find( '.bookacti-login-button' );
-	var button_container	= login_field_container.find( '.bookacti-login-field-submit-button' );
+	var login_type         = login_field_container.find( 'input[name="login_type"]:checked' ).val();
+	var password_strength  = login_field_container.find( '.bookacti-password-strength' );
+	var password_forgotten = login_field_container.find( '.bookacti-forgotten-password' );
+	var password_field     = login_field_container.find( '.bookacti-login-field-password' );
+	var remember_field     = login_field_container.find( '.bookacti-login-field-remember' );
+	var register_fieldset  = login_field_container.find( '.bookacti-register-fields' );
+	var login_button       = login_field_container.find( '.bookacti-login-button' );
+	var button_container   = login_field_container.find( '.bookacti-login-field-submit-button' );
 	if( login_type === 'new_account' ) { 
 		password_strength.show(); 
 		password_forgotten.hide(); 
@@ -429,8 +429,8 @@ function bookacti_submit_login_form( submit_button ) {
 		data: data.form_data,
 		dataType: 'json',
 		cache: false,
-        contentType: false,
-        processData: false,
+		contentType: false,
+		processData: false,
 		success: function( response ) {
 			// Display feedback message
 			var message = response.message ? response.message : ( response.messages ? response.messages : '' );
@@ -523,7 +523,7 @@ function bookacti_submit_booking_form( form ) {
 			if( submit_button.length ) { submit_button.prop( 'disabled', false ); }
 			// Scroll to error message
 			bookacti_scroll_to( error_div, 500, 'middle' );
-			return false; // End script	
+			return false; // End script
 		}
 	}
 	
@@ -564,8 +564,8 @@ function bookacti_submit_booking_form( form ) {
 		data: data.form_data,
 		dataType: 'json',
 		cache: false,
-        contentType: false,
-        processData: false,
+		contentType: false,
+		processData: false,
 		success: function( response ) {
 			var redirect_url = typeof response.redirect_url !== 'undefined' ? response.redirect_url : '';
 			
@@ -630,7 +630,7 @@ function bookacti_submit_booking_form( form ) {
 			}
 			bookacti_stop_loading_booking_system( booking_system );
 		}
-	});	
+	});
 }
 
 
@@ -649,8 +649,8 @@ function bookacti_perform_form_action( booking_system ) {
 	booking_system.trigger( 'bookacti_trigger_perform_form_action', [ trigger ] );
 	if( ! trigger.trigger ) { return; }
 	
-	var booking_system_id	= booking_system.attr( 'id' );
-	var attributes			= bookacti.booking_system[ booking_system_id ];
+	var booking_system_id = booking_system.attr( 'id' );
+	var attributes        = bookacti.booking_system[ booking_system_id ];
 	
 	if( typeof attributes[ 'form_action' ] === 'undefined' ) { return; }
 	

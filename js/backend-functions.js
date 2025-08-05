@@ -348,9 +348,9 @@ function bookacti_fill_fields_from_array( fields, field_prefix, scope ) {
 function bookacti_switch_select_to_multiple( checkbox ) {
 	if( ! $j( checkbox ).length ) { return; }
 	
-	var select_id	= $j( checkbox ).data( 'select-id' );
-	var select_name	= $j( 'select#' + select_id ).attr( 'name' );
-	var is_checked	= $j( checkbox ).is( ':checked' );
+	var select_id   = $j( checkbox ).data( 'select-id' );
+	var select_name = $j( 'select#' + select_id ).attr( 'name' );
+	var is_checked  = $j( checkbox ).is( ':checked' );
 	
 	// Get the currently selected values
 	var values = $j( 'select#' + select_id ).val();
@@ -552,9 +552,9 @@ function bookacti_show_hide_template_related_options( template_ids, options ) {
  */
 function bookacti_update_qtx_field( field ){
 	if( typeof qTranslateConfig !== 'undefined' ) {
-		var qtx = qTranslateConfig.js.get_qtx();
+		var qtx         = qTranslateConfig.js.get_qtx();
 		var active_lang = qtx.getActiveLanguage();
-		var input_name	= $j( field ).attr( 'name' );
+		var input_name  = $j( field ).attr( 'name' );
 
 		if( active_lang !== undefined ) {
 			$j( 'input[name="qtranslate-fields[' + input_name + '][' + active_lang + ']"]' ).val( $j( field ).val() );

@@ -316,7 +316,7 @@ $j( document ).ready( function() {
 				bookacti.booking_system[ booking_system_id ][ 'loading_number' ] = 0;
 			}
 			if( typeof bookacti.booking_system[ booking_system_id ][ 'picked_events' ] === 'undefined' ) {
-				bookacti.booking_system[ booking_system_id ][ 'picked_events' ]	= [];
+				bookacti.booking_system[ booking_system_id ][ 'picked_events' ] = [];
 			}
 			
 			// Load the booking system
@@ -336,7 +336,7 @@ $j( document ).ready( function() {
 					bookacti_reload_booking_system( booking_system, true );
 				}
 			}
-		});		
+		});
 	}
 });
 

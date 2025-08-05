@@ -510,7 +510,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 			$j( info.el ).data( 'event-start',      event_start_formatted );
 			$j( info.el ).attr( 'data-event-start', event_start_formatted );
 			$j( info.el ).data( 'event-end',        event_end_formatted );
-			$j( info.el ).attr( 'data-event-end',   event_end_formatted );			
+			$j( info.el ).attr( 'data-event-end',   event_end_formatted );
 			
 			var event_data = bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event_id ];
 			if( typeof event_data.activity_id !== 'undefined' ) {
@@ -636,7 +636,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 				'class': 'fc-event-time', 
 				'html': '<span class="bookacti-event-time-start">' + moment.utc( info.event.start ).format( time_format ) + '</span>' 
 				      + '<span class="bookacti-event-time-separator"> - </span>' 
-					  + '<span class="bookacti-event-time-end">' + moment.utc( info.event.end ).format( time_format ) + '</span>'
+				      + '<span class="bookacti-event-time-end">' + moment.utc( info.event.end ).format( time_format ) + '</span>'
 			} );
 			return_object.domNodes.push( time_div[ 0 ] );
 			

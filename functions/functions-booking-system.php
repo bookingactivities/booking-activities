@@ -1318,7 +1318,7 @@ function bookacti_get_fullcalendar_fields_default_data( $fields = array() ) {
 /**
  * Check picked event / group of events availability
  * @since 1.15.6 (was bookacti_validate_booking_form)
- * @version 1.16.40
+ * @version 1.16.41
  * @param array $picked_events formatted with bookacti_format_picked_events with $one_entry_per_group = false
  * @param array $args {
  *  @type int $quantity Desired number of bookings
@@ -1504,7 +1504,11 @@ function bookacti_validate_picked_events( $picked_events, $args = array() ) {
 			$error = '';
 			$message = '';
 			
-			if( ! $is_qty_sup_to_min ) {
+			if( $availability <= 0 ) {
+				$error = 'no_availability';
+				/* translators: %s = The event title and dates. E.g.: The event "Basketball (Sep, 22nd - 3:00 PM to 6:00 PM)" is no longer available. */
+				$message = sprintf( esc_html__( 'The event "%s" is no longer available. Please choose another event.', 'booking-activities' ), $title . ' (' . $dates . ')' );
+			} else if( ! $is_qty_sup_to_min ) {
 				$error = 'qty_inf_to_min';
 				/* translators: %1$s is a variable number of bookings, %2$s is the event title. */
 				$message = sprintf( esc_html( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $args[ 'quantity' ], 'booking-activities' ) ), $args[ 'quantity' ], $title . ' (' . $dates . ')' );
@@ -1533,10 +1537,6 @@ function bookacti_validate_picked_events( $picked_events, $args = array() ) {
 				$error = 'users_sup_to_max';
 				/* translators: %s = The event title and dates. E.g.: The event "Basketball (Sep, 22nd - 3:00 PM to 6:00 PM)" has reached the maximum number of users allowed. */
 				$message = sprintf( esc_html__( 'The event "%s" has reached the maximum number of users allowed. Bookings from other users are no longer accepted. Please choose another event.', 'booking-activities' ), $title . ' (' . $dates . ')' );
-			} else if( $availability === 0 ) {
-				$error = 'no_availability';
-				/* translators: %s = The event title and dates. E.g.: The event "Basketball (Sep, 22nd - 3:00 PM to 6:00 PM)" is no longer available. */
-				$message = sprintf( esc_html__( 'The event "%s" is no longer available. Please choose another event.', 'booking-activities' ), $title . ' (' . $dates . ')' );
 			} else if( ! $is_qty_inf_to_avail ) {
 				$error = 'qty_sup_to_avail';
 				$message = sprintf( esc_html( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $args[ 'quantity' ], 'booking-activities' ) ), $args[ 'quantity' ], $title . ' (' . $dates . ')' )

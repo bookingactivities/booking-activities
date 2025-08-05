@@ -436,27 +436,24 @@ function bookacti_make_groups_of_events_sortable() {
 
 
 /**
- * Add a group category to the categories list
- * @version 1.7.6
+ * Add a group category to the category list
+ * @version 1.16.41
  * @param {string} id
  * @param {string} title
  */
 function bookacti_add_group_category( id, title ) {
 	// Add the category row
 	$j( '#bookacti-group-categories' ).append(
-		"<div class='bookacti-group-category'  data-group-category-id='" + id + "' data-show-groups='0' data-visible='1' >"
-	+       "<div class='bookacti-group-category-title' title='" + title + "' >"
-	+			"<span>" + title + "</span>"
-	+		"</div>"
-	+		"<div class='bookacti-update-group-category dashicons dashicons-admin-generic' ></div>"
-	+		"<div class='bookacti-groups-of-events-editor-list bookacti-custom-scrollbar'>"
-	+		"</div>"
-	+   "</div>"
+	  "<div class='bookacti-group-category' data-group-category-id='" + id + "' data-show-groups='0' data-visible='1'>"
+	+     "<div class='bookacti-group-category-title' title='" + title + "'><span>" + title + "</span></div>"
+	+     "<div class='bookacti-update-group-category dashicons dashicons-admin-generic'></div>"
+	+     "<div class='bookacti-groups-of-events-editor-list bookacti-custom-scrollbar'></div>"
+	+ "</div>"
 	);
 
 	// Add the category to the selectbox
 	$j( '#bookacti-group-of-events-category-selectbox' ).append( 
-		"<option value='"+ id + "' >" + title + "</option>"
+		"<option value='" + id + "'>" + title + "</option>"
 	);
 
 	// Define this category as default
@@ -466,13 +463,12 @@ function bookacti_add_group_category( id, title ) {
 
 /**
  * Add a group of events to a category list
- * @version 1.7.3
+ * @version 1.16.41
  * @param {int} id
  * @param {string} title
  * @param {int} category_id
  */
 function bookacti_add_group_of_events( id, title, category_id ) {
-	
 	// If the category id is not found, add a category
 	if( ! $j( '.bookacti-group-category[data-group-category-id="' + category_id + '"]' ).length ) {
 		bookacti_add_group_category( category_id, 'Untitled' );
@@ -480,12 +476,10 @@ function bookacti_add_group_of_events( id, title, category_id ) {
 	
 	// Add the group row to the category
 	$j( '.bookacti-group-category[data-group-category-id="' + category_id + '"] .bookacti-groups-of-events-editor-list' ).append(
-		"<div class='bookacti-group-of-events' data-group-id='" + id + "' >"
-	+		"<div class='bookacti-group-of-events-title' title='" + title + "'>"
-	+			title
-	+		"</div>"
-	+		"<div class='bookacti-update-group-of-events dashicons dashicons-admin-generic' ></div>"
-	+	"</div>"
+	  "<div class='bookacti-group-of-events' data-group-id='" + id + "'>"
+	+     "<div class='bookacti-group-of-events-title' title='" + title + "'>" + title + "</div>"
+	+     "<div class='bookacti-update-group-of-events dashicons dashicons-admin-generic'></div>"
+	+ "</div>"
 	);
 	
 	// Expand the group category
@@ -736,8 +730,8 @@ function bookacti_update_create_form_link_template_id( new_template_id ) {
  * @version 1.7.17
  */
 function bookacti_update_create_form_link_url() {
-	var base_url	= $j( '#bookacti-create-form-link' ).data( 'base-url' );
-	var parameters	= $j( '#bookacti-calendar-integration-tuto-container input' ).serialize();
+	var base_url   = $j( '#bookacti-create-form-link' ).data( 'base-url' );
+	var parameters = $j( '#bookacti-calendar-integration-tuto-container input' ).serialize();
 	$j( '#bookacti-create-form-link' ).attr( 'href', base_url + '?' + parameters );
 }
 
@@ -770,20 +764,20 @@ function bookacti_get_calendar_editor_data_by_interval( interval ) {
 	// Update groups that have been retrieved
 	var group_ids = ! $j.isEmptyObject( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ] ) ? Object.keys( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ] ) : [];
 	
-    bookacti_start_template_loading();
+	bookacti_start_template_loading();
 	
-    $j.ajax({
-        url: ajaxurl,
-        type: 'POST',
-        data: { 
+	$j.ajax({
+		url: ajaxurl,
+		type: 'POST',
+		data: { 
 			'action': 'bookactiGetCalendarEditorDataByInterval', 
 			'template_id': bookacti.selected_template,
 			'interval': JSON.stringify( interval ),
 			'group_ids': JSON.stringify( group_ids ),
 			'nonce': $j( '#bookacti-edit-template-nonce' ).val()
 		},
-        dataType: 'json',
-        success: function( response ){
+		dataType: 'json',
+		success: function( response ){
 			if( response.status === 'success' ) {
 				// Extend or replace the events array if it was empty
 				if( $j.isEmptyObject( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events' ] ) ) {
@@ -824,15 +818,15 @@ function bookacti_get_calendar_editor_data_by_interval( interval ) {
 				console.log( error_message );
 				console.log( response );
 			}
-        },
-        error: function( e ){
-            alert ( 'AJAX ' + bookacti_localized.error );
-            console.log( e );
-        },
-        complete: function() { 
+		},
+		error: function( e ){
+			alert ( 'AJAX ' + bookacti_localized.error );
+			console.log( e );
+		},
+		complete: function() { 
 			bookacti_stop_template_loading();
 		}
-    });
+	});
 }
 
 
