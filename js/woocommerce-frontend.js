@@ -294,7 +294,7 @@ function bookacti_switch_product_variation_form( form_container, variation ) {
 	// Display a loading feedback
 	bookacti_add_loading_html( form_container );
 	
-	var data = {	
+	var data = {
 		'action': 'bookactiGetForm', 
 		'form_id': form_id, 
 		'instance_id': 'product-variation-' + variation[ 'variation_id' ], 
@@ -319,11 +319,11 @@ function bookacti_switch_product_variation_form( form_container, variation ) {
 	
 	// Load new form fields
 	$j.ajax({
-        url: bookacti_localized.ajaxurl,
-        type: 'POST',
-        data: data,
-        dataType: 'json',
-        success: function( response ){
+		url: bookacti_localized.ajaxurl,
+		type: 'POST',
+		data: data,
+		dataType: 'json',
+		success: function( response ){
 			if( response.status === 'success' ) {
 				bookacti.form_fields[ form_id ] = response.form_html;
 				bookacti_fill_product_variation_form( form_container, variation, response.form_html );
@@ -333,15 +333,15 @@ function bookacti_switch_product_variation_form( form_container, variation ) {
 				console.log( error_message );
 				console.log( response );
 			}
-        },
-        error: function( e ){
-            console.log( 'AJAX ' + bookacti_localized.error );
-            console.log( e );
-        },
-        complete: function() { 
+		},
+		error: function( e ){
+			console.log( 'AJAX ' + bookacti_localized.error );
+			console.log( e );
+		},
+		complete: function() { 
 			bookacti_remove_loading_html( form_container );
 		}
-    });	
+    });
 }
 
 

@@ -42,7 +42,7 @@ $j( document ).ready( function() {
 				console.log( e );
 			},
 			complete: function() {}
-		});	
+		});
 		
 	});
 });

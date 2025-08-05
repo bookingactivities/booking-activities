@@ -16,8 +16,8 @@ function bookacti_init_form_editor_actions() {
 	
 	// Open form field dialog boxes
 	$j( '#bookacti-form-editor' ).on( 'click', '.bookacti-form-editor-field-action', function( e ) {
-		var field_name	= $j( this ).closest( '.bookacti-form-editor-field' ).data( 'field-name' );
-		var field_id	= $j( this ).closest( '.bookacti-form-editor-field' ).data( 'field-id' );
+		var field_name = $j( this ).closest( '.bookacti-form-editor-field' ).data( 'field-name' );
+		var field_id   = $j( this ).closest( '.bookacti-form-editor-field' ).data( 'field-id' );
 		
 		if( $j( this ).hasClass( 'bookacti-remove-form-field' ) ){
 			bookacti_dialog_remove_form_field( field_id, field_name );
@@ -26,7 +26,7 @@ function bookacti_init_form_editor_actions() {
 			bookacti_dialog_update_form_field( field_id, field_name );
 		}
 		if( $j( this ).hasClass( 'bookacti-export-events' ) ){
-			var form_id	= $j( '#bookacti-form-id' ).val();
+			var form_id = $j( '#bookacti-form-id' ).val();
 			bookacti_dialog_export_events( form_id );
 		}
 		if( $j( this ).hasClass( 'bookacti-login-form-shortcode' ) ){
@@ -55,7 +55,7 @@ function bookacti_init_form_editor_actions() {
  * @version 1.15.13
  */
 function bookacti_dialog_update_form_meta() {
-	var form_id	= $j( '#bookacti-form-id' ).val();
+	var form_id = $j( '#bookacti-form-id' ).val();
 	
 	// Set the dialog title
 	var dialog_title_raw = $j.trim( $j( '#bookacti-form-meta-dialog' ).dialog( 'option', 'title' ).replace( /\(.*?\)/, '' ) );
@@ -80,10 +80,10 @@ function bookacti_dialog_update_form_meta() {
 	}
 	
 	// Add the buttons
-    $j( '#bookacti-form-meta-dialog' ).dialog( 'option', 'buttons',
+	$j( '#bookacti-form-meta-dialog' ).dialog( 'option', 'buttons',
 		// OK button
 		[{
-			'text': bookacti_localized.dialog_button_ok,			
+			'text': bookacti_localized.dialog_button_ok,
 			'click': function() { 
 				
 				// Save tineMCE editors content 
@@ -129,7 +129,7 @@ function bookacti_dialog_update_form_meta() {
     );
 	
 	// Open the modal dialog
-    $j( '#bookacti-form-meta-dialog' ).dialog( 'open' );
+	$j( '#bookacti-form-meta-dialog' ).dialog( 'open' );
 }
 
 
@@ -144,10 +144,10 @@ function bookacti_dialog_insert_form_field() {
 	$j( '#bookacti-field-to-insert' ).trigger( 'change' );
 	
 	// Add the buttons
-    $j( '#bookacti-insert-form-field-dialog' ).dialog( 'option', 'buttons',
+	$j( '#bookacti-insert-form-field-dialog' ).dialog( 'option', 'buttons',
 		// OK button
 		[{
-			text: bookacti_localized.dialog_button_ok,			
+			text: bookacti_localized.dialog_button_ok,
 			click: function() { 
 				var form_id    = $j( '#bookacti-form-id' ).val();
 				var field_name = $j( '#bookacti-field-to-insert' ).val();
@@ -213,10 +213,10 @@ function bookacti_dialog_insert_form_field() {
 				});
 			}
 		}]
-    );
+	);
 	
 	// Open the modal dialog
-    $j( '#bookacti-insert-form-field-dialog' ).dialog( 'open' );
+	$j( '#bookacti-insert-form-field-dialog' ).dialog( 'open' );
 }
 
 
@@ -235,10 +235,10 @@ function bookacti_dialog_remove_form_field( field_id, field_name ) {
 	});
 	
 	// Add the buttons
-    $j( '#bookacti-remove-form-field-dialog' ).dialog( 'option', 'buttons',
+	$j( '#bookacti-remove-form-field-dialog' ).dialog( 'option', 'buttons',
 		// OK button   
 		[{
-			text: bookacti_localized.dialog_button_ok,			
+			text: bookacti_localized.dialog_button_ok,
 			click: function() { 
 				
 				var nonce = $j( '#bookacti-remove-form-field-form input[name="nonce"]' ).val();
@@ -289,10 +289,10 @@ function bookacti_dialog_remove_form_field( field_id, field_name ) {
 				$j( this ).dialog( 'close' );
 			}
 		}]
-    );
+	);
 	
 	// Open the modal dialog
-    $j( '#bookacti-remove-form-field-dialog' ).dialog( 'open' );
+	$j( '#bookacti-remove-form-field-dialog' ).dialog( 'open' );
 }
 
 
@@ -332,10 +332,10 @@ function bookacti_dialog_update_form_field( field_id, field_name ) {
 	}
 	
 	// Add the buttons
-    $j( '#bookacti-form-field-dialog-' + field_name ).dialog( 'option', 'buttons',
+	$j( '#bookacti-form-field-dialog-' + field_name ).dialog( 'option', 'buttons',
 		// OK button
 		[{
-			text: bookacti_localized.dialog_button_ok,			
+			text: bookacti_localized.dialog_button_ok,
 			click: function() { 
 				// Clear errors
 				$j( '#bookacti-form-field-dialog-' + field_name ).find( '.bookacti-notices' ).remove();
@@ -459,10 +459,10 @@ function bookacti_dialog_update_form_field( field_id, field_name ) {
 				$j( this ).dialog( 'close' );
 			}
 		}]
-    );
+	);
 	
 	// Open the modal dialog
-    $j( '#bookacti-form-field-dialog-' + field_name ).dialog( 'open' );
+	$j( '#bookacti-form-field-dialog-' + field_name ).dialog( 'open' );
 }
 
 
@@ -477,10 +477,10 @@ function bookacti_dialog_export_events( form_id ) {
 	$j( '#bookacti_export_events_url_secret' ).val( $j( '#bookacti_export_events_url_secret' ).data( 'value' ) );
 	
 	// Add the buttons
-    $j( '#bookacti-export-events-dialog' ).dialog( 'option', 'buttons',
+	$j( '#bookacti-export-events-dialog' ).dialog( 'option', 'buttons',
 		// OK button   
 		[{
-			text: bookacti_localized.dialog_button_ok,			
+			text: bookacti_localized.dialog_button_ok,
 			click: function() {
 				// Reset error notices
 				$j( '#bookacti-export-events-dialog .bookacti-notices' ).remove();
@@ -543,10 +543,10 @@ function bookacti_dialog_export_events( form_id ) {
 				});
 			}
 		}]
-    );
+	);
 	
 	// Open the modal dialog
-    $j( '#bookacti-export-events-dialog' ).dialog( 'open' );
+	$j( '#bookacti-export-events-dialog' ).dialog( 'open' );
 }
 
 
@@ -556,18 +556,18 @@ function bookacti_dialog_export_events( form_id ) {
  */
 function bookacti_dialog_calendar_field_help() {
 	// Add the buttons
-    $j( '#bookacti-calendar-field-help-dialog' ).dialog( 'option', 'buttons',
+	$j( '#bookacti-calendar-field-help-dialog' ).dialog( 'option', 'buttons',
 		// OK button   
 		[{
-			text: bookacti_localized.dialog_button_ok,			
+			text: bookacti_localized.dialog_button_ok,
 			click: function() {
 				// Close the modal dialog
 				$j( this ).dialog( 'close' );
 			}
 		}]
-    );
+	);
 	// Open the modal dialog
-    $j( '#bookacti-calendar-field-help-dialog' ).dialog( 'open' );
+	$j( '#bookacti-calendar-field-help-dialog' ).dialog( 'open' );
 }
 
 
@@ -577,16 +577,16 @@ function bookacti_dialog_calendar_field_help() {
  */
 function bookacti_dialog_login_form_shortcode() {
 	// Add the buttons
-    $j( '#bookacti-login-form-shortcode-dialog' ).dialog( 'option', 'buttons',
+	$j( '#bookacti-login-form-shortcode-dialog' ).dialog( 'option', 'buttons',
 		// OK button   
 		[{
-			text: bookacti_localized.dialog_button_ok,			
+			text: bookacti_localized.dialog_button_ok,
 			click: function() {
 				// Close the modal dialog
 				$j( this ).dialog( 'close' );
 			}
 		}]
-    );
+	);
 	// Open the modal dialog
-    $j( '#bookacti-login-form-shortcode-dialog' ).dialog( 'open' );
+	$j( '#bookacti-login-form-shortcode-dialog' ).dialog( 'open' );
 }

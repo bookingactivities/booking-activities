@@ -60,7 +60,7 @@ $j( document ).ready( function() {
  * @since 1.8.0
  * @version 1.15.13
  */
-function bookacti_dialog_update_bookings_calendar_settings() {	
+function bookacti_dialog_update_bookings_calendar_settings() {
 	// Add the buttons
     $j( '#bookacti-bookings-calendar-settings-dialog' ).dialog( 'option', 'buttons',
 		// OK button
@@ -530,7 +530,7 @@ function bookacti_dialog_change_bookings_status( booking_selection ) {
 	$j( 'body' ).trigger( 'bookacti_booking_action_dialog_opened', [ booking_selection, 'change_booking_status' ] );
 
 	// Add the buttons
-    $j( '#bookacti-change-booking-status-dialog' ).dialog( 'option', 'buttons',
+	$j( '#bookacti-change-booking-status-dialog' ).dialog( 'option', 'buttons',
 		// Change booking status button
 		[{
 			text: bookacti_localized.dialog_button_ok,
@@ -639,15 +639,15 @@ function bookacti_dialog_change_bookings_status( booking_selection ) {
 		},
 		// Cancel button
 		{
-            text: bookacti_localized.dialog_button_cancel,
-            click: function() {
+			text: bookacti_localized.dialog_button_cancel,
+			click: function() {
 				$j( this ).dialog( 'close' );
             }
         }]
     );
 	
 	// Open the modal dialog
-    $j( '#bookacti-change-booking-status-dialog' ).dialog( 'open' );
+	$j( '#bookacti-change-booking-status-dialog' ).dialog( 'open' );
 }
 
 
@@ -677,7 +677,7 @@ function bookacti_dialog_change_bookings_quantity( booking_selection ) {
 	$j( 'body' ).trigger( 'bookacti_booking_action_dialog_opened', [ booking_selection, 'change_quantity' ] );
 	
 	// Add the buttons
-    $j( '#bookacti-change-booking-quantity-dialog' ).dialog( 'option', 'buttons',
+	$j( '#bookacti-change-booking-quantity-dialog' ).dialog( 'option', 'buttons',
 		// Change booking quantity button
 		[{
 			text: bookacti_localized.dialog_button_ok,
@@ -776,15 +776,15 @@ function bookacti_dialog_change_bookings_quantity( booking_selection ) {
 		},
 		// Cancel button
 		{
-            text: bookacti_localized.dialog_button_cancel,
-            click: function() {
+			text: bookacti_localized.dialog_button_cancel,
+			click: function() {
 				$j( this ).dialog( 'close' );
-            }
-        }]
-    );
+			}
+		}]
+	);
 	
 	// Open the modal dialog
-    $j( '#bookacti-change-booking-quantity-dialog' ).dialog( 'open' );
+	$j( '#bookacti-change-booking-quantity-dialog' ).dialog( 'open' );
 }
 
 
@@ -877,7 +877,7 @@ function bookacti_dialog_reschedule_bookings( booking_selection ) {
 	
 	
 	// Add the buttons
-    $j( '#bookacti-reschedule-booking-dialog' ).dialog( 'option', 'buttons',
+	$j( '#bookacti-reschedule-booking-dialog' ).dialog( 'option', 'buttons',
 		// Reschedule booking button
 		[{
 			text: bookacti_localized.dialog_button_reschedule,
@@ -993,12 +993,12 @@ function bookacti_dialog_reschedule_bookings( booking_selection ) {
 		},
 		// Cancel button
 		{
-            text: bookacti_localized.dialog_button_cancel,
-            click: function() {
+			text: bookacti_localized.dialog_button_cancel,
+			click: function() {
 				$j( this ).dialog( 'close' );
-            }
-        }]
-    );
+			}
+		}]
+	);
 	
 	// Open the modal dialog
 	$j( '#bookacti-reschedule-booking-dialog' ).dialog( 'open' );
@@ -1026,7 +1026,7 @@ function bookacti_dialog_send_bookings_notification( booking_selection ) {
 	$j( 'body' ).trigger( 'bookacti_booking_action_dialog_opened', [ booking_selection, 'send_notification' ] );
 	
 	// Add the buttons
-    $j( '#bookacti-send-booking-notification-dialog' ).dialog( 'option', 'buttons',
+	$j( '#bookacti-send-booking-notification-dialog' ).dialog( 'option', 'buttons',
 		[{
 			text: bookacti_localized.dialog_button_send,
 			click: function() {
@@ -1097,15 +1097,15 @@ function bookacti_dialog_send_bookings_notification( booking_selection ) {
 		},
 		// Cancel button
 		{
-            text: bookacti_localized.dialog_button_cancel,
-            click: function() {
+			text: bookacti_localized.dialog_button_cancel,
+			click: function() {
 				$j( this ).dialog( 'close' );
-            }
-        }]
-    );
+			}
+		}]
+	);
 	
 	// Open the modal dialog
-    $j( '#bookacti-send-booking-notification-dialog' ).dialog( 'open' );
+	$j( '#bookacti-send-booking-notification-dialog' ).dialog( 'open' );
 }
 
 
@@ -1133,7 +1133,7 @@ function bookacti_dialog_delete_bookings( booking_selection ) {
 	$j( 'body' ).trigger( 'bookacti_booking_action_dialog_opened', [ booking_selection, 'delete' ] );
 	
 	// Add the buttons
-    $j( '#bookacti-delete-booking-dialog' ).dialog( 'option', 'buttons',
+	$j( '#bookacti-delete-booking-dialog' ).dialog( 'option', 'buttons',
 		// Delete button
 		[{
 			text: bookacti_localized.dialog_button_delete,
@@ -1216,16 +1216,16 @@ function bookacti_dialog_delete_bookings( booking_selection ) {
 		},
 		// Cancel button
 		{
-            text: bookacti_localized.dialog_button_cancel,
-            'class': 'bookacti-dialog-left-button',
-            click: function() {
+			text: bookacti_localized.dialog_button_cancel,
+			'class': 'bookacti-dialog-left-button',
+			click: function() {
 				$j( this ).dialog( 'close' );
-            }
-        }]
-    );
+			}
+		}]
+	);
 	
 	// Open the modal dialog
-    $j( '#bookacti-delete-booking-dialog' ).dialog( 'open' );
+	$j( '#bookacti-delete-booking-dialog' ).dialog( 'open' );
 }
 
 
@@ -1247,7 +1247,7 @@ function bookacti_dialog_export_bookings() {
 	$j( '#bookacti-export-bookings-dialog' ).dialog( 'option', 'buttons',
 		// OK button   
 		[{
-			'text': bookacti_localized.dialog_button_generate_link,			
+			'text': bookacti_localized.dialog_button_generate_link,
 			'click': function() { 
 				bookacti_generate_export_bookings_url( false );
 			}
@@ -1260,10 +1260,10 @@ function bookacti_dialog_export_bookings() {
 				bookacti_generate_export_bookings_url( true );
 			}
 		}]
-    );
+	);
 	
 	// Open the modal dialog
-    $j( '#bookacti-export-bookings-dialog' ).dialog( 'open' );
+	$j( '#bookacti-export-bookings-dialog' ).dialog( 'open' );
 }
 
 

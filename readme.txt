@@ -3,7 +3,7 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
 Tested up to: 6.8
-Stable tag: 1.16.40
+Stable tag: 1.16.41
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -320,8 +320,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.16.41 =
+= 1.16.41 - 2025/08/05 =
 * Fix - Do not display negative availability on frontend
+* Fix - Error message not displayed when validating picked events with JS before sending form
 
 = 1.16.40 - 2025/07/23 =
 * Tweak - Improve cart item meta display with WC classic cart

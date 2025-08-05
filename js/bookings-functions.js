@@ -610,8 +610,8 @@ function bookacti_refresh_booking_group_frame() {
  * @returns {boolean}
  */
 function bookacti_validate_picked_events( booking_system, quantity ) {
-	booking_system	= booking_system || $j( '.bookacti-booking-system:first' );
-	quantity		= quantity || 0;
+	booking_system = booking_system || $j( '.bookacti-booking-system:first' );
+	quantity       = quantity || 0;
 	
 	var booking_system_id = booking_system.attr( 'id' );
 	var picked_events = bookacti.booking_system[ booking_system_id ][ 'picked_events' ];
@@ -638,9 +638,9 @@ function bookacti_validate_picked_events( booking_system, quantity ) {
 		}
 	}
 	
-	if( typeof form_values[ 'selected_events' ] === 'undefined' )	{ valid_form.events_selected = false; }
-	else if( $j.isEmptyObject( form_values[ 'selected_events' ] ) )	{ valid_form.events_selected = false; }
-	if( ! picked_events.length )									{ valid_form.events_selected = false; }
+	if( typeof form_values[ 'selected_events' ] === 'undefined' )   { valid_form.events_selected = false; }
+	else if( $j.isEmptyObject( form_values[ 'selected_events' ] ) ) { valid_form.events_selected = false; }
+	if( ! picked_events.length )                                    { valid_form.events_selected = false; }
 	
 	// Check if the picked events inputs match the picked events object
 	if( valid_form.events_selected ) {
@@ -689,7 +689,7 @@ function bookacti_validate_picked_events( booking_system, quantity ) {
 	if( ! valid_form.events_selected
 	||  ! valid_form.consistent_inputs
 	||  ! valid_form.is_qty_sup_to_0 
-	||  ! valid_form.is_qty_inf_to_avail )	{ valid_form.send = false; }
+	||  ! valid_form.is_qty_inf_to_avail ) { valid_form.send = false; }
 	
 	// Display feedbacks
 	booking_system.siblings( '.bookacti-notices' ).empty();
@@ -712,7 +712,7 @@ function bookacti_validate_picked_events( booking_system, quantity ) {
 		if( ! valid_form.consistent_inputs ){ 
 			error_list += '<li>' + bookacti_localized.error_corrupted_event + '</li>'; 
 		}
-
+		
 		// Display error list
 		if( error_list !== '' ) {
 			booking_system.siblings( '.bookacti-notices' ).append( "<ul class='bookacti-error-list'>" + error_list + "</ul>" ).show();

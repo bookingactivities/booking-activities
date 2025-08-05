@@ -165,13 +165,13 @@ function bookacti_remove_loading_html( element ) {
  * @param {String} position Either "middle" or "top"
  */
 function bookacti_scroll_to( element, speed, position ) {
-	speed	= $j.isNumeric( speed ) ? parseInt( speed ) : 500;
-	position= position !== 'middle' ? 'top' : 'middle';
+	speed    = $j.isNumeric( speed ) ? parseInt( speed ) : 500;
+	position = position !== 'middle' ? 'top' : 'middle';
 	
 	var elOffset = typeof element === 'number' ? element : ( element.length ? element.offset().top : $j( document ).scrollTop() );
 	var offset = elOffset;
 	
-	if( position === 'middle' && typeof element !== 'number' && element.length ) {	
+	if( position === 'middle' && typeof element !== 'number' && element.length ) {
 		var elHeight = element.height();
 		var windowHeight = $j( window ).height();
 
@@ -191,8 +191,8 @@ function bookacti_scroll_to( element, speed, position ) {
  * @returns {String}
  */
 function bookacti_pad( str, max ) {
-  str = str.toString();
-  return str.length < max ? bookacti_pad( '0' + str, max ) : str;
+	str = str.toString();
+	return str.length < max ? bookacti_pad( '0' + str, max ) : str;
 }
 
 
@@ -603,9 +603,9 @@ function bookacti_get_url_parameter( desired_param, url ) {
  * @returns {Boolean}
  */
 function bookacti_is_url_external( url ) {
-    var tmp = document.createElement( 'a' );
-    tmp.href = url;
-    return tmp.host !== window.location.host;
+	var tmp = document.createElement( 'a' );
+	tmp.href = url;
+	return tmp.host !== window.location.host;
 }
 
 
