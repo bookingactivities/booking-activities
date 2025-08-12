@@ -1993,6 +1993,60 @@ function bookacti_is_picked_group_of_events_available_on_form( $picked_event_gro
 }
 
 
+/**
+ * Book picked events
+ * @since 1.16.42
+ * @param array $picked_events
+ * @param array $booking_form_values
+ * @return array
+ */
+function bookacti_book_picked_events( $picked_events, $booking_form_values ) {
+	$return_array = array( 'bookings' => array(), 'booking_ids' => array(), 'booking_group_ids' => array() );
+	
+	// Keep one entry per group
+	$picked_events = bookacti_format_picked_events( $picked_events, true );
+	
+	foreach( $picked_events as $picked_event ) {
+		// Single Booking
+		if( ! $picked_event[ 'group_id' ] ) {
+			$booking_data = bookacti_sanitize_booking_data( array_merge( array(
+				'event_id'    => $picked_event[ 'events' ][ 0 ][ 'id' ],
+				'event_start' => $picked_event[ 'events' ][ 0 ][ 'start' ],
+				'event_end'   => $picked_event[ 'events' ][ 0 ][ 'end' ],
+			), $booking_form_values ) );
+
+			$booking_id = bookacti_insert_booking( $booking_data );
+
+			if( $booking_id ) {
+				do_action( 'bookacti_picked_event_booking_inserted', $booking_id, $picked_event, $booking_form_values );
+				$return_array[ 'bookings' ][] = array( 'id' => $booking_id, 'type' => 'single', 'picked_event' => $picked_event );
+				$return_array[ 'booking_ids' ][] = $booking_id;
+			}
+		}
+
+		// Booking group
+		else {
+			// Book all events of the group
+			$booking_group_data = bookacti_sanitize_booking_group_data( array_merge( array( 
+				'event_group_id' => $picked_event[ 'group_id' ],
+				'group_date'     => $picked_event[ 'group_date' ],
+				'grouped_events' => $picked_event[ 'events' ]
+			), $booking_form_values ) );
+
+			$booking_group_id = bookacti_book_group_of_events( $booking_group_data );
+
+			if( $booking_group_id ) {
+				do_action( 'bookacti_picked_event_booking_inserted', $booking_group_id, $picked_event, $booking_form_values );
+				$return_array[ 'bookings' ][] = array( 'id' => $booking_group_id, 'type' => 'group', 'picked_event' => $picked_event );
+				$return_array[ 'booking_group_ids' ][] = $booking_group_id;
+			}
+		}
+	}
+	
+	return apply_filters( 'bookacti_book_picked_events', $return_array, $picked_events, $booking_form_values );
+}
+
+
 
 
 /***** EVENTS *****/
@@ -3965,7 +4019,7 @@ function bookacti_get_occurrences_of_repeated_groups_of_events( $groups, $raw_ar
 
 /**
  * Book all events of a group
- * @version 1.12.0
+ * @version 1.16.42
  * @param array $booking_group_data Sanitized with bookacti_sanitize_booking_group_data
  * @return int|boolean
  */
@@ -3995,8 +4049,12 @@ function bookacti_book_group_of_events( $booking_group_data ) {
 			$grouped_events[ $i ][ 'booking_id' ] = $booking_id;
 		}
 	}
-
-	return apply_filters( 'bookacti_group_of_events_booked', $booking_group_id, $booking_group_data, $grouped_events );
+	
+	if( $booking_group_id ) {
+		do_action( 'bookacti_booking_group_fully_inserted', $booking_group_id, $grouped_events, $booking_group_data );
+	}
+	
+	return $booking_group_id;
 }
 
 

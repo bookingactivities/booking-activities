@@ -118,7 +118,7 @@ $j( document ).ready( function() {
 
 /**
  * Initialize and display the template calendar
- * @version 1.15.12
+ * @version 1.16.42
  */
 function bookacti_load_template_calendar() {
 	var booking_system = $j( '#bookacti-template-calendar' );
@@ -160,7 +160,6 @@ function bookacti_load_template_calendar() {
 		fixedWeekCount:          false,
 		showNonCurrentDates:     true,
 		eventResizableFromStart: false,
-		rerenderDelay:           100,
 		editable:                true,
 		droppable:               true,
 		dropAccept:              '.fc-event, .bookacti-activity-draggable',

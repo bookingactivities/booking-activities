@@ -633,7 +633,7 @@ function bookacti_get_active_add_ons( $prefix = '', $exclude = array( 'balau' ) 
 /**
  * Get add-on data by prefix
  * @since 1.7.14
- * @version 1.16.40
+ * @version 1.16.42
  * @param string $prefix
  * @param array $exclude
  * @return array
@@ -670,7 +670,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-advanced-forms', 
 			'end_of_life' => '', 
 			'download_id' => 2705,
-			'min_version' => '1.5.3'
+			'min_version' => '1.5.6'
 		),
 		'baofc' => array( 
 			'title'	      => 'Order for Customers', 
@@ -678,7 +678,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-order-for-customers', 
 			'end_of_life' => '', 
 			'download_id' => 436,
-			'min_version' => '1.2.33'
+			'min_version' => '1.3.6'
 		),
 		'bara' => array( 
 			'title'       => 'Resource Availability', 
