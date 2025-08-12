@@ -3,7 +3,7 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
 Tested up to: 6.8
-Stable tag: 1.16.41
+Stable tag: 1.16.42
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -319,6 +319,22 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.16.42 - 2025/08/12 =
+* Tweak - Add an option in WooCommerce > Settings > Advanced to change the Bookings endpoint
+* Tweak - Allow to log in with username instead of email address with booking form login fields
+* Dev - Remove bookacti_validate_booking_form_submission hook, use bookacti_validate_form_fields instead
+* Dev - Remove bookacti_booking_form_booking_inserted and bookacti_booking_form_booking_group_inserted hooks, use bookacti_picked_event_booking_inserted instead
+* Dev - Remove bookacti_booking_form_values_before_booking hook, use bookacti_booking_form_values or bookacti_booking_form_before_booking instead
+* Dev - Remove bookacti_login_form_user_registered hook, use bookacti_booking_form_user_registered instead
+* Dev - Remove bookacti_group_of_events_booked hook, use bookacti_booking_group_fully_inserted instead
+* Dev - Change bookacti_booking_form_user_logged_in and bookacti_booking_form_user_registered hooks parameters
+* Dev - Change bookacti_validate_registration_form and bookacti_validate_login_form hooks expected return value
+* Dev - Remove rerender delay from calendar editor to improve compatibility with hooks triggered after
+* Dev - Split the booking form process into multiple smaller functions
+* Dev - Refactor WC endpoints for a better WC handling
+* Dev - Refactor and standardize form field updating process
+* Lib - Update FullCalendar to 6.1.19
 
 = 1.16.41 - 2025/08/05 =
 * Fix - Do not display negative availability on frontend

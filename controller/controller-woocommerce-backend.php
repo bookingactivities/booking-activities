@@ -230,39 +230,7 @@ add_action( 'woocommerce_refund_deleted', 'bookacti_update_booking_when_refund_i
 
 
 
-// TEMPLATES
-
-/**
- * Add shop managers to managers exceptions
- * @since 1.15.5 (was bookacti_add_shop_manager_to_template_managers_exceptions)
- * @param array $exceptions
- * @return string
- */
-function bookacti_wc_add_managers_roles_exceptions( $exceptions ) {
-	$exceptions[] = 'shop_manager';
-	return $exceptions;
-}
-add_filter( 'bookacti_managers_roles_exceptions', 'bookacti_wc_add_managers_roles_exceptions', 10, 1 );
-
-
-/**
- * Bypass template manager check for shop managers
- * @version 1.12.7
- * @param boolean $true
- * @param int $user_id Default to current user
- * @return boolean
- */
-function bookacti_bypass_checks_for_shop_managers( $true, $user_id = 0 ) {
-	return bookacti_is_shop_manager( $user_id ) ? true : $true;
-}
-add_filter( 'bookacti_bypass_template_managers_check', 'bookacti_bypass_checks_for_shop_managers', 10, 2 );
-add_filter( 'bookacti_bypass_activity_managers_check', 'bookacti_bypass_checks_for_shop_managers', 10, 2 );
-add_filter( 'bookacti_bypass_form_managers_check', 'bookacti_bypass_checks_for_shop_managers', 10, 2 );
-
-
-
-
-// CUSTOM PRODUCTS OPTIONS
+// PRODUCTS
 
 /**
  * Add 'Activity' custom product type option
@@ -389,7 +357,7 @@ add_action( 'woocommerce_admin_process_product_object', 'bookacti_save_custom_pr
 
 
 
-// CUSTOM VARIATION FIELDS
+// PRODUCT VARIATIONS
 
 /**
  * Add custom variation product type option
@@ -529,6 +497,56 @@ add_filter( 'woocommerce_available_variation', 'bookacti_load_variation_settings
 
 
 
+// WOOCOMMERCE SETIINGS
+
+/**
+ * Add endpoint options to WC settings
+ * @since 1.16.42
+ * @param array $settings
+ * @return array
+ */
+function bookacti_wc_settings_page_endpoint_options( $settings ) {
+	$new_options = apply_filters( 'bookacti_wc_account_endpoint_options', array(
+		array(
+			'title'    => esc_html__( 'Bookings', 'booking-activities' ),
+			'desc'     => esc_html__( 'Endpoint for the "My account &rarr; Bookings" page.', 'booking-activities' ),
+			'id'       => 'woocommerce_myaccount_bookings_endpoint',
+			'type'     => 'text',
+			'default'  => 'bookings',
+			'desc_tip' => true,
+		)
+	), $settings );
+	
+	// Add 'bookings' endpoint option at the begining of the enpoint section
+	$new_settings = array();
+	$inserted     = false;
+	foreach( $settings as $key => $setting ) {
+		// Keep options and string keys
+		if( is_string( $key ) ) {
+			$new_settings[ $key ] = $setting;
+		} else {
+			$new_settings[] = $setting;
+		}
+		
+		// Add endpoint options in endpoint section
+		if( ! $inserted && ! empty( $setting[ 'id' ] ) && $setting[ 'id' ] === 'account_endpoint_options' ) {
+			$new_settings = array_merge( $new_settings, $new_options );
+			$inserted = true;
+		}
+	}
+	
+	// Otherwise, add it after
+	if( ! $inserted ) {
+		$new_settings = array_merge( $new_settings, $new_options );
+	}
+	
+	return $new_settings;
+}
+add_filter( 'woocommerce_settings_pages', 'bookacti_wc_settings_page_endpoint_options' );
+
+
+
+
 // ROLES AND CAPABILITIES
 
 /**
@@ -614,3 +632,31 @@ function bookacti_wc_prevent_admin_access( $prevent_access ) {
 	return $prevent_access;
 }
 add_filter( 'woocommerce_prevent_admin_access', 'bookacti_wc_prevent_admin_access', 10, 1 );
+
+
+/**
+ * Add shop managers to managers exceptions
+ * @since 1.15.5 (was bookacti_add_shop_manager_to_template_managers_exceptions)
+ * @param array $exceptions
+ * @return string
+ */
+function bookacti_wc_add_managers_roles_exceptions( $exceptions ) {
+	$exceptions[] = 'shop_manager';
+	return $exceptions;
+}
+add_filter( 'bookacti_managers_roles_exceptions', 'bookacti_wc_add_managers_roles_exceptions', 10, 1 );
+
+
+/**
+ * Bypass template manager check for shop managers
+ * @version 1.12.7
+ * @param boolean $true
+ * @param int $user_id Default to current user
+ * @return boolean
+ */
+function bookacti_bypass_checks_for_shop_managers( $true, $user_id = 0 ) {
+	return bookacti_is_shop_manager( $user_id ) ? true : $true;
+}
+add_filter( 'bookacti_bypass_template_managers_check', 'bookacti_bypass_checks_for_shop_managers', 10, 2 );
+add_filter( 'bookacti_bypass_activity_managers_check', 'bookacti_bypass_checks_for_shop_managers', 10, 2 );
+add_filter( 'bookacti_bypass_form_managers_check', 'bookacti_bypass_checks_for_shop_managers', 10, 2 );

@@ -2210,56 +2210,71 @@ add_filter( 'bookacti_user_booking_list_items', 'bookacti_add_wc_data_to_user_bo
 // MY ACCOUNT
 
 /**
- * Register the "Bookings" endpoint to use it on My Account
- * @since 1.7.16
+ * Add "Bookings" WC query var
+ * @since 1.16.42
  */
-function bookacti_add_bookings_endpoint() {
-	add_rewrite_endpoint( 'bookings', EP_ROOT | EP_PAGES );
+function bookacti_wc_add_wc_query_vars( $vars ) {
+    $vars[ 'bookings' ] = get_option( 'woocommerce_myaccount_bookings_endpoint', 'bookings' );
+	
+    return $vars;
 }
-add_action( 'init', 'bookacti_add_bookings_endpoint', 10 );
-add_action( 'bookacti_activate', 'bookacti_add_bookings_endpoint', 10 );
+add_filter( 'woocommerce_get_query_vars', 'bookacti_wc_add_wc_query_vars', 0 );
+
+
+/**
+ * Change the Bookings endpoint URL
+ * @since 1.16.42
+ * @param string $url
+ * @param string $endpoint  Endpoint slug.
+ * @param string $value     Query param value.
+ * @param string $permalink Permalink.
+ * @return string
+ */
+function bookacti_wc_set_bookings_endpoint_url( $url, $endpoint, $value, $permalink ){
+	if( $endpoint === 'bookings' ) {
+		$url = get_permalink( wc_get_page_id( 'myaccount' ) ) . get_option( 'woocommerce_myaccount_bookings_endpoint', 'bookings' );
+	}
+	
+	return $url;
+}
+add_filter( 'woocommerce_get_endpoint_url', 'bookacti_wc_set_bookings_endpoint_url', 10, 4 );
 
 
 /**
  * Set the Bookings page title in WC account
- * @since 1.8.9
- * @version 1.16.31
- * @global WP_Query $wp_query
- * @param string $title
- * @param int $post_id
+ * @since 1.16.42 (was bookacti_wc_account_bookings_page_title)
+ * @param string $title Default title.
+ * @param string $endpoint Endpoint key.
+ * @param string $action Optional action or variation within the endpoint.
  * @return string
  */
-function bookacti_wc_account_bookings_page_title( $title, $post_id = null ) {
-	global $wp_query;
-	$is_endpoint = isset( $wp_query->query_vars[ 'bookings' ] );
-	
-	if( $is_endpoint && ! is_admin() && is_main_query() && in_the_loop() && is_account_page() ) {
-		// Get custom page title
-		$page_id    = intval( bookacti_get_setting_value( 'bookacti_account_settings', 'wc_my_account_bookings_page_id' ) );
-		$page       = $page_id > 0 ? get_page( $page_id ) : null;
-		$page_title = $page && ! empty( $page->post_title ) ? esc_html( apply_filters( 'bookacti_translate_text_external', $page->post_title, false, true, array( 'domain' => 'wordpress', 'object_type' => 'page', 'object_id' => $page_id, 'field' => 'post_title' ) ) ) : '';
-		$title      = $page_title ? $page_title : esc_html__( 'Bookings', 'booking-activities' );
-	}
+function bookacti_wc_endpoint_bookings_title( $title, $endpoint = '', $action = '' ) {
+	// Get custom page title
+	$page_id    = intval( bookacti_get_setting_value( 'bookacti_account_settings', 'wc_my_account_bookings_page_id' ) );
+	$page       = $page_id > 0 ? get_page( $page_id ) : null;
+	$is_trashed = $page ? $page->post_status === 'trash' : false;
+	$page_title = $page && ! $is_trashed && ! empty( $page->post_title ) ? esc_html( apply_filters( 'patips_translate_text_external', $page->post_title, false, true, array( 'domain' => 'wordpress', 'object_type' => 'page', 'object_id' => $page_id, 'field' => 'post_title' ) ) ) : '';
+	$title      = $page_title ? $page_title : esc_html__( 'Bookings', 'booking-activities' );
 	
 	return $title;
 }
-add_filter( 'the_title', 'bookacti_wc_account_bookings_page_title', 10, 2 );
+add_filter( 'woocommerce_endpoint_bookings_title', 'bookacti_wc_endpoint_bookings_title', 10, 3 );
 
 
 /**
  * Add the "Bookings" tab to the My Account menu
- * @since 1.7.16
- * @version 1.16.31
+ * @since 1.16.42 (was bookacti_add_bookings_tab_to_my_account_menu)
  * @param array $tabs
  * @return array
  */
-function bookacti_add_bookings_tab_to_my_account_menu( $tabs ) {
+function bookacti_wc_account_menu_items( $tabs ) {
 	$page_id = intval( bookacti_get_setting_value( 'bookacti_account_settings', 'wc_my_account_bookings_page_id' ) );
 	if( $page_id < 0 ) { return $tabs; }
 	
 	// Get custom page title
 	$page       = $page_id > 0 ? get_page( $page_id ) : null;
-	$page_title = $page && ! empty( $page->post_title ) ? esc_html( apply_filters( 'bookacti_translate_text_external', $page->post_title, false, true, array( 'domain' => 'wordpress', 'object_type' => 'page', 'object_id' => $page_id, 'field' => 'post_title' ) ) ) : '';
+	$is_trashed = $page ? $page->post_status === 'trash' : false;
+	$page_title = $page && ! $is_trashed && ! empty( $page->post_title ) ? esc_html( apply_filters( 'bookacti_translate_text_external', $page->post_title, false, true, array( 'domain' => 'wordpress', 'object_type' => 'page', 'object_id' => $page_id, 'field' => 'post_title' ) ) ) : '';
 	$title      = $page_title ? $page_title : esc_html__( 'Bookings', 'booking-activities' );
 	
 	$inserted = false;
@@ -2287,34 +2302,32 @@ function bookacti_add_bookings_tab_to_my_account_menu( $tabs ) {
 
 	return $new_tabs;
 }
-add_filter( 'woocommerce_account_menu_items', 'bookacti_add_bookings_tab_to_my_account_menu', 50 );
+add_filter( 'woocommerce_account_menu_items', 'bookacti_wc_account_menu_items', 50 );
 
 
 /**
  * Display the content of the "Bookings" tab in My Account
- * @since 1.7.16
- * @version 1.14.0
+ * @since 1.16.42 (was bookacti_display_my_account_bookings_tab_content)
  */
-function bookacti_display_my_account_bookings_tab_content() {
-	$page_id = intval( bookacti_get_setting_value( 'bookacti_account_settings', 'wc_my_account_bookings_page_id' ) );
-	if( $page_id === 0 ) {
+function bookacti_wc_account_bookings_endpoint() {
+	$page_id    = intval( bookacti_get_setting_value( 'bookacti_account_settings', 'wc_my_account_bookings_page_id' ) );
+	$page       = $page_id > 0 ? get_page( $page_id ) : null;
+	$is_trashed = $page ? $page->post_status === 'trash' : false;
+	
+	if( $page && ! $is_trashed && ! empty( $page->post_content ) ) {
+		echo apply_filters( 'the_content', apply_filters( 'patips_translate_text_external', $page->post_content, false, true, array( 'domain' => 'wordpress', 'object_type' => 'page', 'object_id' => $page_id, 'field' => 'post_content' ) ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	} else {
 		echo do_shortcode( '[bookingactivities_list]' );
-	} else if( $page_id > 0 ) {
-		$page = get_page( $page_id );
-		if( $page && ! empty( $page->post_content ) ) {
-			echo apply_filters( 'the_content', apply_filters( 'bookacti_translate_text_external', $page->post_content, false, true, array( 'domain' => 'wordpress', 'object_type' => 'page', 'object_id' => $page_id, 'field' => 'post_content' ) ) );
-		}
 	}
 }
-add_action( 'woocommerce_account_bookings_endpoint', 'bookacti_display_my_account_bookings_tab_content', 10 );
+add_action( 'woocommerce_account_bookings_endpoint', 'bookacti_wc_account_bookings_endpoint', 10 );
 
 
 /**
  * Display links to the new "Bookings" endpoint on the customer's WC account dashboard
- * @since 1.12.0
- * @version 1.15.16
+ * @since 1.16.42 (was bookacti_display_my_account_dashboard_links)
  */
-function bookacti_display_my_account_dashboard_links() {
+function bookacti_wc_account_dashboard() {
 	$page_id = intval( bookacti_get_setting_value( 'bookacti_account_settings', 'wc_my_account_bookings_page_id' ) );
 	if( $page_id < 0 ) { return; }
 ?>
@@ -2329,7 +2342,7 @@ function bookacti_display_my_account_dashboard_links() {
 	</p>
 <?php
 }
-add_action( 'woocommerce_account_dashboard', 'bookacti_display_my_account_dashboard_links', 20 );
+add_action( 'woocommerce_account_dashboard', 'bookacti_wc_account_dashboard', 20 );
 
 
 /**

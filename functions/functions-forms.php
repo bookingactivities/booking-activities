@@ -1142,7 +1142,7 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 /**
  * Sanitize the values entered by the user in the form fields
  * @since 1.5.0
- * @version 1.14.0
+ * @version 1.16.42
  * @param array $values
  * @param string $field_type
  * @return array
@@ -1155,8 +1155,8 @@ function bookacti_sanitize_form_field_values( $values, $field_type = '' ) {
 	
 	// Login fields
 	if( $field_type === 'login' ) {
-		$sanitized_values[ 'email' ]             = ! empty( $values[ 'email' ] ) ? sanitize_email( stripslashes( $values[ 'email' ] ) ) : '';
-		$sanitized_values[ 'password' ]          = ! empty( $values[ 'password' ] ) ? trim( stripslashes( $values[ 'password' ] ) ) : '';
+		$sanitized_values[ 'email' ]             = ! empty( $values[ 'email' ] ) ? ( strpos( $values[ 'email' ], '@', 1 ) !== false ? sanitize_email( wp_unslash( $values[ 'email' ] ) ) : sanitize_user( wp_unslash( $values[ 'email' ] ) ) ) : '';
+		$sanitized_values[ 'password' ]          = ! empty( $values[ 'password' ] ) ? trim( sanitize_text_field( wp_unslash( $values[ 'password' ] ) ) ) : '';
 		$sanitized_values[ 'password_strength' ] = ! empty( $values[ 'password_strength' ] ) ? intval( $values[ 'password_strength' ] ) : 1;
 		$sanitized_values[ 'remember' ]          = ! empty( $values[ 'remember' ] ) ? 1 : 0;
 		
@@ -1175,6 +1175,56 @@ function bookacti_sanitize_form_field_values( $values, $field_type = '' ) {
 	}
 	
 	return apply_filters( 'bookacti_sanitize_form_field_values', $sanitized_values, $values, $field_type );
+}
+
+
+/**
+ * Transform form field sanitized data to actual update data (mainly to avoid saving default values)
+ * @since 1.16.42
+ * @param array $field
+ * @param array $sanitized_data
+ * @param boolean $switch_locale
+ * @return array
+ */
+function bookacti_get_form_field_update_data( $field, $sanitized_data, $switch_locale = true ) {
+	// Get edit data in the default language
+	$lang_switched = $switch_locale ? bookacti_switch_locale( bookacti_get_site_default_locale() ) : false;
+	
+	$default_data   = bookacti_get_default_form_fields_data( $field[ 'name' ], 'edit' );
+	$default_meta   = bookacti_get_default_form_fields_meta( $field[ 'name' ], 'edit' );
+	$sanitized_data = array_map( 'maybe_unserialize', $sanitized_data );
+	$field_meta     = array_intersect_key( $sanitized_data, $default_meta );
+	
+	// Do not save default data
+	$null_data = array();
+	$null_keys = array( 'title', 'label', 'options', 'value', 'placeholder', 'tip' );
+	foreach( $null_keys as $key ) { 
+		if( in_array( $sanitized_data[ $key ], array( '', 'a:0:{}', array(), $default_data[ $key ] ), true ) ) {
+			$null_data[ $key ] = 'null';
+		}
+	}
+	
+	// Do not save default meta
+	foreach( $field_meta as $meta_key => $meta_value ) {
+		$default_value = isset( $default_meta[ $meta_key ] ) ? $default_meta[ $meta_key ] : '';
+		if( in_array( $meta_value, array( '', 'a:0:{}', array(), $default_value ), true ) ) {
+			unset( $field_meta[ $meta_key ] );
+		}
+	}
+	
+	$update_data = array_map( 'maybe_serialize', array_merge( array_diff_key( $sanitized_data, $null_data, $default_meta ), $field_meta ) );
+	
+	foreach( $null_keys as $key ) { 
+		if( ! isset( $update_data[ $key ] ) || ! empty( $null_data[ $key ] ) ) { 
+			$update_data[ $key ] = 'null';
+		}
+	}
+	
+	$update_data = apply_filters( 'bookacti_form_field_update_data', $update_data, $field, $sanitized_data );
+	
+	if( $lang_switched ) { bookacti_restore_locale(); }
+	
+	return $update_data;
 }
 
 
@@ -1277,26 +1327,29 @@ function bookacti_display_form_field_for_editor( $field, $echo = true ) {
 /**
  * Validate register fields
  * @since 1.5.0
- * @version 1.14.0
+ * @version 1.16.42
  * @param array $login_values
  * @param array $login_data
  * @return array
  */
 function bookacti_validate_registration( $login_values, $login_data ) {
-	$return_array = array( 'messages' => array() );
+	$return_array = array( 'status' => 'success', 'error' => '', 'messages' => array() );
 
 	// Check email
-	if( ! is_email( $login_values[ 'email' ] ) || strlen( $login_values[ 'email' ] ) > 64 ) { 
+	if( ! is_email( $login_values[ 'email' ] ) || strlen( $login_values[ 'email' ] ) > 64 ) {
+		$return_array[ 'error' ] = 'invalid_email';
 		$return_array[ 'messages' ][ 'invalid_email' ] = esc_html__( 'Invalid email address.', 'booking-activities' );
 	}
 	
 	// Check if password exists
 	if( ! $login_values[ 'password' ] && ! $login_data[ 'generate_password' ] ) {
+		$return_array[ 'error' ] = 'invalid_password';
 		$return_array[ 'messages' ][ 'invalid_password' ] = esc_html__( 'Invalid password.', 'booking-activities' );
 	}
 	
 	// Check password strength
 	if( $login_values[ 'password_strength' ] < $login_data[ 'min_password_strength' ] && ! $login_data[ 'generate_password' ] ) {
+		$return_array[ 'error' ] = 'invalid_password_strength';
 		$return_array[ 'messages' ][ 'invalid_password_strength' ] = esc_html__( 'Your password is not strong enough.', 'booking-activities' );
 	}
 	
@@ -1307,7 +1360,12 @@ function bookacti_validate_registration( $login_values, $login_data ) {
 			$field_label = ! empty( $login_data[ 'label' ][ $field_name ] ) ? $login_data[ 'label' ][ $field_name ] : $field_name;
 			/* translators: %s is the field name. */
 			$return_array[ 'messages' ][ 'missing_' . $field_name ] = sprintf( esc_html__( 'The field "%s" is required.', 'booking-activities' ), $field_label );
+			$return_array[ 'error' ] = 'missing_' . $field_name;
 		}
+	}
+	
+	if( ! empty( $return_array[ 'error' ] ) ) {
+		$return_array[ 'status' ] = 'failed';
 	}
 	
 	return apply_filters( 'bookacti_validate_registration_form', $return_array, $login_values );
@@ -1317,119 +1375,253 @@ function bookacti_validate_registration( $login_values, $login_data ) {
 /**
  * Register a new user through a booking form
  * @since 1.5.0
- * @version 1.8.9
+ * @version 1.16.42
  * @param array $login_values
  * @param array $login_data
- * @return WP_User|array
+ * @return WP_User|false
  */
 function bookacti_register_a_new_user( $login_values, $login_data ) {
+	$return_array = array( 'status' => 'failed', 'error' => '', 'messages' => array() );
+	$user         = null;
 	
-	$return_array = array( 'status' => 'failed' );
-	
+	// Validate registration fields
 	$resgister_response = bookacti_validate_registration( $login_values, $login_data );
+	if( $resgister_response[ 'status' ] !== 'success' ) {
+		$return_array[ 'error' ]    = 'invalid_register_field';
+		$return_array[ 'messages' ] = $resgister_response[ 'messages' ];
+		
+	} else {
+		// Generate username
+		$username  = ! empty( $login_values[ 'first_name' ] ) ? $login_values[ 'first_name' ] . ' ' : '';
+		$username .= ! empty( $login_values[ 'last_name' ] ) ? $login_values[ 'last_name' ] : '';
+		if( ! trim( $username ) ) {
+			$username = substr( $login_values[ 'email' ], 0, strpos( $login_values[ 'email' ], '@' ) );
+		}
+		$username = sanitize_title_with_dashes( $username );
+		$username_base = strlen( $username ) > 60 ? substr( $username, 0, 50 ) : $username;
+		$i = 2;
+		while( username_exists( $username ) ) {
+			$username = $username_base . '-' . $i;
+			++$i;
+		}
 
-	if( count( $resgister_response[ 'messages' ] ) ) {
-		$return_array[ 'error' ] = 'invalid_register_field';
-		$return_array[ 'message' ] = implode( '</li><li>', $resgister_response[ 'messages' ] );
-		return $return_array;
+		// Let third party modify initial user data
+		$new_user_data = apply_filters( 'bookacti_register_user_data', array(
+			'user_login' => $username,
+			'user_pass'  => ! empty( $login_data[ 'generate_password' ] ) ? wp_generate_password( 24 ) : $login_values[ 'password' ],
+			'user_email' => $login_values[ 'email' ],
+			'first_name' => ! empty( $login_values[ 'first_name' ] ) ? $login_values[ 'first_name' ] : '',
+			'last_name'  => ! empty( $login_values[ 'last_name' ] ) ? $login_values[ 'last_name' ] : '',
+			'role'       => $login_data[ 'new_user_role' ] === 'default' ? get_option( 'default_role' ) : $login_data[ 'new_user_role' ]
+		), $login_values );
+
+		// Create the user
+		$user_id = wp_insert_user( $new_user_data );
+		if( is_wp_error( $user_id ) ) { 
+			$return_array[ 'error' ] = $user_id->get_error_code();
+			$return_array[ 'messages' ][ $return_array[ 'error' ] ] = $user_id->get_error_message();
+			
+		} else {
+			$user = get_user_by( 'id', $user_id );
+
+			// Insert user metadata
+			$user_meta = array();
+			if( ! empty( $login_values[ 'phone' ] ) ) { $user_meta[ 'phone' ] = $login_values[ 'phone' ]; }
+			$user_meta = apply_filters( 'bookacti_register_user_metadata', $user_meta, $user, $login_values );
+			foreach( $user_meta as $meta_key => $meta_value ) {
+				update_user_meta( $user_id, $meta_key, $meta_value );
+			}
+
+			// Send the welcome email
+			$user_registered_notify = apply_filters( 'bookacti_new_registered_user_notify', empty( $login_data[ 'send_new_account_email' ] ) ? 'admin' : 'both', $user, $login_values );
+			bookacti_send_new_user_notification( $user_id, $user_registered_notify, 1 );
+		}
 	}
-
-	// Generate username
-	$username = ! empty( $login_values[ 'first_name' ] ) ? $login_values[ 'first_name' ] . ' ' : '';
-	$username .= ! empty( $login_values[ 'last_name' ] ) ? $login_values[ 'last_name' ] : '';
-	if( ! trim( $username ) ) {
-		$username = substr( $login_values[ 'email' ], 0, strpos( $login_values[ 'email' ], '@' ) );
-	}
-	$username = sanitize_title_with_dashes( $username );
-	$username_base = strlen( $username ) > 60 ? substr( $username, 0, 50 ) : $username;
-	$i = 2;
-	while( username_exists( $username ) ) {
-		$username = $username_base . '-' . $i;
-		++$i;
-	}
-
-	// Let third party modify initial user data
-	$new_user_data = apply_filters( 'bookacti_register_user_data', array(
-		'user_login' => $username,
-		'user_pass'  => ! empty( $login_data[ 'generate_password' ] ) ? wp_generate_password( 24 ) : $login_values[ 'password' ],
-		'user_email' => $login_values[ 'email' ],
-		'first_name' => ! empty( $login_values[ 'first_name' ] ) ? $login_values[ 'first_name' ] : '',
-		'last_name'  => ! empty( $login_values[ 'last_name' ] ) ? $login_values[ 'last_name' ] : '',
-		'role'       => $login_data[ 'new_user_role' ] === 'default' ? get_option( 'default_role' ) : $login_data[ 'new_user_role' ]
-	), $login_values );
-
-	// Create the user
-	$user_id = wp_insert_user( $new_user_data );
-	if( is_wp_error( $user_id ) ) { 
-		$return_array[ 'error' ]   = $user_id->get_error_code();
-		$return_array[ 'message' ] = $user_id->get_error_message();
-		return $return_array;
-	}
-	$user = get_user_by( 'id', $user_id );
-
-	// Insert user metadata
-	$user_meta = array();
-	if( ! empty( $login_values[ 'phone' ] ) ) { $user_meta[ 'phone' ] = $login_values[ 'phone' ]; }
-	$user_meta = apply_filters( 'bookacti_register_user_metadata', $user_meta, $user, $login_values );
-	foreach( $user_meta as $meta_key => $meta_value ) {
-		update_user_meta( $user_id, $meta_key, $meta_value );
-	}
-
-	// Send the welcome email
-	$user_registered_notify = apply_filters( 'bookacti_new_registered_user_notify', empty( $login_data[ 'send_new_account_email' ] ) ? 'admin' : 'both', $user, $login_values );
-	bookacti_send_new_user_notification( $user_id, $user_registered_notify, 1 );
 	
-	return apply_filters( 'bookacti_new_registered_user', $user, $login_values, $login_data );
+	return apply_filters( 'bookacti_new_registered_user', is_a( $user, 'WP_User' ) ? $user : $return_array, $login_values, $login_data );
 }
 
 
 /**
  * Validate login fields
  * @since 1.5.0
- * @version 1.15.0
+ * @version 1.16.42
  * @param array $login_values
  * @param boolean $require_authentication Whether to authenticate the user
  * @return WP_User|array
  */
 function bookacti_validate_login( $login_values, $require_authentication = true ) {
 	// Check if email is correct
-	$user = get_user_by( 'email', $login_values[ 'email' ] );
+	$user_login = ! empty( $login_values[ 'email' ] ) ? $login_values[ 'email' ] : '';
+	$user       = $user_login ? get_user_by( is_email( $user_login ) ? 'email' : 'login', $user_login ) : null;
+	
+	$return_array = array( 'status' => 'failed', 'error' => '', 'messages' => array() );
+	
 	if( ! $user ) { 
-		return array( 
-			'status'  => 'failed',
-			'error'   => 'user_not_found',
-			'message' => esc_html__( 'This email address doesn\'t match any account.', 'booking-activities' )
-		);
+		$return_array[ 'error' ] = 'user_not_found';
+		$return_array[ 'messages' ][ 'user_not_found' ] = esc_html__( 'The email address/username provided does not match any account.', 'booking-activities' );
 	}
 
 	// Check if password is correct
-	if( $require_authentication ) {
+	else if( $require_authentication ) {
 		$user = wp_authenticate( $user->user_email, $login_values[ 'password' ] );
+		
 		if( ! is_a( $user, 'WP_User' ) ) {
-			$return_array = array( 'status' => 'failed' );
 			if( is_wp_error( $user ) ) {
-				$return_array[ 'error' ]   = $user->get_error_code();
-				$return_array[ 'message' ] = $user->get_error_message();
+				$return_array[ 'error' ] = $user->get_error_code();
+				$return_array[ 'messages' ][ $return_array[ 'error' ] ] = $user->get_error_message();
 			}
-			if( empty( $return_array[ 'error' ] ) )   { $return_array[ 'error' ]   = 'authentication_failed'; }
-			if( empty( $return_array[ 'message' ] ) ) { $return_array[ 'message' ] = __( '<strong>Error</strong>: Invalid username, email address or incorrect password.' ); }
-			return $return_array;
+			
+			if( empty( $return_array[ 'error' ] ) )    { $return_array[ 'error' ]   = 'authentication_failed'; }
+			if( empty( $return_array[ 'messages' ] ) ) { $return_array[ 'messages' ][ $return_array[ 'error' ] ] = __( '<strong>Error</strong>: Invalid username, email address or incorrect password.' ); }
 		}
 	}
 	
-	return apply_filters( 'bookacti_validate_login_form', $user, $login_values );
+	return apply_filters( 'bookacti_validate_login_form', is_a( $user, 'WP_User' ) ? $user : $return_array, $login_values );
+}
+
+
+/**
+ * Process login form: log in / register / book without account the user
+ * @since 1.16.42
+ * @param int $form_id
+ * @param array $login_values
+ * @return array
+ */
+function bookacti_process_login_form( $form_id, $login_values ) {
+	$return_array = array( 'status' => 'success', 'error' => '', 'messages' => array(), 'user_id' => '' );
+	
+	if( is_user_logged_in() ) {
+		$return_array[ 'user_id' ] = get_current_user_id();
+	}
+	else if( ! apply_filters( 'bookacti_bypass_login_process', false ) ) {
+		// Retrieve login data
+		$login_field = bookacti_get_form_field_data_by_name( $form_id, 'login' );
+		$user        = null;
+		
+		// Check login data and input values
+		if( ! $login_field || empty( $login_values[ 'login_type' ] ) ) {
+			$return_array[ 'error' ] = 'not_logged_in';
+			$return_array[ 'messages' ][ 'not_logged_in' ] = esc_html__( 'You are not logged in. Please create an account and log in first.', 'booking-activities' );
+		}
+		
+		// Check email address
+		else if( $login_field[ 'required_fields' ][ 'email' ]
+		&&  ( empty( $login_values[ 'email' ] ) || strlen( $login_values[ 'email' ] ) > 64 ) ) {
+			$return_array[ 'error' ] = 'invalid_email';
+			$return_array[ 'messages' ][ 'invalid_email' ] = esc_html__( 'Your email address is not valid.', 'booking-activities' );
+		}
+		
+		// Register
+		else if( $login_values[ 'login_type' ] === 'new_account' ) {
+			// Register the new user
+			$user = bookacti_register_a_new_user( $login_values, $login_field );
+			
+			if( ! is_a( $user, 'WP_User' ) ) {
+				$return_array[ 'error' ]    = 'user_registration_failed';
+				$return_array[ 'messages' ]	= $user[ 'messages' ];
+				
+			} else {
+				do_action( 'bookacti_booking_form_user_registered', $user, $form_id, $login_values );
+
+				$return_array[ 'user_id' ] = $user->ID;
+				$return_array[ 'has_registered' ] = true;
+				$return_array[ 'messages' ][ 'registered' ] = esc_html__( 'Your account has been successfully created.', 'booking-activities' );
+			}
+			
+		// Login
+		} else if( $login_values[ 'login_type' ] === 'my_account' ) {
+			// Validate login fields
+			$require_authentication = ! empty( $login_field[ 'required_fields' ][ 'password' ] );
+			$user = bookacti_validate_login( $login_values, $require_authentication );
+			if( ! is_a( $user, 'WP_User' ) ) {
+				$return_array[ 'error' ]    = 'user_login_failed';
+				$return_array[ 'messages' ] = $user[ 'messages' ];
+			} else {
+				$return_array[ 'user_id' ] = $user->ID;
+			}
+			
+		// Book without account
+		} else if( $login_values[ 'login_type' ] === 'no_account' ) {
+			$return_array[ 'user_id' ] = ! empty( $login_values[ 'email' ] ) ? $login_values[ 'email' ] : '';
+			
+			// Check if the user exists
+			if( is_email( $return_array[ 'user_id' ] ) ) {
+				$user = get_user_by( 'email', $return_array[ 'user_id' ] );
+				if( is_a( $user, 'WP_User' ) ) {
+					$current_url    = ! empty( $_POST[ 'current_url' ] ) ? sanitize_url( $_POST[ 'current_url' ] ) : ( ! empty( $_SERVER[ 'HTTP_REFERER' ] ) ? sanitize_url( $_SERVER[ 'HTTP_REFERER' ] ) : '' );
+					$login_url      = bookacti_get_login_link( $current_url, true );
+					$login_field_id = ! empty( $login_field[ 'field_id' ] ) ? $login_field[ 'field_id' ] : '';
+					
+					$return_array[ 'error' ] = 'user_already_exists';
+					$return_array[ 'messages' ][ 'user_already_exists' ] = sprintf(
+						/* translators: %s = "Log in" link. */
+						esc_html__( 'This email address is associated with an account (%s). In order to make a booking without account, you need to choose an email address that is not associated with any account.', 'booking-activities' ),
+						'<a href="' . $login_url . '" class="bookacti-login-link" data-field-id="' . $login_field_id . '">' . esc_html__( 'Log in', 'booking-activities' ) . '</a>'
+					);
+				}
+			} else {
+				$return_array[ 'error' ] = 'invalid_email';
+				$return_array[ 'messages' ][ 'invalid_email' ] = esc_html__( 'Your email address is not valid.', 'booking-activities' );
+			}
+			
+			// Check that required register fields are filled
+			if( empty( $return_array[ 'error' ] ) ) {
+				$register_fields_errors = array();
+				foreach( $login_field[ 'required_fields' ] as $field_name => $is_required ) {
+					if( $is_required && empty( $login_values[ $field_name ] ) ) {
+						if( $field_name === 'password' ) { continue; }
+						$field_label = ! empty( $login_field[ 'label' ][ $field_name ] ) ? $login_field[ 'label' ][ $field_name ] : $field_name;
+						/* translators: %s is the field name. */
+						$register_fields_errors[ 'required_' . $field_name ] = sprintf( esc_html__( 'The field "%s" is required.', 'booking-activities' ), $field_label );
+					}
+				}
+
+				if( ! empty( $register_fields_errors ) ) {
+					$return_array[ 'error' ] = 'invalid_register_field';
+					$return_array[ 'messages' ]	= array_merge( $return_array[ 'messages' ], $register_fields_errors );
+				}
+			}
+		}
+		
+		// Log the user in programmatically
+		if( $login_field[ 'automatic_login' ] && is_a( $user, 'WP_User' ) && empty( $return_array[ 'error' ] ) ) {
+			$is_logged_in = bookacti_log_user_in( $user->user_login, $login_values[ 'remember' ] );
+			if( ! $is_logged_in ) { 
+				$return_array[ 'error' ] = 'cannot_log_in';
+				$return_array[ 'messages' ][ 'cannot_log_in' ] = esc_html__( 'An error occurred while trying to log you in.', 'booking-activities' );
+			} else {
+				do_action( 'bookacti_booking_form_user_logged_in', $user, $form_id, $login_values );
+
+				$return_array[ 'has_logged_in' ] = true;
+				$return_array[ 'messages' ][ 'logged_in' ] = esc_html__( 'You are now logged into your account.', 'booking-activities' );
+			}
+		}
+	}
+	
+	// If the user ID or email could not be found
+	if( empty( $return_array[ 'user_id' ] ) && empty( $return_array[ 'error' ] ) ) {
+		$return_array[ 'error' ] = 'invalid_user';
+		$return_array[ 'messages' ][ 'invalid_user' ] = esc_html__( 'Invalid user data.', 'booking-activities' );
+	}
+	
+	if( ! empty( $return_array[ 'error' ] ) ) {
+		$return_array[ 'status' ] = 'failed';
+	}
+	
+	return apply_filters( 'bookacti_process_login_form', $return_array, $form_id, $login_values );
 }
 
 
 /**
  * Validate form fields according to values received with $_POST
  * @since 1.7.0
- * @version 1.9.0
+ * @version 1.16.42
  * @param int $form_id
  * @param array $fields_data
  * @return array
  */
-function bookacti_validate_form_fields( $form_id, $fields_data = array() ) {
+function bookacti_validate_form_fields( $form_id = 0, $fields_data = array() ) {
 	// Get form data
 	if( $form_id && ! $fields_data ) { 
 		$fields_data = bookacti_get_form_fields_data( $form_id );

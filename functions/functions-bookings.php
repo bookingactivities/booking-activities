@@ -2763,6 +2763,16 @@ function bookacti_get_payment_statuses() {
 
 
 /**
+ * Get booking unknown user id
+ * @since 1.16.42
+ * @return string|int
+ */
+function bookacti_get_unknown_user_id() {
+	return apply_filters( 'bookacti_unknown_user_id', 'unknown_user' );
+}
+
+
+/**
  * Get booking status HTML
  * @since 1.16.0 (was bookacti_format_booking_state)
  * @version 1.16.38

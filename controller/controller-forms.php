@@ -34,7 +34,7 @@ add_action( 'bookacti_display_form_field_calendar', 'bookacti_display_form_field
 /**
  * Display the form field 'login'
  * @since 1.5.0
- * @version 1.16.16
+ * @version 1.16.42
  * @param string $html
  * @param array $field
  * @param string $instance_id
@@ -118,7 +118,7 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 					<div class='bookacti-form-field-content' >
 					<?php 
 						$email_args = apply_filters( 'bookacti_form_field_login_email', array(
-							'type'        => 'email',
+							'type'        => 'text',
 							'name'        => 'email',
 							'value'       => ! empty( $_REQUEST[ 'email' ] ) ? esc_attr( sanitize_text_field( $_REQUEST[ 'email' ] ) ) : '',
 							'id'          => $field_id . '-email',
@@ -735,7 +735,7 @@ add_action( 'wp_ajax_nopriv_bookactiForgottenPassword', 'bookacti_controller_for
 /**
  * AJAX Controller - Check if login form is correct and then register / log the user in
  * @since 1.8.0
- * @version 1.16.17
+ * @version 1.16.42
  */
 function bookacti_controller_validate_login_form() {
 	$return_array = array(
@@ -806,15 +806,6 @@ function bookacti_controller_validate_login_form() {
 		bookacti_send_json( $return_array, 'submit_login_form' );
 	}
 	
-	// Check email address
-	if( $login_field[ 'required_fields' ][ 'email' ]
-	&&  ( empty( $login_values[ 'email' ] ) || strlen( $login_values[ 'email' ] ) > 64 ) ) {
-		$return_array[ 'error' ] = 'invalid_email';
-		$return_array[ 'messages' ][ 'invalid_email' ] = esc_html__( 'Your email address is not valid.', 'booking-activities' );
-		$return_array[ 'message' ] = implode( '</li><li>', $return_array[ 'messages' ] );
-		bookacti_send_json( $return_array, 'submit_login_form' );
-	}
-	
 	// Register
 	if( $login_values[ 'login_type' ] === 'new_account' ) {
 		// Register the new user
@@ -823,7 +814,7 @@ function bookacti_controller_validate_login_form() {
 			$return_array[ 'has_registered' ] = true;
 			$return_array[ 'messages' ][ 'registered' ] = esc_html__( 'Your account has been successfully created.', 'booking-activities' );
 
-			do_action( 'bookacti_login_form_user_registered', $user, $login_values, $login_field, $form_id );
+			do_action( 'bookacti_booking_form_user_registered', $user, $form_id, $login_values );
 		}
 		
 	// Login
@@ -835,10 +826,10 @@ function bookacti_controller_validate_login_form() {
 	
 	// Check if the user exists
 	if( ! is_a( $user, 'WP_User' ) ) {
-		$return_array[ 'error' ] = $user[ 'error' ];
-		$return_array[ 'messages' ][ $user[ 'error' ] ] = $user[ 'message' ];
-		$return_array[ 'message' ] = implode( '</li><li>', $return_array[ 'messages' ] );
-		bookacti_send_json( $user, 'submit_login_form' );
+		$return_array[ 'error' ]    = $login_values[ 'login_type' ] === 'new_account' ? 'user_registration_failed' : 'user_login_failed';
+		$return_array[ 'messages' ] = ! empty( $user[ 'messages' ] ) ? $user[ 'messages' ] : array();
+		$return_array[ 'message' ]  = implode( '</li><li>', $return_array[ 'messages' ] );
+		bookacti_send_json( $return_array, 'submit_login_form' );
 	}
 	
 	// Log the user in
@@ -870,7 +861,7 @@ add_action( 'wp_ajax_nopriv_bookactiSubmitLoginForm', 'bookacti_controller_valid
 /**
  * AJAX Controller - Check if booking form is correct and then book the event, or send the error message
  * @since 1.5.0
- * @version 1.16.33
+ * @version 1.16.42
  */
 function bookacti_controller_validate_booking_form() {
 	$return_array = array(
@@ -899,225 +890,60 @@ function bookacti_controller_validate_booking_form() {
 	// Send the redirect URL
 	$return_array[ 'redirect_url' ] = $form[ 'redirect_url' ];
 	
-	// Retrieve form field data 
-	$form_fields_data = bookacti_get_form_fields_data( $form_id );
-	
 	// Validate the booking form fields
-	$form_fields_validated = bookacti_validate_form_fields( $form_id, $form_fields_data );
+	$form_fields_validated = bookacti_validate_form_fields( $form_id );
+	$return_array          = array_replace_recursive( $return_array, $form_fields_validated );
 	if( $form_fields_validated[ 'status' ] !== 'success' ) {
-		$return_array[ 'error' ] = 'invalid_form_fields';
-		$return_array[ 'messages' ] = $form_fields_validated[ 'messages' ];
-		$return_array[ 'message' ] = implode( '</li><li>', $form_fields_validated[ 'messages' ] );
+		$return_array[ 'error' ]   = 'invalid_form_fields';
+		$return_array[ 'message' ] = implode( '</li><li>', $return_array[ 'messages' ] );
 		bookacti_send_json( $return_array, 'submit_booking_form' );
 	}
 	
-	// Let third party plugins validate their own part of the form
-	$return_array = apply_filters( 'bookacti_validate_booking_form_submission', $return_array, $form_id, $form_fields_data );
-	if( $return_array[ 'status' ] ) {
-		if( $return_array[ 'messages' ] ) { $return_array[ 'message' ] = implode( '</li><li>', $return_array[ 'messages' ] ); }
+	// Process login / registration
+	$login_values    = bookacti_sanitize_form_field_values( $_POST, 'login' );
+	$login_validated = bookacti_process_login_form( $form_id, $login_values );
+	$return_array    = array_replace_recursive( $return_array, $login_validated );
+	if( $login_validated[ 'status' ] !== 'success' ) {
+		$return_array[ 'error' ]   = 'login_error';
+		$return_array[ 'message' ] = implode( '</li><li>', $return_array[ 'messages' ] );
 		bookacti_send_json( $return_array, 'submit_booking_form' );
-	}
-	
-	if( is_user_logged_in() ) {
-		$return_array[ 'user_id' ] = get_current_user_id();
-	} else {
-		// Retrieve login data
-		$login_values = bookacti_sanitize_form_field_values( $_POST, 'login' );
-		$login_field = array();
-		foreach( $form_fields_data as $form_field_data ) {
-			if( $form_field_data[ 'type' ] === 'login' ) { 
-				$login_field = $form_field_data;
-				break;
-			}
-		}
-		
-		// Check login data and input values
-		if( ! $login_field || empty( $login_values[ 'login_type' ] ) ) {
-			$return_array[ 'error' ] = 'not_logged_in';
-			$return_array[ 'messages' ][ 'not_logged_in' ] = esc_html__( 'You are not logged in. Please create an account and log in first.', 'booking-activities' );
-			$return_array[ 'message' ] = implode( '</li><li>', $return_array[ 'messages' ] );
-			bookacti_send_json( $return_array, 'submit_booking_form' );
-		}
-		
-		// Check email address
-		if( $login_field[ 'required_fields' ][ 'email' ]
-		&&  ( empty( $login_values[ 'email' ] ) || strlen( $login_values[ 'email' ] ) > 64 ) ) {
-			$return_array[ 'error' ] = 'invalid_email';
-			$return_array[ 'messages' ][ 'invalid_email' ] = esc_html__( 'Your email address is not valid.', 'booking-activities' );
-			$return_array[ 'message' ] = implode( '</li><li>', $return_array[ 'messages' ] );
-			bookacti_send_json( $return_array, 'submit_booking_form' );
-		}
-		
-		// Register
-		if( $login_values[ 'login_type' ] === 'new_account' ) {
-			// Register the new user
-			$user = bookacti_register_a_new_user( $login_values, $login_field );
-			if( ! is_a( $user, 'WP_User' ) ) {
-				$return_array[ 'error' ] = $user[ 'error' ];
-				$return_array[ 'messages' ][ $user[ 'error' ] ] = $user[ 'message' ];
-				$return_array[ 'message' ] = implode( '</li><li>', $return_array[ 'messages' ] );
-				bookacti_send_json( $return_array, 'submit_booking_form' );
-			}
-			
-			do_action( 'bookacti_booking_form_user_registered', $user, $login_values, $login_field, $form_id );
-			
-			$return_array[ 'user_id' ] = $user->ID;
-			$return_array[ 'has_registered' ] = true;
-			$return_array[ 'messages' ][ 'registered' ] = esc_html__( 'Your account has been successfully created.', 'booking-activities' );
-			
-		// Login
-		} else if( $login_values[ 'login_type' ] === 'my_account' ) {
-			// Validate login fields
-			$require_authentication = ! empty( $login_field[ 'required_fields' ][ 'password' ] );
-			$user = bookacti_validate_login( $login_values, $require_authentication );
-			if( ! is_a( $user, 'WP_User' ) ) {
-				$return_array[ 'error' ] = $user[ 'error' ];
-				$return_array[ 'messages' ][ $user[ 'error' ] ] = $user[ 'message' ];
-				$return_array[ 'message' ] = implode( '</li><li>', $return_array[ 'messages' ] );
-				bookacti_send_json( $return_array, 'submit_booking_form' );
-			}
-			
-			$return_array[ 'user_id' ] = $user->ID;
-			
-		// Book without account
-		} else if( $login_values[ 'login_type' ] === 'no_account' ) {
-			$return_array[ 'user_id' ] = ! empty( $login_values[ 'email' ] ) ? $login_values[ 'email' ] : esc_attr( apply_filters( 'bookacti_unknown_user_id', 'unknown_user' ) );
-			
-			// Check if the user exists
-			if( is_email( $return_array[ 'user_id' ] ) ) {
-				$user = get_user_by( 'email', $return_array[ 'user_id' ] );
-				if( is_a( $user, 'WP_User' ) ) {
-					$current_url    = ! empty( $_POST[ 'current_url' ] ) ? sanitize_url( $_POST[ 'current_url' ] ) : ( ! empty( $_SERVER[ 'HTTP_REFERER' ] ) ? sanitize_url( $_SERVER[ 'HTTP_REFERER' ] ) : '' );
-					$login_url      = bookacti_get_login_link( $current_url, true );
-					$login_field_id = ! empty( $login_field[ 'field_id' ] ) ? $login_field[ 'field_id' ] : '';
-					
-					$return_array[ 'error' ] = 'user_already_exists';
-					$return_array[ 'messages' ][ 'user_already_exists' ] = sprintf(
-						/* translators: %s = "Log in" link. */
-						esc_html__( 'This email address is associated with an account (%s). In order to make a booking without account, you need to choose an email address that is not associated with any account.', 'booking-activities' ),
-						'<a href="' . $login_url . '" class="bookacti-login-link" data-field-id="' . $login_field_id . '">' . esc_html__( 'Log in', 'booking-activities' ) . '</a>'
-					);
-					$return_array[ 'message' ] = implode( '</li><li>', $return_array[ 'messages' ] );
-					
-					bookacti_send_json( $return_array, 'submit_booking_form' );
-				}
-			}
-			
-			// Check that required register fields are filled
-			$register_fields_errors = array();
-			foreach( $login_field[ 'required_fields' ] as $field_name => $is_required ) {
-				if( $is_required && empty( $login_values[ $field_name ] ) ) {
-					if( $field_name === 'password' ) { continue; }
-					$field_label = ! empty( $login_field[ 'label' ][ $field_name ] ) ? $login_field[ 'label' ][ $field_name ] : $field_name;
-					/* translators: %s is the field name. */
-					$register_fields_errors[ 'required_' . $field_name ] = sprintf( esc_html__( 'The field "%s" is required.', 'booking-activities' ), $field_label );
-				}
-			}
-			
-			if( ! empty( $register_fields_errors ) ) {
-				$return_array[ 'error' ] = 'invalid_register_field';
-				$return_array[ 'messages' ]	= array_merge( $return_array[ 'messages' ], $register_fields_errors );
-				$return_array[ 'message' ] = implode( '</li><li>', $return_array[ 'messages' ] );
-				bookacti_send_json( $return_array, 'submit_booking_form' );
-			}
-		}
-		
-		// Log the user in programmatically
-		if( $login_field[ 'automatic_login' ] && isset( $user ) && is_a( $user, 'WP_User' ) ) {
-			$is_logged_in = bookacti_log_user_in( $user->user_login, $login_values[ 'remember' ] );
-			if( ! $is_logged_in ) { 
-				$return_array[ 'error' ] = 'cannot_log_in';
-				$return_array[ 'messages' ][ 'cannot_log_in' ] = esc_html__( 'An error occurred while trying to log you in.', 'booking-activities' );
-				$return_array[ 'message' ] = implode( '</li><li>', $return_array[ 'messages' ] );
-				bookacti_send_json( $return_array, 'submit_booking_form' );
-			}
-			
-			do_action( 'bookacti_booking_form_user_logged_in', $user, $login_values, $login_field, $form_id );
-			
-			$return_array[ 'has_logged_in' ] = true;
-			$return_array[ 'messages' ][ 'logged_in' ] = esc_html__( 'You are now logged into your account.', 'booking-activities' );
-		}
 	}
 	
 	// Gether the form variables
 	$booking_form_values = apply_filters( 'bookacti_booking_form_values', array(
 		'picked_events'  => ! empty( $_POST[ 'selected_events' ] ) ? bookacti_format_picked_events( $_POST[ 'selected_events' ] ) : array(),
-		'quantity'       => intval( $_POST[ 'quantity' ] ),
+		'quantity'       => ! empty( $_POST[ 'quantity' ] ) ? intval( $_POST[ 'quantity' ] ) : 1,
 		'form_id'        => $form_id,
-		'user_id'        => $return_array[ 'user_id' ],
+		'user_id'        => isset( $return_array[ 'user_id' ] ) && $return_array[ 'user_id' ] !== '' ? $return_array[ 'user_id' ] : bookacti_get_unknown_user_id(),
 		'status'         => bookacti_get_setting_value( 'bookacti_general_settings', 'default_booking_state' ), 
 		'payment_status' => bookacti_get_setting_value( 'bookacti_general_settings', 'default_payment_status' ),
-		'context'        => 'submit_booking_form', 
+		'active'         => 'according_to_status',
+		'context'        => 'submit_booking_form'
 	), $form_id, $return_array );
 
 	// Check if the booking is correct
-	$response = bookacti_validate_picked_events( $booking_form_values[ 'picked_events' ], $booking_form_values );
-	if( $response[ 'status' ] !== 'success' ) {
-		$messages = ! empty( $response[ 'message' ] ) ? array( $response[ 'message' ] ) : array();
-		$return_array[ 'error' ] = $response[ 'error' ];
-		foreach( $response[ 'messages' ] as $error => $error_messages ) {
-			if( ! is_array( $error_messages ) ) { $error_messages = array( $error_messages ); }
-			$messages = array_merge( $messages, $error_messages );
+	$picked_events_validated = bookacti_validate_picked_events( $booking_form_values[ 'picked_events' ], $booking_form_values );
+	$return_array            = array_replace_recursive( $return_array, $picked_events_validated );
+	if( $picked_events_validated[ 'status' ] !== 'success' ) {
+		$messages = array();
+		foreach( $picked_events_validated[ 'messages' ] as $error => $error_messages ) {
+			$messages = array_merge( $messages, is_array( $error_messages ) ? $error_messages : array( $error_messages ) );
 		}
-		$return_array[ 'message' ]	= implode( '</li><li>', array_merge( $return_array[ 'messages' ], $messages ) );
+		
+		$return_array[ 'error' ]   = 'invalid_picked_events';
+		$return_array[ 'message' ] = implode( '</li><li>', $messages );
 		bookacti_send_json( $return_array, 'submit_booking_form' );
 	}
-	
-	// Let third party plugins change form values before booking
-	$booking_form_values = apply_filters( 'bookacti_booking_form_values_before_booking', $booking_form_values, $form_id, $return_array );
 	
 	// Let third party plugins do their stuff before booking
 	do_action( 'bookacti_booking_form_before_booking', $form_id, $booking_form_values, $return_array );
 	
-	// Keep one entry per group
-	$picked_events = bookacti_format_picked_events( $booking_form_values[ 'picked_events' ], true );
-	
-	foreach( $picked_events as $picked_event ) {
-		// Single Booking
-		if( ! $picked_event[ 'group_id' ] ) {
-			$booking_data = bookacti_sanitize_booking_data( array( 
-				'user_id'        => $booking_form_values[ 'user_id' ],
-				'form_id'        => $booking_form_values[ 'form_id' ],
-				'event_id'       => $picked_event[ 'events' ][ 0 ][ 'id' ],
-				'event_start'    => $picked_event[ 'events' ][ 0 ][ 'start' ],
-				'event_end'      => $picked_event[ 'events' ][ 0 ][ 'end' ],
-				'quantity'       => $booking_form_values[ 'quantity' ],
-				'status'         => $booking_form_values[ 'status' ],
-				'payment_status' => $booking_form_values[ 'payment_status' ],
-				'active'         => 'according_to_status'
-			) );
-			$booking_id = bookacti_insert_booking( $booking_data );
-			if( $booking_id ) {
-				do_action( 'bookacti_booking_form_booking_inserted', $booking_id, $picked_event, $booking_form_values, $form_id );
-				$return_array[ 'bookings' ][] = array( 'id' => $booking_id, 'type' => 'single', 'picked_event' => $picked_event );
-				$return_array[ 'booking_ids' ][] = $booking_id;
-			}
-
-		// Booking group
-		} else {
-			// Book all events of the group
-			$booking_group_data = bookacti_sanitize_booking_group_data( array( 
-				'user_id'        => $booking_form_values[ 'user_id' ],
-				'form_id'        => $booking_form_values[ 'form_id' ],
-				'event_group_id' => $picked_event[ 'group_id' ],
-				'group_date'     => $picked_event[ 'group_date' ],
-				'grouped_events' => $picked_event[ 'events' ],
-				'quantity'       => $booking_form_values[ 'quantity' ],
-				'status'         => $booking_form_values[ 'status' ],
-				'payment_status' => $booking_form_values[ 'payment_status' ],
-				'active'         => 'according_to_status'
-			) );
-			$booking_group_id = bookacti_book_group_of_events( $booking_group_data );
-			if( $booking_group_id ) {
-				do_action( 'bookacti_booking_form_booking_group_inserted', $booking_group_id, $picked_event, $booking_form_values, $form_id );
-				$return_array[ 'bookings' ][] = array( 'id' => $booking_group_id, 'type' => 'group', 'picked_event' => $picked_event );
-				$return_array[ 'booking_group_ids' ][] = $booking_group_id;
-			}
-		}
-	}
+	// Make the bookings
+	$bookings_array = bookacti_book_picked_events( $booking_form_values[ 'picked_events' ], $booking_form_values );
+	$return_array   = array_replace_recursive( $return_array, $bookings_array );
 	
 	// Return success
-	if( ! empty( $return_array[ 'booking_ids' ] ) || ! empty( $return_array[ 'booking_group_ids' ] ) ) {
+	if( ! empty( $return_array[ 'bookings' ] ) ) {
 		$return_array[ 'status' ] = 'success';
 		$return_array[ 'messages' ][ 'booked' ] = bookacti_get_message( 'booking_success' );
 		
@@ -1446,7 +1272,7 @@ add_action( 'wp_ajax_bookactiUpdateForm', 'bookacti_controller_update_form' );
 /**
  * Duplicate a booking form
  * @since 1.7.18
- * @version 1.14.0
+ * @version 1.16.42
  */
 function bookacti_controller_duplicate_form() {
 	if( empty( $_REQUEST[ 'form_id' ] ) || empty( $_REQUEST[ 'action' ] ) || empty( $_REQUEST[ 'page' ] ) ) { return; }
@@ -1495,27 +1321,39 @@ function bookacti_controller_duplicate_form() {
 	$original_form_managers = bookacti_get_form_managers( $original_form_id );
 	bookacti_update_managers( 'form', $form_id, $original_form_managers );
 	
+	// Get edit data in the default language
+	$lang_switched = bookacti_switch_locale( bookacti_get_site_default_locale() );
+	
 	// Duplicate the fields
 	$field_order = array();
-	$original_fields_raw = bookacti_get_form_fields_data( $original_form_id, true, false, true );
+	$original_fields_raw      = bookacti_get_form_fields_data( $original_form_id, true, false, true );
 	$default_form_fields_meta = bookacti_get_default_form_fields_meta( '', 'edit' );
 	if( $original_fields_raw ) {
 		$original_fields_ordered = bookacti_sort_form_fields_array( $original_form_id, $original_fields_raw );
 		foreach( $original_fields_ordered as $original_field ) {
 			// Duplicate field
 			$sanitized_data = bookacti_sanitize_form_field_data( $original_field );
-			$field_id = $sanitized_data ? bookacti_insert_form_field( $form_id, $sanitized_data ) : 0;
-			if( ! $field_id ) { continue; }
-			bookacti_update_form_field( array_merge( $sanitized_data, array( 'field_id' => $field_id ) ) );
+			if( ! $sanitized_data ) { continue; }
 			
+			$field_id = bookacti_insert_form_field( $form_id, $sanitized_data );
+			if( ! $field_id ) { continue; }
+			
+			$sanitized_data[ 'field_id' ] = $field_id;
 			$field_order[] = $field_id;
-					
+			
+			// Update field data
+			$update_data = bookacti_get_form_field_update_data( array_merge( $original_field, array( 'field_id' => $field_id ) ), $sanitized_data, false );
+			$updated     = bookacti_update_form_field( $update_data );
+			
 			// Duplicate field meta
-			$field_meta = ! empty( $default_form_fields_meta[ $original_field[ 'name' ] ] ) ? array_intersect_key( $sanitized_data, $original_field, $default_form_fields_meta[ $original_field[ 'name' ] ] ) : array();
-			if( ! $field_meta ) { continue; }
-			bookacti_update_metadata( 'form_field', $field_id, $field_meta );
+			$default_meta = ! empty( $default_form_fields_meta[ $original_field[ 'name' ] ] ) ? $default_form_fields_meta[ $original_field[ 'name' ] ] : array();
+			if( $update_data && $default_meta ) {
+				bookacti_update_metadata( 'form_field', $field_id, array_intersect_key( $update_data, $default_meta, $original_field ) );
+			}
 		}
 	}
+	
+	if( $lang_switched ) { bookacti_restore_locale(); }
 	
 	// Duplicate form meta
 	$form_meta = array_intersect_key( $original_form_data, $original_form_data_raw, bookacti_get_default_form_meta() );
@@ -1815,7 +1653,7 @@ add_action( 'wp_ajax_bookactiSaveFormFieldOrder', 'bookacti_controller_save_form
 /**
  * AJAX Controller - Update a field
  * @since 1.5.0
- * @version 1.16.0
+ * @version 1.16.42
  */
 function bookacti_controller_update_form_field() {
 	// Check nonce
@@ -1831,51 +1669,26 @@ function bookacti_controller_update_form_field() {
 	
 	// Get edit data in the default language
 	$lang_switched = bookacti_switch_locale( bookacti_get_site_default_locale() );
-	$default_data  = bookacti_get_default_form_fields_data( $field[ 'name' ], 'edit' );
-	$default_meta  = bookacti_get_default_form_fields_meta( $field[ 'name' ], 'edit' );
 	
-	// Sanitize data
+	// Prepare update data
 	$sanitized_data = bookacti_sanitize_form_field_data( array_merge( $_POST, array( 'name' => $field[ 'name' ], 'type' => $field[ 'type' ], 'form_id' => $field[ 'form_id' ] ) ) );
-	$sanitized_data = array_map( 'maybe_unserialize', $sanitized_data );
-	$field_meta     = array_intersect_key( $sanitized_data, $default_meta );
-	
-	// Do not save default data
-	$null_data = array();
-	$null_keys = array( 'title', 'label', 'options', 'value', 'placeholder', 'tip' );
-	foreach( $null_keys as $key ) { 
-		if( $sanitized_data[ $key ] === '' 
-		||  $sanitized_data[ $key ] === $default_data[ $key ] ) { $null_data[ $key ] = 'null'; }
-	}
-	
-	// Do not save default meta
-	foreach( $field_meta as $meta_key => $meta_value ) {
-		$default_value = isset( $default_meta[ $meta_key ] ) ? $default_meta[ $meta_key ] : '';
-		if( $meta_value === '' || $meta_value === $default_value ) { unset( $field_meta[ $meta_key ] ); }
-	}
-	
-	$sanitized_data = apply_filters( 'bookacti_form_field_update_data', array_merge( array_diff_key( $sanitized_data, $null_data, $default_meta ), $field_meta ), $field );
-	
-	// Get edit data in the default language
-	$field_data_edit = bookacti_format_form_field_data( $sanitized_data, 'edit' );
-	
-	if( $lang_switched ) { bookacti_restore_locale(); }
+	$update_data    = bookacti_get_form_field_update_data( $field, $sanitized_data, false );
 	
 	// Update form field
-	$saved_data = array_map( 'maybe_serialize', $sanitized_data );
-	foreach( $null_keys as $key ) { 
-		if( ! isset( $saved_data[ $key ] ) || ! empty( $null_data[ $key ] ) ) { 
-			$saved_data[ $key ] = 'null';
-		}
-	}
-	$updated = bookacti_update_form_field( $saved_data );
+	$updated = bookacti_update_form_field( $update_data );
 	
 	if( $updated === false ) {
-		bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_updated', 'message' => esc_html__( 'An error occurs while trying to update the field.', 'booking-activities' ) ), 'update_form_field' );
+		bookacti_send_json( array( 
+			'status'  => 'failed', 
+			'error'   => 'not_updated', 
+			'message' => esc_html__( 'An error occurs while trying to update the field.', 'booking-activities' )
+		), 'update_form_field' );
 	}
 	
 	// Update field metadata
-	if( $default_meta ) { bookacti_delete_metadata( 'form_field', $field_id, array_keys( $default_meta ) ); }
-	if( $field_meta )   { bookacti_update_metadata( 'form_field', $field_id, array_intersect_key( $sanitized_data, $default_meta ) ); }
+	$default_meta = bookacti_get_default_form_fields_meta( $field[ 'name' ], 'edit' );
+	if( $default_meta )                 { bookacti_delete_metadata( 'form_field', $field_id, array_keys( $default_meta ) ); }
+	if( $update_data && $default_meta ) { bookacti_update_metadata( 'form_field', $field_id, array_intersect_key( $update_data, $default_meta ) ); }
 	
 	// Remove cache
 	wp_cache_delete( 'form_fields_' . $field[ 'form_id' ], 'bookacti' );
@@ -1885,11 +1698,17 @@ function bookacti_controller_update_form_field() {
 	
 	do_action( 'bookacti_form_field_updated', $field, $sanitized_data );
 
+	// Get edit data in the default language
+	$field_data_raw  = bookacti_get_form_field_data( $field_id, true );
+	$field_data_edit = bookacti_format_form_field_data( $field_data_raw, 'edit' );
+	
+	if( $lang_switched ) { bookacti_restore_locale(); }
+	
 	// Get field data and HTML for editor
-	$field_data = bookacti_format_form_field_data( $sanitized_data );
+	$field_data = bookacti_format_form_field_data( $field_data_raw );
 	$field_html = bookacti_display_form_field_for_editor( $field_data, false );
 	
-	$booking_system_attributes = $field_data_edit ? bookacti_get_calendar_field_booking_system_attributes( $field_data_edit ) : array();
+	$booking_system_attributes = $field_data_edit && $field_data_edit[ 'name' ] === 'calendar' ? bookacti_get_calendar_field_booking_system_attributes( $field_data_edit ) : array();
 	
 	bookacti_send_json( array( 'status' => 'success', 'field_data' => $field_data_edit, 'field_html' => $field_html, 'booking_system_attributes' => $booking_system_attributes ), 'update_form_field' );
 }
@@ -1961,12 +1780,13 @@ add_action( 'wp_ajax_bookactiResetFormField', 'bookacti_controller_reset_form_fi
 /**
  * Do not save default label, placeholder and tip while updating login form field
  * @since 1.14.0 (was bookacti_reset_calendar_form_field_exceptions)
- * @param array $saved_data
+ * @version 1.16.42
+ * @param array $update_data
  * @param array $field
  * @return array
  */
-function bookacti_update_login_form_field_data( $saved_data, $field ) {
-	if( $field[ 'type' ] !== 'login' ) { return $saved_data; }
+function bookacti_update_login_form_field_data( $update_data, $field ) {
+	if( $field[ 'type' ] !== 'login' ) { return $update_data; }
 	
 	$register_defaults   = bookacti_get_register_fields_default_data( 'edit' );
 	$log_in_defaults     = bookacti_get_log_in_fields_default_data( 'edit' );
@@ -1975,14 +1795,14 @@ function bookacti_update_login_form_field_data( $saved_data, $field ) {
 	
 	$keys = array( 'label', 'placeholder', 'tip' );
 	foreach( $keys as $key ) {
-		if( empty( $saved_data[ $key ] ) ) { continue; }
+		if( empty( $update_data[ $key ] ) || ! is_array( $update_data[ $key ] ) ) { continue; }
 		foreach( $login_defaults as $field_name => $default_field ) {
-			if( isset( $saved_data[ $key ][ $field_name ] ) && $saved_data[ $key ][ $field_name ] === $default_field[ $key ] ) { unset( $saved_data[ $key ][ $field_name ] ); }
+			if( isset( $update_data[ $key ][ $field_name ] ) && $update_data[ $key ][ $field_name ] === $default_field[ $key ] ) { unset( $update_data[ $key ][ $field_name ] ); }
 		}
-		if( empty( $saved_data[ $key ] ) ) { unset( $saved_data[ $key ] ); }
+		if( empty( $update_data[ $key ] ) ) { unset( $update_data[ $key ] ); }
 	}
 	
-	return $saved_data;
+	return $update_data;
 }
 add_filter( 'bookacti_form_field_update_data', 'bookacti_update_login_form_field_data', 10, 2 );
 
