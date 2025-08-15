@@ -97,7 +97,23 @@ function bookacti_wc_booking_statuses( $labels ) {
 	$labels[ 'removed' ] = esc_html__( 'Removed', 'booking-activities' );
 	return $labels;
 }
-add_filter( 'bookacti_booking_statuses', 'bookacti_wc_booking_statuses', 10, 1 );
+add_filter( 'bookacti_booking_statuses', 'bookacti_wc_booking_statuses', 20, 1 );
+
+
+/**
+ * Remove WC booking statuses from the change selectbox
+ * @since 1.16.43
+ * @param array $options
+ * @return array
+ */
+function bookacti_wc_change_booking_statuses_options( $options ) {
+	unset( $options[ 'in_cart' ] );
+	unset( $options[ 'expired' ] );
+	unset( $options[ 'removed' ] );
+	
+	return $options;
+}
+add_filter( 'bookacti_change_booking_status_options', 'bookacti_wc_change_booking_statuses_options', 10, 1 );
 
 
 /**
