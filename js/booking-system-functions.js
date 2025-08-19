@@ -1024,7 +1024,7 @@ function bookacti_set_tooltip_position( element, tooltip_container, position ) {
 /**
  * Get min and max quantity according to the selected events
  * @since 1.9.0
- * @version 1.15.0
+ * @version 1.16.43
  * @param {HTMLElement} booking_system
  * @returns {Object}
  */
@@ -1108,7 +1108,7 @@ function bookacti_get_min_and_max_quantity( booking_system ) {
 			}
 		}
 		
-		max_quantity = max_quantity && max_quantity != 0 && ( max_quantity - quantity_booked ) < available_places ? Math.max( ( max_quantity - quantity_booked ), 0 ) : available_places;
+		max_quantity = max_quantity && max_quantity != 0 && ( max_quantity - quantity_booked ) < available_places ? Math.max( ( max_quantity - quantity_booked ), 0 ) : Math.max( available_places, 0 );
 		min_quantity = min_quantity && min_quantity != 0 && min_quantity > 1 && quantity_booked < min_quantity ? Math.max( ( min_quantity - quantity_booked ), 0 ) : 1;
 		
 		if( min_quantity > highest_min_quantity )                { highest_min_quantity = min_quantity; }

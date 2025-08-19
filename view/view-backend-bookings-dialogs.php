@@ -1,7 +1,7 @@
 <?php 
 /**
  * Backend booking dialogs
- * @version 1.16.0
+ * @version 1.16.43
  */
 
 // Exit if accessed directly
@@ -165,8 +165,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				<select name='booking_status' id='bookacti-select-booking-status' >
 					<option value=''><?php esc_html_e( 'Do not change', 'booking-activities' ); ?></option>
 					<?php
-					$allowed_statuses = apply_filters( 'bookacti_booking_states_you_can_manually_change', array( 'delivered', 'booked', 'pending', 'cancelled', 'refund_requested', 'refunded' ) );
-					$booking_statuses = array_intersect_key( bookacti_get_booking_statuses(), array_flip( $allowed_statuses ) );
+					$booking_statuses = apply_filters( 'bookacti_change_booking_status_options', bookacti_get_booking_statuses() );
 					foreach( $booking_statuses as $status => $label ) {
 						echo '<option value="' . esc_attr( $status ) . '" >' . esc_html( $label ) . '</option>';
 					}

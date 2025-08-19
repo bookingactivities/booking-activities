@@ -779,14 +779,14 @@ add_filter( 'bookacti_login_link', 'bookacti_wc_login_link', 10, 3 );
 
 /**
  * Redirect users to the desired page
- * @since 1.16.33
+ * @since 1.16.43
  * @param string $redirect
  * @param object $user
  * @return string
  */
 function bookacti_wc_login_form_redirect( $redirect, $user = null ) {
 	if( ! empty( $_GET[ 'redirect_to' ] ) ) { 
-		$redirect = wp_unslash( rawurldecode( $_GET[ 'redirect_to' ] ) );
+		$redirect = rawurldecode( wp_unslash( $_GET[ 'redirect_to' ] ) );
 	}
 	
 	return $redirect;

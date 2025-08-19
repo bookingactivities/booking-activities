@@ -10,7 +10,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 	
 	/**
 	 * Bookings WP_List_Table
-	 * @version 1.16.22
+	 * @version 1.16.43
 	 */
 	class Bookings_List_Table extends WP_List_Table {
 		
@@ -246,7 +246,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		
 		/**
 		 * Get booking list items. Parameters can be passed in the URL.
-		 * @version 1.16.0
+		 * @version 1.16.43
 		 * @access public
 		 * @return array
 		 */
@@ -276,7 +276,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 				if( $booking->id && ! in_array( $booking->id, $this->booking_ids, true ) ){ $this->booking_ids[] = $booking->id; }
 				if( $booking->group_id && ! in_array( $booking->group_id, $this->group_ids, true ) ){ $this->group_ids[] = $booking->group_id; }
 			}
-			$unknown_user_id = esc_attr( apply_filters( 'bookacti_unknown_user_id', 'unknown_user' ) );
+			$unknown_user_id = esc_attr( bookacti_get_unknown_user_id() );
 			
 			// Retrieve the required groups data only
 			$booking_groups     = array();

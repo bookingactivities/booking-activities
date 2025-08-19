@@ -1878,6 +1878,7 @@ add_action( 'woocommerce_before_pay_action', 'bookacti_availability_check_before
 /**
  * Change order bookings status after the customer validates checkout
  * @since 1.16.0 (was bookacti_change_booking_state_after_checkout)
+ * @version 1.16.43
  * @param int $order_id
  * @param array $posted_data
  * @param WC_Order $order
@@ -1916,7 +1917,7 @@ function bookacti_wc_checkout_order_processed_booking_status( $order_id, $posted
 	$needs_payment = WC()->cart->needs_payment();
 	$customer_id   = $order->get_user_id( 'edit' );
 	$user_email    = $order->get_billing_email( 'edit' );
-	$user_id       = is_numeric( $customer_id ) && $customer_id ? intval( $customer_id ) : ( $user_email ? $user_email : apply_filters( 'bookacti_unknown_user_id', 'unknown_user' ) );
+	$user_id       = is_numeric( $customer_id ) && $customer_id ? intval( $customer_id ) : ( $user_email ? $user_email : bookacti_get_unknown_user_id() );
 	
 	$new_data = array(
 		'user_id'        => $user_id,

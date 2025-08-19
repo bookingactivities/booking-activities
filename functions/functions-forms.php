@@ -747,7 +747,7 @@ function bookacti_get_available_form_action_triggers() {
 /**
  * Format field data according to its type
  * @since 1.5.0
- * @version 1.16.0
+ * @version 1.16.43
  * @param array|string $raw_field_data
  * @param $context "view" or "edit"
  * @return array
@@ -799,8 +799,8 @@ function bookacti_format_form_field_data( $raw_field_data, $context = 'view' ) {
 		
 		$field_meta[ 'form_action' ]                    = isset( $raw_field_data[ 'form_action' ] ) && in_array( $raw_field_data[ 'form_action' ], array_keys( bookacti_get_available_form_actions() ), true ) ? $raw_field_data[ 'form_action' ] : $default_meta[ 'form_action' ];
 		$field_meta[ 'when_perform_form_action' ]       = isset( $raw_field_data[ 'when_perform_form_action' ] ) && in_array( $raw_field_data[ 'when_perform_form_action' ], array_keys( bookacti_get_available_form_action_triggers() ), true ) ? $raw_field_data[ 'when_perform_form_action' ] : $default_meta[ 'when_perform_form_action' ];
-		$field_meta[ 'redirect_url_by_activity' ]       = isset( $raw_field_data[ 'redirect_url_by_activity' ] ) && is_array( $raw_field_data[ 'redirect_url_by_activity' ] ) ? array_map( 'esc_url', $raw_field_data[ 'redirect_url_by_activity' ] ) : $default_meta[ 'redirect_url_by_activity' ];
-		$field_meta[ 'redirect_url_by_group_category' ] = isset( $raw_field_data[ 'redirect_url_by_group_category' ] ) && is_array( $raw_field_data[ 'redirect_url_by_group_category' ] ) ? array_map( 'esc_url', $raw_field_data[ 'redirect_url_by_group_category' ] ) : $default_meta[ 'redirect_url_by_group_category' ];
+		$field_meta[ 'redirect_url_by_activity' ]       = isset( $raw_field_data[ 'redirect_url_by_activity' ] ) && is_array( $raw_field_data[ 'redirect_url_by_activity' ] ) ? array_filter( array_map( 'esc_url', $raw_field_data[ 'redirect_url_by_activity' ] ) ) : $default_meta[ 'redirect_url_by_activity' ];
+		$field_meta[ 'redirect_url_by_group_category' ] = isset( $raw_field_data[ 'redirect_url_by_group_category' ] ) && is_array( $raw_field_data[ 'redirect_url_by_group_category' ] ) ? array_filter( array_map( 'esc_url', $raw_field_data[ 'redirect_url_by_group_category' ] ) ) : $default_meta[ 'redirect_url_by_group_category' ];
 		
 		// The Calendar field display data are the same as the booking system's, we can safely use bookacti_format_booking_system_display_data
 		$display_data = bookacti_format_booking_system_display_data( $raw_field_data );
@@ -953,7 +953,7 @@ function bookacti_format_form_field_data( $raw_field_data, $context = 'view' ) {
 /**
  * Sanitize field data according to its type
  * @since 1.5.0
- * @version 1.16.0
+ * @version 1.16.43
  * @param array|string $raw_field_data
  * @return array
  */
@@ -1026,8 +1026,8 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 		
 		$field_meta[ 'form_action' ]                    = isset( $raw_field_data[ 'form_action' ] ) && in_array( $raw_field_data[ 'form_action' ], array_keys( bookacti_get_available_form_actions() ), true ) ? $raw_field_data[ 'form_action' ] : $default_meta[ 'form_action' ];
 		$field_meta[ 'when_perform_form_action' ]       = isset( $raw_field_data[ 'when_perform_form_action' ] ) && in_array( $raw_field_data[ 'when_perform_form_action' ], array_keys( bookacti_get_available_form_action_triggers() ), true ) ? $raw_field_data[ 'when_perform_form_action' ] : $default_meta[ 'when_perform_form_action' ];
-		$field_meta[ 'redirect_url_by_activity' ]       = isset( $raw_field_data[ 'redirect_url_by_activity' ] ) && is_array( $raw_field_data[ 'redirect_url_by_activity' ] ) ? array_map( 'stripslashes', array_map( 'esc_url_raw', $raw_field_data[ 'redirect_url_by_activity' ] ) ) : $default_meta[ 'redirect_url_by_activity' ];
-		$field_meta[ 'redirect_url_by_group_category' ] = isset( $raw_field_data[ 'redirect_url_by_group_category' ] ) && is_array( $raw_field_data[ 'redirect_url_by_group_category' ] ) ? array_map( 'stripslashes', array_map( 'esc_url_raw', $raw_field_data[ 'redirect_url_by_group_category' ] ) ) : $default_meta[ 'redirect_url_by_group_category' ];
+		$field_meta[ 'redirect_url_by_activity' ]       = isset( $raw_field_data[ 'redirect_url_by_activity' ] ) && is_array( $raw_field_data[ 'redirect_url_by_activity' ] ) ? array_filter( array_map( 'esc_url_raw', array_map( 'wp_unslash', $raw_field_data[ 'redirect_url_by_activity' ] ) ) ) : $default_meta[ 'redirect_url_by_activity' ];
+		$field_meta[ 'redirect_url_by_group_category' ] = isset( $raw_field_data[ 'redirect_url_by_group_category' ] ) && is_array( $raw_field_data[ 'redirect_url_by_group_category' ] ) ? array_filter( array_map( 'esc_url_raw', array_map( 'wp_unslash', $raw_field_data[ 'redirect_url_by_group_category' ] ) ) ) : $default_meta[ 'redirect_url_by_group_category' ];
 		
 		// The Calendar field display data are the same as the booking system's, we can safely use bookacti_sanitize_booking_system_display_data
 		$display_data = bookacti_sanitize_booking_system_display_data( $raw_field_data );
@@ -1181,6 +1181,7 @@ function bookacti_sanitize_form_field_values( $values, $field_type = '' ) {
 /**
  * Transform form field sanitized data to actual update data (mainly to avoid saving default values)
  * @since 1.16.42
+ * @version 1.16.43
  * @param array $field
  * @param array $sanitized_data
  * @param boolean $switch_locale
@@ -1207,7 +1208,7 @@ function bookacti_get_form_field_update_data( $field, $sanitized_data, $switch_l
 	// Do not save default meta
 	foreach( $field_meta as $meta_key => $meta_value ) {
 		$default_value = isset( $default_meta[ $meta_key ] ) ? $default_meta[ $meta_key ] : '';
-		if( in_array( $meta_value, array( '', 'a:0:{}', array(), $default_value ), true ) ) {
+		if( $meta_value === $default_value ) {
 			unset( $field_meta[ $meta_key ] );
 		}
 	}

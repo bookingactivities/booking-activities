@@ -3,7 +3,7 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
 Tested up to: 6.8
-Stable tag: 1.16.42
+Stable tag: 1.16.43
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -19,7 +19,7 @@ It is very easy to use:
 2. Copy / Paste a **shortcode** to display a booking form. Or **integrate it with WooCommerce** products.
 3. **Pick** an event on this calendar and book it. 
 
-Try this reservation tool live on the [demo website](https://demo.booking-activities.fr/en/), or [generate a temporary site](https://tastewp.com/new/?pre-installed-plugin-slug=booking-activities&pre-installed-plugin-slug=woocommerce&pre-installed-theme-slug=twentytwentythree&redirect=admin.php%3Fpage%3Dbookacti_calendars&ni=true) to test the backend!
+Try this reservation tool live on the [demo website](https://demo.booking-activities.fr/en/), or [generate a temporary site](https://tastewp.com/template/bookingactivities/?redirect=admin.php%3Fpage%3Dbookacti_calendars&ni=true) to test the backend!
 
 [youtube https://www.youtube.com/watch?v=Q7gbK5i4DPU]
 
@@ -319,6 +319,12 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.16.43 - 2025/08/19 =
+* Fix - Form field meta not saved when value was empty array (e.g. "All" group categories in Calendar settings)
+* Fix - Incorrect availability display after creating an event in the calendar editor
+* Dev - Improve compatibility with deposit plugins
+* Dev - Remove bookacti_booking_states_you_can_manually_change hook, use bookacti_change_booking_status_options instead
 
 = 1.16.42 - 2025/08/12 =
 * Tweak - Add an option in WooCommerce > Settings > Advanced to change the Bookings endpoint
