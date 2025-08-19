@@ -2441,7 +2441,7 @@ function bookacti_update_booking_groups_bookings_quantity( $group_ids, $new_quan
 /**
  * Get booking groups according to filters
  * @since 1.3.0 (was bookacti_get_booking_groups_by_group_of_events)
- * @version 1.16.8
+ * @version 1.16.43
  * @global wpdb $wpdb
  * @param array $filters Use bookacti_format_booking_filters() before
  * @return array
@@ -2455,6 +2455,12 @@ function bookacti_get_booking_groups( $filters ) {
 	if( is_numeric( $filters[ 'group_category_id' ] ) && $filters[ 'group_category_id' ] ) { $filters[ 'in__group_category_id' ][] = $filters[ 'group_category_id' ]; }
 	if( is_numeric( $filters[ 'form_id' ] ) && $filters[ 'form_id' ] )                     { $filters[ 'in__form_id' ][] = $filters[ 'form_id' ]; }
 	if( $filters[ 'user_id' ] )                                                            { $filters[ 'in__user_id' ][] = $filters[ 'user_id' ]; }
+	
+	// Remove invalid order_by columns
+	if( $filters[ 'order_by' ] ) {
+		$sortable_columns = array( 'id', 'user_id', 'event_group_id', 'group_date', 'state', 'payment_status', 'quantity', 'template_id', 'creation_date' );
+		$filters[ 'order_by' ] = array_values( array_intersect( $filters[ 'order_by' ], $sortable_columns ) );
+	}
 	
 	// Used for backward compatibility with mySQL 5.7 and MariaDB 10.3
 	$bw_compat_query = bookacti_is_db_version_outdated() ? 'CONCAT( "[", GROUP_CONCAT( id SEPARATOR ", " ), "]" )' : 'JSON_ARRAYAGG( id )';
@@ -2693,8 +2699,29 @@ function bookacti_get_booking_groups( $filters ) {
 
 	$query .= ' GROUP BY BG.id ';
 
-	$query .= ' ORDER BY BG.id ASC ';
-
+	if( $filters[ 'order_by' ] ) {
+		$query .= ' ORDER BY ';
+		for( $i=0,$len=count($filters[ 'order_by' ]); $i<$len; ++$i ) {
+			if( $filters[ 'order_by' ][ $i ] === 'id' ) { $filters[ 'order_by' ][ $i ] = 'BG.id'; }
+			$query .= $filters[ 'order_by' ][ $i ];
+			if( $filters[ 'order' ] ) { $query .= ' ' . $filters[ 'order' ]; }
+			if( $i < $len-1 ) { $query .= ', '; }
+		}
+	}
+	
+	if( $filters[ 'offset' ] || $filters[ 'per_page' ] ) {
+		$query .= ' LIMIT ';
+		if( $filters[ 'offset' ] ) {
+			$query .= '%d';
+			if( $filters[ 'per_page' ] ) { $query .= ', '; }
+			$variables[] = $filters[ 'offset' ];
+		}
+		if( $filters[ 'per_page' ] ) { 
+			$query .= '%d ';
+			$variables[] = $filters[ 'per_page' ];
+		}
+	}
+	
 	if( $variables ) {
 		$query = $wpdb->prepare( $query, $variables );
 	}

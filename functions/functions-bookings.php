@@ -467,7 +467,7 @@ function bookacti_get_activities_html_for_booking_page( $template_ids, $activity
 /**
  * Get Default booking filters
  * @since 1.6.0
- * @version 1.16.12
+ * @version 1.16.43
  * @return array
  */
 function bookacti_get_default_booking_filters() {
@@ -494,7 +494,7 @@ function bookacti_get_default_booking_filters() {
 		'created_to'                 => '',
 		'active'                     => false,
 		'group_by'                   => '',
-		'order_by'                   => array( 'creation_date', 'id', 'event_start' ), 
+		'order_by'                   => array( 'creation_date', 'id' ), 
 		'order'                      => 'desc',
 		'offset'                     => 0,
 		'per_page'                   => 0,
@@ -526,7 +526,7 @@ function bookacti_get_default_booking_filters() {
 /**
  * Format booking filters
  * @since 1.3.0
- * @version 1.16.12
+ * @version 1.16.43
  * @param array $filters 
  * @return array
  */
@@ -614,6 +614,8 @@ function bookacti_format_booking_filters( $filters = array() ) {
 				'event_title', 
 				'event_start', 
 				'event_end', 
+				'event_group_id', 
+				'group_date', 
 				'state', 
 				'payment_status', 
 				'quantity', 
@@ -621,16 +623,9 @@ function bookacti_format_booking_filters( $filters = array() ) {
 				'activity_id', 
 				'creation_date' 
 			);
-			if( is_string( $current_value ) ) { 
-				if( ! in_array( $current_value, $sortable_columns, true ) ) { $current_value = $default_value; }
-				else { $current_value = array( $current_value ); }
-			}
+			if( is_string( $current_value ) ) { $current_value = array( $current_value ); }
 			if( ! is_array( $current_value ) || ! $current_value ) { $current_value = $default_value; }
-			$current_value = array_values( bookacti_str_ids_to_array( $current_value ) );
-			if( count( $current_value ) === 1 ) {
-				if( $current_value[ 0 ] === 'creation_date' ) { $current_value = array( 'creation_date', 'id', 'event_start' ); }
-				else if( $current_value[ 0 ] === 'id' )       { $current_value = array( 'id', 'event_start' ); }
-			}
+			$current_value = array_values( array_intersect( bookacti_str_ids_to_array( $current_value ), $sortable_columns ) );
 			
 		} else if( $filter === 'order' ) {
 			if( ! in_array( $current_value, array( 'asc', 'desc' ), true ) ) { $current_value = $default_value; }
@@ -2313,7 +2308,7 @@ function bookacti_get_bookings_export_events_tags_values( $booking_items, $args 
 /**
  * Get an array of bookings data formatted to be exported
  * @since 1.6.0
- * @version 1.16.0
+ * @version 1.16.43
  * @param array $args_raw
  * @return array
  */
@@ -2373,7 +2368,7 @@ function bookacti_get_bookings_for_export( $args_raw = array() ) {
 		$users = $user_ids ? bookacti_get_users_data( array( 'include' => $user_ids ) ) : array();
 		$roles_names = bookacti_get_roles();
 	}
-	$unknown_user_id = esc_attr( apply_filters( 'bookacti_unknown_user_id', 'unknown_user' ) );
+	$unknown_user_id = esc_attr( bookacti_get_unknown_user_id() );
 	
 	$date_format      = $args[ 'raw' ] ? 'Y-m-d' : get_option( 'date_format' );
 	$datetime_format  = $args[ 'raw' ] ? 'Y-m-d H:i:s' : bookacti_get_message( 'date_format_long' );
@@ -2932,7 +2927,7 @@ function bookacti_get_user_booking_list_private_columns() {
 /**
  * Get booking list items
  * @since 1.7.4
- * @version 1.16.0
+ * @version 1.16.43
  * @param array $filters
  * @param array $columns
  * @return string
@@ -3003,7 +2998,7 @@ function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
 		$users = $user_ids ? bookacti_get_users_data( array( 'include' => $user_ids ) ) : array();
 		$roles_names = bookacti_get_roles();
 	}
-	$unknown_user_id = esc_attr( apply_filters( 'bookacti_unknown_user_id', 'unknown_user' ) );
+	$unknown_user_id = esc_attr( bookacti_get_unknown_user_id() );
 	
 	// Get datetime format
 	$datetime_format = bookacti_get_message( 'date_format_long' );

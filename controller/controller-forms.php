@@ -1272,7 +1272,7 @@ add_action( 'wp_ajax_bookactiUpdateForm', 'bookacti_controller_update_form' );
 /**
  * Duplicate a booking form
  * @since 1.7.18
- * @version 1.16.42
+ * @version 1.16.43
  */
 function bookacti_controller_duplicate_form() {
 	if( empty( $_REQUEST[ 'form_id' ] ) || empty( $_REQUEST[ 'action' ] ) || empty( $_REQUEST[ 'page' ] ) ) { return; }
@@ -1343,7 +1343,7 @@ function bookacti_controller_duplicate_form() {
 			
 			// Update field data
 			$update_data = bookacti_get_form_field_update_data( array_merge( $original_field, array( 'field_id' => $field_id ) ), $sanitized_data, false );
-			$updated     = bookacti_update_form_field( $update_data );
+			bookacti_update_form_field( $update_data );
 			
 			// Duplicate field meta
 			$default_meta = ! empty( $default_form_fields_meta[ $original_field[ 'name' ] ] ) ? $default_form_fields_meta[ $original_field[ 'name' ] ] : array();

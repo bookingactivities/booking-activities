@@ -219,7 +219,7 @@ add_action( 'woocommerce_order_status_completed', 'bookacti_wc_update_completed_
 /**
  * Update the bookings of an order to "Pending" when it turns "Partially paid" (beta support for some deposit plugins)
  * @since 1.16.24
- * @version 1.16.40
+ * @version 1.16.43
  * @param int $order_id
  * @param WC_Order $order
  * @param string $booking_status
@@ -227,20 +227,13 @@ add_action( 'woocommerce_order_status_completed', 'bookacti_wc_update_completed_
  * @param boolean $force_status_notification
  */
 function bookacti_wc_update_partially_paid_order_bookings( $order_id, $order = null ) {
-	// Remove custom code given to customers in the past
-	$hook_name = current_action();
-	$priority  = has_action( $hook_name, 'bookacti_wc_update_completed_order_bookings' );
-	if( is_numeric( $priority ) ) {
-		remove_action( $hook_name, 'bookacti_wc_update_completed_order_bookings', $priority );
-	}
-	
 	if( ! $order ) { $order = wc_get_order( $order_id ); }
 	if( ! $order ) { return; }
 	
 	// Get order user ID  or email
 	$customer_id = $order->get_user_id( 'edit' );
 	$user_email  = $order->get_billing_email( 'edit' );
-	$user_id     = is_numeric( $customer_id ) && $customer_id ? intval( $customer_id ) : ( $user_email ? $user_email : apply_filters( 'bookacti_unknown_user_id', 'unknown_user' ) );
+	$user_id     = is_numeric( $customer_id ) && $customer_id ? intval( $customer_id ) : ( $user_email ? $user_email : bookacti_get_unknown_user_id() );
 	
 	// Change status of all bookings of the order from 'in_cart' to 'pending'
 	$new_data = apply_filters( 'bookacti_wc_partially_paid_order_bookings_data', array(
@@ -259,8 +252,10 @@ function bookacti_wc_update_partially_paid_order_bookings( $order_id, $order = n
 	// Then we just turn 'pending' booking bound to this order to 'removed'
 	bookacti_wc_remove_order_bookings_not_in_order_items( $order_id );
 }
-add_action( 'woocommerce_order_status_pending_to_partially-paid', 'bookacti_wc_update_partially_paid_order_bookings', 4, 2 );
-add_action( 'woocommerce_order_status_pending_to_partial-payment', 'bookacti_wc_update_partially_paid_order_bookings', 4, 2 );
+add_action( 'woocommerce_order_status_partially-paid', 'bookacti_wc_update_partially_paid_order_bookings', 4, 2 );
+add_action( 'woocommerce_order_status_partial-payment', 'bookacti_wc_update_partially_paid_order_bookings', 4, 2 );
+add_action( 'woocommerce_order_status_deposit', 'bookacti_wc_update_partially_paid_order_bookings', 4, 2 );
+add_action( 'woocommerce_order_status_installment', 'bookacti_wc_update_partially_paid_order_bookings', 4, 2 );
 
 
 /**

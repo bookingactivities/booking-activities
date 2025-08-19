@@ -320,7 +320,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.16.43 =
+= 1.16.43 - 2025/08/19 =
+* Fix - Form field meta not saved when value was empty array (e.g. "All" group categories in Calendar settings)
+* Fix - Incorrect availability display after creating an event in the calendar editor
+* Dev - Improve compatibility with deposit plugins
 * Dev - Remove bookacti_booking_states_you_can_manually_change hook, use bookacti_change_booking_status_options instead
 
 = 1.16.42 - 2025/08/12 =

@@ -118,7 +118,7 @@ $j( document ).ready( function() {
 
 /**
  * Initialize and display the template calendar
- * @version 1.16.42
+ * @version 1.16.43
  */
 function bookacti_load_template_calendar() {
 	var booking_system = $j( '#bookacti-template-calendar' );
@@ -631,7 +631,7 @@ function bookacti_load_template_calendar() {
 		/**
 		 * Called when an external draggable element with associated event data was dropped onto the calendar. Or an event from another calendar.
 		 * This callback is fired before the eventAdd callback is fired.
-		 * @version 1.15.5
+		 * @version 1.16.43
 		 * @param {Object} info {
 		 *  @type {FullCalendar.EventApi} event           An Event object containing the newly created/received event.
 		 *  @type {FullCalendar.EventApi[]} relatedEvents An array of other related Event Objects that have also been received. an event might have other recurring event instances or might be linked to other events with the same groupId
@@ -696,6 +696,9 @@ function bookacti_load_template_calendar() {
 						bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ response.event_id ] = response.event_data;
 						
 						booking_system.trigger( 'bookacti_calendar_editor_event_inserted', [ info, response, data ] );
+						
+						// Rerender event
+						bookacti.fc_calendar[ 'bookacti-template-calendar' ].render();
 						
 					} else {
 						info.revert();
