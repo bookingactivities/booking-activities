@@ -1318,7 +1318,7 @@ function bookacti_get_fullcalendar_fields_default_data( $fields = array() ) {
 /**
  * Check picked event / group of events availability
  * @since 1.15.6 (was bookacti_validate_booking_form)
- * @version 1.16.41
+ * @version 1.16.44
  * @param array $picked_events formatted with bookacti_format_picked_events with $one_entry_per_group = false
  * @param array $args {
  *  @type int $quantity Desired number of bookings
@@ -1352,8 +1352,8 @@ function bookacti_validate_picked_events( $picked_events, $args = array() ) {
 	
 	// If no events are picked
 	if( ! $picked_events ) {
-		$validated[ 'error' ] = 'no_event_selected';
-		$validated[ 'messages' ][ 'no_event_selected' ] = array( esc_html__( 'You haven\'t picked any event. Please pick an event first.', 'booking-activities' ) );
+		$validated[ 'error' ] = 'no_events_selected';
+		$validated[ 'messages' ][ 'no_events_selected' ] = array( esc_html__( 'You haven\'t picked any events. Please pick an event first.', 'booking-activities' ) );
 	} 
 	
 	// If multiple events are picked, but it is not allowed

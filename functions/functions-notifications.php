@@ -454,7 +454,7 @@ function bookacti_get_notifications_tags( $notification_id = '' ) {
 /**
  * Get notifications tags and values corresponding to given booking
  * @since 1.2.0
- * @version 1.16.31
+ * @version 1.16.44
  * @param object $booking
  * @param string $booking_type 'group' or 'single'
  * @param array $notification
@@ -585,7 +585,7 @@ function bookacti_get_notifications_tags_values( $booking, $booking_type, $notif
 				$booking_data[ '{user_email}' ]     = ! empty( $booking->user_email ) ? $booking->user_email : ( is_email( $booking->user_id ) ? $booking->user_id : '' );
 				$booking_data[ '{user_phone}' ]     = ! empty( $booking->user_phone ) ? $booking->user_phone : '';
 			}
-			$booking_data[ '{user_auth_key}' ] = $booking_data[ '{user_email}' ] && is_email( $booking_data[ '{user_email}' ] ) ? bookacti_encrypt( $booking_data[ '{user_email}' ], 'user_auth' ) : '';
+			$booking_data[ '{user_auth_key}' ] = bookacti_get_booking_user_auth_key( $booking, $booking_type );
 		}
 		
 		$booking_ical_key = $user_ical_key ? $user_ical_key : ( ! empty( $booking->secret_key ) ? $booking->secret_key : '' );
