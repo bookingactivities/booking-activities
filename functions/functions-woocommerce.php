@@ -1753,7 +1753,7 @@ function bookacti_get_order_items_rows( $order_items = array() ) {
 /**
  * Display a products selectbox
  * @since 1.7.0
- * @version 1.15.6
+ * @version 1.16.44
  * @param array $raw_args
  * @return string
  */
@@ -1805,7 +1805,7 @@ function bookacti_display_product_selectbox( $raw_args = array() ) {
 					<optgroup class='bookacti-wc-variable-product-option-group' label='<?php echo $product[ 'title' ] ? esc_attr( apply_filters( 'bookacti_translate_text_external', $product[ 'title' ], false, true, array( 'domain' => 'woocommerce', 'object_type' => 'product', 'object_id' => $product_id, 'field' => 'post_title' ) ) ) : $product[ 'title' ]; ?>'>
 					<?php
 						foreach( $product[ 'variations' ] as $variation_id => $variation ) {
-							$_selected = selected( $variation_id, $args[ 'selected' ] );
+							$_selected = selected( $variation_id, $args[ 'selected' ], false );
 							if( $_selected ) { $is_selected = true; }
 							$variation_title = $variation[ 'title' ] ? esc_html( apply_filters( 'bookacti_translate_text_external', $variation[ 'title' ], false, true, array( 'domain' => 'woocommerce', 'object_type' => 'product_variation', 'object_id' => $variation_id, 'field' => 'post_excerpt', 'product_id' => $product_id ) ) ) : $variation[ 'title' ];
 							$formatted_variation_title = trim( preg_replace( '/,[\s\S]+?:/', ',', ',' . $variation_title ), ', ' );

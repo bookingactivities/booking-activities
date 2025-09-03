@@ -349,7 +349,7 @@ add_filter( 'bookacti_form_action_options', 'bookacti_add_wc_form_action_options
 /**
  * Add columns to the activity redirect URL table
  * @since 1.7.0
- * @version 1.7.19
+ * @version 1.16.44
  * @param array $url_array
  * @param array $params
  * @return array
@@ -376,7 +376,7 @@ function bookacti_add_wc_columns_to_activity_redirect_url_table( $url_array, $pa
 		if( ! in_array( $activity_id, $missing_activities, true ) ) { continue; }
 		$url_array[ 'body' ][] = array( 
 			'activity'     => intval( $activity_id ),
-			'redirect_url' => '<input type="text" name="redirect_url_by_activity[ ' . intval( $activity_id ) . ' ]" value="" />'
+			'redirect_url' => '<input type="text" name="redirect_url_by_activity[' . intval( $activity_id ) . ']" value=""/>'
 		);
 	}
 	
@@ -395,7 +395,7 @@ add_filter( 'bookacti_activity_redirect_url_table', 'bookacti_add_wc_columns_to_
 /**
  * Add columns to the group category redirect URL table
  * @since 1.7.19 (was bookacti_add_wc_columns_to_group_activity_redirect_url_table)
- * @version 1.8.3
+ * @version 1.16.44
  * @param array $url_array
  * @param array $params
  * @return array
@@ -421,7 +421,7 @@ function bookacti_add_wc_columns_to_group_category_redirect_url_table( $url_arra
 		if( ! in_array( $group_category_id, $missing_group_categories, true ) ) { continue; }
 		$url_array[ 'body' ][] = array( 
 			'group_category' => intval( $group_category_id ),
-			'redirect_url' => '<input type="text" name="redirect_url_by_group_category[ ' . intval( $group_category_id ) . ' ]" value="" />'
+			'redirect_url' => '<input type="text" name="redirect_url_by_group_category[' . intval( $group_category_id ) . ']" value=""/>'
 		);
 	}
 	
