@@ -197,6 +197,18 @@ function bookacti_pad( str, max ) {
 
 
 /**
+ * Replacement for deprecated jQuery's isNumeric function
+ * @since 1.16.44
+ * @param {Object} obj
+ * @returns {Boolean}
+ */
+function bookacti_is_numeric( obj ) {
+	var type = jQuery.type( obj );
+	return ( type === 'number' || type === 'string' ) && ! isNaN( obj - parseFloat( obj ) );
+}
+
+
+/**
  * Compare two arrays and tell if they are the same
  * @version 1.8.0
  * @param {array} array1

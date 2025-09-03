@@ -843,7 +843,7 @@ add_action( 'wp_ajax_nopriv_bookactiGetRescheduleBookingSystemData', 'bookacti_c
 /**
  * AJAX Controller - Reschedule bookings
  * @since 1.16.0
- * @version 1.16.24
+ * @version 1.16.44
  */
 function bookacti_controller_reschedule_bookings() {
 	// Check nonce
@@ -870,7 +870,7 @@ function bookacti_controller_reschedule_bookings() {
 	
 	// Check picked event
 	if( ! $picked_events || ! empty( $picked_events[ 0 ][ 'group_id' ] ) || empty( $picked_events[ 0 ][ 'id' ] ) ) { 
-		bookacti_send_json( array( 'status' => 'failed', 'error' => 'no_event_selected', 'message' => esc_html__( 'You haven\'t picked any event. Please pick an event first.', 'booking-activities' ) ), 'reschedule_booking' );
+		bookacti_send_json( array( 'status' => 'failed', 'error' => 'no_events_selected', 'message' => esc_html__( 'You haven\'t picked any events. Please pick an event first.', 'booking-activities' ) ), 'reschedule_booking' );
 	}
 	
 	// Validate the reschedule booking form fields

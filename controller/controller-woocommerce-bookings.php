@@ -187,7 +187,7 @@ add_action( 'woocommerce_system_status_tool_executed', 'bookacti_wc_controller_r
 /**
  * Update the bookings of an order to "Booked" when it turns "Completed"
  * @since 1.9.0 (was bookacti_turn_temporary_booking_to_permanent)
- * @version 1.16.40
+ * @version 1.16.44
  * @param int $order_id
  * @param WC_Order $order
  * @param string $booking_status
@@ -206,7 +206,7 @@ function bookacti_wc_update_completed_order_bookings( $order_id, $order = null )
 		'is_order_completed' => true // Used for deferring notifications to woocommerce_order_status_changed
 	);
 	
-	bookacti_wc_update_order_items_bookings( $order, $new_data, array( 'in__status' => array( 'pending', 'in_cart' ) ) );
+	bookacti_wc_update_order_items_bookings( $order, $new_data, array( 'in__status' => array( 'pending', 'in_cart', 'waiting_list_pending' ) ) );
 	
 	// It is possible that pending bookings remain bound to the order if the user change his mind after he placed the order, but before he paid it.
 	// He then changed his cart, placed a new order, paid it, and only part of the old order is booked (or even nothing), the rest is still 'pending'
@@ -219,7 +219,7 @@ add_action( 'woocommerce_order_status_completed', 'bookacti_wc_update_completed_
 /**
  * Update the bookings of an order to "Pending" when it turns "Partially paid" (beta support for some deposit plugins)
  * @since 1.16.24
- * @version 1.16.43
+ * @version 1.16.44
  * @param int $order_id
  * @param WC_Order $order
  * @param string $booking_status
@@ -245,7 +245,7 @@ function bookacti_wc_update_partially_paid_order_bookings( $order_id, $order = n
 		'is_new_order'   => true
 	), $order );
 	
-	bookacti_wc_update_order_items_bookings( $order, $new_data, array( 'in__status' => array( 'in_cart' ) ) );
+	bookacti_wc_update_order_items_bookings( $order, $new_data, array( 'in__status' => array( 'in_cart', 'waiting_list_pending' ) ) );
 	
 	// It is possible that pending bookings remain bound to the order if the user change his mind after he placed the order, but before he paid it.
 	// He then changed his cart, placed a new order, paid it, and only part of the old order is booked (or even nothing), the rest is still 'pending'
@@ -261,7 +261,7 @@ add_action( 'woocommerce_order_status_installment', 'bookacti_wc_update_partiall
 /**
  * Update the bookings of a failed order to "Booked" or "Pending" when it turns to an active status
  * @since 1.9.0 (was bookacti_turn_failed_order_bookings_status_to_complete)
- * @version 1.16.2
+ * @version 1.16.44
  * @param int $order_id
  * @param WC_order $order
  */
@@ -284,7 +284,7 @@ function bookacti_wc_update_failed_order_bookings_to_complete( $order_id, $order
 		'active'         => 'auto',
 		'is_new_order'   => current_action() !== 'woocommerce_order_status_failed_to_pending'
 	);
-	bookacti_wc_update_order_items_bookings( $order, $new_data, array( 'in__status' => array( 'pending', 'cancelled', 'in_cart', 'removed', 'expired' ) ) );
+	bookacti_wc_update_order_items_bookings( $order, $new_data, array( 'in__status' => array( 'pending', 'cancelled', 'in_cart', 'removed', 'expired', 'waiting_list_pending' ) ) );
 }
 add_action( 'woocommerce_order_status_failed_to_pending', 'bookacti_wc_update_failed_order_bookings_to_complete', 5, 2 );
 add_action( 'woocommerce_order_status_failed_to_on-hold', 'bookacti_wc_update_failed_order_bookings_to_complete', 5, 2 );
@@ -323,7 +323,7 @@ add_action( 'woocommerce_order_status_cancelled', 'bookacti_wc_update_cancelled_
  * - "Processing" if the order has only activities but not virtual
  * And update the bookings of the order to "Pending" if there are at least one activity in the middle of other products
  * @since 1.9.0 (was bookacti_set_order_status_to_completed_after_payment)
- * @version 1.16.40
+ * @version 1.16.44
  * @param string $order_status
  * @param int $order_id
  * @return string
@@ -380,7 +380,7 @@ function bookacti_wc_payment_complete_order_status( $order_status, $order_id ) {
 			'payment_status' => 'owed',
 			'active'         => 'auto'
 		);
-		bookacti_wc_update_order_items_bookings( $order, $new_data, array( 'in__status' => array( 'pending', 'in_cart' ) ) );
+		bookacti_wc_update_order_items_bookings( $order, $new_data, array( 'in__status' => array( 'pending', 'in_cart', 'waiting_list_pending' ) ) );
 
 		// Remove remaining undesired bookings
 		bookacti_wc_remove_order_bookings_not_in_order_items( $order_id );
@@ -396,7 +396,7 @@ add_filter( 'wc_deposits_order_fully_paid_status', 'bookacti_wc_payment_complete
  * Update the bookings of a "Pending" order to "Booked" when it turns "Processing" or "On Hold" if the order has been Paid
  * If the order was not paid, send the "Pending" bookings notifications
  * @since 1.9.0 (was bookacti_turn_paid_order_item_bookings_to_permanent)
- * @version 1.16.40
+ * @version 1.16.44
  * @param int $order_id
  * @param WC_Order $order
  */
@@ -462,7 +462,7 @@ function bookacti_wc_update_paid_order_bookings( $order_id, $order = null ) {
 		);
 
 		$where = array( 
-			'in__status' => array( 'pending', 'in_cart' )
+			'in__status' => array( 'pending', 'in_cart', 'waiting_list_pending' )
 		);
 
 		bookacti_wc_update_order_items_bookings( $order, $new_data, $where );
@@ -481,7 +481,7 @@ function bookacti_wc_update_paid_order_bookings( $order_id, $order = null ) {
 			);
 
 			$where = array(
-				'in__status' => array( 'in_cart', 'pending' ), 
+				'in__status' => array( 'in_cart', 'pending', 'waiting_list_pending' ), 
 				'in__booking_id' => $non_virtual_item_booking_ids, 
 				'in__booking_group_id' => $non_virtual_item_booking_group_ids
 			);
@@ -512,7 +512,7 @@ function bookacti_wc_update_paid_order_bookings( $order_id, $order = null ) {
 			);
 
 			$where = array(
-				'in__status' => array( 'in_cart', 'pending' ), 
+				'in__status' => array( 'in_cart', 'pending', 'waiting_list_pending' ), 
 				'in__booking_id' => $virtual_item_booking_ids, 
 				'in__booking_group_id' => $virtual_item_booking_group_ids
 			);

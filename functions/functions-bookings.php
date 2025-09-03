@@ -2551,6 +2551,38 @@ function bookacti_is_booking_secret_key_valid( $secret_key, $booking_id, $bookin
 }
 
 
+/**
+ * Get user auth key by booking
+ * @since 1.16.44
+ * @param object|int $booking
+ * @param string $booking_type
+ * @return string
+ */
+function bookacti_get_booking_user_auth_key( $booking, $booking_type = 'single' ) {
+	// Get booking
+	if( is_numeric( $booking ) ) {
+		$booking_object = $booking_type === 'group' ? bookacti_get_booking_group_by_id( $booking ) : bookacti_get_booking_by_id( $booking );
+		if( $booking_object ) {
+			$booking = $booking_object;
+		}
+	}
+	
+	// Get user auth key
+	$user_email = '';
+	if( is_object( $booking ) && ! empty( $booking->user_id ) ) {
+		if( is_email( $booking->user_id ) ) {
+			$user_email = sanitize_email( $booking->user_id );
+		} else {
+			$user       = get_user_by( 'id', $booking->user_id );
+			$user_email = $user ? $user->user_email : '';
+		}
+	}
+	$user_auth_key = $user_email ? bookacti_encrypt( $user_email, 'user_auth' ) : '';
+	
+	return apply_filters( 'bookacti_booking_user_auth_key', $user_auth_key, $booking, $booking_type );
+}
+
+
 
 
 // REFUND BOOKING
