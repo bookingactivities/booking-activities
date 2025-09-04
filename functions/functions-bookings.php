@@ -899,7 +899,7 @@ function bookacti_booking_can_be_rescheduled( $booking, $is_frontend = true ) {
 /**
  * Check if a booking can be rescheduled to another event
  * @since 1.1.0
- * @version 1.16.40
+ * @version 1.16.45
  * @param object|int $booking
  * @param int $event_id
  * @param string $event_start
@@ -980,6 +980,16 @@ function bookacti_booking_can_be_rescheduled_to( $booking, $event_id, $event_sta
 					if( strpos( $reschedule_scope, 'form_' ) !== false ) {
 						$picked_event   = bookacti_format_picked_event( array( 'id' => $event_id, 'start' => $event_start, 'end' => $event_end ) );
 						$form_validated = $form_id ? bookacti_is_picked_event_available_on_form( $picked_event, (array) $event, $form_id ) : array( 'status' => 'failed', 'messages' => array() );
+						
+						// Allow rescheduling to past events for administrators from admin
+						if( $is_admin ) {
+							$allowed_keys = array( 'past_event', 'event_starts_before_availability_period', 'event_starts_after_availability_period' );
+							$form_validated[ 'messages' ] = array_diff_key( $form_validated[ 'messages' ], array_flip( $allowed_keys ) );
+							if( ! $form_validated[ 'messages' ] ) {
+								$form_validated[ 'status' ] = 'success';
+							}
+						}
+						
 						if( $form_validated[ 'status' ] !== 'success' ) {
 							reset( $form_validated[ 'messages' ] );
 							$error = key( $form_validated[ 'messages' ] );
