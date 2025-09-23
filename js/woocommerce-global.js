@@ -126,7 +126,7 @@ function bookacti_redirect_to_group_category_product_page( booking_system, group
 /**
  * Add a product to cart from a booking form
  * @since 1.7.0
- * @version 1.15.15
+ * @version 1.16.45
  * @param {HTMLElement} booking_system
  */
 function bookacti_add_product_to_cart_via_booking_system( booking_system ) {
@@ -136,7 +136,7 @@ function bookacti_add_product_to_cart_via_booking_system( booking_system ) {
 	var form = booking_system.closest( 'form' );
 	
 	// Disable the submit button to avoid multiple booking
-	var submit_button = form.find( 'input[type="submit"]' );
+	var submit_button = form.find( 'button[type="submit"], input[type="submit"]' ).first();
 	if( submit_button.length ) { submit_button.prop( 'disabled', true ); }
 	
 	// Use the error div of the booking system by default, or if possible, the error div of the form

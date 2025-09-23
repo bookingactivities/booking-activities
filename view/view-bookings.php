@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking list page
- * @version 1.16.13
+ * @version 1.16.45
  */
 
 // Exit if accessed directly
@@ -364,5 +364,4 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 <?php
 // Include dialogs
-include_once( 'view-backend-bookings-dialogs.php' );
-include_once( 'view-bookings-dialogs.php' );
+bookacti_include_booking_dialogs( 'admin' );

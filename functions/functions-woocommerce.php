@@ -1274,7 +1274,7 @@ function bookacti_wc_update_order_items_bookings( $order_id, $new_data, $where =
 /**
  * Update the order status according to the bookings status bound to its items
  * @since 1.9.0 (was bookacti_change_order_state_based_on_its_bookings_state)
- * @version 1.16.0
+ * @version 1.16.45
  * @param int $order_id
  */
 function bookacti_wc_update_order_status_according_to_its_bookings( $order_id ) {
@@ -1320,7 +1320,7 @@ function bookacti_wc_update_order_status_according_to_its_bookings( $order_id ) 
 	$order_status     = $order->get_status();
 	$new_order_status = $order_status;
 	$completed_booking_statuses = array( 'delivered', 'booked' );
-	$cancelled_booking_statuses = array( 'cancelled', 'refund_requested', 'expired', 'removed' );
+	$cancelled_booking_statuses = array( 'cancelled', 'refund_requested', 'expired', 'removed', 'waiting_list_rejected' );
 	$refunded_booking_statuses  = array( 'refunded' );
 	$are_completed = ! array_diff( $statuses, $completed_booking_statuses );
 	$are_cancelled = ! array_diff( $statuses, $cancelled_booking_statuses );

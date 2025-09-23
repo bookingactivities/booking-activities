@@ -123,7 +123,7 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Display booking system fields and submit button if the user want to make a new booking
-	 * @version 1.15.6
+	 * @version 1.16.45
 	 */
 	$j( 'body' ).on( 'click', '.bookacti-booking-form .bookacti-new-booking-button', function() {
 		// Reload page if necessary
@@ -144,7 +144,7 @@ $j( document ).ready( function() {
 		error_div.empty();
 		
 		// Display form fields and submit button, and then, hide the "Make a new booking" button
-		form.find( '.bookacti-form-field-container:not(.bookacti-hidden-field), input[type="submit"]' ).show();
+		form.find( '.bookacti-form-field-container:not(.bookacti-hidden-field), button[type="submit"], input[type="submit"]' ).show();
 		$j( this ).hide();
 		
 		form.trigger( 'bookacti_make_new_booking' );
@@ -153,23 +153,27 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Enable submit booking button
-	 * @version 1.15.0
+	 * @version 1.16.45
 	 */
 	$j( 'body' ).on( 'bookacti_displayed_info_cleared', '.bookacti-booking-form .bookacti-booking-system, .bookacti-form-fields .bookacti-booking-system', function() {
-		var form = $j( this ).closest( 'form' ).length ? $j( this ).closest( 'form' ) : $j( this ).closest( '.bookacti-form-fields' );
+		var form          = $j( this ).closest( 'form' ).length ? $j( this ).closest( 'form' ) : $j( this ).closest( '.bookacti-form-fields' );
+		var submit_button = form.find( 'button[type="submit"], input[type="submit"]' ).first();
+		
 		form.find( 'input[name="quantity"]' ).attr( 'disabled', false );
-		form.find( 'button[type="submit"]' ).attr( 'disabled', false );
+		submit_button.attr( 'disabled', false );
 	});
 
 
 	/**
 	 * Disable submit booking button
-	 * @version 1.12.4
+	 * @version 1.16.45
 	 */
 	$j( 'body' ).on( 'bookacti_error_displayed', '.bookacti-booking-form .bookacti-booking-system, .bookacti-form-fields .bookacti-booking-system', function() {
-		var form = $j( this ).closest( 'form' ).length ? $j( this ).closest( 'form' ) : $j( this ).closest( '.bookacti-form-fields' );
+		var form          = $j( this ).closest( 'form' ).length ? $j( this ).closest( 'form' ) : $j( this ).closest( '.bookacti-form-fields' );
+		var submit_button = form.find( 'button[type="submit"], input[type="submit"]' ).first();
+		
 		form.find( 'input[name="quantity"]' ).attr( 'disabled', true );
-		form.find( 'button[type="submit"]' ).attr( 'disabled', true );
+		submit_button.attr( 'disabled', true );
 	});
 	
 	
@@ -482,14 +486,14 @@ function bookacti_submit_login_form( submit_button ) {
 /**
  * Submit booking form
  * @since 1.7.6 (was bookacti_sumbit_booking_form)
- * @version 1.16.40
+ * @version 1.16.45
  * @param {HTMLElement} form
  */
 function bookacti_submit_booking_form( form ) {
 	var booking_system = form.find( '.bookacti-booking-system' );
 	
 	// Disable the submit button to avoid multiple booking
-	var submit_button = form.find( 'input[type="submit"]' );
+	var submit_button = form.find( 'button[type="submit"], input[type="submit"]' ).first();
 	if( submit_button.length ) { submit_button.prop( 'disabled', true ); }
 	
 	// Use the error div of the booking system by default, or if possible, the error div of the form
@@ -575,7 +579,7 @@ function bookacti_submit_booking_form( form ) {
 				
 			} else {
 				// Hide fields and submit button to avoid duplicated bookings
-				form.find( '.bookacti-form-field-container:not(.bookacti-form-field-name-submit):not(.bookacti-form-field-name-calendar), input[type="submit"]' ).hide();
+				form.find( '.bookacti-form-field-container:not(.bookacti-form-field-name-submit):not(.bookacti-form-field-name-calendar), button[type="submit"], input[type="submit"]' ).hide();
 
 				// Show a "Make a new booking" button to avoid refreshing the page to make a new booking
 				if( response.has_logged_in ) { form.find( '.bookacti-new-booking-button' ).addClass( 'bookacti-reload-page' ); }

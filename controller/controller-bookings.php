@@ -78,9 +78,24 @@ add_action( 'wp_ajax_bookactiGetBookingList', 'bookacti_controller_get_booking_l
 // BOOKINGS ACTIONS
 
 /**
+ * Controller - Include dialogs for booking actions
+ * @since 1.16.45
+ * @global string $bookacti_include_booking_dialogs
+ */
+function bookacti_controller_include_booking_dialogs() {
+	global $bookacti_include_booking_dialogs;
+	if( ! empty( $bookacti_include_booking_dialogs ) ) {
+		bookacti_include_booking_dialogs( $bookacti_include_booking_dialogs, false );
+	}
+}
+add_action( 'wp_footer', 'bookacti_controller_include_booking_dialogs' );
+add_action( 'admin_footer', 'bookacti_controller_include_booking_dialogs' );
+
+
+/**
  * AJAX Controller - Cancel bookings
  * @since 1.16.0
- * @version 1.16.5
+ * @version 1.16.45
  */
 function bookacti_controller_cancel_bookings() {
 	// Check nonce
@@ -111,7 +126,7 @@ function bookacti_controller_cancel_bookings() {
 	foreach( $booking_groups as $booking_group_id => $booking_group ) {
 		$group_bookings = ! empty( $groups_bookings[ $booking_group_id ] ) ? $groups_bookings[ $booking_group_id ] : array();
 		$is_allowed = bookacti_user_can_manage_booking_group( $group_bookings );
-		if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'get_refund_actions_html' ); }
+		if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'cancel_booking' ); }
 		if( ! bookacti_booking_group_can_be_cancelled( $booking_group, $group_bookings, ! $is_admin ) ) {
 			/* translators: %s = Booking group ID */
 			bookacti_send_json( array( 'status' => 'failed', 'error' => 'cannot_be_cancelled', 'message' => sprintf( esc_html__( 'Booking group #%s cannot be cancelled.', 'booking-activities' ), $booking_group_id ) ), 'cancel_booking' );

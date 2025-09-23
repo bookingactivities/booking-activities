@@ -100,7 +100,7 @@ add_action( 'woocommerce_before_save_order_items', 'bookacti_cancel_bookings_if_
 /**
  * Cancel bookings when admin removes the associated order item
  * @since 1.1.0
- * @version 1.9.0
+ * @version 1.16.45
  * @param int $item_id
  */
 function bookacti_cancel_bookings_when_order_item_is_deleted( $item_id ) {
@@ -113,12 +113,18 @@ function bookacti_cancel_bookings_when_order_item_is_deleted( $item_id ) {
 	$items_bookings = bookacti_wc_get_order_items_bookings( array( $item ) );
 	if( empty( $items_bookings[ $item_id ] ) ) { return; }
 	
+	$active_statuses = bookacti_get_active_booking_statuses();
+	
 	// The item will be removed, so cancel the associated bookings
 	foreach( $items_bookings[ $item_id ] as $item_booking ) {
+		// Set the new status to "cancelled"
+		$new_status = apply_filters( 'bookacti_wc_deleted_order_item_booking_status', 'cancelled', $item_booking );
+		$is_active  = in_array( $new_status, $active_statuses, true ) ? 1 : 0;
+
 		// Cancel the single bookings
 		foreach( $item_booking[ 'bookings' ] as $booking ) {
 			$booking_data = array( 'id' => $booking->id, 'order_id' => -1 );
-			if( $booking->active ) { $booking_data[ 'status' ] = 'cancelled'; $booking_data[ 'active' ] = 0; }
+			if( $booking->active ) { $booking_data[ 'status' ] = $new_status; $booking_data[ 'active' ] = $is_active; }
 			$booking_data = bookacti_sanitize_booking_data( $booking_data );
 			bookacti_update_booking( $booking_data );
 		}
@@ -126,7 +132,7 @@ function bookacti_cancel_bookings_when_order_item_is_deleted( $item_id ) {
 		// Cancel the booking groups
 		if( $item_booking[ 'type' ] === 'group' ) {
 			$booking_group_data = array( 'id' => $item_booking[ 'id' ], 'order_id' => -1 );
-			if( ! empty( $item_booking[ 'bookings' ][ 0 ]->group_active ) ) { $booking_group_data[ 'status' ] = 'cancelled'; $booking_group_data[ 'active' ] = 0; }
+			if( ! empty( $item_booking[ 'bookings' ][ 0 ]->group_active ) ) { $booking_group_data[ 'status' ] = $new_status; $booking_group_data[ 'active' ] = $is_active; }
 			$booking_group_data = bookacti_sanitize_booking_group_data( $booking_group_data );
 			bookacti_update_booking_group( $booking_group_data );
 		}

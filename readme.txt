@@ -322,6 +322,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 = 1.16.45 =
 * Fix - Admnistrators could not reschedule to a past event from admin if "Administrators can reschedule bookings to" option was set to "Same form"
+* Fix - Booking dialogs may not appear on block based sites
+* Dev - Remove bookacti_booking_list_displayed_status hook, use bookacti_user_booking_list_default_statuses instead
+* Dev - Improve compatibility with "button" type submit, and not only "input" type submit
 
 = 1.16.44 - 2025/09/03 =
 * Fix - Product selectboxes may remain empty in booking form calendar settings

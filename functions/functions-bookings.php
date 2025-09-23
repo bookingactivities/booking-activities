@@ -1674,8 +1674,8 @@ function bookacti_get_booking_actions_by_booking( $booking, $admin_or_front = 'b
 	$is_frontend = $admin_or_front !== 'admin';
 	
 	if( ! current_user_can( 'bookacti_edit_bookings' ) ) {
-		if( isset( $actions[ 'edit_status' ] ) )      { unset( $actions[ 'edit_status' ] ); }
-		if( isset( $actions[ 'edit_quantity' ] ) )   { unset( $actions[ 'edit_quantity' ] ); }
+		if( isset( $actions[ 'edit_status' ] ) )       { unset( $actions[ 'edit_status' ] ); }
+		if( isset( $actions[ 'edit_quantity' ] ) )     { unset( $actions[ 'edit_quantity' ] ); }
 		if( isset( $actions[ 'send_notification' ] ) ) { unset( $actions[ 'send_notification' ] ); }
 	}
 	if( isset( $actions[ 'cancel' ] ) && ! bookacti_booking_can_be_cancelled( $booking, $is_frontend ) ) {
@@ -3251,7 +3251,7 @@ function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
 /**
  * Display a booking list
  * @since 1.7.6
- * @version 1.16.33
+ * @version 1.16.45
  * @param array $filters
  * @param array $columns
  * @param int $per_page
@@ -3318,10 +3318,40 @@ function bookacti_get_user_booking_list( $filters, $columns = array(), $per_page
 	
 	// Include bookings dialogs if they are not already
 	if( in_array( 'actions', $columns, true ) ) {
-		include_once( WP_PLUGIN_DIR . '/' . BOOKACTI_PLUGIN_NAME . '/view/view-bookings-dialogs.php' );
+		bookacti_include_booking_dialogs();
 	}
 	
 	return apply_filters( 'bookacti_user_booking_list_html', ob_get_clean(), $booking_list_items, $columns, $filters, $per_page );
+}
+
+
+/**
+ * Include dialogs for booking actions
+ * @since 1.16.45
+ * @global string $bookacti_include_booking_dialogs
+ * @param string $context 'front' or 'admin'
+ * @param boolean $in_footer
+ */
+function bookacti_include_booking_dialogs( $context = 'front', $in_footer = true ) {
+	// During AJAX calls, display the dialogs right away because there is no footer hooks
+	if( $in_footer && defined( 'DOING_AJAX' ) && DOING_AJAX ) {
+		$in_footer = false;
+	}
+	
+	if( $in_footer ) {
+		global $bookacti_include_booking_dialogs;
+		if( ! ( isset( $bookacti_include_booking_dialogs ) && $bookacti_include_booking_dialogs === 'admin' ) ) {
+			$bookacti_include_booking_dialogs = in_array( $context, array( 'front', 'admin' ), true ) ? $context : 'front';
+		}
+	}
+	else {
+		include_once( BOOKACTI_PATH . '/view/view-bookings-dialogs.php' );
+		if( $context === 'admin' ) {
+			include_once( BOOKACTI_PATH . '/view/view-backend-bookings-dialogs.php' );
+		}
+	}
+	
+	do_action( 'bookacti_include_booking_dialogs', $context, $in_footer );
 }
 
 

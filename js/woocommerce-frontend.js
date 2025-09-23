@@ -79,27 +79,33 @@ $j( document ).ready( function() {
 
 	/**
 	 * Enable add-to-cart button
-	 * @version 1.15.5
+	 * @version 1.16.45
 	 */
 	$j( '.woocommerce' ).on( 'bookacti_displayed_info_cleared', 'form.cart .bookacti-booking-system', function() {
-		$j( this ).closest( 'form' ).find( 'input[name="quantity"]' ).attr( 'disabled', false );
-		$j( this ).closest( 'form' ).find( 'button[type="submit"]' ).attr( 'disabled', false );
+		var form          = $j( this ).closest( 'form' );
+		var submit_button = form.find( 'button[type="submit"], input[type="submit"]' ).first();
+		
+		form.find( 'input[name="quantity"]' ).attr( 'disabled', false );
+		submit_button.attr( 'disabled', false );
 	});
 
 
 	/**
 	 * Disable add-to-cart button
-	 * @version 1.15.5
+	 * @version 1.16.45
 	 */
 	$j( '.woocommerce' ).on( 'bookacti_error_displayed', 'form.cart .bookacti-booking-system', function() {
-		$j( this ).closest( 'form' ).find( 'input[name="quantity"]' ).attr( 'disabled', true );
-		$j( this ).closest( 'form' ).find( 'button[type="submit"]' ).attr( 'disabled', true );
+		var form          = $j( this ).closest( 'form' );
+		var submit_button = form.find( 'button[type="submit"], input[type="submit"]' ).first();
+		
+		form.find( 'input[name="quantity"]' ).attr( 'disabled', true );
+		submit_button.attr( 'disabled', true );
 	});
 
 
 	/**
 	 * Add to cart dynamic check
-	 * @version 1.16.14
+	 * @version 1.16.45
 	 */
 	$j( '.woocommerce form.cart' ).on( 'submit', function() { 
 		var form = $j( this );
@@ -118,7 +124,7 @@ $j( document ).ready( function() {
 
 		if( proceed_to_validation ) {
 			// Submit Add to cart form only once at a time
-			var submit_button = form.find( 'button[type="submit"]' );
+			var submit_button = form.find( 'button[type="submit"], input[type="submit"]' ).first();
 			var was_disabled  = submit_button.attr( 'disabled' );
 			if( form.hasClass( 'bookacti-adding-to-cart' ) ) { 
 				submit_button.attr( 'disabled', true );
@@ -132,6 +138,9 @@ $j( document ).ready( function() {
 				if( is_valid ) {
 					// Trigger action before sending form
 					var data = { 'form_data': new FormData( form.get(0) ) };
+					if( submit_button.length && data.form_data instanceof FormData && submit_button.attr( 'name' ) ) {
+						data.form_data.append( submit_button.attr( 'name' ), submit_button.attr( 'value' ) );
+					}
 
 					form.trigger( 'bookacti_before_submit_booking_form', [ data ] );
 

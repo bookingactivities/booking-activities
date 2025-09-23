@@ -141,6 +141,7 @@ function bookacti_shortcode_booking_list( $raw_atts = array(), $content = null, 
 /**
  * Sanitize booking list shorcode attributes
  * @since 1.8.6
+ * @version 1.16.45
  * @param array $atts
  * @return array|false
  */
@@ -162,7 +163,7 @@ function bookacti_sanitize_booking_list_shortcode_attributes( $atts ) {
 	$default_atts = array_merge( bookacti_get_default_booking_filters(), array(
 		'user_id'	=> get_current_user_id(),
 		'per_page'	=> 10,
-		'status'	=> apply_filters( 'bookacti_booking_list_displayed_status', array( 'delivered', 'booked', 'pending', 'cancelled', 'refunded', 'refund_requested' ) ),
+		'status'	=> apply_filters( 'bookacti_user_booking_list_default_statuses', array( 'delivered', 'booked', 'pending', 'cancelled', 'refunded', 'refund_requested' ) ),
 		'group_by'	=> 'booking_group',
 		'columns'	=> bookacti_get_user_booking_list_default_columns()
 	) );
