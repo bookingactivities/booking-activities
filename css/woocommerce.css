@@ -66,6 +66,10 @@ table.woocommerce_order_items ul.bookacti-booking-events-list { margin: 0; }
 /* Cart, Checkout */
 .bookacti-cart-item-activity th.product-name dl.variation dt,
 .bookacti-cart-item-activity td.product-name dl.variation dt { float: none; display: block; font-weight: bold; }
+.wc-block-components-product-details__nbsp-nbsp-nbsp-nbsp-bull .wc-block-components-product-details__value:before { content: '\a0\a0\a0\a0'; }
+.wc-block-components-product-details__nbsp-nbsp-nbsp-nbsp-bull .wc-block-components-product-details__name,
+.bookacti-cart-item-activity th.product-name dl.variation dt.variation-nbspnbspnbspnbspbull,
+.bookacti-cart-item-activity td.product-name dl.variation dt.variation-nbspnbspnbspnbspbull { display: none; }
 .bookacti-cart-item-activity dd                              { margin: 0; }
 .bookacti-cart-item-activity dd > p:first-child              { margin: 0; font-weight: normal; }
 

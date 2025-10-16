@@ -171,8 +171,6 @@ ul[id$='-select-box-results'] li[aria-disabled='true'] { display: none; }
 .bookacti-duration-field-container { display: inline-block; vertical-align: middle; margin-right: 4px; }
 .bookacti-duration-field { width: 60px; }
 .bookacti-duration-field-label { display: block; }
-.bookacti-duration-hint { font-size: smaller; font-style: italic; }
-.bookacti-field-container .bookacti-duration-hint { text-align: right; }
 
 .bookacti-delete-date-interval           { cursor: pointer; color: #565d61; }
 .bookacti-add-date-interval              { cursor: pointer; color: #418fb6; }

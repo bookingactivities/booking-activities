@@ -47,9 +47,6 @@ body.booking-activities_page_bookacti_forms label[for='bookacti_form_publish-hid
 
 .bookacti-form-field-name-calendar .bookacti-edit-form-field:before	{ content: '\f111'; font: 400 20px dashicons; margin-right: 4px; vertical-align: sub; }
 
-#bookacti-availability_period_start-container .bookacti-duration-hint,
-#bookacti-availability_period_end-container .bookacti-duration-hint { display: none !important; }
-
 #bookacti-form-editor-page-container #bookacti-form-shortcode { background: inherit; color: inherit; font-size: 12px; border: none; box-shadow: none; padding: 4px 8px; margin: 0; width: 100%; max-width: none; }
 
 

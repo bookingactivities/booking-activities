@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Array of configurable notifications
  * @since 1.2.1 (was bookacti_get_emails_default_settings in 1.2.0)
- * @version 1.16.31
+ * @version 1.16.45
  * @return array
  */
 function bookacti_get_notifications_default_settings() {
@@ -101,7 +101,7 @@ function bookacti_get_notifications_default_settings() {
 				/* translators: %s = a booking status. E.g.: "Pending", "Booked"... */
 				'title'       => sprintf( esc_html__( 'Booking status turns to "%s"', 'booking-activities' ), esc_html__( 'Pending', 'booking-activities' ) ),
 				/* translators: %s = a booking status. E.g.: "Pending", "Booked"... */
-				'description' => sprintf( esc_html__( 'This notification is sent to the customer when one of his bookings becomes "%s".', 'booking-activities' ), esc_html__( 'Pending', 'booking-activities' ) ) 
+				'description' => sprintf( esc_html__( 'This notification is sent to customers when one of their bookings becomes "%s".', 'booking-activities' ), esc_html__( 'Pending', 'booking-activities' ) ) 
 				/* translators: %s = a booking status. E.g.: "Pending", "Booked"... */
 				              . ' ' . sprintf( esc_html__( 'If you set the "Default booking status" option to "%s", this notification will be sent right after the booking is made.', 'booking-activities' ), esc_html__( 'Pending', 'booking-activities' ) ),
 				'email'       => array(
@@ -117,7 +117,7 @@ function bookacti_get_notifications_default_settings() {
 				'id'          => 'customer_booked_booking',
 				'active'      => 1,
 				'title'       => sprintf( esc_html__( 'Booking status turns to "%s"', 'booking-activities' ), esc_html__( 'Booked', 'booking-activities' ) ),
-				'description' => sprintf( esc_html__( 'This notification is sent to the customer when one of his bookings becomes "%s".', 'booking-activities' ), esc_html__( 'Booked', 'booking-activities' ) ) 
+				'description' => sprintf( esc_html__( 'This notification is sent to customers when one of their bookings becomes "%s".', 'booking-activities' ), esc_html__( 'Booked', 'booking-activities' ) ) 
 				              . ' ' . sprintf( esc_html__( 'If you set the "Default booking status" option to "%s", this notification will be sent right after the booking is made.', 'booking-activities' ), esc_html__( 'Booked', 'booking-activities' ) ),
 				'email'       => array(
 					'active'  => 1,
@@ -132,7 +132,7 @@ function bookacti_get_notifications_default_settings() {
 				'id'          => 'customer_delivered_booking',
 				'active'      => 1,
 				'title'       => sprintf( esc_html__( 'Booking status turns to "%s"', 'booking-activities' ), esc_html__( 'Delivered', 'booking-activities' ) ),
-				'description' => sprintf( esc_html__( 'This notification is sent to the customer when one of his bookings becomes "%s".', 'booking-activities' ), esc_html__( 'Delivered', 'booking-activities' ) ),
+				'description' => sprintf( esc_html__( 'This notification is sent to customers when one of their bookings becomes "%s".', 'booking-activities' ), esc_html__( 'Delivered', 'booking-activities' ) ),
 				'email'       => array(
 					'active'  => 1,
 					'to'      => array(),
@@ -146,7 +146,7 @@ function bookacti_get_notifications_default_settings() {
 				'id'          => 'customer_cancelled_booking',
 				'active'      => 1,
 				'title'       => sprintf( esc_html__( 'Booking status turns to "%s"', 'booking-activities' ), esc_html__( 'Cancelled', 'booking-activities' ) ),
-				'description' => sprintf( esc_html__( 'This notification is sent to the customer when one of his bookings becomes "%s".', 'booking-activities' ), esc_html__( 'Cancelled', 'booking-activities' ) ),
+				'description' => sprintf( esc_html__( 'This notification is sent to customers when one of their bookings becomes "%s".', 'booking-activities' ), esc_html__( 'Cancelled', 'booking-activities' ) ),
 				'email'       => array(
 					'active'  => 1,
 					'to'      => array(),
@@ -160,7 +160,7 @@ function bookacti_get_notifications_default_settings() {
 				'id'          => 'customer_refund_requested_booking',
 				'active'      => 1,
 				'title'       => sprintf( esc_html__( 'Booking status turns to "%s"', 'booking-activities' ), esc_html__( 'Refund requested', 'booking-activities' ) ),
-				'description' => sprintf( esc_html__( 'This notification is sent to the customer when one of his bookings becomes "%s".', 'booking-activities' ), esc_html__( 'Refund requested', 'booking-activities' ) ),
+				'description' => sprintf( esc_html__( 'This notification is sent to customers when one of their bookings becomes "%s".', 'booking-activities' ), esc_html__( 'Refund requested', 'booking-activities' ) ),
 				'email'       => array(
 					'active'  => 1,
 					'to'      => array(),
@@ -174,7 +174,7 @@ function bookacti_get_notifications_default_settings() {
 				'id'          => 'customer_refunded_booking',
 				'active'      => 1,
 				'title'       => sprintf( esc_html__( 'Booking status turns to "%s"', 'booking-activities' ), esc_html__( 'Refunded', 'booking-activities' ) ),
-				'description' => sprintf( esc_html__( 'This notification is sent to the customer when one of his bookings becomes "%s".', 'booking-activities' ), esc_html__( 'Refunded', 'booking-activities' ) ),
+				'description' => sprintf( esc_html__( 'This notification is sent to customers when one of their bookings becomes "%s".', 'booking-activities' ), esc_html__( 'Refunded', 'booking-activities' ) ),
 				'email'       => array(
 					'active'  => 1,
 					'to'      => array(),
@@ -188,7 +188,7 @@ function bookacti_get_notifications_default_settings() {
 				'id'          => 'customer_rescheduled_booking',
 				'active'      => 1,
 				'title'       => esc_html__( 'Booking is rescheduled', 'booking-activities' ),
-				'description' => esc_html__( 'This notification is sent to the customer when one of his bookings is rescheduled.', 'booking-activities' ),
+				'description' => esc_html__( 'This notification is sent to customers when one of their bookings is rescheduled.', 'booking-activities' ),
 				'email'       => array(
 					'active'  => 1,
 					'to'      => array(),
@@ -388,7 +388,7 @@ function bookacti_sanitize_notification_settings( $args, $notification_id = '' )
 /**
  * Get notifications tags
  * @since 1.2.0
- * @version 1.16.31
+ * @version 1.16.45
  * @param string $notification_id Optional.
  * @return array
  */
@@ -417,7 +417,7 @@ function bookacti_get_notifications_tags( $notification_id = '' ) {
 		'{user_lastname}'          => esc_html__( 'The user last name', 'booking-activities' ),
 		'{user_email}'             => esc_html__( 'The user email address', 'booking-activities' ),
 		'{user_phone}'             => esc_html__( 'The user phone number', 'booking-activities' ),
-		'{user_id}'                => esc_html__( 'The user ID. If the user has booked without account, this will display his email address.', 'booking-activities' ),
+		'{user_id}'                => esc_html__( 'The user ID. If the user has booked without account, this will display the email address.', 'booking-activities' ),
 		'{user_locale}'            => esc_html__( 'The user locale code. If the user has booked without account, the site locale will be used.', 'booking-activities' ),
 		'{user_auth_key}'          => esc_html__( 'The user authentication key, it allows users to manage their bookings without being logged in. Use it as the value of the user_auth_key parameter in the URL of a page where the [bookingactivities_list] shortcode is displayed (e.g.: https://example.net/my-bookings/?user_auth_key={user_auth_key}).', 'booking-activities' ),
 		'{user_ical_url}'          => esc_html__( 'URL to export the user list of bookings in ical format. You can append the "start" and "end" parameters with relative time format to this URL (e.g.: {user_ical_url}&start=today&end=next+year). If the user has booked without account, only the current booking is exported.', 'booking-activities' ),
@@ -1250,7 +1250,7 @@ function bookacti_maybe_send_event_rescheduled_notifications( $old_event, $old_b
 /**
  * Send a notification when an event is deleted to the customers who booked it
  * @since 1.14.0 (was bookacti_send_event_cancelled_notifications)
- * @version 1.16.27
+ * @version 1.16.45
  * @param object $event
  * @param array $old_bookings
  * @param boolean $send_notitifications
@@ -1286,7 +1286,7 @@ function bookacti_maybe_send_event_cancelled_notifications( $event, $old_booking
 		$old_booking = ! empty( $old_bookings[ $booking->id ] ) ? $old_bookings[ $booking->id ] : $booking;
 		if( $old_booking->state === $booking->state ) { continue; }
 		
-		do_action( 'bookacti_booking_status_changed', $booking->state, $old_booking, array() );
+		do_action( 'bookacti_booking_status_changed', $booking->state, $old_booking, array( 'is_admin' => true, 'context' => 'event_deactivated' ) );
 
 		$send = apply_filters( 'bookacti_send_event_cancelled_notification', $send_notitifications, $booking, $event, $old_booking );
 		if( $send ) {
@@ -1300,7 +1300,7 @@ function bookacti_maybe_send_event_cancelled_notifications( $event, $old_booking
 /**
  * Send a notification when an event is deleted to the customers who booked it
  * @since 1.14.1 (was bookacti_send_group_of_events_cancelled_notifications)
- * @version 1.16.5
+ * @version 1.16.45
  * @param array $group_of_events
  * @param array $old_booking_groups
  * @param array $old_groups_bookings
@@ -1333,7 +1333,7 @@ function bookacti_maybe_send_group_of_events_cancelled_notifications( $group_of_
 		$old_group_bookings = ! empty( $old_groups_bookings[ $booking_group->id ] ) ? $old_groups_bookings[ $booking_group->id ] : array();
 		if( $old_booking_group->state === $booking_group->state ) { continue; }
 		
-		do_action( 'bookacti_booking_group_status_changed', $booking_group->state, $old_booking_group, $old_group_bookings, array() );
+		do_action( 'bookacti_booking_group_status_changed', $booking_group->state, $old_booking_group, $old_group_bookings, array( 'is_admin' => true, 'context' => 'event_deactivated' ) );
 		
 		$send = apply_filters( 'bookacti_send_group_of_events_cancelled_notification', $send_notifications, $booking_group, $group_of_events, $old_booking_group, $old_group_bookings );
 		if( $send ) {

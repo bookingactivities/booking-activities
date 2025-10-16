@@ -2032,6 +2032,20 @@ function bookacti_add_class_to_activity_order_item( $classes, $item, $order ) {
 add_filter( 'woocommerce_order_item_class', 'bookacti_add_class_to_activity_order_item', 10, 3 );
 
 
+/**
+ * Change displayed item meta HTML
+ * @since 1.0.0
+ * @param string $html
+ * @param WC_Order_Item_Product $item
+ * @param array $args
+ * @return string
+ */
+function bookacti_wc_display_item_meta( $html, $item, $args ) {
+	return str_replace( '&bull;:', '', $html );
+}
+add_filter( 'woocommerce_display_item_meta', 'bookacti_wc_display_item_meta', 10, 3 );
+
+
 
 
 // BOOKING LIST

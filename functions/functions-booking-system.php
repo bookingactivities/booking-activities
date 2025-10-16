@@ -613,7 +613,7 @@ function bookacti_format_booking_system_attributes( $raw_atts = array() ) {
 /**
  * Format picked events array
  * @since 1.9.0
- * @version 1.12.3
+ * @version 1.16.45
  * @param array $picked_events_raw
  * @param boolean $one_entry_per_group
  * @return array
@@ -641,9 +641,9 @@ function bookacti_format_picked_events( $picked_events_raw = array(), $one_entry
 				
 				// Add the group to the array and start listing its picked events
 				$picked_events[ $i ] = array(
-					'group_id' => $picked_event[ 'group_id' ],
+					'group_id'   => $picked_event[ 'group_id' ],
 					'group_date' => $picked_event[ 'group_date' ],
-					'events' => array( $picked_event )
+					'events'     => array( $picked_event )
 				);
 			} 
 			
@@ -657,6 +657,15 @@ function bookacti_format_picked_events( $picked_events_raw = array(), $one_entry
 			
 			// Increment 1 per group or event
 			++$i;
+		}
+		
+		// Sort events array by date
+		if( $one_entry_per_group ) {
+			foreach( $picked_events as $i => $picked_event ) {
+				if( count( $picked_events[ $i ][ 'events' ] ) > 1 ) {
+					$picked_events[ $i ][ 'events' ] = bookacti_sort_events_array_by_dates( $picked_events[ $i ][ 'events' ] );
+				}
+			}
 		}
 	}
 	

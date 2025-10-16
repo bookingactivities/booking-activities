@@ -77,7 +77,7 @@ $j( document ).ready( function() {
 	/**
 	 * Convert duration from days/hours/minutes to seconds - on change
 	 * @since 1.8.0
-	 * @version 1.15.8
+	 * @version 1.16.45
 	 */
 	$j( 'body' ).on( 'keyup mouseup change', '.bookacti-duration-field', function() {
 		var field_value = $j( this ).closest( '.bookacti-duration-field-container' ).siblings( '.bookacti-duration-value' );
@@ -92,12 +92,6 @@ $j( document ).ready( function() {
 			if( $j.isNumeric( days ) )    { value += parseInt( days ) * 86400; }
 		}
 		field_value.val( value ).trigger( 'change' );
-		
-		// Display an hint below avilability period fields to help setting the appropriate value - on change
-		$j( this ).closest( '.bookacti-duration-field-container' ).siblings( '.bookacti-duration-hint' ).remove();
-		if( ! $j.isNumeric( value ) ) { value = 0; }
-		var hint = moment.utc().add( value + bookacti_localized.utc_offset, 's' ).formatPHP( bookacti_localized.date_format_long );
-		$j( this ).closest( '.bookacti-duration-field-container' ).parent().find( '.bookacti-duration-field-container' ).last().after( '<div class="bookacti-duration-hint">' + hint + '</div>' );
 	});
 	
 	

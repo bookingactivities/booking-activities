@@ -157,7 +157,6 @@
 /* Activity dialog */
 #bookacti-activity-import-dialog label { display: inline-block; width: 150px; font-weight: bold; }
 #bookacti-delete-activity-options { margin-top: 20px; }
-#bookacti-activity-duration-container .bookacti-duration-hint { display: none !important; }
 .bookacti-roles-notice { display: none; margin-top: 10px; margin-bottom: 20px; }
 #bookacti-activity-roles-container label, #bookacti-group-category-roles-container label { cursor: pointer; }
 #bookacti-event-repeat-step, #bookacti-group-of-events-repeat-step { width: 50px; }

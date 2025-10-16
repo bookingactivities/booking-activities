@@ -59,7 +59,7 @@ function bookacti_insert_booking( $booking_data ) {
 /**
  * Update a booking
  * @since 1.9.0
- * @version 1.11.0
+ * @version 1.16.45
  * @global wpdb $wpdb
  * @param array $booking_data Sanitized with bookacti_sanitize_booking_data
  * @param array $where
@@ -111,6 +111,7 @@ function bookacti_update_booking( $booking_data, $where = array() ) {
 			}
 		}
 		$query .= ') ';
+		$variables = array_merge( $variables, $where[ 'status__in' ] );
 	}
 	
 	$query = apply_filters( 'bookacti_update_booking_query', $wpdb->prepare( $query, $variables ), $booking_data, $where );
@@ -126,7 +127,7 @@ function bookacti_update_booking( $booking_data, $where = array() ) {
 
 /**
  * Get bookings according to filters
- * @version 1.16.12
+ * @version 1.16.45
  * @global wpdb $wpdb
  * @param array $filters Use bookacti_format_booking_filters() before
  * @return array
@@ -318,8 +319,10 @@ function bookacti_get_bookings( $filters ) {
 		$variables = array_merge( $variables, $filters[ 'not_in__booking_group_id' ] );
 	}
 	
-	if( $filters[ 'booking_group_id' ] === 'none' ) {
+	if( $filters[ 'booking_group_id' ] === false ) {
 		$query .= ' AND B.group_id IS NULL ';
+	} else if( $filters[ 'booking_group_id' ] === true ) {
+		$query .= ' AND B.group_id IS NOT NULL ';
 	}
 	
 	if( $filters[ 'in__booking_group_date' ] ) {
@@ -505,6 +508,14 @@ function bookacti_get_bookings( $filters ) {
 		$variables[] = $filters[ 'active' ];
 	}
 	
+	if( $filters[ 'expired' ] !== false ) {
+		if( $filters[ 'expired' ] ) {
+			$query .= ' AND B.expiration_date IS NOT NULL AND B.expiration_date <= UTC_TIMESTAMP() ';
+		} else {
+			$query .= ' AND ( B.expiration_date IS NULL OR B.expiration_date > UTC_TIMESTAMP() ) ';
+		}
+	}
+	
 	if( $filters[ 'group_by' ] === 'booking_group' ) {
 		$query .= ' GROUP BY unique_group_id ';
 	} else {
@@ -580,7 +591,7 @@ function bookacti_get_bookings( $filters ) {
 /**
  * Get the total amount of booking rows according to filters
  * @since 1.3.1
- * @version 1.16.12
+ * @version 1.16.45
  * @global wpdb $wpdb
  * @param array $filters Use bookacti_format_booking_filters() before
  * @return int
@@ -773,8 +784,10 @@ function bookacti_get_number_of_booking_rows( $filters ) {
 		$variables = array_merge( $variables, $filters[ 'not_in__booking_group_id' ] );
 	}
 	
-	if( $filters[ 'booking_group_id' ] === 'none' ) {
+	if( $filters[ 'booking_group_id' ] === false ) {
 		$query .= ' AND B.group_id IS NULL ';
+	} else if( $filters[ 'booking_group_id' ] === true ) {
+		$query .= ' AND B.group_id IS NOT NULL ';
 	}
 	
 	if( $filters[ 'in__booking_group_date' ] ) {
@@ -961,6 +974,14 @@ function bookacti_get_number_of_booking_rows( $filters ) {
 		$variables[] = $filters[ 'active' ];
 	}
 	
+	if( $filters[ 'expired' ] !== false ) {
+		if( $filters[ 'expired' ] ) {
+			$query .= ' AND B.expiration_date IS NOT NULL AND B.expiration_date <= UTC_TIMESTAMP() ';
+		} else {
+			$query .= ' AND ( B.expiration_date IS NULL OR B.expiration_date > UTC_TIMESTAMP() ) ';
+		}
+	}
+	
 	// Whether to count bookings of the same groups as one item
 	if( $filters[ 'group_by' ] === 'booking_group' ) {
 		$query .= ' GROUP BY unique_group_id ';
@@ -986,7 +1007,7 @@ function bookacti_get_number_of_booking_rows( $filters ) {
 
 /**
  * Get number of bookings of a specific event or a specific occurrence
- * @version 1.16.12
+ * @version 1.16.45
  * @global wpdb $wpdb
  * @param array $filters Use bookacti_format_booking_filters() before
  * @return int
@@ -1188,8 +1209,10 @@ function bookacti_get_number_of_bookings( $filters ) {
 		$variables = array_merge( $variables, $filters[ 'not_in__booking_group_id' ] );
 	}
 	
-	if( $filters[ 'booking_group_id' ] === 'none' ) {
+	if( $filters[ 'booking_group_id' ] === false ) {
 		$query .= ' AND B.group_id IS NULL ';
+	} else if( $filters[ 'booking_group_id' ] === true ) {
+		$query .= ' AND B.group_id IS NOT NULL ';
 	}
 	
 	if( $filters[ 'in__booking_group_date' ] ) {
@@ -1373,6 +1396,14 @@ function bookacti_get_number_of_bookings( $filters ) {
 	if( $filters[ 'active' ] !== false ) {
 		$query .= ' AND B.active = %d ';
 		$variables[] = $filters[ 'active' ];
+	}
+	
+	if( $filters[ 'expired' ] !== false ) {
+		if( $filters[ 'expired' ] ) {
+			$query .= ' AND B.expiration_date IS NOT NULL AND B.expiration_date <= UTC_TIMESTAMP() ';
+		} else {
+			$query .= ' AND ( B.expiration_date IS NULL OR B.expiration_date > UTC_TIMESTAMP() ) ';
+		}
 	}
 	
 	// Whether to count bookings of the same groups as one item
@@ -2441,7 +2472,7 @@ function bookacti_update_booking_groups_bookings_quantity( $group_ids, $new_quan
 /**
  * Get booking groups according to filters
  * @since 1.3.0 (was bookacti_get_booking_groups_by_group_of_events)
- * @version 1.16.43
+ * @version 1.16.45
  * @global wpdb $wpdb
  * @param array $filters Use bookacti_format_booking_filters() before
  * @return array
@@ -2695,6 +2726,14 @@ function bookacti_get_booking_groups( $filters ) {
 	if( $filters[ 'active' ] !== false ) {
 		$query .= ' AND BG.active = %d ';
 		$variables[] = $filters[ 'active' ];
+	}
+	
+	if( $filters[ 'expired' ] !== false ) {
+		if( $filters[ 'expired' ] ) {
+			$query .= ' AND B.expiration_date IS NOT NULL AND B.expiration_date <= UTC_TIMESTAMP() ';
+		} else {
+			$query .= ' AND ( B.expiration_date IS NULL OR B.expiration_date > UTC_TIMESTAMP() ) ';
+		}
 	}
 
 	$query .= ' GROUP BY BG.id ';

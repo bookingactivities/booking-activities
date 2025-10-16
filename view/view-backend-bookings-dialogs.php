@@ -1,7 +1,7 @@
 <?php 
 /**
  * Backend booking dialogs
- * @version 1.16.43
+ * @version 1.16.45
  */
 
 // Exit if accessed directly
@@ -160,47 +160,46 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_change_booking_status' ); ?>'/>
 		<fieldset>
 			<legend><?php esc_html_e( 'Booking status', 'booking-activities' ); ?></legend>
-			<div>
-				<label for='bookacti-select-booking-status' ><?php esc_html_e( 'Booking status', 'booking-activities' ); ?></label>
-				<select name='booking_status' id='bookacti-select-booking-status' >
-					<option value=''><?php esc_html_e( 'Do not change', 'booking-activities' ); ?></option>
-					<?php
-					$booking_statuses = apply_filters( 'bookacti_change_booking_status_options', bookacti_get_booking_statuses() );
-					foreach( $booking_statuses as $status => $label ) {
-						echo '<option value="' . esc_attr( $status ) . '" >' . esc_html( $label ) . '</option>';
-					}
-					?>
-				</select>
-			</div>
-			<div>
-				<label for='bookacti-send-notifications-on-status-change'><?php esc_html_e( 'Send notifications', 'booking-activities' ); ?></label>
-				<?php 
-					$args = array(
-						'type'  => 'checkbox',
-						'name'  => 'send_notifications',
-						'id'    => 'bookacti-send-notifications-on-status-change',
-						'value' => 0,
+			<?php
+				$booking_qty_fields = apply_filters( 'bookacti_change_booking_status_dialog_booking_status_fields', array(
+					'booking_status' => array(
+						'type'    => 'select',
+						'name'    => 'booking_status',
+						'title'   => esc_html__( 'Booking status', 'booking-activities' ),
+						'id'      => 'bookacti-select-booking-status',
+						'options' => array_merge( array( '' => esc_html__( 'Do not change', 'booking-activities' ) ), bookacti_get_booking_statuses() ),
+						'value'   => '',
+						'tip'     => esc_html__( 'Select the new booking status. For booking groups, all bookings will be updated unless they have a different status than the group.', 'booking-activities' )
+					),
+					'send_notifications' => array(
+						'type'    => 'checkbox',
+						'name'    => 'send_notifications',
+						'title'   => esc_html__( 'Send notifications', 'booking-activities' ),
+						'id'      => 'bookacti-send-notifications-on-status-change',
+						'value'   => 0,
 						/* Translators: %s is a link to the "Notifications settings" */
-						'tip'   => sprintf( esc_html__( 'Send the booking status change notifications configured in %s.', 'booking-activities' ), '<a href="' . admin_url( 'admin.php?page=bookacti_settings&tab=notifications' ) . '">' . esc_html__( 'Notifications settings', 'booking-activities' ) . '</a>' )
-					);
-					bookacti_display_field( $args );
-				?>
-			</div>
+						'tip'     => sprintf( esc_html__( 'Send the booking status change notifications configured in %s.', 'booking-activities' ), '<a href="' . admin_url( 'admin.php?page=bookacti_settings&tab=notifications' ) . '">' . esc_html__( 'Notifications settings', 'booking-activities' ) . '</a>' )
+					)
+				));
+				bookacti_display_fields( $booking_qty_fields );
+			?>
 		</fieldset>
 		<fieldset>
 			<legend><?php esc_html_e( 'Payment status', 'booking-activities' ); ?></legend>
-			<div>
-				<label for='bookacti-select-payment-status' ><?php esc_html_e( 'Payment status', 'booking-activities' ); ?></label>
-				<select name='payment_status' id='bookacti-select-payment-status'>
-					<option value=''><?php esc_html_e( 'Do not change', 'booking-activities' ); ?></option>
-					<?php
-					$payment_statuses = bookacti_get_payment_statuses();
-					foreach( $payment_statuses as $status => $label ) {
-						echo '<option value="' . esc_attr( $status ) . '" >' . esc_html( $label ) . '</option>';
-					}
-					?>
-				</select>
-			</div>
+			<?php 
+				$booking_qty_fields = apply_filters( 'bookacti_change_booking_status_dialog_payment_status_fields', array(
+					'payment_status' => array(
+						'type'    => 'select',
+						'name'    => 'payment_status',
+						'title'   => esc_html__( 'Payment status', 'booking-activities' ),
+						'id'      => 'bookacti-select-payment-status',
+						'options' => array_merge( array( '' => esc_html__( 'Do not change', 'booking-activities' ) ), bookacti_get_payment_statuses() ),
+						'value'   => '',
+						'tip'     => esc_html__( 'Select the new payment status. For booking groups, all bookings will be updated unless they have a different payment status than the group.', 'booking-activities' )
+					)
+				));
+				bookacti_display_fields( $booking_qty_fields );
+			?>
 		</fieldset>
 	</form>
 </div>

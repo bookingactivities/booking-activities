@@ -103,17 +103,18 @@ add_filter( 'bookacti_booking_statuses', 'bookacti_wc_booking_statuses', 20, 1 )
 /**
  * Remove WC booking statuses from the change selectbox
  * @since 1.16.43
- * @param array $options
+ * @version 1.16.45
+ * @param array $fields
  * @return array
  */
-function bookacti_wc_change_booking_statuses_options( $options ) {
-	unset( $options[ 'in_cart' ] );
-	unset( $options[ 'expired' ] );
-	unset( $options[ 'removed' ] );
+function bookacti_wc_change_booking_statuses_options( $fields ) {
+	unset( $fields[ 'booking_status' ][ 'options' ][ 'in_cart' ] );
+	unset( $fields[ 'booking_status' ][ 'options' ][ 'expired' ] );
+	unset( $fields[ 'booking_status' ][ 'options' ][ 'removed' ] );
 	
-	return $options;
+	return $fields;
 }
-add_filter( 'bookacti_change_booking_status_options', 'bookacti_wc_change_booking_statuses_options', 10, 1 );
+add_filter( 'bookacti_change_booking_status_dialog_booking_status_fields', 'bookacti_wc_change_booking_statuses_options', 10, 1 );
 
 
 /**
@@ -1049,7 +1050,7 @@ add_filter( 'bookacti_booking_list_default_hidden_columns', 'bookacti_woocommerc
 /**
  * Controller - Get WC order items rows
  * @since 1.7.4
- * @version 1.9.0
+ * @version 1.16.45
  * @param string $rows
  * @param string $context
  * @param array $filters
@@ -1062,9 +1063,9 @@ function bookacti_controller_get_order_items_rows( $rows, $context, $filters, $c
 	$booking_ids = array();
 	$booking_group_ids = array();
 	
-	if( ! empty( $filters[ 'booking_id' ] ) )			{ $booking_ids[] = $filters[ 'booking_id' ]; }
+	if( ! empty( $filters[ 'booking_id' ] ) && is_numeric( $filters[ 'booking_id' ] ) )			    { $booking_ids[] = $filters[ 'booking_id' ]; }
+	if( ! empty( $filters[ 'booking_group_id' ] ) && is_numeric( $filters[ 'booking_group_id' ] ) ) { $booking_group_ids[] = $filters[ 'booking_group_id' ]; }
 	if( ! empty( $filters[ 'in__booking_id' ] ) )		{ $booking_ids = array_merge( $booking_ids, $filters[ 'in__booking_id' ] ); }
-	if( ! empty( $filters[ 'booking_group_id' ] ) )		{ $booking_group_ids[] = $filters[ 'booking_group_id' ]; }
 	if( ! empty( $filters[ 'in__booking_group_id' ] ) )	{ $booking_group_ids = array_merge( $booking_group_ids, $filters[ 'in__booking_group_id' ] ); }
 	
 	$order_items = bookacti_wc_get_order_items_by_bookings( $booking_ids, $booking_group_ids );
