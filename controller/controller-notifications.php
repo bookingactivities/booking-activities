@@ -27,6 +27,7 @@ add_action( 'bookacti_deactivate', 'bookacti_deregister_cron_event_to_clean_late
 /**
  * Controller - Send async notifications
  * @since 1.16.0
+ * @version 1.16.45
  */
 function bookacti_controller_send_async_notifications() {
 	// Do not send on AJAX calls to avoid multiple calls and expired cache
@@ -38,6 +39,12 @@ function bookacti_controller_send_async_notifications() {
 	
 	// Check if the desired action is to send the async notifications
 	if( empty( $_REQUEST[ 'bookacti_send_async_notifications' ] ) ) { return; }
+	
+	// Check if the key is correct
+	if( empty( $_REQUEST[ 'key' ] ) ) { return; }
+	$sanitized_key = sanitize_title_with_dashes( $_REQUEST[ 'key' ] );
+	$secret_key    = get_option( 'bookacti_cron_key' );
+	if( $sanitized_key !== $secret_key ) { return; }
 	
 	// Check if async notifications are allowed
 	$allow_async = apply_filters( 'bookacti_allow_async_notifications', bookacti_get_setting_value( 'bookacti_notifications_settings', 'notifications_async' ) );

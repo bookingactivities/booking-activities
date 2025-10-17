@@ -350,6 +350,10 @@ function bookacti_activate() {
 	$install_date = get_option( 'bookacti-install-date' );
 	if( ! $install_date ) { update_option( 'bookacti-install-date', date( 'Y-m-d H:i:s' ) ); }
 	
+	// Create a secret key to allow to manually trigger certain cron tasks
+	$cron_key = get_option( 'bookacti_cron_key' );
+	if( ! $cron_key ) { update_option( 'bookacti_cron_key', md5( microtime().rand() ) ); }
+	
 	// Update current version
 	delete_option( 'bookacti_version' );
 	add_option( 'bookacti_version', BOOKACTI_VERSION );

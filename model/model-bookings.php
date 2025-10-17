@@ -2735,7 +2735,37 @@ function bookacti_get_booking_groups( $filters ) {
 			$query .= ' AND ( B.expiration_date IS NULL OR B.expiration_date > UTC_TIMESTAMP() ) ';
 		}
 	}
-
+	
+	if( $filters[ 'from' ] ) {
+		$query .= ' AND B.start >= %s ';
+		$variables[] = $filters[ 'from' ];
+	}
+	
+	if( $filters[ 'to' ] ) {
+		$query .= ' AND B.start <= %s ';
+		$variables[] = $filters[ 'to' ];
+	}
+	
+	if( $filters[ 'end_from' ] ) {
+		$query .= ' AND B.end >= %s ';
+		$variables[] = $filters[ 'end_from' ];
+	}
+	
+	if( $filters[ 'end_to' ] ) {
+		$query .= ' AND B.end <= %s ';
+		$variables[] = $filters[ 'end_to' ];
+	}
+	
+	if( $filters[ 'created_from' ] ) {
+		$query .= ' AND B.creation_date >= %s ';
+		$variables[] = $filters[ 'created_from' ];
+	}
+	
+	if( $filters[ 'created_to' ] ) {
+		$query .= ' AND B.creation_date <= %s ';
+		$variables[] = $filters[ 'created_to' ];
+	}
+	
 	$query .= ' GROUP BY BG.id ';
 
 	if( $filters[ 'order_by' ] ) {

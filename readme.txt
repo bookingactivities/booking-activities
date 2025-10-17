@@ -327,14 +327,18 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Admnistrators could not reschedule to a past event from admin if "Administrators can reschedule bookings to" option was set to "Same form"
 * Fix - Booking dialogs may not appear on block based sites
 * Dev - Add "expired" booking filter (can only be used programmatically)
+* Dev - Make "from", "to", "end_from", "end_to", "created_from" and "created_to" booking filters work when retrieving booking groups as well
 * Dev - Allow boolean value for "booking_group_id" booking filter to retrieve only (non) grouped bookings (can only be used programmatically)
 * Dev - Remove bookacti_booking_list_displayed_status hook, use bookacti_user_booking_list_default_statuses instead
 * Dev - Remove bookacti_change_booking_status_options hook, use bookacti_change_booking_status_dialog_booking_status_fields instead
 * Dev - Add bookacti_booking_quantity_updated and bookacti_booking_status_changed hooks on every WC actions that affects booking quantity or status
 * Dev - Add context in $args parameter of bookacti_booking_quantity_updated, bookacti_booking_group_quantity_updated, bookacti_booking_status_changed and bookacti_booking_group_status_changed hooks
 * Dev - Refactor all parameters of bookacti_booking_quantity_updated and bookacti_booking_group_quantity_updated hooks
+* Dev - Refactor all parameters of bookacti_event_updated hook
+* Dev - Replace first parameter of bookacti_activity_updated and bookacti_group_category_updated hooks
 * Dev - Replace $delay parameter of bookacti_is_booking_in_delay hook with $deadline_dt
 * Dev - Improve compatibility with "button" type submit, and not only "input" type submit
+* Dev - Add a secret key to process async notifications via URL
 
 = 1.16.44 - 2025/09/03 =
 * Fix - Product selectboxes may remain empty in booking form calendar settings

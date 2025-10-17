@@ -997,7 +997,7 @@ add_action( 'wp_ajax_nopriv_bookactiRescheduleBookings', 'bookacti_controller_re
 /**
  * AJAX Controller - Send a notification for bookings (groups)
  * @since 1.16.0
- * @version 1.16.31
+ * @version 1.16.45
  */
 function bookacti_controller_send_bookings_notification() {
 	// Check nonce
@@ -1053,8 +1053,9 @@ function bookacti_controller_send_bookings_notification() {
 	$message = sprintf( esc_html( _n( '%s notification has been sent.', '%s notifications have been sent.', $sent_nb, 'booking-activities' ) ), $sent_nb );
 	$async   = apply_filters( 'bookacti_allow_async_notifications', bookacti_get_setting_value( 'bookacti_notifications_settings', 'notifications_async' ) );
 	if( $async ) {
+		$secret_key = get_option( 'bookacti_cron_key' );
 		/* translators: %s = link labelled "Trigger manually" */
-		$message .= '</li><li>' . sprintf( esc_html__( 'Please be patient, the notifications are sent asynchronously (%s).', 'booking-activities' ), '<a href="' . esc_url( get_site_url() . '/wp-cron.php?bookacti_send_async_notifications=1' ) . '" target="_blank">' . esc_html__( 'Trigger manually', 'booking-activities' ) . '</a>' );
+		$message .= '</li><li>' . sprintf( esc_html__( 'Please be patient, the notifications are sent asynchronously (%s).', 'booking-activities' ), '<a href="' . esc_url( get_site_url() . '/wp-cron.php?bookacti_send_async_notifications=1&key=' . $secret_key ) . '" target="_blank">' . esc_html__( 'Trigger manually', 'booking-activities' ) . '</a>' );
 	
 		if( $sent_nb > 1 ) {
 			$message .= '</li><li>' . esc_html__( 'Notifications sent to the same recipient will be merged.', 'booking-activities' );
@@ -1070,7 +1071,7 @@ add_action( 'wp_ajax_bookactiSendBookingsNotification', 'bookacti_controller_sen
 /**
  * AJAX Controller - Delete bookings
  * @since 1.16.0
- * @version 1.16.1
+ * @version 1.16.45
  */
 function bookacti_controller_delete_bookings() {
 	// Check nonce
@@ -1122,7 +1123,7 @@ function bookacti_controller_delete_bookings() {
 			'booking' => empty( $new_selected_bookings[ 'bookings' ][ $booking_id ] )
 		);
 		if( empty( $new_selected_bookings[ 'bookings' ][ $booking_id ] ) ) {
-			do_action( 'bookacti_booking_deleted', $booking );
+			do_action( 'bookacti_booking_deleted', $booking, array( 'is_admin' => $is_admin, 'context' => 'delete_bookings' ) );
 		}
 	}
 	foreach( $booking_groups as $group_id => $booking_group ) {
@@ -1132,7 +1133,7 @@ function bookacti_controller_delete_bookings() {
 		);
 		if( empty( $new_selected_bookings[ 'booking_groups' ][ $group_id ] ) ) {
 			$group_bookings = isset( $groups_bookings[ $group_id ] ) ? $groups_bookings[ $group_id ] : array();
-			do_action( 'bookacti_booking_group_deleted', $booking_group, $group_bookings );
+			do_action( 'bookacti_booking_group_deleted', $booking_group, $group_bookings, array( 'is_admin' => $is_admin, 'context' => 'delete_bookings' ) );
 		}
 	}
 	
