@@ -846,6 +846,16 @@ function bookacti_dont_display_instock_in_variation( $availability_html, $variat
 add_filter( 'woocommerce_get_stock_html', 'bookacti_dont_display_instock_in_variation', 10, 2 );
 
 
+/**
+ * Clean session data - on woocommerce_cart_emptied
+ * @since 1.16.45
+ */
+function bookacti_wc_clean_session_data() {
+	bookacti_wc_set_cart_expiration_date( null );
+}
+add_action( 'woocommerce_cart_emptied', 'bookacti_wc_clean_session_data' );
+
+
 
 
 // CART PAGE

@@ -1253,13 +1253,13 @@ function bookacti_expand_collapse_all_groups_of_events( action, except_category_
 
 /**
  * Load activities bound to selected template
- * @version 1.15.5
+ * @version 1.16.45
  * @param {int} selected_template_id
  */
 function bookacti_load_activities_bound_to_template( selected_template_id ) {
 	if( parseInt( selected_template_id ) === parseInt( bookacti.selected_template ) ) { return; }
 
-	$j( '#bookacti-activity-import-dialog .bookacti-form-error' ).remove();
+	$j( '#bookacti-activity-import-dialog .bookacti-notices' ).remove();
 
 	bookacti_start_template_loading();
 	bookacti_add_loading_html( $j( '#bookacti-activity-import-dialog' ) );

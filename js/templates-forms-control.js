@@ -45,20 +45,20 @@ $j( document ).ready( function() {
 	/**
 	 * Toggle activity user roles - on check box
 	 * @since 1.13.0
-	 * @version 1.15.4
+	 * @version 1.16.45
 	 */
 	$j( '#bookacti-activity-data-dialog' ).on( 'change', '#bookacti-display-activity-user-roles', function() {
-		$j( '#bookacti-activity-roles, #bookacti-activity-roles + .select2-container, #bookacti-activity-data-dialog .bookacti-roles-notice' ).toggle( $j( this ).prop( 'checked' ) );
+		$j( '#bookacti-activity-roles-container' ).toggle( $j( this ).prop( 'checked' ) );
 	});
 	
 	
 	/**
 	 * Toggle group category user roles - on check box
 	 * @since 1.13.0
-	 * @version 1.15.4
+	 * @version 1.16.45
 	 */
 	$j( '#bookacti-group-category-dialog' ).on( 'change', '#bookacti-display-group-category-user-roles', function() {
-		$j( '#bookacti-group-category-roles, #bookacti-group-category-roles + .select2-container, #bookacti-group-category-dialog .bookacti-roles-notice' ).toggle( $j( this ).prop( 'checked' ) );
+		$j( '#bookacti-group-category-roles-container' ).toggle( $j( this ).prop( 'checked' ) );
 	});
 	
 	
@@ -97,8 +97,6 @@ $j( document ).ready( function() {
 	/**
 	 * Toggle reschedule activity ids field accoding to reschedule scope value - on change
 	 * @since 1.16.0
-	 * @param {Event} e
-	 * @param {Boolean} is_checked
 	 */
 	$j( '#bookacti-activity-reschedule-scope' ).on( 'change', function() {
 		var reschedule_scope = $j( this ).val() || '';

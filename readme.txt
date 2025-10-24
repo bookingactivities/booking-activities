@@ -339,6 +339,8 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Dev - Replace $delay parameter of bookacti_is_booking_in_delay hook with $deadline_dt
 * Dev - Improve compatibility with "button" type submit, and not only "input" type submit
 * Dev - Add a secret key to process async notifications via URL
+* Dev - Add PHP hooks in calendar editor dialogs, refactor some code to standardize everything
+* Dev - Clean session data on woocommerce_cart_emptied as recommended in WC 10.3
 
 = 1.16.44 - 2025/09/03 =
 * Fix - Product selectboxes may remain empty in booking form calendar settings

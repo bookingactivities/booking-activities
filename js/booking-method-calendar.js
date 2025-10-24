@@ -503,7 +503,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 			// Add data to the event element
 			var event_start_formatted = moment.utc( info.event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
 			var event_end_formatted   = moment.utc( info.event.end ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
-
+			
 			// Add some info to the event
 			$j( info.el ).data( 'event-id',         event_id );
 			$j( info.el ).attr( 'data-event-id',    event_id );
@@ -650,7 +650,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 			if( avail_div ) { return_object.domNodes.push( avail_div[ 0 ] ); }
 			
 			booking_system.trigger( 'bookacti_calendar_event_content', [ return_object, info ] );
-
+			
 			return return_object;
 		},
 		

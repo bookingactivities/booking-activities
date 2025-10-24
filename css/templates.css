@@ -158,11 +158,18 @@
 #bookacti-activity-import-dialog label { display: inline-block; width: 150px; font-weight: bold; }
 #bookacti-delete-activity-options { margin-top: 20px; }
 .bookacti-roles-notice { display: none; margin-top: 10px; margin-bottom: 20px; }
-#bookacti-activity-roles-container label, #bookacti-group-category-roles-container label { cursor: pointer; }
-#bookacti-event-repeat-step, #bookacti-group-of-events-repeat-step { width: 50px; }
+#bookacti-display-activity-user-roles-container label,
+#bookacti-display-group-category-user-roles-container label { display: inline-block; vertical-align: middle; width: auto; cursor: pointer; }
+#bookacti-activity-roles, #bookacti-group-category-roles { width: 100% !important; }
 
 /* Event dialog */
-.bookacti-repeat-freq-start-of-week-notice { display: none; margin-top: 10px; }
+#bookacti-event-repeat-step-container, 
+#bookacti-event-repeat-freq-container,
+#bookacti-group-of-events-repeat-step-container,
+#bookacti-group-of-events-repeat-freq-container  { display: inline-block; vertical-align: middle; }
+#bookacti-event-repeat-step,
+#bookacti-group-of-events-repeat-step            { width: 50px; }
+.bookacti-repeat-freq-start-of-week-notice       { display: none; margin-top: 10px; }
 
 /* Move an event dialog */
 .bookacti-selected-event-dates						{ margin: 25px 0; }
@@ -179,7 +186,6 @@
 .bookacti-update-booked-repeated-event-dates-warning, 
 .bookacti-delete-booked-repeated-event-warning { color: #b81c23; }
 
-
 /* Unbind dialog */
 #bookacti-unbind-event-dialog .bookacti-selected-event-dates,
 #bookacti-unbind-group-of-events-dialog .bookacti-selected-group-of-events-container { margin: 0 0 25px 0; }
@@ -190,9 +196,8 @@
 #bookacti-unbind-event-dialog .bookacti-unbind-action small,
 #bookacti-unbind-group-of-events-dialog .bookacti-unbind-action small { display: inline-block; margin: 1em 2em 0 2em; }
 
-
 /* Group of events dialog */
-#bookacti-group-of-events-new-category-title { display: none; }
+#bookacti-group-of-events-category-title-field-container { display: none; }
 #bookacti-group-of-events-summary-label-container { display: flex; justify-content: space-between; }
 #bookacti-group-of-events-summary-label { width: 220px; padding: 8px 0; }
 .bookacti-backend-dialog .bookacti-selected-events-list { width: 100%; max-width: 100%; overflow: auto; resize: vertical; }

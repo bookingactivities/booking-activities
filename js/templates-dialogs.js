@@ -133,23 +133,20 @@ function bookacti_init_template_dialogs() {
 	
 	/**
 	 * Display or hide new group category title field
+	 * @version 1.16.45
 	 */
 	$j( '#bookacti-group-of-events-category-selectbox' ).on( 'change blur', function() {
-		if( $j( this ).val() === 'new' ){
-			$j( '#bookacti-group-of-events-new-category-title' ).show();
-		} else {
-			$j( '#bookacti-group-of-events-new-category-title' ).hide();
-		}
+		$j( '#bookacti-group-of-events-category-title-field-container' ).toggle( $j( this ).val() === 'new' );
 	});
 	
 	/**
 	 * Toggle week starts on notice according to repeat_every option in event dialog
 	 * @since 1.11.0
-	 * @version 1.12.0
+	 * @version 1.16.45
 	 */
 	$j( 'body' ).on( 'change', 'input[name="repeat_step"], select[name="repeat_freq"]', function() { 
-		var skip_weeks = parseInt( $j( this ).closest( '.bookacti-field-container' ).find( 'input[name="repeat_step"]' ).val() ) > 1 && $j( this ).closest( '.bookacti-field-container' ).find( 'select[name="repeat_freq"]' ).val() === 'weekly';
-		$j( this ).closest( '.bookacti-field-container' ).find( '.bookacti-repeat-freq-start-of-week-notice' ).toggle( skip_weeks );
+		var skip_weeks = parseInt( $j( this ).closest( '.bookacti-repeat-freq-container' ).find( 'input[name="repeat_step"]' ).val() ) > 1 && $j( this ).closest( '.bookacti-repeat-freq-container' ).find( 'select[name="repeat_freq"]' ).val() === 'weekly';
+		$j( this ).closest( '.bookacti-repeat-freq-container' ).find( '.bookacti-repeat-freq-start-of-week-notice' ).toggle( skip_weeks );
 	});
 	
 	/**
@@ -1763,7 +1760,7 @@ function bookacti_dialog_delete_activity( activity_id ) {
 
 /**
  * Create a group of events
- * @version 1.15.13
+ * @version 1.16.45
  * @param {int} category_id
  */
 function bookacti_dialog_create_group_of_events( category_id ) {
@@ -1782,7 +1779,7 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 		$j( '#bookacti-group-of-events-category-selectbox' ).val( category_id ).trigger( 'change' );
 		
 	} else {
-		$j( '#bookacti-group-of-events-new-category-title' ).show();
+		$j( '#bookacti-group-of-events-category-title-field-container' ).show();
 	}
 	
 	// General tab
