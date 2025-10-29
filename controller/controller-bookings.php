@@ -405,7 +405,7 @@ add_action( 'wp_ajax_nopriv_bookactiRefundBookings', 'bookacti_controller_refund
 /**
  * AJAX Controller - Change bookings status
  * @since 1.16.0
- * @version 1.16.5
+ * @version 1.16.45
  */
 function bookacti_controller_change_bookings_status() {
 	// Check nonce
@@ -488,14 +488,14 @@ function bookacti_controller_change_bookings_status() {
 	foreach( $bookings as $booking_id => $booking ) {
 		if( empty( $new_selected_bookings[ 'bookings' ][ $booking_id ] ) ) { continue; }
 		$new_booking = $new_selected_bookings[ 'bookings' ][ $booking_id ];
+		if( $booking->payment_status !== $new_booking->payment_status ) {
+			do_action( 'bookacti_booking_payment_status_changed', $new_booking->payment_status, $booking, array( 'is_admin' => $is_admin, 'context' => 'change_bookings_status', 'send_notifications' => $send_notifications ) );
+		}
 		if( $booking->state !== $new_booking->state ) {
 			do_action( 'bookacti_booking_status_changed', $new_booking->state, $booking, array( 'is_admin' => $is_admin, 'context' => 'change_bookings_status' ) );
 			if( $send_notifications ) {
 				bookacti_send_booking_status_change_notification( $new_booking->state, $new_booking, $booking );
 			}
-		}
-		if( $booking->payment_status !== $new_booking->payment_status ) {
-			do_action( 'bookacti_booking_payment_status_changed', $booking, $new_payment_status, array( 'is_admin' => $is_admin, 'context' => 'change_bookings_status', 'send_notifications' => $send_notifications ) );
 		}
 		$updated[ 'bookings' ][ $booking_id ] = array(
 			'old_status'         => $booking->state,
@@ -508,14 +508,14 @@ function bookacti_controller_change_bookings_status() {
 		if( empty( $new_selected_bookings[ 'booking_groups' ][ $group_id ] ) ) { continue; }
 		$new_booking_group = $new_selected_bookings[ 'booking_groups' ][ $group_id ];
 		$group_bookings    = isset( $groups_bookings[ $group_id ] ) ? $groups_bookings[ $group_id ] : array();
+		if( $booking_group->payment_status !== $new_booking_group->payment_status ) {
+			do_action( 'bookacti_booking_group_payment_status_changed', $new_booking_group->payment_status, $booking_group, $group_bookings, array( 'is_admin' => $is_admin, 'context' => 'change_bookings_status', 'send_notifications' => $send_notifications ) );
+		}
 		if( $booking_group->state !== $new_booking_group->state ) {
 			do_action( 'bookacti_booking_group_status_changed', $new_booking_group->state, $booking_group, $group_bookings, array( 'is_admin' => $is_admin, 'context' => 'change_bookings_status' ) );
 			if( $send_notifications ) {
 				bookacti_send_booking_group_status_change_notification( $new_booking_group->state, $new_booking_group, $booking_group );
 			}
-		}
-		if( $booking_group->payment_status !== $new_booking_group->payment_status ) {
-			do_action( 'bookacti_booking_group_payment_status_changed', $group_id, $group_bookings, $new_booking_group->payment_status, array( 'is_admin' => $is_admin, 'context' => 'change_bookings_status', 'send_notifications' => $send_notifications ) );
 		}
 		$updated[ 'booking_groups' ][ $group_id ] = array(
 			'old_status'         => $booking_group->state,

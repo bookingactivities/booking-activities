@@ -333,6 +333,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Dev - Remove bookacti_change_booking_status_options hook, use bookacti_change_booking_status_dialog_booking_status_fields instead
 * Dev - Add bookacti_booking_quantity_updated and bookacti_booking_status_changed hooks on every WC actions that affects booking quantity or status
 * Dev - Add context in $args parameter of bookacti_booking_quantity_updated, bookacti_booking_group_quantity_updated, bookacti_booking_status_changed and bookacti_booking_group_status_changed hooks
+* Dev - Refactor all parameters of bookacti_booking_payment_status_changed and bookacti_booking_group_payment_status_changed hooks
 * Dev - Refactor all parameters of bookacti_booking_quantity_updated and bookacti_booking_group_quantity_updated hooks
 * Dev - Refactor all parameters of bookacti_event_updated hook
 * Dev - Replace first parameter of bookacti_activity_updated and bookacti_group_category_updated hooks
