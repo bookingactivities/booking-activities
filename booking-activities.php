@@ -11,7 +11,7 @@
  * Requires at least: 4.1
  * Requires PHP: 5.6
  * WC requires at least: 3.0
- * WC tested up to: 10.1
+ * WC tested up to: 10.3
  * License: GPL3
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  * 

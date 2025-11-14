@@ -1420,8 +1420,11 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 					'id'    => 'bookacti-update-booked-event-dates-send_notifications',
 					'title' => esc_html__( 'Send notifications', 'booking-activities' ),
 					'value' => 0,
-					/* translators: %1$s = title of the notification (E.g.: "Booking is rescheduled") */
-					'tip'   => sprintf( esc_html__( 'Send the "%1$s" notification to your customer. No notification will be sent for past bookings and to administrators.', 'booking-activities' ), esc_html__( 'Booking is rescheduled', 'booking-activities' ) )
+					'tip'   => sprintf(
+						/* Translators: %s is a link to the "Notifications settings" */
+						esc_html__( 'Send the reschedule booking notifications configured in %s.', 'booking-activities' ), 
+						'<a href="' . admin_url( 'admin.php?page=bookacti_settings&tab=notifications' ) . '">' . esc_html__( 'Notifications settings', 'booking-activities' ) . '</a>'
+					) . ' ' . esc_html__( 'No notification will be sent for past bookings.', 'booking-activities' )
 				)
 			);
 			bookacti_display_fields( $fields );
@@ -1467,7 +1470,12 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 		<div id='bookacti-delete-booked-event-options'>
 			<p><?php esc_html_e( 'You can also cancel the bookings made for this event.', 'booking-activities' ); ?></p>
 			<?php 
-				$send_notifications_tip = sprintf( esc_html__( 'Send the "%1$s" notification to your customer. No notification will be sent for past bookings and to administrators.', 'booking-activities' ), sprintf( esc_html__( 'Booking status turns to "%s"', 'booking-activities' ), esc_html__( 'Cancelled', 'booking-activities' ) ) );
+				$send_notifications_tip = sprintf( 
+					/* Translators: %s is a link to the "Notifications settings" */
+					esc_html__( 'Send the booking status change notifications configured in %s.', 'booking-activities' ), 
+					'<a href="' . admin_url( 'admin.php?page=bookacti_settings&tab=notifications' ) . '">' . esc_html__( 'Notifications settings', 'booking-activities' ) . '</a>'
+				) . ' ' . esc_html__( 'No notification will be sent for past bookings.', 'booking-activities' );
+				
 				$fields = apply_filters( 'bookacti_delete_booked_event_fields', array(
 					'cancel_bookings' => array(
 						'type'  => 'checkbox',

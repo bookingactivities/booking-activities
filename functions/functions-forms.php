@@ -1485,6 +1485,7 @@ function bookacti_validate_login( $login_values, $require_authentication = true 
 /**
  * Process login form: log in / register / book without account the user
  * @since 1.16.42
+ * @version 1.16.45
  * @param int $form_id
  * @param array $login_values
  * @return array
@@ -1493,7 +1494,7 @@ function bookacti_process_login_form( $form_id, $login_values ) {
 	$return_array = array( 'status' => 'success', 'error' => '', 'messages' => array(), 'user_id' => '' );
 	
 	if( is_user_logged_in() ) {
-		$return_array[ 'user_id' ] = get_current_user_id();
+		$return_array[ 'user_id' ] = apply_filters( 'bookacti_current_user_id', get_current_user_id() );
 	}
 	else if( ! apply_filters( 'bookacti_bypass_login_process', false ) ) {
 		// Retrieve login data

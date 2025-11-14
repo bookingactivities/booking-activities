@@ -2,7 +2,7 @@
 Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
-Tested up to: 6.8
+Tested up to: 6.9
 Stable tag: 1.16.45
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -326,6 +326,8 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Tweak - Hide bullet point followed by colon in WC item meta
 * Fix - Admnistrators could not reschedule to a past event from admin if "Administrators can reschedule bookings to" option was set to "Same form"
 * Fix - Booking dialogs may not appear on block based sites
+* Fix - Columns order may not be taken into account with select2 4.0.13
+* Fix - Call woocommerce_coupon_is_valid hook in try catch to improve compatibility
 * Dev - Add "expired" booking filter (can only be used programmatically)
 * Dev - Make "from", "to", "end_from", "end_to", "created_from" and "created_to" booking filters work when retrieving booking groups as well
 * Dev - Allow boolean value for "booking_group_id" booking filter to retrieve only (non) grouped bookings (can only be used programmatically)

@@ -177,8 +177,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						'title'   => esc_html__( 'Send notifications', 'booking-activities' ),
 						'id'      => 'bookacti-send-notifications-on-status-change',
 						'value'   => 0,
-						/* Translators: %s is a link to the "Notifications settings" */
-						'tip'     => sprintf( esc_html__( 'Send the booking status change notifications configured in %s.', 'booking-activities' ), '<a href="' . admin_url( 'admin.php?page=bookacti_settings&tab=notifications' ) . '">' . esc_html__( 'Notifications settings', 'booking-activities' ) . '</a>' )
+						'tip'     => sprintf(
+							/* Translators: %s is a link to the "Notifications settings" */
+							esc_html__( 'Send the booking status change notifications configured in %s.', 'booking-activities' ), 
+							'<a href="' . admin_url( 'admin.php?page=bookacti_settings&tab=notifications' ) . '">' . esc_html__( 'Notifications settings', 'booking-activities' ) . '</a>'
+						)
 					)
 				));
 				bookacti_display_fields( $booking_qty_fields );

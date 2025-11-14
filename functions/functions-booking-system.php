@@ -1327,7 +1327,7 @@ function bookacti_get_fullcalendar_fields_default_data( $fields = array() ) {
 /**
  * Check picked event / group of events availability
  * @since 1.15.6 (was bookacti_validate_booking_form)
- * @version 1.16.44
+ * @version 1.16.45
  * @param array $picked_events formatted with bookacti_format_picked_events with $one_entry_per_group = false
  * @param array $args {
  *  @type int $quantity Desired number of bookings
@@ -1344,8 +1344,12 @@ function bookacti_validate_picked_events( $picked_events, $args = array() ) {
 	
 	$default_args = array(
 		'quantity' => 1,
-		'form_id'  => 0
+		'form_id'  => 0,
+		'user_id'  => apply_filters( 'bookacti_current_user_id', get_current_user_id() )
 	);
+	if( isset( $args[ 'user_id' ] ) && ( ! $args[ 'user_id' ] || $args[ 'user_id' ] === bookacti_get_unknown_user_id() ) ) {
+		unset( $args[ 'user_id' ] );
+	}
 	$args = wp_parse_args( $args, $default_args );
 	
 	// Keep one entry per group
@@ -1379,13 +1383,6 @@ function bookacti_validate_picked_events( $picked_events, $args = array() ) {
 	
 	// Check each picked event
 	else {
-		// Get user ID
-		if( ! empty( $_POST[ 'login_type' ] ) && $_POST[ 'login_type' ] === 'no_account' 
-		&&  ! empty( $_POST[ 'email' ] ) && is_email( $_POST[ 'email' ] ) ) { 
-			$user_id = $_POST[ 'email' ]; 
-		}
-		$user_id = apply_filters( 'bookacti_current_user_id', ! empty( $user_id ) ? $user_id : get_current_user_id() );
-		
 		// Get events and groups of events data
 		$event_ids = $group_ids = $events_interval_dt = $groups_interval_dt = array();
 		foreach( $picked_events as $i => $picked_event ) {
@@ -1475,9 +1472,10 @@ function bookacti_validate_picked_events( $picked_events, $args = array() ) {
 			}
 
 			// Availability checks
-			$availability = $picked_event[ 'args' ][ 'availability' ];
+			$user_id                 = $args[ 'user_id' ];
+			$availability            = $picked_event[ 'args' ][ 'availability' ];
 			$quantity_already_booked = isset( $picked_event[ 'args' ][ 'bookings_nb_per_user' ][ $user_id ] ) ? $picked_event[ 'args' ][ 'bookings_nb_per_user' ][ $user_id ] : 0;
-			$number_of_users = count( $picked_event[ 'args' ][ 'bookings_nb_per_user' ] );
+			$number_of_users         = count( $picked_event[ 'args' ][ 'bookings_nb_per_user' ] );
 			
 			// Sanitize Activity / Category meta
 			$min_quantity  = isset( $activity_meta[ 'min_bookings_per_user' ] ) ? intval( $activity_meta[ 'min_bookings_per_user' ] ) : 0;

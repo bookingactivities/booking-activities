@@ -698,7 +698,7 @@ function bookacti_get_formatted_time_before_expiration( $expiration_date, $preci
 /**
  * Get product price as is it should be displayed in cart (with or without tax according to settings)
  * @since 1.9.0
- * @version 1.16.0
+ * @version 1.16.45
  * @global woocommerce $woocommerce
  * @param WC_Product $product
  * @param float $price
@@ -711,16 +711,18 @@ function bookacti_wc_get_displayed_product_price( $product, $price = '', $qty = 
 	
 	$display_price = $price !== '' ? floatval( $price ) : 0;
 	if( $product->is_taxable() ) {
-		if( $woocommerce->cart->display_prices_including_tax() ) {
+		$is_incl_tax      = ! empty( $woocommerce->cart ) ? $woocommerce->cart->display_prices_including_tax() : get_option( 'woocommerce_tax_display_cart' ) === 'incl';
+		$has_subtotal_tax = ! empty( $woocommerce->cart ) ? $woocommerce->cart->get_subtotal_tax() > 0 : true;
+		if( $is_incl_tax ) {
 			$display_price   = wc_get_price_including_tax( $product, array( 'price' => $price, 'qty' => $qty ) );
 			$formatted_price = html_entity_decode( wc_price( $display_price ) );
-			if( ! wc_prices_include_tax() && $woocommerce->cart->get_subtotal_tax() > 0 ) {
+			if( ! wc_prices_include_tax() && $has_subtotal_tax ) {
 				$formatted_price .= ' <small class="tax_label">' . $woocommerce->countries->inc_tax_or_vat() . '</small>';
 			}
 		} else {
 			$display_price   = wc_get_price_excluding_tax( $product, array( 'price' => $price, 'qty' => $qty ) );
 			$formatted_price = html_entity_decode( wc_price( $display_price ) );
-			if( wc_prices_include_tax() && $woocommerce->cart->get_subtotal_tax() > 0 ) {
+			if( wc_prices_include_tax() && $has_subtotal_tax ) {
 				$formatted_price .= ' <small class="tax_label">' . $woocommerce->countries->ex_tax_or_vat() . '</small>';
 			}
 		}
@@ -2634,7 +2636,7 @@ function bookacti_refund_selected_bookings_with_coupon( $selected_bookings, $ref
 /**
  * Check if a coupon code can be used
  * @since 1.11.3
- * @version 1.16.8
+ * @version 1.16.45
  * @param string $coupon_code
  * @return WP_Error|true
  */
@@ -2664,12 +2666,23 @@ function bookacti_wc_is_coupon_code_valid( $coupon_code ) {
 	}
 	
 	// Check if the coupon has been disabled by a third-party plugin
-	if( ! $error_code && ! apply_filters( 'woocommerce_coupon_is_valid', true, $coupon, null ) ) {
-		$error_code = WC_Coupon::E_WC_COUPON_INVALID_FILTERED;
+	if( ! $error_code ) {
+		$is_valid = true;
+		try {
+			$is_valid = apply_filters( 'woocommerce_coupon_is_valid', $is_valid, $coupon, null );
+		} catch ( Exception $e ) {
+			$is_valid      = false;
+			$error_code    = $e->getCode() ? $e->getCode() : WC_Coupon::E_WC_COUPON_INVALID_FILTERED;
+			$error_message = apply_filters( 'woocommerce_coupon_error', $e->getMessage(), $e->getCode(), $coupon );
+		}
+		
+		if( ! $is_valid && ! $error_code ) {
+			$error_code = WC_Coupon::E_WC_COUPON_INVALID_FILTERED;
+		}
 	}
 	
 	// Get the corresponding error message
-	if( $error_code ) {
+	if( $error_code && ! $error_message ) {
 		$error_message = is_numeric( $error_code ) ? $coupon->get_coupon_error( $error_code ) : $error_code;
 		$error_code    = is_numeric( $error_code ) ? intval( $error_code ) : 0;
 		$error_message = apply_filters( 'woocommerce_coupon_error', $error_message, $error_code, $coupon );

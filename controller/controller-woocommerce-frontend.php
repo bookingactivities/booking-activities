@@ -484,7 +484,7 @@ add_filter( 'woocommerce_quantity_input_args', 'bookacti_set_wc_quantity_via_url
 
 /**
  * Validate add to cart form and temporarily book the event
- * @version 1.15.15
+ * @version 1.16.45
  * @global WooCommerce $woocommerce
  * @global array $global_bookacti_wc
  * @param boolean $true
@@ -510,7 +510,7 @@ function bookacti_validate_add_to_cart_and_book_temporarily( $true, $product_id,
 	}
 	
 	global $woocommerce;
-	$user_id = is_user_logged_in() ? get_current_user_id() : $woocommerce->session->get_customer_id();
+	$user_id = apply_filters( 'bookacti_current_user_id', get_current_user_id() );
 	
 	// Get product form ID
 	$form_id = $variation_id ? bookacti_get_product_form_id( $variation_id, true ) : bookacti_get_product_form_id( $product_id, false );

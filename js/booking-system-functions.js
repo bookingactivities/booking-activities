@@ -1130,7 +1130,7 @@ function bookacti_get_min_and_max_quantity( booking_system ) {
 
 /**
  * Set min and max quantity on the quantity field
- * @version 1.16.18
+ * @version 1.16.45
  * @param {HTMLElement} booking_system
  * @param {Boolean} change_val
  */
@@ -1156,7 +1156,7 @@ function bookacti_set_min_and_max_quantity( booking_system, change_val ) {
 	if( old_quantity < qty_data.min ) {
 		// If min required bookings is higher than available places, 
 		// keep the higher amount to feedback that there are not enough places
-		if( qty_data.min > qty_data.avail ) { qty_data.max = qty_data.min; }
+		if( qty_data.avail && qty_data.min > qty_data.avail ) { qty_data.max = qty_data.min; }
 		if( change_val ) { qty_data.value = qty_data.min; }
 	}
 	
