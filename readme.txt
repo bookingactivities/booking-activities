@@ -324,6 +324,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Feature - Add customer avatar column to user booking list (customer_avatar) and backend booking list
 * Tweak - Remove hint on duration field as it may be misleading
 * Tweak - Hide bullet point followed by colon in WC item meta
+* Tweak - Remove "Password required" option from "User data (login / registration)" field settings
 * Fix - Admnistrators could not reschedule to a past event from admin if "Administrators can reschedule bookings to" option was set to "Same form"
 * Fix - Booking dialogs may not appear on block based sites
 * Fix - Columns order may not be taken into account with select2 4.0.13

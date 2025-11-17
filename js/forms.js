@@ -257,7 +257,7 @@ $j( document ).ready( function() {
 /**
  * Display or hide the register fields according to the login type value
  * @since 1.5.0
- * @version 1.12.4
+ * @version 1.16.45
  * @param {HTMLElement} login_field_container
  */
 function bookacti_show_hide_register_fields( login_field_container ) {
@@ -286,14 +286,9 @@ function bookacti_show_hide_register_fields( login_field_container ) {
 		button_container.show();
 	} else if( login_type === 'my_account' ) { 
 		password_strength.hide(); 
-		password_forgotten.show(); 
-		if( password_field.hasClass( 'bookacti-password-not-required' ) ) {
-			password_field.hide();
-			password_field.find( 'input[name="password"]' ).prop( 'required', false );
-		} else {
-			password_field.show();
-			password_field.find( 'input[name="password"]' ).prop( 'required', true );
-		}
+		password_forgotten.show();
+		password_field.show();
+		password_field.find( 'input[name="password"]' ).prop( 'required', true );
 		remember_field.show();
 		register_fieldset.hide(); 
 		register_fieldset.find( '.bookacti-required-field' ).prop( 'required', false );
