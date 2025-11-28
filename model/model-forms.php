@@ -595,7 +595,7 @@ function bookacti_get_form_fields( $form_id, $active_only = true ) {
 /**
  * Update a form field
  * @since 1.5.0
- * @version 1.14.0
+ * @version 1.16.45
  * @global wpdb $wpdb
  * @param array $field_data
  * @return int|false
@@ -605,13 +605,13 @@ function bookacti_update_form_field( $field_data ) {
 	
 	$query = 'UPDATE ' . BOOKACTI_TABLE_FORM_FIELDS 
 	       . ' SET '
-	       . ' title = NULLIF( IFNULL( NULLIF( %s, "" ), title ), "null" ), '
-	       . ' label = NULLIF( IFNULL( NULLIF( %s, "" ), label ), "null" ), '
-	       . ' placeholder = NULLIF( IFNULL( NULLIF( %s, "" ), placeholder ), "null" ), '
-	       . ' tip = NULLIF( IFNULL( NULLIF( %s, "" ), tip ), "null" ), '
-	       . ' options = NULLIF( IFNULL( NULLIF( %s, "" ), options ), "null" ), '
-	       . ' value = NULLIF( IFNULL( NULLIF( %s, "" ), value ), "null" ), '
-	       . ' required = IFNULL( NULLIF( %d, -1 ), required ) '
+	       . ' title       = NULLIF( IFNULL( NULLIF( IFNULL( NULLIF( %s, "" ), title ), "empty" ), "" ), "null" ), '
+	       . ' label       = NULLIF( IFNULL( NULLIF( IFNULL( NULLIF( %s, "" ), label ), "empty" ), "" ), "null" ), '
+	       . ' placeholder = NULLIF( IFNULL( NULLIF( IFNULL( NULLIF( %s, "" ), placeholder ), "empty" ), "" ), "null" ), '
+	       . ' tip         = NULLIF( IFNULL( NULLIF( IFNULL( NULLIF( %s, "" ), tip ), "empty" ), "" ), "null" ), '
+	       . ' options     = NULLIF( IFNULL( NULLIF( IFNULL( NULLIF( %s, "" ), options ), "empty" ), "a:0:{}" ), "null" ), '
+	       . ' value       = NULLIF( IFNULL( NULLIF( IFNULL( NULLIF( %s, "" ), value ), "empty" ), "" ), "null" ), '
+	       . ' required    = IFNULL( NULLIF( %d, -1 ), required ) '
 	       . ' WHERE id = %d ';
 	
 	$variables = array(

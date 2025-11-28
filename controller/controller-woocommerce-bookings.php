@@ -191,9 +191,6 @@ add_action( 'woocommerce_system_status_tool_executed', 'bookacti_wc_controller_r
  * @version 1.16.45
  * @param int $order_id
  * @param WC_Order $order
- * @param string $booking_status
- * @param string $payment_status
- * @param boolean $force_status_notification
  */
 function bookacti_wc_update_completed_order_bookings( $order_id, $order = null ) {
 	if( ! $order ) { $order = wc_get_order( $order_id ); }
@@ -223,9 +220,6 @@ add_action( 'woocommerce_order_status_completed', 'bookacti_wc_update_completed_
  * @version 1.16.45
  * @param int $order_id
  * @param WC_Order $order
- * @param string $booking_status
- * @param string $payment_status
- * @param boolean $force_status_notification
  */
 function bookacti_wc_update_partially_paid_order_bookings( $order_id, $order = null ) {
 	if( ! $order ) { $order = wc_get_order( $order_id ); }

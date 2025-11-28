@@ -633,7 +633,7 @@ function bookacti_get_active_add_ons( $prefix = '', $exclude = array( 'balau' ) 
 /**
  * Get add-on data by prefix
  * @since 1.7.14
- * @version 1.16.42
+ * @version 1.16.45
  * @param string $prefix
  * @param array $exclude
  * @return array
@@ -646,7 +646,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-display-pack', 
 			'end_of_life' => '', 
 			'download_id' => 482,
-			'min_version' => '1.5.9'
+			'min_version' => '1.5.12'
 		),
 		'banp' => array( 
 			'title'       => 'Notification Pack', 
@@ -654,7 +654,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-notification-pack', 
 			'end_of_life' => '', 
 			'download_id' => 1393,
-			'min_version' => '1.3.3'
+			'min_version' => '1.3.12'
 		),
 		'bapap' => array( 
 			'title'       => 'Prices and Credits', 
@@ -662,7 +662,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-prices-and-credits', 
 			'end_of_life' => '', 
 			'download_id' => 438,
-			'min_version' => '1.8.29'
+			'min_version' => '1.8.32'
 		),
 		'baaf' => array( 
 			'title'       => 'Advanced Forms', 
@@ -670,7 +670,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-advanced-forms', 
 			'end_of_life' => '', 
 			'download_id' => 2705,
-			'min_version' => '1.5.6'
+			'min_version' => '1.5.7'
 		),
 		'baofc' => array( 
 			'title'	      => 'Order for Customers', 
@@ -678,7 +678,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-order-for-customers', 
 			'end_of_life' => '', 
 			'download_id' => 436,
-			'min_version' => '1.3.6'
+			'min_version' => '1.3.7'
 		),
 		'bara' => array( 
 			'title'       => 'Resource Availability', 
@@ -686,7 +686,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-resource-availability', 
 			'end_of_life' => '', 
 			'download_id' => 29249,
-			'min_version' => '1.2.3'
+			'min_version' => '1.2.4'
 		),
 		'balau' => array( 
 			'title'       => 'Licenses & Updates', 

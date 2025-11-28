@@ -120,7 +120,7 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 							'id'          => $field_id . '-email',
 							'class'       => 'bookacti-form-field bookacti-email',
 							'placeholder' => $field[ 'placeholder' ][ 'email' ],
-							'required'    => $field[ 'required_fields' ][ 'email' ] ? 1 : 0
+							'required'    => 1
 						), $field, $instance_id, $context );
 						bookacti_display_field( $email_args );
 					?>

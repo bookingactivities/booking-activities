@@ -446,19 +446,18 @@ function bookacti_get_booking_changes_deadline_dt( $booking, $booking_type = 'si
  * @param string $context 'cancel' or 'reschedule'
  * @return boolean
  */
-function bookacti_is_booking_in_delay( $booking, $context = '' ) {
+function bookacti_is_booking_in_delay( $booking, $booking_type = 'single', $context = '' ) {
 	// Get booking
 	if( is_numeric( $booking ) ) { $booking = bookacti_get_booking_by_id( $booking, true ); }
 	if( ! $booking ) { return false; }
 	
 	// Check if changes deadline is past
-	$booking_type = ! empty( $booking->group_id ) ? 'group' : 'single';
 	$deadline_dt  = bookacti_get_booking_changes_deadline_dt( $booking, $booking_type, $context );
 	$timezone     = bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' );
 	$now_dt       = new DateTime( 'now', new DateTimeZone( $timezone ) );
 	$is_in_delay  = $deadline_dt ? $now_dt < $deadline_dt : false;
 	
-	return apply_filters( 'bookacti_is_booking_in_delay', $is_in_delay, $booking, $deadline_dt, $context );
+	return apply_filters( 'bookacti_is_booking_in_delay', $is_in_delay, $booking, $booking_type, $context, $deadline_dt );
 }
 
 
@@ -885,13 +884,13 @@ function bookacti_user_can_manage_booking( $booking, $allow_self = true, $capabi
 
 /**
  * Check if a booking can be cancelled
- * @version 1.16.0
+ * @version 1.16.45
  * @param object|int $booking
  * @param boolean $is_frontend
- * @param boolean $allow_grouped_booking
+ * @param boolean $grouped_check True when runing this check for each booking of a group.
  * @return boolean
  */
-function bookacti_booking_can_be_cancelled( $booking, $is_frontend = true, $allow_grouped_booking = false ) {
+function bookacti_booking_can_be_cancelled( $booking, $is_frontend = true, $grouped_check = false ) {
 	// Get booking
 	if( is_numeric( $booking ) ) { $booking = bookacti_get_booking_by_id( $booking, true ); }
 	
@@ -900,21 +899,21 @@ function bookacti_booking_can_be_cancelled( $booking, $is_frontend = true, $allo
 	else {
 		if( ! current_user_can( 'bookacti_edit_bookings' ) || $is_frontend ) {
 			$is_cancel_allowed = bookacti_get_setting_value( 'bookacti_cancellation_settings', 'allow_customers_to_cancel' );
-			$is_grouped        = apply_filters( 'bookacti_allow_grouped_booking_changes', $allow_grouped_booking, $booking, 'cancel' ) ? false : ! empty( $booking->group_id );
-			$is_in_delay       = apply_filters( 'bookacti_bypass_booking_changes_deadline', false, $booking, 'cancel' ) ? true : bookacti_is_booking_in_delay( $booking, 'cancel' );
+			$is_grouped        = apply_filters( 'bookacti_allow_grouped_booking_changes', $grouped_check, $booking, 'cancel' ) ? false : ! empty( $booking->group_id );
+			$is_in_delay       = apply_filters( 'bookacti_bypass_booking_changes_deadline', $grouped_check, $booking, 'single', 'cancel' ) ? true : bookacti_is_booking_in_delay( $booking, 'single', 'cancel' );
 			$user_id           = isset( $booking->user_id ) && is_numeric( $booking->user_id ) ? intval( $booking->user_id ) : 0;
 			$is_own            = apply_filters( 'bookacti_allow_others_booking_changes', $user_id && $user_id === get_current_user_id(), $booking, 'cancel' );
 			if( ! $is_cancel_allowed || $is_grouped || ! $is_in_delay || ! $is_own || empty( $booking->active ) ) { $is_allowed = false; }
 		}
 	}
 	
-	return apply_filters( 'bookacti_booking_can_be_cancelled', $is_allowed, $booking, $is_frontend, $allow_grouped_booking );
+	return apply_filters( 'bookacti_booking_can_be_cancelled', $is_allowed, $booking, $is_frontend, $grouped_check );
 }
 
 
 /**
  * Check if a booking is allowed to be rescheduled
- * @version 1.16.0
+ * @version 1.16.45
  * @param object|int $booking
  * @param boolean $is_frontend
  * @return boolean
@@ -928,7 +927,7 @@ function bookacti_booking_can_be_rescheduled( $booking, $is_frontend = true ) {
 	if( $booking && ( ! current_user_can( 'bookacti_edit_bookings' ) || $is_frontend ) ) {
 		$is_reschedule_allowed = bookacti_get_setting_value( 'bookacti_cancellation_settings', 'allow_customers_to_reschedule' );
 		$is_grouped            = apply_filters( 'bookacti_allow_grouped_booking_changes', false, $booking, 'reschedule' ) ? false : ! empty( $booking->group_id );
-		$is_in_delay           = apply_filters( 'bookacti_bypass_booking_changes_deadline', false, $booking, 'reschedule' ) ? true : bookacti_is_booking_in_delay( $booking, 'reschedule' );
+		$is_in_delay           = apply_filters( 'bookacti_bypass_booking_changes_deadline', false, $booking, 'single', 'reschedule' ) ? true : bookacti_is_booking_in_delay( $booking, 'single', 'reschedule' );
 		$user_id               = isset( $booking->user_id ) && is_numeric( $booking->user_id ) ? intval( $booking->user_id ) : 0;
 		$is_own                = apply_filters( 'bookacti_allow_others_booking_changes', $user_id && $user_id === get_current_user_id(), $booking, 'reschedule' );
 		if( ! $is_reschedule_allowed || ! $booking->active || $is_grouped || ! $is_in_delay || ! $is_own ) { $is_allowed = false; }
@@ -1338,7 +1337,7 @@ function bookacti_user_can_manage_booking_group( $bookings, $allow_self = true, 
 /**
  * Check if a booking group can be cancelled
  * @since 1.1.0
- * @version 1.16.0
+ * @version 1.16.45
  * @param array|int $booking_group
  * @param array $group_bookings
  * @param boolean $is_frontend
@@ -1358,11 +1357,15 @@ function bookacti_booking_group_can_be_cancelled( $booking_group, $group_booking
 		if( ! current_user_can( 'bookacti_edit_bookings' ) || $is_frontend ) {
 			if( empty( $booking_group->active ) ) { $true = false; }
 			else {
-				foreach( $group_bookings as $booking ) {
-					$is_allowed = bookacti_booking_can_be_cancelled( $booking, $is_frontend, true );
-					if( ! $is_allowed ) {
-						$true = false;
-						break; // If one of the booking of the group is not allowed, return false immediatly
+				$is_in_delay = apply_filters( 'bookacti_bypass_booking_changes_deadline', false, $booking_group, 'group', 'confirm_waiting_list' ) ? true : bookacti_is_booking_in_delay( $booking_group, 'group', 'confirm_waiting_list' );
+				if( ! $is_in_delay ) { $true = false; }
+				else {
+					foreach( $group_bookings as $booking ) {
+						$is_allowed = bookacti_booking_can_be_cancelled( $booking, $is_frontend, true );
+						if( ! $is_allowed ) {
+							$true = false;
+							break; // If one of the booking of the group is not allowed, return false immediatly
+						}
 					}
 				}
 			}

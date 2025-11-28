@@ -274,6 +274,8 @@ tr.bookacti-booking-list-selected-row                             { background-c
 .bookacti-refund-table th            { padding: 5px 0; padding-inline-end: 20px; text-align: start; border: none; }
 .bookacti-refund-table td            { padding: 5px 0; padding-inline-end: 20px; border: none; }
 
+#bookacti-booking-notification-id-container label { margin-bottom: 10px; }
+#bookacti-booking-notification-id                 { width: 100%; }
 
 
 

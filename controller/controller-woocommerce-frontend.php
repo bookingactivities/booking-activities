@@ -1827,56 +1827,83 @@ add_action( 'woocommerce_checkout_create_order', 'bookacti_wc_checkout_create_on
 
 
 /**
- * Check availability before paying for a failed order
+ * Check availability before paying for an order
  * @since 1.7.13
- * @version 1.15.11
+ * @version 1.16.45
  * @param WC_Order $order
  */
 function bookacti_availability_check_before_pay_action( $order ) {
-	$error_occurred = false;
-	$order_id = $order->get_id();
+	$response             = array( 'status' => 'success', 'messages' => array() );
+	$order_id             = intval( $order->get_id() );
 	$order_items_bookings = bookacti_wc_get_order_items_bookings( $order );
+	$booking_statuses     = bookacti_get_booking_statuses();
 	
-	// If the booking is already attached to another non "failed" order, prevent to purchase it again
 	foreach( $order_items_bookings as $item_id => $order_item_bookings ) {
 		foreach( $order_item_bookings as $order_item_booking ) {
-			$booking_order_id = $order_item_booking[ 'type' ] === 'group' && ! empty( $order_item_booking[ 'bookings' ][ 0 ]->group_order_id ) ? $order_item_booking[ 'bookings' ][ 0 ]->group_order_id : ( ! empty( $order_item_booking[ 'bookings' ][ 0 ]->order_id ) ? $order_item_booking[ 'bookings' ][ 0 ]->order_id : 0 );
-			if( $booking_order_id && intval( $booking_order_id ) !== intval( $order_id ) ) {
+			// Get the booking (group) linked to the order item
+			$booking = $order_item_booking[ 'type' ] === 'group' && ! empty( $order_item_booking[ 'booking_group' ] ) ? $order_item_booking[ 'booking_group' ] : reset( $order_item_booking[ 'bookings' ] );
+
+			// If the booking is already attached to another non "failed" order, prevent to purchase it again
+			$booking_order_id = ! empty( $booking->order_id ) ? intval( $booking->order_id ) : 0;
+			if( $booking_order_id && $booking_order_id !== $order_id ) {
 				$booking_order = wc_get_order( $booking_order_id );
 				if( $booking_order ) {
 					if( $booking_order->get_status() !== 'failed' ) {
-						$error_occurred = true;
-						$title          = $order_item_booking[ 'type' ] === 'group' && ! empty( $order_item_booking[ 'bookings' ][ 0 ]->group_title ) ? $order_item_booking[ 'bookings' ][ 0 ]->group_title : ( ! empty( $order_item_booking[ 'bookings' ][ 0 ]->event_title ) ? $order_item_booking[ 'bookings' ][ 0 ]->event_title : '' );
-						$last_booking   = end( $order_item_booking[ 'bookings' ] );
-						$first_booking  = reset( $order_item_booking[ 'bookings' ] );
-						$dates          = bookacti_get_formatted_event_dates( $first_booking->event_start, $last_booking->event_end, false );
-						/* translators: %1$s = the booking ID. %2$s = the event title and dates. %3$s = the order ID. */
-						wc_add_notice( sprintf( esc_html__( 'You have already purchased the booking #%1$s "%2$s" in the order #%3$s.', 'booking-activities' ), $order_item_booking[ 'id' ], $title ? apply_filters( 'bookacti_translate_text', $title ) . ' (' . $dates . ')' : $dates, $booking_order_id ), 'error' );
+						$title = $order_item_booking[ 'type' ] === 'group' && ! empty( $booking->group_title ) ? $booking->group_title : ( ! empty( $booking->event_title ) ? $booking->event_title : '' );
+						$start = $order_item_booking[ 'type' ] === 'group' && ! empty( $booking->start ) ? $booking->start : ( ! empty( $booking->event_start ) ? $booking->event_start : '' );
+						$end   = $order_item_booking[ 'type' ] === 'group' && ! empty( $booking->end ) ? $booking->end : ( ! empty( $booking->event_end ) ? $booking->event_end : '' );
+						$dates = bookacti_get_formatted_event_dates( $start, $end, false );
+
+						$response[ 'status' ] = 'failed';
+						$response[ 'messages' ][ 'booking_linked_to_another_order_' . $item_id ] = sprintf( 
+							/* translators: %1$s = the booking ID. %2$s = the event title and dates. %3$s = the order ID. */
+							esc_html__( 'You have already purchased the booking #%1$s "%2$s" in the order #%3$s.', 'booking-activities' ), 
+							$booking->id, 
+							$title ? apply_filters( 'bookacti_translate_text', $title ) . ' (' . $dates . ')' : $dates, 
+							$booking_order_id
+						);
 					}
 				}
+			}
+
+			// Check if the order item bookings quantity can be "changed" to its own quantity
+			// is the same as checking if an inactive order item can be turned to active
+			$response_new_quantity = bookacti_wc_validate_order_item_bookings_new_quantity( $order_item_bookings, $booking->quantity );
+			if( $response_new_quantity[ 'status' ] !== 'success' ) {
+				$response[ 'status' ]   = $response_new_quantity[ 'status' ];
+				$response[ 'messages' ] = array_merge( $response[ 'messages' ], $response_new_quantity[ 'messages' ] );
+			}
+
+			// Check booking status
+			$valid_statuses = array( 'in_cart', 'pending', 'booked', 'delivered', 'waiting_list_accepted' );
+			if( ! in_array( $booking->state, $valid_statuses, true ) ) {
+				$status_label = isset( $booking_statuses[ $booking->state ] ) ? $booking_statuses[ $booking->state ] : $booking->state;
+
+				$response[ 'status' ] = 'failed';
+				$response[ 'messages' ][ 'invalid_booking_status_' . $booking->state ] = sprintf( 
+					/* translators: %s = Booking status. */
+					esc_html__( 'Bookings with the "%s" status cannot be included in an order.', 'booking-activities' ), 
+					$status_label
+				);
 			}
 		}
 	}
 	
-	// Validate events availability
-	foreach( $order_items_bookings as $order_item_key => $order_item_bookings ) {
-		// Check if the order item bookings quantity can be "changed" to its own quantity
-		// is the same as checking if an inactive order item can be turned to active
-		$quantity = $order_item_bookings[ 0 ][ 'bookings' ][ 0 ]->quantity;
-		$response = bookacti_wc_validate_order_item_bookings_new_quantity( $order_item_bookings, $quantity );
-		
-		// Display the error and stop checkout processing
-		if( $response[ 'status' ] !== 'success' ) {
-			$error_occurred = true;
+	$response = apply_filters( 'bookacti_wc_validate_order_items_bookings', $response, $order_items_bookings, $order );
+	
+	// Display the error and stop checkout processing
+	if( $response[ 'status' ] !== 'success' ) {
+		// Display specific error messages
+		if( $response[ 'messages' ] ) {
 			foreach( $response[ 'messages' ] as $error => $error_message ) {
 				wc_add_notice( $error_message, 'error' );
 			}
 		}
-	}
-	
-	// If the events are no longer available, prevent submission and feedback user
-	if( $error_occurred ) {
+		
+		// Display default error message
 		wc_add_notice( esc_html__( 'Sorry, this order is invalid and cannot be paid for.', 'woocommerce' ), 'error' );
+		
+		// Refresh page
 		$checkout_url = $order->get_checkout_payment_url();
 		wp_redirect( $checkout_url );
 		exit;

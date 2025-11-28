@@ -12,6 +12,9 @@ select.bookacti-select2-no-ajax, select.bookacti-select2-ajax  { transition: non
 .bookacti-select2-selection.select2-selection--multiple .select2-search,
 .bookacti-select2-selection.select2-selection--multiple .select2-search__field                  { width: 100% !important; max-width: none !important; min-height: 0; }
 .bookacti-select2-selection .select2-selection__rendered                                        { position: relative; padding: 0; }
+.bookacti-select2-selection.select2-selection--single,
+.bookacti-select2-selection.select2-selection--single .select2-selection__arrow,
+.bookacti-select2-selection.select2-selection--single .select2-selection__rendered              { min-height: 32px; }
 .bookacti-select2-selection.select2-selection--single .select2-selection__rendered              { padding: 0 20px 0 8px; }
 .rtl .bookacti-select2-selection.select2-selection--single .select2-selection__rendered         { padding: 0 8px 0 20px; }
 .bookacti-select2-selection.select2-selection--multiple .select2-selection__clear               { position: absolute; right: 2px; top: 0; margin: 0 !important; line-height: 1em; z-index: 15; }
@@ -21,11 +24,11 @@ select.bookacti-select2-no-ajax, select.bookacti-select2-ajax  { transition: non
 select.select2-hidden-accessible[data-sortable="1"] + .select2-container .bookacti-select2-selection.select2-selection--multiple .select2-selection__choice { cursor: move; }
 
 /* Radio box */
-.bookacti-custom-radio-button		{ display: inline-block; margin: 0 0.5em 0.5em 0; }
-.bookacti-custom-radio-button input { display: none; }
+.bookacti-custom-radio-button-container { container-type: inline-size; container-name: ba-login-type; }
+.bookacti-custom-radio-button input     { display: none; }
 .bookacti-custom-radio-button label {
 	display: inline-block;
-	padding: 0.8em 1.2em;
+	padding: 0.8em 1em;
 	cursor: pointer;
 	border-radius: 0.25em;
 	border: 1px solid rgba( 0, 0, 0, 0.1 );
@@ -40,15 +43,23 @@ select.select2-hidden-accessible[data-sortable="1"] + .select2-container .bookac
 	background: #efefef;
 	color: #101010;
 }
-@media ( max-width: 40em ) {
-	.bookacti-custom-radio-button		{ margin: 0.5em 0.5em 0 0; }
-	.bookacti-custom-radio-button label { padding: 0.5em 1em; }
+.bookacti-custom-radio-button input:checked + label       { background: #52b7e9; color: #fff; }
+.bookacti-custom-radio-button input:checked + label:hover { background: #1e8cbe; }
+.bookacti-custom-radio-button:before                      { content: attr(data-separator); margin: 0 10px; }
+.bookacti-custom-radio-button[data-separator=""],
+.bookacti-custom-radio-button[data-separator=""]:before,
+.bookacti-custom-radio-button:first-child,
+.bookacti-custom-radio-button:first-child:before          { content: none; }
+.bookacti-custom-radio-button                             { display: inline-block; margin: 10px 0; }
+
+@container ba-login-type ( max-width: 782px ) {
+	.bookacti-custom-radio-button label { padding: .5em .75em; }
 }
-.bookacti-custom-radio-button input:checked + label			{ background: #52b7e9; color: #fff; }
-.bookacti-custom-radio-button input:checked + label:hover	{ background: #1e8cbe; }
-.bookacti-custom-radio-button::before             { content: attr(data-separator); margin-right: 0.5em; }
-.rtl .bookacti-custom-radio-button::before        { margin-right: 0; margin-left: 0.5em; }
-.bookacti-custom-radio-button:first-child::before { content: none; }
+@container ba-login-type ( max-width: 480px ) {
+	.bookacti-custom-radio-button-container                                         { text-align: center; }
+	.bookacti-custom-radio-button:not(:first-child):not([data-separator=""])        { display: block; }
+	.bookacti-custom-radio-button:not(:first-child):not([data-separator=""]):before { display: block; margin: 0 0 10px 0; }
+}
 
 /* Tooltip */
 .bookacti-tip-icon        { margin: 0; }
@@ -191,8 +202,6 @@ fieldset legend .bookacti-show-hide-advanced-options { cursor: pointer; color: #
 .bookacti-backend-dialog div > label.bookacti-fullwidth-label { display: block; width: 100%; font-weight: bold; cursor: auto; }
 .bookacti-backend-dialog div > input:not([type="hidden"]) + label:not(.bookacti-onoffswitch-label):not(.bookacti-refund-option-label):not(.bookacti-duration-field-label) { display: inline; width: auto; font-weight: normal; }
 
-.bookacti-dialog,
-.bookacti-dialog.ui-dialog .ui-dialog-content { overflow: visible; }
 .bookacti-dialog ~ .ui-widget-overlay { position: fixed; top: 0; left: 0; width:100%; height:100%; background: #aaa; opacity: 0.4; z-index: 1; }
 
 .bookacti-dialog .ui-dialog-buttonpane { padding: .3em 1em .5em 1em !important; }

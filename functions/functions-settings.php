@@ -676,9 +676,60 @@ function bookacti_settings_field_admin_reschedule_scope_callback() {
 // NOTIFICATIONS SETTINGS 
 
 /**
+ * Sort notifications array
+ * @since 1.16.45
+ * @param array $notifications
+ * @return array
+ */
+function bookacti_sort_notifications( $notifications ) {
+	// Triggers order
+	$triggers_order = apply_filters( 'bookacti_notification_triggers_order', array( 'new_booking', 'pending', 'booked', 'delivered', 'cancelled', 'refund_requested', 'refunded', 'rescheduled' ) );
+	
+	// Sort notifications by id
+	ksort( $notifications );
+	
+	// Sort notifications by recipient and trigger
+	uasort( $notifications, function( $a, $b ) use ( $triggers_order ) {
+		// Recipient: Admin first, Customer next
+		$a_is_admin = substr( $a[ 'id' ], 0, 6 ) === 'admin_';
+		$b_is_admin = substr( $b[ 'id' ], 0, 6 ) === 'admin_';
+		if( $a_is_admin !== $b_is_admin ) {
+			return $a_is_admin ? -1 : 1;
+		}
+		
+		// Trigger: sort by trigger order
+		$a_trigger_position = $b_trigger_position = 0;
+		foreach( $triggers_order as $i => $trigger ) {
+			if( ! $a_trigger_position ) {
+				$a_trigger = ( $a_is_admin ? 'admin' : 'customer' ) . '_' . $trigger;
+				if( substr( $a[ 'id' ], 0, strlen( $a_trigger ) ) === $a_trigger ) {
+					$a_trigger_position = $i + 1;
+				}
+			}
+			
+			if( ! $b_trigger_position ) {
+				$b_trigger = ( $b_is_admin ? 'admin' : 'customer' ) . '_' . $trigger;
+				if( substr( $b[ 'id' ], 0, strlen( $b_trigger ) ) === $b_trigger ) {
+					$b_trigger_position = $i + 1;
+				}
+			}
+			
+			if( $a_trigger_position && $b_trigger_position ) {
+				break;
+			}
+		}
+		
+		return $a_trigger_position && $b_trigger_position ? ( $a_trigger_position < $b_trigger_position ? -1 : 1 ) : 0;
+	});
+	
+	return apply_filters( 'bookacti_notifications_sorted', $notifications );
+}
+
+
+/**
  * Settings section callback - Notifications - General settings (displayed before settings)
  * @since 1.2.1 (was bookacti_settings_section_notifications_callback in 1.2.0)
- * @version 1.16.0
+ * @version 1.16.45
  */
 function bookacti_settings_section_notifications_general_callback() { 
 	// Display a table of configurable notifications
@@ -708,19 +759,10 @@ function bookacti_settings_section_notifications_general_callback() {
 				$notifications_settings[ $notification_id ] = bookacti_get_notification_settings( $notification_id, false );
 			}
 			
-			// Sort notifications: admin's first, customer's next
-			$notifications_ids_admin = array();
-			$notifications_ids_customer = array();
-			foreach( $notifications_ids as $i => $notification_id ) {
-				$added = false;
-				if( substr( $notification_id, 0, 9 ) === 'customer_' ) { $notifications_ids_customer[] = $notification_id; $added = true; }
-				else if( substr( $notification_id, 0, 6 ) === 'admin_' ) { $notifications_ids_admin[] = $notification_id; $added = true; } 
-				if( $added ) { unset( $notifications_ids[ $i ] ); }
-			}
-			$notifications_ids_sorted = apply_filters( 'bookacti_notifications_list_order', array_values( array_merge( $notifications_ids_admin, $notifications_ids_customer, $notifications_ids ) ), $notifications_settings );
-
-			foreach( $notifications_ids_sorted as $notification_id ) {
-				$notification_settings = isset( $notifications_settings[ $notification_id ] ) ? $notifications_settings[ $notification_id ] : array();
+			// Sort notifications
+			$notifications_settings = bookacti_sort_notifications( $notifications_settings );
+			
+			foreach( $notifications_settings as $notification_id => $notification_settings ) {
 				$active_icon = $notification_settings[ 'active' ] ? 'dashicons-yes' : 'dashicons-no';
 				$description = $notification_settings[ 'description' ] ? bookacti_help_tip( $notification_settings[ 'description' ], false ) : '';
 

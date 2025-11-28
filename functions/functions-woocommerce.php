@@ -2204,7 +2204,7 @@ function bookacti_update_order_bookings_on_items_refund( $refund ) {
 						$new_booking->settings[ 'refunds' ] = $refunds;
 						
 						$send_to = $refund_action === 'manual' ? 'customer' : 'both';
-						bookacti_send_booking_status_change_notification( $booking_data[ 'status' ], $new_booking, $booking, $send_to, array( 'refund_action' => $refund_action ) );
+						bookacti_send_booking_status_change_notification( $booking_data[ 'status' ], $new_booking, $booking, 'single', $send_to, array( 'refund_action' => $refund_action ) );
 					}
 				}
 			}
@@ -2242,7 +2242,7 @@ function bookacti_update_order_bookings_on_items_refund( $refund ) {
 						$new_booking_group->settings[ 'refunds' ] = $refunds;
 						
 						$send_to = $refund_action === 'manual' ? 'customer' : 'both';
-						bookacti_send_booking_group_status_change_notification( $booking_group_data[ 'status' ], $new_booking_group, $item_booking[ 'booking_group' ], $send_to, array( 'refund_action' => $refund_action ) );
+						bookacti_send_booking_status_change_notification( $booking_group_data[ 'status' ], $new_booking_group, $item_booking[ 'booking_group' ], 'group', $send_to, array( 'refund_action' => $refund_action ) );
 					}
 				}
 			}
@@ -2316,7 +2316,7 @@ function bookacti_update_order_bookings_on_order_refund( $refund ) {
 					$new_booking->settings[ 'refunds' ] = $refunds;
 					
 					$send_to = $refund_action === 'manual' ? 'customer' : 'both';
-					bookacti_send_booking_status_change_notification( $booking_data[ 'status' ], $new_booking, $booking, $send_to, array( 'refund_action' => $refund_action ) );
+					bookacti_send_booking_status_change_notification( $booking_data[ 'status' ], $new_booking, $booking, 'single', $send_to, array( 'refund_action' => $refund_action ) );
 				}
 
 			// Booking group
@@ -2345,7 +2345,7 @@ function bookacti_update_order_bookings_on_order_refund( $refund ) {
 					$new_booking_group->settings[ 'refunds' ] = $refunds;
 
 					$send_to = $refund_action === 'manual' ? 'customer' : 'both';
-					bookacti_send_booking_group_status_change_notification( $booking_group_data[ 'status' ], $new_booking_group, $item_booking[ 'booking_group' ], $send_to, array( 'refund_action' => $refund_action ) );
+					bookacti_send_booking_status_change_notification( $booking_group_data[ 'status' ], $new_booking_group, $item_booking[ 'booking_group' ], 'group', $send_to, array( 'refund_action' => $refund_action ) );
 				}
 			}
 		}

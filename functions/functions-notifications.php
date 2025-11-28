@@ -1091,48 +1091,25 @@ function bookacti_send_email( $to, $subject, $message, $headers, $attachments = 
 /**
  * Send booking status changes notification
  * @since 1.16.0
+ * @version 1.16.45
  * @param string $status
  * @param object $booking
  * @param object $old_booking
  * @param string $send_to
  * @param array $notification_args
  */
-function bookacti_send_booking_status_change_notification( $status, $booking, $old_booking, $send_to = 'both', $notification_args = array() ) {
-	$send_to           = apply_filters( 'bookacti_booking_status_change_notification_recipient', $send_to && in_array( $send_to, array( 'both', 'customer', 'admin' ), true ) ? $send_to : 'both', $status, $booking, $old_booking );
-	$notification_args = apply_filters( 'bookacti_booking_status_change_notification_args', $notification_args, $status, $booking, $old_booking, $send_to );
+function bookacti_send_booking_status_change_notification( $status, $booking, $old_booking, $booking_type = 'single', $send_to = 'both', $notification_args = array() ) {
+	$send_to           = apply_filters( 'bookacti_booking_status_change_notification_recipient', $send_to && in_array( $send_to, array( 'both', 'customer', 'admin' ), true ) ? $send_to : 'both', $status, $booking, $old_booking, $booking_type, $notification_args );
+	$notification_args = apply_filters( 'bookacti_booking_status_change_notification_args', $notification_args, $status, $booking, $old_booking, $booking_type, $send_to );
 	
 	if( $send_to === 'customer' || $send_to === 'both' ) {
-		bookacti_send_notification( 'customer_' . $status . '_booking', $booking->id, 'single', $notification_args );
+		bookacti_send_notification( 'customer_' . $status . '_booking', $booking->id, $booking_type, $notification_args );
 	}
 	if( $send_to === 'admin' || $send_to === 'both' ) {
-		bookacti_send_notification( 'admin_' . $status . '_booking', $booking->id, 'single', $notification_args );
+		bookacti_send_notification( 'admin_' . $status . '_booking', $booking->id, $booking_type, $notification_args );
 	}
 	
-	do_action( 'bookacti_booking_status_change_notification_sent', $status, $booking, $old_booking, $send_to, $notification_args );
-}
-
-
-/**
- * Send booking group status changes notification
- * @since 1.16.0
- * @param string $status
- * @param object $booking_group
- * @param object $old_booking_group
- * @param string $send_to
- * @param array $notification_args
- */
-function bookacti_send_booking_group_status_change_notification( $status, $booking_group, $old_booking_group, $send_to = 'both', $notification_args = array() ) {
-	$send_to           = apply_filters( 'bookacti_booking_group_status_change_notification_recipient', $send_to && in_array( $send_to, array( 'both', 'customer', 'admin' ), true ) ? $send_to : 'both', $status, $booking_group, $old_booking_group );
-	$notification_args = apply_filters( 'bookacti_booking_group_status_change_notification_args', $notification_args, $status, $booking_group, $old_booking_group, $send_to );
-	
-	if( $send_to === 'customer' || $send_to === 'both' ) {
-		bookacti_send_notification( 'customer_' . $status . '_booking', $booking_group->id, 'group', $notification_args );
-	}
-	if( $send_to === 'admin' || $send_to === 'both' ) {
-		bookacti_send_notification( 'admin_' . $status . '_booking', $booking_group->id, 'group', $notification_args );
-	}
-	
-	do_action( 'bookacti_booking_group_status_change_notification_sent', $status, $booking_group, $old_booking_group, $send_to, $notification_args );
+	do_action( 'bookacti_booking_status_change_notification_sent', $status, $booking, $old_booking, $booking_type, $send_to, $notification_args );
 }
 
 
@@ -1337,7 +1314,7 @@ function bookacti_maybe_send_group_of_events_cancelled_notifications( $group_of_
 		
 		$send = apply_filters( 'bookacti_send_group_of_events_cancelled_notification', $send_notifications, $booking_group, $group_of_events, $old_booking_group, $old_group_bookings );
 		if( $send ) {
-			bookacti_send_booking_group_status_change_notification( $booking_group->state, $booking_group, $old_booking_group, 'customer' );
+			bookacti_send_booking_status_change_notification( $booking_group->state, $booking_group, $old_booking_group, 'group', 'customer' );
 			do_action( 'bookacti_group_of_events_cancelled_notification_sent', $group_of_events, $booking_group, $old_booking_group, $old_group_bookings );
 		}
 	}

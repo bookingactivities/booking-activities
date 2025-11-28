@@ -258,17 +258,17 @@ $j( document ).ready( function() {
  * Display or hide the register fields according to the login type value
  * @since 1.5.0
  * @version 1.16.45
- * @param {HTMLElement} login_field_container
+ * @param {HTMLElement} login_field
  */
-function bookacti_show_hide_register_fields( login_field_container ) {
-	var login_type         = login_field_container.find( 'input[name="login_type"]:checked' ).val();
-	var password_strength  = login_field_container.find( '.bookacti-password-strength' );
-	var password_forgotten = login_field_container.find( '.bookacti-forgotten-password' );
-	var password_field     = login_field_container.find( '.bookacti-login-field-password' );
-	var remember_field     = login_field_container.find( '.bookacti-login-field-remember' );
-	var register_fieldset  = login_field_container.find( '.bookacti-register-fields' );
-	var login_button       = login_field_container.find( '.bookacti-login-button' );
-	var button_container   = login_field_container.find( '.bookacti-login-field-submit-button' );
+function bookacti_show_hide_register_fields( login_field ) {
+	var login_type         = login_field.find( 'input[name="login_type"]:checked' ).val();
+	var password_strength  = login_field.find( '.bookacti-password-strength' );
+	var password_forgotten = login_field.find( '.bookacti-forgotten-password' );
+	var password_field     = login_field.find( '.bookacti-login-field-password' );
+	var remember_field     = login_field.find( '.bookacti-login-field-remember' );
+	var register_fieldset  = login_field.find( '.bookacti-register-fields' );
+	var login_button       = login_field.find( '.bookacti-login-button' );
+	var button_container   = login_field.find( '.bookacti-login-field-submit-button' );
 	if( login_type === 'new_account' ) { 
 		password_strength.show(); 
 		password_forgotten.hide(); 
@@ -581,7 +581,7 @@ function bookacti_submit_booking_form( form ) {
 				else { form.find( '.bookacti-new-booking-button' ).removeClass( 'bookacti-reload-page' ); }
 				form.find( '.bookacti-new-booking-button' ).show();
 
-				message = "<ul class='bookacti-success-list bookacti-persistent-notice'><li>" + response.message + "</li></ul>";
+				message = "<ul class='bookacti-success-list'><li>" + response.message + "</li></ul>";
 
 				// Reload booking numbers if page is not reloaded
 				if( redirect_url.indexOf( '://' ) < 0 ) {

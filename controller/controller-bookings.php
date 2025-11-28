@@ -162,7 +162,7 @@ function bookacti_controller_cancel_bookings() {
 		$group_bookings    = isset( $groups_bookings[ $group_id ] ) ? $groups_bookings[ $group_id ] : array();
 		if( $booking_group->state !== $new_booking_group->state ) {
 			do_action( 'bookacti_booking_group_status_changed', $new_booking_group->state, $booking_group, $group_bookings, array( 'is_admin' => $is_admin, 'context' => 'cancel_bookings' ) );
-			bookacti_send_booking_group_status_change_notification( $new_booking_group->state, $new_booking_group, $booking_group );
+			bookacti_send_booking_status_change_notification( $new_booking_group->state, $new_booking_group, $booking_group, 'group' );
 		}
 		$updated[ 'booking_groups' ][ $group_id ] = array(
 			'old_status' => $booking_group->state,
@@ -259,7 +259,7 @@ add_action( 'wp_ajax_nopriv_bookactiGetBookingsRefundActionsHTML', 'bookacti_con
 /**
  * AJAX Controller - Refund bookings
  * @since 1.16.0
- * @version 1.16.1
+ * @version 1.16.45
  */
 function bookacti_controller_refund_bookings() {
 	// Check nonce
@@ -363,7 +363,7 @@ function bookacti_controller_refund_bookings() {
 		if( $booking->state !== $new_booking->state && empty( $refunded[ 'do_not_update_status' ] ) ) {
 			do_action( 'bookacti_booking_status_changed', $new_booking->state, $booking, array( 'is_admin' => $is_admin, 'context' => 'refund_bookings', 'refund_action' => $refund_action ) );
 			if( empty( $refunded[ 'do_not_send_notification' ] ) ) {
-				bookacti_send_booking_status_change_notification( $new_booking->state, $new_booking, $booking, 'both', array( 'refund_action' => $refund_action ) );
+				bookacti_send_booking_status_change_notification( $new_booking->state, $new_booking, $booking, 'single', 'both', array( 'refund_action' => $refund_action ) );
 			}
 		}
 		if( ! isset( $refunded[ 'bookings' ][ $booking_id ] ) ) { $refunded[ 'bookings' ][ $booking_id ] = array(); }
@@ -377,7 +377,7 @@ function bookacti_controller_refund_bookings() {
 		if( $booking_group->state !== $new_booking_group->state && empty( $refunded[ 'do_not_update_status' ] ) ) {
 			do_action( 'bookacti_booking_group_status_changed', $new_booking_group->state, $booking_group, $group_bookings, array( 'is_admin' => $is_admin, 'context' => 'refund_bookings', 'refund_action' => $refund_action ) );
 			if( empty( $refunded[ 'do_not_send_notification' ] ) ) {
-				bookacti_send_booking_group_status_change_notification( $new_booking_group->state, $new_booking_group, $booking_group, 'both', array( 'refund_action' => $refund_action ) );
+				bookacti_send_booking_status_change_notification( $new_booking_group->state, $new_booking_group, $booking_group, 'group', 'both', array( 'refund_action' => $refund_action ) );
 			}
 		}
 		if( ! isset( $refunded[ 'booking_groups' ][ $group_id ] ) ) { $refunded[ 'booking_groups' ][ $group_id ] = array(); }
@@ -514,7 +514,7 @@ function bookacti_controller_change_bookings_status() {
 		if( $booking_group->state !== $new_booking_group->state ) {
 			do_action( 'bookacti_booking_group_status_changed', $new_booking_group->state, $booking_group, $group_bookings, array( 'is_admin' => $is_admin, 'context' => 'change_bookings_status' ) );
 			if( $send_notifications ) {
-				bookacti_send_booking_group_status_change_notification( $new_booking_group->state, $new_booking_group, $booking_group );
+				bookacti_send_booking_status_change_notification( $new_booking_group->state, $new_booking_group, $booking_group, 'group' );
 			}
 		}
 		$updated[ 'booking_groups' ][ $group_id ] = array(

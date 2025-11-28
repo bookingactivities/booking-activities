@@ -255,12 +255,18 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	<form id='bookacti-send-booking-notification-form'>
 		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_send_booking_notification' ); ?>'/>
 		<?php
+			// Get notifications
 			$notifications_ids      = array_keys( bookacti_get_notifications_default_settings() );
 			$notifications_settings = array();
-			$notification_options   = array();
 			foreach( $notifications_ids as $notification_id ) {
 				$notifications_settings[ $notification_id ] = bookacti_get_notification_settings( $notification_id, false );
 			}
+			
+			// Sort notifications
+			$notifications_settings = bookacti_sort_notifications( $notifications_settings );
+			
+			// Build notification options
+			$notification_options = array();
 			foreach( $notifications_settings as $notification_id => $notification_settings ) {
 				$notification_options[ $notification_id ] = substr( $notification_id, 0, 6 ) === 'admin_' ? esc_html__( 'Administrator', 'booking-activities' ) : esc_html__( 'Customer', 'booking-activities' );
 				$notification_options[ $notification_id ] .= ' - ';
@@ -272,6 +278,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					'name'        => 'notification_id',
 					'type'        => 'select',
 					'class'       => 'bookacti-select2-no-ajax',
+					'fullwidth'   => 1,
 					'id'          => 'bookacti-booking-notification-id',
 					'placeholder' => esc_html__( 'Search...', 'booking-activities' ),
 					'attr'        => array( '<select>' => ' data-allow-clear="0"' ),
