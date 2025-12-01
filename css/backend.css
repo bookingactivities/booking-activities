@@ -163,6 +163,15 @@ ul[id$='-select-box-results'] li[aria-disabled='true'] { display: none; }
 .bookacti-licenses-settings-description strong    { font-size: 14px; }
 .bookacti-licenses-settings-description + .submit { display: none; }
 
+.bookacti-default-booking-status-wc-notice table    { border-collapse: collapse; margin-top: 10px; }
+.bookacti-default-booking-status-wc-notice table th,
+.bookacti-default-booking-status-wc-notice table td { border: 1px solid #ccc; padding: 10px; }
+
+@media screen and ( max-width: 782px ) {
+	.bookacti-default-booking-status-wc-notice table    { display: table; }
+	.bookacti-default-booking-status-wc-notice table th,
+	.bookacti-default-booking-status-wc-notice table td { display: table-cell; font-size: small; }
+}
 
 /* Tabs */
 .bookacti-tabs .bookacti-tab-content .bookacti-display-inline-block { display: inline-block; }
@@ -171,8 +180,6 @@ ul[id$='-select-box-results'] li[aria-disabled='true'] { display: none; }
 .bookacti-duration-field-container { display: inline-block; vertical-align: middle; margin-right: 4px; }
 .bookacti-duration-field { width: 60px; }
 .bookacti-duration-field-label { display: block; }
-.bookacti-duration-hint { font-size: smaller; font-style: italic; }
-.bookacti-field-container .bookacti-duration-hint { text-align: right; }
 
 .bookacti-delete-date-interval           { cursor: pointer; color: #565d61; }
 .bookacti-add-date-interval              { cursor: pointer; color: #418fb6; }

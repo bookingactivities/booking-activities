@@ -79,27 +79,33 @@ $j( document ).ready( function() {
 
 	/**
 	 * Enable add-to-cart button
-	 * @version 1.15.5
+	 * @version 1.16.45
 	 */
 	$j( '.woocommerce' ).on( 'bookacti_displayed_info_cleared', 'form.cart .bookacti-booking-system', function() {
-		$j( this ).closest( 'form' ).find( 'input[name="quantity"]' ).attr( 'disabled', false );
-		$j( this ).closest( 'form' ).find( 'button[type="submit"]' ).attr( 'disabled', false );
+		var form          = $j( this ).closest( 'form' );
+		var submit_button = form.find( 'button[type="submit"], input[type="submit"]' ).first();
+		
+		form.find( 'input[name="quantity"]' ).attr( 'disabled', false );
+		submit_button.attr( 'disabled', false );
 	});
 
 
 	/**
 	 * Disable add-to-cart button
-	 * @version 1.15.5
+	 * @version 1.16.45
 	 */
 	$j( '.woocommerce' ).on( 'bookacti_error_displayed', 'form.cart .bookacti-booking-system', function() {
-		$j( this ).closest( 'form' ).find( 'input[name="quantity"]' ).attr( 'disabled', true );
-		$j( this ).closest( 'form' ).find( 'button[type="submit"]' ).attr( 'disabled', true );
+		var form          = $j( this ).closest( 'form' );
+		var submit_button = form.find( 'button[type="submit"], input[type="submit"]' ).first();
+		
+		form.find( 'input[name="quantity"]' ).attr( 'disabled', true );
+		submit_button.attr( 'disabled', true );
 	});
 
 
 	/**
 	 * Add to cart dynamic check
-	 * @version 1.16.14
+	 * @version 1.16.45
 	 */
 	$j( '.woocommerce form.cart' ).on( 'submit', function() { 
 		var form = $j( this );
@@ -118,7 +124,7 @@ $j( document ).ready( function() {
 
 		if( proceed_to_validation ) {
 			// Submit Add to cart form only once at a time
-			var submit_button = form.find( 'button[type="submit"]' );
+			var submit_button = form.find( 'button[type="submit"], input[type="submit"]' ).first();
 			var was_disabled  = submit_button.attr( 'disabled' );
 			if( form.hasClass( 'bookacti-adding-to-cart' ) ) { 
 				submit_button.attr( 'disabled', true );
@@ -127,31 +133,44 @@ $j( document ).ready( function() {
 			}
 
 			if( form.find( '.bookacti-booking-system' ).length ) {
-				// Submit form if all is OK
-				var is_valid = bookacti_validate_picked_events( form.find( '.bookacti-booking-system' ), form.find( 'input.qty' ).val() );
-				if( is_valid ) {
-					// Trigger action before sending form
-					var data = { 'form_data': new FormData( form.get(0) ) };
-
-					form.trigger( 'bookacti_before_submit_booking_form', [ data ] );
-
-					if( ! ( data.form_data instanceof FormData ) ) { return false; }
-
-					form.addClass( 'bookacti-adding-to-cart' );
-					
-					// Reactivate Add to cart button after 10 seconds (to improve compatibility with custom AJAX add to cart)
-					setTimeout( function() {
-						form.removeClass( 'bookacti-adding-to-cart' );
-						submit_button.attr( 'disabled', was_disabled ? true : false );
-						bookacti_remove_loading_html( submit_button.next( '.bookacti-loading-container' ) );
-					}, 10000 );
-					
-					return true;
-				} else {
+				// Validate picked events
+				var booking_system = form.find( '.bookacti-booking-system' );
+				var is_valid       = bookacti_validate_picked_events( booking_system, form.find( 'input.qty' ).val() );
+				
+				// Prevent submitting add to cart form in case of error
+				var trigger = { trigger: is_valid };
+				
+				booking_system.trigger( 'bookacti_trigger_perform_form_action', [ trigger ] );
+				
+				if( ! trigger.trigger ) {
 					// Scroll to error message
-					bookacti_scroll_to( form.find( '.bookacti-booking-system-container .bookacti-notices' ), 500, 'middle' );
+					if( form.find( '.bookacti-booking-system-container .bookacti-notices' ).is( ':visible' ) ) {
+						bookacti_scroll_to( form.find( '.bookacti-booking-system-container .bookacti-notices' ), 500, 'middle' );
+					}
 					return false; // Prevent form submission
 				}
+
+				// Get form data
+				var data = { 'form_data': new FormData( form.get(0) ) };
+				if( submit_button.length && data.form_data instanceof FormData && submit_button.attr( 'name' ) ) {
+					data.form_data.append( submit_button.attr( 'name' ), submit_button.attr( 'value' ) );
+				}
+
+				// Trigger action before sending form
+				form.trigger( 'bookacti_before_submit_booking_form', [ data ] );
+
+				if( ! ( data.form_data instanceof FormData ) ) { return false; }
+
+				form.addClass( 'bookacti-adding-to-cart' );
+
+				// Reactivate Add to cart button after 10 seconds (to improve compatibility with custom AJAX add to cart)
+				setTimeout( function() {
+					form.removeClass( 'bookacti-adding-to-cart' );
+					submit_button.attr( 'disabled', was_disabled ? true : false );
+					bookacti_remove_loading_html( submit_button.next( '.bookacti-loading-container' ) );
+				}, 10000 );
+
+				return true;
 			}
 		}
 	});

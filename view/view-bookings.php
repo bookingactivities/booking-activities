@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking list page
- * @version 1.16.13
+ * @version 1.16.45
  */
 
 // Exit if accessed directly
@@ -90,8 +90,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					</div>
 					<div id='bookacti-booking-id-filter-content' class='bookacti-bookings-filter-content'>
 						<?php
-							$booking_id       = ! empty( $_REQUEST[ 'booking_id' ] ) ? intval( $_REQUEST[ 'booking_id' ] ) : '';
-							$booking_group_id = ! empty( $_REQUEST[ 'booking_group_id' ] ) ? intval( $_REQUEST[ 'booking_group_id' ] ) : '';
+							$booking_id       = ! empty( $_REQUEST[ 'booking_id' ] ) && is_numeric( $_REQUEST[ 'booking_id' ] ) ? intval( $_REQUEST[ 'booking_id' ] ) : '';
+							$booking_group_id = ! empty( $_REQUEST[ 'booking_group_id' ] ) && is_numeric( $_REQUEST[ 'booking_group_id' ] ) ? intval( $_REQUEST[ 'booking_group_id' ] ) : '';
 						?>
 						<div id='bookacti-booking-id-filter-input-container'>
 							<input type='number' name='booking_id' id='bookacti-booking-filter-booking-id' value='<?php echo $booking_id; ?>' placeholder='<?php esc_html_e( 'Booking ID', 'booking-activities' ); ?>' min='1'/>
@@ -364,5 +364,4 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 <?php
 // Include dialogs
-include_once( 'view-backend-bookings-dialogs.php' );
-include_once( 'view-bookings-dialogs.php' );
+bookacti_include_booking_dialogs( 'admin' );

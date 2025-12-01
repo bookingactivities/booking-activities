@@ -1130,7 +1130,7 @@ function bookacti_get_min_and_max_quantity( booking_system ) {
 
 /**
  * Set min and max quantity on the quantity field
- * @version 1.16.18
+ * @version 1.16.45
  * @param {HTMLElement} booking_system
  * @param {Boolean} change_val
  */
@@ -1156,7 +1156,7 @@ function bookacti_set_min_and_max_quantity( booking_system, change_val ) {
 	if( old_quantity < qty_data.min ) {
 		// If min required bookings is higher than available places, 
 		// keep the higher amount to feedback that there are not enough places
-		if( qty_data.min > qty_data.avail ) { qty_data.max = qty_data.min; }
+		if( qty_data.avail && qty_data.min > qty_data.avail ) { qty_data.max = qty_data.min; }
 		if( change_val ) { qty_data.value = qty_data.min; }
 	}
 	
@@ -1962,7 +1962,7 @@ function bookacti_redirect_to_group_category_url( booking_system, group_id ) {
 /**
  * Redirect to url with the booking form values as parameters
  * @since 1.7.10
- * @version 1.15.14
+ * @version 1.16.45
  * @param {HTMLElement} booking_system
  * @param {String} redirect_url
  */
@@ -1971,7 +1971,7 @@ function bookacti_redirect_booking_system_to_url( booking_system, redirect_url )
 	
 	// Disable the submit button to avoid multiple redirect
 	var form = booking_system.closest( 'form' ).length ? booking_system.closest( 'form' ) : booking_system.closest( '.bookacti-form-fields' );	
-	var submit_button = form.find( 'input[type="submit"]' );
+	var submit_button = form.find( 'button[type="submit"], input[type="submit"]' ).first();
 	if( submit_button.length ) { submit_button.prop( 'disabled', true ); }
 	
 	// Start loading

@@ -2,8 +2,8 @@
 Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
-Tested up to: 6.8
-Stable tag: 1.16.44
+Tested up to: 6.9
+Stable tag: 1.16.45
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -320,6 +320,40 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.16.45 - 2025/12/02 =
+* Feature - Add customer avatar column to user booking list (customer_avatar) and backend booking list
+* Tweak - Remove hint on duration field as it may be misleading
+* Tweak - Hide bullet point followed by colon in WC item meta
+* Tweak - Remove "Password required" option from "User data (login / registration)" field settings
+* Tweak - Allow empty values for title, label, tooltip, placeholder, options and value fields in form fields settings
+* Fix - Admnistrators could not reschedule to a past event from admin if "Administrators can reschedule bookings to" option was set to "Same form"
+* Fix - Booking dialogs may not appear on block based sites
+* Fix - Columns order may not be taken into account with select2 4.0.13
+* Fix - Call woocommerce_coupon_is_valid hook in try catch to improve compatibility
+* Fix - Do not allow dialogs content to overflow after resizing
+* Fix - Prevent payment for orders with bookings whose status is not valid
+* Dev - Add "expired" booking filter (can only be used programmatically)
+* Dev - Make "from", "to", "end_from", "end_to", "created_from" and "created_to" booking filters work when retrieving booking groups as well
+* Dev - Allow boolean value for "booking_group_id" booking filter to retrieve only (non) grouped bookings (can only be used programmatically)
+* Dev - Remove bookacti_booking_list_displayed_status hook, use bookacti_user_booking_list_default_statuses instead
+* Dev - Remove bookacti_change_booking_status_options hook, use bookacti_change_booking_status_dialog_booking_status_fields instead
+* Dev - Remove bookacti_new_booking_notification_args hooks, use bookacti_booking_status_change_notification_args instead
+* Dev - Remove bookacti_send_booking_group_status_change_notification function, use bookacti_send_booking_status_change_notification instead
+* Dev - Remove bookacti_booking_group_status_change_notification_* hooks, use bookacti_booking_status_change_notification_* instead
+* Dev - Refactor bookacti_send_booking_status_change_notification function and bookacti_booking_status_change_notification_* hooks parameters to handle both single and group bookings
+* Dev - Add bookacti_booking_quantity_updated and bookacti_booking_status_changed hooks on every WC actions that affects booking quantity or status
+* Dev - Add context in $args parameter of bookacti_booking_quantity_updated, bookacti_booking_group_quantity_updated, bookacti_booking_status_changed and bookacti_booking_group_status_changed hooks
+* Dev - Refactor all parameters of bookacti_booking_payment_status_changed and bookacti_booking_group_payment_status_changed hooks
+* Dev - Refactor all parameters of bookacti_booking_quantity_updated and bookacti_booking_group_quantity_updated hooks
+* Dev - Refactor all parameters of bookacti_event_updated hook
+* Dev - Replace first parameter of bookacti_activity_updated and bookacti_group_category_updated hooks
+* Dev - Refactor parameters of bookacti_is_booking_in_delay function and hook
+* Dev - Refactor parameters of bookacti_bypass_booking_changes_deadline hook
+* Dev - Improve compatibility with "button" type submit, and not only "input" type submit
+* Dev - Add a secret key to process async notifications via URL
+* Dev - Add PHP hooks in calendar editor dialogs, refactor some code to standardize everything
+* Dev - Clean session data on woocommerce_cart_emptied as recommended in WC 10.3
+
 = 1.16.44 - 2025/09/03 =
 * Fix - Product selectboxes may remain empty in booking form calendar settings
 
@@ -620,6 +654,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Upgrade Notice ==
+
+= 1.16.45 =
+Major changes in code:
+* If you have purchased add-ons, you need to update them too.
+* If you have custom code, you may need to adapt it. No support can be provided for your custom code.
 
 = 1.15.8 =
 Requires MySQL 5.7.22 or later, or MariaDB 10.5.4 or later

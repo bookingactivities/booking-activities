@@ -33,3 +33,7 @@
 .bookacti-icons-warning:before        { content:'\004c'; }
 .bookacti-icons-info:before           { content:'\004d'; }
 .bookacti-icons-error:before          { content:'\004e'; }
+.bookacti-icons-alarmclock:before     { content:'\004f'; }
+.bookacti-icons-alarm:before          { content:'\0050'; }
+.bookacti-icons-turnoffalarm:before   { content:'\0051'; }
+.bookacti-icons-notify:before         { content:'\0052'; }

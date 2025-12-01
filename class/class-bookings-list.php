@@ -10,7 +10,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 	
 	/**
 	 * Bookings WP_List_Table
-	 * @version 1.16.43
+	 * @version 1.16.45
 	 */
 	class Bookings_List_Table extends WP_List_Table {
 		
@@ -49,7 +49,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		
 		/**
 		 * Get booking list table columns
-		 * @version 1.16.0
+		 * @version 1.16.45
 		 * @access public
 		 * @return array
 		 */
@@ -65,6 +65,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			$columns = apply_filters( 'bookacti_booking_list_columns', array(
 				'cb'             => '<input type="checkbox" />',
 				'id'             => esc_html_x( 'id', 'An id is a unique identification number', 'booking-activities' ),
+				'avatar'         => esc_html__( 'Avatar', 'booking-activities' ),
 				'customer'       => esc_html__( 'Customer', 'booking-activities' ),
 				'email'          => esc_html__( 'Email', 'booking-activities' ),
 				'phone'          => esc_html__( 'Phone', 'booking-activities' ),
@@ -94,6 +95,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 				20 => 'id',
 				30 => 'state',
 				40 => 'payment_status',
+				45 => 'avatar',
 				50 => 'customer',
 				52 => 'email',
 				54 => 'phone',
@@ -123,7 +125,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		/**
 		 * Get default hidden columns
 		 * @since 1.3.0
-		 * @version 1.8.0
+		 * @version 1.16.45
 		 * @access public
 		 * @param array $hidden
 		 * @param WP_Screen $screen
@@ -132,6 +134,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		public function get_default_hidden_columns( $hidden, $screen ) {
 			if( $screen->id == $this->screen->id ) {
 				$hidden = apply_filters( 'bookacti_booking_list_default_hidden_columns', array(
+					'avatar',
 					'email',
 					'phone',
 					'roles',
@@ -246,7 +249,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		
 		/**
 		 * Get booking list items. Parameters can be passed in the URL.
-		 * @version 1.16.43
+		 * @version 1.16.45
 		 * @access public
 		 * @return array
 		 */
@@ -436,6 +439,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					'raw_id'            => $raw_id,
 					'raw_group_id'      => $raw_group_id,
 					'user_id'           => $user_id,
+					'avatar'            => (string) get_avatar( $user ? $user : $email, 64, '', '', array( 'force_display' => true ) ),
 					'customer'          => $customer,
 					'email'             => $email,
 					'phone'             => $phone,

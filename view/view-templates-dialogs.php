@@ -1,7 +1,7 @@
 <?php 
 /**
  * Calendar editor dialogs
- * @version 1.16.0
+ * @version 1.16.45
  */
 
 // Exit if accessed directly
@@ -43,13 +43,13 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 		
 		/**
 		 * Fill the "event" tab of the Event settings dialog
-		 * @version 1.14.0
+		 * @version 1.16.45
 		 * @param array $params
 		 */
 		function bookacti_fill_event_tab_general( $params ) {
 			do_action( 'bookacti_event_tab_general_before', $params );
 						
-			$fields = array(
+			$fields = apply_filters( 'bookacti_event_tab_general_fields', array(
 				'title' => array(
 					'type'        => 'textarea',
 					'name'        => 'title',
@@ -71,7 +71,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 					'tip'     => esc_html__( 'Set the amount of bookings that can be made on this event.', 'booking-activities' ) . ' '
 					          . esc_html__( 'It will override the activity setting on this event only.', 'booking-activities' )
 				)
-			);
+			) );
 			
 			bookacti_display_fields( $fields );
 		
@@ -83,58 +83,28 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 		
 		/**
 		 * Display the 'Repetition' tab content of event settings
-		 * @version 1.15.6
+		 * @version 1.16.45
 		 * @param array $params
 		 */
 		function bookacti_fill_event_tab_repetition( $params ) {
 			do_action( 'bookacti_event_tab_repetition_before', $params );
-		?>
-			<div class='bookacti-field-container' id='bookacti-event-repeat-freq-container'>
-				<label for='bookacti-event-repeat-freq'>
-				<?php 
-					/* translators: Followed by a number of days / weeks / months. E.g.: Repeat every 2 days / weeks / months. */ 
-					esc_html_e( 'Repeat every', 'booking-activities' );
-				?>
-				</label>
-			<?php
-				// Display the number input
-				bookacti_display_field( array(
+			
+			$fields = apply_filters( 'bookacti_event_tab_repetition_fields', array(
+				'repeat_step' => array(
 					'type'    => 'number',
 					'name'    => 'repeat_step',
 					'id'      => 'bookacti-event-repeat-step',
 					'options' => array( 'min' => 1, 'max' => 9999, 'step' => 1 ),
 					'value'   => 1,
-				) ); 
-
-				// Display the selectbox
-				bookacti_display_field( array(
+				),
+				'repeat_freq' => array(
 					'type'    => 'select',
 					'name'    => 'repeat_freq',
 					'id'      => 'bookacti-event-repeat-freq',
 					'options' => bookacti_get_event_repeat_periods(),
 					'value'   => 'none',
 					'tip'     => esc_html__( 'Set the repetition frequency. This will create an occurrence of the event on each corresponding date.', 'booking-activities' )
-				) );
-
-				$start_of_week = intval( get_option( 'start_of_week' ) );
-				$weekdays = array( 0 => esc_html__( 'Sunday' ), 1 => esc_html__( 'Monday' ), 2 => esc_html__( 'Tuesday' ), 3 => esc_html__( 'Wednesday' ), 4 => esc_html__( 'Thursday' ), 5 => esc_html__( 'Friday' ), 6 => esc_html__( 'Saturday' ) );
-				$start_of_weekday = $weekdays[ $start_of_week ];
-			?>
-				<div class='bookacti-repeat-freq-start-of-week-notice bookacti-info' data-start-of-week='<?php echo $start_of_week; ?>'>
-					<span class='dashicons dashicons-warning'></span>
-					<span>
-						<?php 
-							/* translators: %1$s = "Week Starts On" option label. %2$s = "Week Starts On" option value (e.g.: Monday). %3$s = link to "WordPress Settings > General" */
-							echo sprintf( esc_html__( 'You have set the "%1$s" option to "%2$s" in %3$s. This setting will be used to skip weeks.', 'booking-activities' ), 
-									'<strong>' . esc_html__( 'Week Starts On' ) . '</strong>', 
-									'<strong>' . $weekdays[ $start_of_week ] . '</strong>', 
-									'<a href="' . admin_url( 'options-general.php' ) . '">' . esc_html__( 'WordPress Settings > General', 'booking-activities' ) . '</a>' );
-						?>
-					</span>
-				</div>
-			</div>
-		<?php
-			$fields = array(
+				),
 				'repeat_days' => array( 
 					'name'  => 'repeat_days',
 					'type'  => 'checkboxes',
@@ -204,9 +174,40 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 					'title' => esc_html__( 'Exceptions', 'booking-activities' ),
 					'tip'   => esc_html__( 'No occurrences will be displayed between these dates.', 'booking-activities' )
 				)
-			);
-			bookacti_display_fields( $fields );
+			) );
+			?>
+			<div class='bookacti-field-container bookacti-repeat-freq-container' id='bookacti-event-repeat-freq-container'>
+				<label for='bookacti-event-repeat-freq'>
+				<?php 
+					/* translators: Followed by a number of days / weeks / months. E.g.: Repeat every 2 days / weeks / months. */ 
+					esc_html_e( 'Repeat every', 'booking-activities' );
+				?>
+				</label>
+			<?php
+				// Display repeat_step and repeat_freq fields
+				bookacti_display_fields( array_intersect_key( $fields, array_flip( array( 'repeat_step', 'repeat_freq' ) ) ) );
 
+				$start_of_week = intval( get_option( 'start_of_week' ) );
+				$weekdays = array( 0 => esc_html__( 'Sunday' ), 1 => esc_html__( 'Monday' ), 2 => esc_html__( 'Tuesday' ), 3 => esc_html__( 'Wednesday' ), 4 => esc_html__( 'Thursday' ), 5 => esc_html__( 'Friday' ), 6 => esc_html__( 'Saturday' ) );
+				$start_of_weekday = $weekdays[ $start_of_week ];
+			?>
+				<div class='bookacti-repeat-freq-start-of-week-notice bookacti-info' data-start-of-week='<?php echo $start_of_week; ?>'>
+					<span class='dashicons dashicons-warning'></span>
+					<span>
+						<?php 
+							/* translators: %1$s = "Week Starts On" option label. %2$s = "Week Starts On" option value (e.g.: Monday). %3$s = link to "WordPress Settings > General" */
+							echo sprintf( esc_html__( 'You have set the "%1$s" option to "%2$s" in %3$s. This setting will be used to skip weeks.', 'booking-activities' ), 
+									'<strong>' . esc_html__( 'Week Starts On' ) . '</strong>', 
+									'<strong>' . $weekdays[ $start_of_week ] . '</strong>', 
+									'<a href="' . admin_url( 'options-general.php' ) . '">' . esc_html__( 'WordPress Settings > General', 'booking-activities' ) . '</a>' );
+						?>
+					</span>
+				</div>
+			</div>
+			<?php
+			// Display the other fields
+			bookacti_display_fields( array_diff_key( $fields, array_flip( array( 'repeat_step', 'repeat_freq' ) ) ) );
+			
 			do_action( 'bookacti_event_tab_repetition_after', $params );
 		}
 		?>
@@ -245,14 +246,14 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			
 			/**
 			 * Display the 'General' tab content of template settings
-			 * @version 1.16.0
+			 * @version 1.16.45
 			 * @param array $params
 			 */
 			function bookacti_fill_template_tab_general( $params = array() ) {
 				$templates_options = isset( $params[ 'templates_options' ] ) ? $params[ 'templates_options' ] : array();
 				do_action( 'bookacti_template_tab_general_before', $params );
 				
-				$fields = array(
+				$fields = apply_filters( 'bookacti_template_tab_general_fields', array(
 					'title' => array(
 						'type'  => 'text',
 						'name'  => 'title',
@@ -270,7 +271,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 						'options' => array( 0 => esc_html__( 'Don\'t duplicate', 'booking-activities' ) ) + $templates_options,
 						'tip'     => esc_html__( 'If you want to duplicate a calendar, select it in the list. It will copy its events, activities list, and its settings but not the bookings made on it.', 'booking-activities' )
 					)
-				);
+				) );
 				
 				bookacti_display_fields( $fields );
 				
@@ -323,7 +324,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			
 			/**
 			 * Display the 'Permission' tab content of calendar settings
-			 * @version 1.15.6
+			 * @version 1.16.45
 			 * @param array $params
 			 */
 			function bookacti_fill_template_tab_permissions( $params = array() ) {
@@ -333,29 +334,31 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 				$role_in      = apply_filters( 'bookacti_managers_roles', array_merge( bookacti_get_roles_by_capabilities( $capabilities ), $capabilities ), 'template' );
 				$role_not_in  = apply_filters( 'bookacti_managers_roles_exceptions', array( 'administrator' ), 'template' );
 
-				$fields = array( 'managers' => array( 
-					'type'      => 'user_id', 
-					'name'      => 'managers',
-					'id'        => 'bookacti-template-managers', 
-					'fullwidth' => 1, 
-					'options'   => array(
-						'option_label' => array( 'display_name', ' (', 'user_login', ')' ),
-						'role__in'     => $role_in ? $role_in : array( 'none' ),
-						'role__not_in' => $role_not_in,
-						'meta'         => false,
-						'multiple'     => 1,
-						'ajax'         => 0
-					),
-					'title'     => esc_html__( 'Who can manage this calendar?', 'booking-activities' ),
-					'tip'       => esc_html__( 'Choose who is allowed to access this calendar.', 'booking-activities' )
-					            /* translators: %s = comma separated list of user roles */
-					            . '<br/>' . sprintf( esc_html__( 'These roles already have this privilege: %s.', 'booking-activities' ), '<code>' . implode( '</code>, <code>', array_intersect_key( bookacti_get_roles(), array_flip( $role_not_in ) ) ) . '</code>' )
-					            /* translators: %s = capabilities name */
-					            . '<br/>' . sprintf( esc_html__( 'If the selectbox is empty, it means that no other users have these capabilities: %s.', 'booking-activities' ), '<code>' . implode( '</code>, <code>', $capabilities ) . '</code>' )
-					            /* translators: %1$s = Order for Customers add-on link. */
-					            . '<br/>' . sprintf( esc_html__( 'Operators from %1$s add-on have these capabilities.', 'booking-activities' ), '<a href="https://booking-activities.fr/en/downloads/order-for-customers/?utm_source=plugin&utm_medium=plugin&utm_campaign=order-for-customers&utm_content=infobulle-permission" target="_blank" >Order for Customers</a>' )
-					            /* translators: %1$s = User Role Editor plugin link. */
-					            . ' ' . sprintf( esc_html__( 'If you want to grant a user these capabilities, use a plugin such as %1$s.', 'booking-activities' ), '<a href="https://wordpress.org/plugins/user-role-editor/" target="_blank">User Role Editor</a>' )
+				$fields = apply_filters( 'bookacti_template_tab_permissions_fields', array( 
+					'managers' => array( 
+						'type'      => 'user_id', 
+						'name'      => 'managers',
+						'id'        => 'bookacti-template-managers', 
+						'fullwidth' => 1, 
+						'options'   => array(
+							'option_label' => array( 'display_name', ' (', 'user_login', ')' ),
+							'role__in'     => $role_in ? $role_in : array( 'none' ),
+							'role__not_in' => $role_not_in,
+							'meta'         => false,
+							'multiple'     => 1,
+							'ajax'         => 0
+						),
+						'title'     => esc_html__( 'Who can manage this calendar?', 'booking-activities' ),
+						'tip'       => esc_html__( 'Choose who is allowed to access this calendar.', 'booking-activities' )
+									/* translators: %s = comma separated list of user roles */
+									. '<br/>' . sprintf( esc_html__( 'These roles already have this privilege: %s.', 'booking-activities' ), '<code>' . implode( '</code>, <code>', array_intersect_key( bookacti_get_roles(), array_flip( $role_not_in ) ) ) . '</code>' )
+									/* translators: %s = capabilities name */
+									. '<br/>' . sprintf( esc_html__( 'If the selectbox is empty, it means that no other users have these capabilities: %s.', 'booking-activities' ), '<code>' . implode( '</code>, <code>', $capabilities ) . '</code>' )
+									/* translators: %1$s = Order for Customers add-on link. */
+									. '<br/>' . sprintf( esc_html__( 'Operators from %1$s add-on have these capabilities.', 'booking-activities' ), '<a href="https://booking-activities.fr/en/downloads/order-for-customers/?utm_source=plugin&utm_medium=plugin&utm_campaign=order-for-customers&utm_content=infobulle-permission" target="_blank" >Order for Customers</a>' )
+									/* translators: %1$s = User Role Editor plugin link. */
+									. ' ' . sprintf( esc_html__( 'If you want to grant a user these capabilities, use a plugin such as %1$s.', 'booking-activities' ), '<a href="https://wordpress.org/plugins/user-role-editor/" target="_blank">User Role Editor</a>' )
+					)
 				) );
 				bookacti_display_fields( $fields );
 	
@@ -403,13 +406,13 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			<?php
 			/**
 			 * Display the 'General' tab content of activity settings
-			 * @version 1.15.19
+			 * @version 1.16.45
 			 * @param array $params
 			 */
 			function bookacti_fill_activity_tab_general( $params = array() ) {
 				do_action( 'bookacti_activity_tab_general_before', $params );
 				
-				$fields = array(
+				$fields = apply_filters( 'bookacti_activity_tab_general_fields', array(
 					'activity-title' => array(
 						'type'  => 'text',
 						'name'  => 'title',
@@ -443,7 +446,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 						'title' => esc_html__( 'Background color', 'booking-activities' ),
 						'tip'   => esc_html__( 'Choose the color of the event background.', 'booking-activities' )
 					)
-				);
+				) );
 				
 				bookacti_display_fields( $fields );
 				
@@ -564,7 +567,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			/**
 			 * Display the fields in the "Text" tab of the Activity dialog
 			 * @since 1.7.4 (was bookacti_fill_activity_tab_terminology)
-			 * @version 1.14.0
+			 * @version 1.16.45
 			 * @param array $params
 			 */
 			function bookacti_fill_activity_tab_text( $params = array() ) {
@@ -573,7 +576,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 				$unit = '<strong><em>' . esc_html( _n( 'unit', 'units', 1, 'booking-activities' ) ) . '</em></strong>';
 				$units = '<strong><em>' . esc_html( _n( 'unit', 'units', 2, 'booking-activities' ) ) . '</em></strong>';
 				
-				$fields = array(
+				$fields = apply_filters( 'bookacti_activity_tab_text_fields', array(
 					'unit_name_singular' => array(
 						'type'  => 'text',
 						'name'  => 'unit_name_singular',
@@ -609,7 +612,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 						/* translators: %s is a number superior than or equal to 2. E.g.: 2. */
 						'tip'     => sprintf( esc_html__( 'The number of people who can do the activity with 1 booking. Set 0 to hide this piece of information. E.g.: "You have booked 1 unit for %s people".', 'booking-activities' ), '<strong><em>2</em></strong>' )
 					)
-				);
+				) );
 				
 				bookacti_display_fields( $fields );
 				
@@ -619,73 +622,70 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			
 			/**
 			 * Display the fields in the "Permissions" tab of the Activity dialog
-			 * @version 1.15.6
+			 * @version 1.16.45
 			 * @param array $params
 			 */
 			function bookacti_fill_activity_tab_permissions( $params = array() ) {
 				do_action( 'bookacti_activity_tab_permissions_before', $params );
 				
-				// Allowed roles field
+				// Allowed roles options
 				$roles = get_editable_roles();
 				$roles_options = array();
-				foreach( $roles as $role_id => $role ) { $roles_options[ $role_id ] = $role[ 'name' ]; }
-				?>
-				<div class='bookacti-field-container' id='bookacti-activity-roles-container'>
-					<input type='checkbox' name='is_restricted' id='bookacti-display-activity-user-roles'/>
-					<label for='bookacti-display-activity-user-roles' class='bookacti-fullwidth-label'>
-						<strong><?php esc_html_e( 'I want to restrict this activity to certain users only', 'booking-activities' ); ?></strong>
-						<?php
-						$tip = esc_html__( 'Choose who is allowed to book the events of this activity.', 'booking-activities' )
-							 . ' ' . esc_html__( 'Don\'t pick any role to allow everybody.', 'booking-activities' );
-						bookacti_help_tip( $tip );
-						?>
-					</label>
-					
-					<?php
-					$allowed_roles = array( 
+				foreach( $roles as $role_id => $role ) {
+					$roles_options[ $role_id ] = $role[ 'name' ];
+				}
+				
+				$capabilities = array( 'bookacti_edit_bookings', 'bookacti_edit_templates', 'bookacti_read_templates' );
+				$role_in      = apply_filters( 'bookacti_managers_roles', array_merge( bookacti_get_roles_by_capabilities( $capabilities ), $capabilities ), 'activity' );
+				$role_not_in  = apply_filters( 'bookacti_managers_roles_exceptions', array( 'administrator' ), 'activity' );
+				
+				$fields = apply_filters( 'bookacti_activity_tab_permissions_fields', array(
+					'is_restricted' => array(
+						'type'        => 'checkbox',
+						'title'       => esc_html__( 'I want to restrict this activity to certain users only', 'booking-activities' ),
+						'name'        => 'is_restricted',
+						'id'          => 'bookacti-display-activity-user-roles',
+						'fullwidth'   => 1,
+						'tip'         => esc_html__( 'Choose who is allowed to book the events of this activity.', 'booking-activities' )
+						                 . ' ' . esc_html__( 'Don\'t pick any role to allow everybody.', 'booking-activities' ),
+						),
+					'allowed_roles' => array( 
 						'type'        => 'select',
 						'multiple'    => 1,
+						'title'       => ' ',
 						'name'        => 'allowed_roles',
 						'id'          => 'bookacti-activity-roles',
 						'class'       => 'bookacti-select2-no-ajax',
 						'placeholder' => esc_html__( 'Search...', 'booking-activities' ),
 						'fullwidth'   => 1,
-						'options'     => array_merge( $roles_options, array( 'all' => esc_html__( 'Everybody', 'booking-activities' ) ) )
-					);
-					bookacti_display_field( $allowed_roles );
-					?>
-				
-					<div class='bookacti-roles-notice bookacti-warning' style='margin-bottom:0;'>
-						<span class='dashicons dashicons-info'></span>
-						<span><?php esc_html_e( 'Don\'t pick any role to allow everybody.', 'booking-activities' ); ?></span>
-					</div>
-				</div>
-				
-				<?php
-				$capabilities = array( 'bookacti_edit_bookings', 'bookacti_edit_templates', 'bookacti_read_templates' );
-				$role_in      = apply_filters( 'bookacti_managers_roles', array_merge( bookacti_get_roles_by_capabilities( $capabilities ), $capabilities ), 'activity' );
-				$role_not_in  = apply_filters( 'bookacti_managers_roles_exceptions', array( 'administrator' ), 'activity' );
-
-				$fields = array( 'managers' => array( 
-					'type'      => 'user_id', 
-					'name'      => 'managers',
-					'id'        => 'bookacti-activity-managers', 
-					'fullwidth' => 1, 
-					'options'   => array(
-						'option_label' => array( 'display_name', ' (', 'user_login', ')' ),
-						'role__in'     => $role_in ? $role_in : array( 'none' ),
-						'role__not_in' => $role_not_in,
-						'meta'         => false,
-						'multiple'     => 1,
-						'ajax'         => 0
+						'options'     => array_merge( $roles_options, array( 'all' => esc_html__( 'Everybody', 'booking-activities' ) ) ),
+						'after'       => '<div class="bookacti-roles-notice bookacti-warning" style="margin-bottom:0;">
+						                    <span class="dashicons dashicons-info"></span>
+						                    <span>' . esc_html__( 'Don\'t pick any role to allow everybody.', 'booking-activities' ) . '</span>'
+						              .  '</div>'
 					),
-					'title'     => esc_html__( 'Who can manage this activity?', 'booking-activities' ),
-					'tip'       => esc_html__( 'Choose who is allowed to access this activity.', 'booking-activities' )
-								. '<br/>' . sprintf( esc_html__( 'These roles already have this privilege: %s.', 'booking-activities' ), '<code>' . implode( '</code>, <code>', array_intersect_key( bookacti_get_roles(), array_flip( $role_not_in ) ) ) . '</code>' )
-								. '<br/>' . sprintf( esc_html__( 'If the selectbox is empty, it means that no other users have these capabilities: %s.', 'booking-activities' ), '<code>' . implode( '</code>, <code>', $capabilities ) . '</code>' )
-								. '<br/>' . sprintf( esc_html__( 'Operators from %1$s add-on have these capabilities.', 'booking-activities' ), '<a href="https://booking-activities.fr/en/downloads/order-for-customers/?utm_source=plugin&utm_medium=plugin&utm_campaign=order-for-customers&utm_content=infobulle-permission" target="_blank" >Order for Customers</a>' )
-					            . ' ' . sprintf( esc_html__( 'If you want to grant a user these capabilities, use a plugin such as %1$s.', 'booking-activities' ), '<a href="https://wordpress.org/plugins/user-role-editor/" target="_blank" >User Role Editor</a>' )
+					'managers' => array( 
+						'type'      => 'user_id', 
+						'name'      => 'managers',
+						'id'        => 'bookacti-activity-managers', 
+						'fullwidth' => 1, 
+						'options'   => array(
+							'option_label' => array( 'display_name', ' (', 'user_login', ')' ),
+							'role__in'     => $role_in ? $role_in : array( 'none' ),
+							'role__not_in' => $role_not_in,
+							'meta'         => false,
+							'multiple'     => 1,
+							'ajax'         => 0
+						),
+						'title'     => esc_html__( 'Who can manage this activity?', 'booking-activities' ),
+						'tip'       => esc_html__( 'Choose who is allowed to access this activity.', 'booking-activities' )
+						            . '<br/>' . sprintf( esc_html__( 'These roles already have this privilege: %s.', 'booking-activities' ), '<code>' . implode( '</code>, <code>', array_intersect_key( bookacti_get_roles(), array_flip( $role_not_in ) ) ) . '</code>' )
+						            . '<br/>' . sprintf( esc_html__( 'If the selectbox is empty, it means that no other users have these capabilities: %s.', 'booking-activities' ), '<code>' . implode( '</code>, <code>', $capabilities ) . '</code>' )
+						            . '<br/>' . sprintf( esc_html__( 'Operators from %1$s add-on have these capabilities.', 'booking-activities' ), '<a href="https://booking-activities.fr/en/downloads/order-for-customers/?utm_source=plugin&utm_medium=plugin&utm_campaign=order-for-customers&utm_content=infobulle-permission" target="_blank" >Order for Customers</a>' )
+						            . ' ' . sprintf( esc_html__( 'If you want to grant a user these capabilities, use a plugin such as %1$s.', 'booking-activities' ), '<a href="https://wordpress.org/plugins/user-role-editor/" target="_blank" >User Role Editor</a>' )
+					)
 				) );
+				
 				bookacti_display_fields( $fields );
 
 				do_action( 'bookacti_activity_tab_permissions_after', $params );
@@ -697,12 +697,14 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 
 <!-- Choose between creating a brand new activity or import an existing one -->
 <div id='bookacti-activity-create-method-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Create a new activity or use an existing activity ?', 'booking-activities' ); ?>'  style='display:none;'>
+	<?php do_action( 'bookacti_activity_create_method_dialog_before' ); ?>
 	<div id='bookacti-activity-create-method-container' >
 		<?php 
 			/* translators: This is followed by "You can't:", and then a list of bans. */
 			esc_html_e( 'Do you want to create a brand new activity or use on that calendar an activity you already created on an other calendar ?', 'booking-activities' ); 
 		?>
 	</div>
+	<?php do_action( 'bookacti_activity_create_method_dialog_after' ); ?>
 </div>
 
 
@@ -714,7 +716,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			<?php esc_html_e( 'Import an activity that you have already created on an other calendar:', 'booking-activities' ); ?>
 		</div>
 		<?php 
-			$fields = array(
+			$fields = apply_filters( 'bookacti_activity_import_fields', array(
 				'template_to_import_activities_from' => array(
 					'type'    => 'select',
 					'name'    => 'template_to_import_activities_from',
@@ -735,7 +737,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 					'title'       => esc_html__( 'Activities to import', 'booking-activities' ),
 					'options'     => array()
 				)
-			);
+			) );
 			bookacti_display_fields( $fields );
 		?>
     </div>
@@ -769,64 +771,58 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 
 		/**
 		 * Fill "General" tab of "Group of Events" dialog
-		 * @version 1.14.0
+		 * @version 1.16.45
 		 * @param array $params
 		 */
 		function bookacti_fill_group_of_events_tab_general( $params = array() ) {
 			do_action( 'bookacti_group_of_events_tab_general_before', $params );
+			
+			// Get categories options
+			$category_options = array( 'new' => esc_html__( 'New category', 'booking-activities' ) );
+			$template_id      = get_user_meta( get_current_user_id(), 'bookacti_default_template', true );
+			if( $template_id ) {
+				$categories	= bookacti_get_group_categories( array( 'templates' => array( $template_id ) ) );
+				foreach( $categories as $category ) {
+					$category_options[ $category[ 'id' ] ] = $category[ 'title' ];
+				}
+			}
+			
+			$title_tip = esc_html__( 'Name this group of events. Your cutomers may see this name if they have several booking choices (if the event is in two groups, or if you also allow to book the event alone). Choose a short and relevant name.', 'booking-activities' );
+			
+			$fields = apply_filters( 'bookacti_group_of_events_tab_general_fields', array(
+				'title' => array(
+					'type'        => 'textarea',
+					'name'        => 'title',
+					'title'       => esc_html__( 'Group title', 'booking-activities' ),
+					'id'          => 'bookacti-group-of-events-title-field',
+					'class'	      => 'bookacti-translatable',
+					'fullwidth'   => 1,
+					'placeholder' => $title_tip,
+					'tip'         => $title_tip
+				),
+				'category_id' => array(
+					'type'        => 'select',
+					'name'        => 'category_id',
+					'title'       => esc_html__( 'Group category', 'booking-activities' ),
+					'id'          => 'bookacti-group-of-events-category-selectbox',
+					'options'     => $category_options,
+					'tip'         => esc_html__( 'Pick a category for your group of events.', 'booking-activities' )
+					              . ' ' . esc_html__( 'Thanks to categories, you will be able to choose what groups of events are available on what booking forms.', 'booking-activities' )
+				),
+				'category_title' => array(
+					'type'        => 'text',
+					'name'        => 'category_title',
+					'title'       => esc_html__( 'New category title', 'booking-activities' ),
+					'id'          => 'bookacti-group-of-events-category-title-field',
+					'class'	      => 'bookacti-translatable',
+					'tip'         => esc_html__( 'Name the group of events category.', 'booking-activities' )
+					              . ' ' . esc_html__( 'Thanks to categories, you will be able to choose what groups of events are available on what booking forms.', 'booking-activities' )
+				),
+			) );
+			
+			bookacti_display_fields( $fields );
 		?>
-			<div>
-				<?php
-					$tip = esc_html__( 'Name this group of events. Your cutomers may see this name if they have several booking choices (if the event is in two groups, or if you also allow to book the event alone). Choose a short and relevant name.', 'booking-activities' );
-					$args = array(
-						'type'        => 'textarea',
-						'name'        => 'title',
-						'id'          => 'bookacti-group-of-events-title-field',
-						'class'	      => 'bookacti-translatable',
-						'placeholder' => $tip,
-						'value'       => ''
-					);
-				?>
-				<div>
-					<label for='<?php echo $args[ 'id' ]; ?>' class='bookacti-fullwidth-label' >
-					<?php 
-						esc_html_e( 'Group title', 'booking-activities' );
-						bookacti_help_tip( $tip );
-					?>
-					</label>
-					<?php bookacti_display_field( $args ); ?>
-				</div>
-			</div>
-			<div>
-				<label for='bookacti-group-of-events-category-selectbox' ><?php esc_html_e( 'Group category', 'booking-activities' ); ?></label>
-				<select name='category_id' id='bookacti-group-of-events-category-selectbox' >
-					<option value='new' ><?php esc_html_e( 'New category', 'booking-activities' ); ?></option>
-					<?php
-						$template_id = get_user_meta( get_current_user_id(), 'bookacti_default_template', true );
-						if( $template_id ) {
-							$categories	= bookacti_get_group_categories( array( 'templates' => array( $template_id ) ) );
-							foreach( $categories as $category ) {
-								echo "<option value='" . $category[ 'id' ] . "' >" . $category[ 'title' ] . "</option>";
-							}
-						}
-					?>
-				</select>
-				<?php
-					$tip = esc_html__( 'Pick a category for your group of events.', 'booking-activities' );
-					$tip .= esc_html__( 'Thanks to categories, you will be able to choose what groups of events are available on what booking forms.', 'booking-activities' );
-					bookacti_help_tip( $tip );
-				?>
-			</div>
-			<div id='bookacti-group-of-events-new-category-title' >
-				<label for='bookacti-group-of-events-category-title-field' ><?php esc_html_e( 'New category title', 'booking-activities' ); ?></label>
-				<input type='text' name='category_title' id='bookacti-group-of-events-category-title-field' class='bookacti-translatable'/>
-				<?php
-					$tip = esc_html__( 'Name the group of events category.', 'booking-activities' );
-					$tip .= esc_html__( 'Thanks to categories, you will be able to choose what groups of events are available on what booking forms.', 'booking-activities' );
-					bookacti_help_tip( $tip );
-				?>
-			</div>
-			<div>
+			<div id='bookacti-group-of-events-summary-container'>
 				<div id='bookacti-group-of-events-summary-label-container'>
 					<label id='bookacti-group-of-events-summary-label' for='bookacti-group-of-events-summary'><?php esc_html_e( 'Selected events', 'booking-activities' ); ?></label>
 					<div id='bookacti-group-of-events-occurrences-navigation'>
@@ -854,34 +850,105 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 		/**
 		 * Display the 'Repetition' tab content of group of events settings
 		 * @since 1.12.0
-		 * @version 1.15.6
+		 * @version 1.16.45
 		 * @param array $params
 		 */
 		function bookacti_fill_group_of_events_tab_repetition( $params ) {
 			do_action( 'bookacti_group_of_events_tab_repetition_before', $params );
+			
+			$fields = apply_filters( 'bookacti_group_of_events_tab_repetition_fields', array(
+				'repeat_step' => array(
+					'type'    => 'number',
+					'name'    => 'repeat_step',
+					'id'      => 'bookacti-group-of-events-repeat-step',
+					'options' => array( 'min' => 1, 'max' => 9999, 'step' => 1 ),
+					'value'   => 1,
+				),
+				'repeat_freq' => array(
+					'type'    => 'select',
+					'name'    => 'repeat_freq',
+					'id'      => 'bookacti-group-of-events-repeat-freq',
+					'options' => bookacti_get_event_repeat_periods(),
+					'value'   => 'none',
+					'tip'     => esc_html__( 'Set the repetition frequency. The occurrences of the group of events starting on the corresponding dates will be generated.', 'booking-activities' )
+				),
+				'repeat_days' => array( 
+					'name'    => 'repeat_days',
+					'type'    => 'checkboxes',
+					'id'      => 'bookacti-group-of-events-repeat-days',
+					'class'   => 'bookacti-repeat-days',
+					/* translators: followed by checkboxes having the names of the days of the week. E.g.: Repeat on Mondays, Tuesdays and Fridays. */
+					'title'   => esc_html_x( 'Repeat on', 'weekly repetition', 'booking-activities' ),
+					'value'   => array( '1' => 1, '2' => 1, '3' => 1, '4' => 1, '5' => 1, '6' => 1, '0' => 1 ), 
+					'options' => array( 
+						array( 'id' => '1', 'label' => esc_html__( 'Mondays', 'booking-activities' ) ),
+						array( 'id' => '2', 'label' => esc_html__( 'Tuesdays', 'booking-activities' ) ),
+						array( 'id' => '3', 'label' => esc_html__( 'Wednesdays', 'booking-activities' ) ),
+						array( 'id' => '4', 'label' => esc_html__( 'Thursdays', 'booking-activities' ) ),
+						array( 'id' => '5', 'label' => esc_html__( 'Fridays', 'booking-activities' ) ),
+						array( 'id' => '6', 'label' => esc_html__( 'Saturdays', 'booking-activities' ) ),
+						array( 'id' => '0', 'label' => esc_html__( 'Sundays', 'booking-activities' ) )
+					),
+					'tip'     => esc_html__( 'Select the days of the week on which the group of events will be repeated.', 'booking-activities' )
+				),
+				'repeat_monthly_type' => array( 
+					'name'    => 'repeat_monthly_type',
+					'type'    => 'select',
+					'id'      => 'bookacti-group-of-events-repeat-monthly_type',
+					'class'   => 'bookacti-repeat-monthly_type',
+					/* translators: followed by a selectox with the following values. E.g.: Repeat on the 21st of each month / Repeat on the 2nd Monday of each month / Repeat on the last day of each month / Repeat on the last Monday of each month */
+					'title'   => esc_html_x( 'Repeat on', 'monthly repetition', 'booking-activities' ),
+					'options' => array( 
+						'nth_day_of_month'  => 'nth_day_of_month',
+						'last_day_of_month' => 'last_day_of_month',
+						'nth_day_of_week'   => 'nth_day_of_week',
+						'last_day_of_week'  => 'last_day_of_week'
+					),
+					'attr'    => array( 
+						/* translators: Keep the {nth_day_of_month} tag as is. Selectbox option, comes after "Repeat on". E.g.: [Repeat on] on the 21st each month. */
+						'nth_day_of_month'  => 'data-default-label="' . esc_html__( 'on the {nth_day_of_month} each month', 'booking-activities' ) . '"',
+						/* translators: Selectbox option, comes after by "Repeat on the". E.g.: [Repeat on] on the last day of each month. */
+						'last_day_of_month' => 'data-default-label="' . esc_html__( 'on the last day of each month', 'booking-activities' ) . '"',
+						/* translators: Keep the {nth_day_of_week} and {day_of_week} tags as is. Selectbox option, comes after by "Repeat on". E.g.: [Repeat on] on the 2nd Monday of each month. */
+						'nth_day_of_week'   => 'data-default-label="' . esc_html__( 'on the {nth_day_of_week} {day_of_week} of each month', 'booking-activities' ) . '"',
+						/* translators: Keep the {day_of_week} tag as is. Selectbox option, comes after by "Repeat on". E.g.: [Repeat on] on the last Monday of each month. */
+						'last_day_of_week'  => 'data-default-label="' . esc_html__( 'on the last {day_of_week} of each month', 'booking-activities' ) . '"'
+					),
+					'tip'     => esc_html__( 'Select the day of the month on which the group of events will be repeated.', 'booking-activities' )
+				),
+				'repeat_from' => array(
+					'type'  => 'date',
+					'name'  => 'repeat_from',
+					'id'    => 'bookacti-group-of-events-repeat-from',
+					'class' => 'bookacti-repeat-from',
+					'title' => esc_html__( 'Repeat from', 'booking-activities' ),
+					'tip'   => esc_html__( 'Set the starting date of the repetition. The occurrences of the group of events starting after that date will be generated.', 'booking-activities' )
+				),
+				'repeat_to' => array(
+					'type'  => 'date',
+					'name'  => 'repeat_to',
+					'id'    => 'bookacti-group-of-events-repeat-to',
+					'class' => 'bookacti-repeat-to',
+					'title' => esc_html__( 'Repeat to', 'booking-activities' ),
+					'tip'   => esc_html__( 'Set the ending date of the repetition. The occurrences of the group of events starting after that date won\'t be generated.', 'booking-activities' )
+				),
+				'repeat_exceptions' => array(
+					'type'  => 'custom_date_intervals',
+					'name'  => 'repeat_exceptions',
+					'id'    => 'bookacti-group-of-events-repeat-exceptions',
+					'class' => 'bookacti-repeat_exceptions',
+					'value' => array(),
+					'title' => esc_html__( 'Exceptions', 'booking-activities' ),
+					'tip'   => esc_html__( 'No occurrences will be displayed between these dates.', 'booking-activities' )
+				)
+			) );
 		?>
-			<div class='bookacti-field-container' id='bookacti-group-of-events-repeat-freq-container'>
+			<div class='bookacti-field-container bookacti-repeat-freq-container' id='bookacti-group-of-events-repeat-freq-container'>
 				<label for='bookacti-group-of-events-repeat-freq'><?php esc_html_e( 'Repeat every', 'booking-activities' ); ?></label>
 				<?php
-					// Display the number input
-					bookacti_display_field( array(
-						'type'    => 'number',
-						'name'    => 'repeat_step',
-						'id'      => 'bookacti-group-of-events-repeat-step',
-						'options' => array( 'min' => 1, 'max' => 9999, 'step' => 1 ),
-						'value'   => 1,
-					) ); 
-
-					// Display the selectbox
-					bookacti_display_field( array(
-						'type'    => 'select',
-						'name'    => 'repeat_freq',
-						'id'      => 'bookacti-group-of-events-repeat-freq',
-						'options' => bookacti_get_event_repeat_periods(),
-						'value'   => 'none',
-						'tip'     => esc_html__( 'Set the repetition frequency. The occurrences of the group of events starting on the corresponding dates will be generated.', 'booking-activities' )
-					) );
-
+					// Display repeat_step and repeat_freq fields
+					bookacti_display_fields( array_intersect_key( $fields, array_flip( array( 'repeat_step', 'repeat_freq' ) ) ) );
+				
 					$start_of_week = intval( get_option( 'start_of_week' ) );
 					$weekdays = array( 0 => esc_html__( 'Sunday' ), 1 => esc_html__( 'Monday' ), 2 => esc_html__( 'Tuesday' ), 3 => esc_html__( 'Wednesday' ), 4 => esc_html__( 'Thursday' ), 5 => esc_html__( 'Friday' ), 6 => esc_html__( 'Saturday' ) );
 					$start_of_weekday = $weekdays[ $start_of_week ];
@@ -891,9 +958,9 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 					<span>
 						<?php 
 							echo sprintf( esc_html__( 'You have set the "%1$s" option to "%2$s" in %3$s. This setting will be used to skip weeks.', 'booking-activities' ), 
-									'<strong>' . esc_html__( 'Week Starts On' ) . '</strong>', 
-									'<strong>' . $weekdays[ $start_of_week ] . '</strong>', 
-									'<a href="' . admin_url( 'options-general.php' ) . '">' . esc_html__( 'WordPress Settings > General', 'booking-activities' ) . '</a>' );
+								'<strong>' . esc_html__( 'Week Starts On' ) . '</strong>', 
+								'<strong>' . $weekdays[ $start_of_week ] . '</strong>', 
+								'<a href="' . admin_url( 'options-general.php' ) . '">' . esc_html__( 'WordPress Settings > General', 'booking-activities' ) . '</a>' );
 						?>
 					</span>
 				</div>
@@ -905,78 +972,8 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			</div>
 		
 			<?php
-				$fields = array(
-					'repeat_days' => array( 
-						'name'    => 'repeat_days',
-						'type'    => 'checkboxes',
-						'id'      => 'bookacti-group-of-events-repeat-days',
-						'class'   => 'bookacti-repeat-days',
-						/* translators: followed by checkboxes having the names of the days of the week. E.g.: Repeat on Mondays, Tuesdays and Fridays. */
-						'title'   => esc_html_x( 'Repeat on', 'weekly repetition', 'booking-activities' ),
-						'value'   => array( '1' => 1, '2' => 1, '3' => 1, '4' => 1, '5' => 1, '6' => 1, '0' => 1 ), 
-						'options' => array( 
-							array( 'id' => '1', 'label' => esc_html__( 'Mondays', 'booking-activities' ) ),
-							array( 'id' => '2', 'label' => esc_html__( 'Tuesdays', 'booking-activities' ) ),
-							array( 'id' => '3', 'label' => esc_html__( 'Wednesdays', 'booking-activities' ) ),
-							array( 'id' => '4', 'label' => esc_html__( 'Thursdays', 'booking-activities' ) ),
-							array( 'id' => '5', 'label' => esc_html__( 'Fridays', 'booking-activities' ) ),
-							array( 'id' => '6', 'label' => esc_html__( 'Saturdays', 'booking-activities' ) ),
-							array( 'id' => '0', 'label' => esc_html__( 'Sundays', 'booking-activities' ) )
-						),
-						'tip'     => esc_html__( 'Select the days of the week on which the group of events will be repeated.', 'booking-activities' )
-					),
-					'repeat_monthly_type' => array( 
-						'name'    => 'repeat_monthly_type',
-						'type'    => 'select',
-						'id'      => 'bookacti-group-of-events-repeat-monthly_type',
-						'class'   => 'bookacti-repeat-monthly_type',
-						/* translators: followed by a selectox with the following values. E.g.: Repeat on the 21st of each month / Repeat on the 2nd Monday of each month / Repeat on the last day of each month / Repeat on the last Monday of each month */
-						'title'   => esc_html_x( 'Repeat on', 'monthly repetition', 'booking-activities' ),
-						'options' => array( 
-							'nth_day_of_month'  => 'nth_day_of_month',
-							'last_day_of_month' => 'last_day_of_month',
-							'nth_day_of_week'   => 'nth_day_of_week',
-							'last_day_of_week'  => 'last_day_of_week'
-						),
-						'attr'    => array( 
-							/* translators: Keep the {nth_day_of_month} tag as is. Selectbox option, comes after "Repeat on". E.g.: [Repeat on] on the 21st each month. */
-							'nth_day_of_month'  => 'data-default-label="' . esc_html__( 'on the {nth_day_of_month} each month', 'booking-activities' ) . '"',
-							/* translators: Selectbox option, comes after by "Repeat on the". E.g.: [Repeat on] on the last day of each month. */
-							'last_day_of_month' => 'data-default-label="' . esc_html__( 'on the last day of each month', 'booking-activities' ) . '"',
-							/* translators: Keep the {nth_day_of_week} and {day_of_week} tags as is. Selectbox option, comes after by "Repeat on". E.g.: [Repeat on] on the 2nd Monday of each month. */
-							'nth_day_of_week'   => 'data-default-label="' . esc_html__( 'on the {nth_day_of_week} {day_of_week} of each month', 'booking-activities' ) . '"',
-							/* translators: Keep the {day_of_week} tag as is. Selectbox option, comes after by "Repeat on". E.g.: [Repeat on] on the last Monday of each month. */
-							'last_day_of_week'  => 'data-default-label="' . esc_html__( 'on the last {day_of_week} of each month', 'booking-activities' ) . '"'
-						),
-						'tip'     => esc_html__( 'Select the day of the month on which the group of events will be repeated.', 'booking-activities' )
-					),
-					'repeat_from' => array(
-						'type'  => 'date',
-						'name'  => 'repeat_from',
-						'id'    => 'bookacti-group-of-events-repeat-from',
-						'class' => 'bookacti-repeat-from',
-						'title' => esc_html__( 'Repeat from', 'booking-activities' ),
-						'tip'   => esc_html__( 'Set the starting date of the repetition. The occurrences of the group of events starting after that date will be generated.', 'booking-activities' )
-					),
-					'repeat_to' => array(
-						'type'  => 'date',
-						'name'  => 'repeat_to',
-						'id'    => 'bookacti-group-of-events-repeat-to',
-						'class' => 'bookacti-repeat-to',
-						'title' => esc_html__( 'Repeat to', 'booking-activities' ),
-						'tip'   => esc_html__( 'Set the ending date of the repetition. The occurrences of the group of events starting after that date won\'t be generated.', 'booking-activities' )
-					),
-					'repeat_exceptions' => array(
-						'type'  => 'custom_date_intervals',
-						'name'  => 'repeat_exceptions',
-						'id'    => 'bookacti-group-of-events-repeat-exceptions',
-						'class' => 'bookacti-repeat_exceptions',
-						'value' => array(),
-						'title' => esc_html__( 'Exceptions', 'booking-activities' ),
-						'tip'   => esc_html__( 'No occurrences will be displayed between these dates.', 'booking-activities' )
-					)
-				);
-				bookacti_display_fields( $fields );
+				// Display the other fields
+				bookacti_display_fields( array_diff_key( $fields, array_flip( array( 'repeat_step', 'repeat_freq' ) ) ) );
 			
 				do_action( 'bookacti_group_of_events_tab_repetition_after', $params );
 			?>
@@ -1029,21 +1026,25 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			
 			/**
 			 * Fill "General" tab of "Group category" dialog
-			 * @version 1.14.0
+			 * @version 1.16.45
 			 * @param array $params
 			 */
 			function bookacti_fill_group_category_tab_general( $params = array() ) {
 				do_action( 'bookacti_group_category_tab_general_before', $params );
-				?>
-				<div>
-					<label for='bookacti-group-category-title-field' ><?php esc_html_e( 'Category title', 'booking-activities' ); ?></label>
-					<input type='text' name='title' id='bookacti-group-category-title-field' class='bookacti-translatable'/>
-					<?php
-						$tip = esc_html__( 'Name the group of events category.', 'booking-activities' );
-						bookacti_help_tip( $tip );
-					?>
-				</div>
-				<?php
+				
+				$fields = apply_filters( 'bookacti_group_category_tab_general_fields', array(
+					'title' => array(
+						'type'        => 'text',
+						'name'        => 'title',
+						'title'       => esc_html__( 'Category title', 'booking-activities' ),
+						'id'          => 'bookacti-group-category-title-field',
+						'class'	      => 'bookacti-translatable',
+						'tip'         => esc_html__( 'Name the group of events category.', 'booking-activities' )
+					)
+				) );
+				
+				bookacti_display_fields( $fields );
+				
 				do_action( 'bookacti_group_category_tab_general_after', $params );
 			}
 			
@@ -1142,48 +1143,52 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			
 			/**
 			 * Display the fields in the "Permissions" tab of the Group Category dialog
-			 * @version 1.15.4
+			 * @version 1.16.45
 			 * @param array $params
 			 */
 			function bookacti_fill_group_category_tab_permissions( $params = array() ) {
 				do_action( 'bookacti_group_category_tab_permissions_before', $params );
 				
-				// Allowed roles field
+				// Allowed roles options
 				$roles = get_editable_roles();
 				$roles_options = array();
-				foreach( $roles as $role_id => $role ) { $roles_options[ $role_id ] = $role[ 'name' ]; }
-				?>
-				<div class='bookacti-field-container' id='bookacti-group-category-roles-container'>
-					<input type='checkbox' name='is_restricted' id='bookacti-display-group-category-user-roles'/>
-					<label for='bookacti-display-group-category-user-roles' class='bookacti-fullwidth-label'>
-						<strong><?php esc_html_e( 'I want to restrict this group category to certain users only', 'booking-activities' ); ?></strong>
-						<?php
-						$tip = esc_html__( 'Choose who is allowed to book the groups of this category.', 'booking-activities' )
-							 . ' ' . esc_html__( 'Don\'t pick any role to allow everybody.', 'booking-activities' );
-						bookacti_help_tip( $tip );
-						?>
-					</label>
-					
-					<?php
-					$allowed_roles = array( 
+				foreach( $roles as $role_id => $role ) {
+					$roles_options[ $role_id ] = $role[ 'name' ];
+				}
+				
+				$capabilities = array( 'bookacti_edit_bookings', 'bookacti_edit_templates', 'bookacti_read_templates' );
+				$role_in      = apply_filters( 'bookacti_managers_roles', array_merge( bookacti_get_roles_by_capabilities( $capabilities ), $capabilities ), 'activity' );
+				$role_not_in  = apply_filters( 'bookacti_managers_roles_exceptions', array( 'administrator' ), 'activity' );
+				
+				$fields = apply_filters( 'bookacti_activity_tab_permissions_fields', array(
+					'is_restricted' => array(
+						'type'        => 'checkbox',
+						'title'       => esc_html__( 'I want to restrict this group category to certain users only', 'booking-activities' ),
+						'name'        => 'is_restricted',
+						'id'          => 'bookacti-display-group-category-user-roles',
+						'fullwidth'   => 1,
+						'tip'         => esc_html__( 'Choose who is allowed to book the groups of this category.', 'booking-activities' )
+						                 . ' ' . esc_html__( 'Don\'t pick any role to allow everybody.', 'booking-activities' ),
+						),
+					'allowed_roles' => array( 
 						'type'        => 'select',
 						'multiple'    => 1,
+						'title'       => ' ',
 						'name'        => 'allowed_roles',
 						'id'          => 'bookacti-group-category-roles',
 						'class'       => 'bookacti-select2-no-ajax',
 						'placeholder' => esc_html__( 'Search...', 'booking-activities' ),
 						'fullwidth'   => 1,
-						'options'     => array_merge( $roles_options, array( 'all' => esc_html__( 'Everybody', 'booking-activities' ) ) )
-					);
-					bookacti_display_field( $allowed_roles );
-					?>
-					
-					<div class='bookacti-roles-notice bookacti-warning' style='margin-bottom:0;'>
-						<span class='dashicons dashicons-info'></span>
-						<span><?php esc_html_e( 'Don\'t pick any role to allow everybody.', 'booking-activities' ); ?></span>
-					</div>
-				</div>
-				<?php
+						'options'     => array_merge( $roles_options, array( 'all' => esc_html__( 'Everybody', 'booking-activities' ) ) ),
+						'after'       => '<div class="bookacti-roles-notice bookacti-warning" style="margin-bottom:0;">
+						                    <span class="dashicons dashicons-info"></span>
+						                    <span>' . esc_html__( 'Don\'t pick any role to allow everybody.', 'booking-activities' ) . '</span>'
+						              .  '</div>'
+					)
+				) );
+				
+				bookacti_display_fields( $fields );
+				
 				do_action( 'bookacti_group_category_tab_permissions_after', $params );
 			}
 		?>
@@ -1193,17 +1198,24 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 
 <!-- Delete template -->
 <div id='bookacti-delete-template-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Delete calendar', 'booking-activities' ); ?>' style='display:none;' >
+	<?php do_action( 'bookacti_delete_template_dialog_before' ); ?>
+	
 	<div><?php esc_html_e( 'Are you sure to delete this calendar?', 'booking-activities' ); ?></div>
 	<div class='bookacti-error'>
 		<span class='dashicons dashicons-warning'></span>
 		<span><?php esc_html_e( 'This action cannot be undone.', 'booking-activities' ); ?></span>
 	</div>
+	
+	<?php do_action( 'bookacti_delete_template_dialog_after' ); ?>
 </div>
 
 
 <!-- Delete activity -->
 <div id='bookacti-delete-activity-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Delete activity', 'booking-activities' ); ?>' style='display:none;' >
 	<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_deactivate_activity' ); ?>'/>
+	
+	<?php do_action( 'bookacti_delete_activity_dialog_before' ); ?>
+	
 	<div>
 		<?php esc_html_e( 'Are you sure to delete this activity permanently?', 'booking-activities' ); ?><br/>
 		<em><?php esc_html_e( 'You won\'t be able to place new events from this activity anymore.', 'booking-activities' ); ?></em>
@@ -1217,7 +1229,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 	<div id='bookacti-delete-activity-options'>
 		<p><?php esc_html_e( 'You can also delete the events of that activity on that calendar.', 'booking-activities' ); ?></p>
 		<?php 
-			$fields = array(
+			$fields = apply_filters( 'bookacti_delete_activity_fields', array(
 				'delete_activity_events' => array(
 					'type'  => 'checkbox',
 					'name'  => 'delete_activity_events',
@@ -1226,7 +1238,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 					'value' => 0,
 					'tip'   => esc_html__( 'The events of this activity will be permanently deleted from that calendar.', 'booking-activities' )
 				)
-			);
+			) );
 			bookacti_display_fields( $fields );
 		?>
 	</div>
@@ -1234,6 +1246,8 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 		<span class='dashicons dashicons-warning'></span>
 		<span><?php esc_html_e( 'This action cannot be undone.', 'booking-activities' ); ?></span>
 	</div>
+	
+	<?php do_action( 'bookacti_delete_activity_dialog_after' ); ?>
 </div>
 
 
@@ -1244,8 +1258,10 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_unbind_event_occurrences' ); ?>'/>
 		<input type='hidden' name='unbind_action' value='selected'/>
 		
+		<?php do_action( 'bookacti_unbind_event_dialog_before' ); ?>
+		
 		<p><?php esc_html_e( 'In order to edit the occurrences of the event independently, you can:', 'booking-activities' ); ?></p>
-				
+		
 		<div id='bookacti-unbind-event-actions'>
 			<div id='bookacti-unbind-event-action-selected-container' class='bookacti-unbind-action'>
 				<input type='radio' name='unbind_action' value='selected' id='bookacti-unbind-event-action-selected' checked='checked'/>
@@ -1279,6 +1295,8 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			<span class='dashicons dashicons-warning'></span>
 			<span><?php esc_html_e( 'This action cannot be undone.', 'booking-activities' ); ?></span>
 		</div>
+		
+		<?php do_action( 'bookacti_unbind_event_dialog_after' ); ?>
 	</form>
 </div>
 
@@ -1289,6 +1307,8 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 		<input type='hidden' name='action' id='bookacti-unbind-group-of-events-form-action' value='bookactiUnbindGroupOfEventsOccurrences'/>
 		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_unbind_group_of_events_occurrences' ); ?>'/>
 		<input type='hidden' name='unbind_action' value='selected'/>
+		
+		<?php do_action( 'bookacti_unbind_group_of_events_dialog_before' ); ?>
 		
 		<p><?php esc_html_e( 'In order to edit the occurrences of the group of events independently, you can:', 'booking-activities' ); ?></p>
 				
@@ -1325,6 +1345,8 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			<span class='dashicons dashicons-warning'></span>
 			<span><?php esc_html_e( 'This action cannot be undone.', 'booking-activities' ); ?></span>
 		</div>
+		
+		<?php do_action( 'bookacti_unbind_group_of_events_dialog_after' ); ?>
 	</form>
 </div>
 
@@ -1332,6 +1354,8 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 <!-- Dialog to move / resize an event -->
 <div id='bookacti-update-event-dates-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Change the event\'s dates', 'booking-activities' ); ?>' style='display:none;'>
 	<form id='bookacti-update-event-dates-form'>
+		<?php do_action( 'bookacti_update_event_dates_dialog_before' ); ?>
+		
 		<div class='bookacti-info'>
 			<span class='dashicons dashicons-info'></span>
 			<span>
@@ -1342,6 +1366,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			<strong><?php esc_html_e( 'Selected event:', 'booking-activities' ); ?></strong>
 			<span class='bookacti-selected-event-start'></span> - <span class='bookacti-selected-event-end'></span>
 		</p>
+		
 		<div class='bookacti-field-container' id='bookacti-update-event-dates-start-container'>
 			<label for='bookacti-update-event-dates-start_date'>
 				<?php esc_html_e( 'Start', 'booking-activities' ); ?>
@@ -1366,13 +1391,17 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 				bookacti_help_tip( esc_html__( 'Set the new event end date and time. The event will be resized accordingly.', 'booking-activities' ) );
 			?>
 		</div>
+		
 		<?php do_action( 'bookacti_update_event_dates_options_after' ); ?>
+		
 		<div class='bookacti-error bookacti-update-repeated-event-dates-warning'>
 			<span class='dashicons dashicons-warning'></span>
 			<span>
 				<?php esc_html_e( 'This is a repeated event, all the occurrences will be affected. If you want to apply these changes to only one occurrence, you need to unbind it first.', 'booking-activities' ); ?>
 			</span>
 		</div>
+		
+		<?php do_action( 'bookacti_update_event_dates_dialog_after' ); ?>
 	</form>
 </div>
 
@@ -1380,6 +1409,8 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 <!-- Warning before moving / resizing a booked event -->
 <div id='bookacti-update-booked-event-dates-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Move a booked event', 'booking-activities' ); ?>' style='display:none;'>
 	<form id='bookacti-update-booked-event-dates-form'>
+		<?php do_action( 'bookacti_update_booked_event_dates_dialog_before' ); ?>
+		
 		<p id='bookacti-update-booked-event-dates-intro'><?php esc_html_e( 'You are about to change the dates of a booked event. The event\'s bookings will be rescheduled to match the new dates.', 'booking-activities' ); ?></p>
 		<?php 
 			$fields = array(
@@ -1389,8 +1420,11 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 					'id'    => 'bookacti-update-booked-event-dates-send_notifications',
 					'title' => esc_html__( 'Send notifications', 'booking-activities' ),
 					'value' => 0,
-					/* translators: %1$s = title of the notification (E.g.: "Booking is rescheduled") */
-					'tip'   => sprintf( esc_html__( 'Send the "%1$s" notification to your customer. No notification will be sent for past bookings and to administrators.', 'booking-activities' ), esc_html__( 'Booking is rescheduled', 'booking-activities' ) )
+					'tip'   => sprintf(
+						/* Translators: %s is a link to the "Notifications settings" */
+						esc_html__( 'Send the reschedule booking notifications configured in %s.', 'booking-activities' ), 
+						'<a href="' . admin_url( 'admin.php?page=bookacti_settings&tab=notifications' ) . '">' . esc_html__( 'Notifications settings', 'booking-activities' ) . '</a>'
+					) . ' ' . esc_html__( 'No notification will be sent for past bookings.', 'booking-activities' )
 				)
 			);
 			bookacti_display_fields( $fields );
@@ -1405,6 +1439,8 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 				<?php esc_html_e( 'This is a repeated event, all the occurrences will be affected. If you want to apply these changes to only one occurrence, you need to unbind it first.', 'booking-activities' ); ?>
 			</span>
 		</div>
+		
+		<?php do_action( 'bookacti_update_booked_event_dates_dialog_after' ); ?>
 	</form>
 </div>
 
@@ -1414,6 +1450,8 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 	<form id='bookacti-delete-event-form'>
 		<input type='hidden' name='action' id='bookacti-delete-event-form-action' value='bookactiDeleteEvent'/>
 		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_delete_event' ); ?>'/>
+		
+		<?php do_action( 'bookacti_delete_event_dialog_before' ); ?>
 		
 		<div><?php esc_html_e( 'Are you sure to delete this event permanently?', 'booking-activities' ); ?></div>
 		<div class='bookacti-error'>
@@ -1432,8 +1470,13 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 		<div id='bookacti-delete-booked-event-options'>
 			<p><?php esc_html_e( 'You can also cancel the bookings made for this event.', 'booking-activities' ); ?></p>
 			<?php 
-				$send_notifications_tip = sprintf( esc_html__( 'Send the "%1$s" notification to your customer. No notification will be sent for past bookings and to administrators.', 'booking-activities' ), sprintf( esc_html__( 'Booking status turns to "%s"', 'booking-activities' ), esc_html__( 'Cancelled', 'booking-activities' ) ) );
-				$fields = array(
+				$send_notifications_tip = sprintf( 
+					/* Translators: %s is a link to the "Notifications settings" */
+					esc_html__( 'Send the booking status change notifications configured in %s.', 'booking-activities' ), 
+					'<a href="' . admin_url( 'admin.php?page=bookacti_settings&tab=notifications' ) . '">' . esc_html__( 'Notifications settings', 'booking-activities' ) . '</a>'
+				) . ' ' . esc_html__( 'No notification will be sent for past bookings.', 'booking-activities' );
+				
+				$fields = apply_filters( 'bookacti_delete_booked_event_fields', array(
 					'cancel_bookings' => array(
 						'type'  => 'checkbox',
 						'name'  => 'cancel_bookings',
@@ -1450,7 +1493,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 						'value' => 0,
 						'tip'   => $send_notifications_tip
 					)
-				);
+				) );
 				bookacti_display_fields( $fields );
 				
 				bookacti_display_banp_promo_admin_message();
@@ -1458,6 +1501,8 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 				do_action( 'bookacti_delete_booked_event_options_after' );
 			?>
 		</div>
+		
+		<?php do_action( 'bookacti_delete_event_dialog_after' ); ?>
 	</form>
 </div>
 
@@ -1467,6 +1512,8 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 	<form id='bookacti-delete-group-of-events-form'>
 		<input type='hidden' name='action' id='bookacti-delete-group-of-events-form-action' value='bookactiDeleteGroupOfEvents'/>
 		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_delete_group_of_events' ); ?>'/>
+		
+		<?php do_action( 'bookacti_delete_group_of_events_dialog_before' ); ?>
 		
 		<div><p><?php esc_html_e( 'Are you sure to delete this group of events permanently?', 'booking-activities' ); ?></p></div>
 		<div class='bookacti-info'>
@@ -1483,7 +1530,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 		<div id='bookacti-delete-booked-group-of-events-options'>
 			<p><?php esc_html_e( 'You can also cancel the bookings made for this group of events.', 'booking-activities' ); ?></p>
 			<?php 
-				$fields = array(
+				$fields = apply_filters( 'bookacti_delete_booked_group_of_events_fields', array(
 					'cancel_bookings' => array(
 						'type'  => 'checkbox',
 						'name'  => 'cancel_bookings',
@@ -1500,7 +1547,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 						'value' => 0,
 						'tip'   => $send_notifications_tip
 					)
-				);
+				) );
 				bookacti_display_fields( $fields );
 				
 				bookacti_display_banp_promo_admin_message();
@@ -1508,6 +1555,8 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 				do_action( 'bookacti_delete_booked_group_of_events_options_after' );
 			?>
 		</div>
+		
+		<?php do_action( 'bookacti_delete_group_of_events_dialog_after' ); ?>
 	</form>
 </div>
 
@@ -1515,6 +1564,9 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 <!-- Delete group category -->
 <div id='bookacti-delete-group-category-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Delete a group category', 'booking-activities' ); ?>' style='display:none;' >
 	<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_delete_group_category' ); ?>'/>
+	
+	<?php do_action( 'bookacti_delete_group_category_dialog_before' ); ?>
+	
 	<div><?php esc_html_e( 'Are you sure to delete this category and all its groups of events permanently?', 'booking-activities' ); ?></div>
 	<div class='bookacti-info'>
 		<span class='dashicons dashicons-info'></span>
@@ -1524,6 +1576,8 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 		<span class='dashicons dashicons-warning'></span>
 		<span><?php esc_html_e( 'This action cannot be undone.', 'booking-activities' ); ?></span>
 	</div>
+	
+	<?php do_action( 'bookacti_delete_group_category_dialog_after' ); ?>
 </div>
 
 

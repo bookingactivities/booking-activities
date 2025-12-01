@@ -2,7 +2,7 @@
 /**
  * Form editor dialogs
  * @since 1.5.0
- * @version 1.15.19
+ * @version 1.16.45
  */
 
 // Exit if accessed directly
@@ -660,7 +660,7 @@ foreach( $fields_default as $field_name => $field_data ) {
 		/**
 		 * Get the login types edit fields HTML
 		 * @since 1.6.0
-		 * @version 1.14.0
+		 * @version 1.16.45
 		 * @param array $keys
 		 * @return string
 		 */
@@ -844,19 +844,6 @@ foreach( $fields_default as $field_name => $field_data ) {
 					?>
 				</div>
 			</fieldset>
-			<div>
-				<label for='bookacti-password-required'><?php esc_html_e( 'Password required', 'booking-activities' ); ?></label>
-				<?php 
-					$args = array(
-						'type'  => 'checkbox',
-						'name'  => 'required_fields[password]',
-						'id'    => 'bookacti-required_fields-password',
-						'value' => 1,
-						'tip'   => esc_html__( 'Disable this option to allow your customers to book without password authentication. They will simply have to give their e-mail address for the reservation to be made on their account. Becareful, anyone will be able to book on someone else\'s behalf with his email address only.', 'booking-activities' )
-					);
-					bookacti_display_field( $args );
-				?>
-			</div>
 			<div>
 				<label for='bookacti-automatic-login'><?php esc_html_e( 'Automatic login', 'booking-activities' ); ?></label>
 				<?php 

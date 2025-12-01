@@ -301,7 +301,7 @@ add_filter( 'bookacti_default_messages', 'bookacti_wc_default_messages', 10, 1 )
 /**
  * Add WC notice to Default booking status settings
  * @since 1.15.16
- * @version 1.16.17
+ * @version 1.16.45
  * @param array $args
  * @return array
  */
@@ -340,11 +340,6 @@ function bookacti_wc_settings_default_booking_status_field_args( $args ) {
 				<td><?php esc_html_e( 'Order', 'booking-activities' ); ?>: <strong><?php esc_html_e( 'Processing', 'woocommerce' ); ?></strong><br/><?php esc_html_e( 'Bookings', 'booking-activities' ); ?>: <strong><?php esc_html_e( 'Pending', 'booking-activities' ); ?></strong> & <strong><?php esc_html_e( 'Due', 'booking-activities' ); ?></strong></td>
 			</tr>
 		</table>
-		<style>
-			.bookacti-default-booking-status-wc-notice table    { border-collapse: collapse; margin-top: 10px; }
-			.bookacti-default-booking-status-wc-notice table th,
-			.bookacti-default-booking-status-wc-notice table td { border: 1px solid #ccc; padding: 10px; }
-		</style>
 	</div>
 <?php
 	$args[ 'after' ] = ob_get_clean();

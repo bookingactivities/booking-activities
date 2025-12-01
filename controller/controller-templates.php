@@ -455,7 +455,7 @@ add_action( 'wp_ajax_bookactiDuplicateEvent', 'bookacti_controller_duplicate_eve
 /**
  * AJAX Controller - Update event
  * @since 1.2.2 (was bookacti_controller_update_event_data)
- * @version 1.15.5
+ * @version 1.16.45
  */
 function bookacti_controller_update_event() {
 	// Check nonce
@@ -520,10 +520,16 @@ function bookacti_controller_update_event() {
 	$interval = ! empty( $_POST[ 'interval' ] ) ? bookacti_sanitize_events_interval( $_POST[ 'interval' ] ) : array();
 	$events   = bookacti_fetch_events_for_calendar_editor( array( 'events' => array( $event_id ), 'interval' => $interval ) );
 
+	$new_event_data = ! empty( $events[ 'data' ][ $event_id ] ) ? $events[ 'data' ][ $event_id ] : $event_data;
+	if( isset( $new_event_data[ 'settings' ] ) ) { 
+		$new_event_data = array_merge( $new_event_data, $new_event_data[ 'settings' ] ); 
+		unset( $new_event_data[ 'settings' ] );
+	}
+	
 	// Retrieve groups of events
 	$groups = bookacti_get_groups_of_events( array( 'templates' => array( $old_event->template_id ), 'nb_events' => array(), 'past_events' => 1, 'data_only' => 1 ) );
-
-	do_action( 'bookacti_event_updated', $event_id, $events );
+	
+	do_action( 'bookacti_event_updated', $old_event, $new_event_data );
 	
 	bookacti_send_json( array( 
 		'status'      => 'success', 
@@ -1102,7 +1108,7 @@ add_action( 'wp_ajax_bookactiUnbindGroupOfEventsOccurrences', 'bookacti_controll
 /**
  * Update group category data with AJAX
  * @since 1.1.0
- * @version 1.15.5
+ * @version 1.16.45
  */
 function bookacti_controller_update_group_category() {
 	// Check nonce
@@ -1125,6 +1131,10 @@ function bookacti_controller_update_group_category() {
 		bookacti_send_json( $is_category_valid, 'update_group_category' );
 	}
 	
+	// Get old category data
+	$categories   = bookacti_get_group_categories( array( 'group_categories' => array( $category_id ) ) );
+	$old_category = ! empty( $categories[ $category_id ] ) ? $categories[ $category_id ] : array();
+	
 	// Update the category data
 	$updated = bookacti_update_group_category( $category_data );
 	
@@ -1140,12 +1150,12 @@ function bookacti_controller_update_group_category() {
 		bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_updated', 'category_data' => $category_data ), 'update_group_category' );
 	}
 	
-	$categories = bookacti_get_group_categories( array( 'group_categories' => array( $category_id ) ) );
-	$category   = ! empty( $categories[ $category_id ] ) ? $categories[ $category_id ] : array();
+	$categories   = bookacti_get_group_categories( array( 'group_categories' => array( $category_id ) ) );
+	$new_category = ! empty( $categories[ $category_id ] ) ? $categories[ $category_id ] : array();
 
-	do_action( 'bookacti_group_category_updated', $category_id, $category );
+	do_action( 'bookacti_group_category_updated', $old_category, $new_category );
 
-	bookacti_send_json( array( 'status' => 'success', 'category' => $category ), 'update_group_category' );
+	bookacti_send_json( array( 'status' => 'success', 'category' => $new_category ), 'update_group_category' );
 }
 add_action( 'wp_ajax_bookactiUpdateGroupCategory', 'bookacti_controller_update_group_category' );
 
@@ -1257,7 +1267,7 @@ add_action( 'wp_ajax_bookactiInsertActivity', 'bookacti_controller_insert_activi
 
 /**
  * AJAX Controller - Update an activity
- * @version 1.15.5
+ * @version 1.16.45
  */
 function bookacti_controller_update_activity() {
 	// Check nonce
@@ -1265,8 +1275,8 @@ function bookacti_controller_update_activity() {
 	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'update_activity' ); }
 	
 	$activity_data = bookacti_sanitize_activity_data( $_POST );
-	$activity_id = $activity_data[ 'id' ];
-	$template_id = intval( $_POST[ 'template_id' ] );
+	$activity_id   = $activity_data[ 'id' ];
+	$template_id   = intval( $_POST[ 'template_id' ] );
 	
 	// Check capabilities
 	$is_allowed = current_user_can( 'bookacti_edit_activities' ) && bookacti_user_can_manage_activity( $activity_id );
@@ -1275,6 +1285,10 @@ function bookacti_controller_update_activity() {
 	// Validate activity data
 	$is_valid = bookacti_validate_activity_data( $activity_data );
 	if( $is_valid[ 'status' ] !== 'success' ) { bookacti_send_json( array( 'status' => 'failed', 'error' => $is_valid[ 'errors' ] ), 'update_activity' ); }
+	
+	// Get old activity data
+	$activities_data = bookacti_get_activities_by_template( $template_id, false, true );
+	$old_activity    = ! empty( $activities_data[ $activity_id ] ) ? $activities_data[ $activity_id ] : array();
 	
 	// Update the events title bound to this activity before updating the activty
 	$updated_events = bookacti_update_events_title( $activity_id, $activity_data[ 'title' ] );
@@ -1299,13 +1313,13 @@ function bookacti_controller_update_activity() {
 		bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_updated', 'activity_data' => $activity_data ), 'update_activity' );
 	}
 	
-	$activities_data= bookacti_get_activities_by_template( $template_id, false, true );
-	$activity_data	= ! empty( $activities_data[ $activity_id ] ) ? $activities_data[ $activity_id ] : array();
-	$activity_list	= bookacti_get_template_activities_list( $activities_data, $template_id );
+	$activities_data = bookacti_get_activities_by_template( $template_id, false, true );
+	$new_activity    = ! empty( $activities_data[ $activity_id ] ) ? $activities_data[ $activity_id ] : array();
+	$activity_list   = bookacti_get_template_activities_list( $activities_data, $template_id );
 
-	do_action( 'bookacti_activity_updated', $activity_id, $activity_data );
+	do_action( 'bookacti_activity_updated', $old_activity, $new_activity );
 
-	bookacti_send_json( array( 'status' => 'success', 'activity_data' => $activity_data, 'activity_list' => $activity_list ), 'update_activity' );
+	bookacti_send_json( array( 'status' => 'success', 'activity_data' => $new_activity, 'activity_list' => $activity_list ), 'update_activity' );
 }
 add_action( 'wp_ajax_bookactiUpdateActivity', 'bookacti_controller_update_activity' );
 

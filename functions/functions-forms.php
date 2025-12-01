@@ -747,7 +747,7 @@ function bookacti_get_available_form_action_triggers() {
 /**
  * Format field data according to its type
  * @since 1.5.0
- * @version 1.16.43
+ * @version 1.16.45
  * @param array|string $raw_field_data
  * @param $context "view" or "edit"
  * @return array
@@ -821,8 +821,8 @@ function bookacti_format_form_field_data( $raw_field_data, $context = 'view' ) {
 		$field_meta = bookacti_sanitize_values( $default_meta, $raw_field_data, $keys_by_type );
 		
 		// Translate texts
-		$field_meta[ 'login_button_label' ]    = ! empty( $raw_field_data[ 'login_button_label' ] ) ? ( $context !== 'edit' ? apply_filters( 'bookacti_translate_text', $raw_field_data[ 'login_button_label' ] ) : $raw_field_data[ 'login_button_label' ] ) : $default_meta[ 'login_button_label' ];
-		$field_meta[ 'register_button_label' ] = ! empty( $raw_field_data[ 'register_button_label' ] ) ? ( $context !== 'edit' ? apply_filters( 'bookacti_translate_text', $raw_field_data[ 'register_button_label' ] ) : $raw_field_data[ 'register_button_label' ] ) : $default_meta[ 'register_button_label' ];
+		$field_meta[ 'login_button_label' ]    = isset( $raw_field_data[ 'login_button_label' ] ) ? ( $context !== 'edit' && ! empty( $raw_field_data[ 'login_button_label' ] ) ? apply_filters( 'bookacti_translate_text', $raw_field_data[ 'login_button_label' ] ) : $raw_field_data[ 'login_button_label' ] ) : $default_meta[ 'login_button_label' ];
+		$field_meta[ 'register_button_label' ] = isset( $raw_field_data[ 'register_button_label' ] ) ? ( $context !== 'edit' && ! empty( $raw_field_data[ 'register_button_label' ] ) ? apply_filters( 'bookacti_translate_text', $raw_field_data[ 'register_button_label' ] ) : $raw_field_data[ 'register_button_label' ] ) : $default_meta[ 'register_button_label' ];
 		
 		// Treat 'required_fields' and 'displayed_fields' field meta as a common field data
 		$default_data[ 'displayed_fields' ] = $default_meta[ 'displayed_fields' ]; unset( $default_meta[ 'displayed_fields' ] );
@@ -848,11 +848,7 @@ function bookacti_format_form_field_data( $raw_field_data, $context = 'view' ) {
 				foreach( $register_defaults as $register_field_name => $register_default ) {
 					$register_fields[ $register_field_name ] = $default_data[ $key ][ $register_field_name ];
 					if( isset( $raw_login_field_data[ $register_field_name ] ) ) {
-						if( $is_translatable ) {
-							if( $raw_login_field_data[ $register_field_name ] ) { $register_fields[ $register_field_name ] = $context !== 'edit' ? apply_filters( 'bookacti_translate_text', $raw_login_field_data[ $register_field_name ] ) : $raw_login_field_data[ $register_field_name ]; }
-						} else {
-							$register_fields[ $register_field_name ] = $raw_login_field_data[ $register_field_name ];
-						}
+						$register_fields[ $register_field_name ] = $is_translatable && $context !== 'edit' && ! empty( $raw_login_field_data[ $register_field_name ] ) ? apply_filters( 'bookacti_translate_text', $raw_login_field_data[ $register_field_name ] ) : $raw_login_field_data[ $register_field_name ];
 					}
 				}
 				
@@ -860,12 +856,12 @@ function bookacti_format_form_field_data( $raw_field_data, $context = 'view' ) {
 				$log_in_fields = array();
 				foreach( $log_in_defaults as $log_in_field_name => $log_in_field_default ) {
 					$log_in_fields[ $log_in_field_name ] = $default_data[ $key ][ $log_in_field_name ];
+					
+					// Keep default "required" attribute for login fields
+					if( $key === 'required_fields' ) { continue; }
+					
 					if( isset( $raw_login_field_data[ $log_in_field_name ] ) ) {
-						if( $is_translatable ) {
-							if( $raw_login_field_data[ $log_in_field_name ] ) { $log_in_fields[ $log_in_field_name ] = $context !== 'edit' ? apply_filters( 'bookacti_translate_text', $raw_login_field_data[ $log_in_field_name ] ) : $raw_login_field_data[ $log_in_field_name ]; }
-						} else {
-							$log_in_fields[ $log_in_field_name ] = $raw_login_field_data[ $log_in_field_name ];
-						}
+						$log_in_fields[ $log_in_field_name ] = $is_translatable && $context !== 'edit' && ! empty( $raw_login_field_data[ $log_in_field_name ] ) ? apply_filters( 'bookacti_translate_text', $raw_login_field_data[ $log_in_field_name ] ) : $raw_login_field_data[ $log_in_field_name ];
 					}
 				}
 				
@@ -874,11 +870,7 @@ function bookacti_format_form_field_data( $raw_field_data, $context = 'view' ) {
 				foreach( $login_type_defaults as $login_type_name => $login_type_default ) {
 					$login_types[ $login_type_name ] = $default_data[ $key ][ $login_type_name ];
 					if( isset( $raw_login_field_data[ $login_type_name ] ) ) {
-						if( $is_translatable ) {
-							if( $raw_login_field_data[ $login_type_name ] ) { $login_types[ $login_type_name ] = $context !== 'edit' ? apply_filters( 'bookacti_translate_text', $raw_login_field_data[ $login_type_name ] ) : $raw_login_field_data[ $login_type_name ]; }
-						} else {
-							$login_types[ $login_type_name ] = $raw_login_field_data[ $login_type_name ];
-						}
+						$login_types[ $login_type_name ] = $is_translatable && $context !== 'edit' && ! empty( $raw_login_field_data[ $login_type_name ] ) ? apply_filters( 'bookacti_translate_text', $raw_login_field_data[ $login_type_name ] ) : $raw_login_field_data[ $login_type_name ];
 					}
 				}
 				
@@ -934,7 +926,7 @@ function bookacti_format_form_field_data( $raw_field_data, $context = 'view' ) {
 	$translatable_keys = array( 'title', 'label', 'placeholder', 'tip' );
 	foreach( $translatable_keys as $key ) {
 		if( is_string( $formatted_field_data[ $key ] ) ) { 
-			$formatted_field_data[ $key ] = ! empty( $raw_field_data[ $key ] ) ? ( $context !== 'edit' ? apply_filters( 'bookacti_translate_text', $raw_field_data[ $key ] ) : $raw_field_data[ $key ] ) : ( isset( $field_data[ $key ] ) ? $field_data[ $key ] : $default_data[ $key ] );
+			$formatted_field_data[ $key ] = isset( $raw_field_data[ $key ] ) ? ( $context !== 'edit' && ! empty( $raw_field_data[ $key ] ) ? apply_filters( 'bookacti_translate_text', $raw_field_data[ $key ] ) : $raw_field_data[ $key ] ) : ( isset( $field_data[ $key ] ) ? $field_data[ $key ] : $default_data[ $key ] );
 		}
 	}
 	
@@ -953,7 +945,7 @@ function bookacti_format_form_field_data( $raw_field_data, $context = 'view' ) {
 /**
  * Sanitize field data according to its type
  * @since 1.5.0
- * @version 1.16.43
+ * @version 1.16.45
  * @param array|string $raw_field_data
  * @return array
  */
@@ -1050,7 +1042,7 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 		// Treat 'required_fields' and 'displayed_fields' field meta as a common field data
 		$default_data[ 'displayed_fields' ] = $default_meta[ 'displayed_fields' ]; unset( $default_meta[ 'displayed_fields' ] );
 		$default_data[ 'required_fields' ]  = $default_meta[ 'required_fields' ]; unset( $default_meta[ 'required_fields' ] );
-
+		
 		// Sanitize common values (specific cases)
 		// Sanitize label, placeholder and tip
 		$register_defaults   = bookacti_get_register_fields_default_data( 'edit' );
@@ -1078,6 +1070,12 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 				// Sanitize login fields
 				$log_in_fields = array();
 				foreach( $log_in_defaults as $log_in_field_name => $log_in_field_default ) {
+					// Keep default "required" attribute for login fields
+					if( $key === 'required_fields' ) {
+						$log_in_fields[ $log_in_field_name ] = $default_data[ $key ][ $log_in_field_name ];
+						continue;
+					}
+					
 					$log_in_fields[ $log_in_field_name ] = isset( $raw_login_field_data[ $log_in_field_name ] ) ? $raw_login_field_data[ $log_in_field_name ] : ( $is_translatable ? '' : $default_data[ $key ][ $log_in_field_name ] );
 				}
 				
@@ -1181,7 +1179,7 @@ function bookacti_sanitize_form_field_values( $values, $field_type = '' ) {
 /**
  * Transform form field sanitized data to actual update data (mainly to avoid saving default values)
  * @since 1.16.42
- * @version 1.16.43
+ * @version 1.16.45
  * @param array $field
  * @param array $sanitized_data
  * @param boolean $switch_locale
@@ -1196,12 +1194,16 @@ function bookacti_get_form_field_update_data( $field, $sanitized_data, $switch_l
 	$sanitized_data = array_map( 'maybe_unserialize', $sanitized_data );
 	$field_meta     = array_intersect_key( $sanitized_data, $default_meta );
 	
-	// Do not save default data
-	$null_data = array();
-	$null_keys = array( 'title', 'label', 'options', 'value', 'placeholder', 'tip' );
+	// Do not save default data, but allow empty data
+	$null_data  = array();
+	$empty_data = array();
+	$null_keys  = array( 'title', 'label', 'placeholder', 'tip', 'options', 'value' );
 	foreach( $null_keys as $key ) { 
-		if( in_array( $sanitized_data[ $key ], array( '', 'a:0:{}', array(), $default_data[ $key ] ), true ) ) {
+		if( $sanitized_data[ $key ] === $default_data[ $key ] ) {
 			$null_data[ $key ] = 'null';
+		}
+		else if( in_array( $sanitized_data[ $key ], array( '', 'a:0:{}', array() ), true ) ) {
+			$empty_data[ $key ] = 'empty';
 		}
 	}
 	
@@ -1213,9 +1215,12 @@ function bookacti_get_form_field_update_data( $field, $sanitized_data, $switch_l
 		}
 	}
 	
-	$update_data = array_map( 'maybe_serialize', array_merge( array_diff_key( $sanitized_data, $null_data, $default_meta ), $field_meta ) );
+	$update_data = array_map( 'maybe_serialize', array_merge( array_diff_key( $sanitized_data, $null_data, $empty_data, $default_meta ), $field_meta ) );
 	
 	foreach( $null_keys as $key ) { 
+		if( ! empty( $empty_data[ $key ] ) ) { 
+			$update_data[ $key ] = 'empty';
+		}
 		if( ! isset( $update_data[ $key ] ) || ! empty( $null_data[ $key ] ) ) { 
 			$update_data[ $key ] = 'null';
 		}
@@ -1328,7 +1333,7 @@ function bookacti_display_form_field_for_editor( $field, $echo = true ) {
 /**
  * Validate register fields
  * @since 1.5.0
- * @version 1.16.42
+ * @version 1.16.45
  * @param array $login_values
  * @param array $login_data
  * @return array
@@ -1357,7 +1362,7 @@ function bookacti_validate_registration( $login_values, $login_data ) {
 	// Check that required register fields are filled
 	foreach( $login_data[ 'required_fields' ] as $field_name => $is_required ) {
 		if( $is_required && empty( $login_values[ $field_name ] ) ) {
-			if( $field_name === 'password' && ! empty( $login_values[ 'login_type' ] ) && $login_values[ 'login_type' ] === 'new_account' && $login_data[ 'generate_password' ] ) { continue; }
+			if( $field_name === 'password' && $login_data[ 'generate_password' ] ) { continue; }
 			$field_label = ! empty( $login_data[ 'label' ][ $field_name ] ) ? $login_data[ 'label' ][ $field_name ] : $field_name;
 			/* translators: %s is the field name. */
 			$return_array[ 'messages' ][ 'missing_' . $field_name ] = sprintf( esc_html__( 'The field "%s" is required.', 'booking-activities' ), $field_label );
@@ -1446,12 +1451,11 @@ function bookacti_register_a_new_user( $login_values, $login_data ) {
 /**
  * Validate login fields
  * @since 1.5.0
- * @version 1.16.42
+ * @version 1.16.45
  * @param array $login_values
- * @param boolean $require_authentication Whether to authenticate the user
  * @return WP_User|array
  */
-function bookacti_validate_login( $login_values, $require_authentication = true ) {
+function bookacti_validate_login( $login_values ) {
 	// Check if email is correct
 	$user_login = ! empty( $login_values[ 'email' ] ) ? $login_values[ 'email' ] : '';
 	$user       = $user_login ? get_user_by( is_email( $user_login ) ? 'email' : 'login', $user_login ) : null;
@@ -1464,8 +1468,9 @@ function bookacti_validate_login( $login_values, $require_authentication = true 
 	}
 
 	// Check if password is correct
-	else if( $require_authentication ) {
-		$user = wp_authenticate( $user->user_email, $login_values[ 'password' ] );
+	else {
+		$password = ! empty( $login_values[ 'password' ] ) ? $login_values[ 'password' ] : '';
+		$user     = wp_authenticate( $user->user_email, $password );
 		
 		if( ! is_a( $user, 'WP_User' ) ) {
 			if( is_wp_error( $user ) ) {
@@ -1485,6 +1490,7 @@ function bookacti_validate_login( $login_values, $require_authentication = true 
 /**
  * Process login form: log in / register / book without account the user
  * @since 1.16.42
+ * @version 1.16.45
  * @param int $form_id
  * @param array $login_values
  * @return array
@@ -1493,7 +1499,7 @@ function bookacti_process_login_form( $form_id, $login_values ) {
 	$return_array = array( 'status' => 'success', 'error' => '', 'messages' => array(), 'user_id' => '' );
 	
 	if( is_user_logged_in() ) {
-		$return_array[ 'user_id' ] = get_current_user_id();
+		$return_array[ 'user_id' ] = apply_filters( 'bookacti_current_user_id', get_current_user_id() );
 	}
 	else if( ! apply_filters( 'bookacti_bypass_login_process', false ) ) {
 		// Retrieve login data
@@ -1533,8 +1539,7 @@ function bookacti_process_login_form( $form_id, $login_values ) {
 		// Login
 		} else if( $login_values[ 'login_type' ] === 'my_account' ) {
 			// Validate login fields
-			$require_authentication = ! empty( $login_field[ 'required_fields' ][ 'password' ] );
-			$user = bookacti_validate_login( $login_values, $require_authentication );
+			$user = bookacti_validate_login( $login_values );
 			if( ! is_a( $user, 'WP_User' ) ) {
 				$return_array[ 'error' ]    = 'user_login_failed';
 				$return_array[ 'messages' ] = $user[ 'messages' ];

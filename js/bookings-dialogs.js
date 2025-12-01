@@ -504,7 +504,7 @@ function bookacti_dialog_refund_confirmation( message ) {
 /**
  * Change Bookings Status
  * @since 1.16.0
- * @version 1.16.1
+ * @version 1.16.45
  * @param {Object} booking_selection
  */
 function bookacti_dialog_change_bookings_status( booking_selection ) {
@@ -523,9 +523,9 @@ function bookacti_dialog_change_bookings_status( booking_selection ) {
 	// Select the current status
 	var booking_status = rows.length === 1 ? rows.find( '.bookacti-booking-status' ).data( 'booking-status' ) : '';
 	var payment_status = rows.length === 1 ? rows.find( '.bookacti-payment-status' ).data( 'payment-status' ) : '';
-	$j( 'select#bookacti-select-booking-status' ).val( booking_status );
-	$j( 'select#bookacti-select-payment-status' ).val( payment_status );
-	$j( '#bookacti-send-notifications-on-status-change' ).prop( 'checked', false );
+	$j( 'select#bookacti-select-booking-status' ).val( booking_status ).trigger( 'change' );
+	$j( 'select#bookacti-select-payment-status' ).val( payment_status ).trigger( 'change' );
+	$j( '#bookacti-send-notifications-on-status-change' ).prop( 'checked', false ).trigger( 'change' );
 
 	$j( 'body' ).trigger( 'bookacti_booking_action_dialog_opened', [ booking_selection, 'change_booking_status' ] );
 
