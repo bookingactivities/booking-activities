@@ -655,6 +655,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Upgrade Notice ==
 
+= 1.16.45 =
+Major changes in code:
+* If you have purchased add-ons, you need to update them too.
+* If you have custom code, you may need to adapt it. No support can be provided for your custom code.
+
 = 1.15.8 =
 Requires MySQL 5.7.22 or later, or MariaDB 10.5.4 or later
 

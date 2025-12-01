@@ -688,6 +688,14 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'download_id' => 29249,
 			'min_version' => '1.2.4'
 		),
+		'bawl' => array( 
+			'title'       => 'Waiting List', 
+			'slug'        => 'waiting-list', 
+			'plugin_name' => 'ba-waiting-list', 
+			'end_of_life' => '', 
+			'download_id' => 39100,
+			'min_version' => '1.0.0'
+		),
 		'balau' => array( 
 			'title'       => 'Licenses & Updates', 
 			'slug'        => 'licenses-and-updates', 
