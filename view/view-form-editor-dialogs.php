@@ -2,7 +2,7 @@
 /**
  * Form editor dialogs
  * @since 1.5.0
- * @version 1.16.45
+ * @version 1.16.46
  */
 
 // Exit if accessed directly
@@ -1230,7 +1230,7 @@ foreach( $fields_default as $field_name => $field_data ) {
 			<p><strong><?php esc_html_e( 'Secret address in iCal format', 'booking-activities' ); ?></strong></p>
 			<div class='bookacti_export_url'>
 				<div class='bookacti_export_url_field'><input type='text' id='bookacti_export_events_url_secret' data-value='<?php echo $ical_url; ?>' value='<?php echo $ical_url; ?>' readonly onfocus='this.select();'/></div>
-				<div class='bookacti_export_button'><input type='button' value='<?php esc_html( _ex( 'Export', 'action', 'booking-activities' ) ); ?>' class='button button-primary button-large'/></div>
+				<div class='bookacti_export_button'><input type='button' value='<?php echo esc_attr_x( 'Export', 'action', 'booking-activities' ); ?>' class='button button-primary button-large'/></div>
 			</div>
 			<p>
 				<small>

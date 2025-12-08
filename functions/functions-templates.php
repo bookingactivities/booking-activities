@@ -853,7 +853,7 @@ function bookacti_get_template_groups_of_events_list( $categories, $groups, $tem
 
 /**
  * Display a promo area of Prices and Credits add-on
- * @version 1.15.0
+ * @version 1.16.46
  * @param string $type
  */
 function bookacti_promo_for_bapap_addon( $type = 'event' ) {
@@ -915,7 +915,7 @@ function bookacti_promo_for_bapap_addon( $type = 'event' ) {
 							<span class='bookacti-available-places bookacti-not-booked'>
 								<span class='bookacti-available-places-number'>50</span>
 								<span class='bookacti-available-places-unit-name'> </span>
-								<span class='bookacti-available-places-avail-particle'> <?php esc_html( _ex( 'avail.', 'Short for availabilities [plural noun]', 'booking-activities' ) ); ?></span>
+								<span class='bookacti-available-places-avail-particle'> <?php echo esc_html_x( 'avail.', 'Short for availabilities [plural noun]', 'booking-activities' ); ?></span>
 							</span>
 						</div>
 					</div>
@@ -932,7 +932,7 @@ function bookacti_promo_for_bapap_addon( $type = 'event' ) {
 							<span class='bookacti-available-places bookacti-not-booked'>
 								<span class='bookacti-available-places-number'>50</span>
 								<span class='bookacti-available-places-unit-name'> </span>
-								<span class='bookacti-available-places-avail-particle'> <?php _ex( 'avail.', 'Short for availabilities [plural noun]', 'booking-activities' ); ?></span>
+								<span class='bookacti-available-places-avail-particle'> <?php echo esc_html_x( 'avail.', 'Short for availabilities [plural noun]', 'booking-activities' ); ?></span>
 							</span>
 						</div>
 					</div>
@@ -954,7 +954,7 @@ function bookacti_promo_for_bapap_addon( $type = 'event' ) {
 							<span class='bookacti-available-places bookacti-not-booked'>
 								<span class='bookacti-available-places-number'>50</span>
 								<span class='bookacti-available-places-unit-name'> </span>
-								<span class='bookacti-available-places-avail-particle'> <?php _ex( 'avail.', 'Short for availabilities [plural noun]', 'booking-activities' ); ?></span>
+								<span class='bookacti-available-places-avail-particle'> <?php echo esc_html_x( 'avail.', 'Short for availabilities [plural noun]', 'booking-activities' ); ?></span>
 							</span>
 						</div>
 					</div>

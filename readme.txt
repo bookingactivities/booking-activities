@@ -320,8 +320,13 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.16.46 =
+* Fix - Fix qTranslateConfig deprecation notice with qTranslateXT 1.16
+* Fix - Fix escaping errors
+
 = 1.16.45 - 2025/12/02 =
-* Feature - Add customer avatar column to user booking list (customer_avatar) and backend booking list
+* Tweak - Compatibility with Waiting List add-on 1.0.0
+* Tweak - Add customer avatar column to user booking list (customer_avatar) and backend booking list
 * Tweak - Remove hint on duration field as it may be misleading
 * Tweak - Hide bullet point followed by colon in WC item meta
 * Tweak - Remove "Password required" option from "User data (login / registration)" field settings
