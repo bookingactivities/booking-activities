@@ -329,7 +329,7 @@ foreach( $fields_default as $field_name => $field_data ) {
 		/**
 		 * Display the content of the "Availability" tab of the "Calendar" dialog
 		 * @since 1.5.0
-		 * @version 1.13.0
+		 * @version 1.15.46
 		 * @param array $params
 		 */
 		function bookacti_fill_calendar_dialog_availability_tab( $params ) {
@@ -370,12 +370,14 @@ foreach( $fields_default as $field_name => $field_data ) {
 		</fieldset>
 		<?php 
 			do_action( 'bookacti_calendar_dialog_availability_tab_after', $params );
-		} 
+		
+			bookacti_display_bawl_promo();
+		}
 		
 		/**
 		 * Display the content of the "Calendar" tab of the "Calendar" dialog
 		 * @since 1.5.0
-		 * @version 1.15.0
+		 * @version 1.16.46
 		 * @param array $params
 		 */
 		function bookacti_fill_calendar_dialog_calendar_tab( $params ) {
@@ -390,11 +392,11 @@ foreach( $fields_default as $field_name => $field_data ) {
 		</fieldset>
 		<?php 
 			do_action( 'bookacti_calendar_dialog_calendar_tab_after', $params );
-		} 
+		
+			bookacti_display_badp_promo();
+		}
 		?>
-		<div class='bookacti-hidden-field'>
-			<?php bookacti_display_badp_promo(); ?>
-		</div>
+		
 		<div class='bookacti-show-hide-advanced-options bookacti-show-advanced-options' 
 			 data-show-title='<?php esc_html_e( 'Show advanced options', 'booking-activities' ); ?>'
 			 data-hide-title='<?php esc_html_e( 'Hide advanced options', 'booking-activities' ); ?>'>

@@ -858,16 +858,16 @@ function bookacti_get_template_groups_of_events_list( $categories, $groups, $tem
  */
 function bookacti_promo_for_bapap_addon( $type = 'event' ) {
 	$is_plugin_active = bookacti_is_plugin_active( 'ba-prices-and-credits/ba-prices-and-credits.php' );
-	$license_status = get_option( 'bapap_license_status' );
+	$license_status   = get_option( 'bapap_license_status' );
 
 	// If the plugin is activated but the license is not active yet
-	if( $is_plugin_active && ( empty( $license_status ) || $license_status !== 'valid' ) ) {
+	if( $is_plugin_active && $license_status !== 'valid' ) {
 		?>
 		<div class='bookacti-addon-promo'>
 			<p>
 			<?php 
 				/* translators: %s = add-on name */
-				echo sprintf( esc_html__( 'Thank you for purchasing %s add-on!', 'booking-activities' ), '<strong>Prices and Credits</strong>' ); 
+				echo sprintf( esc_html__( 'Thank you for purchasing %s add-on!', 'booking-activities' ), '<strong>Prices&nbsp;and&nbsp;Credits</strong>' ); 
 			?>
 			</p><p>
 				<?php esc_html_e( 'It seems you didn\'t activate your license yet. Please follow these instructions to activate your license:', 'booking-activities' ); ?>
@@ -876,7 +876,7 @@ function bookacti_promo_for_bapap_addon( $type = 'event' ) {
 					<a href='https://booking-activities.fr/en/docs/user-documentation/get-started-with-prices-and-credits-add-on/prerequisite-installation-license-activation-of-prices-and-credits-add-on/?utm_source=plugin&utm_medium=plugin&utm_content=encart-promo-<?php echo esc_attr( $type ); ?>' target='_blank'>
 						<?php 
 						/* translators: %s = add-on name */
-							echo sprintf( esc_html__( 'How to activate %s license?', 'booking-activities' ), 'Prices and Credits' ); 
+							echo sprintf( esc_html__( 'How to activate %s license?', 'booking-activities' ), 'Prices&nbsp;and&nbsp;Credits' ); 
 						?>
 					</a>
 				</strong>
@@ -885,11 +885,11 @@ function bookacti_promo_for_bapap_addon( $type = 'event' ) {
 		<?php
 	}
 
-	else if( empty( $license_status ) || $license_status !== 'valid' ) {
+	else if( $license_status !== 'valid' ) {
 		?>
 		<div class='bookacti-addon-promo'>
 			<?php 
-			$addon_link = '<a href="https://booking-activities.fr/en/downloads/prices-and-credits/?utm_source=plugin&utm_medium=plugin&utm_medium=plugin&utm_campaign=prices-and-credits&utm_content=encart-promo-' . $type . '" target="_blank" >Prices and Credits</a>';
+			$addon_link = '<strong><a href="https://booking-activities.fr/en/downloads/prices-and-credits/?utm_source=plugin&utm_medium=plugin&utm_medium=plugin&utm_campaign=prices-and-credits&utm_content=encart-promo-' . $type . '" target="_blank" >Prices&nbsp;and&nbsp;Credits</a></strong>';
 			$message = '';
 			$event_name = '';
 			if( $type === 'group-of-events' ) {
@@ -914,7 +914,7 @@ function bookacti_promo_for_bapap_addon( $type = 'event' ) {
 						<div class='bookacti-availability-container'>
 							<span class='bookacti-available-places bookacti-not-booked'>
 								<span class='bookacti-available-places-number'>50</span>
-								<span class='bookacti-available-places-unit-name'> </span>
+								<span class='bookacti-available-places-unit-name'></span>
 								<span class='bookacti-available-places-avail-particle'> <?php echo esc_html_x( 'avail.', 'Short for availabilities [plural noun]', 'booking-activities' ); ?></span>
 							</span>
 						</div>
@@ -931,7 +931,7 @@ function bookacti_promo_for_bapap_addon( $type = 'event' ) {
 						<div class='bookacti-availability-container'>
 							<span class='bookacti-available-places bookacti-not-booked'>
 								<span class='bookacti-available-places-number'>50</span>
-								<span class='bookacti-available-places-unit-name'> </span>
+								<span class='bookacti-available-places-unit-name'></span>
 								<span class='bookacti-available-places-avail-particle'> <?php echo esc_html_x( 'avail.', 'Short for availabilities [plural noun]', 'booking-activities' ); ?></span>
 							</span>
 						</div>
@@ -953,7 +953,7 @@ function bookacti_promo_for_bapap_addon( $type = 'event' ) {
 						<div class='bookacti-availability-container'>
 							<span class='bookacti-available-places bookacti-not-booked'>
 								<span class='bookacti-available-places-number'>50</span>
-								<span class='bookacti-available-places-unit-name'> </span>
+								<span class='bookacti-available-places-unit-name'></span>
 								<span class='bookacti-available-places-avail-particle'> <?php echo esc_html_x( 'avail.', 'Short for availabilities [plural noun]', 'booking-activities' ); ?></span>
 							</span>
 						</div>

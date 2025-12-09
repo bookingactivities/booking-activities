@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking Activities landing page
- * @version 1.16.33
+ * @version 1.16.46
  */
 
 // Exit if accessed directly
@@ -22,6 +22,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		<div id='bookacti-add-ons-container'>
 		<?php
 			$add_ons = array(
+				'waiting-list' => array( 
+					'prefix'      => 'bawl',
+					'title'       => 'Waiting List',
+					'subtitle'    => '',
+					'link'        => 'https://booking-activities.fr/en/downloads/waiting-list/?utm_source=plugin&utm_medium=plugin&utm_campaign=waiting-list&utm_content=landing',
+					'screenshot'  => true,
+					'light_color' => '#f2c291',
+					'dark_color'  => '#403326',
+					'excerpt'     => esc_html__( 'Allow customers to wait-list for sold-out events, and notify or automatically book them when they become available.', 'booking-activities' ),
+				),
 				'resource-availability' => array( 
 					'prefix'      => 'bara',
 					'title'       => 'Resource Availability',
