@@ -3,7 +3,7 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
 Tested up to: 6.9
-Stable tag: 1.16.45
+Stable tag: 1.16.46
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -107,6 +107,7 @@ See the whole [features list here](https://booking-activities.fr/en/documentatio
 * **[Prices and Credits](https://booking-activities.fr/en/downloads/prices-and-credits/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=prices-and-credits&utm_content=readme)**: Set per event prices, decreasing prices, price categories (adults, children, etc.), pay with credits
 * **[Notification Pack](https://booking-activities.fr/en/downloads/notification-pack/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=notification-pack&utm_content=readme)**: Send activity-specific notifications and booking reminders by email, SMS and Push
 * **[Order for Customers](https://booking-activities.fr/en/downloads/order-for-customers/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=order-for-customers&utm_content=readme)**: You can book / place an order in the name of your customers
+* **[Waiting List](https://booking-activities.fr/en/downloads/waiting-list/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=waiting-list&utm_content=readme)**: Join the waiting list for sold-out events (automatic notification / booking)
 
 See the whole [add-ons list here](https://booking-activities.fr/en/add-ons/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)
 
@@ -320,8 +321,14 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.16.46 - 2025/12/09 =
+* Tweak - The [Waiting List](https://booking-activities.fr/en/downloads/waiting-list/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme) add-on is now available!
+* Fix - Fix qTranslateConfig deprecation notice with qTranslateXT 1.16
+* Fix - Fix escaping errors
+
 = 1.16.45 - 2025/12/02 =
-* Feature - Add customer avatar column to user booking list (customer_avatar) and backend booking list
+* Tweak - Compatibility with Waiting List add-on 1.0.0
+* Tweak - Add customer avatar column to user booking list (customer_avatar) and backend booking list
 * Tweak - Remove hint on duration field as it may be misleading
 * Tweak - Hide bullet point followed by colon in WC item meta
 * Tweak - Remove "Password required" option from "User data (login / registration)" field settings

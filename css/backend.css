@@ -199,3 +199,14 @@ input[type=checkbox].bookacti-onoffswitch-checkbox { position: relative; width: 
 .bookacti-onoffswitch .bookacti-onoffswitch-knobs, .bookacti-onoffswitch .bookacti-onoffswitch-knobs:before, .bookacti-onoffswitch .bookacti-onoffswitch-layer { transition: 0.3s ease all; }
 .rtl .bookacti-onoffswitch .bookacti-onoffswitch-knobs:before { left: 32px; }
 .rtl .bookacti-onoffswitch .bookacti-onoffswitch-checkbox:checked + .bookacti-onoffswitch-knobs:before { left: 0; }
+
+
+/* Forms */
+.bookacti-bawl-addon-promo .bookacti-promo-events-examples .fc-event { height: 64px; }
+.bookacti-bawl-addon-promo .bookacti-event-waitlist-container        { position: absolute; top: 0; right: 0; z-index: 6; width: 24px; height: 24px; padding: 2px 3px; background: rgba(0, 0, 0, 1); color: #fff; border-radius: 0 0 0 3px; text-align: right; box-sizing: border-box; }
+.bookacti-bawl-addon-promo .bookacti-event-waitlist-text             { position: relative; right: -30px; font-size: 0.85em; line-height: 1.2em; }
+.bookacti-bawl-addon-promo .bookacti-event-waitlist-container:before { display: block; vertical-align: middle; font-size: 14px; content: '\0052'; font-family: 'booking_activities_icons'; }
+.bookacti-bawl-addon-promo .bookacti-event-waitlistable .bookacti-event-waitlist-container,
+.bookacti-bawl-addon-promo .bookacti-event-waitlistable .bookacti-event-waitlist-text             { transition: all 0.2s; }
+.bookacti-bawl-addon-promo .bookacti-event-waitlistable:hover .bookacti-event-waitlist-container  { opacity: 1; width: 100%; height: 100%; border-radius: 0; transition: all 0.5s; }
+.bookacti-bawl-addon-promo .bookacti-event-waitlistable:hover .bookacti-event-waitlist-text       { right: 0; transition: all 0.5s; }

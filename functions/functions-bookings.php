@@ -692,7 +692,7 @@ function bookacti_format_booking_filters( $filters = array() ) {
 /**
  * Format booking filters manually input
  * @since 1.6.0
- * @version 1.16.0
+ * @version 1.16.46
  * @param array $filters
  * @return array
  */
@@ -730,7 +730,7 @@ function bookacti_format_string_booking_filters( $filters = array() ) {
 
 	// Format datetime
 	$from = ''; $to = '';
-	if( ! empty( $filters[ 'from' ] ) || ! empty( $filters[ 'to' ] ) !== '' ) { 
+	if( ! empty( $filters[ 'from' ] ) || ! empty( $filters[ 'to' ] ) ) { 
 		$timezone = new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
 		if( ! empty( $filters[ 'from' ] ) ) {
 			$from_sanitized = sanitize_text_field( $filters[ 'from' ] );

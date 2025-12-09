@@ -542,17 +542,18 @@ function bookacti_show_hide_template_related_options( template_ids, options ) {
 
 /**
  * Update multilangual fields with qTranslate-XT
+ * @version 1.16.46
  * @param {HTMLElement} field
  */
-function bookacti_update_qtx_field( field ){
-	if( typeof qTranslateConfig !== 'undefined' ) {
-		var qtx         = qTranslateConfig.js.get_qtx();
-		var active_lang = qtx.getActiveLanguage();
-		var input_name  = $j( field ).attr( 'name' );
+function bookacti_update_qtx_field( field ) {
+	var qtx = typeof qTranx !== 'undefined' ? qTranx?.hooks : ( typeof qTranslateConfig !== 'undefined' ? qTranslateConfig?.js.get_qtx?.() : null );
+	if( ! qtx ) { return; }
+	
+	var active_lang = qtx.getActiveLanguage();
+	var input_name  = $j( field ).attr( 'name' );
 
-		if( active_lang !== undefined ) {
-			$j( 'input[name="qtranslate-fields[' + input_name + '][' + active_lang + ']"]' ).val( $j( field ).val() );
-		}
+	if( active_lang !== undefined ) {
+		$j( 'input[name="qtranslate-fields[' + input_name + '][' + active_lang + ']"]' ).val( $j( field ).val() );
 	}
 }
 
@@ -560,22 +561,23 @@ function bookacti_update_qtx_field( field ){
 /**
  * Refresh multilingual field to make a correct display 
  * E.g.: '[:en]Hello[:fr]Bonjour[:]' become 'Hello' and 'Bonjour' each in its own switchable field (with the LSB)
+ * @version 1.16.46
  * @param {HTMLElement} field
  */
-function bookacti_refresh_qtx_field( field ){
-	if( typeof qTranslateConfig !== 'undefined' ) {
-		var qtx = qTranslateConfig.js.get_qtx();
-		$j( field ).removeClass('qtranxs-translatable');
-		var h = qtx.refreshContentHook( field );
-		$j( field ).addClass('qtranxs-translatable');
-		
-		// Refresh tinyMCE (from "qtranslate-xt\admin\js\common.js" updateTinyMCE line 588)
-		if( typeof tinyMCE !== 'undefined' ) {
-			if( tinyMCE && $j( '#' + field.id ).hasClass( 'wp-editor-area' ) ) {
-				if( tinyMCE.get( field.id ) ) {
-					h.mce = tinyMCE.get( field.id );
-					h.mce.setContent( h.contentField.value, { format: 'html' } );
-				}
+function bookacti_refresh_qtx_field( field ) {
+	var qtx = typeof qTranx !== 'undefined' ? qTranx?.hooks : ( typeof qTranslateConfig !== 'undefined' ? qTranslateConfig?.js.get_qtx?.() : null );
+	if( ! qtx ) { return; }
+	
+	$j( field ).removeClass( 'qtranxs-translatable' );
+	var h = qtx.refreshContentHook( field );
+	$j( field ).addClass( 'qtranxs-translatable' );
+
+	// Refresh tinyMCE (from "qtranslate-xt\admin\js\common.js" updateTinyMCE line 588)
+	if( typeof tinyMCE !== 'undefined' ) {
+		if( tinyMCE && $j( '#' + field.id ).hasClass( 'wp-editor-area' ) ) {
+			if( tinyMCE.get( field.id ) ) {
+				h.mce = tinyMCE.get( field.id );
+				h.mce.setContent( h.contentField.value, { format: 'html' } );
 			}
 		}
 	}
