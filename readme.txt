@@ -3,7 +3,7 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
 Tested up to: 6.9
-Stable tag: 1.16.46
+Stable tag: 1.16.47
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -320,6 +320,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.16.47 =
+* Fix - Prevent unbinding repeated (group of) event(s) occurrences if the result would be identical to the original
+* Fix - Incorrect grouped events after unbinding booked occurrences if the result is a non repeated group
 
 = 1.16.46 - 2025/12/09 =
 * Tweak - The [Waiting List](https://booking-activities.fr/en/downloads/waiting-list/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme) add-on is now available!

@@ -118,7 +118,7 @@ function bookacti_get_template_managers( $template_ids ) {
  * @param int|array $activity_ids
  * @return array
  */
-function bookacti_get_activity_managers( $activity_ids ) {	
+function bookacti_get_activity_managers( $activity_ids ) {
 	$activity_ids = bookacti_ids_to_array( $activity_ids );
 	$managers     = $activity_ids ? bookacti_get_managers( 'activity', $activity_ids ) : array();
 	
@@ -261,8 +261,8 @@ function bookacti_get_templates_data( $template_ids = array(), $raw = false, $us
  */
 function bookacti_get_mixed_template_data( $template_ids ) {
 	$templates_data = bookacti_get_templates_data( $template_ids );
-	$mixed_data = array();
-	$mixed_settings	= array();
+	$mixed_data     = array();
+	$mixed_settings = array();
 
 	foreach( $templates_data as $template_data ){
 		$settings = $template_data[ 'settings' ];
@@ -339,7 +339,7 @@ function bookacti_bind_activities_to_template( $new_activities, $template_id ) {
 /**
  * Unbind selected occurrence of an event
  * @since 1.12.0 (was bookacti_unbind_selected_occurrence)
- * @version 1.13.0
+ * @version 1.16.47
  * @param object $event
  * @param string $event_start Y-m-d H:i:s
  * @param string $event_end Y-m-d H:i:s
@@ -347,6 +347,10 @@ function bookacti_bind_activities_to_template( $new_activities, $template_id ) {
  */
 function bookacti_unbind_selected_event_occurrence( $event, $event_start, $event_end ) {
 	$event_id = $event->event_id;
+	
+	// Check whether there are more than one occurrence
+	$occurrences = bookacti_get_occurrences_of_repeated_event( $event, array( 'past_events' => 1 ) );
+	if( count( $occurrences ) <= 1 ) { return 0; }
 	
 	// Duplicate the event occurrence
 	$duplicated_event_data = bookacti_sanitize_event_data( array_merge( (array) $event, array( 'start' => $event_start, 'end' => $event_end, 'repeat_freq' => 'none' ) ) );
@@ -378,7 +382,7 @@ function bookacti_unbind_selected_event_occurrence( $event, $event_start, $event
 /**
  * Unbind booked occurrences of an event
  * @since 1.12.0 (was bookacti_unbind_booked_occurrences)
- * @version 1.13.0
+ * @version 1.16.47
  * @param object $event
  * @return int
  */
@@ -386,8 +390,12 @@ function bookacti_unbind_booked_event_occurrences( $event ) {
 	$event_id = $event->event_id;
 	
 	// Get the booked occurrences (the original event will keep the booked occurrences only)
-	$booked_events = bookacti_fetch_booked_events( array( 'events' => array( $event_id ), 'active' => 1, 'past_events' => 1 ) );
-	if( empty( $booked_events[ 'events' ] ) ) { return 0; }
+	$booked_occurrences = bookacti_fetch_booked_events( array( 'events' => array( $event_id ), 'active' => 1, 'past_events' => 1 ) );
+	if( empty( $booked_occurrences[ 'events' ] ) ) { return 0; }
+	
+	// Check whether all occurrences are booked
+	$occurrences = bookacti_get_occurrences_of_repeated_event( $event, array( 'past_events' => 1 ) );
+	if( count( $occurrences ) <= 1 || count( $booked_occurrences[ 'events' ] ) === count( $occurrences ) ) { return 0; }
 	
 	// Duplicate the original event
 	$duplicated_event_id = bookacti_duplicate_event( $event_id );
@@ -405,16 +413,16 @@ function bookacti_unbind_booked_event_occurrences( $event ) {
 	$not_booked_dates = array();
 	
 	// For each booked event...
-	foreach( $booked_events[ 'events' ] as $event_to_unbind ) {
+	foreach( $booked_occurrences[ 'events' ] as $occurrence_to_unbind ) {
 		// Give back its original event id to booked occurrences
-		bookacti_update_grouped_event_id( $duplicated_event_id, $event_id, $event_to_unbind[ 'start' ], $event_to_unbind[ 'end' ] );
+		bookacti_update_grouped_event_id( $duplicated_event_id, $event_id, $occurrence_to_unbind[ 'start' ], $occurrence_to_unbind[ 'end' ] );
 
 		// Get the smallest repeat period possible
-		if( ! $booked_dates ) { $max_repeat_from = substr( $event_to_unbind[ 'start' ], 0, 10 ); }
-		$min_repeat_to = substr( $event_to_unbind[ 'start' ], 0, 10 );
+		if( ! $booked_dates ) { $max_repeat_from = substr( $occurrence_to_unbind[ 'start' ], 0, 10 ); }
+		$min_repeat_to = substr( $occurrence_to_unbind[ 'start' ], 0, 10 );
 
 		// Store the booked dates for exceptions
-		$booked_date = substr( $event_to_unbind[ 'start' ], 0, 10 );
+		$booked_date = substr( $occurrence_to_unbind[ 'start' ], 0, 10 );
 		if( ! in_array( $booked_date, $booked_dates, true ) ) { $booked_dates[] = $booked_date; }
 	}
 	
@@ -423,9 +431,9 @@ function bookacti_unbind_booked_event_occurrences( $event ) {
 		$dummy_event = clone $event;
 		$dummy_event->repeat_from = $max_repeat_from;
 		$dummy_event->repeat_to = $min_repeat_to;
-		$occurrences = bookacti_get_occurrences_of_repeated_event( $dummy_event, array( 'past_events' => 1 ) );
-		foreach( $occurrences as $occurrence ) {
-			$occurrence_date = substr( $occurrence[ 'start' ], 0, 10 );
+		$dummy_occurrences = bookacti_get_occurrences_of_repeated_event( $dummy_event, array( 'past_events' => 1 ) );
+		foreach( $dummy_occurrences as $dummy_occurrence ) {
+			$occurrence_date = substr( $dummy_occurrence[ 'start' ], 0, 10 );
 			if( ! in_array( $occurrence_date, $booked_dates, true ) ) { $not_booked_dates[] = $occurrence_date; }
 		}
 	}
@@ -449,12 +457,21 @@ function bookacti_unbind_booked_event_occurrences( $event ) {
 /**
  * Unbind future occurrences of an event
  * @since 1.12.0 (was bookacti_unbind_future_occurrences)
- * @version 1.13.0
+ * @version 1.16.47
  * @param object $event
  * @param string $unbind_from Y-m-d
  * @return int
  */
 function bookacti_unbind_future_event_occurrences( $event, $unbind_from ) {
+	// Stop the original event repetition where the new event repetition begins
+	$repeat_to_dt = DateTime::createFromFormat( 'Y-m-d', $unbind_from );
+	$repeat_to_dt->sub( new DateInterval( 'P1D' ) );
+	
+	// Make sure there are occurrences before and after
+	$occurrences_before = bookacti_get_occurrences_of_repeated_event( $event, array( 'interval' => array( 'end'   => $repeat_to_dt->format( 'Y-m-d' ) . ' 23:59:59' ), 'past_events' => 1 ) );
+	$occurrences_after  = bookacti_get_occurrences_of_repeated_event( $event, array( 'interval' => array( 'start' => $unbind_from . ' 00:00:00' ), 'past_events' => 1 ) );
+	if( ! $occurrences_before || ! $occurrences_after ) { return 0; }
+	
 	// Duplicate the original event and make its repetition begins on the desired date
 	$duplicated_event_data = bookacti_sanitize_event_data( array_merge( (array) $event, array( 'repeat_from' => $unbind_from ) ) );
 	$duplicated_event_id = bookacti_insert_event( $duplicated_event_data );
@@ -469,10 +486,6 @@ function bookacti_unbind_future_event_occurrences( $event, $unbind_from ) {
 	// Change the event_id of bookings made on future events
 	bookacti_update_bookings_event_id( $event->event_id, $duplicated_event_id, '', '', $unbind_from . ' 00:00:00' );
 	
-	// Stop the original event repetition where the new event repetition begins
-	$repeat_to_dt = DateTime::createFromFormat( 'Y-m-d', $unbind_from );
-	$repeat_to_dt->sub( new DateInterval( 'P1D' ) );
-	
 	// Update the original event dates
 	$original_event_data = bookacti_sanitize_event_data( array_merge( (array) $event, array( 'repeat_to' => $repeat_to_dt->format( 'Y-m-d' ) ) ) );
 	bookacti_update_event( $original_event_data );
@@ -484,26 +497,26 @@ function bookacti_unbind_future_event_occurrences( $event, $unbind_from ) {
 /**
  * Unbind each occurrence of an event
  * @since 1.12.0 (was bookacti_unbind_all_occurrences)
- * @version 1.13.0
+ * @version 1.16.47
  * @param object $event
  * @return array
  */
 function bookacti_unbind_all_event_occurrences( $event ) {
 	// Get the event occurrences (skip exceptions)
 	$occurrences = bookacti_get_occurrences_of_repeated_event( $event, array( 'past_events' => 1 ) );
-	if( ! $occurrences ) { return array(); }
+	if( count( $occurrences ) <= 1 ) { return array(); }
 	
 	$occurrences_ids = array();
 	foreach( $occurrences as $occurrence ) {
 		// Get the occurrence data
 		$occurrence_data = bookacti_sanitize_event_data( array( 
-			'template_id'   => $event->template_id,
-			'activity_id'   => $event->activity_id,
-			'title'         => $event->title,
-			'start'         => $occurrence[ 'start' ],
-			'end'           => $occurrence[ 'end' ],
-			'availability'	=> $event->availability,
-			'repeat_freq'	=> 'none'
+			'template_id'  => $event->template_id,
+			'activity_id'  => $event->activity_id,
+			'title'        => $event->title,
+			'start'        => $occurrence[ 'start' ],
+			'end'          => $occurrence[ 'end' ],
+			'availability' => $event->availability,
+			'repeat_freq'  => 'none'
 		));
 		
 		// Create one event per occurrence
@@ -536,7 +549,7 @@ function bookacti_unbind_all_event_occurrences( $event ) {
 /**
  * Unbind selected occurrence of a group of events
  * @since 1.12.0
- * @version 1.13.0
+ * @version 1.16.47
  * @param array $group
  * @param string $group_date
  * @return int
@@ -546,6 +559,9 @@ function bookacti_unbind_selected_group_of_events_occurrence( $group, $group_dat
 	
 	// Make sure the group occurrence exists
 	if( ! $group_date || empty( $group[ 'groups' ][ $group_date ] ) ) { return 0; }
+	
+	// Check whether there are more than one occurrence
+	if( count( $group[ 'groups' ] ) <= 1 ) { return 0; }
 	
 	// Duplicate the group occurrence
 	$duplicated_group_data = bookacti_sanitize_group_of_events_data( array_merge( $group[ 'data' ], array( 'id' => 0, 'repeat_freq' => 'none', 'events' => $group[ 'groups' ][ $group_date ], 'title' => $group[ 'data' ][ 'multilingual_title' ] ) ) );
@@ -578,7 +594,7 @@ function bookacti_unbind_selected_group_of_events_occurrence( $group, $group_dat
 /**
  * Unbind booked occurrences of a group of events
  * @since 1.12.0
- * @version 1.13.0
+ * @version 1.16.47
  * @param array $group
  * @return int
  */
@@ -596,22 +612,26 @@ function bookacti_unbind_booked_group_of_events_occurrences( $group ) {
 			}
 		}
 	}
-	if( ! $booked_dates ) { return 0; }
 	
-	$occurrences_dates	= array_keys( $group[ 'groups' ] );
-	$booked_dates		= array_intersect( $occurrences_dates, $booked_dates );
-	$not_booked_dates	= array_diff( $occurrences_dates, $booked_dates );
+	// Check whether all occurrences are booked, or none are booked
+	if( count( $group[ 'groups' ] ) <= 1 || ! $booked_dates || count( $group[ 'groups' ] ) === count( $booked_dates ) ) { return 0; }
+	
+	$occurrences_dates = array_keys( $group[ 'groups' ] );
+	$booked_dates      = array_intersect( $occurrences_dates, $booked_dates );
+	$not_booked_dates  = array_diff( $occurrences_dates, $booked_dates );
 	
 	// Duplicate group of events
 	$duplicated_group_exceptions_merged = ! empty( $group[ 'data' ][ 'repeat_exceptions' ] ) && is_array( $group[ 'data' ][ 'repeat_exceptions' ] ) ? $group[ 'data' ][ 'repeat_exceptions' ] : array();
 	foreach( $booked_dates as $booked_date ) { $duplicated_group_exceptions_merged[] = array( 'from' => $booked_date, 'to' => $booked_date ); }
 	$duplicated_group_data = bookacti_sanitize_group_of_events_data( array_merge( $group[ 'data' ], array( 'id' => 0, 'repeat_exceptions' => $duplicated_group_exceptions_merged, 'title' => $group[ 'data' ][ 'multilingual_title' ] ) ) );
-	$duplicated_group_id = bookacti_insert_group_of_events( $duplicated_group_data );
+	$duplicated_group_id   = bookacti_insert_group_of_events( $duplicated_group_data );
 	if( ! $duplicated_group_id ) { return 0; }
 	
-	// Insert duplicated grouped events
-	$grouped_events = $duplicated_group_data[ 'repeat_freq' ] !== 'none' && $duplicated_group_data[ 'repeat_from' ] && ! empty( $group[ 'groups' ][ $duplicated_group_data[ 'repeat_from' ] ] ) ? $group[ 'groups' ][ $duplicated_group_data[ 'repeat_from' ] ] : $group[ 'data' ][ 'events' ];
-	$inserted = bookacti_insert_events_into_group( $duplicated_group_id, $grouped_events );
+	// Insert duplicated grouped events (not booked occurrences)
+	$first_not_booked_date = reset( $not_booked_dates );
+	$not_booked_date       = $duplicated_group_data[ 'repeat_freq' ] !== 'none' && $duplicated_group_data[ 'repeat_from' ] ? $duplicated_group_data[ 'repeat_from' ] : $first_not_booked_date;
+	$grouped_events        = $not_booked_date && ! empty( $group[ 'groups' ][ $not_booked_date ] ) ? $group[ 'groups' ][ $not_booked_date ] : $group[ 'data' ][ 'events' ];
+	$inserted              = bookacti_insert_events_into_group( $duplicated_group_id, $grouped_events );
 	if( ! $inserted ) { return 0; }
 	
 	// Duplicate group metadata
@@ -624,9 +644,11 @@ function bookacti_unbind_booked_group_of_events_occurrences( $group ) {
 	bookacti_update_group_of_events( $original_group_data );
 	
 	// Update original grouped events
-	if( $original_group_data[ 'repeat_freq' ] !== 'none' && $original_group_data[ 'repeat_from' ] && ! empty( $group[ 'groups' ][ $original_group_data[ 'repeat_from' ] ] ) ) {
+	$first_booked_date = reset( $booked_dates );
+	$booked_date       = $original_group_data[ 'repeat_freq' ] !== 'none' && $original_group_data[ 'repeat_from' ] ? $original_group_data[ 'repeat_from' ] : $first_booked_date;
+	if( ! empty( $group[ 'groups' ][ $booked_date ] ) ) {
 		bookacti_delete_events_from_group( $group_id );
-		bookacti_insert_events_into_group( $group_id, $group[ 'groups' ][ $original_group_data[ 'repeat_from' ] ] );
+		bookacti_insert_events_into_group( $group_id, $group[ 'groups' ][ $booked_date ] );
 	}
 	
 	return $duplicated_group_id;
@@ -636,7 +658,7 @@ function bookacti_unbind_booked_group_of_events_occurrences( $group ) {
 /**
  * Unbind future occurrences of a group of events
  * @since 1.12.0
- * @version 1.13.0
+ * @version 1.16.47
  * @param array $group
  * @param string $unbind_from Y-m-d
  * @return int
@@ -647,9 +669,16 @@ function bookacti_unbind_future_group_of_events_occurrences( $group, $unbind_fro
 	// Make sure the group occurrence exists
 	if( ! $unbind_from || empty( $group[ 'groups' ][ $unbind_from ] ) ) { return 0; }
 	
+	// Make sure there are occurrences before and after
+	$occurrences_dates  = array_keys( $group[ 'groups' ] );
+	$occurrence_i       = array_search( $unbind_from, $occurrences_dates );
+	$occurrences_before = array_slice( $occurrences_dates, 0, $occurrence_i );
+	$occurrences_after  = array_slice( $occurrences_dates, $occurrence_i );
+	if( ! $occurrences_before || ! $occurrences_after ) { return 0; }
+	
 	// Duplicate the original group of events and make its repetition begins on the desired date
 	$duplicated_group_data = bookacti_sanitize_group_of_events_data( array_merge( $group[ 'data' ], array( 'id' => 0, 'repeat_from' => $unbind_from, 'title' => $group[ 'data' ][ 'multilingual_title' ] ) ) );
-	$duplicated_group_id = bookacti_insert_group_of_events( $duplicated_group_data );
+	$duplicated_group_id   = bookacti_insert_group_of_events( $duplicated_group_data );
 	if( ! $duplicated_group_id ) { return 0; }
 	
 	// Insert the events in the group
@@ -677,20 +706,24 @@ function bookacti_unbind_future_group_of_events_occurrences( $group, $unbind_fro
 /**
  * Unbind each occurrence of a group of events
  * @since 1.12.0
+ * @version 1.16.47
  * @param array $group
  * @return array
  */
 function bookacti_unbind_all_group_of_events_occurrences( $group ) {
 	$group_id = $group[ 'data' ][ 'id' ];
 	
+	// Check whether there are more than one occurrence
+	if( count( $group[ 'groups' ] ) <= 1 ) { return array(); }
+	
 	$occurrences_ids = array();
 	foreach( $group[ 'groups' ] as $group_date => $group_events ) {
 		// Sanitize the occurrence data
 		$occurrence_data = bookacti_sanitize_group_of_events_data( array( 
-			'template_id'   => $group[ 'data' ][ 'template_id' ],
-			'category_id'   => $group[ 'data' ][ 'category_id' ],
-			'title'         => $group[ 'data' ][ 'multilingual_title' ],
-			'repeat_freq'	=> 'none'
+			'template_id' => $group[ 'data' ][ 'template_id' ],
+			'category_id' => $group[ 'data' ][ 'category_id' ],
+			'title'       => $group[ 'data' ][ 'multilingual_title' ],
+			'repeat_freq' => 'none'
 		));
 		
 		// Create one group of events per occurrence
@@ -783,7 +816,7 @@ function bookacti_update_events_of_group( $group_id, $new_events ) {
 function bookacti_get_template_groups_of_events_list( $categories, $groups, $template_id = 0 ) {
 	if( ! $categories || ! $groups ) { return ''; }
 
-	$current_user_can_edit_template	= current_user_can( 'bookacti_edit_templates' );
+	$current_user_can_edit_template = current_user_can( 'bookacti_edit_templates' );
 	
 	// Sort the group categories by custom order
 	$ordered_categories = $categories;

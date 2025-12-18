@@ -97,7 +97,7 @@ function bookacti_get_booking_system( $atts ) {
 /**
  * Get booking system data
  * @since 1.7.4
- * @version 1.16.11
+ * @version 1.16.47
  * @param array $atts (see bookacti_format_booking_system_attributes())
  * @return array
  */
@@ -206,8 +206,8 @@ function bookacti_get_booking_system_data( $atts ) {
 			if( $atts[ 'groups_first_event_only' ] && ! empty( $groups[ 'groups' ] ) ) {
 				$events_uid_to_keep   = array();
 				$events_uid_to_remove = array();
-				foreach( $groups[ 'groups' ] as $group_id => $group_occurences ) {
-					foreach( $group_occurences as $group_date => $group_events ) {
+				foreach( $groups[ 'groups' ] as $group_id => $group_occurrences ) {
+					foreach( $group_occurrences as $group_date => $group_events ) {
 						foreach( $group_events as $i => $group_event ) {
 							$event_uid = $group_event[ 'id' ] . '_' . $group_event[ 'start' ];
 							if( $i === 0 ) { $events_uid_to_keep[] = $event_uid; }

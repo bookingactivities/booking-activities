@@ -1821,7 +1821,7 @@ function bookacti_get_loading_html() {
 // BLOCK
 
 /**
- * Return the first occurence of a parsed block recursively
+ * Return the first occurrence of a parsed block recursively
  * @since 1.16.5
  * @param array $parsed_block
  * @param string $block_name
