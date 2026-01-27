@@ -2,7 +2,7 @@
 /**
  * Form editor page
  * @since 1.5.0
- * @version 1.15.13
+ * @version 1.16.47
  */
 
 // Exit if accessed directly
@@ -14,16 +14,16 @@ if( empty( $_REQUEST[ 'action' ] ) && ! empty( $_REQUEST[ 'form_id' ] ) ) {
 
 $form_id = ! empty( $_REQUEST[ 'form_id' ] ) ? intval( $_REQUEST[ 'form_id' ] ) : 0;
 
-if( ! $form_id ) { exit; }
+if( ! $form_id ) { return; }
 
 // Exit if not allowed to edit current form
 $can_manage_form = bookacti_user_can_manage_form( $form_id );
 $can_edit_form   = current_user_can( 'bookacti_edit_forms' );
-if ( ! $can_edit_form || ! $can_manage_form ) { esc_html_e( 'You are not allowed to do that.', 'booking-activities' ); exit; }
+if ( ! $can_edit_form || ! $can_manage_form ) { esc_html_e( 'You are not allowed to do that.', 'booking-activities' ); return; }
 
 // Get form data
 $form_raw = bookacti_get_form_data( $form_id, true );
-if( ! $form_raw ) { exit; }
+if( ! $form_raw ) { return; }
 
 // Get form fields data
 $form_fields      = array();
@@ -45,7 +45,7 @@ foreach( $form_fields_raw as $field_id => $field_raw ) {
 
 if( $lang_switched ) { bookacti_restore_locale(); }
 
-if( ! $form_edit ) { exit; }
+if( ! $form_edit ) { return; }
 ?>
 <div class='wrap'>
 	<h1 class='wp-heading-inline'><?php esc_html_e( 'Edit Booking Form', 'booking-activities' ); ?></h1>

@@ -321,9 +321,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.16.47 =
+= 1.16.47 - 2025/01/27 =
 * Fix - Prevent unbinding repeated (group of) event(s) occurrences if the result would be identical to the original
 * Fix - Incorrect grouped events after unbinding booked occurrences if the result is a non repeated group
+* Fix - WC variable product booking form was not pre-filled after redirecting from another form
+* Fix - Custom fields may be empty after duplicating a booking form
 
 = 1.16.46 - 2025/12/09 =
 * Tweak - The [Waiting List](https://booking-activities.fr/en/downloads/waiting-list/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme) add-on is now available!

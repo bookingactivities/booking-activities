@@ -1263,7 +1263,7 @@ add_action( 'wp_ajax_bookactiUpdateForm', 'bookacti_controller_update_form' );
 /**
  * Duplicate a booking form
  * @since 1.7.18
- * @version 1.16.43
+ * @version 1.16.47
  */
 function bookacti_controller_duplicate_form() {
 	if( empty( $_REQUEST[ 'form_id' ] ) || empty( $_REQUEST[ 'action' ] ) || empty( $_REQUEST[ 'page' ] ) ) { return; }
@@ -1289,10 +1289,15 @@ function bookacti_controller_duplicate_form() {
 		return;
 	}
 	
+	// Get edit data in the default language
+	$lang_switched = bookacti_switch_locale( bookacti_get_site_default_locale() );
+	
 	// Get original form data
 	$original_form_data_raw = bookacti_get_form_data( $original_form_id, true );
-	$original_form_data = $original_form_data_raw ? bookacti_sanitize_form_data( $original_form_data_raw ) : array();
+	$original_form_edit     = $original_form_data_raw ? bookacti_format_form_data( $original_form_data_raw, 'edit' ) : array();
+	$original_form_data     = $original_form_edit ? bookacti_sanitize_form_data( $original_form_edit ) : array();
 	if( ! $original_form_data ) {
+		if( $lang_switched ) { bookacti_restore_locale(); }
 		$notice[ 'message' ] = esc_html__( 'An error occurred while trying to duplicate a booking form.', 'booking-activities' );
 		bookacti_display_admin_notice( $notice, 'duplicate_form' );
 		return;
@@ -1303,6 +1308,7 @@ function bookacti_controller_duplicate_form() {
 	$form_title = ! empty( $original_form_data_raw[ 'title' ] ) && ! empty( $original_form_data[ 'title' ] ) ? sprintf( esc_html__( '%s - Copy', 'booking-activities' ), $original_form_data[ 'title' ] ) : '';
 	$form_id = bookacti_create_form( $form_title, false );
 	if( ! $form_id ) {
+		if( $lang_switched ) { bookacti_restore_locale(); }
 		$notice[ 'message' ] = esc_html__( 'Error occurs when trying to create the form.', 'booking-activities' );
 		bookacti_display_admin_notice( $notice, 'duplicate_form' );
 		return;
@@ -1312,15 +1318,17 @@ function bookacti_controller_duplicate_form() {
 	$original_form_managers = bookacti_get_form_managers( $original_form_id );
 	bookacti_update_managers( 'form', $form_id, $original_form_managers );
 	
-	// Get edit data in the default language
-	$lang_switched = bookacti_switch_locale( bookacti_get_site_default_locale() );
-	
 	// Duplicate the fields
 	$field_order = array();
 	$original_fields_raw      = bookacti_get_form_fields_data( $original_form_id, true, false, true );
 	$default_form_fields_meta = bookacti_get_default_form_fields_meta( '', 'edit' );
 	if( $original_fields_raw ) {
-		$original_fields_ordered = bookacti_sort_form_fields_array( $original_form_id, $original_fields_raw );
+		$original_fields_edit = array();
+		foreach( $original_fields_raw as $i => $original_field_raw ) {
+			$original_fields_edit[ $i ] = bookacti_format_form_field_data( $original_field_raw, 'edit' );
+		}
+		
+		$original_fields_ordered = bookacti_sort_form_fields_array( $original_form_id, $original_fields_edit );
 		foreach( $original_fields_ordered as $original_field ) {
 			// Duplicate field
 			$sanitized_data = bookacti_sanitize_form_field_data( $original_field );
@@ -1344,13 +1352,13 @@ function bookacti_controller_duplicate_form() {
 		}
 	}
 	
-	if( $lang_switched ) { bookacti_restore_locale(); }
-	
 	// Duplicate form meta
 	$form_meta = array_intersect_key( $original_form_data, $original_form_data_raw, bookacti_get_default_form_meta() );
 	if( $field_order ) { $form_meta[ 'field_order' ] = $field_order; }
 	if( isset( $form_meta[ 'secret_key' ] ) ) { unset( $form_meta[ 'secret_key' ] ); }
 	bookacti_update_metadata( 'form', $form_id, $form_meta );
+	
+	if( $lang_switched ) { bookacti_restore_locale(); }
 	
 	// Allow plugins to hook here
 	do_action( 'bookacti_form_duplicated', $form_id, $original_form_id );

@@ -2,7 +2,7 @@
 /**
  * Form list page
  * @since 1.5.0
- * @version 1.16.2
+ * @version 1.16.47
  */
 
 // Exit if accessed directly
@@ -39,7 +39,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			</div>
 		</div><!-- end of wp wrap -->
 		<?php
-		exit;
+		return;
 	}
 	?>
 		

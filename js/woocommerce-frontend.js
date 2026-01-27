@@ -61,16 +61,33 @@ $j( document ).ready( function() {
 
 	/**
 	 * Switch the booking form according to the selected product variation - on switch variation
-	 * @version 1.15.5
+	 * @version 1.16.47
 	 * @param {Event} e
 	 * @param {Object} variation
 	 */
 	$j( '.woocommerce' ).on( 'show_variation', 'form.cart.variations_form', function( e, variation ) { 
 		if( ! $j( this ).find( '.bookacti-wc-form-fields' ).length ) { return; }
-
+		
+		var switch_form    = true;
 		var form_container = $j( this ).find( '.bookacti-wc-form-fields' );
-		bookacti_switch_product_variation_form( form_container, variation );
-
+		
+		// Check if the form is displayed on page load
+		if( parseInt( form_container.data( 'variation-id' ) ) === parseInt( variation[ 'variation_id' ] )
+		&&  parseInt( form_container.data( 'form-id' ) ) === parseInt( variation[ 'bookacti_form_id' ] )
+		&&  ! bookacti.form_fields?.[ parseInt( variation[ 'bookacti_form_id' ] ) ] ) {
+			var booking_system = form_container.find( '.bookacti-booking-system' );
+			if( booking_system.length ) {
+				// The booking system needs to be loaded in that case
+				bookacti_reload_booking_system( booking_system, true );
+				switch_form = false;
+			}
+		}
+		
+		// Switch booking form
+		if( switch_form ) {
+			bookacti_switch_product_variation_form( form_container, variation );
+		}
+		
 		// Change Add to cart button label
 		var new_button_text = variation[ 'bookacti_is_activity' ] ? bookacti_localized.add_booking_to_cart_button_text : bookacti_localized.add_product_to_cart_button_text;
 		$j( this ).find( '.single_add_to_cart_button' ).text( new_button_text );

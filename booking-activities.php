@@ -34,7 +34,7 @@
  * @category Core
  * @author Booking Activities Team
  * 
- * Copyright 2025 Yoan Cutillas
+ * Copyright 2026 Yoan Cutillas
 */
 
 // Exit if accessed directly
