@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking list page
- * @version 1.16.45
+ * @version 1.16.47
  */
 
 // Exit if accessed directly
@@ -26,7 +26,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			</div>
 		</div><!-- end of wp wrap -->
 		<?php
-		exit;
+		return;
 	}
 	
 	// Format templates from URL

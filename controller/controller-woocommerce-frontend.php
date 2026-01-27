@@ -266,7 +266,7 @@ add_action( 'woocommerce_before_single_product_summary', 'bookacti_move_add_to_c
 
 /**
  * Add booking forms to single product page (front-end)
- * @version 1.15.17
+ * @version 1.16.47
  * @global WC_Product $product
  */
 function bookacti_add_booking_system_in_single_product_page() {
@@ -297,9 +297,21 @@ function bookacti_add_booking_system_in_single_product_page() {
 		$form_instance_id = 'bookacti-wc-form-fields-product-' . $product->get_id();
 	}
 	else if( $product->is_type( 'variable' ) ) {
-		$default_attributes = bookacti_get_product_default_attributes( $product );
-		if( $default_attributes ) { 
-			$variation_id = bookacti_get_product_variation_matching_attributes( $product, $default_attributes );
+		// Get the requested attributes
+		$passed_attributes = array();
+		if( ! empty( $_REQUEST ) ) {
+			foreach( $_REQUEST as $key => $value ) {
+				if( substr( $key, 0, 10 ) !== 'attribute_' ) { continue; }
+				$passed_attributes[ sanitize_title_with_dashes( substr( $key, 10 ) ) ] = sanitize_text_field( $value );
+			}
+		}
+		
+		// Get default attributes and merge them
+		$default_attributes  = bookacti_get_product_default_attributes( $product );
+		$selected_attributes = array_merge( $default_attributes, $passed_attributes );
+		
+		if( $selected_attributes ) { 
+			$variation_id = bookacti_get_product_variation_matching_attributes( $product, $selected_attributes );
 			$default_variation_id = $variation_id;
 			if( $default_variation_id ) {
 				$variation = wc_get_product( $default_variation_id );
@@ -319,14 +331,14 @@ function bookacti_add_booking_system_in_single_product_page() {
 	}
 
 	$form_atts = apply_filters( 'bookacti_product_form_attributes', array(
-		'id' => $form_instance_id,
-		'class' => '',
+		'id'                        => $form_instance_id,
+		'class'                     => '',
 		'data-default-variation-id' => ! empty( $default_variation_id ) ? $default_variation_id : '',
-		'data-variation-id' => ! empty( $variation_id ) ? $variation_id : '',
-		'data-product-id' => $product->get_id(),
-		'data-form-id' => $form_id
+		'data-variation-id'         => ! empty( $variation_id ) ? $variation_id : '',
+		'data-product-id'           => $product->get_id(),
+		'data-form-id'              => $form_id
 	), $product );
-
+	
 	// Add compulsory class
 	$form_atts[ 'class' ] .= ' bookacti-wc-form-fields';
 	if( ! empty( $_REQUEST[ 'add-to-cart' ] ) && did_action( 'woocommerce_add_to_cart' ) ) { $form_atts[ 'class' ] .= ' bookacti-wc-form-fields-reset'; }
@@ -414,6 +426,7 @@ add_filter( 'bookacti_displayed_form_fields', 'bookacti_remove_unsupported_field
 /**
  * Force auto-load calendar when variation are switched
  * @since 1.5.2
+ * @version 1.16.47
  * @param array $fields
  * @param array $form
  * @param string $instance_id
@@ -428,6 +441,7 @@ function bookacti_force_auto_load_calendar_while_switching_variations( $fields, 
 			$fields[ $i ][ 'auto_load' ] = 1;
 		}
 	}
+	
 	return $fields;
 }
 add_filter( 'bookacti_displayed_form_fields', 'bookacti_force_auto_load_calendar_while_switching_variations', 20, 4 );
