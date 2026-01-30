@@ -1,7 +1,7 @@
 <?php
 /**
  * Calendar editor page
- * @version 1.15.5
+ * @version 1.16.48
  */
 
 // Exit if accessed directly
@@ -188,5 +188,11 @@ $templates = bookacti_get_templates_data();
 	</ol>
 </div>
 
-<?php include_once( 'view-templates-dialogs.php' ); ?>
+<?php
+// Include template dialogs
+include_once( 'view-templates-dialogs.php' );
+
+// Include booking dialogs
+bookacti_include_booking_dialogs( 'admin' );
+?>
 </div>

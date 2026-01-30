@@ -581,7 +581,7 @@ add_action( 'wp_ajax_bookactiBeforeDeleteEvent', 'bookacti_controller_before_del
 
 /**
  * AJAX Controller - Delete an event if it doesn't have bookings
- * @version 1.15.5
+ * @version 1.16.48
  */
 function bookacti_controller_delete_event() {
 	// Check nonce
@@ -611,20 +611,39 @@ function bookacti_controller_delete_event() {
 	bookacti_delete_event_from_groups( $event_id );
 	
 	// Cancel the active bookings
+	$refund_booking_ids = array();
 	if( $cancel_bookings ) {
 		$old_bookings = bookacti_get_removed_event_bookings_to_cancel( $event );
 		if( $old_bookings ) {
+			// Cancel the bookings
 			$cancelled = bookacti_cancel_event_bookings( $event_id, array( 'in__booking_id' => array_keys( $old_bookings ), 'from' => '' ) );
+			
 			// Maybe send notifications
 			bookacti_maybe_send_event_cancelled_notifications( $event, $old_bookings, $send_notifications );
+			
+			// Check if the cancelled bookings can be refunded
+			foreach( $old_bookings as $old_booking_id => $old_booking ) {
+				$old_booking->state  = 'cancelled';
+				$old_booking->active = 0;
+				$is_allowed          = bookacti_user_can_manage_booking( $old_booking );
+				$can_be_refunded     = bookacti_booking_can_be_refunded( $old_booking, false );
+				
+				if( $is_allowed && $can_be_refunded ) {
+					$refund_booking_ids[] = $old_booking_id;
+				}
+			}
 		}
 	}
-	
+				
 	do_action( 'bookacti_event_deactivated', $event, $cancel_bookings, $send_notifications );
 	
 	$groups = bookacti_get_groups_of_events( array( 'templates' => array( $event->template_id ), 'nb_events' => array(), 'past_events' => 1, 'data_only' => 1 ) );
 	
-	bookacti_send_json( array( 'status' => 'success', 'groups_data' => $groups[ 'data' ] ), 'deactivate_event' );
+	bookacti_send_json( array( 
+		'status'             => 'success', 
+		'groups_data'        => $groups[ 'data' ], 
+		'refund_booking_ids' => $refund_booking_ids 
+	), 'deactivate_event' );
 }
 add_action( 'wp_ajax_bookactiDeleteEvent', 'bookacti_controller_delete_event' );
 
