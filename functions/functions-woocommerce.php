@@ -2703,6 +2703,7 @@ function bookacti_wc_is_coupon_code_valid( $coupon_code ) {
 /**
  * Refund selected bookings through the payment gateway (for supported gateways)
  * @since 1.16.0 (was bookacti_auto_refund_booking)
+ * @version 1.16.48
  * @param array $selected_bookings
  * @param string $refund_message
  * @return array
@@ -2746,6 +2747,7 @@ function bookacti_refund_selected_bookings_with_gateway( $selected_bookings, $re
 			$item_id          = $item->get_id();
 			$refunded_amounts = bookacti_wc_get_item_total_refunded( $item, true );
 			$item_taxes       = $item->get_taxes();
+			$refund_tax       = array();
 			if( isset( $item_taxes[ 'total' ] ) ) {
 				foreach( $item_taxes[ 'total' ] as $tax_id => $total ) {
 					$refunded_tax_amount = abs( (float) $order->get_tax_refunded_for_item( $item_id, $tax_id ) );
@@ -2782,6 +2784,7 @@ function bookacti_refund_selected_bookings_with_gateway( $selected_bookings, $re
 			$item_id          = $item->get_id();
 			$refunded_amounts = bookacti_wc_get_item_total_refunded( $item, true );
 			$item_taxes       = $item->get_taxes();
+			$refund_tax       = array();
 			if( isset( $item_taxes[ 'total' ] ) ) {
 				foreach( $item_taxes[ 'total' ] as $tax_id => $total ) {
 					$refunded_tax_amount = abs( (float) $order->get_tax_refunded_for_item( $item_id, $tax_id ) );

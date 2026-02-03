@@ -988,7 +988,7 @@ add_action( 'wp_ajax_bookactiBeforeDeleteGroupOfEvents', 'bookacti_controller_be
 /**
  * Delete a group of events with AJAX
  * @since 1.1.0
- * @version 1.16.0
+ * @version 1.16.48
  */
 function bookacti_controller_delete_group_of_events() {
 	// Check nonce
@@ -1015,7 +1015,7 @@ function bookacti_controller_delete_group_of_events() {
 	bookacti_deactivate_group_of_events( $group_id );
 	
 	// Cancel the bookings
-	$bookings_nb_per_event = array();
+	$bookings_nb_per_event = $refund_booking_group_ids = array();
 	if( $cancel_bookings ) { 
 		// Get bookings before cancelling them
 		$filters = bookacti_format_booking_filters( array( 'event_group_id' => $group_id, 'active' => 1, 'fetch_meta' => true ) );
@@ -1037,9 +1037,32 @@ function bookacti_controller_delete_group_of_events() {
 		// Cancel active and future grouped bookings belonging that (once) belong(ed) to that group of events
 		bookacti_cancel_group_of_events_bookings( $group_id );
 		
-		// Maybe send notifications
 		if( $old_booking_groups ) {
+			// Maybe send notifications
 			bookacti_maybe_send_group_of_events_cancelled_notifications( $group, $old_booking_groups, $old_groups_bookings, $send_notifications );
+			
+			// Get new booking groups
+			$filters             = $group_ids ? bookacti_format_booking_filters( array( 'in__booking_group_id' => $group_ids, 'status' => array( 'cancelled' ), 'fetch_meta' => true ) ) : array();
+			$new_booking_groups  = $filters ? bookacti_get_booking_groups( $filters ) : array();
+			$grouped_bookings    = $grouped_filters ? bookacti_get_bookings( $grouped_filters ) : array();
+			$new_groups_bookings = array();
+			foreach( $grouped_bookings as $booking ) {
+				if( ! isset( $new_groups_bookings[ $booking->group_id ] ) ) { $new_groups_bookings[ $booking->group_id ] = array(); }
+				$new_groups_bookings[ $booking->group_id ][ $booking->id ] = $booking;
+			}
+			
+			// Check if the cancelled bookings can be refunded
+			foreach( $new_booking_groups as $new_booking_group_id => $new_booking_group ) {
+				$group_bookings = isset( $old_groups_bookings[ $new_booking_group_id ] ) ? $old_groups_bookings[ $new_booking_group_id ] : array();
+				if( ! $group_bookings ) { continue; }
+				
+				$is_allowed      = bookacti_user_can_manage_booking_group( $group_bookings );
+				$can_be_refunded = bookacti_booking_group_can_be_refunded( $new_booking_group, $group_bookings, false );
+				
+				if( $is_allowed && $can_be_refunded ) {
+					$refund_booking_group_ids[] = $new_booking_group_id;
+				}
+			}
 		}
 		
 		$bookings_nb_per_event = bookacti_get_number_of_bookings_per_event( array( 'templates' => array( $group[ 'template_id' ] ) ) );
@@ -1047,7 +1070,11 @@ function bookacti_controller_delete_group_of_events() {
 	
 	do_action( 'bookacti_group_of_events_deactivated', $group, $cancel_bookings, $send_notifications );
 
-	bookacti_send_json( array( 'status' => 'success', 'bookings' => $bookings_nb_per_event ), 'deactivate_group_of_events' );
+	bookacti_send_json( array( 
+		'status'                   => 'success', 
+		'bookings'                 => $bookings_nb_per_event,
+		'refund_booking_group_ids' => $refund_booking_group_ids
+	), 'deactivate_group_of_events' );
 }
 add_action( 'wp_ajax_bookactiDeleteGroupOfEvents', 'bookacti_controller_delete_group_of_events' );
 

@@ -322,8 +322,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 == Changelog ==
 
 = 1.16.48 =
-* Feature - Offer to refund the cancelled bookings after deleting an event and cancelling its bookings from the calendar editor
+* Feature - Offer to refund the cancelled bookings after deleting a (group of) event(s) and cancelling its bookings from the calendar editor
 * Tweak - WC order status will turn to "Complete" when updating booking status only if all its bookings payment status are "paid" or "none"
+* Fix - PHP notice when bulk refund multiple bookings with WC gateway
 * Dev - Add bookacti_wc_is_default_booking_status_for_unpaid_order PHP hook to use the default booking status for unpaid orders (instead of "pending")
 
 = 1.16.47 - 2026/01/27 =
