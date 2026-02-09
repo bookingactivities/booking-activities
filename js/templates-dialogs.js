@@ -754,7 +754,7 @@ function bookacti_dialog_update_event( fc_event ) {
 						// Open the dialog to confirm the event deletion
 						bookacti_dialog_delete_event( fc_event );
 						
-						// Display the number of bookings to be rescheduled and the number of users to be notified
+						// Display the number of bookings to be cancelled and the number of users to be notified
 						$j( '#bookacti-delete-booked-event-options' ).toggle( parseInt( response.has_bookings ) ? true : false );
 						$j( '#bookacti-delete-event-cancel_bookings' ).prop( 'checked', parseInt( response.has_bookings ) ? true : false ).trigger( 'change' );
 						$j( '#bookacti-delete-event-cancel_bookings-container' ).append( '<span class="bookacti-bookings-nb">' + response.bookings_nb + '</span>' );
@@ -904,7 +904,7 @@ function bookacti_dialog_update_event_dates( fc_event ) {
 
 /**
  * Dialog Delete Event
- * @version 1.15.13
+ * @version 1.16.48
  * @param {FullCalendar.EventApi} fc_event
  */
 function bookacti_dialog_delete_event( fc_event ) {
@@ -956,6 +956,17 @@ function bookacti_dialog_delete_event( fc_event ) {
 							
 							// Close the dialog
 							$j( '#bookacti-delete-event-dialog' ).dialog( 'close' );
+							
+							// Open refund dialog
+							if( response.refund_booking_ids.length ) {
+								var booking_selection = {
+									'booking_ids': response.refund_booking_ids,
+									'booking_group_ids': [],
+									'all': 0,
+									'filters': {}
+								};
+								bookacti_dialog_refund_bookings( booking_selection );
+							}
 							
 						} else {
 							var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
@@ -2210,7 +2221,7 @@ function bookacti_get_group_of_events_occurrences( group_id ) {
 
 /**
  * Dialog Delete a group of events
- * @version 1.15.13
+ * @version 1.16.48
  * @param {int} group_id
  */
 function bookacti_dialog_delete_group_of_events( group_id ) {
@@ -2269,6 +2280,17 @@ function bookacti_dialog_delete_group_of_events( group_id ) {
 							
 							// Close the dialog
 							$j( '#bookacti-delete-group-of-events-dialog' ).dialog( 'close' );
+							
+							// Open refund dialog
+							if( response.refund_booking_group_ids.length ) {
+								var booking_selection = {
+									'booking_ids': [],
+									'booking_group_ids': response.refund_booking_group_ids,
+									'all': 0,
+									'filters': {}
+								};
+								bookacti_dialog_refund_bookings( booking_selection );
+							}
 							
 						} else {
 							var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;

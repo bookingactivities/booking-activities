@@ -1343,7 +1343,7 @@ function bookacti_wc_update_order_items_bookings( $order_id, $new_data, $where =
 /**
  * Update the order status according to the bookings status bound to its items
  * @since 1.9.0 (was bookacti_change_order_state_based_on_its_bookings_state)
- * @version 1.16.45
+ * @version 1.16.48
  * @param int $order_id
  */
 function bookacti_wc_update_order_status_according_to_its_bookings( $order_id ) {
@@ -1359,7 +1359,7 @@ function bookacti_wc_update_order_status_according_to_its_bookings( $order_id ) 
 
 	// Get items booking status and
 	// Determine if the order is only composed of activities
-	$statuses = array();
+	$statuses = $payment_statuses = array();
 	$only_activities = true;
 	$only_virtual_activities = true;
 	foreach( $items as $item_id => $item ) {
@@ -1373,11 +1373,13 @@ function bookacti_wc_update_order_status_according_to_its_bookings( $order_id ) 
 		foreach( $items_bookings[ $item_id ] as $item_booking ) {
 			if( $item_booking[ 'type' ] === 'group' ) {
 				if( ! empty( $item_booking[ 'booking_group' ]->state ) ) {
-					$statuses[] = $item_booking[ 'booking_group' ]->state;
+					$statuses[]         = $item_booking[ 'booking_group' ]->state;
+					$payment_statuses[] = $item_booking[ 'booking_group' ]->payment_status;
 				}
 			} else {
 				foreach( $item_booking[ 'bookings' ] as $booking ) {
-					$statuses[] = $booking->state;
+					$statuses[]         = $booking->state;
+					$payment_statuses[] = $booking->payment_status;
 				}
 			}
 		}
@@ -1386,11 +1388,14 @@ function bookacti_wc_update_order_status_according_to_its_bookings( $order_id ) 
 	if( ! $only_activities || ! $statuses || in_array( 'in_cart', $statuses, true ) ) { return; }
 
 	$statuses         = array_unique( $statuses );
+	$payment_statuses = array_unique( $payment_statuses );
 	$order_status     = $order->get_status();
 	$new_order_status = $order_status;
+	$paid_payment_statuses      = array( 'paid', 'none' );
 	$completed_booking_statuses = array( 'delivered', 'booked' );
 	$cancelled_booking_statuses = array( 'cancelled', 'refund_requested', 'expired', 'removed', 'waiting_list_rejected' );
 	$refunded_booking_statuses  = array( 'refunded' );
+	$are_paid      = ! array_diff( $payment_statuses, $paid_payment_statuses );
 	$are_completed = ! array_diff( $statuses, $completed_booking_statuses );
 	$are_cancelled = ! array_diff( $statuses, $cancelled_booking_statuses );
 	$are_refunded  = ! array_diff( $statuses, $refunded_booking_statuses );
@@ -1399,9 +1404,12 @@ function bookacti_wc_update_order_status_according_to_its_bookings( $order_id ) 
 		// Turn order status to processing
 		$new_order_status = 'processing';
 	} else if( ! in_array( $order_status, array( 'cancelled', 'refunded', 'failed', 'completed' ), true ) && $are_completed ) {
-		// Turn order status to completed
+		// Turn order status to completed, except if payment status is not "paid"
 		$non_virtual_bookings_order_status = apply_filters( 'bookacti_wc_completed_non_virtual_bookings_order_status', 'processing' );
 		$new_order_status = $only_virtual_activities ? 'completed' : $non_virtual_bookings_order_status;
+		if( $new_order_status === 'completed' && ! $are_paid ) {
+			$new_order_status = 'processing';
+		}
 	} else if( ! in_array( $order_status, array( 'cancelled', 'refunded', 'failed' ), true ) && $are_cancelled ) {
 		// Turn order status to cancelled
 		$new_order_status = 'cancelled';
@@ -1925,7 +1933,7 @@ function bookacti_display_product_selectbox( $raw_args = array() ) {
 
 /**
  * Tell if the product is activity or has variations that are activities
- * @version 1.15.17
+ * @version 1.16.48
  * @param WC_Product|int $product
  * @return boolean
  */
@@ -1939,10 +1947,10 @@ function bookacti_product_is_activity( $product ) {
 
 	$is_activity = false;
 	
-	if( $product->is_type( 'variation' ) ) {
+	if( is_a( $product, 'WC_Product_Variation' ) ) {
 		$is_activity = $product->get_meta( 'bookacti_variable_is_activity' ) === 'yes';
 	}
-	else if( $product->is_type( 'variable' ) ) {
+	else if( is_a( $product, 'WC_Product_Variable' ) ) {
 		$variations = $product->get_available_variations();
 		foreach( $variations as $variation ) {
 			if( ! empty( $variation[ 'bookacti_is_activity' ] ) ) { $is_activity = true; break; }
@@ -2695,6 +2703,7 @@ function bookacti_wc_is_coupon_code_valid( $coupon_code ) {
 /**
  * Refund selected bookings through the payment gateway (for supported gateways)
  * @since 1.16.0 (was bookacti_auto_refund_booking)
+ * @version 1.16.48
  * @param array $selected_bookings
  * @param string $refund_message
  * @return array
@@ -2738,6 +2747,7 @@ function bookacti_refund_selected_bookings_with_gateway( $selected_bookings, $re
 			$item_id          = $item->get_id();
 			$refunded_amounts = bookacti_wc_get_item_total_refunded( $item, true );
 			$item_taxes       = $item->get_taxes();
+			$refund_tax       = array();
 			if( isset( $item_taxes[ 'total' ] ) ) {
 				foreach( $item_taxes[ 'total' ] as $tax_id => $total ) {
 					$refunded_tax_amount = abs( (float) $order->get_tax_refunded_for_item( $item_id, $tax_id ) );
@@ -2774,6 +2784,7 @@ function bookacti_refund_selected_bookings_with_gateway( $selected_bookings, $re
 			$item_id          = $item->get_id();
 			$refunded_amounts = bookacti_wc_get_item_total_refunded( $item, true );
 			$item_taxes       = $item->get_taxes();
+			$refund_tax       = array();
 			if( isset( $item_taxes[ 'total' ] ) ) {
 				foreach( $item_taxes[ 'total' ] as $tax_id => $total ) {
 					$refunded_tax_amount = abs( (float) $order->get_tax_refunded_for_item( $item_id, $tax_id ) );

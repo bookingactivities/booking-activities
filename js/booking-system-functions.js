@@ -1328,7 +1328,7 @@ function bookacti_get_event_availability( booking_system, event ) {
 
 /**
  * Check if an event is available
- * @version 1.16.39
+ * @version 1.16.48
  * @param {HTMLElement} booking_system
  * @param {(FullCalendar.EventApi|Object)} event
  * @returns {Boolean}
@@ -1422,7 +1422,7 @@ function bookacti_is_event_available( booking_system, event ) {
 			// Check the max quantity allowed AND
 			// Check the max number of different users allowed
 			var min_qty_ok = max_qty_ok = max_users_ok = true;
-			event_start_formatted = event_start.format( 'YYYY-MM-DD HH:mm:ss' );
+			var event_start_formatted = event_start.format( 'YYYY-MM-DD HH:mm:ss' );
 			if( typeof attributes[ 'bookings' ][ event_id ] !== 'undefined' ) {
 				if( typeof attributes[ 'bookings' ][ event_id ][ event_start_formatted ] !== 'undefined' ) {
 					var min_quantity = typeof activity_data[ 'min_bookings_per_user' ] === 'undefined' ? 0 : ( activity_data[ 'min_bookings_per_user' ] ? parseInt( activity_data[ 'min_bookings_per_user' ] ) : 0 );

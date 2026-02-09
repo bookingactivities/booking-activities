@@ -266,7 +266,7 @@ add_action( 'woocommerce_before_single_product_summary', 'bookacti_move_add_to_c
 
 /**
  * Add booking forms to single product page (front-end)
- * @version 1.16.47
+ * @version 1.16.48
  * @global WC_Product $product
  */
 function bookacti_add_booking_system_in_single_product_page() {
@@ -278,7 +278,7 @@ function bookacti_add_booking_system_in_single_product_page() {
 
 	// Check if the product or one of its available variation is bound to a booking form
 	$form_id = bookacti_get_product_form_id( $product->get_id() );
-	if( $product->is_type( 'variable' ) ) {
+	if( is_a( $product, 'WC_Product_Variable' ) ) {
 		$variations = $product->get_available_variations();
 		foreach( $variations as $variation ) {
 			if( empty( $variation[ 'bookacti_is_activity' ] ) || empty( $variation[ 'bookacti_form_id' ] ) ) { continue; }
@@ -293,10 +293,7 @@ function bookacti_add_booking_system_in_single_product_page() {
 	$default_variation_id = 0;
 
 	// Show form on single product page or on variable product with a default value
-	if( $product->is_type( 'simple' ) ) {
-		$form_instance_id = 'bookacti-wc-form-fields-product-' . $product->get_id();
-	}
-	else if( $product->is_type( 'variable' ) ) {
+	if( is_a( $product, 'WC_Product_Variable' ) ) {
 		// Get the requested attributes
 		$passed_attributes = array();
 		if( ! empty( $_REQUEST ) ) {
@@ -322,12 +319,15 @@ function bookacti_add_booking_system_in_single_product_page() {
 			}
 		}
 
-	} else if( $product->is_type( 'variation' ) ) {
+	} else if( is_a( $product, 'WC_Product_Variation' ) ) {
 		$variation_id = $product->get_id();
 		$form_id      = $product->get_meta( 'bookacti_variable_form' );
 		if( $form_id ) { 
 			$form_instance_id = 'bookacti-wc-form-fields-product-variation-' . $variation_id;
 		}
+	}
+	else {
+		$form_instance_id = 'bookacti-wc-form-fields-product-' . $product->get_id();
 	}
 
 	$form_atts = apply_filters( 'bookacti_product_form_attributes', array(
@@ -1929,7 +1929,7 @@ add_action( 'woocommerce_before_pay_action', 'bookacti_availability_check_before
 /**
  * Change order bookings status after the customer validates checkout
  * @since 1.16.0 (was bookacti_change_booking_state_after_checkout)
- * @version 1.16.43
+ * @version 1.16.48
  * @param int $order_id
  * @param array $posted_data
  * @param WC_Order $order
@@ -1970,10 +1970,13 @@ function bookacti_wc_checkout_order_processed_booking_status( $order_id, $posted
 	$user_email    = $order->get_billing_email( 'edit' );
 	$user_id       = is_numeric( $customer_id ) && $customer_id ? intval( $customer_id ) : ( $user_email ? $user_email : bookacti_get_unknown_user_id() );
 	
+	$default_status    = bookacti_get_setting_value( 'bookacti_general_settings', 'default_booking_state' );
+	$is_default_status = apply_filters( 'bookacti_wc_is_default_booking_status_for_unpaid_order', false, $order );
+	
 	$new_data = array(
 		'user_id'        => $user_id,
 		'order_id'       => $order_id,
-		'status'         => $needs_payment ? 'pending' : 'booked',
+		'status'         => $needs_payment ? ( $is_default_status ? $default_status : 'pending' ) : 'booked',
 		'payment_status' => $needs_payment ? 'owed' : 'paid',
 		'active'         => 'auto',
 		'is_new_order'   => 1
