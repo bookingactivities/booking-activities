@@ -1933,7 +1933,7 @@ function bookacti_display_product_selectbox( $raw_args = array() ) {
 
 /**
  * Tell if the product is activity or has variations that are activities
- * @version 1.15.17
+ * @version 1.16.48
  * @param WC_Product|int $product
  * @return boolean
  */
@@ -1947,10 +1947,10 @@ function bookacti_product_is_activity( $product ) {
 
 	$is_activity = false;
 	
-	if( $product->is_type( 'variation' ) ) {
+	if( is_a( $product, 'WC_Product_Variation' ) ) {
 		$is_activity = $product->get_meta( 'bookacti_variable_is_activity' ) === 'yes';
 	}
-	else if( $product->is_type( 'variable' ) ) {
+	else if( is_a( $product, 'WC_Product_Variable' ) ) {
 		$variations = $product->get_available_variations();
 		foreach( $variations as $variation ) {
 			if( ! empty( $variation[ 'bookacti_is_activity' ] ) ) { $is_activity = true; break; }

@@ -3,7 +3,7 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
 Tested up to: 6.9
-Stable tag: 1.16.47
+Stable tag: 1.16.48
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -321,11 +321,12 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.16.48 =
+= 1.16.48 - 2026/02/09 =
 * Feature - Offer to refund the cancelled bookings after deleting a (group of) event(s) and cancelling its bookings from the calendar editor
 * Tweak - WC order status will turn to "Complete" when updating booking status only if all its bookings payment status are "paid" or "none"
 * Fix - PHP notice when bulk refund multiple bookings with WC gateway
 * Dev - Add bookacti_wc_is_default_booking_status_for_unpaid_order PHP hook to use the default booking status for unpaid orders (instead of "pending")
+* Dev - Improve compatibility with third party product types by using is_a instead of is_type
 
 = 1.16.47 - 2026/01/27 =
 * Fix - Prevent unbinding repeated (group of) event(s) occurrences if the result would be identical to the original
