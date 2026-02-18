@@ -180,59 +180,51 @@ function bookacti_get_string_between( $string, $start = '', $end = '' ) {
 /**
  * Encrypt a string
  * @since 1.7.15
- * @version 1.16.0
+ * @version 1.16.49
  * @param string $string
  * @param $context $string
  * @return string
  */
 function bookacti_encrypt( $string, $context = '' ) {
+	$output     = '';
 	$secret_key = get_option( 'bookacti_secret_key' );
 	$secret_iv  = get_option( 'bookacti_secret_iv' );
 
 	if( ! $secret_key ) { $secret_key = md5( microtime().rand() ); update_option( 'bookacti_secret_key', $secret_key ); }
 	if( ! $secret_iv )  { $secret_iv  = md5( microtime().rand() ); update_option( 'bookacti_secret_iv', $secret_iv ); }
 
-	$output = $string;
-	$encrypt_method = 'AES-256-CBC';
-	$key = hash( 'sha256', $context . $secret_key );
-	$iv  = substr( hash( 'sha256', $context . $secret_iv ), 0, 16 );
-
-	if( function_exists( 'openssl_encrypt' ) && version_compare( phpversion(), '5.3.3', '>=' ) ) {
-		$output = base64_encode( openssl_encrypt( $string, $encrypt_method, $key, 0, $iv ) );
+	if( $secret_key && $secret_iv && function_exists( 'openssl_encrypt' ) && version_compare( phpversion(), '5.3.3', '>=' ) ) {
+		$key       = hash( 'sha256', $context . $secret_key );
+		$iv        = substr( hash( 'sha256', $context . $secret_iv ), 0, 16 );
+		$encrypted = openssl_encrypt( $string, 'AES-256-CBC', $key, 0, $iv );
+		$output    = $encrypted !== false ? base64_encode( $encrypted ) : '';
 	}
 
-	if( ! $output ) { return $string; }
-
-	return $output;
+	return $output !== false ? $output : '';
 }
 
 
 /**
  * Dencrypt a string
  * @since 1.7.15
- * @version 1.16.0
+ * @version 1.16.49
  * @param string $string
  * @param string $context
  * @return string
  */
 function bookacti_decrypt( $string, $context = '' ) {
+	$output     = '';
 	$secret_key = get_option( 'bookacti_secret_key' );
 	$secret_iv  = get_option( 'bookacti_secret_iv' );
-
-	if( ! $secret_key || ! $secret_iv ) { return $string; }
-
-	$output = $string;
-	$encrypt_method = 'AES-256-CBC';
-	$key = hash( 'sha256', $context . $secret_key );
-	$iv  = substr( hash( 'sha256', $context . $secret_iv ), 0, 16 );
-
-	if( function_exists( 'openssl_decrypt' ) && version_compare( phpversion(), '5.3.3', '>=' ) ) {
-		$output = openssl_decrypt( base64_decode( $string ), $encrypt_method, $key, 0, $iv );
+	
+	if( $secret_key && $secret_iv && function_exists( 'openssl_decrypt' ) && version_compare( phpversion(), '5.3.3', '>=' ) ) {
+		$key     = hash( 'sha256', $context . $secret_key );
+		$iv      = substr( hash( 'sha256', $context . $secret_iv ), 0, 16 );
+		$decoded = base64_decode( $string );
+		$output  = $decoded !== false ? openssl_decrypt( $decoded, 'AES-256-CBC', $key, 0, $iv ) : '';
 	}
 
-	if( ! $output ) { return $string; }
-
-	return $output;
+	return $output !== false ? $output : '';
 }
 
 
@@ -633,7 +625,7 @@ function bookacti_get_active_add_ons( $prefix = '', $exclude = array( 'balau' ) 
 /**
  * Get add-on data by prefix
  * @since 1.7.14
- * @version 1.16.45
+ * @version 1.16.49
  * @param string $prefix
  * @param array $exclude
  * @return array
@@ -686,7 +678,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-resource-availability', 
 			'end_of_life' => '', 
 			'download_id' => 29249,
-			'min_version' => '1.2.4'
+			'min_version' => '1.2.6'
 		),
 		'bawl' => array( 
 			'title'       => 'Waiting List', 

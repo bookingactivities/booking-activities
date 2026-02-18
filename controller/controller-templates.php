@@ -817,7 +817,7 @@ add_action( 'wp_ajax_bookactiInsertGroupOfEvents', 'bookacti_controller_insert_g
 /**
  * Update group of events data with AJAX
  * @since 1.1.0
- * @version 1.15.5
+ * @version 1.16.49
  */
 function bookacti_controller_update_group_of_events() {
 	// Check nonce
@@ -894,7 +894,7 @@ function bookacti_controller_update_group_of_events() {
 	$groups          = bookacti_get_groups_of_events( array( 'event_groups' => array( $group_id ), 'past_events' => 1, 'interval' => $interval, 'interval_started' => 1 ) );
 	$group_data      = isset( $groups[ 'data' ][ $group_id ] ) ? $groups[ 'data' ][ $group_id ] : array();
 	$group_events    = isset( $groups[ 'groups' ][ $group_id ] ) ? $groups[ 'groups' ][ $group_id ] : array();
-	$group_title_raw = strip_tags( $group_data[ 'title' ] );
+	$group_title_raw = isset( $group_data[ 'title' ] ) ? strip_tags( $group_data[ 'title' ] ) : '';
 	
 	do_action( 'bookacti_group_of_events_updated', $group_id, $group_data, $group_events, $category_data );
 

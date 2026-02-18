@@ -1486,6 +1486,7 @@ function bookacti_is_event_in_available_group( booking_system, event ) {
 /**
  * Check if a group of events is available
  * @since 1.16.39
+ * @version 1.16.49
  * @param {HTMLElement} booking_system
  * @param {Integer} group_id
  * @param {String} group_date
@@ -1534,8 +1535,17 @@ function bookacti_is_group_of_events_available( booking_system, group_id, group_
 	
 	// Check if the group of events is in the availability period
 	if( ! past_events_bookable ) {
-		if( availability_period.start ) { if( group_start.isBefore( moment.utc( availability_period.start ) ) ) { is_available = false; } }
-		if( availability_period.end )   { if( group_start.isAfter( moment.utc( availability_period.end ) ) )    { is_available = false; } }
+		if( availability_period.start ) {
+			if( group_start.isBefore( moment.utc( availability_period.start ) )
+			&& ! ( started_groups_bookable && group_end.isAfter( moment.utc( availability_period.start ) ) ) ) { 
+				is_available = false; 
+			}
+		}
+		if( availability_period.end ) { 
+			if( group_start.isAfter( moment.utc( availability_period.end ) ) ) { 
+				is_available = false;
+			}
+		}
 	}
 
 	if( is_available ) {

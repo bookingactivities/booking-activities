@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Get all translatable texts
  * @since 1.14.0
- * @version 1.16.37
+ * @version 1.16.49
  * @return array
  */
 function bookacti_get_translatable_texts() {
@@ -144,7 +144,7 @@ function bookacti_get_translatable_texts() {
 	}
 	
 	// Get groups of events strings
-	$groups = bookacti_get_groups_of_events( array( 'data_only' => 1, 'past_events' => 0 ) );
+	$groups = bookacti_get_groups_of_events( array( 'data_only' => 1, 'started_groups' => 1, 'past_events' => 0 ) );
 	if( ! empty( $groups[ 'data' ] ) ) {
 		foreach( $groups[ 'data' ] as $group_id => $group ) {
 			$group_texts = array();

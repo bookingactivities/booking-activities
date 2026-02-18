@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Fetch events to display on calendar editor
  * @since 1.1.0 (replace bookacti_fetch_events)
- * @version 1.15.6
+ * @version 1.16.49
  * @global wpdb $wpdb
  * @param array $raw_args {
  *  @type array $templates Array of template IDs
@@ -36,7 +36,7 @@ function bookacti_fetch_events_for_calendar_editor( $raw_args = array() ) {
 	global $wpdb;
 
 	// Select events
-	$query = 'SELECT E.id as event_id, E.template_id, E.activity_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_step, E.repeat_on, E.repeat_from, E.repeat_to, E.repeat_exceptions, E.availability, A.color ' 
+	$query = 'SELECT E.id as event_id, E.template_id, E.activity_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_step, E.repeat_on, E.repeat_from, E.repeat_to, E.repeat_exceptions, E.availability, ABS( DATEDIFF( E.end, E.start ) ) as delta_days, A.color ' 
 	       . ' FROM ' . BOOKACTI_TABLE_EVENTS . ' as E, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A '
 	       . ' WHERE E.activity_id = A.id '
 	       . ' AND E.active = 1 ';
