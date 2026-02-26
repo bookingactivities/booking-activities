@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking list page
- * @version 1.16.47
+ * @version 1.16.49
  */
 
 // Exit if accessed directly
@@ -303,6 +303,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							'start'                        => $from,
 							'end'                          => $to,
 							'trim'                         => 0, // Doesn't play nicely when dynamically changing bookings
+							'out_of_period_events'         => 1,
 							'past_events'                  => 1,
 							'past_events_bookable'         => 1,
 							'check_roles'                  => 0,

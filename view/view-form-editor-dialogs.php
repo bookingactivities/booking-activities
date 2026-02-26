@@ -2,7 +2,7 @@
 /**
  * Form editor dialogs
  * @since 1.5.0
- * @version 1.16.46
+ * @version 1.16.49
  */
 
 // Exit if accessed directly
@@ -329,7 +329,7 @@ foreach( $fields_default as $field_name => $field_data ) {
 		/**
 		 * Display the content of the "Availability" tab of the "Calendar" dialog
 		 * @since 1.5.0
-		 * @version 1.15.46
+		 * @version 1.16.49
 		 * @param array $params
 		 */
 		function bookacti_fill_calendar_dialog_availability_tab( $params ) {
@@ -362,9 +362,9 @@ foreach( $fields_default as $field_name => $field_data ) {
 		</fieldset>
 		
 		<fieldset id='bookacti-past-events-fieldset'>
-			<legend><?php esc_html_e( 'Past events', 'booking-activities' ); ?></legend>
+			<legend><?php esc_html_e( 'Out-of-bounds events', 'booking-activities' ); ?></legend>
 			<?php 
-				$fields = bookacti_get_booking_system_fields_default_data( array( 'past_events', 'past_events_bookable' ) );
+				$fields = bookacti_get_booking_system_fields_default_data( array( 'out_of_period_events', 'past_events', 'past_events_bookable' ) );
 				bookacti_display_fields( $fields );
 			?>
 		</fieldset>

@@ -634,7 +634,7 @@ add_action( 'wp_ajax_bookactiChangeBookingsQuantity', 'bookacti_controller_chang
 /**
  * AJAX Controller - Get reschedule booking system data by booking selection
  * @since 1.8.0 (was bookacti_controller_get_booking_data)
- * @version 1.16.24
+ * @version 1.16.49
  */
 function bookacti_controller_get_reschedule_booking_system_data() {
 	$is_admin          = current_user_can( 'bookacti_edit_bookings' ) && ! empty( $_POST[ 'is_admin' ] );
@@ -840,6 +840,7 @@ function bookacti_controller_get_reschedule_booking_system_data() {
 		$atts[ 'start' ]                = '';
 		$atts[ 'end' ]                  = '';
 		$atts[ 'trim' ]                 = 1;
+		$atts[ 'out_of_period_events' ] = 1;
 		$atts[ 'past_events' ]          = 1;
 		$atts[ 'past_events_bookable' ] = 1;
 	}

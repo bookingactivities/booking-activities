@@ -638,7 +638,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-display-pack', 
 			'end_of_life' => '', 
 			'download_id' => 482,
-			'min_version' => '1.5.12'
+			'min_version' => '1.5.14'
 		),
 		'banp' => array( 
 			'title'       => 'Notification Pack', 
@@ -670,7 +670,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-order-for-customers', 
 			'end_of_life' => '', 
 			'download_id' => 436,
-			'min_version' => '1.3.7'
+			'min_version' => '1.3.9'
 		),
 		'bara' => array( 
 			'title'       => 'Resource Availability', 
@@ -686,7 +686,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-waiting-list', 
 			'end_of_life' => '', 
 			'download_id' => 39100,
-			'min_version' => '1.0.0'
+			'min_version' => '1.0.3'
 		),
 		'balau' => array( 
 			'title'       => 'Licenses & Updates', 

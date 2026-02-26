@@ -15,18 +15,18 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Update the calendar valid range
-	 * @since 1.16.1
+	 * @since 1.16.49
 	 * @param {Event} e
 	 * @param {String} booking_method
-	 * @param {Object} availability_period
+	 * @param {Object} display_period
 	 */
-	$j( 'body' ).on( 'bookacti_booking_method_update_availability_period', '.bookacti-booking-system', function( e, booking_method, availability_period ) {
+	$j( 'body' ).on( 'bookacti_booking_method_update_display_period', '.bookacti-booking-system', function( e, booking_method, display_period ) {
 		if( booking_method === 'calendar' && $j( this ).find( '.bookacti-calendar' ).length ) {
 			var booking_system_id = $j( this ).attr( 'id' );
 			if( typeof bookacti.fc_calendar[ booking_system_id ] !== 'undefined' ) {
 				var valid_range = {
-					start: availability_period.start ? moment.utc( availability_period.start.substr( 0, 10 ) ).format( 'YYYY-MM-DD' ) : null,
-					end: availability_period.end ? moment.utc( availability_period.end.substr( 0, 10 ) ).add( 1, 'days' ).format( 'YYYY-MM-DD' ) : null
+					start: display_period.start ? moment.utc( display_period.start.substr( 0, 10 ) ).format( 'YYYY-MM-DD' ) : null,
+					end: display_period.end ? moment.utc( display_period.end.substr( 0, 10 ) ).add( 1, 'days' ).format( 'YYYY-MM-DD' ) : null
 				};
 				bookacti.fc_calendar[ booking_system_id ].setOption( 'validRange', valid_range );
 			}
@@ -259,7 +259,7 @@ $j( document ).ready( function() {
 
 /**
  * Initialize the calendar
- * @version 1.16.39
+ * @version 1.16.49
  * @param {HTMLElement} booking_system
  * @param {boolean} reload_events
  */
@@ -269,12 +269,12 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 	bookacti.booking_system[ booking_system_id ][ 'load_events' ] = false;
 	
 	// Get calendar display_data
-	var availability_period = bookacti_get_availability_period( booking_system );
-	var display_data        = typeof bookacti.booking_system[ booking_system_id ][ 'display_data' ] !== 'undefined' ? bookacti.booking_system[ booking_system_id ][ 'display_data' ] : {};
-	var event_min_height    = typeof bookacti_localized.event_tiny_height !== 'undefined' ? parseInt( bookacti_localized.event_tiny_height ) : 32;
-	var slot_min_time       = typeof display_data.slotMinTime !== 'undefined' ? display_data.slotMinTime : '00:00';
-	var slot_max_time       = typeof display_data.slotMaxTime !== 'undefined' ? display_data.slotMaxTime : '24:00';
-	var next_day_threshold  = moment.utc( '1992-12-26 ' + slot_min_time ).add( 1, 'minutes' ).format( 'HH:mm' ); // One minute after slot_min_time
+	var display_period     = bookacti_get_display_period( booking_system );
+	var display_data       = typeof bookacti.booking_system[ booking_system_id ][ 'display_data' ] !== 'undefined' ? bookacti.booking_system[ booking_system_id ][ 'display_data' ] : {};
+	var event_min_height   = typeof bookacti_localized.event_tiny_height !== 'undefined' ? parseInt( bookacti_localized.event_tiny_height ) : 32;
+	var slot_min_time      = typeof display_data.slotMinTime !== 'undefined' ? display_data.slotMinTime : '00:00';
+	var slot_max_time      = typeof display_data.slotMaxTime !== 'undefined' ? display_data.slotMaxTime : '24:00';
+	var next_day_threshold = moment.utc( '1992-12-26 ' + slot_min_time ).add( 1, 'minutes' ).format( 'HH:mm' ); // One minute after slot_min_time
 	
 	// See https://fullcalendar.io/docs/
 	var init_data = {
@@ -304,8 +304,8 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		slotMaxTime:            slot_max_time,
 		
 		validRange: {
-            start: availability_period.start ? moment.utc( availability_period.start.substr( 0, 10 ) ).format( 'YYYY-MM-DD' ) : null,
-            end: availability_period.end ? moment.utc( availability_period.end.substr( 0, 10 ) ).add( 1, 'days' ).format( 'YYYY-MM-DD' ) : null
+            start: display_period.start ? moment.utc( display_period.start.substr( 0, 10 ) ).format( 'YYYY-MM-DD' ) : null,
+            end: display_period.end ? moment.utc( display_period.end.substr( 0, 10 ) ).add( 1, 'days' ).format( 'YYYY-MM-DD' ) : null
         },
 		
 		headerToolbar: {

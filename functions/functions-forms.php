@@ -626,7 +626,7 @@ function bookacti_get_default_form_fields_data( $field_name = '', $context = 'vi
  * Get fields metadata
  * @see bookacti_format_form_field_data to properly format your array
  * @since 1.5.0
- * @version 1.15.19
+ * @version 1.16.49
  * @param string $field_name
  * @param string $context 'view' or 'edit'
  * @return array
@@ -677,6 +677,7 @@ function bookacti_get_default_form_fields_meta( $field_name = '', $context = 'vi
 			'availability_period_start'      => 0,
 			'availability_period_end'        => 0,
 			'trim'                           => 1,
+			'out_of_period_events'           => 0,
 			'past_events'                    => 0,
 			'past_events_bookable'           => 0,
 			'days_off'                       => array(),
@@ -747,7 +748,7 @@ function bookacti_get_available_form_action_triggers() {
 /**
  * Format field data according to its type
  * @since 1.5.0
- * @version 1.16.45
+ * @version 1.16.49
  * @param array|string $raw_field_data
  * @param $context "view" or "edit"
  * @return array
@@ -765,7 +766,7 @@ function bookacti_format_form_field_data( $raw_field_data, $context = 'view' ) {
 	
 	// Format field-specific data and metadata
 	if( $raw_field_data[ 'name' ] === 'calendar' ) {
-		$booleans_to_check = array( 'groups_only', 'groups_single_events', 'groups_first_event_only', 'multiple_bookings', 'bookings_only', 'trim', 'past_events', 'past_events_bookable' );
+		$booleans_to_check = array( 'groups_only', 'groups_single_events', 'groups_first_event_only', 'multiple_bookings', 'bookings_only', 'trim', 'out_of_period_events', 'past_events', 'past_events_bookable' );
 		foreach( $booleans_to_check as $key ) {
 			if( ! isset( $raw_field_data[ $key ] ) ) { continue; }
 			$field_meta[ $key ] = in_array( $raw_field_data[ $key ], array( 1, '1', true, 'true', 'yes', 'ok' ), true ) ? 1 : 0;
@@ -945,7 +946,7 @@ function bookacti_format_form_field_data( $raw_field_data, $context = 'view' ) {
 /**
  * Sanitize field data according to its type
  * @since 1.5.0
- * @version 1.16.45
+ * @version 1.16.49
  * @param array|string $raw_field_data
  * @return array
  */
@@ -963,7 +964,7 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 	
 	// Sanitize field-specific data and metadata
 	if( $raw_field_data[ 'name' ] === 'calendar' ) {
-		$booleans_to_check = array( 'groups_only', 'groups_single_events', 'groups_first_event_only', 'multiple_bookings', 'bookings_only', 'trim', 'past_events', 'past_events_bookable' );
+		$booleans_to_check = array( 'groups_only', 'groups_single_events', 'groups_first_event_only', 'multiple_bookings', 'bookings_only', 'trim', 'out_of_period_events', 'past_events', 'past_events_bookable' );
 		foreach( $booleans_to_check as $key ) {
 			if( ! isset( $raw_field_data[ $key ] ) ) { $field_meta[ $key ] = $default_meta[ $key ]; continue; }
 			$field_meta[ $key ] = in_array( $raw_field_data[ $key ], array( 1, '1', true, 'true', 'yes', 'ok' ), true ) ? 1 : 0;

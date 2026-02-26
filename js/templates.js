@@ -26,6 +26,7 @@ $j( document ).ready( function() {
 	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'picked_events' ]         = [];
 	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'loading_number' ]        = 0;
 	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'method' ]                = 'calendar';
+	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'out_of_period_events' ]  = true;
 	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'past_events' ]           = true;
 	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'past_events_bookable' ]  = true;
 	
@@ -118,19 +119,19 @@ $j( document ).ready( function() {
 
 /**
  * Initialize and display the template calendar
- * @version 1.16.43
+ * @version 1.16.49
  */
 function bookacti_load_template_calendar() {
 	var booking_system = $j( '#bookacti-template-calendar' );
 
 	// Get calendar settings
-	var availability_period = bookacti_get_availability_period( booking_system );
-	var display_data        = typeof bookacti.booking_system[ 'bookacti-template-calendar' ][ 'display_data' ] !== 'undefined' ? bookacti.booking_system[ 'bookacti-template-calendar' ][ 'display_data' ] : {};
-	var event_min_height    = typeof bookacti_localized.event_tiny_height !== 'undefined' ? parseInt( bookacti_localized.event_tiny_height ) : 32;
-	var slot_min_time       = typeof display_data.slotMinTime !== 'undefined' ? display_data.slotMinTime : '00:00';
-	var slot_max_time       = typeof display_data.slotMaxTime !== 'undefined' ? display_data.slotMaxTime : '24:00';
-	var snap_duration       = typeof display_data.snapDuration !== 'undefined' ? display_data.snapDuration : '00:05';
-	var next_day_threshold  = moment.utc( '1992-12-26 ' + slot_min_time ).add( 1, 'minutes' ).format( 'HH:mm' ); // One minute after slot_min_time
+	var display_period     = bookacti_get_display_period( booking_system );
+	var display_data       = typeof bookacti.booking_system[ 'bookacti-template-calendar' ][ 'display_data' ] !== 'undefined' ? bookacti.booking_system[ 'bookacti-template-calendar' ][ 'display_data' ] : {};
+	var event_min_height   = typeof bookacti_localized.event_tiny_height !== 'undefined' ? parseInt( bookacti_localized.event_tiny_height ) : 32;
+	var slot_min_time      = typeof display_data.slotMinTime !== 'undefined' ? display_data.slotMinTime : '00:00';
+	var slot_max_time      = typeof display_data.slotMaxTime !== 'undefined' ? display_data.slotMaxTime : '24:00';
+	var snap_duration      = typeof display_data.snapDuration !== 'undefined' ? display_data.snapDuration : '00:05';
+	var next_day_threshold = moment.utc( '1992-12-26 ' + slot_min_time ).add( 1, 'minutes' ).format( 'HH:mm' ); // One minute after slot_min_time
 	
 	// See https://fullcalendar.io/docs/
 	var init_data = {
@@ -167,8 +168,8 @@ function bookacti_load_template_calendar() {
 		dragRevertDuration:      0,
 		
 		validRange: {
-			start: availability_period.start ? moment.utc( availability_period.start.substr( 0, 10 ) ).format( 'YYYY-MM-DD' ) : null,
-			end:   availability_period.end ? moment.utc( availability_period.end.substr( 0, 10 ) ).add( 1, 'days' ).format( 'YYYY-MM-DD' ) : null
+			start: display_period.start ? moment.utc( display_period.start.substr( 0, 10 ) ).format( 'YYYY-MM-DD' ) : null,
+			end:   display_period.end ? moment.utc( display_period.end.substr( 0, 10 ) ).add( 1, 'days' ).format( 'YYYY-MM-DD' ) : null
 		},
 		
 		customButtons: {

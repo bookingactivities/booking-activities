@@ -322,9 +322,12 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 == Changelog ==
 
 = 1.16.49 =
+* Feature - Add an option to display events out of the availability period as unavailable instead of not retrieving them at all (in form calendar settings)
 * Tweak - Display started (groups of) events if they are bookable without having to turn ON Past Events (in form calendar settings)
+* Tweak - Make "At the latest" option compatible with "Display past events" and "Make past events bookable" options (in form calendar settings)
 * Tweak - Make "Booked only" and "Groups only" filters compatible together (in form calendar settings)
 * Fix - Grouped events could be booked individually if group has started and Group category was set to "All"
+* Dev - Separate the availability period from the display period: the former corresponds to the period during which events can be booked, the latter to the period during which they are displayed
 * Dev - Refactor parameters of bookacti_fetch_events_of_group_of_events_occurrences function and bookacti_get_grouped_events hook
 * Dev - Replace bookacti_booking_system_grouped_events_filters, bookacti_booking_system_booked_events_filters and bookacti_booking_system_events_filters hooks with bookacti_booking_system_event_filters
 * Dev - bookacti_encrypt and bookacti_decrypt functions now return an empty string in case of failure
