@@ -323,6 +323,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 = 1.16.49 =
 * Feature - Add an option to display events out of the availability period as unavailable instead of not retrieving them at all (in form calendar settings)
+* Feature - Allow to set days off globally in Booking Activities settings
 * Tweak - Display started (groups of) events if they are bookable without having to turn ON Past Events (in form calendar settings)
 * Tweak - Make "At the latest" option compatible with "Display past events" and "Make past events bookable" options (in form calendar settings)
 * Tweak - Make "Booked only" and "Groups only" filters compatible together (in form calendar settings)
@@ -331,6 +332,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Dev - Refactor parameters of bookacti_fetch_events_of_group_of_events_occurrences function and bookacti_get_grouped_events hook
 * Dev - Replace bookacti_booking_system_grouped_events_filters, bookacti_booking_system_booked_events_filters and bookacti_booking_system_events_filters hooks with bookacti_booking_system_event_filters
 * Dev - bookacti_encrypt and bookacti_decrypt functions now return an empty string in case of failure
+* Dev - Parameters of these functions have changed: bookacti_get_template_data, bookacti_get_templates_data, bookacti_get_mixed_template_data and bookacti_format_template_data
 
 = 1.16.48 - 2026/02/09 =
 * Feature - Offer to refund the cancelled bookings after deleting a (group of) event(s) and cancelling its bookings from the calendar editor

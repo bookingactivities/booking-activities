@@ -239,6 +239,7 @@ function bookacti_load_template_calendar() {
 		/**
 		 * Add classes to the day header
 		 * @since 1.15.0
+		 * @version 1.16.49
 		 * @param {Object} info {
 		 *  @type {Date} date
 		 *  @type {String} dayNumberText
@@ -253,21 +254,22 @@ function bookacti_load_template_calendar() {
 			var return_object = { 'class_names': [] };
 			
 			// Gray out days off
-			var template_data = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ];
-			if( typeof template_data !== 'undefined' ) {
-				if( typeof template_data.settings !== 'undefined' ) {
-					if( typeof template_data.settings.days_off !== 'undefined' ) {
-						var day_date = moment.utc( info.date );
-						$j.each( template_data.settings.days_off, function ( i, day_off ) {
-							var day_off_from = moment.utc( day_off.from + ' 00:00:00' );
-							var day_off_to = moment.utc( day_off.to + ' 23:59:59' );
-							if( day_date.isBetween( day_off_from, day_off_to, 'second', '[]' ) ) {
-								return_object.class_names.push( 'fc-day-disabled' );
-								return false; // break
-							}
-						});
+			var template_data       = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ];
+			var use_global_days_off = parseInt( template_data?.[ 'settings' ]?.[ 'use_global_days_off' ] ?? 0 );
+			var template_days_off   = template_data?.[ 'settings' ]?.[ 'days_off' ] ?? [];
+			var global_days_off     = bookacti_localized?.days_off ?? [];
+			var days_off            = use_global_days_off > 0 ? global_days_off : ( use_global_days_off < 0 ? template_days_off.concat( global_days_off ) : template_days_off );
+			
+			if( days_off.length ) {
+				var day_date = moment.utc( info.date );
+				$j.each( days_off, function ( i, day_off ) {
+					var day_off_from = moment.utc( day_off.from + ' 00:00:00' );
+					var day_off_to = moment.utc( day_off.to + ' 23:59:59' );
+					if( day_date.isBetween( day_off_from, day_off_to, 'second', '[]' ) ) {
+						return_object.class_names.push( 'fc-day-disabled' );
+						return false; // break
 					}
-				}
+				});
 			}
 			
 			booking_system.trigger( 'bookacti_calendar_editor_day_header_class_names', [ return_object, info ] );
@@ -279,6 +281,7 @@ function bookacti_load_template_calendar() {
 		/**
 		 * Add classes to the day cell
 		 * @since 1.15.0
+		 * @version 1.16.49
 		 * @param {Object} info {
 		 *  @type {Date} date
 		 *  @type {String} dayNumberText
@@ -293,21 +296,22 @@ function bookacti_load_template_calendar() {
 			var return_object = { 'class_names': [] };
 			
 			// Gray out days off
-			var template_data = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ];
-			if( typeof template_data !== 'undefined' ) {
-				if( typeof template_data.settings !== 'undefined' ) {
-					if( typeof template_data.settings.days_off !== 'undefined' ) {
-						var day_date = moment.utc( info.date );
-						$j.each( template_data.settings.days_off, function ( i, day_off ) {
-							var day_off_from = moment.utc( day_off.from + ' 00:00:00' );
-							var day_off_to = moment.utc( day_off.to + ' 23:59:59' );
-							if( day_date.isBetween( day_off_from, day_off_to, 'second', '[]' ) ) {
-								return_object.class_names.push( 'fc-day-disabled' );
-								return false; // break
-							}
-						});
+			var template_data       = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ];
+			var use_global_days_off = parseInt( template_data?.[ 'settings' ]?.[ 'use_global_days_off' ] ?? 0 );
+			var template_days_off   = template_data?.[ 'settings' ]?.[ 'days_off' ] ?? [];
+			var global_days_off     = bookacti_localized?.days_off ?? [];
+			var days_off            = use_global_days_off > 0 ? global_days_off : ( use_global_days_off < 0 ? template_days_off.concat( global_days_off ) : template_days_off );
+			
+			if( days_off.length ) {
+				var day_date = moment.utc( info.date );
+				$j.each( days_off, function ( i, day_off ) {
+					var day_off_from = moment.utc( day_off.from + ' 00:00:00' );
+					var day_off_to = moment.utc( day_off.to + ' 23:59:59' );
+					if( day_date.isBetween( day_off_from, day_off_to, 'second', '[]' ) ) {
+						return_object.class_names.push( 'fc-day-disabled' );
+						return false; // break
 					}
-				}
+				});
 			}
 			
 			booking_system.trigger( 'bookacti_calendar_editor_day_cell_class_names', [ return_object, info ] );
@@ -592,7 +596,7 @@ function bookacti_load_template_calendar() {
 		/**
 		 * Exact programmatic control over where an event can be dropped
 		 * @since 1.13.0
-		 * @version 1.15.0
+		 * @version 1.16.49
 		 * @param {object} drop_info {
 		 *  @type {Boolean} allDay  true or false whether the event was dropped on one of the all-day cells.
 		 *  @type {Date} end        Date. The end of where the draggable event was dropped.
@@ -607,20 +611,21 @@ function bookacti_load_template_calendar() {
 			var allow_drop = { 'allow': true };
 			
 			// Do not allow to drop events on days off
-			var template_data = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ];
-			if( typeof template_data !== 'undefined' ) {
-				if( typeof template_data.settings !== 'undefined' ) {
-					if( typeof template_data.settings.days_off !== 'undefined' ) {
-						$j.each( template_data.settings.days_off, function ( i, day_off ) {
-							var day_off_from = moment.utc( day_off.from + ' 00:00:00' );
-							var day_off_to = moment.utc( day_off.to + ' 23:59:59' );
-							if( moment.utc( drop_info.start ).isBetween( day_off_from, day_off_to, 'second', '[]' ) ) { 
-								allow_drop.allow = false;
-								return false; // break
-							}
-						});
+			var template_data       = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ];
+			var use_global_days_off = parseInt( template_data?.[ 'settings' ]?.[ 'use_global_days_off' ] ?? 0 );
+			var template_days_off   = template_data?.[ 'settings' ]?.[ 'days_off' ] ?? [];
+			var global_days_off     = bookacti_localized?.days_off ?? [];
+			var days_off            = use_global_days_off > 0 ? global_days_off : ( use_global_days_off < 0 ? template_days_off.concat( global_days_off ) : template_days_off );
+			
+			if( days_off.length ) {
+				$j.each( days_off, function ( i, day_off ) {
+					var day_off_from = moment.utc( day_off.from + ' 00:00:00' );
+					var day_off_to = moment.utc( day_off.to + ' 23:59:59' );
+					if( moment.utc( drop_info.start ).isBetween( day_off_from, day_off_to, 'second', '[]' ) ) { 
+						allow_drop.allow = false;
+						return false; // break
 					}
-				}
+				});
 			}
 			
 			booking_system.trigger( 'bookacti_calendar_editor_allow_drop', [ allow_drop.allow, drop_info, dragged_event ] );

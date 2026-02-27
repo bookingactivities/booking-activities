@@ -680,6 +680,7 @@ function bookacti_get_default_form_fields_meta( $field_name = '', $context = 'vi
 			'out_of_period_events'           => 0,
 			'past_events'                    => 0,
 			'past_events_bookable'           => 0,
+			'use_global_days_off'            => -1,
 			'days_off'                       => array(),
 			'form_action'                    => 'default',
 			'when_perform_form_action'       => 'on_submit',
@@ -794,9 +795,19 @@ function bookacti_format_form_field_data( $raw_field_data, $context = 'view' ) {
 		
 		$field_meta[ 'start' ]    = isset( $raw_field_data[ 'start' ] ) && bookacti_sanitize_date( $raw_field_data[ 'start' ] ) ? bookacti_sanitize_date( $raw_field_data[ 'start' ] ) : $default_meta[ 'start' ];
 		$field_meta[ 'end' ]      = isset( $raw_field_data[ 'end' ] ) && bookacti_sanitize_date( $raw_field_data[ 'end' ] ) ? bookacti_sanitize_date( $raw_field_data[ 'end' ] ) : $default_meta[ 'end' ];
-		$field_meta[ 'days_off' ] = isset( $raw_field_data[ 'days_off' ] ) && is_array( $raw_field_data[ 'days_off' ] ) ? bookacti_sanitize_days_off( $raw_field_data[ 'days_off' ] ) : $default_meta[ 'days_off' ];
 		$field_meta[ 'availability_period_start' ] = isset( $raw_field_data[ 'availability_period_start' ] ) && is_numeric( $raw_field_data[ 'availability_period_start' ] ) ? intval( $raw_field_data[ 'availability_period_start' ] ) : $default_meta[ 'availability_period_start' ];
 		$field_meta[ 'availability_period_end' ]   = isset( $raw_field_data[ 'availability_period_end' ] ) && is_numeric( $raw_field_data[ 'availability_period_end' ] ) ? intval( $raw_field_data[ 'availability_period_end' ] ) : $default_meta[ 'availability_period_end' ];
+		$field_meta[ 'use_global_days_off' ] = isset( $raw_field_data[ 'use_global_days_off' ] ) && is_numeric( $raw_field_data[ 'use_global_days_off' ] ) ? max( min( intval( $raw_field_data[ 'use_global_days_off' ] ), 1 ), -1 ) : $default_meta[ 'use_global_days_off' ];
+		
+		$days_off = isset( $raw_field_data[ 'days_off' ] ) && is_array( $raw_field_data[ 'days_off' ] ) ? $raw_field_data[ 'days_off' ] : $default_meta[ 'days_off' ];
+		if( $context !== 'edit' ) {
+			if( $field_meta[ 'use_global_days_off' ] > 0 ) {
+				$days_off = bookacti_get_setting_value( 'bookacti_general_settings', 'days_off' );
+			} else if( $field_meta[ 'use_global_days_off' ] < 0 ) {
+				$days_off = array_merge( bookacti_get_setting_value( 'bookacti_general_settings', 'days_off' ), $days_off );
+			}
+		}
+		$field_meta[ 'days_off' ] = bookacti_sanitize_days_off( $days_off );
 		
 		$field_meta[ 'form_action' ]                    = isset( $raw_field_data[ 'form_action' ] ) && in_array( $raw_field_data[ 'form_action' ], array_keys( bookacti_get_available_form_actions() ), true ) ? $raw_field_data[ 'form_action' ] : $default_meta[ 'form_action' ];
 		$field_meta[ 'when_perform_form_action' ]       = isset( $raw_field_data[ 'when_perform_form_action' ] ) && in_array( $raw_field_data[ 'when_perform_form_action' ], array_keys( bookacti_get_available_form_action_triggers() ), true ) ? $raw_field_data[ 'when_perform_form_action' ] : $default_meta[ 'when_perform_form_action' ];
@@ -994,7 +1005,8 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 		
 		$field_meta[ 'start' ]    = isset( $raw_field_data[ 'start' ] ) && bookacti_sanitize_date( $raw_field_data[ 'start' ] ) ? bookacti_sanitize_date( $raw_field_data[ 'start' ] ) : $default_meta[ 'start' ];
 		$field_meta[ 'end' ]      = isset( $raw_field_data[ 'end' ] ) && bookacti_sanitize_date( $raw_field_data[ 'end' ] ) ? bookacti_sanitize_date( $raw_field_data[ 'end' ] ) : $default_meta[ 'end' ];
-		$field_meta[ 'days_off' ] = isset( $raw_field_data[ 'days_off' ] ) && is_array( $raw_field_data[ 'days_off' ] ) ? bookacti_sanitize_days_off( $raw_field_data[ 'days_off' ] ) : $default_meta[ 'days_off' ];
+		$field_meta[ 'use_global_days_off' ] = isset( $raw_field_data[ 'use_global_days_off' ] ) && is_numeric( $raw_field_data[ 'use_global_days_off' ] ) ? max( min( intval( $raw_field_data[ 'use_global_days_off' ] ), 1 ), -1 ) : $default_meta[ 'use_global_days_off' ];
+		$field_meta[ 'days_off' ]            = isset( $raw_field_data[ 'days_off' ] ) && is_array( $raw_field_data[ 'days_off' ] ) && $field_meta[ 'use_global_days_off' ] < 1 ? bookacti_sanitize_days_off( $raw_field_data[ 'days_off' ] ) : $default_meta[ 'days_off' ];
 		$field_meta[ 'availability_period_start' ] = isset( $raw_field_data[ 'availability_period_start' ] ) && is_numeric( $raw_field_data[ 'availability_period_start' ] ) ? intval( $raw_field_data[ 'availability_period_start' ] ) : $default_meta[ 'availability_period_start' ];
 		$field_meta[ 'availability_period_end' ]   = isset( $raw_field_data[ 'availability_period_end' ] ) && is_numeric( $raw_field_data[ 'availability_period_end' ] ) ? intval( $raw_field_data[ 'availability_period_end' ] ) : $default_meta[ 'availability_period_end' ];
 		

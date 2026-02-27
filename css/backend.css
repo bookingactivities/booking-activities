@@ -110,7 +110,7 @@ ul[id$='-select-box-results'] li[aria-disabled='true'] { display: none; }
 
 
 /***** SETTINGS *****/
-#bookacti-settings input:not([type='submit']):not([type='checkbox']):not([type='radio']):not([type='button']):not([type='search']):not(.button):not(.bookacti-duration-field),
+#bookacti-settings input:not([type='submit']):not([type='checkbox']):not([type='radio']):not([type='button']):not([type='search']):not(.button):not(.bookacti-duration-field):not(.bookacti-date-interval-from):not(.bookacti-date-interval-to),
 #bookacti-settings select   { min-width: 300px; width: 300px; max-width: 300px; display: inline-block; }
 #bookacti-settings textarea:not(.wp-editor-area) { min-width: 300px; width: 300px; }
 
@@ -181,9 +181,18 @@ ul[id$='-select-box-results'] li[aria-disabled='true'] { display: none; }
 .bookacti-duration-field { width: 60px; }
 .bookacti-duration-field-label { display: block; }
 
-.bookacti-delete-date-interval           { cursor: pointer; color: #565d61; }
-.bookacti-add-date-interval              { cursor: pointer; color: #418fb6; }
-.bookacti-date-intervals-table-container { max-height: 130px; overflow-y: auto; }
+.bookacti-date-intervals-container.bookacti-has-use-global { display: grid; gap: 3px; grid-template-columns: 150px 1fr; container-type: inline-size; }
+.bookacti-date-intervals-container.bookacti-has-use-global .bookacti-date-intervals-table-container { grid-column: 1 / 2; }
+.bookacti-date-intervals-table-container     { max-height: 160px; overflow-y: auto; width: fit-content; padding-inline-end: 20px; }
+.bookacti-date-intervals-table-container th  { width: unset; text-align: center; }
+.bookacti-date-intervals-table-container th,
+.bookacti-date-intervals-table-container td  { padding: 1px; }
+.bookacti-delete-date-interval               { cursor: pointer; color: #565d61; }
+.bookacti-add-date-interval                  { cursor: pointer; color: #418fb6; vertical-align: middle; }
+
+@container (min-width: 540px) {
+	.bookacti-date-intervals-container.bookacti-has-use-global .bookacti-date-intervals-table-container { grid-column: 2; }
+}
 
 
 /* ON / OFF Switch */

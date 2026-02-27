@@ -524,6 +524,7 @@ function bookacti_get_booking_system_default_attributes() {
 		'out_of_period_events'           => 0,
 		'past_events'                    => 0,
 		'past_events_bookable'           => 0,
+		'use_global_days_off'            => -1,
 		'days_off'                       => array(),
 		'check_roles'                    => 1,
 		'picked_events'                  => array(),
@@ -649,14 +650,21 @@ function bookacti_format_booking_system_attributes( $raw_atts = array() ) {
 	$formatted_atts[ 'display_period' ][ 'end' ]   = $sanitized_period_end ? $sanitized_period_end : $defaults[ 'display_period' ][ 'end' ];
 	
 	// Format Days off
-	$formatted_atts[ 'days_off' ] = bookacti_sanitize_days_off( $atts[ 'days_off' ] );
+	$days_off = $atts[ 'days_off' ];
+	$formatted_atts[ 'use_global_days_off' ] = is_numeric( $atts[ 'use_global_days_off' ] ) ? max( min( intval( $atts[ 'use_global_days_off' ] ), 1 ), -1 ) : $defaults[ 'use_global_days_off' ];
+	if( $formatted_atts[ 'use_global_days_off' ] > 0 ) {
+		$days_off = bookacti_get_setting_value( 'bookacti_general_settings', 'days_off' );
+	} else if( $formatted_atts[ 'use_global_days_off' ] < 0 ) {
+		$days_off = array_merge( bookacti_get_setting_value( 'bookacti_general_settings', 'days_off' ), $days_off );
+	}
+	$formatted_atts[ 'days_off' ] = bookacti_sanitize_days_off( $days_off );
 	
 	// Format display data
 	$formatted_atts[ 'display_data' ] = is_array( $atts[ 'display_data' ] ) ? bookacti_format_booking_system_display_data( $atts[ 'display_data' ] ) : $defaults[ 'display_data' ];
 	
 	// Check if desired booking method is registered
-	$available_booking_methods = array_keys( bookacti_get_available_booking_methods() );
-	$method = esc_attr( $atts[ 'method' ] );
+	$available_booking_methods  = array_keys( bookacti_get_available_booking_methods() );
+	$method                     = esc_attr( $atts[ 'method' ] );
 	$formatted_atts[ 'method' ] = in_array( $method, $available_booking_methods, true ) ? $method : ( in_array( $defaults[ 'method' ], $available_booking_methods, true ) ? $defaults[ 'method' ] : 'calendar' );
 	
 	// Sanitize user id
@@ -940,7 +948,7 @@ function bookacti_get_calendar_field_booking_system_attributes( $calendar_field 
 	$display_data = array_intersect_key( $calendar_field, bookacti_get_booking_system_default_display_data() );
 	
 	// Transform the Calendar field settings to Booking system attributes
-	$booking_system_atts_raw = array_merge( $calendar_field, $availability_period, array( 'picked_events' => $picked_events, 'display_data' => $display_data, 'availability_period' => $availability_period ) );
+	$booking_system_atts_raw = array_merge( $calendar_field, $availability_period, array( 'picked_events' => $picked_events, 'display_data' => $display_data, 'availability_period' => $availability_period, 'use_global_days_off' => 0 ) );
 	$booking_system_atts     = bookacti_format_booking_system_attributes( $booking_system_atts_raw );
 	
 	// Compute display period
@@ -1345,11 +1353,13 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 	// Days off
 	if( ! $fields || in_array( 'days_off', $fields, true ) ) {
 		$defaults[ 'days_off' ] = array(
-			'type'  => 'custom_date_intervals',
-			'name'  => 'days_off',
-			'value' => array(),
-			'title' => esc_html__( 'Days off', 'booking-activities' ),
-			'tip'   => esc_html__( 'Enter your leave periods, no events will be displayed during them.', 'booking-activities' ));
+			'type'       => 'custom_date_intervals',
+			'use_global' => 1,
+			'name'       => 'days_off',
+			'value'      => array(),
+			'title'      => esc_html__( 'Days off', 'booking-activities' ),
+			'tip'        => esc_html__( 'Enter your leave periods, no events will be displayed during them.', 'booking-activities' )
+		);
 	}
 	
 	// Trim empty days
