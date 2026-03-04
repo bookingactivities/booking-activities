@@ -323,7 +323,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 = 1.16.49 =
 * Feature - Add an option to display events out of the availability period as unavailable instead of not retrieving them at all (in form calendar settings)
-* Feature - Allow to set days off globally in Booking Activities settings
+* Feature - Add an option to select the first available event by default (in form calendar settings)
+* Feature - Add an option to hide calendar if an event is automatically preselected (in form calendar settings)
+* Feature - Add an option to set days off globally (in Booking Activities settings)
 * Tweak - Display started (groups of) events if they are bookable without having to turn ON Past Events (in form calendar settings)
 * Tweak - Make "At the latest" option compatible with "Display past events" and "Make past events bookable" options (in form calendar settings)
 * Tweak - Make "Booked only" and "Groups only" filters compatible together (in form calendar settings)

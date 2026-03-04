@@ -32,6 +32,7 @@ function bookacti_controller_get_booking_system_data_by_interval() {
 	$atts[ 'start' ]               = ! empty( $interval[ 'start' ] ) ? $interval[ 'start' ] : '';
 	$atts[ 'end' ]                 = ! empty( $interval[ 'end' ] ) ? $interval[ 'end' ] : '';
 	$atts[ 'events_min_interval' ] = $atts[ 'start' ] || $atts[ 'end' ] ? array( 'start' => $atts[ 'start' ], 'end' => $atts[ 'end' ] ) : array();
+	$atts[ 'select_first_event' ]  = 0;
 	$atts[ 'auto_load' ]           = 1;
 	
 	$booking_system_data = bookacti_get_booking_system_data( $atts );

@@ -662,6 +662,7 @@ function bookacti_get_default_form_fields_meta( $field_name = '', $context = 'vi
 			'class'                          => '',
 			'method'                         => 'calendar',
 			'hide_availability'              => 100,
+			'hide_calendar'                  => array( 'none' ),
 			'calendars'                      => array(),
 			'activities'                     => array(),
 			'group_categories'               => array( 'none' ),
@@ -684,6 +685,7 @@ function bookacti_get_default_form_fields_meta( $field_name = '', $context = 'vi
 			'days_off'                       => array(),
 			'form_action'                    => 'default',
 			'when_perform_form_action'       => 'on_submit',
+			'select_first_event'             => 0,
 			'redirect_url_by_activity'       => array(),
 			'redirect_url_by_group_category' => array(),
 			'slotMinTime'                    => '00:00',
@@ -723,26 +725,35 @@ function bookacti_get_default_form_fields_meta( $field_name = '', $context = 'vi
 /**
  * Get available form actions
  * @since 1.7.17
+ * @version 1.16.49
  * @return array
  */
 function bookacti_get_available_form_actions() {
-	return apply_filters( 'bookacti_form_action_options', array( 
-		'default' => '', 
-		'redirect_to_url' => ''
-	));
+	$fields = bookacti_get_booking_system_fields_default_data( array( 'form_action' ) );
+	return ! empty( $fields[ 'form_action' ][ 'options' ] ) ? $fields[ 'form_action' ][ 'options' ] : array();
 }
 
 
 /**
  * Get available form submit triggers
  * @since 1.7.17
+ * @version 1.16.49
  * @return array
  */
 function bookacti_get_available_form_action_triggers() {
-	return apply_filters( 'bookacti_when_perform_form_action_options', array( 
-		'on_submit' => '', 
-		'on_event_click' => ''
-	));
+	$fields = bookacti_get_booking_system_fields_default_data( array( 'when_perform_form_action' ) );
+	return ! empty( $fields[ 'when_perform_form_action' ][ 'options' ] ) ? $fields[ 'when_perform_form_action' ][ 'options' ] : array();
+}
+
+
+/**
+ * Get available hide calendar options
+ * @since 1.16.49
+ * @return array
+ */
+function bookacti_get_available_hide_calendar_options() {
+	$fields = bookacti_get_booking_system_fields_default_data( array( 'hide_calendar' ) );
+	return ! empty( $fields[ 'hide_calendar' ][ 'options' ] ) ? $fields[ 'hide_calendar' ][ 'options' ] : array();
 }
 
 
@@ -767,7 +778,7 @@ function bookacti_format_form_field_data( $raw_field_data, $context = 'view' ) {
 	
 	// Format field-specific data and metadata
 	if( $raw_field_data[ 'name' ] === 'calendar' ) {
-		$booleans_to_check = array( 'groups_only', 'groups_single_events', 'groups_first_event_only', 'multiple_bookings', 'bookings_only', 'trim', 'out_of_period_events', 'past_events', 'past_events_bookable' );
+		$booleans_to_check = array( 'groups_only', 'groups_single_events', 'groups_first_event_only', 'multiple_bookings', 'bookings_only', 'trim', 'out_of_period_events', 'past_events', 'past_events_bookable', 'select_first_event' );
 		foreach( $booleans_to_check as $key ) {
 			if( ! isset( $raw_field_data[ $key ] ) ) { continue; }
 			$field_meta[ $key ] = in_array( $raw_field_data[ $key ], array( 1, '1', true, 'true', 'yes', 'ok' ), true ) ? 1 : 0;
@@ -778,7 +789,9 @@ function bookacti_format_form_field_data( $raw_field_data, $context = 'view' ) {
 		
 		$field_meta[ 'method' ]            = isset( $raw_field_data[ 'method' ] ) && in_array( $raw_field_data[ 'method' ], array_keys( bookacti_get_available_booking_methods() ), true ) ? $raw_field_data[ 'method' ] : $default_meta[ 'method' ];
 		$field_meta[ 'hide_availability' ] = isset( $raw_field_data[ 'hide_availability' ] ) && is_numeric( $raw_field_data[ 'hide_availability' ] ) ? max( min( intval( $raw_field_data[ 'hide_availability' ] ), 100 ), 0 ) : $default_meta[ 'hide_availability' ];
-	
+		$field_meta[ 'hide_calendar' ]     = isset( $raw_field_data[ 'hide_calendar' ] ) ? array_values( array_diff( array_intersect( array_keys( bookacti_get_available_hide_calendar_options() ), bookacti_str_ids_to_array( $raw_field_data[ 'hide_calendar' ] ) ), array( false, 'none', 'false', 'no' ) ) ) : $default_meta[ 'hide_calendar' ];
+		if( ! $field_meta[ 'hide_calendar' ] || array_intersect( $field_meta[ 'hide_calendar' ], array( false, 'none', 'false', 'no' ) ) ) { $field_meta[ 'hide_calendar' ] = array( 'none' ); }
+		
 		$field_meta[ 'calendars' ] = isset( $raw_field_data[ 'calendars' ] ) ? bookacti_ids_to_array( $raw_field_data[ 'calendars' ] ) : $default_meta[ 'calendars' ];
 		
 		$had_activities             = ! empty( $raw_field_data[ 'activities' ] );
@@ -975,7 +988,7 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 	
 	// Sanitize field-specific data and metadata
 	if( $raw_field_data[ 'name' ] === 'calendar' ) {
-		$booleans_to_check = array( 'groups_only', 'groups_single_events', 'groups_first_event_only', 'multiple_bookings', 'bookings_only', 'trim', 'out_of_period_events', 'past_events', 'past_events_bookable' );
+		$booleans_to_check = array( 'groups_only', 'groups_single_events', 'groups_first_event_only', 'multiple_bookings', 'bookings_only', 'trim', 'out_of_period_events', 'past_events', 'past_events_bookable', 'select_first_event' );
 		foreach( $booleans_to_check as $key ) {
 			if( ! isset( $raw_field_data[ $key ] ) ) { $field_meta[ $key ] = $default_meta[ $key ]; continue; }
 			$field_meta[ $key ] = in_array( $raw_field_data[ $key ], array( 1, '1', true, 'true', 'yes', 'ok' ), true ) ? 1 : 0;
@@ -986,6 +999,8 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 		
 		$field_meta[ 'method' ]            = isset( $raw_field_data[ 'method' ] ) && in_array( $raw_field_data[ 'method' ], array_keys( bookacti_get_available_booking_methods() ), true ) ? $raw_field_data[ 'method' ] : $default_meta[ 'method' ];
 		$field_meta[ 'hide_availability' ] = isset( $raw_field_data[ 'hide_availability' ] ) && is_numeric( $raw_field_data[ 'hide_availability' ] ) ? max( min( intval( $raw_field_data[ 'hide_availability' ] ), 100 ), 0 ) : $default_meta[ 'hide_availability' ];
+		$field_meta[ 'hide_calendar' ]     = isset( $raw_field_data[ 'hide_calendar' ] ) ? array_values( array_intersect( array_keys( bookacti_get_available_hide_calendar_options() ), bookacti_str_ids_to_array( $raw_field_data[ 'hide_calendar' ] ) ) ) : $default_meta[ 'hide_calendar' ];
+		if( ! $field_meta[ 'hide_calendar' ] || array_intersect( $field_meta[ 'hide_calendar' ], array( false, 'none', 'false', 'no' ) ) ) { $field_meta[ 'hide_calendar' ] = array( 'none' ); }
 		
 		$field_meta[ 'calendars' ] = isset( $raw_field_data[ 'calendars' ] ) ? bookacti_ids_to_array( $raw_field_data[ 'calendars' ] ) : $default_meta[ 'calendars' ];
 		

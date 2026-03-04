@@ -176,7 +176,6 @@ function bookacti_get_string_between( $string, $start = '', $end = '' ) {
 }
 
 
-
 /**
  * Encrypt a string
  * @since 1.7.15

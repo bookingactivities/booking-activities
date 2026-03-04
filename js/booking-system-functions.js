@@ -1373,7 +1373,7 @@ function bookacti_get_event_availability( booking_system, event ) {
 function bookacti_is_event_available( booking_system, event ) {
 	var booking_system_id    = booking_system.attr( 'id' );
 	var attributes           = bookacti.booking_system[ booking_system_id ];
-	var past_events_bookable = attributes[ 'past_events_bookable' ];
+	var past_events_bookable = attributes?.[ 'past_events' ] && attributes?.[ 'past_events_bookable' ];
 	
 	var event_id     = typeof event.groupId !== 'undefined' ? parseInt( event.groupId ) : parseInt( event.id );
 	var event_start  = moment.utc( event.start ).clone().locale( 'en' );
@@ -1528,7 +1528,7 @@ function bookacti_is_event_in_available_group( booking_system, event ) {
 function bookacti_is_group_of_events_available( booking_system, group_id, group_date ) {
 	var booking_system_id    = booking_system.attr( 'id' );
 	var attributes           = bookacti.booking_system[ booking_system_id ];
-	var past_events_bookable = attributes?.[ 'past_events_bookable' ];
+	var past_events_bookable = attributes?.[ 'past_events' ] && attributes?.[ 'past_events_bookable' ];
 	var group_events         = attributes?.[ 'groups_events' ]?.[ group_id ]?.[ group_date ];
 	var availability_period  = bookacti_get_availability_period( booking_system );
 	

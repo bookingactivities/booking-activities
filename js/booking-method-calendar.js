@@ -254,6 +254,19 @@ $j( document ).ready( function() {
 		if( ! $j( this ).find( '.bookacti-calendar' ).length ) { return; }
 		bookacti_unpick_all_events_on_calendar( $j( this ) );
 	});
+	
+	
+	/**
+	 * Make sure calendar is displayed if events are unpicked
+	 * @since 1.16.49
+	 */
+	$j( 'body' ).on( 'bookacti_events_unpicked bookacti_unpick_all_events', '.bookacti-booking-system', function() {
+		var was_hidden = $j( this ).find( '.bookacti-calendar, .bookacti-calendar-title' ).hasClass( 'bookacti-hidden-field' );
+		if( was_hidden ) {
+			$j( this ).find( '.bookacti-calendar, .bookacti-calendar-title' ).removeClass( 'bookacti-hidden-field' );
+			bookacti_booking_method_rerender_events( $j( this ) );
+		}
+	});
 });
 
 
@@ -823,7 +836,7 @@ function bookacti_fc_add_events( booking_system, events ) {
 /**
  * Add CSS class to the picked events on calendar, remove it from the others
  * @since 1.8.9
- * @version 1.9.0
+ * @version 1.16.49
  * @param {HTMLElement} booking_system
  */
 function bookacti_refresh_picked_events_on_calendar( booking_system ) {
@@ -839,10 +852,8 @@ function bookacti_refresh_picked_events_on_calendar( booking_system ) {
 			var picked_event_start = moment.utc( picked_event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
 
 			// Because of popover and long events (spreading on multiple days), 
-			// the same event can appears twice, so we need to apply changes on each
+			// the same event may appear twice, so we need to apply changes on each
 			var elements = booking_system.find( '.fc-event[data-event-id="' + picked_event.id + '"][data-event-start="' + picked_event_start + '"]' );
-			
-			// Format the pciked event (because of popover, the same event can appears twice)
 			elements.addClass( 'bookacti-picked-event' );
 		});
 	}

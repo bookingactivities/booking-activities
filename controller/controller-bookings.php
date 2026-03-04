@@ -686,6 +686,8 @@ function bookacti_controller_get_reschedule_booking_system_data() {
 	$atts[ 'id' ]                       = 'bookacti-booking-system-reschedule';
 	$atts[ 'form_action' ]              = 'default';
 	$atts[ 'when_perform_form_action' ] = 'on_submit';
+	$atts[ 'select_first_event' ]       = 0;
+	$atts[ 'hide_calendar' ]            = array( 'none' );
 	$atts[ 'multiple_bookings' ]        = 0;
 	$atts[ 'auto_load' ]                = 0;
 	

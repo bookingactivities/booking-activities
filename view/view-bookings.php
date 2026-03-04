@@ -308,6 +308,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							'past_events_bookable'         => 1,
 							'check_roles'                  => 0,
 							'auto_load'                    => 0, // Prevent to load on page load to save some performance
+							'select_first_event'           => 0,
 							'picked_events'                => $picked_events,
 							'tooltip_booking_list'         => $user_calendar_settings[ 'tooltip_booking_list' ],
 							'tooltip_booking_list_columns' => $user_calendar_settings[ 'tooltip_booking_list_columns' ],
