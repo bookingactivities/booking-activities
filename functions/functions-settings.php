@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Get default settings values
  * @since 1.3.0 (was bookacti_define_default_settings_constants)
- * @version 1.16.49
+ * @version 1.17.0
  */
 function bookacti_get_default_settings() {
 	$date = new DateTime(); 
@@ -15,6 +15,7 @@ function bookacti_get_default_settings() {
 		'event_load_interval'               => 92,
 		'started_events_bookable'           => false,
 		'started_groups_bookable'           => false,
+		'started_days_off_bookable'         => 0,
 		'days_off'                          => array(),
 		'default_booking_state'             => 'pending',
 		'default_payment_status'            => 'none',
@@ -353,8 +354,24 @@ function bookacti_settings_field_started_groups_bookable_callback() {
 
 
 /**
+ * Display "Are events taking place partly on days off bookable?" setting
+ * @since 1.17.0
+ */
+function bookacti_settings_field_started_days_off_bookable_callback() {
+	$args = array(
+		'type'  => 'checkbox',
+		'name'  => 'bookacti_general_settings[started_days_off_bookable]',
+		'id'    => 'started_days_off_bookable',
+		'value' => bookacti_get_setting_value( 'bookacti_general_settings', 'started_days_off_bookable' ),
+		'tip'   => esc_html__( 'Allow customers to book events starting on a working day and extending into a day off. Useful for events taking place at night.', 'booking-activities' )
+	);
+	bookacti_display_field( $args );
+}
+
+
+/**
  * Display "Days off" general setting
- * @since 1.16.49
+ * @since 1.17.0
  */
 function bookacti_settings_field_days_off_callback() {
 	$tip  = esc_html__( 'Enter your leave periods, no events will be displayed during them.', 'booking-activities' );
@@ -1182,7 +1199,7 @@ function bookacti_get_message( $message_id, $raw = false ) {
 
 /**
  * Sanitize General settings
- * @since 1.16.49
+ * @since 1.17.0
  * @param array $settings_raw
  * @return array
  */
@@ -1193,7 +1210,7 @@ function bookacti_sanitize_settings_general( $settings_raw ) {
 		'int'    => array( 'default_calendar_view_threshold', 'event_load_interval', 'price_decimals_number' ),
 		'str'    => array( 'timezone', 'price_currency_symbol', 'price_thousand_separator', 'price_decimal_separator' ),
 		'str_id' => array( 'calendar_localization', 'default_payment_status', 'default_booking_state', 'price_currency_position' ),
-		'bool'   => array( 'started_events_bookable', 'started_groups_bookable', 'display_private_columns', 'delete_data_on_uninstall' ),
+		'bool'   => array( 'started_events_bookable', 'started_groups_bookable', 'started_days_off_bookable', 'display_private_columns', 'delete_data_on_uninstall' ),
 		'array'  => array( 'days_off' )
 	);
 	

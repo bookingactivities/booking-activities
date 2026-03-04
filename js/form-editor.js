@@ -181,7 +181,7 @@ $j( document ).ready( function() {
 	/**
 	 * Calendar field settings: Toggle the availability fields - on change
 	 * @since 1.8.0
-	 * @version 1.16.49
+	 * @version 1.17.0
 	 */
 	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', '#bookacti-availability_period_start-container .bookacti-duration-value, #bookacti-availability_period_end-container .bookacti-duration-value, #bookacti-start, #bookacti-end, #bookacti-out_of_period_events, #bookacti-past_events, #bookacti-past_events_bookable', function() {
 		bookacti_toggle_form_calendar_settings_availability_fields();
@@ -575,7 +575,7 @@ function bookacti_refresh_redirect_url_by_group_category_table() {
 
 /**
  * Show or hide fields in the form calendar settings availability tab according to their values
- * @since 1.16.49
+ * @since 1.17.0
  */
 function bookacti_toggle_form_calendar_settings_availability_fields() {
 	var start_field                = $j( '#bookacti-form-field-dialog-calendar #bookacti-start' );

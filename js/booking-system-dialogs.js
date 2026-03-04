@@ -2,7 +2,7 @@
 
 /**
  * Choose a group of events dialog
- * @version 1.16.49
+ * @version 1.17.0
  * @param {HTMLElement} booking_system
  * @param {Object} groups
  * @param {(FullCalendar.EventApi|Object)} event

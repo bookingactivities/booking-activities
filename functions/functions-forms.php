@@ -626,7 +626,7 @@ function bookacti_get_default_form_fields_data( $field_name = '', $context = 'vi
  * Get fields metadata
  * @see bookacti_format_form_field_data to properly format your array
  * @since 1.5.0
- * @version 1.16.49
+ * @version 1.17.0
  * @param string $field_name
  * @param string $context 'view' or 'edit'
  * @return array
@@ -725,7 +725,7 @@ function bookacti_get_default_form_fields_meta( $field_name = '', $context = 'vi
 /**
  * Get available form actions
  * @since 1.7.17
- * @version 1.16.49
+ * @version 1.17.0
  * @return array
  */
 function bookacti_get_available_form_actions() {
@@ -737,7 +737,7 @@ function bookacti_get_available_form_actions() {
 /**
  * Get available form submit triggers
  * @since 1.7.17
- * @version 1.16.49
+ * @version 1.17.0
  * @return array
  */
 function bookacti_get_available_form_action_triggers() {
@@ -748,7 +748,7 @@ function bookacti_get_available_form_action_triggers() {
 
 /**
  * Get available hide calendar options
- * @since 1.16.49
+ * @since 1.17.0
  * @return array
  */
 function bookacti_get_available_hide_calendar_options() {
@@ -760,7 +760,7 @@ function bookacti_get_available_hide_calendar_options() {
 /**
  * Format field data according to its type
  * @since 1.5.0
- * @version 1.16.49
+ * @version 1.17.0
  * @param array|string $raw_field_data
  * @param $context "view" or "edit"
  * @return array
@@ -970,7 +970,7 @@ function bookacti_format_form_field_data( $raw_field_data, $context = 'view' ) {
 /**
  * Sanitize field data according to its type
  * @since 1.5.0
- * @version 1.16.49
+ * @version 1.17.0
  * @param array|string $raw_field_data
  * @return array
  */

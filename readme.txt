@@ -3,7 +3,7 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
 Tested up to: 6.9
-Stable tag: 1.16.49
+Stable tag: 1.17.0
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -321,11 +321,12 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.16.49 =
+= 1.17.0 - 2026/03/05 =
 * Feature - Add an option to display events out of the availability period as unavailable instead of not retrieving them at all (in form calendar settings)
 * Feature - Add an option to select the first available event by default (in form calendar settings)
 * Feature - Add an option to hide calendar if an event is automatically preselected (in form calendar settings)
 * Feature - Add an option to set days off globally (in Booking Activities settings)
+* Feature - Add an option to prevent booking events taking place partly on days off (in Booking Activities settings)
 * Tweak - Display started (groups of) events if they are bookable without having to turn ON Past Events (in form calendar settings)
 * Tweak - Make "At the latest" option compatible with "Display past events" and "Make past events bookable" options (in form calendar settings)
 * Tweak - Make "Booked only" and "Groups only" filters compatible together (in form calendar settings)

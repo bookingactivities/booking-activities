@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking list page
- * @version 1.16.49
+ * @version 1.17.0
  */
 
 // Exit if accessed directly

@@ -2,7 +2,7 @@
 /**
  * Form editor dialogs
  * @since 1.5.0
- * @version 1.16.49
+ * @version 1.17.0
  */
 
 // Exit if accessed directly
@@ -223,7 +223,7 @@ foreach( $fields_default as $field_name => $field_data ) {
 		/**
 		 * Display the content of the "Actions" tab of the "Calendar" dialog
 		 * @since 1.7.0
-		 * @version 1.16.49
+		 * @version 1.17.0
 		 * @param array $params
 		 */
 		function bookacti_fill_calendar_dialog_actions_tab( $params ) {
@@ -293,7 +293,7 @@ foreach( $fields_default as $field_name => $field_data ) {
 		/**
 		 * Display the content of the "Display" tab of the "Calendar" dialog
 		 * @since 1.5.0
-		 * @version 1.16.49
+		 * @version 1.17.0
 		 * @param array $params
 		 */
 		function bookacti_fill_calendar_dialog_display_tab( $params ) {
@@ -317,7 +317,7 @@ foreach( $fields_default as $field_name => $field_data ) {
 		/**
 		 * Display the content of the "Availability" tab of the "Calendar" dialog
 		 * @since 1.5.0
-		 * @version 1.16.49
+		 * @version 1.17.0
 		 * @param array $params
 		 */
 		function bookacti_fill_calendar_dialog_availability_tab( $params ) {

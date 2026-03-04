@@ -119,7 +119,7 @@ $j( document ).ready( function() {
 
 /**
  * Initialize and display the template calendar
- * @version 1.16.49
+ * @version 1.17.0
  */
 function bookacti_load_template_calendar() {
 	var booking_system = $j( '#bookacti-template-calendar' );
@@ -239,7 +239,7 @@ function bookacti_load_template_calendar() {
 		/**
 		 * Add classes to the day header
 		 * @since 1.15.0
-		 * @version 1.16.49
+		 * @version 1.17.0
 		 * @param {Object} info {
 		 *  @type {Date} date
 		 *  @type {String} dayNumberText
@@ -281,7 +281,7 @@ function bookacti_load_template_calendar() {
 		/**
 		 * Add classes to the day cell
 		 * @since 1.15.0
-		 * @version 1.16.49
+		 * @version 1.17.0
 		 * @param {Object} info {
 		 *  @type {Date} date
 		 *  @type {String} dayNumberText
@@ -596,7 +596,7 @@ function bookacti_load_template_calendar() {
 		/**
 		 * Exact programmatic control over where an event can be dropped
 		 * @since 1.13.0
-		 * @version 1.16.49
+		 * @version 1.17.0
 		 * @param {object} drop_info {
 		 *  @type {Boolean} allDay  true or false whether the event was dropped on one of the all-day cells.
 		 *  @type {Date} end        Date. The end of where the draggable event was dropped.
@@ -618,10 +618,26 @@ function bookacti_load_template_calendar() {
 			var days_off            = use_global_days_off > 0 ? global_days_off : ( use_global_days_off < 0 ? template_days_off.concat( global_days_off ) : template_days_off );
 			
 			if( days_off.length ) {
+				// If the event is dropped on a non-timeGrid view, make it begins at the slotMinTime
+				var new_event_start = moment.utc( drop_info.start );
+				var new_event_end  = moment.utc( drop_info.end );
+				if( bookacti.fc_calendar[ 'bookacti-template-calendar' ].view.type.substr( 0, 8 ) !== 'timeGrid' ) {
+					var slot_min_time = bookacti.fc_calendar[ 'bookacti-template-calendar' ].getOption( 'slotMinTime' );
+					new_event_start.set( { 'hours': slot_min_time.substr( 0, 2 ), 'minutes': slot_min_time.substr( 3, 2 ), 'seconds': 0 } );
+					
+					// Calculate the end datetime thanks to start datetime and duration
+					var activity_id       = parseInt( dragged_event.extendedProps?.activity_id );
+					var activity_data     = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'activities_data' ]?.[ activity_id ];
+					var activity_duration = activity_data?.duration ? activity_data.duration : '000.01:00:00';
+					new_event_end         = new_event_start.clone().add( moment.duration( activity_duration ) );
+				}
+				
 				$j.each( days_off, function ( i, day_off ) {
 					var day_off_from = moment.utc( day_off.from + ' 00:00:00' );
 					var day_off_to = moment.utc( day_off.to + ' 23:59:59' );
-					if( moment.utc( drop_info.start ).isBetween( day_off_from, day_off_to, 'second', '[]' ) ) { 
+					
+					if( new_event_start.isBetween( day_off_from, day_off_to, 'second', '[]' )
+					||  ( ! parseInt( bookacti_localized.started_days_off_bookable ) && new_event_start.isBefore( day_off_from ) && new_event_end.isAfter( day_off_from ) ) ) { 
 						allow_drop.allow = false;
 						return false; // break
 					}

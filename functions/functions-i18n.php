@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Get all translatable texts
  * @since 1.14.0
- * @version 1.16.49
+ * @version 1.17.0
  * @return array
  */
 function bookacti_get_translatable_texts() {

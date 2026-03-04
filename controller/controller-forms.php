@@ -1160,7 +1160,7 @@ add_action( 'admin_footer-booking-activities_page_bookacti_forms', 'bookacti_pri
 /**
  * Create a booking form from REQUEST parameters
  * @since 1.5.0
- * @version 1.16.49
+ * @version 1.17.0
  */
 function bookacti_controller_create_form() {
 	if( empty( $_REQUEST[ 'action' ] ) || ( isset( $_REQUEST[ 'action' ] ) && $_REQUEST[ 'action' ] !== 'new' ) ) { return; }
@@ -1652,7 +1652,7 @@ add_action( 'wp_ajax_bookactiSaveFormFieldOrder', 'bookacti_controller_save_form
 /**
  * AJAX Controller - Update a field
  * @since 1.5.0
- * @version 1.16.49
+ * @version 1.17.0
  */
 function bookacti_controller_update_form_field() {
 	// Check nonce
@@ -1717,7 +1717,7 @@ add_action( 'wp_ajax_bookactiUpdateFormField', 'bookacti_controller_update_form_
 /**
  * AJAX Controller - Reset form field data
  * @since 1.5.0
- * @version 1.16.49
+ * @version 1.17.0
  */
 function bookacti_controller_reset_form_field() {
 	$field_id = intval( $_POST[ 'field_id' ] );

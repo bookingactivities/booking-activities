@@ -20,7 +20,7 @@ function bookacti_get_template_default_data() {
 /**
  * Get template default meta
  * @since 1.12.0
- * @version 1.16.49
+ * @version 1.17.0
  */
 function bookacti_get_template_default_meta() {
 	return apply_filters( 'bookacti_template_default_meta', array(
@@ -36,7 +36,7 @@ function bookacti_get_template_default_meta() {
 /**
  * Sanitize template data
  * @since 1.12.0 (was bookacti_sanitize_template_settings)
- * @version 1.16.49
+ * @version 1.17.0
  * @param array $raw_data
  * @return array
  */
@@ -83,7 +83,7 @@ function bookacti_sanitize_template_data( $raw_data ) {
 /**
  * Format template data
  * @since 1.15.0
- * @version 1.16.49
+ * @version 1.17.0
  * @param array $raw_data
  * @param string $context 'view' or 'edit'
  * @return array

@@ -1430,7 +1430,7 @@ function bookacti_get_number_of_bookings( $filters ) {
 /**
  * Get number of bookings per event
  * @since 1.12.0 (was bookacti_get_number_of_bookings_for_booking_system)
- * @version 1.16.49
+ * @version 1.17.0
  * @global wpdb $wpdb
  * @param array $raw_args {
  *  @type array $templates Array of template IDs

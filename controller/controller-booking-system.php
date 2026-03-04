@@ -3,9 +3,27 @@
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
+ * Automatically select the first (group of) event(s) available
+ * @since 1.17.0
+ * @param array $booking_system_data
+ * @param array $atts
+ * @return array
+ */
+function bookacti_controller_booking_system_select_first_event( $booking_system_data, $atts ) {
+	// Maybe select the first available event
+	if( $booking_system_data[ 'select_first_event' ] && ! $booking_system_data[ 'picked_events' ] ) {
+		$booking_system_data[ 'picked_events' ] = bookacti_get_booking_system_first_available_picked_events( $booking_system_data );
+	}
+	
+	return $booking_system_data;
+}
+add_filter( 'bookacti_booking_system_data', 'bookacti_controller_booking_system_select_first_event', 100, 2 );
+
+
+/**
  * AJAX Controller - Get booking system data by interval (events, groups, and bookings) 
  * @since 1.12.0 (was bookacti_controller_fetch_events)
- * @version 1.16.49
+ * @version 1.17.0
  */
 function bookacti_controller_get_booking_system_data_by_interval() {
 	$atts           = isset( $_POST[ 'attributes' ] ) ? ( is_array( $_POST[ 'attributes' ] ) ? $_POST[ 'attributes' ] : ( is_string( $_POST[ 'attributes' ] ) ? bookacti_maybe_decode_json( stripslashes( $_POST[ 'attributes' ] ), true ) : array() ) ) : array();

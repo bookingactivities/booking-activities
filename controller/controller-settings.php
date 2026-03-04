@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Init Booking Activities settings
- * @version 1.16.49
+ * @version 1.17.0
  */
 function bookacti_init_settings() { 
 	/* General settings Section - 1 - Misc */
@@ -64,6 +64,14 @@ function bookacti_init_settings() {
 		'started_groups_bookable', 
 		esc_html__( 'Are started groups of events bookable?', 'booking-activities' ), 
 		'bookacti_settings_field_started_groups_bookable_callback', 
+		'bookacti_general_settings', 
+		'bookacti_settings_section_general' 
+	);
+
+	add_settings_field(
+		'started_days_off_bookable', 
+		esc_html__( 'Are events taking place partly on days off bookable?', 'booking-activities' ), 
+		'bookacti_settings_field_started_days_off_bookable_callback', 
 		'bookacti_general_settings', 
 		'bookacti_settings_section_general' 
 	);

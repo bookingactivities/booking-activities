@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Get booking system data
  * @since 1.7.4
- * @version 1.16.49
+ * @version 1.17.0
  * @param array $atts (see bookacti_format_booking_system_attributes())
  * @param int $template_id
  * @return array
@@ -207,7 +207,7 @@ function bookacti_get_template_activities_list( $activities, $template_id = 0 ) 
 /**
  * Get template data
  * @since 1.15.0
- * @version 1.16.49
+ * @version 1.17.0
  * @param int $template_id
  * @param string $context
  * @param int $user_id User ID to check the permissions for. -1 for current user (default). 0 to ignore permission. 
@@ -222,7 +222,7 @@ function bookacti_get_template_data( $template_id, $context = 'view', $user_id =
 /**
  * Get templates data
  * @since 1.7.3
- * @version 1.16.49
+ * @version 1.17.0
  * @param array $template_ids
  * @param string $context
  * @param int $user_id User ID to check the permissions for. -1 for current user (default). 0 to ignore permission. 
@@ -249,7 +249,7 @@ function bookacti_get_templates_data( $template_ids = array(), $context = 'view'
 /**
  * Get a unique template setting made from a combination of multiple template settings
  * @since 1.2.2 (was bookacti_get_mixed_template_settings)
- * @version 1.16.49
+ * @version 1.17.0
  * @param array $template_ids Array of template ids
  * @param $context 'view' or 'edit'
  * @return array

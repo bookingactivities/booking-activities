@@ -127,7 +127,7 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Show or hide days off table according to use_global value - on load
-	 * @since 1.16.49
+	 * @since 1.17.0
 	 * @param {HTMLElement} container
 	 */
 	$j( '.bookacti-date-intervals-container' ).each( function() {
@@ -137,7 +137,7 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Show or hide days off table according to use_global value - on change
-	 * @since 1.16.49
+	 * @since 1.17.0
 	 */
 	$j( 'body' ).on( 'change', '.bookacti-date-intervals-use-global', function() {
 		var container = $j( this ).closest( '.bookacti-date-intervals-container' );
@@ -716,7 +716,7 @@ function bookacti_delete_days_off_rows( container ) {
 
 /**
  * Show or hide days off table according to use_global value
- * @since 1.16.49
+ * @since 1.17.0
  * @param {HTMLElement} container
  */
 function bookacti_toggle_days_off_table( container ) {

@@ -179,7 +179,7 @@ function bookacti_get_string_between( $string, $start = '', $end = '' ) {
 /**
  * Encrypt a string
  * @since 1.7.15
- * @version 1.16.49
+ * @version 1.17.0
  * @param string $string
  * @param $context $string
  * @return string
@@ -206,7 +206,7 @@ function bookacti_encrypt( $string, $context = '' ) {
 /**
  * Dencrypt a string
  * @since 1.7.15
- * @version 1.16.49
+ * @version 1.17.0
  * @param string $string
  * @param string $context
  * @return string
@@ -415,7 +415,7 @@ function bookacti_is_db_version_outdated() {
 /**
  * Get the variables used with javascript
  * @since 1.8.0
- * @version 1.16.49
+ * @version 1.17.0
  * @return array
  */
 function bookacti_get_js_variables() {
@@ -478,6 +478,7 @@ function bookacti_get_js_variables() {
 
 		'started_events_bookable'            => bookacti_get_setting_value( 'bookacti_general_settings', 'started_events_bookable' ) ? 1 : 0,
 		'started_groups_bookable'            => bookacti_get_setting_value( 'bookacti_general_settings', 'started_groups_bookable' ) ? 1 : 0,
+		'started_days_off_bookable'          => bookacti_get_setting_value( 'bookacti_general_settings', 'started_days_off_bookable' ),
 		'event_load_interval'                => bookacti_get_setting_value( 'bookacti_general_settings', 'event_load_interval' ),
 		'initial_view_threshold'             => $fc_init_view_threshold,
 		'event_touch_press_delay'            => 350,
@@ -626,7 +627,7 @@ function bookacti_get_active_add_ons( $prefix = '', $exclude = array( 'balau' ) 
 /**
  * Get add-on data by prefix
  * @since 1.7.14
- * @version 1.16.49
+ * @version 1.17.0
  * @param string $prefix
  * @param array $exclude
  * @return array
@@ -1754,7 +1755,7 @@ function bookacti_display_table_from_array( $array ) {
 /**
  * Display the Days off field
  * @since 1.13.0
- * @version 1.16.49
+ * @version 1.17.0
  * @param array $field
  * @param string $field_name
  */

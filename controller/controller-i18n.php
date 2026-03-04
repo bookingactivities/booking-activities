@@ -228,7 +228,7 @@ add_action( 'bookacti_add_settings', 'bookacti_add_wpml_settings_section' );
 
 /**
  * Sanitize WPML general settings
- * @since 1.16.49
+ * @since 1.17.0
  * @param array $settings
  * @param array $settings_raw
  * @param array $defaults

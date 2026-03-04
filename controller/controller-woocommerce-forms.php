@@ -333,7 +333,7 @@ add_filter( 'bookacti_sanitized_field_data', 'bookacti_sanitize_wc_field_data', 
 /**
  * Add new possible actions when the user clicks an event
  * @since 1.7.0
- * @version 1.16.49
+ * @version 1.17.0
  * @param array $defaults
  * @return array
  */

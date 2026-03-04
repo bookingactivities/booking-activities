@@ -15,7 +15,7 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Update the calendar valid range
-	 * @since 1.16.49
+	 * @since 1.17.0
 	 * @param {Event} e
 	 * @param {String} booking_method
 	 * @param {Object} display_period
@@ -258,7 +258,7 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Make sure calendar is displayed if events are unpicked
-	 * @since 1.16.49
+	 * @since 1.17.0
 	 */
 	$j( 'body' ).on( 'bookacti_events_unpicked bookacti_unpick_all_events', '.bookacti-booking-system', function() {
 		var was_hidden = $j( this ).find( '.bookacti-calendar, .bookacti-calendar-title' ).hasClass( 'bookacti-hidden-field' );
@@ -272,7 +272,7 @@ $j( document ).ready( function() {
 
 /**
  * Initialize the calendar
- * @version 1.16.49
+ * @version 1.17.0
  * @param {HTMLElement} booking_system
  * @param {boolean} reload_events
  */
@@ -836,7 +836,7 @@ function bookacti_fc_add_events( booking_system, events ) {
 /**
  * Add CSS class to the picked events on calendar, remove it from the others
  * @since 1.8.9
- * @version 1.16.49
+ * @version 1.17.0
  * @param {HTMLElement} booking_system
  */
 function bookacti_refresh_picked_events_on_calendar( booking_system ) {

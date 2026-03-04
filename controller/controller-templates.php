@@ -40,7 +40,7 @@ add_action( 'wp_ajax_bookactiSwitchTemplate', 'bookacti_controller_switch_templa
 
 /**
  * AJAX Controller - Create a new template
- * @version 1.16.49
+ * @version 1.17.0
  */
 function bookacti_controller_insert_template() {
 	// Check nonce
@@ -86,7 +86,7 @@ add_action( 'wp_ajax_bookactiInsertTemplate', 'bookacti_controller_insert_templa
 
 /**
  * AJAX Controller - Update template
- * @version 1.16.49
+ * @version 1.17.0
  */
 function bookacti_controller_update_template() {
 	// Check nonce and capabilities
@@ -820,7 +820,7 @@ add_action( 'wp_ajax_bookactiInsertGroupOfEvents', 'bookacti_controller_insert_g
 /**
  * Update group of events data with AJAX
  * @since 1.1.0
- * @version 1.16.49
+ * @version 1.17.0
  */
 function bookacti_controller_update_group_of_events() {
 	// Check nonce

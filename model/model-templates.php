@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Fetch events to display on calendar editor
  * @since 1.1.0 (replace bookacti_fetch_events)
- * @version 1.16.49
+ * @version 1.17.0
  * @global wpdb $wpdb
  * @param array $raw_args {
  *  @type array $templates Array of template IDs
@@ -120,6 +120,8 @@ function bookacti_fetch_events_for_calendar_editor( $raw_args = array() ) {
 		$remaining_events_ids = array();
 		
 		if( ! empty( $template_data[ 'settings' ][ 'days_off' ] ) ) {
+			$started_days_off_bookable = bookacti_get_setting_value( 'bookacti_general_settings', 'started_days_off_bookable' );
+			
 			foreach( $template_data[ 'settings' ][ 'days_off' ] as $off_period ) {
 				$off_from_dt = new DateTime( $off_period[ 'from' ] . ' 00:00:00' );
 				$off_to_dt   = new DateTime( $off_period[ 'to' ] . ' 23:59:59' );
@@ -128,7 +130,9 @@ function bookacti_fetch_events_for_calendar_editor( $raw_args = array() ) {
 
 				foreach( $events_array[ 'events' ] as $i => $event ) {
 					$event_start_dt = new DateTime( $event[ 'start' ] );
-					if( $event_start_dt >= $off_from_dt && $event_start_dt <= $off_to_dt ) {
+					$event_end_dt   = new DateTime( $event[ 'end' ] );
+					if( ( $event_start_dt >= $off_from_dt && $event_start_dt <= $off_to_dt )
+					||  ( ! $started_days_off_bookable && $event_start_dt < $off_from_dt && $event_end_dt > $off_from_dt ) ) {
 						unset( $events_array[ 'events' ][ $i ] );
 						$events_removed = true;
 					} else { $remaining_events_ids[] = $event[ 'id' ]; }

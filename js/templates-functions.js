@@ -2,7 +2,7 @@
 
 /**
  * Change default template on change in the select box
- * @version 1.16.49
+ * @version 1.17.0
  * @param {int} selected_template_id
  */
 function bookacti_switch_template( selected_template_id ) {

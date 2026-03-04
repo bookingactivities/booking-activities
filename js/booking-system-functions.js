@@ -1,7 +1,7 @@
 /**
  * Get booking system data by interval (events, groups, and bookings) 
  * @since 1.12.0 (was bookacti_fetch_events)
- * @version 1.16.49
+ * @version 1.17.0
  * @param {HTMLElement} booking_system
  * @param {object} interval
  */
@@ -206,7 +206,7 @@ function bookacti_get_booking_system_attributes_without_data( booking_system ) {
 /**
  * Get the interval of events to be loaded according to the desired view interval
  * @since 1.12.0 (was bookacti_fetch_events_from_interval)
- * @version 1.16.49
+ * @version 1.17.0
  * @param {HTMLElement} booking_system
  * @param {object} desired_interval { 'start': moment.utc(), 'end': moment.utc() }
  * @returns {Object}
@@ -304,7 +304,7 @@ function bookacti_get_interval_of_events( booking_system, desired_interval ) {
 
 /**
  * Get the first events interval
- * @version 1.16.49
+ * @version 1.17.0
  * @param {HTMLElement} booking_system
  * @param {Object} min_interval
  * @returns {Object}
@@ -403,7 +403,7 @@ function bookacti_get_extended_events_interval( booking_system, interval ) {
 
 /**
  * Get availability period
- * @version 1.16.49
+ * @version 1.17.0
  * @param {HTMLElement} booking_system
  * @returns {object}
  */
@@ -428,7 +428,7 @@ function bookacti_get_availability_period( booking_system ) {
 
 /**
  * Get display period
- * @version 1.16.49
+ * @version 1.17.0
  * @param {HTMLElement} booking_system
  * @returns {object}
  */
@@ -1365,7 +1365,7 @@ function bookacti_get_event_availability( booking_system, event ) {
 
 /**
  * Check if an event is available
- * @version 1.16.49
+ * @version 1.17.0
  * @param {HTMLElement} booking_system
  * @param {(FullCalendar.EventApi|Object)} event
  * @returns {Boolean}
@@ -1447,7 +1447,21 @@ function bookacti_is_event_available( booking_system, event ) {
 			is_out_of_period = true;
 		}
 		
-		if( ! is_past && ! is_out_of_period ) {
+		// Check days off
+		var is_in_days_off = false;
+		if( is_available && attributes[ 'days_off' ] ) {
+			$j.each( attributes[ 'days_off' ], function ( i, day_off ) {
+				var day_off_from = moment.utc( day_off.from + ' 00:00:00' );
+				var day_off_to = moment.utc( day_off.to + ' 23:59:59' );
+				if( event_start.isBetween( day_off_from, day_off_to, 'second', '[]' )
+				||  ( ! parseInt( bookacti_localized.started_days_off_bookable ) && event_start.isBefore( day_off_from ) && event_end.isAfter( day_off_from ) ) ) { 
+					is_in_days_off = true;
+					return false; // break
+				}
+			});
+		}
+		
+		if( ! is_past && ! is_out_of_period && ! is_in_days_off ) {
 			var activity_id   = parseInt( attributes[ 'events_data' ][ event_id ][ 'activity_id' ] );
 			var activity_data = attributes[ 'activities_data' ][ activity_id ][ 'settings' ];
 
@@ -1519,7 +1533,7 @@ function bookacti_is_event_in_available_group( booking_system, event ) {
 /**
  * Check if a group of events is available
  * @since 1.16.39
- * @version 1.16.49
+ * @version 1.17.0
  * @param {HTMLElement} booking_system
  * @param {Integer} group_id
  * @param {String} group_date
@@ -1571,6 +1585,24 @@ function bookacti_is_group_of_events_available( booking_system, group_id, group_
 	if( ( availability_period.start && group_start.isBefore( moment.utc( availability_period.start ) ) && group_start.isAfter( current_time ) )
 	||  ( availability_period.end && group_start.isAfter( moment.utc( availability_period.end ) ) ) ) { 
 		is_available = false;
+	}
+	
+	// Check days off
+	if( is_available && attributes?.[ 'days_off' ] ) {
+		$j.each( group_events, function ( i, group_event ) {
+			var group_event_start = moment.utc( group_event[ 'start' ] );
+			var group_event_end   = moment.utc( group_event[ 'end' ] );
+			$j.each( attributes[ 'days_off' ], function ( i, day_off ) {
+				var day_off_from = moment.utc( day_off.from + ' 00:00:00' );
+				var day_off_to = moment.utc( day_off.to + ' 23:59:59' );
+				if( group_event_start.isBetween( day_off_from, day_off_to, 'second', '[]' )
+				||  ( ! parseInt( bookacti_localized.started_days_off_bookable ) && group_event_start.isBefore( day_off_from ) && group_event_end.isAfter( day_off_from ) ) ) { 
+					is_available = false;
+					return false; // break
+				}
+			});
+			if( ! is_available ) { return false; } // break
+		});
 	}
 	
 	if( is_available ) {
@@ -1820,7 +1852,7 @@ function bookacti_booking_method_set_up( booking_system, reload_events ) {
 
 /**
  * Update the dsiplay period of the booking method
- * @since 1.16.49
+ * @since 1.17.0
  * @param {HTMLElement} booking_system
  */
 function bookacti_booking_method_update_display_period( booking_system ) {

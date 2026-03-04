@@ -74,7 +74,7 @@ function bookacti_shortcode_login_form( $raw_atts = array(), $content = null, $t
 /**
  * Display a user related booking list via shortcode
  * @since 1.7.4 (was bookacti_shortcode_booking_list)
- * @version 1.16.49
+ * @version 1.17.0
  * @param array $raw_atts [user_id, per_page, status, and any booking filter such as 'from', 'to', 'activities'...]
  * @param string $content
  * @param string $tag Should be "bookingactivities_list"
