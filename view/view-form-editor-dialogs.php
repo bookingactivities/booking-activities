@@ -325,9 +325,9 @@ foreach( $fields_default as $field_name => $field_data ) {
 		?>
 		<fieldset id='bookacti-availability-period-fieldset'>
 			<legend><?php esc_html_e( 'Availability period', 'booking-activities' ); ?></legend>
-			<div style='margin-bottom:10px;'><em><?php /* translators: This is followed by 3 fields "d days, h hours and m minutes  before the event" (E.g.: The events will be bookable at the latest 2 hours 30 minutes before the event and at the earliest 14 days before the event. */ esc_html_e( 'The events will be bookable:', 'booking-activities' ); ?></em></div>
+			<div style='margin-bottom:10px;'><em><?php /* translators: This is followed by 3 fields "d days, h hours and m minutes  before the event" (E.g.: The events will be bookable between: at the latest 2 hours 30 minutes before the event and at the earliest 14 days before the event. */ esc_html_e( 'The events will be bookable between:', 'booking-activities' ); ?></em></div>
 			<?php 
-				$fields = bookacti_get_booking_system_fields_default_data( array( 'availability_period_end', 'availability_period_start' ) );
+				$fields = bookacti_get_booking_system_fields_default_data( array( 'availability_period_start', 'availability_period_end' ) );
 				bookacti_display_fields( $fields );
 			?>
 			<hr/>

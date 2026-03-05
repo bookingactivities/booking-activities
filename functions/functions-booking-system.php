@@ -1380,6 +1380,19 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 		);
 	}
 	
+	// Availability Period Start
+	if( ! $fields || in_array( 'availability_period_start', $fields, true ) ) {
+		$defaults[ 'availability_period_start' ] = array(
+			'type'    => 'duration',
+			'name'    => 'availability_period_start',
+			'options' => array( 'min' => 0, 'step' => 1 ),
+			/* translators: Followed by a field indicating a number of days from today. E.g.: "At the latest 1 hour before the event". */
+			'title'   => esc_html__( 'At the latest', 'booking-activities' ),
+			'label'   => esc_html__( 'before the event', 'booking-activities' ),
+			'tip'     => esc_html__( 'Set when an event can be booked at the latest. E.g.: "1 hour 30 minutes", you can book an event starting in 2 hours, but you cannot book an event starting in 45 minutes.', 'booking-activities' )
+		);
+	}
+	
 	// Availability Period End
 	if( ! $fields || in_array( 'availability_period_end', $fields, true ) ) {
 		$defaults[ 'availability_period_end' ] = array(
@@ -1391,19 +1404,6 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 			/* translators: Comes after a field indicating a number of days from today. E.g.: "At the earliest 14 days before the event". */
 			'label'   => esc_html__( 'before the event', 'booking-activities' ),
 			'tip'     => esc_html__( 'Set when an event can be booked at the earliest. E.g.: "14 days", you can book an event starting in 13 days and few hours, but you cannot book an event starting in 3 weeks.', 'booking-activities' )
-		);
-	}
-	
-	// Availability Period Start
-	if( ! $fields || in_array( 'availability_period_start', $fields, true ) ) {
-		$defaults[ 'availability_period_start' ] = array(
-			'type'    => 'duration',
-			'name'    => 'availability_period_start',
-			'options' => array( 'min' => 0, 'step' => 1 ),
-			/* translators: Followed by a field indicating a number of days from today. E.g.: "At the latest 1 hour before the event". */
-			'title'   => esc_html__( 'At the latest', 'booking-activities' ),
-			'label'   => esc_html__( 'before the event', 'booking-activities' ),
-			'tip'     => esc_html__( 'Set when an event can be booked at the latest. E.g.: "1 hour 30 minutes", you can book an event starting in 2 hours, but you cannot book an event starting in 45 minutes.', 'booking-activities' )
 		);
 	}
 	
