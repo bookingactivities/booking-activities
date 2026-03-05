@@ -443,7 +443,7 @@ function bookacti_get_booking_system_default_attributes() {
 
 /**
  * Check booking system attributes and format them to be correct
- * @version 1.16.0
+ * @version 1.16.48.1
  * @param array $raw_atts 
  * @return array
  */
@@ -554,10 +554,13 @@ function bookacti_format_booking_system_attributes( $raw_atts = array() ) {
 	foreach( $atts[ 'user_id' ] as $i => $user_id ) {
 		$user_id = is_numeric( $user_id ) ? intval( $user_id ) : esc_attr( $user_id );
 		if( $user_id === 'current' ) { $user_id = get_current_user_id(); }
-		if( $user_id && ! is_email( $user_id ) && ( ! is_numeric( $user_id ) || ( is_numeric( $user_id ) && strlen( (string) $user_id ) ) >= 16 ) ) { 
-			$user_id = bookacti_decrypt( $user_id );
+        if( $user_id && ! is_email( $user_id ) && ( ! is_numeric( $user_id ) || ( is_numeric( $user_id ) && strlen( (string) $user_id ) >= 16 ) ) ) { 
+            $decrypted = bookacti_decrypt( $user_id );
+            if( $decrypted !== '' ) { $user_id = $decrypted; }
+        }
+        if( $user_id !== '' ) {
+            $formatted_atts[ 'user_id' ][] = $user_id;
 		}
-		$formatted_atts[ 'user_id' ][] = $user_id;
 	}
 	
 	// Sanitize booking status

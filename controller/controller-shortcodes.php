@@ -74,7 +74,7 @@ function bookacti_shortcode_login_form( $raw_atts = array(), $content = null, $t
 /**
  * Display a user related booking list via shortcode
  * @since 1.7.4 (was bookacti_shortcode_booking_list)
- * @version 1.16.0
+ * @version 1.16.48.1
  * @param array $raw_atts [user_id, per_page, status, and any booking filter such as 'from', 'to', 'activities'...]
  * @param string $content
  * @param string $tag Should be "bookingactivities_list"
@@ -90,9 +90,9 @@ function bookacti_shortcode_booking_list( $raw_atts = array(), $content = null, 
 		// Check if the user is passed to the URL
 		$user_email = '';
 		if( ! empty( $_REQUEST[ 'user_auth_key' ] ) ) {
-			$user_decrypted = bookacti_decrypt( sanitize_text_field( $_REQUEST[ 'user_auth_key' ] ), 'user_auth' );
-			if( is_email( sanitize_email( $user_decrypted ) ) ) {
-				$user_email = sanitize_email( $user_decrypted );
+            $user_decrypted = sanitize_email( bookacti_decrypt( sanitize_text_field( $_REQUEST[ 'user_auth_key' ] ), 'user_auth' ) );
+            if( is_email( $user_decrypted ) ) {
+                $user_email = $user_decrypted;
 			}
 			if( $user_email && ( empty( $raw_atts[ 'user_id' ] ) || ( ! empty( $raw_atts[ 'user_id' ] ) && $raw_atts[ 'user_id' ] === 'current' ) ) ) {
 				$atts[ 'in__user_id' ] = array( $user_email );

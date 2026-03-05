@@ -3,7 +3,7 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
 Tested up to: 6.9
-Stable tag: 1.16.48
+Stable tag: 1.16.48.1
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -320,6 +320,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.16.48.1 - 2026/03/05 =
+* Dev - bookacti_encrypt and bookacti_decrypt functions now return an empty string in case of failure
 
 = 1.16.48 - 2026/02/09 =
 * Feature - Offer to refund the cancelled bookings after deleting a (group of) event(s) and cancelling its bookings from the calendar editor
