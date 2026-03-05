@@ -2,7 +2,7 @@
 /**
  * Form editor dialogs
  * @since 1.5.0
- * @version 1.16.46
+ * @version 1.17.0
  */
 
 // Exit if accessed directly
@@ -51,7 +51,7 @@ foreach( $fields_default as $field_name => $field_data ) {
 	</form>
 </div>
 
-			
+
 <!-- Remove field dialog -->
 <div id='bookacti-remove-form-field-dialog' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php esc_html_e( 'Remove this field from the form', 'booking-activities' ); ?>' >
 	<form id='bookacti-remove-form-field-form' >
@@ -61,7 +61,7 @@ foreach( $fields_default as $field_name => $field_data ) {
 	</form>
 </div>
 
-			
+
 <!-- Edit form meta dialog -->
 <div id='bookacti-form-meta-dialog' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php esc_html_e( 'Form options', 'booking-activities' ); ?>' >
 	<form id='bookacti-update-form-meta-form' >
@@ -136,31 +136,41 @@ foreach( $fields_default as $field_name => $field_data ) {
 		
 		// Fill the array of tabs with their label, callback for content and display order
 		$calendar_tabs = apply_filters( 'bookacti_form_field_calendar_dialog_tabs', array (
-			array(	'label'      => esc_html__( 'Filters', 'booking-activities' ),
-					'id'         => 'filters',
-					'callback'   => 'bookacti_fill_calendar_dialog_filters_tab',
-					'parameters' => array( 'form' => $form_edit, 'calendar_data' => $calendar_field_edit ),
-					'order'      => 10 ),
-			array(	'label'      => esc_html__( 'Availability', 'booking-activities' ),
-					'id'         => 'availability',
-					'callback'   => 'bookacti_fill_calendar_dialog_availability_tab',
-					'parameters' => array( 'form' => $form_edit, 'calendar_data' => $calendar_field_edit ),
-					'order'      => 20 ),
-			array(	'label'      => esc_html__( 'Actions', 'booking-activities' ),
-					'id'         => 'actions',
-					'callback'   => 'bookacti_fill_calendar_dialog_actions_tab',
-					'parameters' => array( 'form' => $form_edit, 'calendar_data' => $calendar_field_edit ),
-					'order'      => 30 ),
-			array(	'label'      => esc_html__( 'Display', 'booking-activities' ),
-					'id'         => 'display',
-					'callback'   => 'bookacti_fill_calendar_dialog_display_tab',
-					'parameters' => array( 'form' => $form_edit, 'calendar_data' => $calendar_field_edit ),
-					'order'      => 40 ),
-			array(	'label'      => esc_html__( 'Calendar', 'booking-activities' ),
-					'id'         => 'calendar',
-					'callback'   => 'bookacti_fill_calendar_dialog_calendar_tab',
-					'parameters' => array( 'form' => $form_edit, 'calendar_data' => $calendar_field_edit ),
-					'order'      => 50 )
+			array( 
+				'label'      => esc_html__( 'Filters', 'booking-activities' ),
+				'id'         => 'filters',
+				'callback'   => 'bookacti_fill_calendar_dialog_filters_tab',
+				'parameters' => array( 'form' => $form_edit, 'calendar_data' => $calendar_field_edit ),
+				'order'      => 10
+			),
+			array(
+				'label'      => esc_html__( 'Availability', 'booking-activities' ),
+				'id'         => 'availability',
+				'callback'   => 'bookacti_fill_calendar_dialog_availability_tab',
+				'parameters' => array( 'form' => $form_edit, 'calendar_data' => $calendar_field_edit ),
+				'order'      => 20
+			),
+			array(
+				'label'      => esc_html__( 'Actions', 'booking-activities' ),
+				'id'         => 'actions',
+				'callback'   => 'bookacti_fill_calendar_dialog_actions_tab',
+				'parameters' => array( 'form' => $form_edit, 'calendar_data' => $calendar_field_edit ),
+				'order'      => 30
+			),
+			array(
+				'label'      => esc_html__( 'Display', 'booking-activities' ),
+				'id'         => 'display',
+				'callback'   => 'bookacti_fill_calendar_dialog_display_tab',
+				'parameters' => array( 'form' => $form_edit, 'calendar_data' => $calendar_field_edit ),
+				'order'      => 40
+			),
+			array(
+				'label'      => esc_html__( 'Calendar', 'booking-activities' ),
+				'id'         => 'calendar',
+				'callback'   => 'bookacti_fill_calendar_dialog_calendar_tab',
+				'parameters' => array( 'form' => $form_edit, 'calendar_data' => $calendar_field_edit ),
+				'order'      => 50
+			)
 		) );
 		
 		// Display tabs
@@ -213,48 +223,25 @@ foreach( $fields_default as $field_name => $field_data ) {
 		/**
 		 * Display the content of the "Actions" tab of the "Calendar" dialog
 		 * @since 1.7.0
-		 * @version 1.16.32
+		 * @version 1.17.0
 		 * @param array $params
 		 */
 		function bookacti_fill_calendar_dialog_actions_tab( $params ) {
 			do_action( 'bookacti_calendar_dialog_actions_tab_before', $params );
 		?>
+		
 		<div>
-			<label for='bookacti-form_action'><?php esc_html_e( 'Form action', 'booking-activities' ); ?></label>
-			<?php 
-				$args = array(
-					'type'    => 'select',
-					'name'    => 'form_action',
-					'id'      => 'bookacti-form_action',
-					'options' => apply_filters( 'bookacti_form_action_options', array( 
-						'default'         => esc_html__( 'Make a booking (default)', 'booking-activities' ),
-						'redirect_to_url' => esc_html__( 'Redirect to a URL (no bookings made)', 'booking-activities' )
-					), $params ),
-					'tip'		=> esc_html__( 'What action should this form perform?', 'booking-activities' )
-				);
-				bookacti_display_field( $args );
-			?>
-		</div>
-		<div class='bookacti-when-perform-form-action-container'>
-			<label for='bookacti-when_perform_form_action'><?php esc_html_e( 'When to perform the action', 'booking-activities' ); ?></label>
-			<?php 
-				$args = array(
-					'type'    => 'select',
-					'name'    => 'when_perform_form_action',
-					'id'      => 'bookacti-when_perform_form_action',
-					'options' => apply_filters( 'bookacti_when_perform_form_action_options', array( 
-						'on_submit'      => esc_html__( 'When the form is submitted', 'booking-activities' ),
-						'on_event_click' => esc_html__( 'When an event is clicked', 'booking-activities' )
-					), $params ),
-					'tip'		=> esc_html__( 'When do you want to perform the form action?', 'booking-activities' )
-				);
-				bookacti_display_field( $args );
-			?>
-		</div>
 		<?php 
-			do_action( 'bookacti_calendar_dialog_actions_tab_before_tables', $params );
+			$fields = bookacti_get_booking_system_fields_default_data( array( 'form_action', 'when_perform_form_action', 'select_first_event' ) );
+			bookacti_display_fields( $fields );
 		?>
+		</div>
+		
+		<?php do_action( 'bookacti_calendar_dialog_actions_tab_before_tables', $params ); ?>
+		
+		
 		<div class='bookacti-activities-actions-options-table bookacti-custom-scrollbar'>
+			<hr/>
 			<h4><?php esc_html_e( 'Activities', 'booking-activities' ); ?></h4>
 			<?php
 				$activities_url_rows = array();
@@ -277,6 +264,7 @@ foreach( $fields_default as $field_name => $field_data ) {
 			?>
 		</div>
 		<div class='bookacti-group-categories-actions-options-table bookacti-custom-scrollbar'>
+			<hr/>
 			<h4><?php esc_html_e( 'Group categories', 'booking-activities' ); ?></h4>
 			<?php 
 				$group_categories_url_rows = array();
@@ -300,18 +288,18 @@ foreach( $fields_default as $field_name => $field_data ) {
 		</div>
 		<?php
 			do_action( 'bookacti_calendar_dialog_actions_tab_after', $params );
-		}		
+		}
 		
 		/**
 		 * Display the content of the "Display" tab of the "Calendar" dialog
 		 * @since 1.5.0
-		 * @version 1.9.3
+		 * @version 1.17.0
 		 * @param array $params
 		 */
 		function bookacti_fill_calendar_dialog_display_tab( $params ) {
 			do_action( 'bookacti_calendar_dialog_display_tab_before', $params );
 			
-			$fields = bookacti_get_booking_system_fields_default_data( array( 'hide_availability' ) );
+			$fields = bookacti_get_booking_system_fields_default_data( array( 'hide_availability', 'hide_calendar' ) );
 			bookacti_display_fields( $fields );
 			
 			?>
@@ -329,7 +317,7 @@ foreach( $fields_default as $field_name => $field_data ) {
 		/**
 		 * Display the content of the "Availability" tab of the "Calendar" dialog
 		 * @since 1.5.0
-		 * @version 1.15.46
+		 * @version 1.17.0
 		 * @param array $params
 		 */
 		function bookacti_fill_calendar_dialog_availability_tab( $params ) {
@@ -337,9 +325,9 @@ foreach( $fields_default as $field_name => $field_data ) {
 		?>
 		<fieldset id='bookacti-availability-period-fieldset'>
 			<legend><?php esc_html_e( 'Availability period', 'booking-activities' ); ?></legend>
-			<div style='margin-bottom:10px;'><em><?php /* translators: This is followed by 3 fields "d days, h hours and m minutes  before the event" (E.g.: The events will be bookable at the latest 2 hours 30 minutes before the event and at the earliest 14 days before the event. */ esc_html_e( 'The events will be bookable:', 'booking-activities' ); ?></em></div>
+			<div style='margin-bottom:10px;'><em><?php /* translators: This is followed by 3 fields "d days, h hours and m minutes  before the event" (E.g.: The events will be bookable between: at the latest 2 hours 30 minutes before the event and at the earliest 14 days before the event. */ esc_html_e( 'The events will be bookable between:', 'booking-activities' ); ?></em></div>
 			<?php 
-				$fields = bookacti_get_booking_system_fields_default_data( array( 'availability_period_end', 'availability_period_start' ) );
+				$fields = bookacti_get_booking_system_fields_default_data( array( 'availability_period_start', 'availability_period_end' ) );
 				bookacti_display_fields( $fields );
 			?>
 			<hr/>
@@ -362,9 +350,9 @@ foreach( $fields_default as $field_name => $field_data ) {
 		</fieldset>
 		
 		<fieldset id='bookacti-past-events-fieldset'>
-			<legend><?php esc_html_e( 'Past events', 'booking-activities' ); ?></legend>
+			<legend><?php esc_html_e( 'Out-of-bounds events', 'booking-activities' ); ?></legend>
 			<?php 
-				$fields = bookacti_get_booking_system_fields_default_data( array( 'past_events', 'past_events_bookable' ) );
+				$fields = bookacti_get_booking_system_fields_default_data( array( 'out_of_period_events', 'past_events', 'past_events_bookable' ) );
 				bookacti_display_fields( $fields );
 			?>
 		</fieldset>
@@ -422,26 +410,34 @@ foreach( $fields_default as $field_name => $field_data ) {
 		
 		//Fill the array of tabs with their label, callback for content and display order
 		$login_tabs = apply_filters( 'bookacti_form_field_login_dialog_tabs', array (
-			array(	'label'      => esc_html__( 'Fields', 'booking-activities' ),
-					'id'         => 'fields',
-					'callback'   => 'bookacti_fill_login_dialog_fields_tab',
-					'parameters' => array( 'form' => $form_edit, 'login_data' => $login_field_edit ),
-					'order'      => 10 ),
-			array(	'label'      => esc_html__( 'Login', 'booking-activities' ),
-					'id'         => 'login',
-					'callback'   => 'bookacti_fill_login_dialog_login_tab',
-					'parameters' => array( 'form' => $form_edit, 'login_data' => $login_field_edit ),
-					'order'      => 20 ),
-			array(	'label'      => esc_html__( 'Registration', 'booking-activities' ),
-					'id'         => 'register',
-					'callback'   => 'bookacti_fill_login_dialog_register_tab',
-					'parameters' => array( 'form' => $form_edit, 'login_data' => $login_field_edit ),
-					'order'      => 30 ),
-			array(	'label'      => esc_html__( 'No account', 'booking-activities' ),
-					'id'         => 'no_account',
-					'callback'   => 'bookacti_fill_login_dialog_no_account_tab',
-					'parameters' => array( 'form' => $form_edit, 'login_data' => $login_field_edit ),
-					'order'      => 40 )
+			array(
+				'label'      => esc_html__( 'Fields', 'booking-activities' ),
+				'id'         => 'fields',
+				'callback'   => 'bookacti_fill_login_dialog_fields_tab',
+				'parameters' => array( 'form' => $form_edit, 'login_data' => $login_field_edit ),
+				'order'      => 10
+			),
+			array(
+				'label'      => esc_html__( 'Login', 'booking-activities' ),
+				'id'         => 'login',
+				'callback'   => 'bookacti_fill_login_dialog_login_tab',
+				'parameters' => array( 'form' => $form_edit, 'login_data' => $login_field_edit ),
+				'order'      => 20
+			),
+			array(
+				'label'      => esc_html__( 'Registration', 'booking-activities' ),
+				'id'         => 'register',
+				'callback'   => 'bookacti_fill_login_dialog_register_tab',
+				'parameters' => array( 'form' => $form_edit, 'login_data' => $login_field_edit ),
+				'order'      => 30
+			),
+			array(
+				'label'      => esc_html__( 'No account', 'booking-activities' ),
+				'id'         => 'no_account',
+				'callback'   => 'bookacti_fill_login_dialog_no_account_tab',
+				'parameters' => array( 'form' => $form_edit, 'login_data' => $login_field_edit ),
+				'order'      => 40
+			)
 		));
 		
 		// Display tabs
@@ -598,7 +594,7 @@ foreach( $fields_default as $field_name => $field_data ) {
 			$register_fields_defaults = bookacti_get_register_fields_default_data();
 			$register_fields = apply_filters( 'bookacti_login_dialog_register_fields', $register_fields_defaults, $params );
 			foreach( $register_fields as $register_field_name => $register_field ) {
-		?>		
+		?>
 				<fieldset>
 					<legend><?php echo esc_html( $register_field[ 'label' ] ); ?></legend>
 					<?php

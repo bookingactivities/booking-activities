@@ -6,14 +6,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Fetch events by templates and / or activities
- * @version 1.15.6
+ * @version 1.17.0
  * @param array $raw_args {
  *  @type array $templates Array of template IDs
  *  @type array $activities Array of activity IDs
  *  @type array $events Array of event IDs
  *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
- *  @type boolean $skip_exceptions Whether to retrieve occurrence on exceptions
+ *  @type boolean $interval_started Whether to retrieve started events in interval
+ *  @type boolean $started_events Whether to retrieve started events (ongoing events that have started in the past)
  *  @type boolean $past_events Whether to compute past events
+ *  @type boolean $skip_exceptions Whether to retrieve occurrence on exceptions
  *  @type boolean $bounding_only Whether to retrieve the first and the last events only
  *  @type boolean $data_only Whether to retrieve the events data only, not occurrences
  * }
@@ -21,14 +23,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  */
 function bookacti_fetch_events( $raw_args = array() ) {
 	$default_args = array(
-		'templates'       => array(),
-		'activities'      => array(),
-		'events'          => array(),
-		'interval'        => array(),
-		'skip_exceptions' => 1,
-		'past_events'     => 0,
-		'bounding_only'   => 0,
-		'data_only'       => 0
+		'templates'        => array(),
+		'activities'       => array(),
+		'events'           => array(),
+		'interval'         => array(),
+		'interval_started' => 0,
+		'started_events'   => -1, // 0 = Do not get started events, 1 = Always get started events, -1 = Get started events if started_events_bookable = 1
+		'past_events'      => 0,
+		'skip_exceptions'  => 1,
+		'bounding_only'    => 0,
+		'data_only'        => 0
 	);
 	$args = wp_parse_args( $raw_args, $default_args );
 
@@ -41,8 +45,11 @@ function bookacti_fetch_events( $raw_args = array() ) {
 	$now_dt   = new DateTime( 'now', $timezone );
 	$now      = $now_dt->format( 'Y-m-d H:i:s' );
 	
+	$started_events_bookable = bookacti_get_setting_value( 'bookacti_general_settings', 'started_events_bookable' ) ? 1 : 0;
+	$get_started_events      = ( $args[ 'started_events' ] < 0 && $started_events_bookable ) || $args[ 'started_events' ] > 0;
+	
 	// Prepare the query
-	$query = 'SELECT DISTINCT E.id as event_id, E.template_id, E.activity_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_step, E.repeat_on, E.repeat_from, E.repeat_to, E.repeat_exceptions, E.availability, A.color '
+	$query = 'SELECT DISTINCT E.id as event_id, E.template_id, E.activity_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_step, E.repeat_on, E.repeat_from, E.repeat_to, E.repeat_exceptions, E.availability, ABS( DATEDIFF( E.end, E.start ) ) as delta_days, A.color '
 	       . ' FROM ' . BOOKACTI_TABLE_EVENTS . ' as E '
 	       . ' LEFT JOIN ' . BOOKACTI_TABLE_ACTIVITIES . ' as A ON E.activity_id = A.id '
 	       . ' LEFT JOIN ' . BOOKACTI_TABLE_TEMPLATES . ' as T ON E.template_id = T.id '
@@ -55,7 +62,14 @@ function bookacti_fetch_events( $raw_args = array() ) {
 			// Non-repeated events
 			$query .= '( NULLIF( E.repeat_freq, "none" ) IS NULL ';
 			if( ! empty( $args[ 'interval' ][ 'start' ] ) ) {
-				$query .= ' AND E.start >= %s ';
+				$interval_start_dt = new DateTime( $args[ 'interval' ][ 'start' ], $timezone );
+				
+				$interval_start_query = $args[ 'interval_started' ] ? ' AND E.end > %s ' : ' AND E.start >= %s ';
+				if( ! $args[ 'past_events' ] && $interval_start_dt <= $now_dt && $get_started_events ) {
+					$interval_start_query = ' AND E.end > %s ';
+				}
+				
+				$query .= $interval_start_query;
 				$variables[] = $args[ 'interval' ][ 'start' ];
 			}
 			if( ! empty( $args[ 'interval' ][ 'end' ] ) ) {
@@ -65,7 +79,13 @@ function bookacti_fetch_events( $raw_args = array() ) {
 			// Repeated events
 			$query .= ' ) OR ( NULLIF( E.repeat_freq, "none" ) IS NOT NULL ';
 			if( ! empty( $args[ 'interval' ][ 'start' ] ) ) {
-				$query .= ' AND NOT ( CONCAT( E.repeat_from, " 00:00:00" ) < %s AND CONCAT( E.repeat_to, " 23:59:59" ) < %s ) ';
+				$interval_start_query = $args[ 'interval_started' ] ? 'DATE_SUB( %s, INTERVAL ABS( DATEDIFF( E.end, E.start ) ) HOUR )' : '%s';
+				
+				if( ! $args[ 'past_events' ] && $interval_start_dt <= $now_dt && $get_started_events ) {
+					$interval_start_query = 'DATE_SUB( %s, INTERVAL ABS( DATEDIFF( E.end, E.start ) ) HOUR )';
+				}
+				
+				$query .= ' AND NOT ( CONCAT( E.repeat_from, " 00:00:00" ) < ' . $interval_start_query . ' AND CONCAT( E.repeat_to, " 23:59:59" ) < ' . $interval_start_query . ' ) ';
 				$variables[] = $args[ 'interval' ][ 'start' ];
 				$variables[] = $args[ 'interval' ][ 'start' ];
 			}
@@ -84,13 +104,13 @@ function bookacti_fetch_events( $raw_args = array() ) {
 		$variables[] = $now;
 		$variables[] = $now;
 
-		$started_events_bookable = bookacti_get_setting_value( 'bookacti_general_settings', 'started_events_bookable' );
-		if( $started_events_bookable ) {
-			// Fetch events already started but not finished
-			$query .= ' OR ( E.start <= %s AND E.end >= %s )';
+		// Fetch events already started but not finished
+		if( $get_started_events ) {
+			$query .= ' OR ( E.start <= %s AND E.end > %s )';
 			$variables[] = $now;
 			$variables[] = $now;
 		}
+		
 		$query .= ') ';
 	}
 
@@ -131,7 +151,7 @@ function bookacti_fetch_events( $raw_args = array() ) {
 
 	// Allow plugins to change the query
 	$query = apply_filters( 'bookacti_get_events_query', $wpdb->prepare( $query, $variables ), $args );
-
+	
 	// Get events complying with parameters
 	$events = $wpdb->get_results( $query, OBJECT );
 	
@@ -145,7 +165,7 @@ function bookacti_fetch_events( $raw_args = array() ) {
 /**
  * Fetch booked events only
  * @since 1.2.2
- * @version 1.15.6
+ * @version 1.17.0
  * @global wpdb $wpdb
  * @param array $raw_args {
  *  @type array $templates Array of template IDs
@@ -153,10 +173,13 @@ function bookacti_fetch_events( $raw_args = array() ) {
  *  @type array events Array of event IDs
  *  @type array $status Array of groups of events IDs
  *  @type int|false $active 0 or 1. False to ignore.
- *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
  *  @type int|string $users Array of user IDs
+ *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
+ *  @type boolean $interval_started Whether to retrieve started events in interval
+ *  @type boolean $started_events Whether to retrieve started events (ongoing events that have started in the past)
  *  @type boolean $past_events Whether to compute past events
  *  @type boolean $skip_exceptions Whether to retrieve occurrence on exceptions
+ *  @type boolean $groups_only Whether to retrieve events that are part of a group only
  *  @type boolean $bounding_only Whether to retrieve the first and the last events only
  *  @type boolean $data_only Whether to retrieve the events data only, not occurrences
  * }
@@ -164,20 +187,26 @@ function bookacti_fetch_events( $raw_args = array() ) {
  */
 function bookacti_fetch_booked_events( $raw_args = array() ) {
 	$default_args = array(
-		'templates'       => array(),
-		'activities'      => array(),
-		'events'          => array(),
-		'status'          => array(),
-		'active'          => false,
-		'users'           => array(),
-		'interval'        => array(),
-		'past_events'     => 0,
-		'skip_exceptions' => 0,
-		'bounding_only'   => 0,
-		'data_only'       => 0
+		'templates'        => array(),
+		'activities'       => array(),
+		'group_categories' => array(),
+		'event_groups'     => array(),
+		'events'           => array(),
+		'status'           => array(),
+		'active'           => false,
+		'users'            => array(),
+		'interval'         => array(),
+		'interval_started' => 0,
+		'started_events'   => -1, // 0 = Do not get started events, 1 = Always get started events, -1 = Get started events if started_events_bookable = 1
+		'started_groups'   => -1, // 0 = Do not get started groups, 1 = Always get started groups, -1 = Get started groups if started_groups_bookable = 1
+		'past_events'      => 0,
+		'skip_exceptions'  => 0,
+		'groups_only'      => 0,
+		'bounding_only'    => 0,
+		'data_only'        => 0
 	);
 	$args = wp_parse_args( $raw_args, $default_args );
-
+	
 	global $wpdb;
 
 	$variables = array();
@@ -187,12 +216,30 @@ function bookacti_fetch_booked_events( $raw_args = array() ) {
 	$now_dt   = new DateTime( 'now', $timezone );
 	$now      = $now_dt->format( 'Y-m-d H:i:s' );
 	
+	$started_events_bookable = bookacti_get_setting_value( 'bookacti_general_settings', 'started_events_bookable' ) ? 1 : 0;
+	$get_started_events      = ( $args[ 'started_events' ] < 0 && $started_events_bookable ) || $args[ 'started_events' ] > 0;
+	
 	// Prepare the query
-	$query = 'SELECT DISTINCT B.event_id, E.template_id, E.activity_id, E.title, B.event_start as start, B.event_end as end, "none" as repeat_freq, E.repeat_step, E.repeat_on, E.repeat_from, E.repeat_to, E.repeat_exceptions, E.availability, A.color '
+	$query = 'SELECT DISTINCT B.event_id, E.template_id, E.activity_id, E.title, B.event_start as start, B.event_end as end, "none" as repeat_freq, E.repeat_step, E.repeat_on, E.repeat_from, E.repeat_to, E.repeat_exceptions, E.availability, ABS( DATEDIFF( E.end, E.start ) ) as delta_days, A.color '
 	       . ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B '
 	       . ' LEFT JOIN ' . BOOKACTI_TABLE_EVENTS . ' as E ON B.event_id = E.id '
 	       . ' LEFT JOIN ' . BOOKACTI_TABLE_ACTIVITIES . ' as A ON E.activity_id = A.id '
-	       . ' WHERE TRUE ';
+	       . ' LEFT JOIN ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' as BG ON B.group_id = BG.id ';
+	
+	if( ! $args[ 'past_events' ] && $args[ 'started_groups' ] ) {
+		// Join the meta table to filter groups already started
+		$query .= ' LEFT JOIN ( 
+						SELECT object_id as group_category_id, IFNULL( NULLIF( meta_value, -1 ), %d ) as started_groups_bookable
+						FROM ' . BOOKACTI_TABLE_META . ' 
+						WHERE object_type = "group_category" 
+						AND meta_key = "started_groups_bookable" 
+					) as M ON M.group_category_id = BG.category_id ';
+
+		$started_groups_bookable = bookacti_get_setting_value( 'bookacti_general_settings', 'started_groups_bookable' );
+		$variables[] = $started_groups_bookable;
+	}
+	
+	$query .= ' WHERE TRUE ';
 
 	// Get events from desired templates only
 	if( $args[ 'templates' ] ) {
@@ -215,7 +262,7 @@ function bookacti_fetch_booked_events( $raw_args = array() ) {
 		$query .= ' ) ';
 		$variables = array_merge( $variables, $args[ 'activities' ] );
 	}
-
+	
 	// Get events (occurrences) from desired events only
 	if( $args[ 'events' ] ) {
 		$query .= ' AND B.event_id IN ( %d';
@@ -238,6 +285,37 @@ function bookacti_fetch_booked_events( $raw_args = array() ) {
 		$variables = array_merge( $variables, $args[ 'status' ] );
 	}
 	
+	// Get events from categories only
+	if( $args[ 'group_categories' ] ) {
+		$query .= ' AND ( B.group_id IS NULL OR BG.category_id IN ( %d ';
+		$array_count = count( $args[ 'group_categories' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ) ';
+		$variables = array_merge( $variables, $args[ 'group_categories' ] );
+	}
+	
+	// Get desired groups of events only
+	if( $args[ 'event_groups' ] ) {
+		$query .= ' AND ( B.group_id IS NULL OR BG.event_group_id IN ( %d ';
+		$array_count = count( $args[ 'event_groups' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ) ';
+		$variables = array_merge( $variables, $args[ 'event_groups' ] );
+	}
+	
+	// Filter bookings by group
+	if( $args[ 'groups_only' ] ) {
+		$query .= ' AND B.group_id IS NOT NULL ';
+	}
+	
 	// Filter bookings by active
 	if( $args[ 'active' ] !== false ) {
 		$query .= ' AND B.active = %d ';
@@ -257,7 +335,27 @@ function bookacti_fetch_booked_events( $raw_args = array() ) {
 
 	// Do not fetch events out of the desired interval
 	if( ! empty( $args[ 'interval' ][ 'start' ] ) ) {
-		$query .= ' AND B.event_start >= %s ';
+		$interval_start_dt    = new DateTime( $args[ 'interval' ][ 'start' ], $timezone );
+		$interval_start_query = $args[ 'interval_started' ] ? ' AND B.event_end > %s ' : ' AND B.event_start >= %s ';
+		
+		if( ! $args[ 'past_events' ] && $interval_start_dt <= $now_dt ) {
+			if( $get_started_events ) {
+				$interval_start_query = ' AND B.event_end > %s ';
+			}
+			if( $args[ 'started_groups' ] ) {
+				$interval_start_query = ' AND IF( B.group_id IS NULL, ' . ( $args[ 'interval_started' ] || $get_started_events ? 'B.event_end' : 'B.event_start' ) . ',';
+				
+				if( $args[ 'started_groups' ] < 0 ) {
+					$interval_start_query .= ' IF( M.started_groups_bookable = 1, B.event_end, B.event_start ) ';
+				} else {
+					$interval_start_query .= ' B.event_end ';
+				}
+				
+				$interval_start_query .= ') > %s ';
+			}
+		}
+		
+		$query .= $interval_start_query;
 		$variables[] = $args[ 'interval' ][ 'start' ];
 	}
 	
@@ -268,10 +366,42 @@ function bookacti_fetch_booked_events( $raw_args = array() ) {
 
 	// Whether to fetch past events
 	if( ! $args[ 'past_events' ] ) {
-		$query .= ' AND B.event_start >= %s';
+		$query .= ' AND ( B.event_start >= %s ';
 		$variables[] = $now;
-	}
+		
+		// Fetch events already started but not finished
+		if( $get_started_events || $args[ 'started_groups' ] ) {
+			$past_events_query = ' OR ( IF( B.group_id IS NULL, ';
 
+			if( $get_started_events ) {
+				$past_events_query .= 'B.event_start <= %s AND B.event_end > %s';
+				$variables[] = $now;
+				$variables[] = $now;
+			} else {
+				$past_events_query .= 'FALSE';
+			}
+
+			$past_events_query .= ',';
+
+			if( $args[ 'started_groups' ] ) {
+				if( $args[ 'started_groups' ] < 0 ) {
+					$past_events_query .= ' IF( M.started_groups_bookable = 1, B.event_start <= %s AND B.event_end > %s, FALSE ) ';
+				} else {
+					$past_events_query .= ' B.event_start <= %s AND B.event_end > %s ';
+				}
+				$variables[] = $now;
+				$variables[] = $now;
+			} else {
+				$past_events_query .= 'FALSE';
+			}
+
+			$past_events_query .= ') ) ';
+			$query .= $past_events_query;
+		}
+		
+		$query .= ') ';
+	}
+	
 	$query .= ' ORDER BY B.event_start ASC ';
 
 	// Safely apply variables to the query
@@ -282,7 +412,7 @@ function bookacti_fetch_booked_events( $raw_args = array() ) {
 
 	// Get events complying with parameters
 	$events = $wpdb->get_results( $query, OBJECT );
-
+	
 	// Transform raw events from database to array of individual events
 	$events_array = bookacti_get_events_array_from_db_events( $events, $args );
 
@@ -292,7 +422,7 @@ function bookacti_fetch_booked_events( $raw_args = array() ) {
 
 /**
  * Get event by id
- * @version 1.13.0
+ * @version 1.17.0
  * @global wpdb $wpdb
  * @param int $event_id
  * @return object|false
@@ -300,7 +430,7 @@ function bookacti_fetch_booked_events( $raw_args = array() ) {
 function bookacti_get_event_by_id( $event_id ) {
 	global $wpdb;
 
-	$query = 'SELECT E.id as event_id, E.template_id, E.activity_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_step, E.repeat_on, E.repeat_from, E.repeat_to, E.repeat_exceptions, E.availability, E.active as event_active, A.color, A.active as activity_active, T.active as template_active ' 
+	$query = 'SELECT E.id as event_id, E.template_id, E.activity_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_step, E.repeat_on, E.repeat_from, E.repeat_to, E.repeat_exceptions, E.availability, E.active as event_active, ABS( DATEDIFF( E.end, E.start ) ) as delta_days, A.color, A.active as activity_active, T.active as template_active ' 
 	       . ' FROM ' . BOOKACTI_TABLE_EVENTS . ' as E '
 	       . ' LEFT JOIN ' . BOOKACTI_TABLE_ACTIVITIES . ' as A ON E.activity_id = A.id '
 	       . ' LEFT JOIN ' . BOOKACTI_TABLE_TEMPLATES . ' as T ON E.template_id = T.id '
@@ -353,9 +483,9 @@ function bookacti_get_event_availability( $event_id, $event_start, $event_end ) 
 // GROUPS OF EVENTS
 
 /**
- * Get groups of events data by template ids
+ * Get groups of events data
  * @since 1.4.0 (was bookacti_get_groups_of_events_by_template and bookacti_get_groups_of_events_by_category)
- * @version 1.15.6
+ * @version 1.18.49
  * @global wpdb $wpdb
  * @param array $raw_args {
  *  @type array $templates
@@ -364,8 +494,9 @@ function bookacti_get_event_availability( $event_id, $event_start, $event_end ) 
  *  @type array $nb_events array( 'min' => 2, 'max' => 0 ) Retrieve groups having between 'min' and 'max' events only
  *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
  *  @type boolean $interval_started Whether to retrieve started groups in interval
- *  @type boolean $skip_exceptions Whether to retrieve occurrence on exceptions
+ *  @type boolean $started_groups Whether to retrieve started groups (ongoing groups that have started in the past)
  *  @type boolean $past_events Whether to get past groups of events
+ *  @type boolean $skip_exceptions Whether to retrieve occurrence on exceptions
  *  @type boolean $data_only Whether to retrieve the groups data only, not the occurrences
  * }
  * @return array
@@ -378,8 +509,9 @@ function bookacti_get_groups_of_events( $raw_args = array() ) {
 		'nb_events'        => array( 'min' => 2, 'max' => 0 ),
 		'interval'         => array(),
 		'interval_started' => 0,
-		'skip_exceptions'  => 1,
+		'started_groups'   => -1, // 0 = Do not get started groups, 1 = Always get started groups, -1 = Get started groups if started_groups_bookable = 1
 		'past_events'      => 0,
+		'skip_exceptions'  => 1,
 		'data_only'        => 0
 	);
 	$args = wp_parse_args( $raw_args, $default_args );
@@ -424,13 +556,22 @@ function bookacti_get_groups_of_events( $raw_args = array() ) {
 	
 	// Do not fetch groups totally out of the desired interval
 	if( ! empty( $args[ 'interval' ][ 'start' ] ) || ! empty( $args[ 'interval' ][ 'end' ] ) ) {
-		$interval_start = $args[ 'interval_started' ] ? 'DATE_SUB( %s, INTERVAL GE.delta_days DAY )' : '%s';
-		
 		$query .= ' AND ( ';
 			// Non-repeated groups
 			$query .= '( NULLIF( G.repeat_freq, "none" ) IS NULL ';
 			if( ! empty( $args[ 'interval' ][ 'start' ] ) ) {
-				$query .= ' AND GE.start >= ' . $interval_start;
+				$interval_start_dt = new DateTime( $args[ 'interval' ][ 'start' ], $timezone );
+				
+				$interval_start_query = $args[ 'interval_started' ] ? ' AND GE.end > %s ' : ' AND GE.start >= %s ';
+				if( ! $args[ 'past_events' ] && $interval_start_dt <= $now_dt && $args[ 'started_groups' ] ) {
+					if( $args[ 'started_groups' ] < 0 ) {
+						$interval_start_query = ' AND IF( M.started_groups_bookable = 1, GE.end, GE.start ) > %s ';
+					} else {
+						$interval_start_query = ' AND GE.end > %s ';
+					}
+				}
+				
+				$query .= $interval_start_query;
 				$variables[] = $args[ 'interval' ][ 'start' ];
 			}
 			if( ! empty( $args[ 'interval' ][ 'end' ] ) ) {
@@ -440,7 +581,17 @@ function bookacti_get_groups_of_events( $raw_args = array() ) {
 			// Repeated groups
 			$query .= ' ) OR ( NULLIF( G.repeat_freq, "none" ) IS NOT NULL ';
 			if( ! empty( $args[ 'interval' ][ 'start' ] ) ) {
-				$query .= ' AND NOT ( CONCAT( G.repeat_from, " 00:00:00" ) < ' . $interval_start . ' AND CONCAT( G.repeat_to, " 23:59:59" ) < ' . $interval_start . ' ) ';
+				$interval_start_query = $args[ 'interval_started' ] ? 'DATE_SUB( %s, INTERVAL GE.delta_days DAY )' : '%s';
+				
+				if( ! $args[ 'past_events' ] && $interval_start_dt <= $now_dt && $args[ 'started_groups' ] ) {
+					if( $args[ 'started_groups' ] < 0 ) {
+						$interval_start_query = 'IF( M.started_groups_bookable = 1, DATE_SUB( %s, INTERVAL GE.delta_days DAY ), %s )';
+					} else {
+						$interval_start_query = 'DATE_SUB( %s, INTERVAL GE.delta_days DAY )';
+					}
+				}
+				
+				$query .= ' AND NOT ( CONCAT( G.repeat_from, " 00:00:00" ) < ' . $interval_start_query . ' AND CONCAT( G.repeat_to, " 23:59:59" ) < ' . $interval_start_query . ' ) ';
 				$variables[] = $args[ 'interval' ][ 'start' ];
 				$variables[] = $args[ 'interval' ][ 'start' ];
 			}
@@ -455,15 +606,25 @@ function bookacti_get_groups_of_events( $raw_args = array() ) {
 
 	// Whether to fetch past or started groups of events
 	if( ! $args[ 'past_events' ] ) {
+		$variables[] = $now;
+		$variables[] = $now;
+		
+		$started_groups_query = '';
+		if( $args[ 'started_groups' ] ) {
+			if( $args[ 'started_groups' ] < 0 ) {
+				$started_groups_query = ' OR ( M.started_groups_bookable = 1 AND GE.start <= %s AND GE.end > %s ) ';
+			} else {
+				$started_groups_query = ' OR ( GE.start <= %s AND GE.end > %s ) ';
+			}
+			$variables[] = $now;
+			$variables[] = $now;
+		}
+		
 		$query .= ' AND ( 
 		    GE.start >= %s 
-		    OR ( G.repeat_to + INTERVAL 24 HOUR ) >= %s
-		    OR ( M.started_groups_bookable = 1 AND GE.start <= %s AND GE.end >= %s )
-		) ';
-		$variables[] = $now;
-		$variables[] = $now;
-		$variables[] = $now;
-		$variables[] = $now;
+		    OR ( G.repeat_to + INTERVAL 24 HOUR ) >= %s'
+			. $started_groups_query 
+		. ') ';
 	}
 	
 	// Get events from desired templates only

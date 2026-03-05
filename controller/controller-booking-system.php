@@ -3,22 +3,54 @@
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
+ * Automatically select the first (group of) event(s) available
+ * @since 1.17.0
+ * @param array $booking_system_data
+ * @param array $atts
+ * @return array
+ */
+function bookacti_controller_booking_system_select_first_event( $booking_system_data, $atts ) {
+	// Maybe select the first available event
+	if( $booking_system_data[ 'select_first_event' ] && ! $booking_system_data[ 'picked_events' ] ) {
+		$booking_system_data[ 'picked_events' ] = bookacti_get_booking_system_first_available_picked_events( $booking_system_data );
+	}
+	
+	return $booking_system_data;
+}
+add_filter( 'bookacti_booking_system_data', 'bookacti_controller_booking_system_select_first_event', 100, 2 );
+
+
+/**
  * AJAX Controller - Get booking system data by interval (events, groups, and bookings) 
  * @since 1.12.0 (was bookacti_controller_fetch_events)
- * @version 1.16.1
+ * @version 1.17.0
  */
 function bookacti_controller_get_booking_system_data_by_interval() {
-	$atts     = isset( $_POST[ 'attributes' ] ) ? ( is_array( $_POST[ 'attributes' ] ) ? $_POST[ 'attributes' ] : ( is_string( $_POST[ 'attributes' ] ) ? bookacti_maybe_decode_json( stripslashes( $_POST[ 'attributes' ] ), true ) : array() ) ) : array();
-	$atts     = bookacti_format_booking_system_attributes( $atts );
-	$interval = isset( $_POST[ 'interval' ] ) ? ( is_array( $_POST[ 'interval' ] ) ? $_POST[ 'interval' ] : ( is_string( $_POST[ 'interval' ] ) ? bookacti_maybe_decode_json( stripslashes( $_POST[ 'interval' ] ), true ) : array() ) ) : array();
-	$interval = $interval ? bookacti_sanitize_events_interval( $interval ) : array();
+	$atts           = isset( $_POST[ 'attributes' ] ) ? ( is_array( $_POST[ 'attributes' ] ) ? $_POST[ 'attributes' ] : ( is_string( $_POST[ 'attributes' ] ) ? bookacti_maybe_decode_json( stripslashes( $_POST[ 'attributes' ] ), true ) : array() ) ) : array();
+	$atts           = bookacti_format_booking_system_attributes( $atts );
+	$interval       = isset( $_POST[ 'interval' ] ) ? ( is_array( $_POST[ 'interval' ] ) ? $_POST[ 'interval' ] : ( is_string( $_POST[ 'interval' ] ) ? bookacti_maybe_decode_json( stripslashes( $_POST[ 'interval' ] ), true ) : array() ) ) : array();
+	$interval       = $interval ? bookacti_sanitize_events_interval( $interval ) : array();
 	
-	$start_dt = $atts[ 'start' ] ? new DateTime( $atts[ 'start' ] ) : '';
-	$end_dt   = $atts[ 'end' ] ? new DateTime( $atts[ 'end' ] ) : '';
+	// Save initial start and end
+	$start_dt = $atts[ 'start' ] ? new DateTime( $atts[ 'start' ] ) : null;
+	$end_dt   = $atts[ 'end' ] ? new DateTime( $atts[ 'end' ] ) : null;
+	
+	// Limit the display period to the desired interval
+	$interval_start_dt = ! empty( $interval[ 'start' ] ) ? new DateTime( $interval[ 'start' ] ) : null;
+	$interval_end_dt   = ! empty( $interval[ 'end' ] ) ? new DateTime( $interval[ 'end' ] ) : null;
+	$period_start_dt   = ! empty( $atts[ 'display_period' ][ 'start' ] ) ? new DateTime( $atts[ 'display_period' ][ 'start' ] ) : null;
+	$period_end_dt     = ! empty( $atts[ 'display_period' ][ 'end' ] ) ? new DateTime( $atts[ 'display_period' ][ 'end' ] ) : null;
+	if( ! $period_start_dt || ( $interval_start_dt && $period_start_dt && $interval_start_dt > $period_start_dt ) ) {
+		$atts[ 'display_period' ][ 'start' ] = $interval[ 'start' ];
+	}
+	if( ! $period_end_dt || ( $interval_end_dt && $period_end_dt && $interval_end_dt < $period_end_dt ) ) {
+		$atts[ 'display_period' ][ 'end' ] = $interval[ 'end' ];
+	}
 	
 	$atts[ 'start' ]               = ! empty( $interval[ 'start' ] ) ? $interval[ 'start' ] : '';
 	$atts[ 'end' ]                 = ! empty( $interval[ 'end' ] ) ? $interval[ 'end' ] : '';
 	$atts[ 'events_min_interval' ] = $atts[ 'start' ] || $atts[ 'end' ] ? array( 'start' => $atts[ 'start' ], 'end' => $atts[ 'end' ] ) : array();
+	$atts[ 'select_first_event' ]  = 0;
 	$atts[ 'auto_load' ]           = 1;
 	
 	$booking_system_data = bookacti_get_booking_system_data( $atts );
@@ -26,22 +58,21 @@ function bookacti_controller_get_booking_system_data_by_interval() {
 	// Trim the availability period
 	$trimmed_period = array();
 	if( $booking_system_data[ 'trim' ] ) {
-		$interval_start_dt    = new DateTime( $interval[ 'start' ] );
-		$interval_end_dt      = new DateTime( $interval[ 'end' ] );
-		$is_first_interval    = $start_dt && $interval_start_dt <= $start_dt;
-		$is_last_interval     = $end_dt && $interval_end_dt >= $end_dt;
-		
-		$events_by_start_date = bookacti_sort_events_array_by_dates( $booking_system_data[ 'events' ] );
-		$events_by_end_date   = bookacti_sort_events_array_by_dates( $booking_system_data[ 'events' ], true, true );
-		$first_event_dt       = ! empty( $events_by_start_date[ 0 ][ 'start' ] ) ? new DateTime( $events_by_start_date[ 0 ][ 'start' ] ) : null;
-		$last_event_dt        = ! empty( $events_by_end_date[ 0 ][ 'end' ] ) ? new DateTime( $events_by_end_date[ 0 ][ 'end' ] ) : null;
+		$is_first_interval   = $start_dt && $interval_start_dt && $interval_start_dt <= $start_dt;
+		$is_last_interval    = $end_dt && $interval_end_dt && $interval_end_dt >= $end_dt;
+		$ordered_events      = bookacti_sort_events_array_by_dates( $booking_system_data[ 'events' ] );
+		$ordered_events_keys = array_keys( $ordered_events );
+		$last_key            = end( $ordered_events_keys );
+		$first_key           = reset( $ordered_events_keys );
+		$first_event_dt      = ! empty( $ordered_events[ $first_key ][ 'start' ] ) ? new DateTime( $ordered_events[ $first_key ][ 'start' ] ) : null;
+		$last_event_dt       = ! empty( $ordered_events[ $last_key ][ 'start' ] ) ? new DateTime( $ordered_events[ $last_key ][ 'start' ] ) : null;
 		
 		if( $is_first_interval && $first_event_dt && $first_event_dt > $start_dt ) {
-			$trimmed_period[ 'start' ] = $first_event_dt->format( 'Y-m-d H:i:s' );
+			$trimmed_period[ 'start' ] = $first_event_dt->format( 'Y-m-d' ) . ' 00:00:00';
 		}
 		
 		if( $is_last_interval && $last_event_dt && $last_event_dt < $end_dt ) {
-			$trimmed_period[ 'end' ] = $last_event_dt->format( 'Y-m-d H:i:s' );
+			$trimmed_period[ 'end' ] = $last_event_dt->format( 'Y-m-d' ) . ' 23:59:59';
 		}
 	}
 	

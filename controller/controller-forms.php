@@ -1160,7 +1160,7 @@ add_action( 'admin_footer-booking-activities_page_bookacti_forms', 'bookacti_pri
 /**
  * Create a booking form from REQUEST parameters
  * @since 1.5.0
- * @version 1.14.0
+ * @version 1.17.0
  */
 function bookacti_controller_create_form() {
 	if( empty( $_REQUEST[ 'action' ] ) || ( isset( $_REQUEST[ 'action' ] ) && $_REQUEST[ 'action' ] !== 'new' ) ) { return; }
@@ -1185,7 +1185,7 @@ function bookacti_controller_create_form() {
 		$default_calendar_meta = array();
 		if( ! empty( $_REQUEST[ 'calendar_field' ][ 'calendars' ] ) ) {
 			$calendar_ids = bookacti_ids_to_array( $_REQUEST[ 'calendar_field' ][ 'calendars' ] );
-			$template_data = bookacti_get_mixed_template_data( $calendar_ids );
+			$template_data = bookacti_get_mixed_template_data( $calendar_ids, 'edit' );
 			$default_calendar_meta = $template_data[ 'settings' ];
 		}
 		$raw_calendar_meta = array_merge( $default_calendar_meta, $_REQUEST[ 'calendar_field' ] );
@@ -1652,7 +1652,7 @@ add_action( 'wp_ajax_bookactiSaveFormFieldOrder', 'bookacti_controller_save_form
 /**
  * AJAX Controller - Update a field
  * @since 1.5.0
- * @version 1.16.42
+ * @version 1.17.0
  */
 function bookacti_controller_update_form_field() {
 	// Check nonce
@@ -1707,7 +1707,7 @@ function bookacti_controller_update_form_field() {
 	$field_data = bookacti_format_form_field_data( $field_data_raw );
 	$field_html = bookacti_display_form_field_for_editor( $field_data, false );
 	
-	$booking_system_attributes = $field_data_edit && $field_data_edit[ 'name' ] === 'calendar' ? bookacti_get_calendar_field_booking_system_attributes( $field_data_edit ) : array();
+	$booking_system_attributes = $field_data && $field_data[ 'name' ] === 'calendar' ? bookacti_get_calendar_field_booking_system_attributes( $field_data ) : array();
 	
 	bookacti_send_json( array( 'status' => 'success', 'field_data' => $field_data_edit, 'field_html' => $field_html, 'booking_system_attributes' => $booking_system_attributes ), 'update_form_field' );
 }
@@ -1717,7 +1717,7 @@ add_action( 'wp_ajax_bookactiUpdateFormField', 'bookacti_controller_update_form_
 /**
  * AJAX Controller - Reset form field data
  * @since 1.5.0
- * @version 1.14.0
+ * @version 1.17.0
  */
 function bookacti_controller_reset_form_field() {
 	$field_id = intval( $_POST[ 'field_id' ] );
@@ -1769,7 +1769,7 @@ function bookacti_controller_reset_form_field() {
 	$field_data = bookacti_format_form_field_data( $reset_field_data );
 	$field_html = bookacti_display_form_field_for_editor( $field_data, false );
 	
-	$booking_system_attributes = $field_data_edit ? bookacti_get_calendar_field_booking_system_attributes( $field_data_edit ) : array();
+	$booking_system_attributes = $field_data && $field_data[ 'name' ] === 'calendar' ? bookacti_get_calendar_field_booking_system_attributes( $field_data ) : array();
 	
 	bookacti_send_json( array( 'status' => 'success', 'field_data' => $field_data_edit, 'field_html' => $field_html, 'booking_system_attributes' => $booking_system_attributes ), 'reset_form_field' );
 }

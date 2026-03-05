@@ -2,7 +2,7 @@
 
 /**
  * Change default template on change in the select box
- * @version 1.15.5
+ * @version 1.17.0
  * @param {int} selected_template_id
  */
 function bookacti_switch_template( selected_template_id ) {
@@ -67,6 +67,7 @@ function bookacti_switch_template( selected_template_id ) {
 				bookacti.booking_system[ 'bookacti-template-calendar' ][ 'picked_events' ]        = [];
 				bookacti.booking_system[ 'bookacti-template-calendar' ][ 'loading_number' ]       = loading_number_temp;
 				bookacti.booking_system[ 'bookacti-template-calendar' ][ 'method' ]               = 'calendar';
+				bookacti.booking_system[ 'bookacti-template-calendar' ][ 'out_of_period_events' ] = true;
 				bookacti.booking_system[ 'bookacti-template-calendar' ][ 'past_events' ]          = true;
 				bookacti.booking_system[ 'bookacti-template-calendar' ][ 'past_events_bookable' ] = true;
 

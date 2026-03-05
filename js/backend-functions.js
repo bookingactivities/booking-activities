@@ -123,6 +123,26 @@ $j( document ).ready( function() {
 		bookacti_delete_days_off_rows( $j( scope + ' .bookacti-date-intervals-table-container' ) );
 		$j( scope + ' input.bookacti-date-interval-from, ' + scope + ' input.bookacti-date-interval-to' ).attr( 'min', '' ).attr( 'max', '' );
 	});
+	
+	
+	/**
+	 * Show or hide days off table according to use_global value - on load
+	 * @since 1.17.0
+	 * @param {HTMLElement} container
+	 */
+	$j( '.bookacti-date-intervals-container' ).each( function() {
+		bookacti_toggle_days_off_table( $j( this ) );
+	});
+	
+	
+	/**
+	 * Show or hide days off table according to use_global value - on change
+	 * @since 1.17.0
+	 */
+	$j( 'body' ).on( 'change', '.bookacti-date-intervals-use-global', function() {
+		var container = $j( this ).closest( '.bookacti-date-intervals-container' );
+		bookacti_toggle_days_off_table( container );
+	});
 });
 
 
@@ -691,4 +711,19 @@ function bookacti_delete_days_off_rows( container ) {
 	var tbody = container.find( 'tbody' );
 	tbody.find( 'tr:not(:first)' ).remove();
 	bookacti_delete_days_off_row( container, tbody.find( 'tr:first' ) );
+}
+
+
+/**
+ * Show or hide days off table according to use_global value
+ * @since 1.17.0
+ * @param {HTMLElement} container
+ */
+function bookacti_toggle_days_off_table( container ) {
+	var use_global_select = container.find( '.bookacti-date-intervals-use-global' );
+	if( ! use_global_select.length ) { return; }
+	
+	var use_global = parseInt( use_global_select.val() );
+	
+	container.find( 'table' ).toggle( use_global < 1 );
 }

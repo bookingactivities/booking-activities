@@ -2,7 +2,7 @@
 
 /**
  * Choose a group of events dialog
- * @version 1.16.40
+ * @version 1.17.0
  * @param {HTMLElement} booking_system
  * @param {Object} groups
  * @param {(FullCalendar.EventApi|Object)} event
@@ -12,13 +12,11 @@ function bookacti_dialog_choose_group_of_events( booking_system, groups, event )
 	var dialog                = $j( '#' + booking_system_id + '-choose-group-of-events-dialog' );
 	var groups_of_events_list = $j( '#' + booking_system_id + '-groups-of-events-list' );
 
-	var attributes           = bookacti.booking_system[ booking_system_id ];
-	var multiple_bookings    = attributes[ 'multiple_bookings' ];
-	var bookings_only        = attributes[ 'bookings_only' ];
-	var past_events          = attributes[ 'past_events' ];
-	var past_events_bookable = attributes[ 'past_events_bookable' ];
-	var current_time         = moment.utc( bookacti_localized.current_time );
-
+	var attributes        = bookacti.booking_system[ booking_system_id ];
+	var multiple_bookings = attributes[ 'multiple_bookings' ];
+	var bookings_only     = attributes[ 'bookings_only' ];
+	var event_id          = typeof event.groupId !== 'undefined' ? parseInt( event.groupId ) : parseInt( event.id );
+		
 	groups_of_events_list.data( 'booking-system-id', booking_system_id );
 
 	groups_of_events_list.empty();
@@ -29,54 +27,7 @@ function bookacti_dialog_choose_group_of_events( booking_system, groups, event )
 	if( attributes[ 'groups_single_events' ] ) {
 		// Check event availability
 		var availability = bookacti_get_event_availability( booking_system, event );
-		var is_available = availability > 0;
-		if( typeof event.is_available !== 'undefined' )  { if( ! event.is_available ) { is_available = false; } }
-		if( typeof event.extendedProps !== 'undefined' ) { if( typeof event.extendedProps.is_available !== 'undefined' ) { if( ! event.extendedProps.is_available ) { is_available = false; } } }
-		
-		// Check if the event is past
-		if( past_events ) {
-			var event_start = moment.utc( event.start ).clone();
-			var event_end   = moment.utc( event.end ).clone();
-			if( ! past_events_bookable && event_start.isBefore( current_time ) 
-			&& ! ( bookacti_localized.started_events_bookable && event_end.isAfter( current_time ) ) ) {
-				is_available = false;
-			}
-		}
-		
-		var event_id = typeof event.groupId !== 'undefined' ? parseInt( event.groupId ) : parseInt( event.id );
-		if( is_available && typeof attributes[ 'events_data' ][ event_id ] !== 'undefined' ) {
-			// Check the min quantity required
-			is_available      = false;
-			var min_qty_ok    = false;
-			var activity_id   = parseInt( attributes[ 'events_data' ][ event_id ][ 'activity_id' ] );
-			var activity_data = attributes[ 'activities_data' ][ activity_id ][ 'settings' ];
-			var min_quantity  = typeof activity_data[ 'min_bookings_per_user' ] === 'undefined' ? 0 : ( activity_data[ 'min_bookings_per_user' ] ? parseInt( activity_data[ 'min_bookings_per_user' ] ) : 0 );
-			if( min_quantity <= availability ) { min_qty_ok = true; }
-
-			// Check the max quantity allowed AND
-			// Check the max number of different users allowed
-			var max_qty_ok = max_users_ok = true;
-			var max_quantity = typeof activity_data[ 'max_bookings_per_user' ] === 'undefined' ? 0 : ( activity_data[ 'max_bookings_per_user' ] ? parseInt( activity_data[ 'max_bookings_per_user' ] ) : 0 );
-			var max_users    = typeof activity_data[ 'max_users_per_event' ] === 'undefined' ? 0 : ( activity_data[ 'max_users_per_event' ] ? parseInt( activity_data[ 'max_users_per_event' ] ) : 0 );
-
-			if( max_quantity || max_users ) {
-				var event_start_formatted = moment.utc( event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
-				if( typeof attributes[ 'bookings' ][ event_id ] !== 'undefined' ) {
-					if( typeof attributes[ 'bookings' ][ event_id ][ event_start_formatted ] !== 'undefined' ) {
-						var occurrence = attributes[ 'bookings' ][ event_id ][ event_start_formatted ];
-						var qty_booked = parseInt( occurrence[ 'current_user_bookings' ] );
-						if( max_users && qty_booked === 0 && parseInt( occurrence[ 'distinct_users' ] ) >= max_users ) {
-							max_users_ok = false;
-						}
-						if( max_quantity && qty_booked >= max_quantity ) {
-							max_qty_ok = false;
-						}
-					}
-				}
-			}
-
-			if( min_qty_ok && max_qty_ok && max_users_ok ) { is_available = true; }
-		}
+		var is_available = bookacti_is_event_available( booking_system, event );
 
 		var container = $j( '<div></div>', {});
 		var option_container = $j( '<div></div>', {
@@ -194,16 +145,13 @@ function bookacti_dialog_choose_group_of_events( booking_system, groups, event )
 		
 		$j.each( groups_per_date, function( group_date, group_events ) {
 			// Get group bookings data
-			var is_group_available, group_availability, group_bookings, current_user_bookings, distinct_users, total_availability;
-			is_group_available = group_availability = group_bookings = current_user_bookings = distinct_users = total_availability = 0;
+			var group_availability, group_bookings, total_availability;
+			group_availability = 0; group_bookings = 0; total_availability = 0;
 			if( typeof attributes[ 'groups_bookings' ][ group_id ] !== 'undefined' ) {
 				if( typeof attributes[ 'groups_bookings' ][ group_id ][ group_date ] !== 'undefined' ) {
-					is_group_available    = attributes[ 'groups_bookings' ][ group_id ][ group_date ]?.[ 'is_available' ];
-					group_availability    = attributes[ 'groups_bookings' ][ group_id ][ group_date ]?.[ 'availability' ];
-					group_bookings        = attributes[ 'groups_bookings' ][ group_id ][ group_date ]?.[ 'quantity' ];
-					current_user_bookings = attributes[ 'groups_bookings' ][ group_id ][ group_date ]?.[ 'current_user_bookings' ];
-					distinct_users        = attributes[ 'groups_bookings' ][ group_id ][ group_date ]?.[ 'distinct_users' ];
-					total_availability    = attributes[ 'groups_bookings' ][ group_id ][ group_date ]?.[ 'total_availability' ];
+					group_availability = attributes[ 'groups_bookings' ][ group_id ][ group_date ]?.[ 'availability' ];
+					group_bookings     = attributes[ 'groups_bookings' ][ group_id ][ group_date ]?.[ 'quantity' ];
+					total_availability = attributes[ 'groups_bookings' ][ group_id ][ group_date ]?.[ 'total_availability' ];
 				}
 			}
 			

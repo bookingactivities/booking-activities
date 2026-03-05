@@ -1,7 +1,7 @@
 /**
  * Get booking system data by interval (events, groups, and bookings) 
  * @since 1.12.0 (was bookacti_fetch_events)
- * @version 1.16.2
+ * @version 1.17.0
  * @param {HTMLElement} booking_system
  * @param {object} interval
  */
@@ -77,7 +77,7 @@ function bookacti_get_booking_system_data_by_interval( booking_system, interval 
 					$j.extend( true, bookacti.booking_system[ booking_system_id ][ 'booking_lists' ], response.booking_system_data.booking_lists );
 				}
 
-				// Update availability period
+				// Update display period
 				if( response?.trimmed_period?.start || response?.trimmed_period?.end ) {
 					if( response?.trimmed_period?.start ) {
 						bookacti.booking_system[ booking_system_id ][ 'start' ] = response.trimmed_period.start;
@@ -85,7 +85,7 @@ function bookacti_get_booking_system_data_by_interval( booking_system, interval 
 					if( response?.trimmed_period?.end ) {
 						bookacti.booking_system[ booking_system_id ][ 'end' ] = response.trimmed_period.end;
 					}
-					bookacti_booking_method_update_availability_period( booking_system );
+					bookacti_booking_method_update_display_period( booking_system );
 				}
 				
 				// Display new events
@@ -206,7 +206,7 @@ function bookacti_get_booking_system_attributes_without_data( booking_system ) {
 /**
  * Get the interval of events to be loaded according to the desired view interval
  * @since 1.12.0 (was bookacti_fetch_events_from_interval)
- * @version 1.15.6
+ * @version 1.17.0
  * @param {HTMLElement} booking_system
  * @param {object} desired_interval { 'start': moment.utc(), 'end': moment.utc() }
  * @returns {Object}
@@ -214,11 +214,11 @@ function bookacti_get_booking_system_attributes_without_data( booking_system ) {
 function bookacti_get_interval_of_events( booking_system, desired_interval ) {
 	var booking_system_id   = booking_system.attr( 'id' );
 	var current_interval    = bookacti.booking_system[ booking_system_id ][ 'events_interval' ];
-	var availability_period = bookacti_get_availability_period( booking_system );
+	var display_period      = bookacti_get_display_period( booking_system );
 	var event_load_interval = parseInt( bookacti_localized.event_load_interval );
 	
-	var calendar_start = availability_period.start ? moment.utc( availability_period.start ) : false;
-	var calendar_end   = availability_period.end ? moment.utc( availability_period.end ) : false;
+	var calendar_start = display_period.start ? moment.utc( display_period.start ) : false;
+	var calendar_end   = display_period.end ? moment.utc( display_period.end ) : false;
 	
 	var desired_interval_start = moment.utc( desired_interval.start ).clone();
 	var desired_interval_end   = moment.utc( desired_interval.end ).clone();
@@ -304,35 +304,35 @@ function bookacti_get_interval_of_events( booking_system, desired_interval ) {
 
 /**
  * Get the first events interval
- * @version 1.15.6
+ * @version 1.17.0
  * @param {HTMLElement} booking_system
  * @param {Object} min_interval
  * @returns {Object}
  */
 function bookacti_get_new_interval_of_events( booking_system, min_interval ) {
 	var booking_system_id = booking_system.attr( 'id' );
-	var availability_period = bookacti_get_availability_period( booking_system );
+	var display_period    = bookacti_get_display_period( booking_system );
 	
-	if( typeof availability_period.start === 'undefined' || typeof availability_period.end === 'undefined' ) { return {}; }
+	if( typeof display_period.start === 'undefined' || typeof display_period.end === 'undefined' ) { return {}; }
 	
 	var past_events  = bookacti.booking_system[ booking_system_id ][ 'past_events' ];
 	var current_time = moment.utc( bookacti_localized.current_time );
 	var current_date = current_time.locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
 	
-	var calendar_start = availability_period.start ? moment.utc( availability_period.start ) : false;
-	var calendar_end   = availability_period.end ? moment.utc( availability_period.end ) : false;
+	var calendar_start = display_period.start ? moment.utc( display_period.start ) : false;
+	var calendar_end   = display_period.end ? moment.utc( display_period.end ) : false;
 	
 	if( ! past_events && calendar_end ) { if( calendar_end.isBefore( current_time ) ) { return []; } }
 	
 	if( $j.isEmptyObject( min_interval ) ) {
 		if( calendar_start ) {
 			if( calendar_start.isAfter( current_time ) ) {
-				min_interval = { 'start': availability_period.start, 'end': availability_period.start };
+				min_interval = { 'start': display_period.start, 'end': display_period.start };
 			}
 		}
 		if( calendar_end && $j.isEmptyObject( min_interval ) ) {
 			if( calendar_end.isBefore( current_time ) ) {
-				min_interval = { 'start': availability_period.end, 'end': availability_period.end };
+				min_interval = { 'start': display_period.end, 'end': display_period.end };
 			}
 		}
 		if( $j.isEmptyObject( min_interval ) ) {
@@ -403,14 +403,51 @@ function bookacti_get_extended_events_interval( booking_system, interval ) {
 
 /**
  * Get availability period
- * @version 1.7.17
+ * @version 1.17.0
  * @param {HTMLElement} booking_system
  * @returns {object}
  */
 function bookacti_get_availability_period( booking_system ) {
 	var booking_system_id   = booking_system.attr( 'id' );
 	var booking_system_data = bookacti.booking_system[ booking_system_id ];
-	return { 'start': booking_system_data.start, 'end': booking_system_data.end };
+	
+	var asb_start = booking_system_data?.[ 'availability_period' ]?.[ 'start' ] ? moment.utc( booking_system_data[ 'availability_period' ][ 'start' ] ) : null;
+	var asb_end   = booking_system_data?.[ 'availability_period' ]?.[ 'end' ] ? moment.utc( booking_system_data[ 'availability_period' ][ 'end' ] ) : null;
+	var start     = booking_system_data?.[ 'start' ] ? moment.utc( booking_system_data[ 'start' ] ) : null;
+	var end       = booking_system_data?.[ 'end' ] ? moment.utc( booking_system_data[ 'end' ] ) : null;
+	
+	// Use the smaller period between the absolute availability period and the calendar start and end dates
+	var availability_period = { 
+		'start': ! asb_start && ! start ? '' : ( asb_start && ( ! start || ( start && start < asb_start ) ) ? booking_system_data[ 'availability_period' ][ 'start' ] : booking_system_data[ 'start' ] ),
+		'end': ! asb_end && ! end ? '' : ( asb_end && ( ! end || ( end && end > asb_end ) ) ? booking_system_data[ 'availability_period' ][ 'end' ] : booking_system_data[ 'end' ] )
+	};
+	
+	return availability_period;
+}
+
+
+/**
+ * Get display period
+ * @version 1.17.0
+ * @param {HTMLElement} booking_system
+ * @returns {object}
+ */
+function bookacti_get_display_period( booking_system ) {
+	var booking_system_id   = booking_system.attr( 'id' );
+	var booking_system_data = bookacti.booking_system[ booking_system_id ];
+	
+	var asb_start = booking_system_data?.[ 'display_period' ]?.[ 'start' ] ? moment.utc( booking_system_data[ 'display_period' ][ 'start' ] ) : null;
+	var asb_end   = booking_system_data?.[ 'display_period' ]?.[ 'end' ] ? moment.utc( booking_system_data[ 'display_period' ][ 'end' ] ) : null;
+	var start     = booking_system_data?.[ 'start' ] ? moment.utc( booking_system_data[ 'start' ] ) : null;
+	var end       = booking_system_data?.[ 'end' ] ? moment.utc( booking_system_data[ 'end' ] ) : null;
+	
+	// Use the smaller period between the absolute availability period and the calendar start and end dates
+	var display_period = { 
+		'start': ! asb_start && ! start ? '' : ( asb_start && ( ! start || ( start && start < asb_start ) ) ? booking_system_data[ 'display_period' ][ 'start' ] : booking_system_data[ 'start' ] ),
+		'end': ! asb_end && ! end ? '' : ( asb_end && ( ! end || ( end && end > asb_end ) ) ? booking_system_data[ 'display_period' ][ 'end' ] : booking_system_data[ 'end' ] )
+	};
+	
+	return display_period;
 }
 
 
@@ -1328,7 +1365,7 @@ function bookacti_get_event_availability( booking_system, event ) {
 
 /**
  * Check if an event is available
- * @version 1.16.48
+ * @version 1.17.0
  * @param {HTMLElement} booking_system
  * @param {(FullCalendar.EventApi|Object)} event
  * @returns {Boolean}
@@ -1336,8 +1373,7 @@ function bookacti_get_event_availability( booking_system, event ) {
 function bookacti_is_event_available( booking_system, event ) {
 	var booking_system_id    = booking_system.attr( 'id' );
 	var attributes           = bookacti.booking_system[ booking_system_id ];
-	var past_events          = attributes[ 'past_events' ];
-	var past_events_bookable = attributes[ 'past_events_bookable' ];
+	var past_events_bookable = attributes?.[ 'past_events' ] && attributes?.[ 'past_events_bookable' ];
 	
 	var event_id     = typeof event.groupId !== 'undefined' ? parseInt( event.groupId ) : parseInt( event.id );
 	var event_start  = moment.utc( event.start ).clone().locale( 'en' );
@@ -1396,32 +1432,43 @@ function bookacti_is_event_available( booking_system, event ) {
 	}
 	
 	// Single events
-	if( ( ! is_in_group || ( is_in_group && groups_single_events ) ) && is_event_available
-	&&  typeof attributes[ 'events_data' ][ event_id ] !== 'undefined' ) {
-		// Check if the event is past or out of the availability period
+	if( ( ! is_in_group || ( is_in_group && groups_single_events ) ) && is_event_available && typeof attributes[ 'events_data' ][ event_id ] !== 'undefined' ) {
+		// Check if the event is past
 		var is_past = false;
-		if( past_events ) {
-			// Check if the event is past
-			if( ! past_events_bookable && event_start.isBefore( current_time ) 
-			&& ! ( bookacti_localized.started_events_bookable && event_end.isAfter( current_time ) ) ) {
-				is_past = true;
-			}
-			
-			// Check if the event is in the availability period
-			if( ! past_events_bookable ) {
-				if( availability_period.start ) { if( event_start.isBefore( moment.utc( availability_period.start ) ) ) { is_past = true; } }
-				if( availability_period.end )   { if( event_end.isAfter( moment.utc( availability_period.end ) ) )      { is_past = true; } }
-			}
+		if( ! past_events_bookable && event_start.isBefore( current_time ) 
+		&& ! ( bookacti_localized.started_events_bookable && event_end.isAfter( current_time ) ) ) {
+			is_past = true;
 		}
 		
-		if( ! is_past ) {
-			// Check the min required quantity
+		// Check if the event is in the availability period
+		var is_out_of_period = false;
+		if( ( availability_period.start && event_start.isBefore( moment.utc( availability_period.start ) ) && event_start.isAfter( current_time ) )
+		||  ( availability_period.end && event_start.isAfter( moment.utc( availability_period.end ) ) ) ) {
+			is_out_of_period = true;
+		}
+		
+		// Check days off
+		var is_in_days_off = false;
+		if( is_available && attributes[ 'days_off' ] ) {
+			$j.each( attributes[ 'days_off' ], function ( i, day_off ) {
+				var day_off_from = moment.utc( day_off.from + ' 00:00:00' );
+				var day_off_to = moment.utc( day_off.to + ' 23:59:59' );
+				if( event_start.isBetween( day_off_from, day_off_to, 'second', '[]' )
+				||  ( ! parseInt( bookacti_localized.started_days_off_bookable ) && event_start.isBefore( day_off_from ) && event_end.isAfter( day_off_from ) ) ) { 
+					is_in_days_off = true;
+					return false; // break
+				}
+			});
+		}
+		
+		if( ! is_past && ! is_out_of_period && ! is_in_days_off ) {
 			var activity_id   = parseInt( attributes[ 'events_data' ][ event_id ][ 'activity_id' ] );
 			var activity_data = attributes[ 'activities_data' ][ activity_id ][ 'settings' ];
 
-			// Check the max quantity allowed AND
+			// Check the min and max quantity allowed AND
 			// Check the max number of different users allowed
-			var min_qty_ok = max_qty_ok = max_users_ok = true;
+			var min_qty_ok, max_qty_ok, max_users_ok;
+			min_qty_ok = true; max_qty_ok = true; max_users_ok = true;
 			var event_start_formatted = event_start.format( 'YYYY-MM-DD HH:mm:ss' );
 			if( typeof attributes[ 'bookings' ][ event_id ] !== 'undefined' ) {
 				if( typeof attributes[ 'bookings' ][ event_id ][ event_start_formatted ] !== 'undefined' ) {
@@ -1444,7 +1491,7 @@ function bookacti_is_event_available( booking_system, event ) {
 					}
 				}
 			}
-
+			
 			if( min_qty_ok && max_qty_ok && max_users_ok ) { is_available = true; }
 		}
 	}
@@ -1486,6 +1533,7 @@ function bookacti_is_event_in_available_group( booking_system, event ) {
 /**
  * Check if a group of events is available
  * @since 1.16.39
+ * @version 1.17.0
  * @param {HTMLElement} booking_system
  * @param {Integer} group_id
  * @param {String} group_date
@@ -1494,7 +1542,7 @@ function bookacti_is_event_in_available_group( booking_system, event ) {
 function bookacti_is_group_of_events_available( booking_system, group_id, group_date ) {
 	var booking_system_id    = booking_system.attr( 'id' );
 	var attributes           = bookacti.booking_system[ booking_system_id ];
-	var past_events_bookable = attributes?.[ 'past_events_bookable' ];
+	var past_events_bookable = attributes?.[ 'past_events' ] && attributes?.[ 'past_events_bookable' ];
 	var group_events         = attributes?.[ 'groups_events' ]?.[ group_id ]?.[ group_date ];
 	var availability_period  = bookacti_get_availability_period( booking_system );
 	
@@ -1527,28 +1575,49 @@ function bookacti_is_group_of_events_available( booking_system, group_id, group_
 	var current_time = moment.utc( bookacti_localized.current_time );
 	var group_start  = moment.utc( group_events[ 0 ].start ).clone();
 	var group_end    = moment.utc( group_events[ group_events.length - 1 ].end ).clone();
+	
 	if( ! past_events_bookable && group_start.isBefore( current_time ) 
 	&& ! ( started_groups_bookable && group_end.isAfter( current_time ) ) ) {
 		is_available = false;
 	}
 	
 	// Check if the group of events is in the availability period
-	if( ! past_events_bookable ) {
-		if( availability_period.start ) { if( group_start.isBefore( moment.utc( availability_period.start ) ) ) { is_available = false; } }
-		if( availability_period.end )   { if( group_start.isAfter( moment.utc( availability_period.end ) ) )    { is_available = false; } }
+	if( ( availability_period.start && group_start.isBefore( moment.utc( availability_period.start ) ) && group_start.isAfter( current_time ) )
+	||  ( availability_period.end && group_start.isAfter( moment.utc( availability_period.end ) ) ) ) { 
+		is_available = false;
 	}
-
+	
+	// Check days off
+	if( is_available && attributes?.[ 'days_off' ] ) {
+		$j.each( group_events, function ( i, group_event ) {
+			var group_event_start = moment.utc( group_event[ 'start' ] );
+			var group_event_end   = moment.utc( group_event[ 'end' ] );
+			$j.each( attributes[ 'days_off' ], function ( i, day_off ) {
+				var day_off_from = moment.utc( day_off.from + ' 00:00:00' );
+				var day_off_to = moment.utc( day_off.to + ' 23:59:59' );
+				if( group_event_start.isBetween( day_off_from, day_off_to, 'second', '[]' )
+				||  ( ! parseInt( bookacti_localized.started_days_off_bookable ) && group_event_start.isBefore( day_off_from ) && group_event_end.isAfter( day_off_from ) ) ) { 
+					is_available = false;
+					return false; // break
+				}
+			});
+			if( ! is_available ) { return false; } // break
+		});
+	}
+	
 	if( is_available ) {
-		// Check the min quantity
-		is_available     = false;
-		var min_qty_ok   = false;
+		is_available = false;
+		
+		// Check the min and max quantity allowed AND
+		// Check the max number of different users allowed
+		var min_qty_ok, max_qty_ok, max_users_ok;
+		min_qty_ok = false; max_qty_ok = true; max_users_ok = true;
+		
 		var min_quantity = typeof category_data[ 'min_bookings_per_user' ] === 'undefined' ? 0 : ( category_data[ 'min_bookings_per_user' ] ? parseInt( category_data[ 'min_bookings_per_user' ] ) : 0 );
 		if( min_quantity <= group_availability && group_availability > 0 ) { min_qty_ok = true; }
-
 		var max_users    = typeof category_data[ 'max_users_per_event' ] === 'undefined' ? 0 : ( category_data[ 'max_users_per_event' ] ? parseInt( category_data[ 'max_users_per_event' ] ) : 0 );
 		var max_quantity = typeof category_data[ 'max_bookings_per_user' ] === 'undefined' ? 0 : ( category_data[ 'max_bookings_per_user' ] ? parseInt( category_data[ 'max_bookings_per_user' ] ) : 0 );
 
-		var max_qty_ok = max_users_ok = true;
 		if( max_quantity || max_users ) {
 			var qty_booked = parseInt( current_user_bookings );
 			if( max_users && qty_booked === 0 && parseInt( distinct_users ) >= max_users ) {
@@ -1782,18 +1851,18 @@ function bookacti_booking_method_set_up( booking_system, reload_events ) {
 
 
 /**
- * Update the availability period of the booking method
- * @since 1.16.1
+ * Update the dsiplay period of the booking method
+ * @since 1.17.0
  * @param {HTMLElement} booking_system
  */
-function bookacti_booking_method_update_availability_period( booking_system ) {
+function bookacti_booking_method_update_display_period( booking_system ) {
 	var booking_system_id = booking_system.attr( 'id' );
 	booking_method = bookacti.booking_system[ booking_system_id ][ 'method' ];
 	if( $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) { booking_method = 'calendar'; }
 	
-	var availability_period = bookacti_get_availability_period( booking_system );
+	var display_period = bookacti_get_display_period( booking_system );
 	
-	booking_system.trigger( 'bookacti_booking_method_update_availability_period', [ booking_method, availability_period ] );
+	booking_system.trigger( 'bookacti_booking_method_update_display_period', [ booking_method, display_period ] );
 }
 
 

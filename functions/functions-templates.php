@@ -7,15 +7,18 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Get booking system data
  * @since 1.7.4
- * @version 1.15.6
+ * @version 1.17.0
  * @param array $atts (see bookacti_format_booking_system_attributes())
  * @param int $template_id
  * @return array
  */
 function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 	$booking_system_data = $atts;
+	
 	$groups = bookacti_get_groups_of_events( array( 'templates' => array( $template_id ), 'nb_events' => array(), 'past_events' => 1, 'data_only' => 1 ) );
-	$template_data = bookacti_get_template_data( $template_id );
+	
+	$template_data            = bookacti_get_template_data( $template_id, 'edit' );
+	$template_data[ 'title' ] = $template_data[ 'title' ] ? apply_filters( 'bookacti_translate_text', $template_data[ 'title' ] ) : '';
 	
 	$booking_system_data[ 'calendars' ]             = array( $template_id );
 	$booking_system_data[ 'events' ]                = array();
@@ -204,37 +207,28 @@ function bookacti_get_template_activities_list( $activities, $template_id = 0 ) 
 /**
  * Get template data
  * @since 1.15.0
+ * @version 1.17.0
  * @param int $template_id
- * @param boolean $raw
+ * @param string $context
  * @param int $user_id User ID to check the permissions for. -1 for current user (default). 0 to ignore permission. 
  * @return array
  */
-function bookacti_get_template_data( $template_id, $raw = false, $user_id = -1 ) {
-	$template  = array();
-	$templates = bookacti_fetch_templates( $template_id, $user_id );
-	
-	if( isset( $templates[ $template_id ] ) ) { 
-		$template_meta     = bookacti_get_metadata( 'template', $template_id );
-		$template_managers = bookacti_get_managers( 'template', $template_id );
-		$template_meta     = is_array( $template_meta ) ? $template_meta : array();
-		$template          = ! $raw ? bookacti_format_template_data( array_merge( $templates[ $template_id ], $template_meta ) ) : array_merge( $templates[ $template_id ], $template_meta );
-		$template[ 'admin' ] = ! empty( $template_managers ) ? ( ! $raw ? bookacti_ids_to_array( $template_managers ) : $template_managers ) : array();
-	}
-
-	return $template;
+function bookacti_get_template_data( $template_id, $context = 'view', $user_id = -1 ) {
+	$templates = bookacti_get_templates_data( array( $template_id ), $context, $user_id );
+	return isset( $templates[ $template_id ] ) ? $templates[ $template_id ] : array();
 }
 
 
 /**
  * Get templates data
  * @since 1.7.3
- * @version 1.15.0
+ * @version 1.17.0
  * @param array $template_ids
- * @param boolean $raw
+ * @param string $context
  * @param int $user_id User ID to check the permissions for. -1 for current user (default). 0 to ignore permission. 
  * @return array
  */
-function bookacti_get_templates_data( $template_ids = array(), $raw = false, $user_id = -1 ) {
+function bookacti_get_templates_data( $template_ids = array(), $context = 'view', $user_id = -1 ) {
 	$templates = bookacti_fetch_templates( $template_ids, $user_id );
 
 	$retrieved_template_ids = array_keys( $templates );
@@ -244,8 +238,8 @@ function bookacti_get_templates_data( $template_ids = array(), $raw = false, $us
 
 	foreach( $templates as $template_id => $template ) {
 		$template_meta = isset( $templates_meta[ $template_id ] ) ? $templates_meta[ $template_id ] : array();
-		$templates[ $template_id ] = ! $raw ? bookacti_format_template_data( array_merge( $template, $template_meta ) ) : array_merge( $template, $template_meta );
-		$templates[ $template_id ][ 'admin' ] = ! empty( $templates_managers[ $template_id ] ) ? ( ! $raw ? bookacti_ids_to_array( $templates_managers[ $template_id ] ) : $templates_managers[ $template_id ] ) : array();
+		$templates[ $template_id ] = bookacti_format_template_data( array_merge( $template, $template_meta ), $context );
+		$templates[ $template_id ][ 'admin' ] = ! empty( $templates_managers[ $template_id ] ) ? bookacti_ids_to_array( $templates_managers[ $template_id ] ) : array();
 	}
 
 	return $templates;
@@ -255,12 +249,13 @@ function bookacti_get_templates_data( $template_ids = array(), $raw = false, $us
 /**
  * Get a unique template setting made from a combination of multiple template settings
  * @since 1.2.2 (was bookacti_get_mixed_template_settings)
- * @version 1.15.0
+ * @version 1.17.0
  * @param array $template_ids Array of template ids
+ * @param $context 'view' or 'edit'
  * @return array
  */
-function bookacti_get_mixed_template_data( $template_ids ) {
-	$templates_data = bookacti_get_templates_data( $template_ids );
+function bookacti_get_mixed_template_data( $template_ids, $context = 'view' ) {
+	$templates_data = bookacti_get_templates_data( $template_ids, $context );
 	$mixed_data     = array();
 	$mixed_settings = array();
 
@@ -269,7 +264,7 @@ function bookacti_get_mixed_template_data( $template_ids ) {
 		if( isset( $settings[ 'slotMinTime' ] ) ) {
 			// Keep the lower value
 			if(  ! isset( $mixed_settings[ 'slotMinTime' ] ) 
-				|| isset( $mixed_settings[ 'slotMinTime' ] ) && intval( str_replace( ':', '', $settings[ 'slotMinTime' ] ) ) < intval( str_replace( ':', '', $mixed_settings[ 'slotMinTime' ] ) ) ) {
+				|| ( isset( $mixed_settings[ 'slotMinTime' ] ) && intval( str_replace( ':', '', $settings[ 'slotMinTime' ] ) ) < intval( str_replace( ':', '', $mixed_settings[ 'slotMinTime' ] ) ) ) ) {
 
 				$mixed_settings[ 'slotMinTime' ] = $settings[ 'slotMinTime' ];
 			} 
@@ -277,7 +272,7 @@ function bookacti_get_mixed_template_data( $template_ids ) {
 		if( isset( $settings[ 'slotMaxTime' ] ) ) {
 			// Keep the higher value
 			if(  ! isset( $mixed_settings[ 'slotMaxTime' ] ) 
-				|| isset( $mixed_settings[ 'slotMaxTime' ] ) && intval( str_replace( ':', '', $settings[ 'slotMaxTime' ] ) ) > intval( str_replace( ':', '', $mixed_settings[ 'slotMaxTime' ] ) ) ) {
+				|| ( isset( $mixed_settings[ 'slotMaxTime' ] ) && intval( str_replace( ':', '', $settings[ 'slotMaxTime' ] ) ) > intval( str_replace( ':', '', $mixed_settings[ 'slotMaxTime' ] ) ) ) ) {
 
 				$mixed_settings[ 'slotMaxTime' ] = $settings[ 'slotMaxTime' ];
 			} 
@@ -285,9 +280,18 @@ function bookacti_get_mixed_template_data( $template_ids ) {
 		if( isset( $settings[ 'snapDuration' ] ) ) {
 			// Keep the lower value
 			if(  ! isset( $mixed_settings[ 'snapDuration' ] ) 
-				|| isset( $mixed_settings[ 'snapDuration' ] ) && strtotime( $settings[ 'snapDuration' ] ) < strtotime( $mixed_settings[ 'snapDuration' ] ) ) {
+				|| ( isset( $mixed_settings[ 'snapDuration' ] ) && strtotime( $settings[ 'snapDuration' ] ) < strtotime( $mixed_settings[ 'snapDuration' ] ) ) ) {
 
 				$mixed_settings[ 'snapDuration' ] = $settings[ 'snapDuration' ];
+			}
+		}
+		if( isset( $settings[ 'use_global_days_off' ] ) ) {
+			// Use both global and custom days off if values differ (1 = use global days off only, 0 = use custom days off only, -1 = use both)
+			if( ! isset( $mixed_settings[ 'use_global_days_off' ] ) ) {
+				$mixed_settings[ 'use_global_days_off' ] = $settings[ 'use_global_days_off' ];
+			} 
+			else if( $settings[ 'use_global_days_off' ] !== $mixed_settings[ 'use_global_days_off' ] ) {
+				$mixed_settings[ 'use_global_days_off' ] = -1;
 			}
 		}
 		if( isset( $settings[ 'days_off' ] ) ) {
@@ -303,7 +307,7 @@ function bookacti_get_mixed_template_data( $template_ids ) {
 	// Add mixed settings
 	$mixed_data[ 'settings' ] = $mixed_settings;
 
-	return apply_filters( 'bookacti_mixed_template_settings', $mixed_data, $templates_data, $template_ids );
+	return apply_filters( 'bookacti_mixed_template_settings', $mixed_data, $templates_data, $template_ids, $context );
 }
 
 

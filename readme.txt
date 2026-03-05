@@ -3,7 +3,7 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
 Tested up to: 6.9
-Stable tag: 1.16.48.1
+Stable tag: 1.17.0
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -321,309 +321,25 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.16.48.1 - 2026/03/05 =
+= 1.17.0 - 2026/03/05 =
+* Calendar settings improvements - **[See the user-friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-17-calendar-settings-improvements/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
+* Feature - Add an option to display events out of the availability period as unavailable instead of not retrieving them at all (in form calendar settings)
+* Feature - Add an option to select the first available event by default (in form calendar settings)
+* Feature - Add an option to hide calendar if an event is automatically preselected (in form calendar settings)
+* Feature - Add an option to set days off globally (in Booking Activities settings)
+* Feature - Add an option to prevent booking events taking place partly on days off (in Booking Activities settings)
+* Tweak - Display started (groups of) events if they are bookable without having to turn ON Past Events (in form calendar settings)
+* Tweak - Make "At the latest" option compatible with "Display past events" and "Make past events bookable" options (in form calendar settings)
+* Tweak - Make "Booked only" and "Groups only" filters compatible together (in form calendar settings)
+* Fix - Grouped events could be booked individually if group has started and Group category was set to "All"
+* Dev - Separate the availability period from the display period: the former corresponds to the period during which events can be booked, the latter to the period during which they are displayed
+* Dev - Refactor parameters of bookacti_fetch_events_of_group_of_events_occurrences function and bookacti_get_grouped_events hook
+* Dev - Replace bookacti_booking_system_grouped_events_filters, bookacti_booking_system_booked_events_filters and bookacti_booking_system_events_filters hooks with bookacti_booking_system_event_filters
 * Dev - bookacti_encrypt and bookacti_decrypt functions now return an empty string in case of failure
-
-= 1.16.48 - 2026/02/09 =
-* Feature - Offer to refund the cancelled bookings after deleting a (group of) event(s) and cancelling its bookings from the calendar editor
-* Tweak - WC order status will turn to "Complete" when updating booking status only if all its bookings payment status are "paid" or "none"
-* Fix - PHP notice when bulk refund multiple bookings with WC gateway
-* Dev - Add bookacti_wc_is_default_booking_status_for_unpaid_order PHP hook to use the default booking status for unpaid orders (instead of "pending")
-* Dev - Improve compatibility with third party product types by using is_a instead of is_type
-
-= 1.16.47 - 2026/01/27 =
-* Fix - Prevent unbinding repeated (group of) event(s) occurrences if the result would be identical to the original
-* Fix - Incorrect grouped events after unbinding booked occurrences if the result is a non repeated group
-* Fix - WC variable product booking form was not pre-filled after redirecting from another form
-* Fix - Custom fields may be empty after duplicating a booking form
-
-= 1.16.46 - 2025/12/09 =
-* Tweak - The [Waiting List](https://booking-activities.fr/en/downloads/waiting-list/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme) add-on is now available!
-* Fix - Fix qTranslateConfig deprecation notice with qTranslateXT 1.16
-* Fix - Fix escaping errors
-
-= 1.16.45 - 2025/12/02 =
-* Tweak - Compatibility with Waiting List add-on 1.0.0
-* Tweak - Add customer avatar column to user booking list (customer_avatar) and backend booking list
-* Tweak - Remove hint on duration field as it may be misleading
-* Tweak - Hide bullet point followed by colon in WC item meta
-* Tweak - Remove "Password required" option from "User data (login / registration)" field settings
-* Tweak - Allow empty values for title, label, tooltip, placeholder, options and value fields in form fields settings
-* Fix - Admnistrators could not reschedule to a past event from admin if "Administrators can reschedule bookings to" option was set to "Same form"
-* Fix - Booking dialogs may not appear on block based sites
-* Fix - Columns order may not be taken into account with select2 4.0.13
-* Fix - Call woocommerce_coupon_is_valid hook in try catch to improve compatibility
-* Fix - Do not allow dialogs content to overflow after resizing
-* Fix - Prevent payment for orders with bookings whose status is not valid
-* Dev - Add "expired" booking filter (can only be used programmatically)
-* Dev - Make "from", "to", "end_from", "end_to", "created_from" and "created_to" booking filters work when retrieving booking groups as well
-* Dev - Allow boolean value for "booking_group_id" booking filter to retrieve only (non) grouped bookings (can only be used programmatically)
-* Dev - Remove bookacti_booking_list_displayed_status hook, use bookacti_user_booking_list_default_statuses instead
-* Dev - Remove bookacti_change_booking_status_options hook, use bookacti_change_booking_status_dialog_booking_status_fields instead
-* Dev - Remove bookacti_new_booking_notification_args hooks, use bookacti_booking_status_change_notification_args instead
-* Dev - Remove bookacti_send_booking_group_status_change_notification function, use bookacti_send_booking_status_change_notification instead
-* Dev - Remove bookacti_booking_group_status_change_notification_* hooks, use bookacti_booking_status_change_notification_* instead
-* Dev - Refactor bookacti_send_booking_status_change_notification function and bookacti_booking_status_change_notification_* hooks parameters to handle both single and group bookings
-* Dev - Add bookacti_booking_quantity_updated and bookacti_booking_status_changed hooks on every WC actions that affects booking quantity or status
-* Dev - Add context in $args parameter of bookacti_booking_quantity_updated, bookacti_booking_group_quantity_updated, bookacti_booking_status_changed and bookacti_booking_group_status_changed hooks
-* Dev - Refactor all parameters of bookacti_booking_payment_status_changed and bookacti_booking_group_payment_status_changed hooks
-* Dev - Refactor all parameters of bookacti_booking_quantity_updated and bookacti_booking_group_quantity_updated hooks
-* Dev - Refactor all parameters of bookacti_event_updated hook
-* Dev - Replace first parameter of bookacti_activity_updated and bookacti_group_category_updated hooks
-* Dev - Refactor parameters of bookacti_is_booking_in_delay function and hook
-* Dev - Refactor parameters of bookacti_bypass_booking_changes_deadline hook
-* Dev - Improve compatibility with "button" type submit, and not only "input" type submit
-* Dev - Add a secret key to process async notifications via URL
-* Dev - Add PHP hooks in calendar editor dialogs, refactor some code to standardize everything
-* Dev - Clean session data on woocommerce_cart_emptied as recommended in WC 10.3
-
-= 1.16.44 - 2025/09/03 =
-* Fix - Product selectboxes may remain empty in booking form calendar settings
-
-= 1.16.43 - 2025/08/19 =
-* Fix - Form field meta not saved when value was empty array (e.g. "All" group categories in Calendar settings)
-* Fix - Incorrect availability display after creating an event in the calendar editor
-* Dev - Improve compatibility with deposit plugins
-* Dev - Remove bookacti_booking_states_you_can_manually_change hook, use bookacti_change_booking_status_options instead
-
-= 1.16.42 - 2025/08/12 =
-* Tweak - Add an option in WooCommerce > Settings > Advanced to change the Bookings endpoint
-* Tweak - Allow to log in with username instead of email address with booking form login fields
-* Dev - Remove bookacti_validate_booking_form_submission hook, use bookacti_validate_form_fields instead
-* Dev - Remove bookacti_booking_form_booking_inserted and bookacti_booking_form_booking_group_inserted hooks, use bookacti_picked_event_booking_inserted instead
-* Dev - Remove bookacti_booking_form_values_before_booking hook, use bookacti_booking_form_values or bookacti_booking_form_before_booking instead
-* Dev - Remove bookacti_login_form_user_registered hook, use bookacti_booking_form_user_registered instead
-* Dev - Remove bookacti_group_of_events_booked hook, use bookacti_booking_group_fully_inserted instead
-* Dev - Change bookacti_booking_form_user_logged_in and bookacti_booking_form_user_registered hooks parameters
-* Dev - Change bookacti_validate_registration_form and bookacti_validate_login_form hooks expected return value
-* Dev - Remove rerender delay from calendar editor to improve compatibility with hooks triggered after
-* Dev - Split the booking form process into multiple smaller functions
-* Dev - Refactor WC endpoints for a better WC handling
-* Dev - Refactor and standardize form field updating process
-* Lib - Update FullCalendar to 6.1.19
-
-= 1.16.41 - 2025/08/05 =
-* Fix - Do not display negative availability on frontend
-* Fix - Error message not displayed when validating picked events with JS before sending form
-
-= 1.16.40 - 2025/07/23 =
-* Tweak - Improve cart item meta display with WC classic cart
-* Tweak - Set unexpectedly removed order item booking status to "removed" instead of "cancelled"
-* Dev - Dissociate event availability check and groups of events availability check in JS
-* Dev - Replace all JS hooks used to change group of events dialog option HTML with the a unique hook bookacti_group_of_events_option
-* Dev - Process all checks when checking if the selected event is available on a specific form instead of stopping after the first failure
-
-= 1.16.39 - 2025/06/30 =
-* Fix - Since 1.16.38, order items booking meta were saved and displayed twice after updating the order (the fix applies to future orders only, for existing orders you need to delete the undesired meta manually)
-* Dev - Standardize group of events availability check in JS in one function bookacti_is_group_of_events_available
-* Dev - Add bookacti_calendar_event_data_transform JS hook
-* Lib - Update FullCalendar to 6.1.18
-
-= 1.16.38 - 2025/06/25 =
-* Tweak - Standardize display of WC item meta in cart, orders, and emails, for all WC versions
-* Tweak - Allow displaying the content of a private, draft or pending page in WooCommerce My Account Bookings tab
-* Tweak - Allow selecting private, draft or pending WC products in calendar settings selectboxes
-* Fix - Add robustness checks when retrieving notification settings in case of corrupted data
-* Lib - Update select2 library to 4.0.13
-
-= 1.16.37 - 2025/06/17 =
-* Fix - With PHP version < 8.1 characters &#039; may appear in booking exports
-* Dev - Fallback to get_option when using wp_load_alloptions in case autoload is off
-
-= 1.16.36 - 2025/06/11 =
-* Fix - Allow users with bookacti_read_templates permission to view activities and events and their settings in calendar editor
-
-= 1.16.35 - 2025/06/02 =
-* Tweak - Declare Booking Activities compatible with WooCommerce cart and checkout blocks (after more than a year of beta testing)
-* Fix - Translations may not be loaded in specific configurations
-
-= 1.16.34 - 2025/04/18 =
-* Fix - Hide WC Payments quick payments buttons on activity product pages (the booking needs to be added to cart first)
-* Fix - Apply z-index to Booking Activities' select2 selectboxes only
-* Dev - Refactor bookacti_log function to use error_log instead of fwrite, and gmdate instead of date
-* Lib - Update FullCalendar to 6.1.17
-
-= 1.16.33 - 2025/03/19 =
-* Fix - Duplicating booking forms did not keep field order
-* Fix - When trying to book without account for an email with an account: Prefer using embedded login method, and fix login link redirect
-
-= 1.16.32 - 2025/03/03 =
-* Fix - Temporary fix for WC select2 sitewide custom CSS (lack prefix or scope)
-* Dev - Allow booking list actions to be performed from a dynamically created element
-
-= 1.16.31 - 2025/02/17 =
-* Tweak - Use the Bookings custom page title as tab label and page title in WC My Account
-* Tweak - Add {booking_count} tag in iCal booking export settings and in notification tags
-* Fix - Booking notifications were not send when WC orders turned to Partially Paid (with a deposit plugin)
-
-= 1.16.30 - 2025/02/10 =
-* Fix - Cart items may be deleted right after a booking was added to cart
-
-= 1.16.29 - 2025/02/07 =
-* Tweak - Add "Customer order note" column in booking export
-* Tweak - Add {customer_order_note} notification tag
-* Fix - Expired and removed bookings were not automatically deleted from database if cart expiration option was not active
-
-= 1.16.28 - 2025/01/07 =
-* Dev - Add checks before removing select2 from a selectbox to prevent JS errors
-
-= 1.16.27 - 2024/12/18 =
-* Fix - Reschedule notifications were not sent after moving a booked event in the calendar editor
-
-= 1.16.26 - 2024/12/11 =
-* Dev - Replace deprecated UTF8 PHP functions as of PHP 8.2
-
-= 1.16.25 - 2024/11/29 =
-* Fix - Select2 could be applied to non select elements
-
-= 1.16.24 - 2024/11/22 =
-* Feature - Add compatibility with some deposit plugins for WooCommerce (Beta)
-* Fix - Events not appearing on reschedule calendar under certain circumstances
-* Fix - Add aria-label for booking status icons and booking action buttons
-* Fix - Clean possibly corrupted repeated events
-* Dev - Improve availability div HTML structure in the group of events selection dialog
-
-= 1.16.23 - 2024/11/14 =
-* Fix - Some texts may not be translated after switching / restoring language with WPML, Polylang or qTranslate-XT with Wordpress 6.7
-
-= 1.16.22 - 2024/11/13 =
-* Fix - Row number per page may be incorrect in List Tables
-* Fix - Plugin was not translated with Wordpress 6.7
-
-= 1.16.21 - 2024/10/18 =
-* Tweak - Reassign the bookings' owner and booking forms' author to the selected user when a user is deleted
-* Fix - Block Cart item total may be incorrect when changing quantity if price was set dynamically with add-ons
-
-= 1.16.20 - 2024/10/16 =
-* Tweak - Display the grayed out number of places (like before 1.16.9) if "unavail." text is set to "{current}" in Settings > Messages tab.
-
-= 1.16.19 - 2024/10/01 =
-* Dev - Bump version to refresh WP repository
-
-= 1.16.18 - 2024/10/01 =
-* Tweak - Do not automatically change the quantity value according to min and max after the customer manually changed it
-* Dev - Add the bookacti_wc_cart_item_price hook to change a cart item price having a booking
-* Dev - Improve product selectbox compatibility with different variable product types
-
-= 1.16.17 - 2024/09/13 =
-* Fix - PHP error when a logged in user tries to validate the log in form
-* Fix - AJAX pagination in admin booking list
-* Dev - Remove div container for WC cart item remove link to improve compatibility with third party plugins
-
-= 1.16.16 - 2024/09/05 =
-* Tweak - Increase PHP version requirement to 5.6 or later
-* Tweak - Change the login button type from "button" to "submit" when only the login field is displayed
-* Fix - Unit name was displayed in availability area even if "Show unit in availability" option was OFF
-
-= 1.16.15 - 2024/08/13 =
-* Fix - PHP error when generating coupon as a refund for a booking if WC was 9.0+ and WC Legacy REST API plugin was not installed
-
-= 1.16.14 - 2024/08/08 =
-* Tweak - Reactivate WC add to cart button on product page after 10 seconds to improve compatibility with third-party AJAX add to cart
-
-= 1.16.13 - 2024/07/17 =
-* Fix - Error message not displayed in the booking forms list if the form author user has been deleted
-* Fix - Booking bulk action did not take into account the "created_from" and "created_to" filters
-
-= 1.16.12 - 2024/07/16 =
-* Dev - Add booking filter "created_from" and "created_to" (as URL parameter only, no GUI)
-* Lib - Update FullCalendar to 6.1.15
-
-= 1.16.11 - 2024/06/26 =
-* Fix - Events may be displayed twice if the calendar opening was a past date, and if "Past events" option was OFF
-* Fix - "unavail." mention was hidden on small events
-
-= 1.16.10 - 2024/06/19 =
-* Tweak - Try to support Polylang via its compatibility API with WPML
-* Fix - Multiday events may not be correctly rendered in Day Grid views with Trim option
-
-= 1.16.9 - 2024/06/11 =
-* Tweak - Display "unavail." on events that cannot be booked even though they are not full. This text can be customized in the Settings > Messages tab.
-* Fix - WooCommerce cart expiration countdown is now visible in WC cart block
-* Fix - Old booking data were not passed to reschedule notification
-* Lib - Update FullCalendar to 6.1.14
-
-= 1.16.8 - 2024/05/28 =
-* Tweak - Add {calendar_title} notification tag
-* Fix - PHP error with some WC add-ons due to missing third argument in woocommerce_coupon_is_valid hook 
-* Fix - Multiday events may not be correctly rendered in Day Grid views with Trim option
-* Dev - Add template_title, template_active, creation_date and expiration_date parameters to booking group objects
-* Lib - Update FullCalendar to 6.1.13
-
-= 1.16.7 - 2024/05/01 =
-* Tweak - If "Show only first event of groups" option is ON, display only the groups starting with the selected event in the dialog to select a group of events
-* Fix - Groups of events may be incorrectly generated
-* Fix - Improve compatibility between "Trim" option and "Show only first event of groups" option
-
-= 1.16.6 - 2024/04/29 =
-* Fix - PHP error when loading a booking list including a booking refunded with a WC coupon on the backend
-
-= 1.16.5 - 2024/04/17 =
-* Fix - PHP error when changing booking group status
-* Fix - PHP warning when cart contains non activity products, or when cart content is null
-* Fix - "Booking form location on product pages" option is now compatible with WP Blocks
-* Tweak - Encapsulate the cart form in a div when "Booking form location on product pages" option is set to "Full width" (non blocks)
-
-= 1.16.4 - 2024/04/12 =
-* Fix - "At the earliest" option was based on events ending time instead of their starting time
-* Fix - Change activity text color in calendar editor according to Display Pack add-on settings
-* Fix - Make sure cart item quantity matches booking quantity and prevent checkout otherwise
-* Fix - Incorrect {price_raw} and {price} notification tags value when used with WooCommerce and Booking Activities add-ons
-* Fix - Hide "Select all ... items" button when no bookings are selected in backend booking list
-* Dev - Use CSS classes to hide empty weeks when "Trim" option is active, so developers can change their appearance
-
-= 1.16.3 - 2024/04/05 =
-* Feature - Filter the booking list by booking (group) ID
-* Fix - Weeks may be hidden even if they have events if "Trim" option is active
-* Fix - "Show only first event of groups" option should be hidden when Group Category = None
-
-= 1.16.2 - 2024/04/04 =
-* Feature - Allow administrators to change the booking forms author
-* Feature - Filter the booking form list by ID, title and author
-* Tweak - Display an error message in the booking forms list if the form author is not allowed to manage the displayed calendars
-* Tweak - Hide weeks on Day Grid views if all the days are empty if "Trim" option is active
-* Fix - Notification not sent to administrators when an administrator reschedule a booking
-* Fix - Incorrect booking status displayed in WC notification after completing a failed order
-* Dev - Remove data conversion for updates from versions prior or equal to 1.14.3 (you need to update Booking Activities to 1.15 before updating it to 1.16)
-
-= 1.16.1 - 2024/03/26 =
-* Fix - Notifications not sent after changing a booking (even if "Send notifications" option was ON)
-* Fix - Prevent performing any booking action if no bookings are selected
-* Fix - Browser may hang after deleting a lot of bookings (bookings were correctly deleted)
-* Fix - Site setting "Are started groups of events bookable?" was not taken into account (but group category setting was)
-* Fix - Started group events were not grayed out if not bookable
-* Fix - Make "Trim" option compatible with "Show only first event of groups" option
-* Dev - Update some js scripts dependencies
+* Dev - Parameters of these functions have changed: bookacti_get_template_data, bookacti_get_templates_data, bookacti_get_mixed_template_data and bookacti_format_template_data
 
 = 1.16.0 - 2024/03/21 =
 * Bookings bulk actions, reschedule scope - **[See the user-friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-16-bookings-bulk-actions-reschedule-scope-etc/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
-* Feature - Edit multiple bookings at once: change status, change quantity, reschedule, refund, delete, send notification
-* Feature - Add an option to allow customers to reschedule a booking to a different activity and / or to a different calendar (in Calendar Editor > the activity settings > Availability tab)
-* Feature - Add an option to allow administrators to reschedule a booking to a different activity and / or to a different calendar (in Settings > Cancellation tab)
-* Feature - Add an option to select the activities a booking can be rescheduled to (in Calendar Editor > the activity settings > Availability tab)
-* Feature - Send only one notification for multiple bookings / for WC order (the "Asynchronous notifications" option must be ON in Settings > Notifications tab)
-* Feature - Manually send a notification from the backend booking list (in the Actions column)
-* Feature - Allow customers to manage their bookings without being logged in by using an authentication key in the URL of the page displaying the [bookingactivities_list] shortcode (see {user_auth_key} notification tag)
-* Feature - Add the {user_auth_key} notification tag (to be used as the user_auth_key URL parameter value, e.g.: yoursite/my-booking-list/?user_auth_key={user_auth_key})
-* Tweak - "Customer" booking filter: List the customer emails from booking made without accounts
-* Tweak - "Customer" booking filter: Display the bookings made with and without account by the selected customer (need a page refresh, not working with AJAX)
-* Tweak - You cannot display events from a calendar that the booking form author cannot manage
-* Tweak - Remove "When to load the events?" option, you can use the bookacti_booking_system_default_attributes hook to set auto_load to 0 (after page load (default)) or 1 (on page load (not recommended, support no longer provided))
-* Tweak - Unselect an event by clicking it again (even if multiple events selection is deactivated)
-* Tweak - Export bookings included in groups if the booking list is filtered by event and if export settings are "One row for each booking of the group"
-* Fix - Booking filters may not be correctly applied after reloading the bookings page
-* Fix - Deleting an activity deleted it from all calendars instead of removing it only from the current calendar
-* Fix - Decode HTML entities before displaying WooCommerce price
-* Fix - Incorrect bookings retrieved if booking_group_id_operator filter was set to "OR" and no booking ids where provided
-* Fix - Selected user ID was displayed in user selectbox instead of proper label
-* Fix - English was used instead of site locale in javascript if site locale code had no underscore
-* Fix - (WIP) Support WooCommerce Cart Block: validate cart item quantity and change booking quantity accordingly
-* Fix - (WIP) Support WooCommerce Checkout Block: change booking status after checkout
-* Dev - (WIP) Declare WC Cart and Checkout blocks as NOT supported by Booking Activities and its add-ons for now (use WC Cart and Checkout shortcodes instead)
-* Dev - Functions to update and delete Booking Activities objects metadata now allow multiple object ids
-* Dev - Refactor async notifications scheduling
-* Dev - Lots of hooks and functions have changed, especially regarding booking actions, test and update your custom code consequently
-* Lib - Update FullCalendar to 6.1.11
 
 = 1.15.0 - 2022/08/31 =
 * Update Fullcalendar to v5 - **[See the user-friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-15-fullcalendar-v5/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**

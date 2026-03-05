@@ -227,6 +227,28 @@ add_action( 'bookacti_add_settings', 'bookacti_add_wpml_settings_section' );
 
 
 /**
+ * Sanitize WPML general settings
+ * @since 1.17.0
+ * @param array $settings
+ * @param array $settings_raw
+ * @param array $defaults
+ * @return array
+ */
+function bookacti_sanitize_wpml_general_settings( $settings, $settings_raw, $defaults ) {
+	$keys_by_type = array( 
+		'bool' => array( 'wpml_register_translatable_texts' )
+	);
+	
+	$wpml_settings = bookacti_sanitize_values( $defaults, $settings_raw, $keys_by_type );
+	
+	$settings = array_merge( $settings, $wpml_settings );
+	
+	return $settings;
+}
+add_filter( 'bookacti_sanitized_settings_general', 'bookacti_sanitize_wpml_general_settings', 10, 3 );
+
+
+/**
  * Register all translatable texts - on WPML String Translation page
  * @since 1.14.0
  * @version 1.16.0

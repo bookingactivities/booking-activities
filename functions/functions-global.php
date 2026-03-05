@@ -179,7 +179,7 @@ function bookacti_get_string_between( $string, $start = '', $end = '' ) {
 /**
  * Encrypt a string
  * @since 1.7.15
- * @version 1.16.48.1
+ * @version 1.17.0
  * @param string $string
  * @param $context $string
  * @return string
@@ -206,7 +206,7 @@ function bookacti_encrypt( $string, $context = '' ) {
 /**
  * Dencrypt a string
  * @since 1.7.15
- * @version 1.16.48.1
+ * @version 1.17.0
  * @param string $string
  * @param string $context
  * @return string
@@ -415,7 +415,7 @@ function bookacti_is_db_version_outdated() {
 /**
  * Get the variables used with javascript
  * @since 1.8.0
- * @version 1.16.2
+ * @version 1.17.0
  * @return array
  */
 function bookacti_get_js_variables() {
@@ -478,6 +478,7 @@ function bookacti_get_js_variables() {
 
 		'started_events_bookable'            => bookacti_get_setting_value( 'bookacti_general_settings', 'started_events_bookable' ) ? 1 : 0,
 		'started_groups_bookable'            => bookacti_get_setting_value( 'bookacti_general_settings', 'started_groups_bookable' ) ? 1 : 0,
+		'started_days_off_bookable'          => bookacti_get_setting_value( 'bookacti_general_settings', 'started_days_off_bookable' ),
 		'event_load_interval'                => bookacti_get_setting_value( 'bookacti_general_settings', 'event_load_interval' ),
 		'initial_view_threshold'             => $fc_init_view_threshold,
 		'event_touch_press_delay'            => 350,
@@ -585,6 +586,8 @@ function bookacti_get_js_variables() {
 				'error_no_templates_for_activity'    => esc_html__( 'The activity must be bound to at least one calendar.', 'booking-activities' ),
 				'error_select_at_least_two_events'   => esc_html__( 'You must select at least two events.', 'booking-activities' ),
 				'error_no_template_selected'         => esc_html__( 'You must select a calendar first.', 'booking-activities' ),
+				
+				'days_off'                           => bookacti_get_setting_value( 'bookacti_general_settings', 'days_off' )
 			);
 			$bookacti_localized_backend = array_merge( $bookacti_localized_backend, $calendar_editor_strings );
 		}
@@ -624,7 +627,7 @@ function bookacti_get_active_add_ons( $prefix = '', $exclude = array( 'balau' ) 
 /**
  * Get add-on data by prefix
  * @since 1.7.14
- * @version 1.16.45
+ * @version 1.17.0
  * @param string $prefix
  * @param array $exclude
  * @return array
@@ -637,7 +640,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-display-pack', 
 			'end_of_life' => '', 
 			'download_id' => 482,
-			'min_version' => '1.5.12'
+			'min_version' => '1.5.14'
 		),
 		'banp' => array( 
 			'title'       => 'Notification Pack', 
@@ -653,7 +656,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-prices-and-credits', 
 			'end_of_life' => '', 
 			'download_id' => 438,
-			'min_version' => '1.8.32'
+			'min_version' => '1.8.37'
 		),
 		'baaf' => array( 
 			'title'       => 'Advanced Forms', 
@@ -669,7 +672,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-order-for-customers', 
 			'end_of_life' => '', 
 			'download_id' => 436,
-			'min_version' => '1.3.7'
+			'min_version' => '1.3.9'
 		),
 		'bara' => array( 
 			'title'       => 'Resource Availability', 
@@ -677,7 +680,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-resource-availability', 
 			'end_of_life' => '', 
 			'download_id' => 29249,
-			'min_version' => '1.2.4'
+			'min_version' => '1.2.6'
 		),
 		'bawl' => array( 
 			'title'       => 'Waiting List', 
@@ -685,7 +688,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-waiting-list', 
 			'end_of_life' => '', 
 			'download_id' => 39100,
-			'min_version' => '1.0.0'
+			'min_version' => '1.0.3'
 		),
 		'balau' => array( 
 			'title'       => 'Licenses & Updates', 
@@ -1752,28 +1755,57 @@ function bookacti_display_table_from_array( $array ) {
 /**
  * Display the Days off field
  * @since 1.13.0
+ * @version 1.17.0
  * @param array $field
  * @param string $field_name
  */
 function bookacti_display_date_intervals_field( $field, $field_name ) {
 	if( $field[ 'type' ] !== 'custom_date_intervals' ) { return; }
 	if( empty( $field[ 'value' ] ) ) { $field[ 'value' ] = array( array( 'from' => '', 'to' => '' ) ); }
+	
+	$display_use_global = isset( $field[ 'use_global' ] );
+	$display_table      = ! isset( $field[ 'use_global' ] ) || ( isset( $field[ 'use_global' ] ) && intval( $field[ 'use_global' ] ) < 1 );
 ?>
-	<div class='bookacti-field-container bookacti-date-intervals-container' id='<?php echo $field[ 'id' ] . '-container'; ?>'>
-		<label for='<?php echo esc_attr( sanitize_title_with_dashes( $field[ 'id' ] ) ); ?>' class='bookacti-fullwidth-label'>
+	<div class='bookacti-field-container bookacti-date-intervals-container <?php if( $display_use_global ) { echo esc_attr( 'bookacti-has-use-global' ); } ?>' id='<?php echo esc_attr( $field[ 'id' ] . '-container' ); ?>'>
+		<?php if( ! empty( $field[ 'title' ] ) ) { ?>
+		<label for='<?php echo esc_attr( sanitize_title_with_dashes( $field[ 'id' ] ) ); ?>' class='<?php if( ! $display_use_global || ! empty( $field[ 'fullwidth' ] ) ) { echo esc_attr( 'bookacti-fullwidth-label' ); } ?>'>
 		<?php 
-			echo ! empty( $field[ 'title' ] ) ? $field[ 'title' ] : '';
-			bookacti_help_tip( $field[ 'tip' ] );
+			echo esc_html( $field[ 'title' ] );
+			if( ! empty( $field[ 'tip' ] ) && ! $display_use_global ) { bookacti_help_tip( $field[ 'tip' ] ); }
 		?>
-			<span class='dashicons dashicons-plus-alt bookacti-add-date-interval'></span>
 		</label>
-		<div id='<?php echo $field[ 'id' ]; ?>' class='bookacti-date-intervals-table-container bookacti-custom-scrollbar' data-name='<?php echo $field[ 'name' ]; ?>' >
-			<table>
+		<?php }
+		
+		if( $display_use_global ) { ?>
+		<div class='bookacti-date-intervals-use-global-container'>
+			<select name='<?php echo esc_attr( 'use_global_' . $field[ 'name' ] ); ?>' class='bookacti-select bookacti-date-intervals-use-global'>
+			<?php
+				$use_global_options = array(
+					1  => __( 'Site setting', 'booking-activities' ),
+					0  => __( 'Specific values', 'booking-activities' ),
+					-1 => __( 'Site setting + specific values', 'booking-activities' )
+				);
+
+				foreach( $use_global_options as $use_global_value => $use_global_label ) { ?>
+					<option value='<?php echo esc_attr( $use_global_value ); ?>' <?php selected( intval( $field[ 'use_global' ] ), $use_global_value ); ?>>
+						<?php echo esc_html( $use_global_label ); ?>
+					</option>
+				<?php } ?>
+			</select>
+			<?php if( ! empty( $field[ 'tip' ] ) ) { bookacti_help_tip( $field[ 'tip' ] ); } ?>
+		</div>
+		<?php } ?>
+		
+		<div id='<?php echo esc_attr( $field[ 'id' ] ); ?>' class='bookacti-date-intervals-table-container bookacti-custom-scrollbar' data-name='<?php echo esc_attr( $field[ 'name' ] ); ?>' >
+			<table style='<?php if( ! $display_table ) { echo esc_attr( 'display: none;' ); } ?>'>
 				<thead>
 					<tr>
 						<th><?php echo esc_html_x( 'From', 'date', 'booking-activities' ); ?></th>
 						<th><?php echo esc_html_x( 'To', 'date', 'booking-activities' ); ?></th>
-						<th></th>
+						<th>
+							<span class='dashicons dashicons-plus-alt bookacti-add-date-interval'></span>
+							<?php if( ! empty( $field[ 'tip' ] ) && ! $display_use_global && empty( $field[ 'title' ] ) ) { bookacti_help_tip( $field[ 'tip' ] ); } ?>
+						</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -1782,8 +1814,8 @@ function bookacti_display_date_intervals_field( $field, $field_name ) {
 					foreach( $field[ 'value' ] as $day_off ) {
 					?>
 						<tr>
-							<td><input type='date' name='<?php echo $field[ 'name' ] . '[' . $i . '][from]'; ?>' value='<?php if( ! empty( $day_off[ 'from' ] ) ) { echo $day_off[ 'from' ]; } ?>' class='bookacti-date-interval-from'/></td>
-							<td><input type='date' name='<?php echo $field[ 'name' ] . '[' . $i . '][to]'; ?>' value='<?php if( ! empty( $day_off[ 'to' ] ) ) { echo $day_off[ 'to' ]; } ?>' class='bookacti-date-interval-to'/></td>
+							<td><input type='date' name='<?php echo esc_attr( $field[ 'name' ] . '[' . $i . '][from]' ); ?>' value='<?php if( ! empty( $day_off[ 'from' ] ) ) { echo esc_attr( $day_off[ 'from' ] ); } ?>' class='bookacti-date-interval-from'/></td>
+							<td><input type='date' name='<?php echo esc_attr( $field[ 'name' ] . '[' . $i . '][to]' ); ?>' value='<?php if( ! empty( $day_off[ 'to' ] ) ) { echo esc_attr( $day_off[ 'to' ] ); } ?>' class='bookacti-date-interval-to'/></td>
 							<td><span class='dashicons dashicons-trash bookacti-delete-date-interval'></span></td>
 						</tr>
 					<?php

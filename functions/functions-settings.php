@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Get default settings values
  * @since 1.3.0 (was bookacti_define_default_settings_constants)
- * @version 1.16.0
+ * @version 1.17.0
  */
 function bookacti_get_default_settings() {
 	$date = new DateTime(); 
@@ -15,6 +15,8 @@ function bookacti_get_default_settings() {
 		'event_load_interval'               => 92,
 		'started_events_bookable'           => false,
 		'started_groups_bookable'           => false,
+		'started_days_off_bookable'         => 0,
+		'days_off'                          => array(),
 		'default_booking_state'             => 'pending',
 		'default_payment_status'            => 'none',
 		'timezone'                          => $tz,
@@ -175,7 +177,6 @@ function bookacti_settings_section_cancellation_callback() {
 
 /**
  * Display Booking page options in screen options area
- * 
  * @since 1.3.0
  */
 function bookacti_display_bookings_screen_options() {
@@ -197,7 +198,6 @@ function bookacti_display_bookings_screen_options() {
 
 /**
  * Display Form page options in screen options area
- * 
  * @since 1.5.0
  */
 function bookacti_display_forms_screen_options() {
@@ -306,13 +306,13 @@ function bookacti_settings_field_calendar_localization_callback() {
  */
 function bookacti_settings_field_event_load_interval_callback() {
 	$args = array(
-		'type'		=> 'number',
-		'name'		=> 'bookacti_general_settings[event_load_interval]',
-		'id'		=> 'event_load_interval',
-		'options'	=> array( 'min' => 14 ),
-		'label'		=> ' ' . esc_html__( 'days', 'booking-activities' ),
-		'value'		=> bookacti_get_setting_value( 'bookacti_general_settings', 'event_load_interval' ),
-		'tip'		=> __( 'Events are loaded at intervals as the user navigates the calendar. E.g.: If you set "92", events will be loaded for 92 days. When the user reaches the 92nd day on the calendar, events of the next 92 days will be loaded.', 'booking-activities' )
+		'type'    => 'number',
+		'name'    => 'bookacti_general_settings[event_load_interval]',
+		'id'      => 'event_load_interval',
+		'options' => array( 'min' => 14 ),
+		'label'   => ' ' . esc_html__( 'days', 'booking-activities' ),
+		'value'   => bookacti_get_setting_value( 'bookacti_general_settings', 'event_load_interval' ),
+		'tip'     => __( 'Events are loaded at intervals as the user navigates the calendar. E.g.: If you set "92", events will be loaded for 92 days. When the user reaches the 92nd day on the calendar, events of the next 92 days will be loaded.', 'booking-activities' )
 	);
 	bookacti_display_field( $args );
 }
@@ -320,16 +320,15 @@ function bookacti_settings_field_event_load_interval_callback() {
 
 /**
  * Display "Is the user allowed to book an event that has already begun?" setting
- * 
  * @version 1.4.0
  */
 function bookacti_settings_field_started_events_bookable_callback() {
 	$args = array(
-		'type'	=> 'checkbox',
-		'name'	=> 'bookacti_general_settings[started_events_bookable]',
-		'id'	=> 'started_events_bookable',
-		'value'	=> bookacti_get_setting_value( 'bookacti_general_settings', 'started_events_bookable' ),
-		'tip'	=> __( 'Allow or disallow users to book an event that has already begun.', 'booking-activities' )
+		'type'  => 'checkbox',
+		'name'  => 'bookacti_general_settings[started_events_bookable]',
+		'id'    => 'started_events_bookable',
+		'value' => bookacti_get_setting_value( 'bookacti_general_settings', 'started_events_bookable' ),
+		'tip'   => __( 'Allow or disallow users to book an event that has already begun.', 'booking-activities' )
 	);
 	bookacti_display_field( $args );
 }
@@ -337,7 +336,6 @@ function bookacti_settings_field_started_events_bookable_callback() {
 
 /**
  * Display "Is the user allowed to book a group of events that has already begun?" setting
- * 
  * @since 1.4.0
  */
 function bookacti_settings_field_started_groups_bookable_callback() {
@@ -345,13 +343,50 @@ function bookacti_settings_field_started_groups_bookable_callback() {
 	$tip .= '<br/>' . __( 'This parameter applies to all groups of events. An group category-specific parameter is available in group category settings, in the calendar editor.', 'booking-activities' );
 
 	$args = array(
-		'type'	=> 'checkbox',
-		'name'	=> 'bookacti_general_settings[started_groups_bookable]',
-		'id'	=> 'started_groups_bookable',
-		'value'	=> bookacti_get_setting_value( 'bookacti_general_settings', 'started_groups_bookable' ),
-		'tip'	=> $tip
+		'type'  => 'checkbox',
+		'name'  => 'bookacti_general_settings[started_groups_bookable]',
+		'id'    => 'started_groups_bookable',
+		'value' => bookacti_get_setting_value( 'bookacti_general_settings', 'started_groups_bookable' ),
+		'tip'   => $tip
 	);
 	bookacti_display_field( $args );
+}
+
+
+/**
+ * Display "Are events taking place partly on days off bookable?" setting
+ * @since 1.17.0
+ */
+function bookacti_settings_field_started_days_off_bookable_callback() {
+	$args = array(
+		'type'  => 'checkbox',
+		'name'  => 'bookacti_general_settings[started_days_off_bookable]',
+		'id'    => 'started_days_off_bookable',
+		'value' => bookacti_get_setting_value( 'bookacti_general_settings', 'started_days_off_bookable' ),
+		'tip'   => esc_html__( 'Allow customers to book events starting on a working day and extending into a day off. Useful for events taking place at night.', 'booking-activities' )
+	);
+	bookacti_display_field( $args );
+}
+
+
+/**
+ * Display "Days off" general setting
+ * @since 1.17.0
+ */
+function bookacti_settings_field_days_off_callback() {
+	$tip  = esc_html__( 'Enter your leave periods, no events will be displayed during them.', 'booking-activities' );
+	$tip .= '<br/>' . __( 'This applies to all calendars by default. You can set specific values in each form\'s calendar settings, and in the calendar editor settings.', 'booking-activities' );
+
+	$fields = array( 
+		'days_off' => array( 
+			'type'  => 'custom_date_intervals',
+			'name'  => 'bookacti_general_settings[days_off]',
+			'id'    => 'days_off',
+			'value' => bookacti_get_setting_value( 'bookacti_general_settings', 'days_off' ),
+			'tip'   => $tip
+		)
+	);
+	bookacti_display_fields( $fields );
 }
 
 
@@ -414,15 +449,15 @@ function bookacti_settings_field_default_calendar_view_threshold_callback() {
 	$addon_link = '<a href="https://booking-activities.fr/en/downloads/display-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=display-pack&utm_content=settings" target="_blank" >Display Pack</a>';
 
 	$args = array(
-		'type'		=> 'number',
-		'name'		=> 'bookacti_general_settings[default_calendar_view_threshold]',
-		'id'		=> 'default_calendar_view_threshold',
-		'options'	=> array( 'min' => 0, 'step' => 1 ),
-		'value'		=> bookacti_get_setting_value( 'bookacti_general_settings', 'default_calendar_view_threshold' ),
-		'label'		=> esc_html_x( 'px', 'pixel short', 'booking-activities' ),
-		'tip'		=> esc_html__( 'The day view will be displayed by default if the calendar width is under that threshold when it is loaded. Else, it will be the week view.', 'booking-activities' )
-					/* translators: %s is the add-on name */
-					. '<br/>' . sprintf( esc_html__( 'Get more views and granularity with the %s add-on!', 'booking-activities' ), $addon_link )
+		'type'    => 'number',
+		'name'    => 'bookacti_general_settings[default_calendar_view_threshold]',
+		'id'      => 'default_calendar_view_threshold',
+		'options' => array( 'min' => 0, 'step' => 1 ),
+		'value'   => bookacti_get_setting_value( 'bookacti_general_settings', 'default_calendar_view_threshold' ),
+		'label'   => esc_html_x( 'px', 'pixel short', 'booking-activities' ),
+		'tip'     => esc_html__( 'The day view will be displayed by default if the calendar width is under that threshold when it is loaded. Else, it will be the week view.', 'booking-activities' )
+		/* translators: %s is the add-on name */
+		. '<br/>' . sprintf( esc_html__( 'Get more views and granularity with the %s add-on!', 'booking-activities' ), $addon_link )
 	);
 	bookacti_display_field( $args );
 }
@@ -434,11 +469,11 @@ function bookacti_settings_field_default_calendar_view_threshold_callback() {
  */
 function bookacti_settings_field_display_private_columns_callback() {
 	$args = array(
-		'type'	=> 'checkbox',
-		'name'	=> 'bookacti_general_settings[display_private_columns]',
-		'id'	=> 'display_private_columns',
-		'value'	=> bookacti_get_setting_value( 'bookacti_general_settings', 'display_private_columns' ),
-		'tip'	=> esc_html__( 'Allow to display private data in frontend booking lists (customers ids, names, emails, phones, roles...).', 'booking-activities' )
+		'type'  => 'checkbox',
+		'name'  => 'bookacti_general_settings[display_private_columns]',
+		'id'    => 'display_private_columns',
+		'value' => bookacti_get_setting_value( 'bookacti_general_settings', 'display_private_columns' ),
+		'tip'   => esc_html__( 'Allow to display private data in frontend booking lists (customers ids, names, emails, phones, roles...).', 'booking-activities' )
 	);
 	bookacti_display_field( $args );
 }
@@ -450,11 +485,11 @@ function bookacti_settings_field_display_private_columns_callback() {
  */
 function bookacti_settings_field_delete_data_on_uninstall_callback() {
 	$args = array(
-		'type'		=> 'checkbox',
-		'name'		=> 'bookacti_general_settings[delete_data_on_uninstall]',
-		'id'		=> 'delete_data_on_uninstall',
-		'value'		=> bookacti_get_setting_value( 'bookacti_general_settings', 'delete_data_on_uninstall' ),
-		'tip'		=> esc_html__( 'Delete all Booking Activities data (calendars, forms, bookings, settings...) when you uninstall Booking Activities.', 'booking-activities' )
+		'type'  => 'checkbox',
+		'name'  => 'bookacti_general_settings[delete_data_on_uninstall]',
+		'id'    => 'delete_data_on_uninstall',
+		'value' => bookacti_get_setting_value( 'bookacti_general_settings', 'delete_data_on_uninstall' ),
+		'tip'   => esc_html__( 'Delete all Booking Activities data (calendars, forms, bookings, settings...) when you uninstall Booking Activities.', 'booking-activities' )
 	);
 	bookacti_display_field( $args );
 }
@@ -570,12 +605,12 @@ function bookacti_settings_field_price_decimals_number_callback() {
  */
 function bookacti_settings_field_activate_cancel_callback() {
 	$args = array(
-		'type'	=> 'checkbox',
-		'name'	=> 'bookacti_cancellation_settings[allow_customers_to_cancel]',
-		'id'	=> 'allow_customers_to_cancel',
-		'value'	=> bookacti_get_setting_value( 'bookacti_cancellation_settings', 'allow_customers_to_cancel' ),
-		'tip'	=> __( 'Allow or disallow customers to cancel a booking after they order it.', 'booking-activities' )
-				. '<br/>' . __( 'This option has no effect for administrators.', 'booking-activities' )
+		'type'  => 'checkbox',
+		'name'  => 'bookacti_cancellation_settings[allow_customers_to_cancel]',
+		'id'    => 'allow_customers_to_cancel',
+		'value' => bookacti_get_setting_value( 'bookacti_cancellation_settings', 'allow_customers_to_cancel' ),
+		'tip'   => __( 'Allow or disallow customers to cancel a booking after they order it.', 'booking-activities' )
+		        . '<br/>' . __( 'This option has no effect for administrators.', 'booking-activities' )
 	);
 	bookacti_display_field( $args );
 }
@@ -591,11 +626,11 @@ function bookacti_settings_field_activate_reschedule_callback() {
 	$tip .= '<br/>' . __( 'This option has no effect for administrators.', 'booking-activities' );
 
 	$args = array(
-		'type'	=> 'checkbox',
-		'name'	=> 'bookacti_cancellation_settings[allow_customers_to_reschedule]',
-		'id'	=> 'allow_customers_to_reschedule',
-		'value'	=> bookacti_get_setting_value( 'bookacti_cancellation_settings', 'allow_customers_to_reschedule' ),
-		'tip'	=> $tip
+		'type'  => 'checkbox',
+		'name'  => 'bookacti_cancellation_settings[allow_customers_to_reschedule]',
+		'id'    => 'allow_customers_to_reschedule',
+		'value' => bookacti_get_setting_value( 'bookacti_cancellation_settings', 'allow_customers_to_reschedule' ),
+		'tip'   => $tip
 	);
 	bookacti_display_field( $args );
 }
@@ -607,12 +642,12 @@ function bookacti_settings_field_activate_reschedule_callback() {
  */
 function bookacti_settings_field_cancellation_delay_callback() {
 	$args = array(
-		'type'	=> 'duration',
-		'name'	=> 'bookacti_cancellation_settings[booking_changes_deadline]',
-		'id'	=> 'booking_changes_deadline',
-		'value'	=> floatval( bookacti_get_setting_value( 'bookacti_cancellation_settings', 'booking_changes_deadline' ) ),
-		'tip'	=> esc_html__( 'Define when a customer can change a booking (cancel, reschedule). E.g.: "2 days 5 hours 30 minutes", your customers will be able to change the bookings starting in 2 days, 5 hours and 30 minutes at least. They won\'t be allowed to cancel a booking starting tomorrow for example.', 'booking-activities' )
-				. '<br/>' . esc_html__( 'This option has no effect for administrators.', 'booking-activities' )
+		'type'  => 'duration',
+		'name'  => 'bookacti_cancellation_settings[booking_changes_deadline]',
+		'id'    => 'booking_changes_deadline',
+		'value' => floatval( bookacti_get_setting_value( 'bookacti_cancellation_settings', 'booking_changes_deadline' ) ),
+		'tip'   => esc_html__( 'Define when a customer can change a booking (cancel, reschedule). E.g.: "2 days 5 hours 30 minutes", your customers will be able to change the bookings starting in 2 days, 5 hours and 30 minutes at least. They won\'t be allowed to cancel a booking starting tomorrow for example.', 'booking-activities' )
+		        . '<br/>' . esc_html__( 'This option has no effect for administrators.', 'booking-activities' )
 	);
 	bookacti_display_field( $args );
 }
@@ -630,13 +665,13 @@ function bookacti_settings_field_cancellation_refund_actions_callback() {
 	if( ! is_array( $actions ) ) { $actions = array(); }
 
 	$args = array(
-		'type'		=> 'checkboxes',
-		'name'		=> 'bookacti_cancellation_settings[refund_actions_after_cancellation]',
-		'id'		=> 'refund_action_after_cancellation',
-		'options'	=> bookacti_get_refund_actions(),
-		'value'		=> $actions,
-		'tip'		=> esc_html__( 'Define the actions a customer will be able to take to be refunded after he / she cancels a booking.', 'booking-activities' )
-					. '<br/>' . esc_html__( 'This option has no effect for administrators.', 'booking-activities' )
+		'type'    => 'checkboxes',
+		'name'    => 'bookacti_cancellation_settings[refund_actions_after_cancellation]',
+		'id'      => 'refund_action_after_cancellation',
+		'options' => bookacti_get_refund_actions(),
+		'value'   => $actions,
+		'tip'     => esc_html__( 'Define the actions a customer will be able to take to be refunded after he / she cancels a booking.', 'booking-activities' )
+		          . '<br/>' . esc_html__( 'This option has no effect for administrators.', 'booking-activities' )
 	);
 
 	?>
@@ -653,19 +688,19 @@ function bookacti_settings_field_cancellation_refund_actions_callback() {
  */
 function bookacti_settings_field_admin_reschedule_scope_callback() {
 	$args = array(
-		'type'     => 'select',
-		'name'     => 'bookacti_cancellation_settings[admin_reschedule_scope]',
-		'id'       => 'admin_reschedule_scope',
-		'title'    => esc_html__( 'Administrators can reschedule bookings to', 'booking-activities' ),
-		'options'  => array(
+		'type'    => 'select',
+		'name'    => 'bookacti_cancellation_settings[admin_reschedule_scope]',
+		'id'      => 'admin_reschedule_scope',
+		'title'   => esc_html__( 'Administrators can reschedule bookings to', 'booking-activities' ),
+		'options' => array(
 			'all_self'  => esc_html__( 'All calendars, same activity', 'booking-activities' ),
 			'all_any'   => esc_html__( 'All calendars, any activities', 'booking-activities' ),
 			'form_self' => esc_html__( 'Same form, same activity', 'booking-activities' ),
 			'form_any'  => esc_html__( 'Same form, any activities', 'booking-activities' ),
 		),
-		'value'    => bookacti_get_setting_value( 'bookacti_cancellation_settings', 'admin_reschedule_scope' ),
-		'tip'      => esc_html__( 'Allow the administrators to reschedule a booking to a different activity, from the backend only.', 'booking-activities' )
-		           . '<br/>'  . esc_html__( 'There is an option is the activity settings to allow customers to reschedule their bookings to a different activity. If this option is set, administrators can reschedule to the widest scope.', 'booking-activities' )
+		'value'   => bookacti_get_setting_value( 'bookacti_cancellation_settings', 'admin_reschedule_scope' ),
+		'tip'     => esc_html__( 'Allow the administrators to reschedule a booking to a different activity, from the backend only.', 'booking-activities' )
+		          . '<br/>'  . esc_html__( 'There is an option is the activity settings to allow customers to reschedule their bookings to a different activity. If this option is set, administrators can reschedule to the widest scope.', 'booking-activities' )
 	);
 	bookacti_display_field( $args );
 }
@@ -767,10 +802,10 @@ function bookacti_settings_section_notifications_general_callback() {
 				$description = $notification_settings[ 'description' ] ? bookacti_help_tip( $notification_settings[ 'description' ], false ) : '';
 
 				$columns_values = apply_filters( 'bookacti_notifications_list_columns_values', array(
-					'active'		=> '<span class="dashicons ' . $active_icon . '"></span>',
-					'title'			=> '<a href="' . esc_url( '?page=bookacti_settings&tab=notifications&notification_id=' . sanitize_title_with_dashes( $notification_id ) ) . '" >' . esc_html( $notification_settings[ 'title' ] ) . '</a>' . $description,
-					'recipients'	=> substr( $notification_id, 0, 8 ) === 'customer' ? esc_html__( 'Customer', 'booking-activities' ) : esc_html__( 'Administrator', 'booking-activities' ),
-					'actions'		=> '<a href="' . esc_url( '?page=bookacti_settings&tab=notifications&notification_id=' . sanitize_title_with_dashes( $notification_id ) ) . '" title="' . esc_attr__( 'Edit this notification', 'booking-activities' ) . '" class="button button-secondary" >' . esc_html__( 'Settings', 'booking-activities' ) . '</a>'
+					'active'     => '<span class="dashicons ' . $active_icon . '"></span>',
+					'title'      => '<a href="' . esc_url( '?page=bookacti_settings&tab=notifications&notification_id=' . sanitize_title_with_dashes( $notification_id ) ) . '" >' . esc_html( $notification_settings[ 'title' ] ) . '</a>' . $description,
+					'recipients' => substr( $notification_id, 0, 8 ) === 'customer' ? esc_html__( 'Customer', 'booking-activities' ) : esc_html__( 'Administrator', 'booking-activities' ),
+					'actions'    => '<a href="' . esc_url( '?page=bookacti_settings&tab=notifications&notification_id=' . sanitize_title_with_dashes( $notification_id ) ) . '" title="' . esc_attr__( 'Edit this notification', 'booking-activities' ) . '" class="button button-secondary" >' . esc_html__( 'Settings', 'booking-activities' ) . '</a>'
 				), $notification_settings, $notification_id );
 
 				?>
@@ -790,13 +825,13 @@ function bookacti_settings_section_notifications_general_callback() {
 			if( ! $is_plugin_active ) {
 				$addon_link = '<a href="https://booking-activities.fr/en/downloads/notification-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=notification-pack&utm_content=settings-notification-list" target="_blank" >Notification Pack</a>';
 				$columns_values = array(
-					'active'		=> '<span class="dashicons dashicons-no"></span>',
-					'title'			=> '<strong>' . esc_html__( '1 hour before / after a booked event', 'booking-activities' ) . '</strong>' 
-									/* translators: %1$s is the placeholder for Notification Pack add-on link */
-									.  bookacti_help_tip( sprintf( esc_html__( 'You can send automated notifications with the %1$s add-on before or after booked events (you can set the desired delay). This add-on also allows you to send all notifications through SMS and Push.', 'booking-activities' ), $addon_link ), false )
-									.  '<br/><small>' . esc_html__( 'Set up automated notifications (booking reminders, request a feedback, marketing automation...)', 'booking-activities' ) . '</small>',
-					'recipients'	=> esc_html__( 'Customer', 'booking-activities' ) . ' / ' . esc_html__( 'Administrator', 'booking-activities' ),
-					'actions'		=> "<a href='https://booking-activities.fr/en/downloads/notification-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=notification-pack&utm_content=settings-notification-list' class='button' target='_blank' >" . esc_html__( 'Learn more', 'booking-activities' ) . "</a>"
+					'active'     => '<span class="dashicons dashicons-no"></span>',
+					'title'      => '<strong>' . esc_html__( '1 hour before / after a booked event', 'booking-activities' ) . '</strong>' 
+						/* translators: %1$s is the placeholder for Notification Pack add-on link */
+						.  bookacti_help_tip( sprintf( esc_html__( 'You can send automated notifications with the %1$s add-on before or after booked events (you can set the desired delay). This add-on also allows you to send all notifications through SMS and Push.', 'booking-activities' ), $addon_link ), false )
+						.  '<br/><small>' . esc_html__( 'Set up automated notifications (booking reminders, request a feedback, marketing automation...)', 'booking-activities' ) . '</small>',
+					'recipients' => esc_html__( 'Customer', 'booking-activities' ) . ' / ' . esc_html__( 'Administrator', 'booking-activities' ),
+					'actions'    => "<a href='https://booking-activities.fr/en/downloads/notification-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=notification-pack&utm_content=settings-notification-list' class='button' target='_blank' >" . esc_html__( 'Learn more', 'booking-activities' ) . "</a>"
 				);
 
 				?>
@@ -829,10 +864,10 @@ function bookacti_settings_section_notifications_general_callback() {
  */
 function bookacti_get_notifications_list_columns_titles() {
 	$columns_titles = apply_filters( 'bookacti_notifications_list_columns_titles', array(
-		10	=> array( 'id' => 'active',		'title' => esc_html_x( 'Active', 'is the notification active', 'booking-activities' ) ),
-		20	=> array( 'id' => 'title',		'title' => esc_html_x( 'Trigger', 'what triggers a notification', 'booking-activities' ) ),
-		30	=> array( 'id' => 'recipients',	'title' => esc_html_x( 'Send to', 'who the notification is sent to', 'booking-activities' ) ),
-		100 => array( 'id' => 'actions',	'title' => esc_html__( 'Actions', 'booking-activities' ) )
+		10  => array( 'id' => 'active',     'title' => esc_html_x( 'Active', 'is the notification active', 'booking-activities' ) ),
+		20  => array( 'id' => 'title',      'title' => esc_html_x( 'Trigger', 'what triggers a notification', 'booking-activities' ) ),
+		30  => array( 'id' => 'recipients', 'title' => esc_html_x( 'Send to', 'who the notification is sent to', 'booking-activities' ) ),
+		100 => array( 'id' => 'actions',    'title' => esc_html__( 'Actions', 'booking-activities' ) )
 	) );
 
 	// Order columns
@@ -869,11 +904,11 @@ function bookacti_settings_section_notifications_email_callback() {
  */
 function bookacti_settings_field_notifications_from_name_callback() {
 	$args = array(
-		'type'	=> 'text',
-		'name'	=> 'bookacti_notifications_settings[notifications_from_name]',
-		'id'	=> 'notifications_from_name',
-		'value'	=> bookacti_get_setting_value( 'bookacti_notifications_settings', 'notifications_from_name' ),
-		'tip'	=> __( 'How the sender name appears in outgoing emails.', 'booking-activities' )
+		'type'  => 'text',
+		'name'  => 'bookacti_notifications_settings[notifications_from_name]',
+		'id'    => 'notifications_from_name',
+		'value' => bookacti_get_setting_value( 'bookacti_notifications_settings', 'notifications_from_name' ),
+		'tip'   => __( 'How the sender name appears in outgoing emails.', 'booking-activities' )
 	);
 	bookacti_display_field( $args );
 }
@@ -935,16 +970,15 @@ function bookacti_settings_field_notifications_from_email_callback() {
 
 /**
  * Notification async setting field
- * 
  * @version 1.2.1 (was bookacti_settings_field_notifications_async_email_callback in 1.2.0)
  */
 function bookacti_settings_field_notifications_async_callback() {
 	$args = array(
-		'type'	=> 'checkbox',
-		'name'	=> 'bookacti_notifications_settings[notifications_async]',
-		'id'	=> 'notifications_async',
-		'value'	=> bookacti_get_setting_value( 'bookacti_notifications_settings', 'notifications_async' ),
-		'tip'	=> __( 'Whether to send notifications asynchronously. If enabled, notifications will be sent the next time any page of this website is loaded. No one will have to wait any longer. Else, the loadings will last until notifications are sent.', 'booking-activities' )
+		'type'  => 'checkbox',
+		'name'  => 'bookacti_notifications_settings[notifications_async]',
+		'id'    => 'notifications_async',
+		'value' => bookacti_get_setting_value( 'bookacti_notifications_settings', 'notifications_async' ),
+		'tip'   => __( 'Whether to send notifications asynchronously. If enabled, notifications will be sent the next time any page of this website is loaded. No one will have to wait any longer. Else, the loadings will last until notifications are sent.', 'booking-activities' )
 	);
 	bookacti_display_field( $args );
 }
@@ -952,9 +986,9 @@ function bookacti_settings_field_notifications_async_callback() {
 
 
 // MESSAGES SETTINGS
+
 /**
  * Settings section callback - Messages (displayed before settings)
- * 
  * @since 1.2.0
  */
 function bookacti_settings_section_messages_callback() {
@@ -977,130 +1011,130 @@ function bookacti_get_default_messages() {
 	$messages = array(
 		'date_format_long' => array(
 			/* translators: Datetime format. Must be adapted to each country. Use wp date_i18n documentation to find the appropriated combinaison https://wordpress.org/support/article/formatting-date-and-time/ */
-			'value'			=> esc_html__( 'l, F j, Y g:i A', 'booking-activities' ),
+			'value'       => esc_html__( 'l, F j, Y g:i A', 'booking-activities' ),
 			/* translators: %1$s si a link to wp date_i18n documentation */
-			'description'	=> sprintf( esc_html__( 'Complete date and time format. See the tags here: %1$s.', 'booking-activities' ), $wp_date_format_link )
+			'description' => sprintf( esc_html__( 'Complete date and time format. See the tags here: %1$s.', 'booking-activities' ), $wp_date_format_link )
 		),
 		'date_format_short' => array(
 			/* translators: Datetime format. Must be adapted to each country. Use wp date_i18n documentation to find the appropriated combinaison https://wordpress.org/support/article/formatting-date-and-time/ */
-			'value'			=> esc_html__( 'M, j - g:i A', 'booking-activities' ),
+			'value'       => esc_html__( 'M, j - g:i A', 'booking-activities' ),
 			/* translators: %1$s si a link to wp date_i18n documentation */
-			'description'	=> sprintf( esc_html__( 'Short date and time format. See the tags here: %1$s.', 'booking-activities' ), $wp_date_format_link )
+			'description' => sprintf( esc_html__( 'Short date and time format. See the tags here: %1$s.', 'booking-activities' ), $wp_date_format_link )
 		),
 		'time_format' => array(
 			/* translators: Time format. Must be adapted to each country. Use wp date_i18n documentation to find the appropriated combinaison https://wordpress.org/support/article/formatting-date-and-time/ */
-			'value'			=> esc_html__( 'g:i A', 'booking-activities' ),
+			'value'       => esc_html__( 'g:i A', 'booking-activities' ),
 			/* translators: %1$s si a link to wp date_i18n documentation */
-			'description'	=> sprintf( esc_html__( 'Time format. It will be used when a time is displayed alone. See the tags here: %1$s.', 'booking-activities' ), $wp_date_format_link )
+			'description' => sprintf( esc_html__( 'Time format. It will be used when a time is displayed alone. See the tags here: %1$s.', 'booking-activities' ), $wp_date_format_link )
 		),
 		'dates_separator' => array(
-			'value'			=> '&nbsp;&rarr;&nbsp;',
-			'description'	=> esc_html__( 'Separator between two dates. Write "&amp;nbsp;" to make a space.', 'booking-activities' )
+			'value'       => '&nbsp;&rarr;&nbsp;',
+			'description' => esc_html__( 'Separator between two dates. Write "&amp;nbsp;" to make a space.', 'booking-activities' )
 		),
 		'date_time_separator' => array(
-			'value'			=> '&nbsp;&rarr;&nbsp;',
-			'description'	=> esc_html__( 'Separator between a date and a time. Write "&amp;nbsp;" to make a space.', 'booking-activities' )
+			'value'       => '&nbsp;&rarr;&nbsp;',
+			'description' => esc_html__( 'Separator between a date and a time. Write "&amp;nbsp;" to make a space.', 'booking-activities' )
 		),
 		'quantity_separator' => array(
-			'value'			=> '&nbsp;x',
-			'description'	=> esc_html__( 'Separator between the event dates and its quantity. Write "&amp;nbsp;" to make a space.', 'booking-activities' )
+			'value'       => '&nbsp;x',
+			'description' => esc_html__( 'Separator between the event dates and its quantity. Write "&amp;nbsp;" to make a space.', 'booking-activities' )
 		),
 		'calendar_title' => array(
-			'value'			=> esc_html__( 'Pick an event on the calendar:', 'booking-activities' ),
-			'description'	=> esc_html__( 'Instructions displayed before the calendar.', 'booking-activities' )
+			'value'       => esc_html__( 'Pick an event on the calendar:', 'booking-activities' ),
+			'description' => esc_html__( 'Instructions displayed before the calendar.', 'booking-activities' )
 		),
 		'selected_event' => array(
-			'value'			=> esc_html__( 'Selected event', 'booking-activities' ),
+			'value'       => esc_html__( 'Selected event', 'booking-activities' ),
 			/* translators: %s can be either "singular" or "plural" */
-			'description'	=> sprintf( esc_html__( 'Title displayed before the selected events list (%s).', 'booking-activities' ), esc_html__( 'singular', 'booking-activities' ) )
+			'description' => sprintf( esc_html__( 'Title displayed before the selected events list (%s).', 'booking-activities' ), esc_html__( 'singular', 'booking-activities' ) )
 		),
 		'selected_events' => array(
-			'value'			=> esc_html__( 'Selected events', 'booking-activities' ),
-			'description'	=> sprintf( esc_html__( 'Title displayed before the selected events list (%s).', 'booking-activities' ), esc_html__( 'plural', 'booking-activities' ) )
+			'value'       => esc_html__( 'Selected events', 'booking-activities' ),
+			'description' => sprintf( esc_html__( 'Title displayed before the selected events list (%s).', 'booking-activities' ), esc_html__( 'plural', 'booking-activities' ) )
 		),
 		'no_events' => array(
-			'value'			=> esc_html__( 'No events available.', 'booking-activities' ),
-			'description'	=> esc_html__( 'Message displayed instead of the calendar when no events are available.', 'booking-activities' )
+			'value'       => esc_html__( 'No events available.', 'booking-activities' ),
+			'description' => esc_html__( 'Message displayed instead of the calendar when no events are available.', 'booking-activities' )
 		),
 		'avail' => array(
 			/* translators: This particle is used right after the quantity of available bookings. Put the singular here. E.g.: 1 avail. . */
-			'value'			=> esc_html_x( 'avail.', 'Short for availability [singular noun]', 'booking-activities' ),
+			'value'       => esc_html_x( 'avail.', 'Short for availability [singular noun]', 'booking-activities' ),
 			/* translators: %s can be either "singular" or "plural" */
-			'description'	=> sprintf( esc_html__( 'Particle displayed after the number of available places on events (%s).', 'booking-activities' ), esc_html__( 'singular', 'booking-activities' ) )
+			'description' => sprintf( esc_html__( 'Particle displayed after the number of available places on events (%s).', 'booking-activities' ), esc_html__( 'singular', 'booking-activities' ) )
 		),
 		'avails' => array(
 			/* translators: This particle is used right after the quantity of available bookings. Put the plural here. E.g.: 2 avail. . */
-			'value'			=> esc_html_x( 'avail.', 'Short for availabilities [plural noun]', 'booking-activities' ),
-			'description'	=> sprintf( esc_html__( 'Particle displayed after the number of available places on events (%s).', 'booking-activities' ), esc_html__( 'plural', 'booking-activities' ) )
+			'value'       => esc_html_x( 'avail.', 'Short for availabilities [plural noun]', 'booking-activities' ),
+			'description' => sprintf( esc_html__( 'Particle displayed after the number of available places on events (%s).', 'booking-activities' ), esc_html__( 'plural', 'booking-activities' ) )
 		),
 		'not_bookable' => array(
-			'value'			=> esc_html_x( 'unavail.', 'Short for unavailable', 'booking-activities' ),
-			'description'	=> esc_html__( 'Message displayed on events that are not bookable even though they are not full. Set it to "{current}" to display the current availability.', 'booking-activities' )
+			'value'       => esc_html_x( 'unavail.', 'Short for unavailable', 'booking-activities' ),
+			'description' => esc_html__( 'Message displayed on events that are not bookable even though they are not full. Set it to "{current}" to display the current availability.', 'booking-activities' )
 		),
 		'booking_success' => array(
-			'value'			=> esc_html__( 'Your reservation has been processed!', 'booking-activities' ),
-			'description'	=> esc_html__( 'When a reservation has been successfully registered.', 'booking-activities' )
+			'value'       => esc_html__( 'Your reservation has been processed!', 'booking-activities' ),
+			'description' => esc_html__( 'When a reservation has been successfully registered.', 'booking-activities' )
 		),
 		'booking_form_new_booking_button' => array(
-			'value'			=> esc_html__( 'Make a new booking', 'booking-activities' ),
-			'description'	=> esc_html__( 'Button label to make a new booking after the booking form has been submitted.', 'booking-activities' )
+			'value'       => esc_html__( 'Make a new booking', 'booking-activities' ),
+			'description' => esc_html__( 'Button label to make a new booking after the booking form has been submitted.', 'booking-activities' )
 		),
 		'choose_group_dialog_title' => array(
-			'value'			=> esc_html__( 'This event is available in several bundles', 'booking-activities' ),
-			'description'	=> esc_html__( 'Choose a group of events dialog title. It appears when a user clicks on an event bundled in multiple groups.', 'booking-activities' )
+			'value'       => esc_html__( 'This event is available in several bundles', 'booking-activities' ),
+			'description' => esc_html__( 'Choose a group of events dialog title. It appears when a user clicks on an event bundled in multiple groups.', 'booking-activities' )
 		),
 		'choose_group_dialog_content' => array(
-			'value'			=> esc_html__( 'Which group of events do you want to pick?', 'booking-activities' ),
-			'description'	=> esc_html__( 'Choose a group of events dialog content.', 'booking-activities' ),
-			'input_type'	=> 'textarea'
+			'value'       => esc_html__( 'Which group of events do you want to pick?', 'booking-activities' ),
+			'description' => esc_html__( 'Choose a group of events dialog content.', 'booking-activities' ),
+			'input_type'  => 'textarea'
 		),
 		'choose_group_dialog_single_event' => array(
 			/* translators: When the user is asked whether to pick the single event or the whole group it is part of */
-			'value'			=> esc_html__( 'Single event', 'booking-activities' ),
-			'description'	=> esc_html__( 'Single event option label in the group of events selection dialog.', 'booking-activities' ),
-			'input_type'	=> 'textarea'
+			'value'       => esc_html__( 'Single event', 'booking-activities' ),
+			'description' => esc_html__( 'Single event option label in the group of events selection dialog.', 'booking-activities' ),
+			'input_type'  => 'textarea'
 		),
 		'refund_request_dialog_feedback_label' => array(
-			'value'			=> esc_html__( 'Tell us why? (Details, reasons, comments...)', 'booking-activities' ),
-			'description'	=> esc_html__( 'Refund request dialog\'s "Customer feedback" field label.', 'booking-activities' ),
-			'input_type'	=> 'textarea'
+			'value'       => esc_html__( 'Tell us why? (Details, reasons, comments...)', 'booking-activities' ),
+			'description' => esc_html__( 'Refund request dialog\'s "Customer feedback" field label.', 'booking-activities' ),
+			'input_type'  => 'textarea'
 		),
 		'cancel_dialog_button' => array(
-			'value'			=> esc_html_x( 'Close', 'Button label to close a dialog.', 'booking-activities' ),
-			'description'	=> esc_html__( 'Button label to close a dialog.', 'booking-activities' )
+			'value'       => esc_html_x( 'Close', 'Button label to close a dialog.', 'booking-activities' ),
+			'description' => esc_html__( 'Button label to close a dialog.', 'booking-activities' )
 		),
 		'cancel_booking_open_dialog_button' => array(
-			'value'			=> esc_html_x( 'Cancel', 'Button label to open the dialog to cancel a booking.', 'booking-activities' ),
-			'description'	=> esc_html__( 'Button label to open the dialog to cancel a booking.', 'booking-activities' )
+			'value'       => esc_html_x( 'Cancel', 'Button label to open the dialog to cancel a booking.', 'booking-activities' ),
+			'description' => esc_html__( 'Button label to open the dialog to cancel a booking.', 'booking-activities' )
 		),
 		'cancel_booking_dialog_button' => array(
-			'value'			=> esc_html_x( 'Cancel booking', 'Button label to trigger the cancellation of a booking.', 'booking-activities' ),
-			'description'	=> esc_html__( 'Button label to trigger the cancellation of a booking.', 'booking-activities' )
+			'value'       => esc_html_x( 'Cancel booking', 'Button label to trigger the cancellation of a booking.', 'booking-activities' ),
+			'description' => esc_html__( 'Button label to trigger the cancellation of a booking.', 'booking-activities' )
 		),
 		'cancel_dialog_title' => array(
-			'value'			=> esc_html_x( 'Cancel the booking', 'Dialog title', 'booking-activities' ),
-			'description'	=> esc_html__( 'Cancel bookings dialog title.', 'booking-activities' )
+			'value'       => esc_html_x( 'Cancel the booking', 'Dialog title', 'booking-activities' ),
+			'description' => esc_html__( 'Cancel bookings dialog title.', 'booking-activities' )
 		),
 		'cancel_dialog_content' => array(
-			'value'			=> esc_html__( 'Do you really want to cancel this booking?', 'booking-activities' ) . '<br/>' . esc_html__( 'If you have already paid, you will be able to request a refund.', 'booking-activities' ),
-			'description'	=> esc_html__( 'Cancel bookings dialog content.', 'booking-activities' ),
-			'input_type'	=> 'textarea'
+			'value'       => esc_html__( 'Do you really want to cancel this booking?', 'booking-activities' ) . '<br/>' . esc_html__( 'If you have already paid, you will be able to request a refund.', 'booking-activities' ),
+			'description' => esc_html__( 'Cancel bookings dialog content.', 'booking-activities' ),
+			'input_type'  => 'textarea'
 		),
 		'reschedule_dialog_button' => array(
-			'value'			=> esc_html_x( 'Reschedule', 'Button label to reschedule a booking.', 'booking-activities' ),
-			'description'	=> esc_html__( 'Button label to reschedule a booking.', 'booking-activities' )
+			'value'       => esc_html_x( 'Reschedule', 'Button label to reschedule a booking.', 'booking-activities' ),
+			'description' => esc_html__( 'Button label to reschedule a booking.', 'booking-activities' )
 		),
 		'reschedule_dialog_title' => array(
-			'value'			=> esc_html_x( 'Reschedule the booking', 'Dialog title', 'booking-activities' ),
-			'description'	=> esc_html__( 'Reschedule booking dialog title.', 'booking-activities' )
+			'value'       => esc_html_x( 'Reschedule the booking', 'Dialog title', 'booking-activities' ),
+			'description' => esc_html__( 'Reschedule booking dialog title.', 'booking-activities' )
 		),
 		'refund_dialog_button' => array(
-			'value'			=> esc_html_x( 'Request a refund', 'Button label to refund a booking', 'booking-activities' ),
-			'description'	=> esc_html__( 'Button label to refund a booking.', 'booking-activities' )
+			'value'       => esc_html_x( 'Request a refund', 'Button label to refund a booking', 'booking-activities' ),
+			'description' => esc_html__( 'Button label to refund a booking.', 'booking-activities' )
 		),
 		'refund_dialog_title' => array(
-			'value'			=> esc_html_x( 'Request a refund', 'Dialog title', 'booking-activities' ),
-			'description'	=> esc_html__( 'Refund booking dialog title.', 'booking-activities' )
+			'value'       => esc_html_x( 'Request a refund', 'Dialog title', 'booking-activities' ),
+			'description' => esc_html__( 'Refund booking dialog title.', 'booking-activities' )
 		),
 	);
 
@@ -1156,6 +1190,38 @@ function bookacti_get_message( $message_id, $raw = false ) {
 	$messages = bookacti_get_messages( $raw );
 	$message = ! empty( $messages[ $message_id ][ 'value' ] ) ? $messages[ $message_id ][ 'value' ] : '';
 	return $message;
+}
+
+
+
+
+// SANITIZE SETTINGS
+
+/**
+ * Sanitize General settings
+ * @since 1.17.0
+ * @param array $settings_raw
+ * @return array
+ */
+function bookacti_sanitize_settings_general( $settings_raw ) {
+	$defaults = bookacti_get_default_settings();
+	
+	$keys_by_type = array( 
+		'int'    => array( 'default_calendar_view_threshold', 'event_load_interval', 'price_decimals_number' ),
+		'str'    => array( 'timezone', 'price_currency_symbol', 'price_thousand_separator', 'price_decimal_separator' ),
+		'str_id' => array( 'calendar_localization', 'default_payment_status', 'default_booking_state', 'price_currency_position' ),
+		'bool'   => array( 'started_events_bookable', 'started_groups_bookable', 'started_days_off_bookable', 'display_private_columns', 'delete_data_on_uninstall' ),
+		'array'  => array( 'days_off' )
+	);
+	
+	$settings = bookacti_sanitize_values( $defaults, $settings_raw, $keys_by_type );
+	
+	// Sanitize Days off
+	$settings[ 'days_off' ] = bookacti_sanitize_days_off( $settings[ 'days_off' ] );
+	
+	$settings = apply_filters( 'bookacti_sanitized_settings_general', $settings, $settings_raw, $defaults );
+	
+	return $settings;
 }
 
 
@@ -1247,7 +1313,7 @@ function bookacti_set_role_and_cap() {
  * @version 1.8.0
  */
 function bookacti_unset_role_and_cap() {
-	$administrator	= get_role( 'administrator' );
+	$administrator = get_role( 'administrator' );
 	if( $administrator ) {
 		$administrator->remove_cap( 'bookacti_manage_booking_activities' );
 		$administrator->remove_cap( 'bookacti_manage_bookings' );
@@ -1282,8 +1348,8 @@ function bookacti_unset_role_and_cap() {
  * @version 1.16.46
  */
 function bookacti_display_badp_promo() {
-	$is_plugin_active	= bookacti_is_plugin_active( 'ba-display-pack/ba-display-pack.php' );
-	$license_status		= get_option( 'badp_license_status' );
+	$is_plugin_active = bookacti_is_plugin_active( 'ba-display-pack/ba-display-pack.php' );
+	$license_status   = get_option( 'badp_license_status' );
 
 	// If the plugin is activated but the license is not active yet
 	if( $is_plugin_active && $license_status !== 'valid' ) {
@@ -1601,7 +1667,7 @@ function bookacti_display_bawl_promo() {
  * @return array
  */
 function bookacti_privacy_exporter_user_data( $email_address, $page = 1 ) {
-	$user			= get_user_by( 'email', $email_address );
+	$user           = get_user_by( 'email', $email_address );
 	$data_to_export = array();
 	
 	if( $user instanceof WP_User ) {
@@ -1714,7 +1780,7 @@ function bookacti_privacy_exporter_bookings_data( $email_address, $page = 1 ) {
 			$statuses = bookacti_get_booking_statuses();
 			foreach( $bookings as $booking ) {
 				$booking_personal_data = array();
-				$booking_meta		= ! empty( $bookings_meta[ $booking->id ] ) ? $bookings_meta[ $booking->id ] : array();
+				$booking_meta       = ! empty( $bookings_meta[ $booking->id ] ) ? $bookings_meta[ $booking->id ] : array();
 				$booking_group_meta = ! empty( $booking->group_id ) && ! empty( $booking_groups_meta[ $booking->group_id ] ) ? $booking_groups_meta[ $booking->group_id ] : array();
 				
 				foreach( $booking_meta_to_export as $key => $name ) {
@@ -1784,8 +1850,8 @@ function bookacti_privacy_exporter_bookings_data( $email_address, $page = 1 ) {
  * @return array
  */
 function bookacti_privacy_eraser_user_data( $email_address, $page = 1 ) {
-	$user		= get_user_by( 'email', $email_address );
-	$response	= array(
+	$user     = get_user_by( 'email', $email_address );
+	$response = array(
 		'items_removed' => false,
 		'items_retained' => false,
 		'messages' => array(),
@@ -1829,9 +1895,9 @@ function bookacti_privacy_eraser_user_data( $email_address, $page = 1 ) {
  * @return array
  */
 function bookacti_privacy_eraser_bookings_data( $email_address, $page = 1 ) {
-	$user	= get_user_by( 'email', $email_address );
-	$number	= 200; // Limit to avoid timing out
-	$page	= (int) $page;
+	$user   = get_user_by( 'email', $email_address );
+	$number = 200; // Limit to avoid timing out
+	$page   = (int) $page;
 	$bookings = array();
 	$response = array(
 		'items_removed' => false,
@@ -1850,7 +1916,7 @@ function bookacti_privacy_eraser_bookings_data( $email_address, $page = 1 ) {
 	
 	// Count the total number of bookings to know when the exporter is done
 	$filters_count = bookacti_format_booking_filters( array(
-		'in__user_id'	=> $user_ids
+		'in__user_id' => $user_ids
 	) );
 	$bookings_count = bookacti_get_number_of_booking_rows( $filters_count );
 	$response[ 'done' ] = ($page*$number) >= $bookings_count;
@@ -1858,9 +1924,9 @@ function bookacti_privacy_eraser_bookings_data( $email_address, $page = 1 ) {
 	if( $bookings_count ) {
 		// Get the bookings
 		$filters = bookacti_format_booking_filters( array(
-			'in__user_id'	=> $user_ids,
-			'offset'		=> ($page-1)*$number,
-			'per_page'		=> $number
+			'in__user_id' => $user_ids,
+			'offset'      => ($page-1)*$number,
+			'per_page'    => $number
 		) );
 		$bookings = bookacti_get_bookings( $filters );
 
@@ -1881,10 +1947,10 @@ function bookacti_privacy_eraser_bookings_data( $email_address, $page = 1 ) {
 			
 			// Let add-ons add metadata to remove
 			$booking_meta_to_erase = apply_filters( 'bookacti_privacy_erase_bookings_columns', array(
-				'user_email'		=> esc_html__( 'Email', 'booking-activities' ),
-				'user_first_name'	=> esc_html__( 'First name', 'booking-activities' ),
-				'user_last_name'	=> esc_html__( 'Last name', 'booking-activities' ),
-				'user_phone'		=> esc_html__( 'Phone', 'booking-activities' )
+				'user_email'      => esc_html__( 'Email', 'booking-activities' ),
+				'user_first_name' => esc_html__( 'First name', 'booking-activities' ),
+				'user_last_name'  => esc_html__( 'Last name', 'booking-activities' ),
+				'user_phone'      => esc_html__( 'Phone', 'booking-activities' )
 			), $bookings, $email_address, $page );
 			
 			$response = apply_filters( 'bookacti_privacy_erase_bookings_data_before', $response, $bookings, $booking_meta_to_erase, $email_address, $page );

@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Get all translatable texts
  * @since 1.14.0
- * @version 1.16.37
+ * @version 1.17.0
  * @return array
  */
 function bookacti_get_translatable_texts() {
@@ -98,7 +98,7 @@ function bookacti_get_translatable_texts() {
 	}
 	
 	// Get templates strings
-	$templates = bookacti_get_templates_data( array(), false );
+	$templates = bookacti_get_templates_data( array() );
 	foreach( $templates as $template_id => $template ) {
 		$template_texts = array();
 		

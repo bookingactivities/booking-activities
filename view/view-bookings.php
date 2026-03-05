@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking list page
- * @version 1.16.47
+ * @version 1.17.0
  */
 
 // Exit if accessed directly
@@ -303,10 +303,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							'start'                        => $from,
 							'end'                          => $to,
 							'trim'                         => 0, // Doesn't play nicely when dynamically changing bookings
+							'out_of_period_events'         => 1,
 							'past_events'                  => 1,
 							'past_events_bookable'         => 1,
 							'check_roles'                  => 0,
 							'auto_load'                    => 0, // Prevent to load on page load to save some performance
+							'select_first_event'           => 0,
 							'picked_events'                => $picked_events,
 							'tooltip_booking_list'         => $user_calendar_settings[ 'tooltip_booking_list' ],
 							'tooltip_booking_list_columns' => $user_calendar_settings[ 'tooltip_booking_list_columns' ],

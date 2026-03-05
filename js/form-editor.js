@@ -179,16 +179,12 @@ $j( document ).ready( function() {
 	
 	
 	/**
-	 * Calendar field settings: Toggle the availability period options - on change
+	 * Calendar field settings: Toggle the availability fields - on change
 	 * @since 1.8.0
-	 * @version 1.8.9
+	 * @version 1.17.0
 	 */
-	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', '#bookacti-availability_period_start-container .bookacti-duration-value', function() {
-		if( parseInt( $j( this ).val() ) === 0 || $j( this ).val() === '' ) { 
-			$j( '#bookacti-past_events-container' ).closest( 'fieldset' ).show();
-		} else {
-			$j( '#bookacti-past_events-container' ).closest( 'fieldset' ).hide();
-		}
+	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', '#bookacti-availability_period_start-container .bookacti-duration-value, #bookacti-availability_period_end-container .bookacti-duration-value, #bookacti-start, #bookacti-end, #bookacti-out_of_period_events, #bookacti-past_events, #bookacti-past_events_bookable', function() {
+		bookacti_toggle_form_calendar_settings_availability_fields();
 	});
 	
 	
@@ -222,19 +218,6 @@ $j( document ).ready( function() {
 			if( opening.isAfter( closing ) ) {
 				$j( this ).parent().append( "<div class='bookacti-form-error'>" + bookacti_localized.error_closing_before_opening + "</div>" );
 			}
-		}
-	});
-	
-	
-	/**
-	 * Calendar field settings: Toggle the past events options - on change
-	 * @since 1.8.0
-	 */
-	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'input#bookacti-past_events', function() {
-		if( $j( this ).is( ':checked' ) ) { 
-			$j( '#bookacti-past_events_bookable-container' ).show();
-		} else {
-			$j( '#bookacti-past_events_bookable-container' ).hide();
 		}
 	});
 	
@@ -587,4 +570,30 @@ function bookacti_refresh_redirect_url_by_group_category_table() {
 			row.hide();
 		}
 	});
+}
+
+
+/**
+ * Show or hide fields in the form calendar settings availability tab according to their values
+ * @since 1.17.0
+ */
+function bookacti_toggle_form_calendar_settings_availability_fields() {
+	var start_field                = $j( '#bookacti-form-field-dialog-calendar #bookacti-start' );
+	var end_field                  = $j( '#bookacti-form-field-dialog-calendar #bookacti-end' );
+	var period_start_field         = $j( '#bookacti-form-field-dialog-calendar #bookacti-availability_period_start-container .bookacti-duration-value' );
+	var period_end_field           = $j( '#bookacti-form-field-dialog-calendar #bookacti-availability_period_end-container .bookacti-duration-value' );
+	var out_of_period_events_field = $j( '#bookacti-form-field-dialog-calendar #bookacti-out_of_period_events' );
+	var past_events_field          = $j( '#bookacti-form-field-dialog-calendar #bookacti-past_events' );
+	var past_events_bookable_field = $j( '#bookacti-form-field-dialog-calendar #bookacti-past_events_bookable' );
+	var is_start                   = start_field.val() !== '';
+	var is_end                     = end_field.val() !== '';
+	var is_period_start            = parseInt( period_start_field.val() ) !== 0 && period_start_field.val() !== '';
+	var is_period_end              = parseInt( period_end_field.val() ) !== 0 && period_end_field.val() !== '';
+	var is_out_of_period_events    = out_of_period_events_field.is( ':checked' );
+	var is_past_events             = past_events_field.is( ':checked' );
+	
+	// Display if is out of period events are displayed or if no relative period start date is set
+	out_of_period_events_field.closest( '.bookacti-field-container' ).toggle( is_period_start || is_period_end || is_start || is_end );
+	past_events_field.closest( '.bookacti-field-container' ).toggle( ! is_period_start || is_out_of_period_events );
+	past_events_bookable_field.closest( '.bookacti-field-container' ).toggle( is_past_events );
 }

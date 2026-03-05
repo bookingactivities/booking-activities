@@ -20,14 +20,15 @@ function bookacti_get_template_default_data() {
 /**
  * Get template default meta
  * @since 1.12.0
- * @version 1.15.0
+ * @version 1.17.0
  */
 function bookacti_get_template_default_meta() {
 	return apply_filters( 'bookacti_template_default_meta', array(
-		'slotMinTime'  => '00:00',
-		'slotMaxTime'  => '00:00',
-		'snapDuration' => '00:05',
-		'days_off'     => array()
+		'slotMinTime'         => '00:00',
+		'slotMaxTime'         => '00:00',
+		'snapDuration'        => '00:05',
+		'use_global_days_off' => -1,
+		'days_off'            => array()
 	));
 }
 
@@ -35,7 +36,7 @@ function bookacti_get_template_default_meta() {
 /**
  * Sanitize template data
  * @since 1.12.0 (was bookacti_sanitize_template_settings)
- * @version 1.15.0
+ * @version 1.17.0
  * @param array $raw_data
  * @return array
  */
@@ -45,6 +46,7 @@ function bookacti_sanitize_template_data( $raw_data ) {
 	
 	// Sanitize common values
 	$keys_by_type = array( 
+		'int'    => array( 'use_global_days_off' ),
 		'absint' => array( 'id', 'duplicated_template_id' ),
 		'str'    => array( 'title', 'slotMinTime', 'slotMaxTime', 'snapDuration' ),
 		'array'  => array( 'managers', 'days_off' ),
@@ -72,7 +74,7 @@ function bookacti_sanitize_template_data( $raw_data ) {
 	if( $data[ 'snapDuration' ] === '00:00' ) { $data[ 'snapDuration' ] = '00:01'; }
 	
 	// Sanitize Days off
-	$data[ 'days_off' ] = bookacti_sanitize_days_off( $data[ 'days_off' ] );
+	$data[ 'days_off' ] = $data[ 'use_global_days_off' ] < 1 ? bookacti_sanitize_days_off( $data[ 'days_off' ] ) : array();
 	
 	return apply_filters( 'bookacti_sanitized_template_data', $data, $raw_data );
 }
@@ -81,15 +83,18 @@ function bookacti_sanitize_template_data( $raw_data ) {
 /**
  * Format template data
  * @since 1.15.0
+ * @version 1.17.0
  * @param array $raw_data
+ * @param string $context 'view' or 'edit'
  * @return array
  */
-function bookacti_format_template_data( $raw_data ) {
+function bookacti_format_template_data( $raw_data, $context = 'view' ) {
 	$default_data = bookacti_get_template_default_data();
 	$default_meta = bookacti_get_template_default_meta();
 	
 	// Sanitize common values
 	$keys_by_type = array( 
+		'int'    => array( 'use_global_days_off' ),
 		'absint' => array( 'id' ),
 		'str'    => array( 'title', 'slotMinTime', 'slotMaxTime', 'snapDuration' ),
 		'array'  => array( 'days_off' ),
@@ -111,18 +116,28 @@ function bookacti_format_template_data( $raw_data ) {
 	if( $data[ 'snapDuration' ] === '00:00' ) { $data[ 'snapDuration' ] = '00:01'; }
 	
 	// Sanitize Days off
-	$data[ 'days_off' ] = bookacti_sanitize_days_off( $data[ 'days_off' ] );
-	
-	$data = apply_filters( 'bookacti_formatted_template_data', $data, $raw_data );
-	
-	// Move the metadata and administrators
-	$meta  = array_intersect_key( $data, $default_meta );
-	$data  = array_intersect_key( $data, $default_data );
-	$data[ 'settings' ] = $meta;
+	$days_off = $data[ 'days_off' ];
+	if( $context !== 'edit' ) {
+		if( $data[ 'use_global_days_off' ] > 0 ) {
+			$days_off = bookacti_get_setting_value( 'bookacti_general_settings', 'days_off' );
+		} else if( $data[ 'use_global_days_off' ] < 0 ) {
+			$days_off = array_merge( bookacti_get_setting_value( 'bookacti_general_settings', 'days_off' ), $days_off );
+		}
+	}
+	$data[ 'days_off' ] = bookacti_sanitize_days_off( $days_off );
 	
 	// Translate title and keep an untranslated entry
 	$data[ 'multilingual_title' ] = $data[ 'title' ];
-	if( $data[ 'title' ] ) { $data[ 'title' ] = apply_filters( 'bookacti_translate_text', $data[ 'title' ] ); }
+	if( $data[ 'title' ] && $context !== 'edit' ) {
+		$data[ 'title' ] = apply_filters( 'bookacti_translate_text', $data[ 'title' ] );
+	}
+	
+	$data = apply_filters( 'bookacti_formatted_template_data', $data, $raw_data, $context );
+	
+	// Move meta
+	$meta  = array_intersect_key( $data, $default_meta );
+	$data  = array_intersect_key( $data, array_merge( $default_data, array( 'multilingual_title' => '' ) ) );
+	$data[ 'settings' ] = $meta;
 	
 	return $data;
 }

@@ -40,7 +40,7 @@ add_action( 'wp_ajax_bookactiSwitchTemplate', 'bookacti_controller_switch_templa
 
 /**
  * AJAX Controller - Create a new template
- * @version 1.15.5
+ * @version 1.17.0
  */
 function bookacti_controller_insert_template() {
 	// Check nonce
@@ -52,30 +52,32 @@ function bookacti_controller_insert_template() {
 	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'insert_template' ); }
 	
 	// Sanitize template data
-	$template_data = bookacti_sanitize_template_data( $_POST );
+	$sanitized_data = bookacti_sanitize_template_data( $_POST );
 	
 	// Validate template data
-	$is_valid = bookacti_validate_template_data( $template_data );
+	$is_valid = bookacti_validate_template_data( $sanitized_data );
 	if( $is_valid[ 'status' ] !== 'success' ) { bookacti_send_json( array( 'status' => 'failed', 'error' => $is_valid[ 'errors' ] ), 'insert_template' ); }
 	
 	// Insert template
-	$template_id = bookacti_insert_template( $template_data );
+	$template_id = bookacti_insert_template( $sanitized_data );
 	if( ! $template_id ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_inserted' ), 'insert_template' ); }
 	
 	// Insert template metadata
-	$meta = array_intersect_key( $template_data, bookacti_get_template_default_meta() );
+	$meta = array_intersect_key( $sanitized_data, bookacti_get_template_default_meta() );
 	if( $meta ) { bookacti_insert_metadata( 'template', $template_id, $meta ); }
 	
 	// Insert template managers
-	if( $template_data[ 'managers' ] ) { bookacti_insert_managers( 'template', $template_id, $template_data[ 'managers' ] ); }
+	if( $sanitized_data[ 'managers' ] ) { bookacti_insert_managers( 'template', $template_id, $sanitized_data[ 'managers' ] ); }
 	
 	// Duplicate template events and activities
-	if( ! empty( $template_data[ 'duplicated_template_id' ] ) ) {
-		bookacti_duplicate_template_events( $template_data[ 'duplicated_template_id' ], $template_id );
-		bookacti_duplicate_template_activities( $template_data[ 'duplicated_template_id' ], $template_id );
+	if( ! empty( $sanitized_data[ 'duplicated_template_id' ] ) ) {
+		bookacti_duplicate_template_events( $sanitized_data[ 'duplicated_template_id' ], $template_id );
+		bookacti_duplicate_template_activities( $sanitized_data[ 'duplicated_template_id' ], $template_id );
 	}
 	
-	do_action( 'bookacti_template_inserted', $template_id, $template_data );
+	$template_data = bookacti_get_template_data( $template_id );
+	
+	do_action( 'bookacti_template_inserted', $template_id, $sanitized_data, $template_data );
 
 	bookacti_send_json( array( 'status' => 'success', 'template_id' => $template_id, 'template_data' => $template_data ), 'insert_template' );
 }
@@ -84,7 +86,7 @@ add_action( 'wp_ajax_bookactiInsertTemplate', 'bookacti_controller_insert_templa
 
 /**
  * AJAX Controller - Update template
- * @version 1.15.5
+ * @version 1.17.0
  */
 function bookacti_controller_update_template() {
 	// Check nonce and capabilities
@@ -122,7 +124,8 @@ function bookacti_controller_update_template() {
 		bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_updated', 'template_data' => $template_data ), 'update_template' );
 	}
 	
-	$template_data = bookacti_get_template_data( $template_id );
+	$template_data            = bookacti_get_template_data( $template_id, 'edit' );
+	$template_data[ 'title' ] = $template_data[ 'title' ] ? apply_filters( 'bookacti_translate_text', $template_data[ 'title' ] ) : '';
 	
 	do_action( 'bookacti_template_updated', $template_id, $template_data );
 
@@ -817,7 +820,7 @@ add_action( 'wp_ajax_bookactiInsertGroupOfEvents', 'bookacti_controller_insert_g
 /**
  * Update group of events data with AJAX
  * @since 1.1.0
- * @version 1.15.5
+ * @version 1.17.0
  */
 function bookacti_controller_update_group_of_events() {
 	// Check nonce
@@ -894,7 +897,7 @@ function bookacti_controller_update_group_of_events() {
 	$groups          = bookacti_get_groups_of_events( array( 'event_groups' => array( $group_id ), 'past_events' => 1, 'interval' => $interval, 'interval_started' => 1 ) );
 	$group_data      = isset( $groups[ 'data' ][ $group_id ] ) ? $groups[ 'data' ][ $group_id ] : array();
 	$group_events    = isset( $groups[ 'groups' ][ $group_id ] ) ? $groups[ 'groups' ][ $group_id ] : array();
-	$group_title_raw = strip_tags( $group_data[ 'title' ] );
+	$group_title_raw = isset( $group_data[ 'title' ] ) ? strip_tags( $group_data[ 'title' ] ) : '';
 	
 	do_action( 'bookacti_group_of_events_updated', $group_id, $group_data, $group_events, $category_data );
 

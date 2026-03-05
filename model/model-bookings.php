@@ -1430,12 +1430,13 @@ function bookacti_get_number_of_bookings( $filters ) {
 /**
  * Get number of bookings per event
  * @since 1.12.0 (was bookacti_get_number_of_bookings_for_booking_system)
- * @version 1.15.10
+ * @version 1.17.0
  * @global wpdb $wpdb
  * @param array $raw_args {
  *  @type array $templates Array of template IDs
  *  @type array $events Array of events IDs
  *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
+ *  @type boolean $interval_started Whether to retrieve started events in interval
  *  @type array $users Array of users IDs
  *  @type array $status Array of booking status
  * }
@@ -1443,11 +1444,12 @@ function bookacti_get_number_of_bookings( $filters ) {
  */
 function bookacti_get_number_of_bookings_per_event( $raw_args = array() ) {
 	$default_args = array(
-		'templates' => array(),
-		'events'    => array(),
-		'interval'  => array(),
-		'users'     => array(),
-		'status'    => array()
+		'templates'        => array(),
+		'events'           => array(),
+		'interval'         => array(),
+		'interval_started' => 0,
+		'users'            => array(),
+		'status'           => array()
 	);
 	$args = wp_parse_args( $raw_args, $default_args );
 	
@@ -1491,7 +1493,7 @@ function bookacti_get_number_of_bookings_per_event( $raw_args = array() ) {
 	
 	// Do not fetch bookings out of the desired interval
 	if( ! empty( $args[ 'interval' ][ 'start' ] ) ) {
-		$query .= ' AND B.event_start >= %s ';
+		$query .= $args[ 'interval_started' ] ? ' AND B.event_end > %s ' : ' AND B.event_start >= %s ';
 		$variables[] = $args[ 'interval' ][ 'start' ];
 	}
 	
