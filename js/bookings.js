@@ -245,13 +245,10 @@ $j( document ).ready( function() {
 	/**
 	 * Bookings page calendar settings: Toggle tooltip options - on change
 	 * @since 1.8.0
+	 * @version 1.17.1
 	 */
 	$j( '#bookacti-bookings-calendar-settings-dialog' ).on( 'change', '#bookacti-tooltip_booking_list', function() { 
-		if( $j( this ).is( ':checked' ) ) { 
-			$j( '#bookacti-event-booking-list-columns-container' ).show();
-		} else {
-			$j( '#bookacti-event-booking-list-columns-container' ).hide();
-		}
+		$j( '#bookacti-event-booking-list-columns-container' ).toggle( $j( this ).is( ':checked' ) );
 	});
 	
 	

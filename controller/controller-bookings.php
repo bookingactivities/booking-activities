@@ -1407,7 +1407,7 @@ add_action( 'wp_ajax_bookactiExportBookingsUrl', 'bookacti_controller_generate_e
 /**
  * Export bookings according to filters
  * @since 1.6.0
- * @version 1.16.45
+ * @version 1.17.1
  */
 function bookacti_export_bookings_page() {
 	if( empty( $_REQUEST[ 'action' ] ) ) { return; }
@@ -1514,13 +1514,13 @@ function bookacti_export_bookings_page() {
 	
 	} else if( $export_type === 'ical' ) { 
 		$ical_args = apply_filters( 'bookacti_export_bookings_ical_args', array( 
-			'vevent_summary'               => isset( $args[ 'vevent_summary' ] ) ? bookacti_utf8_decode( urldecode( trim( $args[ 'vevent_summary' ] ) ) ) : $user_settings[ 'vevent_summary' ],
-			'vevent_description'           => isset( $args[ 'vevent_description' ] ) ? bookacti_utf8_decode( urldecode( str_replace( array( '%0A', '%250A' ), '\n', trim( $args[ 'vevent_description' ] ) ) ) ) : $user_settings[ 'vevent_description' ],
-			'tooltip_booking_list_columns' => $columns,
-			'booking_list_header'          => ! empty( $args[ 'booking_list_header' ] ) ? 1 : 0,
-			'raw'                          => ! empty( $args[ 'raw' ] ) ? 1 : 0,
-			'sequence'                     => ! empty( $args[ 'sequence' ] ) ? intval( $args[ 'sequence' ] ) : 0,
-			'locale'                       => $locale
+			'vevent_summary'       => isset( $args[ 'vevent_summary' ] ) ? bookacti_utf8_decode( urldecode( trim( $args[ 'vevent_summary' ] ) ) ) : $user_settings[ 'vevent_summary' ],
+			'vevent_description'   => isset( $args[ 'vevent_description' ] ) ? bookacti_utf8_decode( urldecode( str_replace( array( '%0A', '%250A' ), '\n', trim( $args[ 'vevent_description' ] ) ) ) ) : $user_settings[ 'vevent_description' ],
+			'booking_list_columns' => $columns,
+			'booking_list_header'  => ! empty( $args[ 'booking_list_header' ] ) ? 1 : 0,
+			'raw'                  => ! empty( $args[ 'raw' ] ) ? 1 : 0,
+			'sequence'             => ! empty( $args[ 'sequence' ] ) ? intval( $args[ 'sequence' ] ) : 0,
+			'locale'               => $locale
 		) );
 		echo bookacti_convert_bookings_to_ical( $filters, $ical_args );
 	}
@@ -1539,7 +1539,7 @@ add_action( 'init', 'bookacti_export_bookings_page', 10 );
 /**
  * Export a user's bookings events as iCal
  * @since 1.12.0 (was bookacti_export_user_booked_events_page)
- * @version 1.15.6
+ * @version 1.17.1
  */
 function bookacti_export_user_bookings_events_page() {
 	if( empty( $_REQUEST[ 'action' ] ) ) { return; }
@@ -1574,13 +1574,13 @@ function bookacti_export_user_bookings_events_page() {
 	$lang_switched = bookacti_switch_locale( $locale );
 	
 	$ical_args = apply_filters( 'bookacti_export_user_bookings_events_ical_args', array( 
-		'vevent_summary'               => '{event_title}',
-		'vevent_description'           => '',
-		'tooltip_booking_list_columns' => array(),
-		'booking_list_header'          => 0,
-		'raw'                          => 0,
-		'sequence'                     => $sequence,
-		'locale'                       => $locale
+		'vevent_summary'       => '{event_title}',
+		'vevent_description'   => '',
+		'booking_list_columns' => array(),
+		'booking_list_header'  => 0,
+		'raw'                  => 0,
+		'sequence'             => $sequence,
+		'locale'               => $locale
 	) );
 	
 	header( 'Content-type: text/calendar; charset=utf-8' );
@@ -1601,7 +1601,7 @@ add_action( 'init', 'bookacti_export_user_bookings_events_page', 10 );
 /**
  * Export a booking (group) event(s) as iCal
  * @since 1.12.0 (was bookacti_export_booked_events_page)
- * @version 1.15.6
+ * @version 1.17.1
  */
 function bookacti_export_booking_events_page() {
 	if( empty( $_REQUEST[ 'action' ] ) ) { return; }
@@ -1633,13 +1633,13 @@ function bookacti_export_booking_events_page() {
 	$lang_switched = bookacti_switch_locale( $locale );
 	
 	$ical_args = apply_filters( 'bookacti_export_booking_events_ical_args', array( 
-		'vevent_summary'               => '{event_title}',
-		'vevent_description'           => '',
-		'tooltip_booking_list_columns' => array(),
-		'booking_list_header'          => 0,
-		'raw'                          => 0,
-		'sequence'                     => ! empty( $_REQUEST[ 'sequence' ] ) ? intval( $_REQUEST[ 'sequence' ] ) : 0,
-		'locale'                       => $locale
+		'vevent_summary'       => '{event_title}',
+		'vevent_description'   => '',
+		'booking_list_columns' => array(),
+		'booking_list_header'  => 0,
+		'raw'                  => 0,
+		'sequence'             => ! empty( $_REQUEST[ 'sequence' ] ) ? intval( $_REQUEST[ 'sequence' ] ) : 0,
+		'locale'               => $locale
 	) );
 	
 	header( 'Content-type: text/calendar; charset=utf-8' );

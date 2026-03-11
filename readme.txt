@@ -3,7 +3,7 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
 Tested up to: 6.9
-Stable tag: 1.17.0
+Stable tag: 1.17.1
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -320,6 +320,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.17.1 =
+* Dev - Refactor parameters of bookacti_events_booking_lists hook
+* Dev - Refactor parameters of bookacti_event_booking_list_displayed JS hook
 
 = 1.17.0 - 2026/03/05 =
 * Calendar settings improvements - **[See the user-friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-17-calendar-settings-improvements/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
