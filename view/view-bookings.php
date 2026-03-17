@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking list page
- * @version 1.17.0
+ * @version 1.17.1
  */
 
 // Exit if accessed directly
@@ -94,14 +94,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							$booking_group_id = ! empty( $_REQUEST[ 'booking_group_id' ] ) && is_numeric( $_REQUEST[ 'booking_group_id' ] ) ? intval( $_REQUEST[ 'booking_group_id' ] ) : '';
 						?>
 						<div id='bookacti-booking-id-filter-input-container'>
-							<input type='number' name='booking_id' id='bookacti-booking-filter-booking-id' value='<?php echo $booking_id; ?>' placeholder='<?php esc_html_e( 'Booking ID', 'booking-activities' ); ?>' min='1'/>
+							<input type='number' name='booking_id' id='bookacti-booking-filter-booking-id' value='<?php echo esc_attr( $booking_id ); ?>' placeholder='<?php esc_attr_e( 'Booking ID', 'booking-activities' ); ?>' min='1'/>
 						</div>
 						<div id='bookacti-booking-group-id-filter-input-container'>
-							<input type='number' name='booking_group_id' id='bookacti-booking-filter-booking-group-id' value='<?php echo $booking_group_id; ?>' placeholder='<?php esc_html_e( 'Booking group ID', 'booking-activities' ); ?>' min='1'/>
+							<input type='number' name='booking_group_id' id='bookacti-booking-filter-booking-group-id' value='<?php echo esc_attr( $booking_group_id ); ?>' placeholder='<?php esc_attr_e( 'Booking group ID', 'booking-activities' ); ?>' min='1'/>
 						</div>
 					</div>
 				</div>
-				<div id='bookacti-templates-filter-container' class='bookacti-filter-container' style='<?php if( count( $templates_select_options ) < 2 ) { echo 'display:none;'; } ?>'>
+				<div id='bookacti-templates-filter-container' class='bookacti-filter-container' style='<?php if( count( $templates_select_options ) < 2 ) { echo esc_attr( 'display:none;' ); } ?>'>
 					<div id='bookacti-templates-filter-title' class='bookacti-filter-title'>
 						<?php esc_html_e( 'Calendars', 'booking-activities' ); ?>
 					</div>
@@ -122,8 +122,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					?>
 					</div>
 				</div>
-				<div id='bookacti-activities-filter-container' class='bookacti-filter-container' style='<?php if( count( $activities_select_options ) < 2 ) { echo 'display:none;'; } ?>'>
-					<div class='bookacti-filter-title' >
+				<div id='bookacti-activities-filter-container' class='bookacti-filter-container' style='<?php if( count( $activities_select_options ) < 2 ) { echo esc_attr( 'display:none;' ); } ?>'>
+					<div class='bookacti-filter-title'>
 						<?php esc_html_e( 'Activities', 'booking-activities' ); ?>
 					</div>
 					<div class='bookacti-filter-content'>
@@ -143,8 +143,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					?>
 					</div>
 				</div>
-				<div id='bookacti-status-filter-container' class='bookacti-filter-container' >
-					<div class='bookacti-filter-title' >
+				<div id='bookacti-status-filter-container' class='bookacti-filter-container'>
+					<div class='bookacti-filter-title'>
 						<?php echo esc_html_x( 'Status', 'Booking status', 'booking-activities' ); ?>
 					</div>
 					<div class='bookacti-filter-content'>
@@ -179,26 +179,26 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					?>
 					</div>
 				</div>
-				<div id='bookacti-dates-filter-container' class='bookacti-filter-container' >
-					<div class='bookacti-filter-title' >
+				<div id='bookacti-dates-filter-container' class='bookacti-filter-container'>
+					<div class='bookacti-filter-title'>
 						<?php esc_html_e( 'Date', 'booking-activities' ); ?>
 					</div>
-					<div class='bookacti-filter-content' >
+					<div class='bookacti-filter-content'>
 						<?php
 							$from = isset( $_REQUEST[ 'from' ] ) ? bookacti_sanitize_date( $_REQUEST[ 'from' ] ) : '';
 							$to   = isset( $_REQUEST[ 'to' ] ) ? bookacti_sanitize_date( $_REQUEST[ 'to' ] ) : '';
 							if( ! $from ) { $from = isset( $_REQUEST[ 'from' ] ) ? substr( bookacti_sanitize_datetime( $_REQUEST[ 'from' ] ), 0, 10 ) : ''; }
 							if( ! $to )   { $to   = isset( $_REQUEST[ 'to' ] ) ? substr( bookacti_sanitize_datetime( $_REQUEST[ 'to' ] ), 0, 10 ) : ''; }
 						?>
-						<div><label for='bookacti-booking-filter-dates-from'><?php /* translators: Followed by a date. E.g.: From 04/02/2021. */ echo esc_html_x( 'From', 'date', 'booking-activities' ) . ' '; ?></label><input type='date' name='from' id='bookacti-booking-filter-dates-from' value='<?php echo $from; ?>' ></div>
-						<div><label for='bookacti-booking-filter-dates-to'><?php /* translators: Followed by a date. E.g.: To 04/02/2021. */ echo esc_html_x( 'To', 'date', 'booking-activities' ) . ' '; ?></label><input type='date' name='to'  id='bookacti-booking-filter-dates-to' value='<?php echo $to; ?>' ></div>
+						<div><label for='bookacti-booking-filter-dates-from'><?php /* translators: Followed by a date. E.g.: From 04/02/2021. */ echo esc_html_x( 'From', 'date', 'booking-activities' ) . ' '; ?></label><input type='date' name='from' id='bookacti-booking-filter-dates-from' value='<?php echo esc_attr( $from ); ?>' ></div>
+						<div><label for='bookacti-booking-filter-dates-to'><?php /* translators: Followed by a date. E.g.: To 04/02/2021. */ echo esc_html_x( 'To', 'date', 'booking-activities' ) . ' '; ?></label><input type='date' name='to'  id='bookacti-booking-filter-dates-to' value='<?php echo esc_attr( $to ); ?>' ></div>
 					</div>
 				</div>
-				<div id='bookacti-customer-filter-container' class='bookacti-filter-container' >
-					<div class='bookacti-filter-title' >
+				<div id='bookacti-customer-filter-container' class='bookacti-filter-container'>
+					<div class='bookacti-filter-title'>
 						<?php esc_html_e( 'Customer', 'booking-activities' ); ?>
 					</div>
-					<div class='bookacti-filter-content' >
+					<div class='bookacti-filter-content'>
 					<?php
 						$selected_user = isset( $_REQUEST[ 'user_id' ] ) ? sanitize_text_field( $_REQUEST[ 'user_id' ] ) : array();
 						$args = apply_filters( 'bookacti_booking_list_user_selectbox_args', array(
@@ -221,18 +221,20 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					$user_calendar_settings = bookacti_format_bookings_calendar_settings( get_user_meta( get_current_user_id(), 'bookacti_bookings_calendar_settings', true ) );
 				?>
 				<div id='bookacti-actions-filter-container' class='bookacti-filter-container'>
-					<div class='bookacti-filter-title' >
+					<div class='bookacti-filter-title'>
 						<?php esc_html_e( 'Actions', 'booking-activities' ); ?>
 					</div>
-					<div class='bookacti-filter-content' >
-						<input type='submit' class='button button-primary button-large' id='bookacti-submit-filter-button' value='<?php esc_html_e( 'Filter the list', 'booking-activities' ); ?>' title='<?php esc_html_e( 'Filter the list', 'booking-activities' ); ?>' data-ajax='<?php echo $user_calendar_settings[ 'ajax' ] ? 1 : 0; ?>'/>
-						<input type='button' class='button button-primary button-large bookacti-export-bookings-button' value='<?php esc_html_e( 'Export bookings', 'booking-activities' ); ?>' title='<?php esc_html_e( 'Export bookings', 'booking-activities' ); ?>'/>
+					<div class='bookacti-filter-content'>
+						<input type='submit' class='button button-primary button-large' id='bookacti-submit-filter-button' value='<?php esc_attr_e( 'Filter the list', 'booking-activities' ); ?>' title='<?php esc_attr_e( 'Filter the list', 'booking-activities' ); ?>' data-ajax='<?php echo esc_attr( $user_calendar_settings[ 'ajax' ] ? 1 : 0 ); ?>'/>
+						<input type='button' class='button button-primary button-large bookacti-export-bookings-button' value='<?php esc_attr_e( 'Export bookings', 'booking-activities' ); ?>' title='<?php esc_attr_e( 'Export bookings', 'booking-activities' ); ?>'/>
 					</div>
 				</div>
 				<div id='bookacti-event-filter-container'>
 					<div class='bookacti-filter-title'>
 						<span><?php esc_html_e( 'Booking calendar', 'booking-activities' ); ?></span>
-						<span id='bookacti-bookings-calendar-settings' class='dashicons dashicons-admin-generic'></span>
+						<a class='button' id='bookacti-bookings-calendar-settings' title='<?php esc_attr_e( 'Calendar settings', 'booking-activities' ); ?>'>
+							<?php esc_html_e( 'Calendar settings', 'booking-activities' ); ?>
+						</a>
 					</div>
 					<div class='bookacti-filter-content'>
 						<?php
@@ -243,18 +245,18 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							$calendar_button_label_hide = esc_html__( 'Hide calendar', 'booking-activities' );
 							$calendar_button_label = $picked_events || $user_calendar_settings[ 'show' ] ? $calendar_button_label_hide : $calendar_button_label_show;
 						?>
-						<a class='button' id='bookacti-pick-event-filter' title='<?php echo $calendar_button_label; ?>' data-label-hide='<?php echo $calendar_button_label_hide; ?>' data-label-show='<?php echo $calendar_button_label_show; ?>'>
+						<a class='button' id='bookacti-pick-event-filter' title='<?php echo esc_attr( $calendar_button_label ); ?>' data-label-hide='<?php echo esc_attr( $calendar_button_label_hide ); ?>' data-label-show='<?php echo esc_attr( $calendar_button_label_show ); ?>'>
 							<?php echo $calendar_button_label; ?>
 						</a>
 						<span id='bookacti-pick-event-filter-instruction' <?php if( $picked_events || ! $user_calendar_settings[ 'show' ] ) { echo 'style="display:none;"'; } ?>>
 							<?php esc_html_e( 'Pick an event to filter the booking list.', 'booking-activities' ); ?>
 						</span>
-						<a class='button' id='bookacti-unpick-events-filter' title='<?php esc_html_e( 'Unpick events', 'booking-activities' ); ?>' <?php if( ! $picked_events ) { echo 'style="display:none;"'; } ?>>
+						<a class='button' id='bookacti-unpick-events-filter' title='<?php esc_attr_e( 'Unpick events', 'booking-activities' ); ?>' <?php if( ! $picked_events ) { echo 'style="display:none;"'; } ?>>
 							<?php esc_html_e( 'Unpick events', 'booking-activities' ); ?>
 						</a>
 						<span id='bookacti-picked-events-actions-container' <?php if( ! $picked_events ) { echo 'style="display:none;"'; } ?>>
-							<input type='submit' class='button button-primary button-large' value='<?php esc_html_e( 'Filter the list', 'booking-activities' ); ?>' title='<?php esc_html_e( 'Filter the list', 'booking-activities' ); ?>'/>
-							<input type='button' class='button button-primary button-large bookacti-export-bookings-button' value='<?php esc_html_e( 'Export bookings', 'booking-activities' ); ?>' title='<?php esc_html_e( 'Export bookings', 'booking-activities' ); ?>'/>
+							<input type='submit' class='button button-primary button-large' value='<?php esc_attr_e( 'Filter the list', 'booking-activities' ); ?>' title='<?php esc_attr_e( 'Filter the list', 'booking-activities' ); ?>'/>
+							<input type='button' class='button button-primary button-large bookacti-export-bookings-button' value='<?php esc_attr_e( 'Export bookings', 'booking-activities' ); ?>' title='<?php esc_attr_e( 'Export bookings', 'booking-activities' ); ?>'/>
 						</span>
 					</div>
 				</div>
@@ -306,6 +308,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							'out_of_period_events'         => 1,
 							'past_events'                  => 1,
 							'past_events_bookable'         => 1,
+							'use_global_days_off'          => 0,
 							'check_roles'                  => 0,
 							'auto_load'                    => 0, // Prevent to load on page load to save some performance
 							'select_first_event'           => 0,
@@ -350,8 +353,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		</div>
 		
 		<div class='bookacti-sos'>
-			<strong><?php /* translators: %s = [bookingactivities_list] */ echo sprintf( esc_html__( 'Your customers can see their booking list too thanks to the %s shortcode!', 'booking-activities' ), '<code>[bookingactivities_list]</code>' ); ?> (<a href='https://booking-activities.fr/en/docs/user-documentation/get-started-with-booking-activities/display-customers-bookings-list-on-the-frontend/' target='_blank'><?php esc_html_e( 'documentation', 'booking-activities' ); ?></a>)</strong>
-			<span class='dashicons dashicons-sos' data-label='<?php echo esc_html_x( 'Help', 'button label', 'booking-activities' ); ?>'></span>
+			<strong><?php /* translators: %s = [bookingactivities_list] */ echo esc_html( sprintf( __( 'Your customers can see their booking list too thanks to the %s shortcode!', 'booking-activities' ), '<code>[bookingactivities_list]</code>' ) ); ?> (<a href='https://booking-activities.fr/en/docs/user-documentation/get-started-with-booking-activities/display-customers-bookings-list-on-the-frontend/' target='_blank'><?php esc_html_e( 'documentation', 'booking-activities' ); ?></a>)</strong>
+			<span class='dashicons dashicons-sos' data-label='<?php echo esc_attr_x( 'Help', 'button label', 'booking-activities' ); ?>'></span>
 			<span>
 				<ul class='bookacti-help-list'>
 					<li><?php esc_html_e( 'The customers will need to be logged in to see their booking list, so it is recommended to display a login form on the same page', 'booking-activities' ); ?> (<a href='https://booking-activities.fr/en/docs/user-documentation/get-started-with-booking-activities/display-a-login-registration-form/' target='_blank'><?php esc_html_e( 'documentation', 'booking-activities' ); ?></a>)

@@ -97,7 +97,7 @@ function bookacti_get_booking_system( $atts ) {
 /**
  * Get booking system data
  * @since 1.7.4
- * @version 1.17.0
+ * @version 1.17.1
  * @param array $atts (see bookacti_format_booking_system_attributes())
  * @return array
  */
@@ -123,7 +123,7 @@ function bookacti_get_booking_system_data( $atts ) {
 	), $atts );
 	
 	// Get the availability period
-	if( $atts[ 'auto_load' ] ) {
+	if( $atts[ 'auto_load' ] && ! $atts[ 'custom_dataset' ] ) {
 		$display_period                 = bookacti_get_booking_system_display_period( $booking_system_data );
 		$booking_system_data[ 'start' ] = $display_period[ 'start' ];
 		$booking_system_data[ 'end' ]   = $display_period[ 'end' ];
@@ -389,7 +389,7 @@ function bookacti_get_booking_system_data( $atts ) {
 	}
 	
 	// Sanitize picked events
-	if( $booking_system_data[ 'picked_events' ] ) {
+	if( $booking_system_data[ 'picked_events' ] && ! $atts[ 'custom_dataset' ] ) {
 		$default_picked_event = array(
 			'group_id'    => 0,
 			'group_date'  => '',
@@ -505,7 +505,7 @@ function bookacti_get_calendar_html( $booking_system_data = array() ) {
 /**
  * Get default booking system attributes
  * @since 1.5.0
- * @version 1.17.0
+ * @version 1.17.1
  * @return array
  */
 function bookacti_get_booking_system_default_attributes() {
@@ -549,7 +549,8 @@ function bookacti_get_booking_system_default_attributes() {
 		'select_first_event'             => 0,
 		'redirect_url_by_activity'       => array(),
 		'redirect_url_by_group_category' => array(),
-		'display_data'                   => bookacti_get_booking_system_default_display_data()
+		'display_data'                   => bookacti_get_booking_system_default_display_data(),
+		'custom_dataset'                 => ''
 	));
 	
 	return $default_atts;
@@ -557,8 +558,8 @@ function bookacti_get_booking_system_default_attributes() {
 
 
 /**
- * Check booking system attributes and format them to be correct
- * @version 1.17.0
+ * Format booking system attributes
+ * @version 1.17.1
  * @param array $raw_atts 
  * @return array
  */
@@ -697,10 +698,8 @@ function bookacti_format_booking_system_attributes( $raw_atts = array() ) {
 		}
 	}
 	
-	// Sanitize booking status
-	$status = is_string( $atts[ 'status' ] ) ? array( sanitize_title_with_dashes( $status ) ) : $atts[ 'status' ];
-	
-	// Check if desired status are registered
+	// Sanitize booking status (check if desired status are registered)
+	$status = bookacti_str_ids_to_array( $atts[ 'status' ] );
 	$formatted_atts[ 'status' ] = is_array( $status ) && $status ? array_intersect( $status, array_keys( bookacti_get_booking_statuses() ) ) : array();
 	
 	// Check if desired columns are registered
@@ -747,6 +746,9 @@ function bookacti_format_booking_system_attributes( $raw_atts = array() ) {
 		}
 	}
 	$formatted_atts[ 'redirect_url_by_group_category' ] = $redirect_url_by_group_category ? $redirect_url_by_group_category : $defaults[ 'redirect_url_by_group_category' ];
+	
+	// Sanitize custom dataset (used by third party to make a custom processing of data)
+	$formatted_atts[ 'custom_dataset' ] = sanitize_title_with_dashes( $atts[ 'custom_dataset' ] );
 	
 	return apply_filters( 'bookacti_formatted_booking_system_attributes', $formatted_atts, $raw_atts, $defaults );
 }
@@ -3303,7 +3305,7 @@ function bookacti_get_booking_system_display_period( $booking_system_data ) {
 /**
  * Get booking system trimmed availability period
  * @since 1.13.0
- * @version 1.17.0
+ * @version 1.17.1
  * @param array $booking_system_data
  * @return array
  */
@@ -3327,16 +3329,20 @@ function bookacti_get_booking_system_availability_period( $booking_system_data )
 	$abs_end_dt   = ! empty( $booking_system_data[ 'availability_period' ][ 'end' ] ) ? new DateTime( $booking_system_data[ 'availability_period' ][ 'end' ], $timezone ) : null;
 	if( $abs_start_dt && ( ! $start_dt || ( $start_dt && $start_dt < $abs_start_dt ) ) ) {
 		$start_dt = clone $abs_start_dt;
+		$availability_period[ 'start_first' ] = $start_dt->format( 'Y-m-d H:i:s' );
+		$availability_period[ 'start' ]       = $availability_period[ 'start_first' ];
 	}
 	if( $abs_end_dt && ( ! $end_dt || ( $end_dt && $end_dt > $abs_end_dt ) ) ) {
 		$end_dt = clone $abs_end_dt;
+		$availability_period[ 'end' ]      = $end_dt->format( 'Y-m-d H:i:s' );
+		$availability_period[ 'end_last' ] = $availability_period[ 'end' ];
 	}
 	
 	// Check if the availability period starts before it ends
 	if( $start_dt && $end_dt && $start_dt >= $end_dt ) { $availability_period[ 'start' ] = $availability_period[ 'start_first' ] = $availability_period[ 'end_last' ] = $availability_period[ 'end' ]; }
 	
 	// Trim the availability period
-	else if( $booking_system_data[ 'trim' ] ) {
+	else if( $booking_system_data[ 'trim' ] && ! $booking_system_data[ 'custom_dataset' ] ) {
 		// Check if we should get events that have started before interval start 
 		$get_interval_started_events = $get_interval_started_groups = 0;
 		$started_groups_bookable = bookacti_get_setting_value( 'bookacti_general_settings', 'started_groups_bookable' );
