@@ -324,6 +324,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 = 1.17.1 =
 * Tweak - Replace booking calendar settings icon with button in Bookings page
 * Fix - Missing JS dependency for globa-function.min.js
+* Fix - Grouped events may appear as available in reschedule booking form
 * Dev - Add custom_dataset booking system attributes to allow third party to override booking system data processing
 * Dev - Add bookacti_select2_option_data JS hook
 * Dev - Refactor parameters of bookacti_events_booking_lists hook
