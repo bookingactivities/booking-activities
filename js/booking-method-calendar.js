@@ -272,7 +272,7 @@ $j( document ).ready( function() {
 
 /**
  * Initialize the calendar
- * @version 1.17.0
+ * @version 1.17.1
  * @param {HTMLElement} booking_system
  * @param {boolean} reload_events
  */
@@ -539,7 +539,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		 * Add classes to the event
 		 * It is called every time the associated event data changes
 		 * @since 1.15.0
-		 * @since 1.16.40
+		 * @version 1.17.1
 		 * @param {Object} info {
 		 *  @type {FullCalendar.EventApi} event
 		 *  @type {String} timeText
@@ -585,9 +585,10 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 			// If the event or its group is not available, disable the event
 			var bookings_only = bookacti.booking_system[ booking_system_id ][ 'bookings_only' ] == 1 ? true : false;
 			if( ! bookings_only ) {
+				var is_reschedule       = booking_system_id === 'bookacti-booking-system-reschedule';
 				var is_available        = bookacti_is_event_available( booking_system, info.event );
 				var has_available_group = bookacti_is_event_in_available_group( booking_system, info.event );
-				if( ! is_available && ! has_available_group ) {
+				if( ! is_available && ( is_reschedule || ! has_available_group ) ) {
 					return_object.class_names.push( 'bookacti-event-unavailable' );
 				}
 			}

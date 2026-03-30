@@ -2,8 +2,8 @@
 Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
-Tested up to: 6.9
-Stable tag: 1.17.0
+Tested up to: 7.0
+Stable tag: 1.17.1
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -320,6 +320,19 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.17.1 - 2026/03/30 =
+* Tweak - Replace booking calendar settings icon with button in Bookings page
+* Fix - Missing JS dependency for globa-function.min.js
+* Fix - Grouped events may appear as available in reschedule booking form
+* Fix - Bookings calendar was not restricted by date on page load when date filters was passed via URL parameters
+* Dev - Add custom_dataset and context booking system attributes to allow third party to override booking system data processing
+* Dev - Allow both date and datetime format for availability_period and display_period booking system attributes
+* Dev - Allow backend booking calendar to be filtered by end_from, created_from, end_to, created_to iinstead of from and to via URL parameters 
+* Dev - Add bookacti_select2_option_data JS hook
+* Dev - Refactor parameters of bookacti_events_booking_lists hook
+* Dev - Refactor parameters of bookacti_event_booking_list_displayed JS hook
+* Dev - Add bookacti_booking_system_tooltip_booking_list_filters PHP hook
 
 = 1.17.0 - 2026/03/05 =
 * Calendar settings improvements - **[See the user-friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-17-calendar-settings-improvements/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**

@@ -27,7 +27,7 @@ table.woocommerce_order_items ul.bookacti-booking-events-list { margin: 0; }
 .product.bookacti-activity form.cart .bookacti-success-list.woocommerce .button,
 .bookacti-success-list.woocommerce a.button               { float: right; }
 .bookacti-success-list.woocommerce li:not(:first-child) a.button.wc-forward { display: none; }
-.product form.cart table.bookacti-total-price-table td    { padding-left: 10px; }
+.product form.cart table.bookacti-total-price-table td    { padding-left: 10px !important; }
 .product form.cart .bookacti-calendar table               { border-width: 0; }
 .product form.cart .bookacti-calendar table.fc-scrollgrid { border-width: 1px 0 0 1px; }
 

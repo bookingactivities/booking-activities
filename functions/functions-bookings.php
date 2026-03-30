@@ -755,6 +755,7 @@ function bookacti_format_string_booking_filters( $filters = array() ) {
 /**
  * Format bookings calendar settings
  * @since 1.8.0
+ * @version 1.17.1
  * @param array $raw_settings
  * @return array
  */
@@ -783,7 +784,7 @@ function bookacti_format_bookings_calendar_settings( $raw_settings = array() ) {
 	$settings[ 'tooltip_booking_list' ] = in_array( $settings[ 'tooltip_booking_list' ], array( 1, '1', true, 'true' ), true ) ? 1 : 0;
 	
 	// Check if desired columns are registered
-	$formatted_atts[ 'tooltip_booking_list_columns' ] = is_array( $settings[ 'tooltip_booking_list_columns' ] ) && $settings[ 'tooltip_booking_list_columns' ] ? array_intersect( $settings[ 'tooltip_booking_list_columns' ], array_keys( bookacti_get_user_booking_list_columns_labels() ) ) : $default_settings[ 'tooltip_booking_list_columns' ];
+	$settings[ 'tooltip_booking_list_columns' ] = is_array( $settings[ 'tooltip_booking_list_columns' ] ) && $settings[ 'tooltip_booking_list_columns' ] ? array_intersect( $settings[ 'tooltip_booking_list_columns' ], array_keys( bookacti_get_user_booking_list_columns_labels() ) ) : $default_settings[ 'tooltip_booking_list_columns' ];
 	
 	// Format display data
 	$display_data = bookacti_format_booking_system_display_data( $raw_settings );
@@ -2208,7 +2209,7 @@ function bookacti_convert_bookings_to_csv( $filters, $args_raw = array() ) {
 /**
  * Convert bookings to iCal format
  * @since 1.8.0
- * @version 1.8.8
+ * @version 1.17.1
  * @param array $filters
  * @param array $args_raw
  * @return string
@@ -2217,13 +2218,13 @@ function bookacti_convert_bookings_to_ical( $filters = array(), $args_raw = arra
 	// Sanitized args
 	$default_settings = bookacti_get_bookings_export_default_settings();
 	$args_default = array( 
-		'vevent_summary'               => $default_settings[ 'vevent_summary' ],
-		'vevent_description'           => $default_settings[ 'vevent_description' ],
-		'tooltip_booking_list_columns' => $default_settings[ 'ical_columns' ],
-		'booking_list_header'          => $default_settings[ 'ical_booking_list_header' ],
-		'raw'                          => $default_settings[ 'ical_raw' ],
-		'sequence'                     => 0,
-		'locale'                       => ''
+		'vevent_summary'       => $default_settings[ 'vevent_summary' ],
+		'vevent_description'   => $default_settings[ 'vevent_description' ],
+		'booking_list_columns' => $default_settings[ 'ical_columns' ],
+		'booking_list_header'  => $default_settings[ 'ical_booking_list_header' ],
+		'raw'                  => $default_settings[ 'ical_raw' ],
+		'sequence'             => 0,
+		'locale'               => ''
 	);
 	$args = wp_parse_args( $args_raw, $args_default );
 	
@@ -2231,7 +2232,7 @@ function bookacti_convert_bookings_to_ical( $filters = array(), $args_raw = arra
 	$filters[ 'group_by' ] = 'none';
 	$export_args = array( 
 		'filters' => $filters, 
-		'columns' => $args[ 'tooltip_booking_list_columns' ], 
+		'columns' => $args[ 'booking_list_columns' ], 
 		'raw'     => $args[ 'raw' ], 
 		'type'    => 'ical',
 		'locale'  => $args[ 'locale' ]
@@ -2288,24 +2289,31 @@ function bookacti_convert_bookings_to_ical( $filters = array(), $args_raw = arra
 /**
  * Get the events tags values
  * @since 1.8.0
- * @version 1.16.31
+ * @version 1.17.1
  * @param array $booking_items
  * @param array $args
  * @return array
  */
 function bookacti_get_bookings_export_events_tags_values( $booking_items, $args ) {
-	$has_booking_list = ! empty( $args[ 'tooltip_booking_list_columns' ] ) && strpos( $args[ 'vevent_summary' ] . $args[ 'vevent_description' ], '{booking_list' ) !== false;
+	$has_booking_list = ! empty( $args[ 'booking_list_columns' ] ) && strpos( $args[ 'vevent_summary' ] . $args[ 'vevent_description' ], '{booking_list' ) !== false;
 	
 	// Remove unknown columns in the booking list
 	if( $has_booking_list ) {
 		$booking_list_headers = $booking_list_empty_columns = array();
 		$allowed_columns = bookacti_get_bookings_export_columns();
-		foreach( $args[ 'tooltip_booking_list_columns' ] as $i => $column_name ) {
-			if( ! isset( $allowed_columns[ $column_name ] ) ) { unset( $args[ 'tooltip_booking_list_columns' ][ $i ] ); continue; }
-			$booking_list_headers[ $column_name ] = $allowed_columns[ $column_name ];
-			$booking_list_empty_columns[ $column_name ] = '';
+		if( ! empty( $args[ 'booking_list_columns' ] ) ) { 
+			foreach( $args[ 'booking_list_columns' ] as $i => $column_name ) {
+				if( ! isset( $allowed_columns[ $column_name ] ) ) {
+					unset( $args[ 'booking_list_columns' ][ $i ] );
+					continue;
+				}
+				
+				$booking_list_headers[ $column_name ] = $allowed_columns[ $column_name ];
+				$booking_list_empty_columns[ $column_name ] = '';
+			}
 		}
-		if( empty( $args[ 'tooltip_booking_list_columns' ] ) ) { $has_booking_list = false; }
+		
+		if( empty( $args[ 'booking_list_columns' ] ) ) { $has_booking_list = false; }
 	}
 	
 	$date_format = bookacti_get_message( 'date_format_long' );
@@ -3539,6 +3547,7 @@ function bookacti_get_booking_list_rows_according_to_context( $context = 'user_b
 /**
  * Get booking lists by event
  * @since 1.8.0
+ * @version 1.17.1
  * @param array $filters_raw
  * @param array $columns
  * @param array $atts Booking system attributes
@@ -3587,5 +3596,5 @@ function bookacti_get_events_booking_lists( $filters_raw, $columns = array(), $a
 		}
 	}
 	
-	return apply_filters( 'bookacti_events_booking_lists', $booking_lists, $filters, $filters_raw, $columns, $atts );
+	return apply_filters( 'bookacti_events_booking_lists', $booking_lists, $booking_items, $filters, $columns, $atts );
 }

@@ -294,7 +294,7 @@ function bookacti_serialize_object( form ) {
 /**
  * Init selectbox with AJAX search
  * @since 1.7.19
- * @version 1.16.45
+ * @version 1.17.1
  */
 function bookacti_select2_init() {
 	if( ! $j.fn.select2 ) { return; }
@@ -302,11 +302,15 @@ function bookacti_select2_init() {
 	/**
 	 * Add the select "option" data to the rendered "li"
 	 * @since 1.16.45
+	 * @version 1.17.1
 	 * @param {Object} data
 	 * @param {HTMLElement} li
 	 * @returns {String}
 	 */
 	function bookacti_select2_add_option_data( data, li ) {
+		var selectbox = $j( data.element ).parents( 'select' );
+		selectbox.trigger( 'bookacti_select2_option_data', [ data, li ] );
+		
 		$j( li ).data( 'data', data );
 		
 		return data.text;
