@@ -367,10 +367,12 @@ function bookacti_get_booking_system_data( $atts ) {
 					'in__event_id' => array_keys( $events[ 'data' ] ),
 				);
 				if( $atts[ 'bookings_only' ] ) {
-					$booking_filters[ 'status' ] = $atts[ 'status' ];
+					$booking_filters[ 'status' ]      = $atts[ 'status' ];
 					$booking_filters[ 'in__user_id' ] = $user_ids;
 				}
-				$booking_lists = bookacti_get_events_booking_lists( $booking_filters, $atts[ 'tooltip_booking_list_columns' ], $atts );
+				
+				$booking_filters = apply_filters( 'bookacti_booking_system_tooltip_booking_list_filters', $booking_filters, $atts );
+				$booking_lists   = bookacti_get_events_booking_lists( $booking_filters, $atts[ 'tooltip_booking_list_columns' ], $atts );
 			}
 			
 			$bookings_nb_filters = apply_filters( 'bookacti_booking_system_number_of_bookings_filters', array( 'status' => $status, 'users' => $user_ids ), $atts );
@@ -378,7 +380,7 @@ function bookacti_get_booking_system_data( $atts ) {
 			$booking_system_data[ 'events' ]                = $events[ 'events' ] ? $events[ 'events' ] : array();
 			$booking_system_data[ 'events_data' ]           = $events[ 'data' ] ? $events[ 'data' ] : array();
 			$booking_system_data[ 'events_interval' ]       = $events_interval;
-			$booking_system_data[ 'bookings' ]              = bookacti_get_number_of_bookings_per_event( array_merge( $bookings_nb_filters, array( 'templates' => $atts[ 'calendars' ], 'events' => array_keys( $events[ 'data' ] ), 'interval' => $events_interval, 'interval_started' => $get_interval_started_events || $get_interval_started_groups ) ) );
+			$booking_system_data[ 'bookings' ]              = bookacti_get_number_of_bookings_per_event( array_merge( array( 'templates' => $atts[ 'calendars' ], 'events' => array_keys( $events[ 'data' ] ), 'interval' => $events_interval, 'interval_started' => $event_filters[ 'interval_started' ] || $get_interval_started_groups ), $bookings_nb_filters ) );
 			$booking_system_data[ 'groups_bookings' ]       = bookacti_get_number_of_bookings_per_group_of_events( $groups, $bookings_nb_filters );
 			$booking_system_data[ 'booking_lists' ]         = $booking_lists;
 			$booking_system_data[ 'activities_data' ]       = bookacti_get_activities_by_template( $atts[ 'calendars' ], true );
@@ -550,6 +552,7 @@ function bookacti_get_booking_system_default_attributes() {
 		'redirect_url_by_activity'       => array(),
 		'redirect_url_by_group_category' => array(),
 		'display_data'                   => bookacti_get_booking_system_default_display_data(),
+		'context'                        => '',
 		'custom_dataset'                 => ''
 	));
 	
@@ -655,14 +658,14 @@ function bookacti_format_booking_system_attributes( $raw_atts = array() ) {
 	$formatted_atts[ 'end' ]   = $sanitized_end ? $sanitized_end : $defaults[ 'end' ];
 	
 	// Format availability period
-	$sanitized_period_start = isset( $atts[ 'availability_period' ][ 'start' ] ) ? bookacti_sanitize_datetime( $atts[ 'availability_period' ][ 'start' ] ) : '';
-	$sanitized_period_end   = isset( $atts[ 'availability_period' ][ 'end' ] ) ? bookacti_sanitize_datetime( $atts[ 'availability_period' ][ 'end' ] ) : '';
+	$sanitized_period_start = isset( $atts[ 'availability_period' ][ 'start' ] ) ? ( bookacti_sanitize_date( $atts[ 'availability_period' ][ 'start' ] ) ? bookacti_sanitize_date( $atts[ 'availability_period' ][ 'start' ] ) . ' 00:00:00' : bookacti_sanitize_datetime( $atts[ 'availability_period' ][ 'start' ] ) ) : '';
+	$sanitized_period_end   = isset( $atts[ 'availability_period' ][ 'end' ] ) ? ( bookacti_sanitize_date( $atts[ 'availability_period' ][ 'end' ] ) ? bookacti_sanitize_date( $atts[ 'availability_period' ][ 'end' ] ) . ' 23:59:59' : bookacti_sanitize_datetime( $atts[ 'availability_period' ][ 'end' ] ) ) : '';
 	$formatted_atts[ 'availability_period' ][ 'start' ] = $atts[ 'past_events' ] && empty( $raw_atts[ 'availability_period' ][ 'start' ] ) ? '' : ( $sanitized_period_start ? $sanitized_period_start : $defaults[ 'availability_period' ][ 'start' ] );
 	$formatted_atts[ 'availability_period' ][ 'end' ]   = $sanitized_period_end ? $sanitized_period_end : $defaults[ 'availability_period' ][ 'end' ];
 	
 	// Format display period
-	$sanitized_period_start = isset( $atts[ 'display_period' ][ 'start' ] ) ? bookacti_sanitize_datetime( $atts[ 'display_period' ][ 'start' ] ) : '';
-	$sanitized_period_end   = isset( $atts[ 'display_period' ][ 'end' ] ) ? bookacti_sanitize_datetime( $atts[ 'display_period' ][ 'end' ] ) : '';
+	$sanitized_period_start = isset( $atts[ 'display_period' ][ 'start' ] ) ? ( bookacti_sanitize_date( $atts[ 'display_period' ][ 'start' ] ) ? bookacti_sanitize_date( $atts[ 'display_period' ][ 'start' ] ) . ' 00:00:00' : bookacti_sanitize_datetime( $atts[ 'display_period' ][ 'start' ] ) ) : '';
+	$sanitized_period_end   = isset( $atts[ 'display_period' ][ 'end' ] ) ? ( bookacti_sanitize_date( $atts[ 'display_period' ][ 'end' ] ) ? bookacti_sanitize_date( $atts[ 'display_period' ][ 'end' ] ) . ' 23:59:59' : bookacti_sanitize_datetime( $atts[ 'display_period' ][ 'end' ] ) ) : '';
 	$formatted_atts[ 'display_period' ][ 'start' ] = $atts[ 'past_events' ] && empty( $raw_atts[ 'display_period' ][ 'start' ] ) ? '' : ( $sanitized_period_start ? $sanitized_period_start : $defaults[ 'display_period' ][ 'start' ] );
 	$formatted_atts[ 'display_period' ][ 'end' ]   = $sanitized_period_end ? $sanitized_period_end : $defaults[ 'display_period' ][ 'end' ];
 	
@@ -729,14 +732,14 @@ function bookacti_format_booking_system_attributes( $raw_atts = array() ) {
 	$formatted_atts[ 'form_action' ]              = in_array( $atts[ 'form_action' ], $possible_form_actions, true ) ? $atts[ 'form_action' ] : $defaults[ 'form_action' ];
 	$formatted_atts[ 'when_perform_form_action' ] = in_array( $atts[ 'when_perform_form_action' ], $possible_form_triggers, true ) ? $atts[ 'when_perform_form_action' ] : $defaults[ 'when_perform_form_action' ];
 	
-	$redirect_url_by_group_activity = array();
+	$redirect_url_by_activity = array();
 	if( is_array( $atts[ 'redirect_url_by_activity' ] ) ) {
 		foreach( $atts[ 'redirect_url_by_activity' ] as $activity_id => $redirect_url ) {
 			if( ! is_numeric( $activity_id ) || empty( $redirect_url ) ) { continue; }
-			$redirect_url_by_group_activity[ intval( $activity_id ) ] = esc_url_raw( $redirect_url );
+			$redirect_url_by_activity[ intval( $activity_id ) ] = esc_url_raw( $redirect_url );
 		}
 	}
-	$formatted_atts[ 'redirect_url_by_activity' ] = $redirect_url_by_group_activity ? $redirect_url_by_group_activity : $defaults[ 'redirect_url_by_activity' ];
+	$formatted_atts[ 'redirect_url_by_activity' ] = $redirect_url_by_activity ? $redirect_url_by_activity : $defaults[ 'redirect_url_by_activity' ];
 
 	$redirect_url_by_group_category = array();
 	if( is_array( $atts[ 'redirect_url_by_group_category' ] ) ) {
@@ -747,7 +750,8 @@ function bookacti_format_booking_system_attributes( $raw_atts = array() ) {
 	}
 	$formatted_atts[ 'redirect_url_by_group_category' ] = $redirect_url_by_group_category ? $redirect_url_by_group_category : $defaults[ 'redirect_url_by_group_category' ];
 	
-	// Sanitize custom dataset (used by third party to make a custom processing of data)
+	// Sanitize context and custom dataset (used by third party to make a custom processing of data)
+	$formatted_atts[ 'context' ]        = sanitize_title_with_dashes( $atts[ 'context' ] );
 	$formatted_atts[ 'custom_dataset' ] = sanitize_title_with_dashes( $atts[ 'custom_dataset' ] );
 	
 	return apply_filters( 'bookacti_formatted_booking_system_attributes', $formatted_atts, $raw_atts, $defaults );

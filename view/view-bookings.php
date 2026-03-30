@@ -50,6 +50,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	foreach( $activities as $activity_id => $activity ) {
 		$activities_select_options[ $activity_id ] = ! empty( $activity[ 'title' ] ) ? esc_html( apply_filters( 'bookacti_translate_text', $activity[ 'title' ] ) ) : '';
 	}
+	
+	$context = ! empty( $_REQUEST[ 'context' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'context' ] ) : '';
 	?>
 	
 	<div id='bookacti-bookings-container'>
@@ -57,8 +59,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			<form id='bookacti-booking-list-filters-form' action=''>
 				<input type='hidden' name='page' value='bookacti_bookings'/>
 				<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_get_booking_list' ); ?>'/>
-				<input type='hidden' name='created_from' value='<?php echo ! empty( $_REQUEST[ 'created_from' ] ) ? esc_attr( $_REQUEST[ 'created_from' ] ) : ''; ?>'/>
-				<input type='hidden' name='created_to' value='<?php echo ! empty( $_REQUEST[ 'created_to' ] ) ? esc_attr( $_REQUEST[ 'created_to' ] ) : ''; ?>'/>
+				<input type='hidden' name='context' value='<?php echo esc_attr( $context ); ?>'/>
+				<input type='hidden' name='created_from' value='<?php echo ! empty( $_REQUEST[ 'created_from' ] ) ? esc_attr( bookacti_sanitize_datetime( $_REQUEST[ 'created_from' ] ) ) : ''; ?>'/>
+				<input type='hidden' name='created_to' value='<?php echo ! empty( $_REQUEST[ 'created_to' ] ) ? esc_attr( bookacti_sanitize_datetime( $_REQUEST[ 'created_to' ] ) ) : ''; ?>'/>
+				<input type='hidden' name='end_from' value='<?php echo ! empty( $_REQUEST[ 'end_from' ] ) ? esc_attr( bookacti_sanitize_datetime( $_REQUEST[ 'end_from' ] ) ) : ''; ?>'/>
+				<input type='hidden' name='end_to' value='<?php echo ! empty( $_REQUEST[ 'end_to' ] ) ? esc_attr( bookacti_sanitize_datetime( $_REQUEST[ 'end_to' ] ) ) : ''; ?>'/>
 				<?php
 					// Display sorting data
 					$order_by = ! empty( $_REQUEST[ 'order_by' ] ) ? $_REQUEST[ 'order_by' ] : ( ! empty( $_REQUEST[ 'orderby' ] ) ? $_REQUEST[ 'orderby' ] : array() );
@@ -187,8 +192,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						<?php
 							$from = isset( $_REQUEST[ 'from' ] ) ? bookacti_sanitize_date( $_REQUEST[ 'from' ] ) : '';
 							$to   = isset( $_REQUEST[ 'to' ] ) ? bookacti_sanitize_date( $_REQUEST[ 'to' ] ) : '';
-							if( ! $from ) { $from = isset( $_REQUEST[ 'from' ] ) ? substr( bookacti_sanitize_datetime( $_REQUEST[ 'from' ] ), 0, 10 ) : ''; }
-							if( ! $to )   { $to   = isset( $_REQUEST[ 'to' ] ) ? substr( bookacti_sanitize_datetime( $_REQUEST[ 'to' ] ), 0, 10 ) : ''; }
+							if( ! $from && isset( $_REQUEST[ 'from' ] ) ) { $from = substr( bookacti_sanitize_datetime( $_REQUEST[ 'from' ] ), 0, 10 ); }
+							if( ! $to   && isset( $_REQUEST[ 'to' ] ) )   { $to   = substr( bookacti_sanitize_datetime( $_REQUEST[ 'to' ] ), 0, 10 ); }
 						?>
 						<div><label for='bookacti-booking-filter-dates-from'><?php /* translators: Followed by a date. E.g.: From 04/02/2021. */ echo esc_html_x( 'From', 'date', 'booking-activities' ) . ' '; ?></label><input type='date' name='from' id='bookacti-booking-filter-dates-from' value='<?php echo esc_attr( $from ); ?>' ></div>
 						<div><label for='bookacti-booking-filter-dates-to'><?php /* translators: Followed by a date. E.g.: To 04/02/2021. */ echo esc_html_x( 'To', 'date', 'booking-activities' ) . ' '; ?></label><input type='date' name='to'  id='bookacti-booking-filter-dates-to' value='<?php echo esc_attr( $to ); ?>' ></div>
@@ -235,19 +240,19 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						<a class='button' id='bookacti-bookings-calendar-settings' title='<?php esc_attr_e( 'Calendar settings', 'booking-activities' ); ?>'>
 							<?php esc_html_e( 'Calendar settings', 'booking-activities' ); ?>
 						</a>
-					</div>
-					<div class='bookacti-filter-content'>
 						<?php
 							// Get selected (group of) event(s) data (if any)
 							$picked_events = ! empty( $_REQUEST[ 'selected_events' ] ) ? bookacti_format_picked_events( $_REQUEST[ 'selected_events' ] ) : array();
 							
 							$calendar_button_label_show = esc_html__( 'Show calendar', 'booking-activities' );
 							$calendar_button_label_hide = esc_html__( 'Hide calendar', 'booking-activities' );
-							$calendar_button_label = $picked_events || $user_calendar_settings[ 'show' ] ? $calendar_button_label_hide : $calendar_button_label_show;
+							$calendar_button_label      = $picked_events || $user_calendar_settings[ 'show' ] ? $calendar_button_label_hide : $calendar_button_label_show;
 						?>
 						<a class='button' id='bookacti-pick-event-filter' title='<?php echo esc_attr( $calendar_button_label ); ?>' data-label-hide='<?php echo esc_attr( $calendar_button_label_hide ); ?>' data-label-show='<?php echo esc_attr( $calendar_button_label_show ); ?>'>
 							<?php echo $calendar_button_label; ?>
 						</a>
+					</div>
+					<div class='bookacti-filter-content'>
 						<span id='bookacti-pick-event-filter-instruction' <?php if( $picked_events || ! $user_calendar_settings[ 'show' ] ) { echo 'style="display:none;"'; } ?>>
 							<?php esc_html_e( 'Pick an event to filter the booking list.', 'booking-activities' ); ?>
 						</span>
@@ -290,6 +295,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							$selected_users = array_unique( array_filter( $selected_users ) );
 						}
 						
+						// Get start and end datetime from "From" and "To" filters (date or datetime)
+						$start = isset( $_REQUEST[ 'from' ] ) && bookacti_sanitize_datetime( $_REQUEST[ 'from' ] ) ? bookacti_sanitize_datetime( $_REQUEST[ 'from' ] ) : ( $from ? $from . ' 00:00:00' : '' );
+						$end   = isset( $_REQUEST[ 'to' ] ) && bookacti_sanitize_datetime( $_REQUEST[ 'to' ] ) ? bookacti_sanitize_datetime( $_REQUEST[ 'to' ] ) : ( $to ? $to . ' 23:59:59' : '' );
+						if( ! $start && isset( $_REQUEST[ 'end_from' ] ) )     { $start = bookacti_sanitize_datetime( $_REQUEST[ 'end_from' ] ); }
+						if( ! $end   && isset( $_REQUEST[ 'end_to' ] ) )       { $end   = bookacti_sanitize_datetime( $_REQUEST[ 'end_to' ] ); }
+						if( ! $start && isset( $_REQUEST[ 'created_from' ] ) ) { $start = bookacti_sanitize_datetime( $_REQUEST[ 'created_from' ] ); }
+						if( ! $end   && isset( $_REQUEST[ 'created_to' ] ) )   { $end   = bookacti_sanitize_datetime( $_REQUEST[ 'created_to' ] ); }
+						
 						// Display the booking system
 						$atts = apply_filters( 'bookacti_bookings_booking_system_attributes', array( 
 							'bookings_only'                => 1,
@@ -302,8 +315,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							'groups_first_event_only'      => 0,
 							'method'                       => 'calendar',
 							'id'                           => 'bookacti-booking-system-bookings-page',
-							'start'                        => $from,
-							'end'                          => $to,
+							'display_period'               => array( 'start' => $start, 'end' => $end ),
+							'start'                        => $start,
+							'end'                          => $end,
 							'trim'                         => 0, // Doesn't play nicely when dynamically changing bookings
 							'out_of_period_events'         => 1,
 							'past_events'                  => 1,
@@ -315,9 +329,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							'picked_events'                => $picked_events,
 							'tooltip_booking_list'         => $user_calendar_settings[ 'tooltip_booking_list' ],
 							'tooltip_booking_list_columns' => $user_calendar_settings[ 'tooltip_booking_list_columns' ],
-							'display_data'                 => $display_data
+							'display_data'                 => $display_data,
+							'context'                      => $context
 						), $user_calendar_settings );
-
+						
 						// Format booking system attributes
 						$atts = bookacti_format_booking_system_attributes( $atts );
 						
