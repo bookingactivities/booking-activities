@@ -1518,7 +1518,7 @@ function bookacti_validate_login( $login_values ) {
 /**
  * Process login form: log in / register / book without account the user
  * @since 1.16.42
- * @version 1.16.45
+ * @version 1.17.2
  * @param int $form_id
  * @param array $login_values
  * @return array
@@ -1583,8 +1583,7 @@ function bookacti_process_login_form( $form_id, $login_values ) {
 			if( is_email( $return_array[ 'user_id' ] ) ) {
 				$user = get_user_by( 'email', $return_array[ 'user_id' ] );
 				if( is_a( $user, 'WP_User' ) ) {
-					$current_url    = ! empty( $_POST[ 'current_url' ] ) ? sanitize_url( $_POST[ 'current_url' ] ) : ( ! empty( $_SERVER[ 'HTTP_REFERER' ] ) ? sanitize_url( $_SERVER[ 'HTTP_REFERER' ] ) : '' );
-					$login_url      = bookacti_get_login_link( $current_url, true );
+					$login_url      = bookacti_get_login_link( '', true );
 					$login_field_id = ! empty( $login_field[ 'field_id' ] ) ? $login_field[ 'field_id' ] : '';
 					
 					$return_array[ 'error' ] = 'user_already_exists';

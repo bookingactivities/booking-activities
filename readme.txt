@@ -321,9 +321,13 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.17.2 =
+* Tweak - Keep form values after being redirected to log in page, when trying to make a booking without account with an email already associated with an account
+* Fix - Backend booking calendar no longer restrict to Date filter after changing another filter
+
 = 1.17.1 - 2026/03/30 =
 * Tweak - Replace booking calendar settings icon with button in Bookings page
-* Fix - Missing JS dependency for globa-function.min.js
+* Fix - Missing JS dependency for global-function.min.js
 * Fix - Grouped events may appear as available in reschedule booking form
 * Fix - Bookings calendar was not restricted by date on page load when date filters was passed via URL parameters
 * Dev - Add custom_dataset and context booking system attributes to allow third party to override booking system data processing

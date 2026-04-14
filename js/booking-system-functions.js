@@ -2031,7 +2031,7 @@ function bookacti_redirect_to_group_category_url( booking_system, group_id ) {
 /**
  * Redirect to url with the booking form values as parameters
  * @since 1.7.10
- * @version 1.16.45
+ * @version 1.17.2
  * @param {HTMLElement} booking_system
  * @param {String} redirect_url
  */
@@ -2070,7 +2070,7 @@ function bookacti_redirect_booking_system_to_url( booking_system, redirect_url )
 	
 	// Use window.location.assign to redirect to external sites (to avoid errors 405 or 414)
 	if( redirect_form_attr[ 'data-redirect-with-js' ] === 1 ) {
-		window.location.assign( redirect_url );
+		window.location.assign( redirect_form_attr[ 'action' ] );
 	} 
 	
 	// Submit the form with POST method for internal redirects (to keep the form values)
