@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking list page
- * @version 1.17.1
+ * @version 1.18.0
  */
 
 // Exit if accessed directly
@@ -368,7 +368,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		</div>
 		
 		<div class='bookacti-sos'>
-			<strong><?php /* translators: %s = [bookingactivities_list] */ echo esc_html( sprintf( __( 'Your customers can see their booking list too thanks to the %s shortcode!', 'booking-activities' ), '<code>[bookingactivities_list]</code>' ) ); ?> (<a href='https://booking-activities.fr/en/docs/user-documentation/get-started-with-booking-activities/display-customers-bookings-list-on-the-frontend/' target='_blank'><?php esc_html_e( 'documentation', 'booking-activities' ); ?></a>)</strong>
+			<strong><?php /* translators: %s = [bookingactivities_list] */ echo sprintf( esc_html__( 'Your customers can see their booking list too thanks to the %s shortcode!', 'booking-activities' ), '<code>[bookingactivities_list]</code>' ); ?> (<a href='https://booking-activities.fr/en/docs/user-documentation/get-started-with-booking-activities/display-customers-bookings-list-on-the-frontend/' target='_blank'><?php esc_html_e( 'documentation', 'booking-activities' ); ?></a>)</strong>
 			<span class='dashicons dashicons-sos' data-label='<?php echo esc_attr_x( 'Help', 'button label', 'booking-activities' ); ?>'></span>
 			<span>
 				<ul class='bookacti-help-list'>

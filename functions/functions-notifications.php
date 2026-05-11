@@ -2,248 +2,396 @@
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
+// NOTIFICATION DATA
+
 /**
- * Array of configurable notifications
- * @since 1.2.1 (was bookacti_get_emails_default_settings in 1.2.0)
- * @version 1.16.45
+ * Get default notification type data
+ * @since 1.18.0 (was bookacti_get_notifications_default_settings)
  * @return array
  */
-function bookacti_get_notifications_default_settings() {
+function bookacti_get_notifications_default_values() {
 	$admin_email = get_bloginfo( 'admin_email' );
 	$blog_name = wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES );
 	$blog_name = $blog_name ? apply_filters( 'bookacti_translate_text_external', $blog_name, false, true, array( 'domain' => 'wordpress', 'field' => 'blogname' ) ) : '';
 	
 	$notifications = array( 
-		'admin_new_booking' => 
-			array(
-				'id'          => 'admin_new_booking',
-				'active'      => 1,
-				'title'       => esc_html__( 'Customer has made a booking', 'booking-activities' ),
-				'description' => esc_html__( 'This notification is sent to the administrator when a new booking is registered.', 'booking-activities' ),
-				'email'       => array(
-					'active'  => 1,
-					'to'      => array( $admin_email ),
-					'subject' => esc_html__( 'New booking!', 'booking-activities' ),
-					'message' => /* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an administrator receives when a booking is made */
-								__( '<p>You have {booking_count} new booking(s)!</p>{for_each_booking}<hr/><p>{booking_list}</p><p>Customer info: {user_firstname} {user_lastname} ({user_email})</p><p>Booking status: <strong>{booking_status}</strong>.</p><p><a href="{booking_admin_url}">Click here</a> to edit this booking (ID: {booking_id}).</p>{/for_each_booking}', 'booking-activities' ) 
-				)
-			),
-		'admin_cancelled_booking' => 
-			array(
-				'id'          => 'admin_cancelled_booking',
-				'active'      => 1,
-				'title'       => esc_html__( 'Customer has cancelled a booking', 'booking-activities' ),
-				'description' => esc_html__( 'This notification is sent to the administrator when a customer cancels a booking.', 'booking-activities' ),
-				'email'       => array(
-					'active'  => 1,
-					'to'      => array( $admin_email ),
-					'subject' => esc_html__( 'Booking cancelled', 'booking-activities' ),
-					'message' => /* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an administrator receives when a booking is cancelled */
-								__( '<p>A customer has cancelled a booking.</p>{for_each_booking}<p>{booking_list}</p><p>Customer info: {user_firstname} {user_lastname} ({user_email})</p><p><a href="{booking_admin_url}">Click here</a> to edit this booking (ID: {booking_id}).</p>{/for_each_booking}', 'booking-activities' )
-				)
-			),
-		'admin_rescheduled_booking' => 
-			array(
-				'id'          => 'admin_rescheduled_booking',
-				'active'      => 1,
-				'title'       => esc_html__( 'Customer has rescheduled a booking', 'booking-activities' ),
-				'description' => esc_html__( 'This notification is sent to the administrator when a customer reschedules a booking.', 'booking-activities' ),
-				'email'       => array(
-					'active'  => 1,
-					'to'      => array( $admin_email ),
-					'subject' => esc_html__( 'Booking rescheduled', 'booking-activities' ),
-					'message' => /* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an administrator receives when a booking is rescheduled */
-								__( '<p>A customer has rescheduled a booking.</p>{for_each_booking}<p>Old booking: {booking_old_start} - {booking_old_end}</p><p>New booking: {booking_list}</p><p>Customer info: {user_firstname} {user_lastname} ({user_email})</p><p><a href="{booking_admin_url}">Click here</a> to edit this booking (ID: {booking_id}).</p>{/for_each_booking}', 'booking-activities' ) 
-				)
-			),
-		'admin_refund_requested_booking' => 
-			array(
-				'id'          => 'admin_refund_requested_booking',
-				'active'      => 1,
-				'title'       => esc_html__( 'Customer has requested a refund for a booking', 'booking-activities' ),
-				'description' => esc_html__( 'This notification is sent to the administrator when a customer submits a refund request for a booking.', 'booking-activities' ),
-				'email'       => array(
-					'active'  => 1,
-					'to'      => array( $admin_email ),
-					/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email subject an administrator receives when a customer submits a refund request for a booking */
-					'subject' => esc_html__( 'Refund request for booking #{booking_id}', 'booking-activities' ),
-					'message' => '{for_each_booking}'
-								/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an administrator receives when a customer submits a refund request for a booking */
-								. __( '<h3>{user_firstname} {user_lastname} wants to be refunded for <a href="{booking_admin_url}" target="_blank">booking #{booking_id}</a></h3>', 'booking-activities' )
-								/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an administrator receives when a customer submits a refund request or process a refund for a booking */
-								. __( '<h4>Booking</h4>ID: {booking_id}<br/>Name: {booking_title}<br/>Start: {booking_start}<br/>End: {booking_end}<br/>Quantity: {booking_quantity}<br/>Status: {booking_status}<br/>List:<br/>{booking_list}<h4>User</h4>Name: {user_firstname} {user_lastname}<br/>Email: {user_email}<br/>Phone: {user_phone}<h4>User message</h4>{refund_message}', 'booking-activities' )
-								. '{/for_each_booking}'
-				)
-			),
-		'admin_refunded_booking' => 
-			array(
-				'id'          => 'admin_refunded_booking',
-				'active'      => 1,
-				'title'       => esc_html__( 'Customer has been refunded', 'booking-activities' ),
-				'description' => esc_html__( 'This notification is sent to the administrator when a customer is successfully reimbursed for a booking.', 'booking-activities' ),
-				'email'       => array(
-					'active'  => 1,
-					'to'      => array( get_bloginfo( 'admin_email' ) ),
-					'subject' => esc_html__( 'Booking refunded', 'booking-activities' ),
-					'message' => '{for_each_booking}'
-								/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an administrator receives when a booking is refunded */
-								. __( '<h3>{user_firstname} {user_lastname} has been refunded for <a href="{booking_admin_url}" target="_blank">booking #{booking_id}</a></h3>', 'booking-activities' )
-								. __( '<h4>Booking</h4>ID: {booking_id}<br/>Name: {booking_title}<br/>Start: {booking_start}<br/>End: {booking_end}<br/>Quantity: {booking_quantity}<br/>Status: {booking_status}<br/>List:<br/>{booking_list}<h4>User</h4>Name: {user_firstname} {user_lastname}<br/>Email: {user_email}<br/>Phone: {user_phone}<h4>User message</h4>{refund_message}', 'booking-activities' )
-								. '{/for_each_booking}'
-				)
-			),
-		
-		
-		'customer_pending_booking' => 
-			array(
-				'id'          => 'customer_pending_booking',
-				'active'      => 1,
-				/* translators: %s = a booking status. E.g.: "Pending", "Booked"... */
-				'title'       => sprintf( esc_html__( 'Booking status turns to "%s"', 'booking-activities' ), esc_html__( 'Pending', 'booking-activities' ) ),
-				/* translators: %s = a booking status. E.g.: "Pending", "Booked"... */
-				'description' => sprintf( esc_html__( 'This notification is sent to customers when one of their bookings becomes "%s".', 'booking-activities' ), esc_html__( 'Pending', 'booking-activities' ) ) 
-				/* translators: %s = a booking status. E.g.: "Pending", "Booked"... */
-				              . ' ' . sprintf( esc_html__( 'If you set the "Default booking status" option to "%s", this notification will be sent right after the booking is made.', 'booking-activities' ), esc_html__( 'Pending', 'booking-activities' ) ),
-				'email'       => array(
-					'active'  => 1,
-					'to'      => array(),
-					'subject' => esc_html__( 'Your booking is pending', 'booking-activities' ) . ' - ' . $blog_name,
-					'message' => /* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receives when a booking is made, but is still Pending */
-								__( '<p>Thank you for your booking request {user_firstname}!</p><p>The following reservations are <strong>pending</strong>:</p><p>{booking_list}</p><p>We will process your request and contact you as soon as possible.</p>', 'booking-activities' )
-				)
-			),
-		'customer_booked_booking' => 
-			array(
-				'id'          => 'customer_booked_booking',
-				'active'      => 1,
-				'title'       => sprintf( esc_html__( 'Booking status turns to "%s"', 'booking-activities' ), esc_html__( 'Booked', 'booking-activities' ) ),
-				'description' => sprintf( esc_html__( 'This notification is sent to customers when one of their bookings becomes "%s".', 'booking-activities' ), esc_html__( 'Booked', 'booking-activities' ) ) 
-				              . ' ' . sprintf( esc_html__( 'If you set the "Default booking status" option to "%s", this notification will be sent right after the booking is made.', 'booking-activities' ), esc_html__( 'Booked', 'booking-activities' ) ),
-				'email'       => array(
-					'active'  => 1,
-					'to'      => array(),
-					'subject' => esc_html__( 'Your booking is complete! Thank you', 'booking-activities' ) . ' - ' . $blog_name,
-					'message' => /* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receives when a booking is made and Complete */
-								__( '<p>Thank you for your booking {user_firstname}!</p><p>We confirm that the following reservations are now <strong>complete</strong>:</p><p>{booking_list}</p>', 'booking-activities' )
-				)
-			),
-		'customer_delivered_booking' => 
-			array(
-				'id'          => 'customer_delivered_booking',
-				'active'      => 1,
-				'title'       => sprintf( esc_html__( 'Booking status turns to "%s"', 'booking-activities' ), esc_html__( 'Delivered', 'booking-activities' ) ),
-				'description' => sprintf( esc_html__( 'This notification is sent to customers when one of their bookings becomes "%s".', 'booking-activities' ), esc_html__( 'Delivered', 'booking-activities' ) ),
-				'email'       => array(
-					'active'  => 1,
-					'to'      => array(),
-					'subject' => esc_html__( 'Thank you!', 'booking-activities' ) . ' - ' . $blog_name,
-					'message' => /* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receives when a booking status becomes "Delivered" */
-								__( '<p>Thank you {user_firstname}!</p><p>The following bookings are now <strong>complete</strong>:</p><p>{booking_list}</p><p>We hope to see you soon!</p>', 'booking-activities' )
-				)
-			),
-		'customer_cancelled_booking' => 
-			array(
-				'id'          => 'customer_cancelled_booking',
-				'active'      => 1,
-				'title'       => sprintf( esc_html__( 'Booking status turns to "%s"', 'booking-activities' ), esc_html__( 'Cancelled', 'booking-activities' ) ),
-				'description' => sprintf( esc_html__( 'This notification is sent to customers when one of their bookings becomes "%s".', 'booking-activities' ), esc_html__( 'Cancelled', 'booking-activities' ) ),
-				'email'       => array(
-					'active'  => 1,
-					'to'      => array(),
-					'subject' => esc_html__( 'Your booking has been cancelled', 'booking-activities' ) . ' - ' . $blog_name,
-					'message' => /* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receives when a booking is cancelled */
-								__( '<p>Hello {user_firstname},</p><p>The following bookings have been <strong>cancelled</strong>:</p><p>{booking_list}</p><p>If you haven\'t cancelled any reservations or if you think there is an error, please contact us.</p>', 'booking-activities' )
-				)
-			),
-		'customer_refund_requested_booking' => 
-			array(
-				'id'          => 'customer_refund_requested_booking',
-				'active'      => 1,
-				'title'       => sprintf( esc_html__( 'Booking status turns to "%s"', 'booking-activities' ), esc_html__( 'Refund requested', 'booking-activities' ) ),
-				'description' => sprintf( esc_html__( 'This notification is sent to customers when one of their bookings becomes "%s".', 'booking-activities' ), esc_html__( 'Refund requested', 'booking-activities' ) ),
-				'email'       => array(
-					'active'  => 1,
-					'to'      => array(),
-					'subject' => esc_html__( 'A refund has been requested for your booking', 'booking-activities' ) . ' - ' . $blog_name,
-					'message' => /* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receives when he is reimbursed for a booking */
-								__( '<p>Hello {user_firstname},</p><p>We have received your <strong>refund request</strong> for the following bookings:</p>{for_each_booking}<p>{booking_list}</p><blockquote><strong>Your message:</strong> <q>{refund_message}</q></blockquote>{/for_each_booking}<p>We will get back to you as soon as possible.</p><p>If you haven\'t requested any refunds or if you think there is an error, please contact us.</p>', 'booking-activities' )
-				)
-			),
-		'customer_refunded_booking' => 
-			array(
-				'id'          => 'customer_refunded_booking',
-				'active'      => 1,
-				'title'       => sprintf( esc_html__( 'Booking status turns to "%s"', 'booking-activities' ), esc_html__( 'Refunded', 'booking-activities' ) ),
-				'description' => sprintf( esc_html__( 'This notification is sent to customers when one of their bookings becomes "%s".', 'booking-activities' ), esc_html__( 'Refunded', 'booking-activities' ) ),
-				'email'       => array(
-					'active'  => 1,
-					'to'      => array(),
-					'subject' => esc_html__( 'Your booking has been refunded', 'booking-activities' ) . ' - ' . $blog_name,
-					'message' => /* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receives when he is reimbursed for a booking */
-								__( '<p>Hello {user_firstname},</p><p>Your bookings below have been <strong>refunded</strong>:</p><p>{booking_list}</p><p>We are sorry for the inconvenience and hope to see you soon.</p>', 'booking-activities' )
-				)
-			),
-		'customer_rescheduled_booking' => 
-			array(
-				'id'          => 'customer_rescheduled_booking',
-				'active'      => 1,
-				'title'       => esc_html__( 'Booking is rescheduled', 'booking-activities' ),
-				'description' => esc_html__( 'This notification is sent to customers when one of their bookings is rescheduled.', 'booking-activities' ),
-				'email'       => array(
-					'active'  => 1,
-					'to'      => array(),
-					'subject' => esc_html__( 'Your booking has been rescheduled', 'booking-activities' ) . ' - ' . $blog_name,
-					'message' => /* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receives when a booking is rescheduled */
-								__( '<p>Hello {user_firstname},</p><p>The following bookings have been <strong>rescheduled</strong>:</p>{for_each_booking}<p>from {booking_old_start} to:</p><p>{booking_list}</p>{/for_each_booking}<p>If you haven\'t rescheduled any reservations or if you think there is an error, please contact us.</p>', 'booking-activities' )
-				)
+		'admin_new_booking' => array(
+			'id'          => 'admin_new_booking',
+			'object_type' => 'booking',
+			'target'      => 'admin',
+			'trigger'     => 'new_booking',
+			'status'      => 'permanent',
+			'active'      => 1,
+			'title'       => esc_html__( 'Customer has made a booking', 'booking-activities' ),
+			'description' => esc_html__( 'This notification is sent to the administrator when a new booking is registered.', 'booking-activities' ),
+			'email'       => array(
+				'active'  => 1,
+				'to'      => array( $admin_email ),
+				'subject' => esc_html__( 'New booking!', 'booking-activities' ),
+				'message' => /* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an administrator receives when a booking is made */
+							__( '<p>You have {booking_count} new booking(s)!</p>{for_each_booking}<hr/><p>{booking_list}</p><p>Customer info: {user_firstname} {user_lastname} ({user_email})</p><p>Booking status: <strong>{booking_status}</strong>.</p><p><a href="{booking_admin_url}">Click here</a> to edit this booking (ID: {booking_id}).</p>{/for_each_booking}', 'booking-activities' ) 
 			)
+		),
+		'admin_rescheduled_booking' => array(
+			'id'          => 'admin_rescheduled_booking',
+			'object_type' => 'booking',
+			'target'      => 'admin',
+			'trigger'     => 'rescheduled_booking',
+			'status'      => 'permanent',
+			'active'      => 1,
+			'title'       => esc_html__( 'Customer has rescheduled a booking', 'booking-activities' ),
+			'description' => esc_html__( 'This notification is sent to the administrator when a customer reschedules a booking.', 'booking-activities' ),
+			'email'       => array(
+				'active'  => 1,
+				'to'      => array( $admin_email ),
+				'subject' => esc_html__( 'Booking rescheduled', 'booking-activities' ),
+				'message' => /* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an administrator receives when a booking is rescheduled */
+							__( '<p>A customer has rescheduled a booking.</p>{for_each_booking}<p>Old booking: {booking_old_start} - {booking_old_end}</p><p>New booking: {booking_list}</p><p>Customer info: {user_firstname} {user_lastname} ({user_email})</p><p><a href="{booking_admin_url}">Click here</a> to edit this booking (ID: {booking_id}).</p>{/for_each_booking}', 'booking-activities' ) 
+			)
+		),
+		'admin_cancelled_booking' => array(
+			'id'          => 'admin_cancelled_booking',
+			'object_type' => 'booking',
+			'target'      => 'admin',
+			'trigger'     => 'cancelled_booking',
+			'status'      => 'permanent',
+			'active'      => 1,
+			'title'       => esc_html__( 'Customer has cancelled a booking', 'booking-activities' ),
+			'description' => esc_html__( 'This notification is sent to the administrator when a customer cancels a booking.', 'booking-activities' ),
+			'email'       => array(
+				'active'  => 1,
+				'to'      => array( $admin_email ),
+				'subject' => esc_html__( 'Booking cancelled', 'booking-activities' ),
+				'message' => /* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an administrator receives when a booking is cancelled */
+							__( '<p>A customer has cancelled a booking.</p>{for_each_booking}<p>{booking_list}</p><p>Customer info: {user_firstname} {user_lastname} ({user_email})</p><p><a href="{booking_admin_url}">Click here</a> to edit this booking (ID: {booking_id}).</p>{/for_each_booking}', 'booking-activities' )
+			)
+		),
+		'admin_refund_requested_booking' => array(
+			'id'          => 'admin_refund_requested_booking',
+			'object_type' => 'booking',
+			'target'      => 'admin',
+			'trigger'     => 'refund_requested_booking',
+			'status'      => 'permanent',
+			'active'      => 1,
+			'title'       => esc_html__( 'Customer has requested a refund for a booking', 'booking-activities' ),
+			'description' => esc_html__( 'This notification is sent to the administrator when a customer submits a refund request for a booking.', 'booking-activities' ),
+			'email'       => array(
+				'active'  => 1,
+				'to'      => array( $admin_email ),
+				/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email subject an administrator receives when a customer submits a refund request for a booking */
+				'subject' => esc_html__( 'Refund request for booking #{booking_id}', 'booking-activities' ),
+				'message' => '{for_each_booking}'
+							/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an administrator receives when a customer submits a refund request for a booking */
+							. __( '<h3>{user_firstname} {user_lastname} wants to be refunded for <a href="{booking_admin_url}" target="_blank">booking #{booking_id}</a></h3>', 'booking-activities' )
+							/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an administrator receives when a customer submits a refund request or process a refund for a booking */
+							. __( '<h4>Booking</h4>ID: {booking_id}<br/>Name: {booking_title}<br/>Start: {booking_start}<br/>End: {booking_end}<br/>Quantity: {booking_quantity}<br/>Status: {booking_status}<br/>List:<br/>{booking_list}<h4>User</h4>Name: {user_firstname} {user_lastname}<br/>Email: {user_email}<br/>Phone: {user_phone}<h4>User message</h4>{refund_message}', 'booking-activities' )
+							. '{/for_each_booking}'
+			)
+		),
+		'admin_refunded_booking' => array(
+			'id'          => 'admin_refunded_booking',
+			'object_type' => 'booking',
+			'target'      => 'admin',
+			'trigger'     => 'refunded_booking',
+			'status'      => 'permanent',
+			'active'      => 1,
+			'title'       => esc_html__( 'Customer has been refunded', 'booking-activities' ),
+			'description' => esc_html__( 'This notification is sent to the administrator when a customer is successfully reimbursed for a booking.', 'booking-activities' ),
+			'email'       => array(
+				'active'  => 1,
+				'to'      => array( get_bloginfo( 'admin_email' ) ),
+				'subject' => esc_html__( 'Booking refunded', 'booking-activities' ),
+				'message' => '{for_each_booking}'
+							/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an administrator receives when a booking is refunded */
+							. __( '<h3>{user_firstname} {user_lastname} has been refunded for <a href="{booking_admin_url}" target="_blank">booking #{booking_id}</a></h3>', 'booking-activities' )
+							. __( '<h4>Booking</h4>ID: {booking_id}<br/>Name: {booking_title}<br/>Start: {booking_start}<br/>End: {booking_end}<br/>Quantity: {booking_quantity}<br/>Status: {booking_status}<br/>List:<br/>{booking_list}<h4>User</h4>Name: {user_firstname} {user_lastname}<br/>Email: {user_email}<br/>Phone: {user_phone}<h4>User message</h4>{refund_message}', 'booking-activities' )
+							. '{/for_each_booking}'
+			)
+		),
+		
+		
+		'customer_rescheduled_booking' => array(
+			'id'          => 'customer_rescheduled_booking',
+			'object_type' => 'booking',
+			'target'      => 'customer',
+			'trigger'     => 'rescheduled_booking',
+			'status'      => 'permanent',
+			'active'      => 1,
+			'title'       => esc_html__( 'Booking is rescheduled', 'booking-activities' ),
+			'description' => esc_html__( 'This notification is sent to customers when one of their bookings is rescheduled.', 'booking-activities' ),
+			'email'       => array(
+				'active'  => 1,
+				'to'      => array(),
+				'subject' => esc_html__( 'Your booking has been rescheduled', 'booking-activities' ) . ' - ' . $blog_name,
+				'message' => /* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receives when a booking is rescheduled */
+							__( '<p>Hello {user_firstname},</p><p>The following bookings have been <strong>rescheduled</strong>:</p>{for_each_booking}<p>from {booking_old_start} to:</p><p>{booking_list}</p>{/for_each_booking}<p>If you haven\'t rescheduled any reservations or if you think there is an error, please contact us.</p>', 'booking-activities' )
+			)
+		),
+		'customer_pending_booking' => array(
+			'id'          => 'customer_pending_booking',
+			'object_type' => 'booking',
+			'target'      => 'customer',
+			'trigger'     => 'pending_booking',
+			'status'      => 'permanent',
+			'active'      => 1,
+			/* translators: %s = a booking status. E.g.: "Pending", "Booked"... */
+			'title'       => sprintf( esc_html__( 'Booking status turns to "%s"', 'booking-activities' ), esc_html__( 'Pending', 'booking-activities' ) ),
+			/* translators: %s = a booking status. E.g.: "Pending", "Booked"... */
+			'description' => sprintf( esc_html__( 'This notification is sent to customers when one of their bookings becomes "%s".', 'booking-activities' ), esc_html__( 'Pending', 'booking-activities' ) ) 
+			/* translators: %s = a booking status. E.g.: "Pending", "Booked"... */
+						  . ' ' . sprintf( esc_html__( 'If you set the "Default booking status" option to "%s", this notification will be sent right after the booking is made.', 'booking-activities' ), esc_html__( 'Pending', 'booking-activities' ) ),
+			'email'       => array(
+				'active'  => 1,
+				'to'      => array(),
+				'subject' => esc_html__( 'Your booking is pending', 'booking-activities' ) . ' - ' . $blog_name,
+				'message' => /* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receives when a booking is made, but is still Pending */
+							__( '<p>Thank you for your booking request {user_firstname}!</p><p>The following reservations are <strong>pending</strong>:</p><p>{booking_list}</p><p>We will process your request and contact you as soon as possible.</p>', 'booking-activities' )
+			)
+		),
+		'customer_booked_booking' => array(
+			'id'          => 'customer_booked_booking',
+			'object_type' => 'booking',
+			'target'      => 'customer',
+			'trigger'     => 'booked_booking',
+			'status'      => 'permanent',
+			'active'      => 1,
+			'title'       => sprintf( esc_html__( 'Booking status turns to "%s"', 'booking-activities' ), esc_html__( 'Booked', 'booking-activities' ) ),
+			'description' => sprintf( esc_html__( 'This notification is sent to customers when one of their bookings becomes "%s".', 'booking-activities' ), esc_html__( 'Booked', 'booking-activities' ) ) 
+						  . ' ' . sprintf( esc_html__( 'If you set the "Default booking status" option to "%s", this notification will be sent right after the booking is made.', 'booking-activities' ), esc_html__( 'Booked', 'booking-activities' ) ),
+			'email'       => array(
+				'active'  => 1,
+				'to'      => array(),
+				'subject' => esc_html__( 'Your booking is complete! Thank you', 'booking-activities' ) . ' - ' . $blog_name,
+				'message' => /* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receives when a booking is made and Complete */
+							__( '<p>Thank you for your booking {user_firstname}!</p><p>We confirm that the following reservations are now <strong>complete</strong>:</p><p>{booking_list}</p>', 'booking-activities' )
+			)
+		),
+		'customer_delivered_booking' => array(
+			'id'          => 'customer_delivered_booking',
+			'object_type' => 'booking',
+			'target'      => 'customer',
+			'trigger'     => 'delivered_booking',
+			'status'      => 'permanent',
+			'active'      => 1,
+			'title'       => sprintf( esc_html__( 'Booking status turns to "%s"', 'booking-activities' ), esc_html__( 'Delivered', 'booking-activities' ) ),
+			'description' => sprintf( esc_html__( 'This notification is sent to customers when one of their bookings becomes "%s".', 'booking-activities' ), esc_html__( 'Delivered', 'booking-activities' ) ),
+			'email'       => array(
+				'active'  => 1,
+				'to'      => array(),
+				'subject' => esc_html__( 'Thank you!', 'booking-activities' ) . ' - ' . $blog_name,
+				'message' => /* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receives when a booking status becomes "Delivered" */
+							__( '<p>Thank you {user_firstname}!</p><p>The following bookings are now <strong>complete</strong>:</p><p>{booking_list}</p><p>We hope to see you soon!</p>', 'booking-activities' )
+			)
+		),
+		'customer_cancelled_booking' => array(
+			'id'          => 'customer_cancelled_booking',
+			'object_type' => 'booking',
+			'target'      => 'customer',
+			'trigger'     => 'cancelled_booking',
+			'status'      => 'permanent',
+			'active'      => 1,
+			'title'       => sprintf( esc_html__( 'Booking status turns to "%s"', 'booking-activities' ), esc_html__( 'Cancelled', 'booking-activities' ) ),
+			'description' => sprintf( esc_html__( 'This notification is sent to customers when one of their bookings becomes "%s".', 'booking-activities' ), esc_html__( 'Cancelled', 'booking-activities' ) ),
+			'email'       => array(
+				'active'  => 1,
+				'to'      => array(),
+				'subject' => esc_html__( 'Your booking has been cancelled', 'booking-activities' ) . ' - ' . $blog_name,
+				'message' => /* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receives when a booking is cancelled */
+							__( '<p>Hello {user_firstname},</p><p>The following bookings have been <strong>cancelled</strong>:</p><p>{booking_list}</p><p>If you haven\'t cancelled any reservations or if you think there is an error, please contact us.</p>', 'booking-activities' )
+			)
+		),
+		'customer_refund_requested_booking' => array(
+			'id'          => 'customer_refund_requested_booking',
+			'object_type' => 'booking',
+			'target'      => 'customer',
+			'trigger'     => 'refund_requested_booking',
+			'status'      => 'permanent',
+			'active'      => 1,
+			'title'       => sprintf( esc_html__( 'Booking status turns to "%s"', 'booking-activities' ), esc_html__( 'Refund requested', 'booking-activities' ) ),
+			'description' => sprintf( esc_html__( 'This notification is sent to customers when one of their bookings becomes "%s".', 'booking-activities' ), esc_html__( 'Refund requested', 'booking-activities' ) ),
+			'email'       => array(
+				'active'  => 1,
+				'to'      => array(),
+				'subject' => esc_html__( 'A refund has been requested for your booking', 'booking-activities' ) . ' - ' . $blog_name,
+				'message' => /* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receives when he is reimbursed for a booking */
+							__( '<p>Hello {user_firstname},</p><p>We have received your <strong>refund request</strong> for the following bookings:</p>{for_each_booking}<p>{booking_list}</p><blockquote><strong>Your message:</strong> <q>{refund_message}</q></blockquote>{/for_each_booking}<p>We will get back to you as soon as possible.</p><p>If you haven\'t requested any refunds or if you think there is an error, please contact us.</p>', 'booking-activities' )
+			)
+		),
+		'customer_refunded_booking' => array(
+			'id'          => 'customer_refunded_booking',
+			'object_type' => 'booking',
+			'target'      => 'customer',
+			'trigger'     => 'refunded_booking',
+			'status'      => 'permanent',
+			'active'      => 1,
+			'title'       => sprintf( esc_html__( 'Booking status turns to "%s"', 'booking-activities' ), esc_html__( 'Refunded', 'booking-activities' ) ),
+			'description' => sprintf( esc_html__( 'This notification is sent to customers when one of their bookings becomes "%s".', 'booking-activities' ), esc_html__( 'Refunded', 'booking-activities' ) ),
+			'email'       => array(
+				'active'  => 1,
+				'to'      => array(),
+				'subject' => esc_html__( 'Your booking has been refunded', 'booking-activities' ) . ' - ' . $blog_name,
+				'message' => /* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receives when he is reimbursed for a booking */
+							__( '<p>Hello {user_firstname},</p><p>Your bookings below have been <strong>refunded</strong>:</p><p>{booking_list}</p><p>We are sorry for the inconvenience and hope to see you soon.</p>', 'booking-activities' )
+			)
+		)
 	);
 
-	return apply_filters( 'bookacti_notifications_default_settings', $notifications );
+	return apply_filters( 'bookacti_notifications_default_values', $notifications );
 }
 
 
 /**
  * Get notification default settings
- * @since 1.2.1 (was bookacti_get_email_default_settings in 1.2.0)
- * @version 1.8.6
+ * @since 1.18.0 (was bookacti_get_notification_default_settings)
  * @param string $notification_id
  * @return array
  */
-function bookacti_get_notification_default_settings( $notification_id ) {
-	$notifications = bookacti_get_notifications_default_settings();
-	$default_settings = isset( $notifications[ $notification_id ] ) ? $notifications[ $notification_id ] : array();
-	return apply_filters( 'bookacti_notification_default_settings', $default_settings, $notification_id );
+function bookacti_get_notification_default_values( $notification_id ) {
+	$notifications_default_values = bookacti_get_notifications_default_values();
+	$notification_default_values  = isset( $notifications_default_values[ $notification_id ] ) ? $notifications_default_values[ $notification_id ] : array();
+	
+	return $notification_default_values;
 }
 
 
 /**
- * Get notification data
- * @since 1.16.37
- * @param string $notification_id
+ * Get default notification data
+ * @since 1.18.0
  * @return array
  */
-function bookacti_get_notification_data( $notification_id ) {
-	$notifications = bookacti_get_notifications_data();
+function bookacti_get_default_notification_data() {
+	return apply_filters( 'bookacti_default_notification_data', array( 
+		'db_id'         => 0,
+		'id'            => '',
+		'object_type'   => '',
+		'target'        => '',
+		'trigger'       => '',
+		'title'         => '',
+		'description'   => '',
+		'user_id'       => 0,
+		'creation_date' => '',
+		'update_date'   => '',
+		'status'        => 'publish',
+		'active'        => 1,
+		'email'         => array(
+			'channel_db_id' => 0,
+			'channel'       => 'email',
+			'to'            => array(),
+			'subject'       => '',
+			'message'       => '',
+			'attachments'   => array(),
+			'active'        => 1
+		)
+	) );
+}
+
+
+/**
+ * Get default notification meta
+ * @since 1.18.0
+ * @return array
+ */
+function bookacti_get_default_notification_meta() {
+	return apply_filters( 'bookacti_default_notification_meta', array() );
+}
+
+
+/**
+ * Get notification channel names
+ * @since 1.18.0
+ * @return array
+ */
+function bookacti_get_notification_channel_names() {
+	$channels = array();
+	$defaults = bookacti_get_default_notification_data();
+	foreach( $defaults as $channel => $channel_defaults ) {
+		if( ! ( is_array( $channel_defaults ) && isset( $channel_defaults[ 'channel_db_id' ] ) ) ) { continue; }
+		$channels[] = $channel;
+	}
 	
-	return isset( $notifications[ $notification_id ] ) ? $notifications[ $notification_id ] : array();
+	return $channels;
 }
 
 
 /**
  * Get notifications data
  * @since 1.16.37
+ * @version 1.18.0
+ * @param boolean $active_only
+ * @param boolean $raw
  * @return array
  */
-function bookacti_get_notifications_data() {
+function bookacti_get_notifications_data( $active_only = true, $raw = false ) {
 	$notifications = wp_cache_get( 'notifications_data', 'bookacti' );
 	
 	if( $notifications === false ) {
-		$notifications = bookacti_get_notifications();
+		$filters       = bookacti_format_notification_filters( array( 'in__notification_type' => array(), 'in__status' => array(), 'manager_id' => false ) );
+		$notifications = bookacti_get_notifications( $filters );
+		
+		if( $notifications ) {
+			$channel_names = bookacti_get_notification_channel_names();
+			
+			// Get notifications IDs and their channel IDs
+			$notification_db_ids = $channel_db_ids = array();
+			foreach( $notifications as $notification ) {
+				$notification_db_ids[] = $notification[ 'db_id' ];
+				
+				$notification_channels = array_intersect_key( $notification, array_flip( $channel_names ) );
+				foreach( $notification_channels as $channel_data ) {
+					$channel_db_ids[] = $channel_data[ 'channel_db_id' ];
+				}
+			}
+			$notification_db_ids = bookacti_ids_to_array( $notification_db_ids );
+			$channel_db_ids      = bookacti_ids_to_array( $channel_db_ids );
+			
+			// Get notifications meta and managers
+			$managers_per_notification = $notification_db_ids ? bookacti_get_managers( 'notification', $notification_db_ids ) : array();
+			$notifications_meta        = $notification_db_ids ? bookacti_get_metadata( 'notification', $notification_db_ids ) : array();
+			$channels_meta             = $channel_db_ids ? bookacti_get_metadata( 'notification_channel', $channel_db_ids ) : array();
+			foreach( $notifications as $notification_id => $notification ) {
+				$notification_db_id = $notification[ 'db_id' ];
+				
+				// Add notification managers
+				$notifications[ $notification_id ][ 'managers' ] = ! empty( $managers_per_notification[ $notification_db_id ] ) ? $managers_per_notification[ $notification_db_id ] : array();
+				
+				// Add notification meta
+				$notification_meta = isset( $notifications_meta[ $notification_db_id ] ) ? $notifications_meta[ $notification_db_id ] : array();
+				if( is_array( $notification_meta ) ) { 
+					$notifications[ $notification_id ] = array_merge( $notification, $notification_meta );
+				}
+				
+				// Add channels meta
+				$notification_channels = array_intersect_key( $notification, array_flip( $channel_names ) );
+				foreach( $notification_channels as $channel => $channel_data ) {
+					$channel_db_id = $channel_data[ 'channel_db_id' ];
+					$channel_meta  = isset( $channels_meta[ $channel_db_id ] ) ? $channels_meta[ $channel_db_id ] : array();
+					if( is_array( $channel_meta ) ) { 
+						$notifications[ $notification_id ][ $channel ] = array_merge( $channel_data, $channel_meta );
+					}
+				}
+			}
+		}
+		
 		$notifications = apply_filters( 'bookacti_notifications_data_raw', $notifications ? $notifications : array() );
 		
 		// Cache data
 		wp_cache_set( 'notifications_data', $notifications, 'bookacti' );
+	}
+	
+	// Format data
+	if( ! $raw && $notifications ) { 
+		$notifications = array_filter( array_map( 'bookacti_format_notification_data', $notifications ) );
+	}
+	
+	// Remove inactive notifications
+	$notifications = $notifications ? $notifications : array();
+	if( $notifications && $active_only ) {
+		foreach( $notifications as $notification_id => $notification ) {
+			$status = ! empty( $notification[ 'status' ] ) ? $notification[ 'status' ] : '';
+			if( empty( $notification[ 'active' ] ) || ! in_array( $status, array( 'publish', 'permanent' ), true ) ) {
+				unset( $notifications[ $notification_id ] );
+			}
+		}
 	}
 	
 	return apply_filters( 'bookacti_notifications_data', $notifications );
@@ -251,139 +399,664 @@ function bookacti_get_notifications_data() {
 
 
 /**
- * Get notification settings
- * @since 1.2.1 (was bookacti_get_email_settings in 1.2.0)
- * @version 1.16.37
- * @param string $notification_id
+ * Get notification data
+ * @since 1.18.0
+ * @param int|string $notification_id Notification database ID or notification ID
  * @param boolean $raw
  * @return array
  */
-function bookacti_get_notification_settings( $notification_id, $raw = true ) {
-	if( ! $notification_id ) { return array(); }
+function bookacti_get_notification_data( $notification_id, $raw = false ) {
+	$notifications_data = bookacti_get_notifications_data( false, $raw );
+	$notification_db_id = is_numeric( $notification_id ) ? intval( $notification_id ) : 0;
 	
-	$notification_settings = array();
-	$default_settings = bookacti_get_notification_default_settings( $notification_id );
-	
-	// Get raw value from database
-	if( $raw ) {
-		$alloptions = wp_load_alloptions(); // get_option() calls wp_load_alloptions() itself, so there is no overhead at runtime 
-		$notification_settings = isset( $alloptions[ 'bookacti_notifications_settings_' . $notification_id ] ) ? maybe_unserialize( $alloptions[ 'bookacti_notifications_settings_' . $notification_id ] ) : get_option( 'bookacti_notifications_settings_' . $notification_id, array() );
-	} 
-	
-	// Else, get notification settings through a normal get_option
-	else {
-		$notification_settings = get_option( 'bookacti_notifications_settings_' . $notification_id, array() );
+	if( ! $notification_db_id && isset( $notifications_data[ $notification_id ] ) ) {
+		return $notifications_data[ $notification_id ];
 	}
-	if( ! is_array( $notification_settings ) ) { $notification_settings = array(); }
-	
-	// Translate email subject and message
-	if( ! $raw ) {
-		if( ! empty( $notification_settings[ 'email' ][ 'subject' ] ) ) { $notification_settings[ 'email' ][ 'subject' ] = apply_filters( 'bookacti_translate_text', $notification_settings[ 'email' ][ 'subject' ], '', true, array( 'string_name' => 'Notification - ' . $notification_id . ' - email subject' ) ); }
-		if( ! empty( $notification_settings[ 'email' ][ 'message' ] ) ) { $notification_settings[ 'email' ][ 'message' ] = apply_filters( 'bookacti_translate_text', $notification_settings[ 'email' ][ 'message' ], '', true, array( 'string_name' => 'Notification - ' . $notification_id . ' - email message' ) ); }
-	}
-	
-	// Make sure all values are set
-	if( ! empty( $default_settings ) ) {
-		foreach( $default_settings as $key => $value ) {
-			if( ! isset( $notification_settings[ $key ] ) ) {
-				$notification_settings[ $key ] = $value;
-			}
+	else if( $notification_db_id ) {
+		foreach( $notifications_data as $notification_data ) {
+			if( intval( $notification_data[ 'db_id' ] ) !== $notification_db_id ) { continue; }
+			return $notification_data;
 		}
 	}
 	
-	// Use default title if empty
-	if( empty( $notification_settings[ 'title' ] ) && ! empty( $default_settings[ 'title' ] ) ) { 
-		$notification_settings[ 'title' ] = $default_settings[ 'title' ];
-	}
-	
-	// Make sure all values are set for emails
-	if( ! empty( $default_settings[ 'email' ] ) ) {
-		foreach( $default_settings[ 'email' ] as $key => $value ) {
-			if( ! isset( $notification_settings[ 'email' ][ $key ] ) ) {
-				$notification_settings[ 'email' ][ $key ] = $value;
-			}
-		}
-	}
-	
-	return apply_filters( 'bookacti_notification_settings', $notification_settings, $notification_id, $raw );
+	return array();
 }
 
 
 /**
- * Sanitize notification settings
- * @since 1.2.1 (was bookacti_sanitize_email_settings in 1.2.0)
- * @version 1.15.13
- * @param array $args
- * @param string $notification_id Optionnal notification id. If set, default value will be picked from the corresponding notification.
+ * Get notification data either by db_id, id, or target + trigger
+ * @since 1.18.0
+ * @param array $notification_data (see bookacti_sanitize_notification_data or bookacti_format_notification_data)
+ * @param boolean $raw
  * @return array
  */
-function bookacti_sanitize_notification_settings( $args, $notification_id = '' ) {
-	if( ! $args ) { return false; }
-
-	$defaults = bookacti_get_notification_default_settings( $notification_id );
-	if( ! $defaults ) {
-		$defaults = array(
-			'id'     => $notification_id,
-			'active' => 0,
-			'email'  => array(
-				'active'  => 1,
-				'to'      => array(),
-				'subject' => '',
-				'message' => '' )
-		);
+function bookacti_find_notification_data( $notification_data, $raw = false ) {
+	// Get notification if it already exists
+	$notification_id = '';
+	if( ! empty( $notification_data[ 'db_id' ] ) ) {
+		$notification_id = $notification_data[ 'db_id' ];
+	} else if( ! empty( $notification_data[ 'id' ] ) ) {
+		$notification_id = $notification_data[ 'id' ];
+	} else if( ! empty( $notification_data[ 'target' ] ) && ! empty( $notification_data[ 'trigger' ] ) && ( isset( $notification_data[ 'status' ] ) && $notification_data[ 'status' ] === 'permanent' ) ) {
+		$notification_id = sanitize_title_with_dashes( $notification_data[ 'target' ] . '_' . $notification_data[ 'trigger' ] );
 	}
 	
-	$notification = array();
-	foreach( $defaults as $key => $default_value ) {
-		// Do not save constant data
-		if( in_array( $key, array( 'id', 'description' ), true ) ) { continue; }
+	$notification = $notification_id ? bookacti_get_notification_data( $notification_id, $raw ) : array();
+	
+	return $notification;
+}
+
+
+/**
+ * Sanitize notification data
+ * @since 1.18.0
+ * @param array $raw_data
+ * @return array
+ */
+function bookacti_sanitize_notification_data( $raw_data = array() ) {
+	if( ! is_array( $raw_data ) ) { return array(); }
+	
+	$default_data = bookacti_get_default_notification_data();
+	$default_meta = bookacti_get_default_notification_meta();
+	
+	// Sanitize common values
+	$keys_by_type = array( 
+		'int'       => array( 'db_id', 'user_id' ),
+		'str'       => array( 'title', 'description' ),
+		'str_id'    => array( 'id', 'object_type', 'target', 'trigger', 'status' ),
+		'datetime'  => array( 'creation_date', 'update_date' ),
+		'array_ids' => array( 'managers' ),
+		'bool'      => array( 'active' )
+	);
+	$notification_data = bookacti_sanitize_values( array_merge( $default_data, $default_meta, array( 'managers' => array() ) ), $raw_data, $keys_by_type );
+	
+	// Sanitize channels data
+	$channel_keys_by_type = array( 
+		'int'       => array( 'channel_db_id' ),
+		'str_id'    => array( 'channel' ),
+		'str'       => array( 'subject' ),
+		'str_html'  => array( 'message' ),
+		'array'     => array( 'to', 'attachments' ),
+		'bool'      => array( 'active' )
+	);
+	
+	$channel_names         = bookacti_get_notification_channel_names();
+	$channels_default_data = array_intersect_key( $default_data, array_flip( $channel_names ) );
+	foreach( $channels_default_data as $channel => $channel_data ) {
+		// Sanitize general data
+		$default_channel_data          = array_merge( $channel_data, ! empty( $default_meta[ $channel ] ) ? $default_meta[ $channel ] : array() );
+		$raw_channel_data              = ! empty( $raw_data[ $channel ] ) ? $raw_data[ $channel ] : array();
+		$notification_data[ $channel ] = bookacti_sanitize_values( $default_channel_data, $raw_channel_data, $channel_keys_by_type );
 		
-		$notification[ $key ] = isset( $args[ $key ] ) ? $args[ $key ] : $default_value;
+		// Specific data
+		if( $channel === 'email' ) {
+			if( ! empty( $raw_channel_data[ 'to' ] ) && is_array( $raw_channel_data[ 'to' ] ) ) {
+				$notification_data[ $channel ][ 'to' ] = array_values( array_filter( array_map( 'sanitize_email', $raw_channel_data[ 'to' ] ) ) );
+			}
+		}
+		
+		// Serialize arrays
+		$notification_data[ $channel ][ 'to' ]          = maybe_serialize( $notification_data[ $channel ][ 'to' ] );
+		$notification_data[ $channel ][ 'attachments' ] = maybe_serialize( $notification_data[ $channel ][ 'attachments' ] );
+	}
+	
+	return apply_filters( 'bookacti_sanitized_notification_data', $notification_data, $raw_data );
+}
 
-		if( $key === 'title' ) {
-			$notification[ $key ] = sanitize_text_field( stripslashes( $notification[ $key ] ) );
-			if( $notification[ $key ] === $default_value ) { $notification[ $key ] = ''; }
-			
-		} else if( $key === 'active' ) {
-			$notification[ $key ] = intval( $notification[ $key ] ) ? 1 : 0;
 
-		} else if( $key === 'email' ) {
-			foreach( $default_value as $email_key => $email_value ) {
-				$notification[ 'email' ][ $email_key ] = isset( $args[ 'email' ][ $email_key ] ) ? $args[ 'email' ][ $email_key ] : $email_value;
-				
-				if( $email_key === 'active' ) {
-					$notification[ 'email' ][ $email_key ] = intval( $notification[ 'email' ][ $email_key ] ) ? 1 : 0;
-					
-				} else if( $email_key === 'to' ) {
-					if( ! is_array( $notification[ 'email' ][ $email_key ] ) ) {
-						$notification[ 'email' ][ $email_key ] = strval( $notification[ 'email' ][ $email_key ] );
-						$notification[ 'email' ][ $email_key ] = strpos( $notification[ 'email' ][ $email_key ], ',' ) !== false ? explode( ',', $notification[ 'email' ][ $email_key ] ) : array( $notification[ 'email' ][ $email_key ] );
-					}
-					
-					foreach( $notification[ 'email' ][ $email_key ] as $to_key => $to_email_address ) {
-						$sanitized_email = sanitize_email( $to_email_address );
-						if( $sanitized_email ) {
-							$notification[ 'email' ][ $email_key ][ $to_key ] = $sanitized_email;
-						} else {
-							unset( $notification[ 'email' ][ $email_key ][ $to_key ] );
-						}
-					}
-
-				} else if( $email_key === 'title' || $email_key === 'subject' ) {
-					$sanitized_field = sanitize_text_field( stripslashes( $notification[ 'email' ][ $email_key ] ) );
-					$notification[ 'email' ][ $email_key ] = $sanitized_field ? $sanitized_field : $email_value;
-
-				} else if( $email_key === 'message' ) {
-					$sanitized_textarea = wp_kses_post( stripslashes( $notification[ 'email' ][ $email_key ] ) );
-					$notification[ 'email' ][ $email_key ] = $sanitized_textarea ? $sanitized_textarea : $email_value;
-				}
+/**
+ * Format notification data
+ * @since 1.18.0
+ * @param array $raw_data
+ * @param string $context "view" or "edit"
+ * @return array
+ */
+function bookacti_format_notification_data( $raw_data = array(), $context = 'view' ) {
+	if( ! is_array( $raw_data ) ) { return array(); }
+	
+	$notification_id   = ! empty( $raw_data[ 'id' ] ) ? $raw_data[ 'id' ] : '';
+	$notification_type = ! empty( $raw_data[ 'target' ] ) && ! empty( $raw_data[ 'trigger' ] ) ? sanitize_title_with_dashes( $raw_data[ 'target' ] . '_' . $raw_data[ 'trigger' ] ) : '';
+	$default_values    = bookacti_get_notification_default_values( $notification_type );
+	$default_data      = bookacti_get_default_notification_data( $context );
+	$default_meta      = bookacti_get_default_notification_meta( $context );
+	
+	// Unset empty fields that should use default value
+	$default_empty_keys = array( 'title', 'description' );
+	foreach( $default_empty_keys as $default_empty_key ) {
+		if( empty( $raw_data[ $default_empty_key ] ) && ! empty( $default_values[ $default_empty_key ] ) ) { 
+			unset( $raw_data[ $default_empty_key ] );
+		}
+	}
+	
+	// Format common values
+	$keys_by_type = array( 
+		'int'       => array( 'db_id', 'user_id' ),
+		'str'       => array( 'title', 'description' ),
+		'str_id'    => array( 'id', 'object_type', 'target', 'trigger', 'status' ),
+		'datetime'  => array( 'creation_date', 'update_date' ),
+		'array_ids' => array( 'managers' ),
+		'bool'      => array( 'active' )
+	);
+	$notification_data = bookacti_sanitize_values( array_merge( $default_data, $default_meta, array( 'managers' => array() ), $default_values ), $raw_data, $keys_by_type );
+	
+	// Translate texts
+	if( $context !== 'edit' ) {
+		if( ! empty( $raw_data[ 'title' ] ) ) {
+			$notification_data[ 'title' ] = sanitize_text_field( apply_filters( 'bookacti_translate_text', stripslashes( $raw_data[ 'title' ] ) ) );
+		}
+	}
+	
+	// Format channels data
+	$channel_keys_by_type = array( 
+		'int'       => array( 'channel_db_id' ),
+		'str_id'    => array( 'channel' ),
+		'str'       => array( 'subject' ),
+		'str_html'  => array( 'message' ),
+		'array'     => array( 'to', 'attachments' ),
+		'bool'      => array( 'active' )
+	);
+	
+	$channel_names         = bookacti_get_notification_channel_names();
+	$channels_default_data = array_intersect_key( $default_data, array_flip( $channel_names ) );
+	foreach( $channels_default_data as $channel => $channel_data ) {
+		// Unset empty fields that should use default value
+		$default_empty_keys = array( 'subject', 'message', 'to' );
+		foreach( $default_empty_keys as $default_empty_key ) {
+			if( empty( $channel_data[ $default_empty_key ] ) && ! empty( $default_values[ $channel ][ $default_empty_key ] ) ) { 
+				unset( $channel_data[ $default_empty_key ] );
+			}
+		}
+		
+		// Format general data
+		$default_channel_values        = ! empty( $default_values[ $channel ] ) ? $default_values[ $channel ] : array();
+		$default_channel_meta          = ! empty( $default_meta[ $channel ] ) ? $default_meta[ $channel ] : array();
+		$default_channel_data          = array_merge( $channel_data, $default_channel_meta, $default_channel_values );
+		$raw_channel_data              = ! empty( $raw_data[ $channel ] ) ? $raw_data[ $channel ] : array();
+		$notification_data[ $channel ] = bookacti_sanitize_values( $default_channel_data, $raw_channel_data, $channel_keys_by_type );
+		
+		// Translate texts
+		if( $context !== 'edit' ) {
+			if( ! empty( $raw_channel_data[ 'subject' ] ) && is_string( $raw_channel_data[ 'subject' ] ) ) {
+				$notification_data[ $channel ][ 'subject' ] = sanitize_text_field( apply_filters( 'bookacti_translate_text', stripslashes( $raw_channel_data[ 'subject' ] ), '', true, array( 'string_name' => 'Notification - ' . $notification_id . ' - ' . $channel . ' subject' ) ) );
+			}
+			if( ! empty( $raw_channel_data[ 'message' ] ) && is_string( $raw_channel_data[ 'message' ] ) ) {
+				$notification_data[ $channel ][ 'message' ] = wp_kses_post( apply_filters( 'bookacti_translate_text', stripslashes( $raw_channel_data[ 'message' ] ), '', true, array( 'string_name' => 'Notification - ' . $notification_id . ' - ' . $channel . ' message' ) ) );
+			}
+		}
+		
+		// Specific data
+		if( $channel === 'email' ) {
+			if( ! empty( $raw_channel_data[ 'to' ] ) && is_array( $raw_channel_data[ 'to' ] ) ) {
+				$notification_data[ $channel ][ 'to' ] = array_values( array_filter( array_map( 'sanitize_email', $raw_channel_data[ 'to' ] ) ) );
 			}
 		}
 	}
 	
-	return apply_filters( 'bookacti_notification_sanitized_settings', $notification, $notification_id, $args );
+	return apply_filters( 'bookacti_formatted_notification_data', $notification_data, $raw_data, $context );
 }
 
+
+
+
+// NOTIFICATION FILTERS
+
+/**
+ * Get default notification filters
+ * @since 1.18.0
+ * @return array
+ */
+function bookacti_get_default_notification_filters() {
+	return apply_filters( 'bookacti_default_notification_filters', array(
+		'title'                 => '',
+		'object_type'           => '',
+		'target'                => '',
+		'in__id'                => array(),
+		'in__trigger'           => array(),
+		'in__notification_type' => array_keys( bookacti_get_notifications_default_values() ),
+		'in__status'            => array( 'permanent' ),
+		'user_id'               => 0,
+		'active'                => false,
+		'order_by'              => array( 'target', 'trigger', 'title' ),
+		'order'                 => 'desc',
+		'offset'                => 0,
+		'per_page'              => 0,
+		'manager_id'            => get_current_user_id() // int or false
+	));
+}
+
+
+/**
+ * Format notification filters
+ * @since 1.18.0
+ * @param array $filters See bookacti_get_default_notification_filters()
+ * @return array
+ */
+function bookacti_format_notification_filters( $filters = array() ) {
+	$default_filters = bookacti_get_default_notification_filters();
+
+	$formatted_filters = array();
+	foreach( $default_filters as $filter => $default_value ) {
+		// If a filter isn't set, use the default value
+		if( ! isset( $filters[ $filter ] ) ) {
+			$formatted_filters[ $filter ] = $default_value;
+			continue;
+		}
+
+		$current_value = $filters[ $filter ];
+
+		// Else, check if its value is correct, or use default
+		if( in_array( $filter, array( 'in__id' ), true ) ) {
+			if( is_numeric( $current_value ) ) { $current_value = array( $current_value ); }
+			if( ! is_array( $current_value ) ) { $current_value = $default_value; }
+			else if( ( $i = array_search( 'all', $current_value, true ) ) !== false ) { unset( $current_value[ $i ] ); }
+			$current_value = array_values( bookacti_ids_to_array( $current_value, false ) );
+			
+		} else if( in_array( $filter, array( 'object_type', 'target' ), true ) ) {
+			if( ! is_string( $current_value ) ) { $current_value = $default_value; }
+			$current_value = sanitize_title_with_dashes( $current_value );
+		
+		} else if( in_array( $filter, array( 'title' ), true ) ) {
+			if( ! is_string( $current_value ) ) { $current_value = $default_value; }
+			$current_value = sanitize_text_field( $current_value );
+		
+		} else if( in_array( $filter, array( 'in__trigger', 'in__notification_type', 'in__status' ), true ) ) {
+			if( is_string( $current_value ) && $current_value !== '' ) { $current_value = array( $current_value ); }
+			if( ! is_array( $current_value ) ) { $current_value = $default_value; }
+			else if( ( $i = array_search( 'all', $current_value, true ) ) !== false ) { unset( $current_value[ $i ] ); }
+			$current_value = array_values( bookacti_str_ids_to_array( $current_value ) );
+		
+		} else if( in_array( $filter, array( 'active' ), true ) ) {
+				 if( in_array( $current_value, array( true, 'true', 1, '1' ), true ) )	{ $current_value = 1; }
+			else if( in_array( $current_value, array( 0, '0' ), true ) ){ $current_value = 0; }
+			if( ! in_array( $current_value, array( 0, 1 ), true ) ) { $current_value = $default_value; }
+		
+		} else if( $filter === 'order_by' ) {
+			$sortable_columns = array( 'id', 'object_type', 'target', 'trigger', 'title', 'user_id', 'creation_date', 'update_date', 'status', 'active' );
+			if( is_string( $current_value ) && $current_value !== '' ) { 
+				if( ! in_array( $current_value, $sortable_columns, true ) ) { $current_value = $default_value; }
+				else { $current_value = array( $current_value ); }
+			}
+			if( ! is_array( $current_value ) ) { $current_value = $default_value; }
+			$current_value = array_values( bookacti_str_ids_to_array( $current_value ) );
+			
+		} else if( $filter === 'order' ) {
+			if( ! in_array( $current_value, array( 'asc', 'desc' ), true ) ) { $current_value = $default_value; }
+
+		} else if( in_array( $filter, array( 'user_id', 'offset', 'per_page' ), true ) ) {
+			if( ! is_numeric( $current_value ) ) { $current_value = $default_value; }
+			$current_value = intval( $current_value );
+			
+		} else if( in_array( $filter, array( 'manager_id' ), true ) ) {
+			if( is_numeric( $current_value ) ) { $current_value = intval( $current_value ); }
+			else if( $current_value !== false ) { $current_value = 0; }
+		}
+		
+		$formatted_filters[ $filter ] = $current_value;
+	}
+	
+	return $formatted_filters;
+}
+
+
+
+
+// CREATE AND UPDATE NOTIFICATION
+
+/**
+ * Add missing permanent notifications to the database
+ * @since 1.18.0
+ */
+function bookacti_create_missing_permanent_notifications() {
+	// Switch to default language
+	$lang_switched = bookacti_switch_locale( bookacti_get_site_default_locale() );
+	
+	// Get default notifications data
+	$notifications_default_values = bookacti_get_notifications_default_values();
+	$notifications = bookacti_get_notifications_data( false, true );
+	$channel_names = bookacti_get_notification_channel_names();
+	
+	foreach( $notifications_default_values as $notification_id => $notification_default_values ) {
+		if( ! ( isset( $notification_default_values[ 'status' ] ) && $notification_default_values[ 'status' ] === 'permanent' ) ) { continue; }
+		
+		$notification       = isset( $notifications[ $notification_id ] ) ? bookacti_format_notification_data( $notifications[ $notification_id ], 'edit' ) : array();
+		$notification_db_id = ! empty( $notification[ 'db_id' ] ) ? $notification[ 'db_id' ] : 0;
+		
+		// Insert missing notifications
+		if( ! $notification_db_id ) {
+			$sanitized_data = bookacti_sanitize_notification_data( $notification_default_values );
+			bookacti_create_notification( $sanitized_data );
+			continue;
+		}
+		
+		// Insert missing notification channels
+		$sanitized_data = bookacti_sanitize_notification_data( $notification );
+		$channels_data  = array_intersect_key( $sanitized_data, array_flip( $channel_names ) );
+		foreach( $channels_data as $channel => $channel_data ) {
+			if( $channel_data[ 'channel_db_id' ] ) { continue; }
+			bookacti_create_notification_channel( $notification_db_id, $channel_data );
+		}
+	}
+	
+	if( $lang_switched ) { bookacti_restore_locale(); }
+}
+
+
+/**
+ * Add new notification data and meta
+ * @since 1.18.0
+ * @param array $notification_data (see bookacti_sanitize_notification_data)
+ * @return int|false
+ */
+function bookacti_create_notification( $notification_data ) {
+	// Get channel names
+	$channel_names = bookacti_get_notification_channel_names();
+	
+	// Get notification if it already exists
+	$existing_notification = bookacti_find_notification_data( $notification_data, true );
+	
+	// If notification already exists, update it instead
+	if( ! empty( $existing_notification[ 'db_id' ] ) ) {
+		// Add database ids in notification data and in channels data
+		$notification_data[ 'db_id' ] = $existing_notification[ 'db_id' ];
+		foreach( $channel_names as $channel_name ) {
+			if( ! isset( $existing_notification[ $channel_name ][ 'channel_db_id' ] ) ) { continue; }
+			$notification_data[ $channel_name ][ 'channel_db_id' ] = $existing_notification[ $channel_name ][ 'channel_db_id' ];
+		}
+		
+		return bookacti_update_notification_data( $notification_data );
+	}
+	
+	// Make sure compulsory fields are not empty
+	if( empty( $notification_data[ 'object_type' ] ) || empty( $notification_data[ 'target' ] ) || empty( $notification_data[ 'trigger' ] ) ) { return false; }
+	
+	// Notification data
+	$notification_db_id = bookacti_insert_notification( $notification_data );
+	if( $notification_db_id === false ) { return false; }
+	
+	// Notification meta
+	$default_notification_meta = bookacti_get_default_notification_meta();
+	$notification_meta         = array_intersect_key( $notification_data, array_diff_key( $default_notification_meta, array_flip( $channel_names ) ) );
+	
+	// Do not save meta equal to default
+	foreach( $notification_meta as $key => $value ) {
+		if( maybe_unserialize( $value ) == $default_notification_meta[ $key ] ) {
+			unset( $notification_meta[ $key ] );
+		}
+	}
+	
+	if( $notification_meta ) {
+		bookacti_insert_metadata( 'notification', $notification_db_id, $notification_meta );
+	}
+	
+	// Delete cache (required before creating channels)
+	wp_cache_delete( 'notifications_data', 'bookacti' );
+	
+	// Notification channels data and meta
+	$channels_data = array_intersect_key( $notification_data, array_flip( $channel_names ) );
+	foreach( $channels_data as $channel => $channel_data ) {
+		bookacti_create_notification_channel( $notification_db_id, $channel_data );
+	}
+	
+	// Notification managers
+	$notification_managers = bookacti_format_notification_managers();
+	bookacti_insert_managers( 'notification', $notification_db_id, $notification_managers );
+	
+	// Delete cache
+	wp_cache_delete( 'notifications_data', 'bookacti' );
+	
+	do_action( 'bookacti_notification_inserted', $notification_db_id );
+	
+	return $notification_db_id;
+}
+
+
+/**
+ * Add new notification channel data and meta
+ * @since 1.18.0
+ * @param array $notification_data (see bookacti_sanitize_notification_data)
+ * @return int|false
+ */
+function bookacti_create_notification_channel( $notification_db_id, $channel_data ) {
+	// Make sure compulsory fields are not empty
+	if( ! $notification_db_id || empty( $channel_data[ 'channel' ] ) ) { return false; }
+	
+	$channel = $channel_data[ 'channel' ];
+	
+	// Get notification data and make sure it exists
+	$notification = bookacti_get_notification_data( $notification_db_id, true );
+	if( ! $notification ) { return false; }
+	
+	// If notification channel already exists, update it instead
+	if( ! empty( $notification[ $channel ][ 'channel_db_id' ] ) ) {
+		// Add database id to channel data
+		$channel_data[ 'channel_db_id' ] = $notification[ $channel ][ 'channel_db_id' ];
+		return bookacti_update_notification_channel_data( $notification_db_id, $channel_data );
+	}
+	
+	// Channel data
+	$channel_db_id = bookacti_insert_notification_channel( $notification_db_id, $channel_data );
+	if( $channel_db_id === false ) { return false; }
+	
+	// Channel meta
+	$default_notification_meta = bookacti_get_default_notification_meta();
+	$default_channel_meta      = ! empty( $default_notification_meta[ $channel ] ) ? $default_notification_meta[ $channel ] : array();
+	$channel_meta              = array_intersect_key( $channel_data, $default_channel_meta );
+	
+	// Do not save meta equal to default
+	foreach( $channel_meta as $key => $value ) {
+		if( maybe_unserialize( $value ) == $default_channel_meta[ $key ] ) {
+			unset( $channel_meta[ $key ] );
+		}
+	}
+	
+	if( $channel_meta ) {
+		bookacti_insert_metadata( 'notification_channel', $channel_db_id, $channel_meta );
+	}
+	
+	// Delete cache
+	wp_cache_delete( 'notifications_data', 'bookacti' );
+	
+	do_action( 'bookacti_notification_channel_inserted', $channel_db_id );
+	
+	return $channel_db_id;
+}
+
+
+/**
+ * Update notification data and meta
+ * @since 1.18.0
+ * @param array $notification_data (see bookacti_sanitize_notification_data)
+ * @return int|false
+ */
+function bookacti_update_notification_data( $notification_data ) {
+	// If there is no notification database ID, create it
+	if( ! $notification_data[ 'db_id' ] ) {
+		$notification_db_id = bookacti_create_notification( $notification_data );
+		return $notification_db_id;
+	}
+	
+	$notification_db_id = $notification_data[ 'db_id' ];
+	
+	// Notification data
+	$updated = bookacti_update_notification( $notification_data );
+	if( $updated === false ) { return false; }
+	
+	// Notification meta
+	$channel_names             = bookacti_get_notification_channel_names();
+	$default_notification_meta = bookacti_get_default_notification_meta();
+	$notification_meta         = array_intersect_key( $notification_data, array_diff_key( $default_notification_meta, array_flip( $channel_names ) ) );
+	
+	// Do not save meta equal to default
+	$notification_meta_to_delete = array();
+	foreach( $notification_meta as $key => $value ) {
+		if( maybe_unserialize( $value ) == $default_notification_meta[ $key ] ) {
+			unset( $notification_meta[ $key ] );
+			$notification_meta_to_delete[] = $key;
+		}
+	}
+	
+	if( $notification_meta ) {
+		bookacti_update_metadata( 'notification', $notification_db_id, $notification_meta );
+	}
+	
+	if( $notification_meta_to_delete ) {
+		bookacti_delete_metadata( 'notification', $notification_db_id, $notification_meta_to_delete );
+	}
+	
+	// Notification channels data and meta
+	$channels_data = array_intersect_key( $notification_data, array_flip( $channel_names ) );
+	foreach( $channels_data as $channel => $channel_data ) {
+		bookacti_update_notification_channel_data( $notification_data[ 'db_id' ], $channel_data );
+	}
+	
+	// Notification managers
+	$notification_managers = bookacti_format_notification_managers( $notification_data[ 'managers' ] );
+	bookacti_update_managers( 'notification', $notification_db_id, $notification_managers );
+	
+	// Delete cache
+	wp_cache_delete( 'notifications_data', 'bookacti' );
+	
+	do_action( 'bookacti_notification_updated', $notification_db_id );
+	
+	return $notification_db_id;
+}
+
+
+/**
+ * Update notification channel data and meta
+ * @since 1.18.0
+ * @param int $notification_db_id
+ * @param array $channel_data (see bookacti_sanitize_notification_data)
+ * @return int|false
+ */
+function bookacti_update_notification_channel_data( $notification_db_id, $channel_data ) {
+	// If there is no notification database ID, create it
+	if( ! $channel_data[ 'channel_db_id' ] ) {
+		$channel_db_id = bookacti_create_notification_channel( $notification_db_id, $channel_data );
+		return $channel_db_id;
+	}
+	
+	$channel_db_id = $channel_data[ 'channel_db_id' ];
+	
+	// Channel data
+	$updated = bookacti_update_notification_channel( $channel_data );
+	if( $updated === false ) { return false; }
+	
+	// Channel meta
+	$channel                   = $channel_data[ 'channel' ];
+	$default_notification_meta = bookacti_get_default_notification_meta();
+	$default_channel_meta      = ! empty( $default_notification_meta[ $channel ] ) ? $default_notification_meta[ $channel ] : array();
+	$channel_meta              = array_intersect_key( $channel_data, $default_channel_meta );
+	
+	// Do not save meta equal to default
+	$channel_meta_to_delete = array();
+	foreach( $channel_meta as $key => $value ) {
+		if( maybe_unserialize( $value ) == $default_channel_meta[ $key ] ) {
+			unset( $channel_meta[ $key ] );
+			$channel_meta_to_delete[] = $key;
+		}
+	}
+	
+	if( $channel_meta ) {
+		bookacti_update_metadata( 'notification_channel', $channel_db_id, $channel_meta );
+	}
+	
+	if( $channel_meta_to_delete ) {
+		bookacti_delete_metadata( 'notification_channel', $channel_db_id, $channel_meta_to_delete );
+	}
+	
+	// Delete cache
+	wp_cache_delete( 'notifications_data', 'bookacti' );
+	
+	do_action( 'bookacti_notification_channel_updated', $channel_db_id );
+	
+	return $channel_data[ 'channel_db_id' ];
+}
+
+
+
+
+// NOTIFICATION PERMISSIONS
+
+/**
+ * Check if user is allowed to manage notification
+ * @since 1.18.0
+ * @param int $notification_db_id
+ * @param int $user_id
+ * @return boolean
+ */
+function bookacti_user_can_manage_notification( $notification_db_id, $user_id = false ) {
+	$user_can_manage_notification = false;
+	if( ! $user_id ) { $user_id = get_current_user_id(); }
+	$bypass_notification_managers_check = apply_filters( 'bookacti_bypass_notification_managers_check', false, $user_id );
+	if( is_super_admin( $user_id ) || $bypass_notification_managers_check ) { $user_can_manage_notification = true; }
+	else {
+		$admins = bookacti_get_notification_managers( $notification_db_id );
+		if( $admins ) {
+			if( in_array( $user_id, $admins, true ) ) { $user_can_manage_notification = true; }
+		}
+	}
+
+	return apply_filters( 'bookacti_user_can_manage_notification', $user_can_manage_notification, $notification_db_id, $user_id );
+}
+
+
+/**
+ * Get notification managers
+ * @since 1.18.0
+ * @param int|array $notification_db_ids
+ * @return array
+ */
+function bookacti_get_notification_managers( $notification_db_ids ) {
+	$managers = bookacti_get_managers( 'notification', $notification_db_ids );
+	
+	$merged_managers = array();
+	foreach( $managers as $user_ids ) {
+		$merged_managers = array_merge( $merged_managers, bookacti_ids_to_array( $user_ids ) );
+	}
+	
+	return array_unique( $merged_managers );
+}
+
+
+/**
+ * Format notification managers
+ * @since 1.18.0
+ * @param array $notification_managers
+ * @return array
+ */
+function bookacti_format_notification_managers( $notification_managers = array() ) {
+	$notification_managers = bookacti_ids_to_array( $notification_managers );
+	
+	// If user is not super admin, add the user automatically in the notification managers list
+	$user_id = get_current_user_id();
+	$bypass_notification_managers_check = apply_filters( 'bookacti_bypass_notification_managers_check', false, $user_id );
+	if( ! is_super_admin( $user_id ) && ! $bypass_notification_managers_check ) {
+		if( ! in_array( $user_id, $notification_managers, true ) ) {
+			$notification_managers[] = $user_id;
+		}
+	}
+	
+	// Make sure all users have permission to manage notifications
+	$notification_managers_caps = array( 'bookacti_edit_notifications' );
+	foreach( $notification_managers as $i => $notification_manager ) {
+		if( $notification_manager ) {
+			$user_can = false;
+			foreach( $notification_managers_caps as $notification_managers_cap ) {
+				if( user_can( $notification_manager, $notification_managers_cap ) ) { $user_can = true; break; }
+			}
+			if( $user_can ) { continue; }
+		}
+		unset( $notification_managers[ $i ] );
+	}
+	
+	return apply_filters( 'bookacti_notification_managers', $notification_managers );
+}
+
+
+
+
+// NOTIFICATION TAGS
 
 /**
  * Get notifications tags
@@ -621,11 +1294,15 @@ function bookacti_get_notifications_tags_values( $booking, $booking_type, $notif
 }
 
 
+
+
+// SEND NOTIFICATION
+
 /**
  * Send a notification
  * @since 1.2.1 (was bookacti_send_email in 1.2.0)
- * @version 1.16.37
- * @param string $notification_id The notification identifier. It must exists as a key in "bookacti_notifications_default_settings".
+ * @version 1.18.0
+ * @param string $notification_id The notification user-friendly identifier. May be $target_$trigger or custom_$target_$trigger_$db_id.
  * @param int $booking_id         Main booking (group) ID
  * @param string $booking_type    Main booking type ("single" or "group")
  * @param array $args {
@@ -711,7 +1388,7 @@ function bookacti_send_notification( $notification_id, $booking_id, $booking_typ
 	$lang_switched = bookacti_switch_locale( $locale );
 	
 	// Get notification settings
-	$notification = bookacti_get_notification_settings( $notification_id, false );
+	$notification = bookacti_get_notification_data( $notification_id, false );
 	
 	// Replace or add notification settings
 	if( ! empty( $args[ 'notification' ] ) ) {

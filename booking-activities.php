@@ -3,7 +3,7 @@
  * Plugin Name: Booking Activities
  * Plugin URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Description: Booking system specialized in activities (sports, cultural, leisure, events...). Works great with WooCommerce.
- * Version: 1.17.1
+ * Version: 1.18.0
  * Author: Booking Activities Team
  * Author URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Text Domain: booking-activities
@@ -42,7 +42,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 // GLOBALS AND CONSTANTS
-if( ! defined( 'BOOKACTI_VERSION' ) )     { define( 'BOOKACTI_VERSION', '1.17.1' ); }
+if( ! defined( 'BOOKACTI_VERSION' ) )     { define( 'BOOKACTI_VERSION', '1.18.0' ); }
 if( ! defined( 'BOOKACTI_PLUGIN_NAME' ) ) { define( 'BOOKACTI_PLUGIN_NAME', 'booking-activities' ); }
 if( ! defined( 'BOOKACTI_PATH' ) )        { define( 'BOOKACTI_PATH', __DIR__ ); }
 
@@ -76,12 +76,14 @@ require_once( 'model/model-templates.php' );
 require_once( 'model/model-booking-system.php' );
 require_once( 'model/model-bookings.php' );
 require_once( 'model/model-forms.php' );
+require_once( 'model/model-notifications.php' );
 
 
 // INCLUDE CLASSES
 if( is_admin() ) {
 	require_once( 'class/class-bookings-list.php' );
 	require_once( 'class/class-forms-list.php' );
+	require_once( 'class/class-notifications-list.php' );
 }
 
 // Get active plugins
@@ -438,7 +440,7 @@ add_action( 'init', 'bookacti_check_version', 5 );
 
 /**
  * Create the Admin Menu
- * @version 1.12.3
+ * @version 1.18.0
  */
 function bookacti_create_menu() {
 	// Add a menu and submenus
@@ -451,6 +453,7 @@ function bookacti_create_menu() {
     
 	do_action( 'bookacti_admin_menu' );
 	
+	add_submenu_page( 'booking-activities', esc_html__( 'Notifications', 'booking-activities' ), esc_html__( 'Notifications', 'booking-activities' ), 'bookacti_manage_notifications', 'bookacti_notifications', 'bookacti_notifications_page' );
 	add_submenu_page( 'booking-activities', esc_html__( 'Settings', 'booking-activities' ), esc_html__( 'Settings', 'booking-activities' ), 'bookacti_manage_booking_activities_settings', 'bookacti_settings', 'bookacti_settings_page' );
 }
 add_action( 'admin_menu', 'bookacti_create_menu' );
@@ -499,6 +502,30 @@ function bookacti_forms_page() {
  */
 function bookacti_bookings_page() {
     include_once( 'view/view-bookings.php' );
+}
+
+/**
+ * Include content of Notifications top-level menu page
+ * @since 1.18.0
+ */
+function bookacti_notifications_page() {
+	$can_create_notifications = current_user_can( 'bookacti_create_notifications' );
+	$can_edit_notifications   = current_user_can( 'bookacti_edit_notifications' );
+	$load_notifications_editor = false;
+	
+	if( ! empty( $_GET[ 'action' ] ) ) {
+		$has_id_parameter = ( ! empty( $_GET[ 'notification_db_id' ] ) && is_numeric( $_GET[ 'notification_db_id' ] ) ) || ( ! empty( $_GET[ 'notification_id' ] ) && is_string( $_GET[ 'notification_id' ] ) );
+		if( ( $_GET[ 'action' ] === 'new' && $can_create_notifications )
+		 || ( $_GET[ 'action' ] === 'edit' && $can_edit_notifications && $has_id_parameter ) ) {
+			$load_notifications_editor = true;
+		}
+	}
+	
+	if( $load_notifications_editor ) {
+		include_once( BOOKACTI_PATH . '/view/view-notification-editor.php' );
+	} else {
+		include_once( BOOKACTI_PATH . '/view/view-notification-list.php' );
+	}
 }
 
 /**

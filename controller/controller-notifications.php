@@ -3,6 +3,14 @@
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
+ * Add missing permanent notifications to the database when the plugin is activated
+ * @since 1.18.0
+ */
+add_action( 'bookacti_activate', 'bookacti_create_missing_permanent_notifications', 10 );
+add_action( 'bookacti_activate', 'bookacti_migrate_legacy_notifications', 20 );
+
+
+/**
  * Register a daily cron event to clean notification logs
  * @since 1.7.1
  */

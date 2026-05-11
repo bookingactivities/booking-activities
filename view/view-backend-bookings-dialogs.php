@@ -1,7 +1,7 @@
 <?php 
 /**
  * Backend booking dialogs
- * @version 1.16.45
+ * @version 1.18.0
  */
 
 // Exit if accessed directly
@@ -256,21 +256,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_send_booking_notification' ); ?>'/>
 		<?php
 			// Get notifications
-			$notifications_ids      = array_keys( bookacti_get_notifications_default_settings() );
-			$notifications_settings = array();
-			foreach( $notifications_ids as $notification_id ) {
-				$notifications_settings[ $notification_id ] = bookacti_get_notification_settings( $notification_id, false );
-			}
+			$notifications_data = bookacti_get_notifications_data();
 			
 			// Sort notifications
-			$notifications_settings = bookacti_sort_notifications( $notifications_settings );
+			$notifications_data = bookacti_sort_notifications( $notifications_data );
 			
 			// Build notification options
 			$notification_options = array();
-			foreach( $notifications_settings as $notification_id => $notification_settings ) {
+			foreach( $notifications_data as $notification_id => $notification_data ) {
 				$notification_options[ $notification_id ] = substr( $notification_id, 0, 6 ) === 'admin_' ? esc_html__( 'Administrator', 'booking-activities' ) : esc_html__( 'Customer', 'booking-activities' );
 				$notification_options[ $notification_id ] .= ' - ';
-				$notification_options[ $notification_id ] .= ! empty( $notification_settings[ 'title' ] ) ? $notification_settings[ 'title' ] : $notification_id;
+				$notification_options[ $notification_id ] .= ! empty( $notification_data[ 'title' ] ) ? $notification_data[ 'title' ] : $notification_id;
 			}
 
 			$fields = array(

@@ -48,6 +48,28 @@ ul[id$='-select-box-results'] li[aria-disabled='true'] { display: none; }
 
 
 /***** LIST TABLE *****/
+/** FILTERS **/
+.bookacti-filter-container          { display: inline-block; vertical-align: top; margin-right: 10px; }
+.bookacti-filter-container input,
+.bookacti-filter-container select,
+.bookacti-filter-container button,
+.bookacti-filter-container .button,
+.bookacti-filter-container textarea { width: 150px; }
+.bookacti-filter-title              { font-weight: bold; line-height: 2.5em; }
+.bookacti-filter-content select[multiple]        { height: 66px; box-sizing: border-box; padding: 0; margin: 0; }
+.bookacti-filter-content select[multiple] option { height: 22px; box-sizing: border-box; padding: 2px 4px; margin: 0; }
+
+.bookacti-filter-container:nth-of-type(1) .select2.select2-container { z-index: 50; }
+.bookacti-filter-container:nth-of-type(2) .select2.select2-container { z-index: 45; }
+.bookacti-filter-container:nth-of-type(3) .select2.select2-container { z-index: 40; }
+.bookacti-filter-container:nth-of-type(4) .select2.select2-container { z-index: 35; }
+.bookacti-filter-container:nth-of-type(5) .select2.select2-container { z-index: 30; }
+.bookacti-filter-container:nth-of-type(6) .select2.select2-container { z-index: 25; }
+.bookacti-filter-container:nth-of-type(7) .select2.select2-container { z-index: 20; }
+.bookacti-filter-container:nth-of-type(8) .select2.select2-container { z-index: 15; }
+.bookacti-filter-container:nth-of-type(9) .select2.select2-container { z-index: 10; }
+
+/** TABLE **/
 .bookacti-list-table tr.hidden                     { display: none; }
 .bookacti-list-table .alternate, 
 .bookacti-list-table .striped>tbody>:nth-child(odd), 
@@ -69,10 +91,14 @@ ul[id$='-select-box-results'] li[aria-disabled='true'] { display: none; }
 .bookacti-list-table .column-id .sorting-indicator { display: inline-block; vertical-align: top; float: none; }
 .bookacti-list-table .column-id                    { width: 40px; white-space: nowrap; text-align: center; }
 .bookacti-list-table .column-active                { width: 60px; white-space: nowrap; text-align: center; }
+.bookacti-list-table .dashicons-yes:before         { color: #3cb371; }
+.bookacti-list-table .dashicons-no:before          { color: #cd5c5c; }
 
 .bookacti-list-table .bookacti-primary-data-container  { display: none; margin-left: 10px; }
 .bookacti-list-table .bookacti-primary-data            { display: inline-block; margin-right: 10px; }
 .bookacti-list-table .bookacti-primary-data:last-child { margin-right: 0; }
+
+.bookacti-list-table .no-items td .button { vertical-align: middle; }
 
 @media screen and ( max-width: 1280px ) { 
 	.bookacti-list-table .check-column,
@@ -88,6 +114,8 @@ ul[id$='-select-box-results'] li[aria-disabled='true'] { display: none; }
 	.bookacti-list-table .is-expanded td      { text-align: left; }
 	.rtl .bookacti-list-table .is-expanded td { text-align: right; }
 }
+
+
 
 
 /***** CALENDAR *****/
@@ -210,7 +238,7 @@ input[type=checkbox].bookacti-onoffswitch-checkbox { position: relative; width: 
 .rtl .bookacti-onoffswitch .bookacti-onoffswitch-checkbox:checked + .bookacti-onoffswitch-knobs:before { left: 0; }
 
 
-/* Forms */
+/* Waiting List */
 .bookacti-bawl-addon-promo .bookacti-promo-events-examples .fc-event { height: 64px; }
 .bookacti-bawl-addon-promo .bookacti-event-waitlist-container        { position: absolute; top: 0; right: 0; z-index: 6; width: 24px; height: 24px; padding: 2px 3px; background: rgba(0, 0, 0, 1); color: #fff; border-radius: 0 0 0 3px; text-align: right; box-sizing: border-box; }
 .bookacti-bawl-addon-promo .bookacti-event-waitlist-text             { position: relative; right: -30px; font-size: 0.85em; line-height: 1.2em; }

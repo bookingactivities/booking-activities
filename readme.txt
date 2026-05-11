@@ -3,7 +3,7 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
 Tested up to: 7.0
-Stable tag: 1.17.1
+Stable tag: 1.18.0
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -211,7 +211,7 @@ Or read the full [features description](https://booking-activities.fr/en/documen
 
 
 = Display user's booking list = 
-*Make sure the user has bookings and he / she is logged in, otherwise it will not show anything* 
+*Make sure the user has bookings and they are logged in, otherwise it will not show anything* 
 
 1. Past this shortcode in any post or page you like: `[bookingactivities_list]`
 2. Go on this post / page frontend, the booking list appears!
@@ -320,6 +320,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.18.0 =
+* Dev - Migrate notifications data from wp_options to wp_bookacti_notitfications and wp_bookacti_notitfication_channels tables
+* Dev - Refactor most functions and hooks related to notifications, and their parameters
+* Dev - Add key on "active" database columns
 
 = 1.17.2 =
 * Tweak - Keep form values after being redirected to log in page, when trying to make a booking without account with an email already associated with an account

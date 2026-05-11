@@ -1,7 +1,7 @@
 <?php 
 /**
  * Calendar editor dialogs
- * @version 1.16.45
+ * @version 1.18.0
  */
 
 // Exit if accessed directly
@@ -457,7 +457,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			/**
 			 * Display the fields in the "Availability" tab of the Activity dialog
 			 * @since 1.4.0
-			 * @version 1.16.0
+			 * @version 1.18.0
 			 * @param array $params
 			 */
 			function bookacti_fill_activity_tab_availability( $params = array() ) {
@@ -492,7 +492,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 								'id'      => 'bookacti-activity-max-bookings-per-user',
 								'title'   => esc_html__( 'Max bookings per user', 'booking-activities' ),
 								'options' => array( 'min' => 0, 'step' => 1 ),
-								'tip'     => esc_html__( 'The maximum booking quantity a user can make on an event of this activity. E.g.: "1", the customer can only book one place of the desired event, and he / she won\'t be allowed to book it twice.', 'booking-activities' )
+								'tip'     => esc_html__( 'The maximum booking quantity a user can make on an event of this activity. E.g.: "1", the customer can only book one place of the desired event, and they won\'t be allowed to book it twice.', 'booking-activities' )
 										  . '<br/>' . esc_html__( 'Set it to "0" to ignore this parameter.', 'booking-activities' )
 							),
 							'max_users_per_event' => array(
@@ -501,7 +501,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 								'id'      => 'bookacti-activity-max-users-per-event',
 								'title'   => esc_html__( 'Max users per event', 'booking-activities' ),
 								'options' => array( 'min' => 0, 'step' => 1 ),
-								'tip'     => esc_html__( 'Set how many different users can book the same event. E.g.: "1", only one user can book a specific event; once he / she has booked it, the event won\'t be available for anyone else anymore, even if it isn\'t full. Useful for private events.', 'booking-activities' )
+								'tip'     => esc_html__( 'Set how many different users can book the same event. E.g.: "1", only one user can book a specific event; once they have booked it, the event won\'t be available for anyone else anymore, even if it isn\'t full. Useful for private events.', 'booking-activities' )
 										  . '<br/>' . esc_html__( 'Set it to "0" to ignore this parameter.', 'booking-activities' )
 							)
 						) );
@@ -1052,7 +1052,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			/**
 			 * Display the fields in the "Availability" tab of the Group Category dialog
 			 * @since 1.4.0
-			 * @version 1.15.11
+			 * @version 1.18.0
 			 * @param array $params
 			 */
 			function bookacti_fill_group_category_tab_availability( $params = array() ) {
@@ -1079,7 +1079,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 								'id'      => 'bookacti-group-category-max-bookings-per-user',
 								'title'   => esc_html__( 'Max bookings per user', 'booking-activities' ),
 								'options' => array( 'min' => 0, 'step' => 1 ),
-								'tip'     => esc_html__( 'The maximum booking quantity a user can make on a group of events of this category. E.g.: "1", the customer can only book one place of the desired group of events, and he / she won\'t be allowed to book it twice.', 'booking-activities' )
+								'tip'     => esc_html__( 'The maximum booking quantity a user can make on a group of events of this category. E.g.: "1", the customer can only book one place of the desired group of events, and they won\'t be allowed to book it twice.', 'booking-activities' )
 										  . '<br/>' . esc_html__( 'Set it to "0" to ignore this parameter.', 'booking-activities' )
 							),
 							'max_users_per_event' => array(
@@ -1088,7 +1088,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 								'id'      => 'bookacti-group-category-max-users-per-event',
 								'title'   => esc_html__( 'Max users per event', 'booking-activities' ),
 								'options' => array( 'min' => 0, 'step' => 1 ),
-								'tip'     => esc_html__( 'Set how many different users can book the same group of events. E.g.: "1", only one user can book a specific group of events; once he / she has booked it, the group of events won\'t be available for anyone else anymore, even if it isn\'t full. Useful for private events.', 'booking-activities' )
+								'tip'     => esc_html__( 'Set how many different users can book the same group of events. E.g.: "1", only one user can book a specific group of events; once they have booked it, the group of events won\'t be available for anyone else anymore, even if it isn\'t full. Useful for private events.', 'booking-activities' )
 										  . '<br/>' . esc_html__( 'Set it to "0" to ignore this parameter.', 'booking-activities' )
 							),
 							'started_groups_bookable' => array(

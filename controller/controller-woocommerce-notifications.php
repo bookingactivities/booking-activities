@@ -3,9 +3,82 @@
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
+ * Get default notification meta
+ * @since 1.18.0
+ * @return array
+ */
+function bookacti_wc_default_notification_meta( $meta ) {
+	$new_meta = array(
+		'active_with_wc' => 0 // Used for these triggers: 'new_booking', 'pending_booking', 'booked_booking', 'cancelled_booking', 'refunded_booking'
+	);
+	
+	return array_merge( $meta, $new_meta );
+}
+add_filter( 'bookacti_default_notification_meta', 'bookacti_wc_default_notification_meta', 10, 1 );
+
+
+/**
+ * Sanitize notification data
+ * @since 1.18.0 (was bookacti_sanitize_wc_notification_settings)
+ * @param array $notification_data
+ * @param array $raw_data
+ * @return array
+ */
+function bookacti_wc_sanitized_notification_data( $notification_data, $raw_data ) {
+	$default_meta = bookacti_get_default_notification_meta();
+	
+	// Sanitize active_with_wc option
+	$notification_data[ 'active_with_wc' ] = in_array( $notification_data[ 'trigger' ], array( 'new_booking', 'pending_booking', 'booked_booking', 'cancelled_booking', 'refunded_booking' ), true ) ? ( ! empty( $raw_data[ 'active_with_wc' ] ) ? 1 : 0 ) : $default_meta[ 'active_with_wc' ];
+	
+	return $notification_data;
+}
+add_filter( 'bookacti_sanitized_notification_data', 'bookacti_wc_sanitized_notification_data', 10, 2 );
+add_filter( 'bookacti_formatted_notification_data', 'bookacti_wc_sanitized_notification_data', 10, 2 );
+
+
+/**
+ * Add WC notifications default values
+ * @since 1.18.0 (was bookacti_add_wc_default_notification_settings bookacti_add_price_info_to_admin_refund_notifications)
+ * @param array $notifications_default_values
+ * @return array
+ */
+function bookacti_wc_notifications_default_values( $notifications_default_values ) {
+	// Refund info to be added to admin refund notifications
+	$refund_info = __( '<h4>Refund</h4>Price: {price}<br/>Coupon: {refund_coupon_code}', 'booking-activities' );
+	
+	// Get WC stock email recipient
+	$wc_stock_email_recipient = get_option( 'woocommerce_stock_email_recipient' );
+	
+	foreach( $notifications_default_values as $notification_id => $notification_default_values ) {
+		$target  = isset( $notification_default_values[ 'target' ] ) ? $notification_default_values[ 'target' ] : '';
+		$trigger = isset( $notification_default_values[ 'trigger' ] ) ? $notification_default_values[ 'trigger' ] : '';
+		
+		// Add refund info to admin refund notifications
+		if( $target === 'admin' && in_array( $trigger, array( 'refund_requested_booking', 'refunded_booking' ), true ) ) {
+			if( isset( $notifications_default_values[ $notification_id ][ 'email' ][ 'message' ] ) ) {
+				$notifications_default_values[ $notification_id ][ 'email' ][ 'message' ] .= $refund_info;
+			}
+		}
+		
+		// Add WC stock email recipient to the refund request emails
+		if( $target === 'admin' && $trigger === 'refund_requested_booking' ) {
+			if( isset( $notifications_default_values[ $notification_id ][ 'email' ][ 'to' ] ) ) {
+				if( is_email( $wc_stock_email_recipient ) && ! in_array( $wc_stock_email_recipient, $notifications_default_values[ $notification_id ][ 'email' ][ 'to' ], true ) ) {
+					$notifications_default_values[ $notification_id ][ 'email' ][ 'to' ][] = $wc_stock_email_recipient;
+				}
+			}
+		}
+	}
+	
+	return $notifications_default_values;
+}
+add_filter( 'bookacti_notifications_default_values', 'bookacti_wc_notifications_default_values', 100, 1 );
+
+
+/**
  * Send a new status notification for a booking attached to an order item
  * @since 1.9.0
- * @version 1.16.0
+ * @version 1.18.0
  * @param array $order_item_booking
  * @param string $new_status
  * @param WC_Order $order
@@ -38,12 +111,12 @@ function bookacti_wc_send_order_item_booking_status_notification( $order_item_bo
 	$notify_admin = 0;
 	if(  in_array( $new_status, bookacti_get_active_booking_statuses(), true )
 	&& ! in_array( $action, array( 'woocommerce_mark_order_status', 'editpost' ) ) ) {
-		$admin_notification = bookacti_get_notification_settings( 'admin_new_booking' );
+		$admin_notification = bookacti_get_notification_data( 'admin_new_booking' );
 		$notify_admin = ! empty( $admin_notification[ 'active_with_wc' ] ) ? 1 : 0;
 	}
 	
 	// Check if the customer must be notified
-	$customer_notification = bookacti_get_notification_settings( 'customer_' . $new_status . '_booking' );
+	$customer_notification = bookacti_get_notification_data( 'customer_' . $new_status . '_booking' );
 	$notify_customer = ! empty( $customer_notification[ 'active_with_wc' ] ) ? 1 : 0;
 	
 	$notification_args = apply_filters( 'bookacti_wc_order_item_booking_status_notification_args', array(), $order_item_booking, $new_status, $order, $forced );
@@ -102,82 +175,6 @@ function bookacti_wc_send_notification_when_order_item_booking_status_changes( $
 	}
 }
 add_action( 'bookacti_wc_order_item_booking_updated', 'bookacti_wc_send_notification_when_order_item_booking_status_changes', 10, 5 );
-
-
-/**
- * Add a mention to notifications
- * @since 1.8.6 (was bookacti_add_admin_refunded_booking_notification before)
- * @version 1.14.0
- * @param array $notifications
- * @return array
- */
-function bookacti_add_price_info_to_admin_refund_notifications( $notifications ) {
-	$refund_message = __( '<h4>Refund</h4>Price: {price}<br/>Coupon: {refund_coupon_code}', 'booking-activities' );
-	if( isset( $notifications[ 'admin_refund_requested_booking' ] ) ) { 
-		$notifications[ 'admin_refund_requested_booking' ][ 'email' ][ 'message' ] .= $refund_message;
-	}
-	if( isset( $notifications[ 'admin_refunded_booking' ] ) ) { 
-		$notifications[ 'admin_refunded_booking' ][ 'email' ][ 'message' ] .= $refund_message;
-	}
-	return $notifications;
-}
-add_filter( 'bookacti_notifications_default_settings', 'bookacti_add_price_info_to_admin_refund_notifications', 10, 1 );
-
-
-/**
- * Add WC-specific default notification settings
- * @since 1.2.2
- * @version 1.8.6
- * @param array $notifications
- * @return array
- */
-function bookacti_add_wc_default_notification_settings( $notifications ) {
-	// Add the active_with_wc option only for certain triggers (booking status changes, and new booking made)
-	$active_with_wc_triggers = array( 'new', 'pending', 'booked', 'cancelled', 'refunded' );
-	
-	// Get WC stock email recipient
-	$wc_stock_email_recipient = get_option( 'woocommerce_stock_email_recipient' );
-	
-	foreach( $notifications as $notification_id => $notification ) {
-		// Check if the active_with_wc option should be added
-		$add_active_with_wc_option = false;
-		foreach( $active_with_wc_triggers as $active_with_wc_trigger ) {
-			if( strpos( $notification_id, '_' . $active_with_wc_trigger ) !== false ) { $add_active_with_wc_option = true; } 
-		}
-		if( ! $add_active_with_wc_option ) { continue; }
-		
-		// Add the active_with_wc option
-		if( ! isset( $notifications[ $notification_id ][ 'active_with_wc' ] ) ) {
-			$notifications[ $notification_id ][ 'active_with_wc' ] = 0;
-		}
-		
-		// Add the recipients to the refund request emails
-		if( strpos( $notification_id, 'admin_refund_requested' ) !== false 
-		&&  ! in_array( $wc_stock_email_recipient, $notifications[ $notification_id ][ 'email' ][ 'to' ], true ) ) {
-			$notifications[ $notification_id ][ 'email' ][ 'to' ][] = $wc_stock_email_recipient;
-		}
-	}
-	
-	return $notifications;
-}
-add_filter( 'bookacti_notifications_default_settings', 'bookacti_add_wc_default_notification_settings', 100, 1 );
-
-
-/**
- * Sanitize WC-specific notifications settings
- * 
- * @since 1.2.2
- * @param array $notification
- * @param string $notification_id
- * @return array
- */
-function bookacti_sanitize_wc_notification_settings( $notification, $notification_id ) {
-	if( isset( $notification[ 'active_with_wc' ] ) ) {
-		$notification[ 'active_with_wc' ] = intval( $notification[ 'active_with_wc' ] ) ? 1 : 0;
-	}
-	return $notification;
-}
-add_filter( 'bookacti_notification_sanitized_settings', 'bookacti_sanitize_wc_notification_settings', 20, 2 );
 
 
 /**

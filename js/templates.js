@@ -105,15 +105,6 @@ $j( document ).ready( function() {
 	window.onerror = function ( errorMsg, url, lineNumber, column, errorObj ) {
 		$j( '#bookacti-fatal-error' ).show();
 	};
-	
-	/**
-	 * Exit template loading (forced) - on click on button
-	 * @version 1.15.0
-	 */
-	$j( 'body' ).on( 'click', '#bookacti-exit-loading', function(){
-		bookacti_stop_template_loading( true );
-		bookacti.load_events = true;
-	});
 });
 
 

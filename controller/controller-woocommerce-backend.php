@@ -616,7 +616,7 @@ add_filter( 'woocommerce_settings_pages', 'bookacti_wc_settings_page_endpoint_op
 
 /**
  * Set Booking Activities roles and capabilities related to WooCommerce
- * @version 1.8.0
+ * @version 1.18.0
  */
 function bookacti_set_role_and_cap_for_woocommerce() {
 	$shop_manager = get_role( 'shop_manager' );
@@ -625,6 +625,7 @@ function bookacti_set_role_and_cap_for_woocommerce() {
 		$shop_manager->add_cap( 'bookacti_manage_bookings' );
 		$shop_manager->add_cap( 'bookacti_manage_templates' );
 		$shop_manager->add_cap( 'bookacti_manage_forms' );
+		$shop_manager->add_cap( 'bookacti_manage_notifications' );
 		$shop_manager->add_cap( 'bookacti_manage_booking_activities_settings' );
 		$shop_manager->add_cap( 'bookacti_read_templates' );
 		$shop_manager->add_cap( 'bookacti_create_templates' );
@@ -638,6 +639,7 @@ function bookacti_set_role_and_cap_for_woocommerce() {
 		$shop_manager->add_cap( 'bookacti_create_forms' );
 		$shop_manager->add_cap( 'bookacti_edit_forms' );
 		$shop_manager->add_cap( 'bookacti_delete_forms' );
+		$shop_manager->add_cap( 'bookacti_edit_notifications' );
 	}
 }
 add_action( 'bookacti_set_capabilities', 'bookacti_set_role_and_cap_for_woocommerce' );
@@ -657,7 +659,7 @@ add_action( 'wp_roles_init', 'bookacti_unset_role_and_cap_for_woocommerce_on_woo
 
 /**
  * Unset Booking Activities roles and capabilities related to WooCommerce
- * @version 1.8.0
+ * @version 1.18.0
  */
 function bookacti_unset_role_and_cap_for_woocommerce() {
 	$shop_manager = get_role( 'shop_manager' );
@@ -666,6 +668,7 @@ function bookacti_unset_role_and_cap_for_woocommerce() {
 		$shop_manager->remove_cap( 'bookacti_manage_bookings' );
 		$shop_manager->remove_cap( 'bookacti_manage_templates' );
 		$shop_manager->remove_cap( 'bookacti_manage_forms' );
+		$shop_manager->remove_cap( 'bookacti_manage_notifications' );
 		$shop_manager->remove_cap( 'bookacti_manage_booking_activities_settings' );
 		$shop_manager->remove_cap( 'bookacti_read_templates' );
 		$shop_manager->remove_cap( 'bookacti_create_templates' );
@@ -679,6 +682,7 @@ function bookacti_unset_role_and_cap_for_woocommerce() {
 		$shop_manager->remove_cap( 'bookacti_create_forms' );
 		$shop_manager->remove_cap( 'bookacti_edit_forms' );
 		$shop_manager->remove_cap( 'bookacti_delete_forms' );
+		$shop_manager->remove_cap( 'bookacti_edit_notifications' );
 	}
 }
 add_action( 'bookacti_unset_capabilities', 'bookacti_unset_role_and_cap_for_woocommerce' );

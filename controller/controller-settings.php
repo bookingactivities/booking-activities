@@ -332,11 +332,12 @@ add_action( 'admin_init', 'bookacti_init_settings' );
  * Add screen options
  * 
  * @since 1.3.0
- * @version 1.5.0
+ * @version 1.18.0
  */
 function bookacti_add_screen_options() {
 	add_action( 'load-booking-activities_page_bookacti_bookings', 'bookacti_display_bookings_screen_options' );
 	add_action( 'load-booking-activities_page_bookacti_forms', 'bookacti_display_forms_screen_options' );
+	add_action( 'load-booking-activities_page_bookacti_notifications', 'bookacti_display_notifications_screen_options' );
 }
 add_action( 'admin_menu', 'bookacti_add_screen_options', 20 );
 
@@ -370,11 +371,25 @@ add_action( 'admin_head-booking-activities_page_bookacti_forms', 'bookacti_add_f
 
 
 /**
+ * Add notification page columns screen options
+ * @since 1.18.0
+ */
+function bookacti_add_notification_page_screen_option() {
+	$action = ! empty( $_REQUEST[ 'action' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'action' ] ) : '';
+	if( ! $action || ! in_array( $action, array( 'edit', 'new' ), true ) ) {
+		new BOOKACTI_Notifications_List_Table();
+	}
+}
+add_action( 'admin_head-booking-activities_page_bookacti_notifications', 'bookacti_add_notification_page_screen_option' );
+
+
+/**
  * Save screen options
  * @since 1.5.0 (was bookacti_save_bookings_screen_options)
+ * @version 1.18.0
  */
 function bookacti_save_screen_options( $status, $option, $value ) {
-	if( 'bookacti_bookings_per_page' == $option || 'bookacti_forms_per_page' == $option ) {
+	if( 'bookacti_bookings_per_page' == $option || 'bookacti_forms_per_page' == $option || 'bookacti_notifications_per_page' == $option ) {
 		return $value;
 	}
 	return $status;
@@ -383,20 +398,21 @@ add_filter( 'set-screen-option', 'bookacti_save_screen_options', 10, 3 );
 
 
 
+
 // NOTIFICATIONS
 
 /**
  * Create a settings page for each notification
  * @since 1.2.1 (was bookacti_fill_notifications_settings_section)
- * @version 1.16.0
+ * @version 1.18.0
  * @param string $notification_id
  */
 function bookacti_fill_notification_settings_page( $notification_id ) {
 	if( ! $notification_id ) { return; }
 	$recipient = substr( $notification_id, 0, 6 ) === 'admin_' ? 'admin' : 'customer';
 	$recipient_label = $recipient === 'admin' ? esc_html__( 'Administrator', 'booking-activities' ) : esc_html__( 'Customer', 'booking-activities' );
-	$default_settings = bookacti_get_notification_default_settings( $notification_id );
-	$notification_settings = bookacti_get_notification_settings( $notification_id, true );
+	$default_settings = bookacti_get_notification_default_values( $notification_id );
+	$notification_settings = bookacti_get_notification_data( $notification_id, true );
 	$notification_title = $notification_settings[ 'title' ] !== $default_settings[ 'title' ] ? $notification_settings[ 'title' ] : '';
 	?>
 		<h2>
@@ -541,7 +557,7 @@ add_action( 'bookacti_notification_settings_page', 'bookacti_fill_notification_s
 /**
  * Update notifications data
  * @since 1.2.0
- * @version 1.15.5
+ * @version 1.18.0
  */
 function bookacti_controller_update_notification() {
 	// Sanitize current option page ID
@@ -561,7 +577,7 @@ function bookacti_controller_update_notification() {
 	if( ! $values || ! $notification_id ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'missing_data' ), 'update_notification' ); }
 
 	// Sanitize values
-	$notification_settings = bookacti_sanitize_notification_settings( $values, $notification_id );
+	$notification_settings = bookacti_sanitize_notification_data( array_merge( $values, array( 'id' => $notification_id ) ) );
 	$updated = update_option( $option_page, $notification_settings );
 
 	if( ! $updated ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_updated' ), 'update_notification' ); }

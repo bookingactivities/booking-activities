@@ -3,6 +3,23 @@
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
+ * Migrate notifications data to their own tables
+ * This function is temporary
+ * @since 1.18.0
+ * @global wpdb $wpdb
+ * @param string $old_version
+ */
+function bookacti_update_db_to_1_18_0( $old_version ) {
+	// Do it only once, when Booking Activities is updated for the first time to 1.18.0
+	if( ! $old_version || version_compare( $old_version, '1.18.0', '>=' ) ) { return; }
+	
+	// Migrate notifications data to their own tables
+	bookacti_migrate_legacy_notifications();
+}
+add_action( 'bookacti_db_updated', 'bookacti_update_db_to_1_18_0', 120 );
+
+
+/**
  * Remove corrupted repeated events (groups)
  * This function is temporary
  * @since 1.16.24
