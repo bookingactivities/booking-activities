@@ -412,7 +412,7 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 	$recipient = substr( $notification_id, 0, 6 ) === 'admin_' ? 'admin' : 'customer';
 	$recipient_label = $recipient === 'admin' ? esc_html__( 'Administrator', 'booking-activities' ) : esc_html__( 'Customer', 'booking-activities' );
 	$default_settings = bookacti_get_notification_default_values( $notification_id );
-	$notification_settings = bookacti_get_notification_data( $notification_id, true );
+	$notification_settings = bookacti_format_notification_data( bookacti_get_notification_data( $notification_id, true ), 'edit' );
 	$notification_title = $notification_settings[ 'title' ] !== $default_settings[ 'title' ] ? $notification_settings[ 'title' ] : '';
 	?>
 		<h2>

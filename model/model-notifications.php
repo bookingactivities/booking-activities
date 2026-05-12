@@ -81,7 +81,8 @@ function bookacti_get_notifications( $filters = array() ) {
 	}
 	
 	if( $filters[ 'title' ] ) {
-		$query .= ' AND N.title LIKE %s ';
+		$query .= ' AND ( N.title LIKE %s OR N.trigger LIKE %s ) ';
+		$variables[] = '%' . $wpdb->esc_like( $filters[ 'title' ] ) . '%' ;
 		$variables[] = '%' . $wpdb->esc_like( $filters[ 'title' ] ) . '%' ;
 	}
 	
@@ -298,7 +299,8 @@ function bookacti_get_number_of_notification_rows( $filters = array() ) {
 	}
 	
 	if( $filters[ 'title' ] ) {
-		$query .= ' AND N.title LIKE %s ';
+		$query .= ' AND ( N.title LIKE %s OR N.trigger LIKE %s ) ';
+		$variables[] = '%' . $wpdb->esc_like( $filters[ 'title' ] ) . '%' ;
 		$variables[] = '%' . $wpdb->esc_like( $filters[ 'title' ] ) . '%' ;
 	}
 	

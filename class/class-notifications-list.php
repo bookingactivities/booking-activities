@@ -267,7 +267,7 @@ if( ! class_exists( 'BOOKACTI_Notifications_List_Table' ) ) {
 			// Get notifications
 			$notifications_data = bookacti_get_notifications_data( false );
 			$notifications_raw  = bookacti_get_notifications( $this->filters );
-			$notifications      = $notifications_raw ? array_intersect_key( $notifications_data, $notifications_raw ) : array();
+			$notifications      = $notifications_raw ? array_intersect_key( array_replace( $notifications_raw, $notifications_data ), $notifications_raw ) : array();
 			$channel_names      = bookacti_get_notification_channel_names();
 			
 			$can_edit_notifications = current_user_can( 'bookacti_edit_notifications' );

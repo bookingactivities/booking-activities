@@ -69,6 +69,56 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				</div>
 			</div>
 			
+			<div id='bookacti-notification-target-filter-container' class='bookacti-filter-container'>
+				<div class='bookacti-filter-title'>
+					<?php esc_html_e( 'Recipient', 'booking-activities' ); ?>
+				</div>
+				<div class='bookacti-filter-content'>
+				<?php
+					$args = array( 
+						'name'    => 'target',
+						'id'      => 'bookacti-notifications-filter-target',
+						'type'    => 'select',
+						'options' => array(
+							''         => esc_html__( 'All', 'booking-activities' ),
+							'admin'    => esc_html__( 'Administrator', 'booking-activities' ),
+							'customer' => esc_html__( 'Customer', 'booking-activities' )
+						),
+						'value'   => ! empty( $_REQUEST[ 'target' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'target' ] ) : ''
+					);
+					bookacti_display_field( $args );
+				?>
+				</div>
+			</div>
+			
+			<div id='bookacti-notification-trigger-filter-container' class='bookacti-filter-container'>
+				<div class='bookacti-filter-title'>
+					<?php esc_html_e( 'Trigger', 'booking-activities' ); ?>
+				</div>
+				<div class='bookacti-filter-content'>
+				<?php
+					$notifications_default_values = bookacti_get_notifications_default_values();
+					$trigger_options              = array( '' => esc_html__( 'All', 'booking-activities' ) );
+					foreach( $notifications_default_values as $notification_default_values ) {
+						$trigger = ! empty( $notification_default_values[ 'trigger' ] ) ? $notification_default_values[ 'trigger' ] : '';
+						if( ! $trigger ) { continue; }
+						
+						$trigger_options[ $trigger ] = ! empty( $notification_default_values[ 'title' ] ) ? $notification_default_values[ 'title' ] : $trigger;
+					}
+					
+					$args = array( 
+						'name'     => 'in__trigger',
+						'id'       => 'bookacti-notifications-filter-trigger',
+						'type'     => 'select',
+						'multiple' => 'maybe',
+						'options'  => $trigger_options,
+						'value'    => ! empty( $_REQUEST[ 'in__trigger' ] ) ? array_values( bookacti_str_ids_to_array( $_REQUEST[ 'in__trigger' ] ) ) : array()
+					);
+					bookacti_display_field( $args );
+				?>
+				</div>
+			</div>
+			
 			<div id='bookacti-notification-author-filter-container' class='bookacti-filter-container'>
 				<div class='bookacti-filter-title'>
 					<?php esc_html_e( 'Author', 'booking-activities' ); ?>

@@ -616,8 +616,8 @@ function bookacti_get_default_notification_filters() {
 		'in__status'            => array( 'permanent' ),
 		'user_id'               => 0,
 		'active'                => false,
-		'order_by'              => array( 'target', 'trigger', 'title' ),
-		'order'                 => 'desc',
+		'order_by'              => array( 'target', 'trigger', 'status', 'title' ),
+		'order'                 => 'asc',
 		'offset'                => 0,
 		'per_page'              => 0,
 		'manager_id'            => get_current_user_id() // int or false
