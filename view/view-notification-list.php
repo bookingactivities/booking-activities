@@ -9,16 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 ?>
 <div class='wrap'>
-	<h1 class='wp-heading-inline'><?php echo esc_html__( 'Notifications', 'booking-activities' ); ?></h1>
-	<?php 
-	if( current_user_can( 'bookacti_create_notifications' ) ) { 
-		?>
-		<a href='<?php echo esc_url( admin_url( 'admin.php?page=bookacti_notifications&action=new' ) ); ?>' class='page-title-action'>
-			<?php esc_html_e( 'Add New Notification', 'booking-activities' ); ?>
-		</a>
-		<?php
-	}
-	?>
+	<h1 class='wp-heading-inline'><?php esc_html_e( 'Notifications', 'booking-activities' ); ?></h1>
+	<?php do_action( 'bookacti_notification_list_page_header' ); ?>
 	<hr class='wp-header-end'/>
 	
 	<div id='bookacti-notifications-filters-container'>
@@ -27,13 +19,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_get_notification_list' ); ?>'/>
 			<?php
 				// Status
-				$status = ! empty( $_REQUEST[ 'status' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'status' ] ) : '';
+				$status = ! empty( $_GET[ 'status' ] ) ? sanitize_title_with_dashes( $_GET[ 'status' ] ) : '';
 				if( $status ) {
 					echo '<input type="hidden" name="status" value="' . esc_attr( $status ) . '"/>';
 				}
 			
 				// Display sorting data
-				$order_by = ! empty( $_REQUEST[ 'order_by' ] ) ? $_REQUEST[ 'order_by' ] : ( ! empty( $_REQUEST[ 'orderby' ] ) ? $_REQUEST[ 'orderby' ] : array() );
+				$order_by = ! empty( $_GET[ 'order_by' ] ) ? $_GET[ 'order_by' ] : ( ! empty( $_GET[ 'orderby' ] ) ? $_GET[ 'orderby' ] : array() );
 				$order_by = array_values( bookacti_str_ids_to_array( $order_by ) );
 				if( $order_by ) {
 					$i=0;
@@ -45,7 +37,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						++$i;
 					}
 				}
-				$order = ! empty( $_REQUEST[ 'order' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'order' ] ) : '';
+				$order = ! empty( $_GET[ 'order' ] ) ? sanitize_title_with_dashes( $_GET[ 'order' ] ) : '';
 				if( $order ) {
 					echo '<input type="hidden" name="order" value="' . esc_attr( $order ) . '" />';
 				}
@@ -62,7 +54,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						'name'  => 'title',
 						'id'    => 'bookacti-notifications-filter-title',
 						'type'  => 'text',
-						'value' => ! empty( $_REQUEST[ 'title' ] ) ? sanitize_text_field( $_REQUEST[ 'title' ] ) : ''
+						'value' => ! empty( $_GET[ 'title' ] ) ? sanitize_text_field( $_GET[ 'title' ] ) : ''
 					);
 					bookacti_display_field( $args );
 				?>
@@ -84,7 +76,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							'admin'    => esc_html__( 'Administrator', 'booking-activities' ),
 							'customer' => esc_html__( 'Customer', 'booking-activities' )
 						),
-						'value'   => ! empty( $_REQUEST[ 'target' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'target' ] ) : ''
+						'value'   => ! empty( $_GET[ 'target' ] ) ? sanitize_title_with_dashes( $_GET[ 'target' ] ) : ''
 					);
 					bookacti_display_field( $args );
 				?>
@@ -112,7 +104,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						'type'     => 'select',
 						'multiple' => 'maybe',
 						'options'  => $trigger_options,
-						'value'    => ! empty( $_REQUEST[ 'in__trigger' ] ) ? array_values( bookacti_str_ids_to_array( $_REQUEST[ 'in__trigger' ] ) ) : array()
+						'value'    => ! empty( $_GET[ 'in__trigger' ] ) ? array_values( bookacti_str_ids_to_array( $_GET[ 'in__trigger' ] ) ) : array()
 					);
 					bookacti_display_field( $args );
 				?>
@@ -125,7 +117,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				</div>
 				<div class='bookacti-filter-content'>
 				<?php
-					$author = ! empty( $_REQUEST[ 'user_id' ] ) ? intval( $_REQUEST[ 'user_id' ] ) : '';
+					$author = ! empty( $_GET[ 'user_id' ] ) ? intval( $_GET[ 'user_id' ] ) : '';
 					$args = apply_filters( 'bookacti_notification_list_author_selectbox_args', array(
 						'name'         => 'user_id',
 						'id'           => 'bookacti-notifications-filter-author',
@@ -148,7 +140,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					<?php esc_html_e( 'Actions', 'booking-activities' ); ?>
 				</div>
 				<div class='bookacti-filter-content'>
-					<input type='submit' class='button button-primary button-large' id='bookacti-submit-filter-button' value='<?php esc_html_e( 'Filter the list', 'booking-activities' ); ?>' title='<?php esc_html_e( 'Filter the list', 'booking-activities' ); ?>'/>
+					<input type='submit' class='button button-primary button-large' id='bookacti-submit-filter-button' value='<?php esc_attr_e( 'Filter the list', 'booking-activities' ); ?>' title='<?php esc_attr_e( 'Filter the list', 'booking-activities' ); ?>'/>
 				</div>
 			</div>
 		</form>

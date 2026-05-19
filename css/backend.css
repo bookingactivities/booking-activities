@@ -41,8 +41,9 @@ ul[id$='-select-box-results'] li[aria-disabled='true'] { display: none; }
 .bookacti-button-dashicons.button { padding: 0 6px; }
 .bookacti-button-dashicons.button,
 .bookacti-button-dashicons .dashicons,
-.bookacti-button-dashicons-text.button,
-.bookacti-button-dashicons-text .dashicons             { vertical-align: middle; }
+.bookacti-button-dashicons-text.button                 { vertical-align: middle; }
+.bookacti-button-dashicons-text.button-secondary .dashicons,
+.bookacti-button-dashicons-text .dashicons             { line-height: initial; vertical-align: middle; }
 .bookacti-button-dashicons-text .dashicons + span      { vertical-align: middle; margin-left: 4px; }
 .rtl .bookacti-button-dashicons-text .dashicons + span { margin-left: 0; margin-right: 4px; }
 

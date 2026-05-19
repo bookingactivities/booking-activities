@@ -411,7 +411,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		/**
 		 * Display the content of the "iCal" tab of the "Export bookings" dialog
 		 * @since 1.8.0
-		 * @version 1.15.4
+		 * @version 1.18.0
 		 * @param array $args
 		 */
 		function bookacti_fill_export_bookings_ical_tab( $args ) {
@@ -543,7 +543,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		<div id='bookacti-export-bookings-url-container' style='display:none;'>
 			<p><strong><?php esc_html_e( 'Secret address', 'booking-activities' ); ?></strong></p>
 			<div class='bookacti_export_url'>
-				<div class='bookacti_export_url_field'><input type='text' id='bookacti_export_bookings_url_secret' value='' readonly onfocus='this.select();'/></div>
+				<div class='bookacti_export_url_field'><input type='text' id='bookacti_export_bookings_url_secret' value='' readonly onfocus='this.select(); document.execCommand("Copy");'/></div>
 				<div class='bookacti_export_button'><input type='button' value='<?php echo esc_html_x( 'Export', 'action', 'booking-activities' ); ?>' class='button button-primary button-large'/></div>
 			</div>
 			<p>

@@ -36,7 +36,7 @@ function bookacti_get_notifications( $filters = array() ) {
 	
 	if( $filters[ 'in__id' ] ) {
 		$query .= ' AND N.id IN ( %d ';
-		$array_count = count( $filters[ 'id' ] );
+		$array_count = count( $filters[ 'in__id' ] );
 		if( $array_count >= 2 ) {
 			for( $i=1; $i<$array_count; ++$i ) {
 				$query .= ', %d ';
@@ -254,7 +254,7 @@ function bookacti_get_number_of_notification_rows( $filters = array() ) {
 	
 	if( $filters[ 'in__id' ] ) {
 		$query .= ' AND N.id IN ( %d ';
-		$array_count = count( $filters[ 'id' ] );
+		$array_count = count( $filters[ 'in__id' ] );
 		if( $array_count >= 2 ) {
 			for( $i=1; $i<$array_count; ++$i ) {
 				$query .= ', %d ';
@@ -616,10 +616,13 @@ function bookacti_migrate_legacy_notifications() {
 			$legacy_notification
 		);
 		
-		// Rename 'title' channel parameter to 'subject'
+		// Rename 'title' channel parameter to 'subject', and convert 'to' to array
 		foreach( $channel_names as $channel_name ) {
 			if( isset( $legacy_notification[ $channel_name ][ 'title' ] ) ) {
 				$legacy_notification[ $channel_name ][ 'subject' ] = $legacy_notification[ $channel_name ][ 'title' ];
+			}
+			if( isset( $legacy_notification[ $channel_name ][ 'to' ] ) && ! is_array( $legacy_notification[ $channel_name ][ 'to' ] ) ) {
+				$legacy_notification[ $channel_name ][ 'to' ] = explode( ',', $legacy_notification[ $channel_name ][ 'to' ] );
 			}
 		}
 		
@@ -667,9 +670,14 @@ function bookacti_migrate_legacy_notifications() {
 		if( is_array( $sanitized_data[ 'push' ][ 'to' ] ) )          { $sanitized_data[ 'push' ][ 'to' ]          = maybe_serialize( $sanitized_data[ 'push' ][ 'to' ] ); }
 		if( is_array( $sanitized_data[ 'push' ][ 'attachments' ] ) ) { $sanitized_data[ 'push' ][ 'attachments' ] = maybe_serialize( $sanitized_data[ 'push' ][ 'attachments' ] ); }
 		
-		// Create custom notifications
+		// Update existing notification
 		$existing_notification = ! $is_custom && isset( $notifications[ $notification_type ] ) ? $notifications[ $notification_type ] : array();
-		if( ! $existing_notification ) {
+		if( $existing_notification ) {
+			$sanitized_data[ 'db_id' ] = $existing_notification[ 'db_id' ];
+			bookacti_update_notification( $sanitized_data );
+		}
+		// Create custom notifications
+		else {
 			$sanitized_data[ 'id' ] = '';
 			$notification_db_id = bookacti_create_notification( $sanitized_data );
 			if( $notification_db_id ) {
@@ -685,8 +693,13 @@ function bookacti_migrate_legacy_notifications() {
 		foreach( $channels_data as $channel => $channel_data ) {
 			$channel_db_id = ! empty( $existing_notification[ $channel ][ 'channel_db_id' ] ) ? $existing_notification[ $channel ][ 'channel_db_id' ] : 0;
 			
+			// Update existing channels
+			if( $channel_db_id ) {
+				$channel_data[ 'channel_db_id' ] = $channel_db_id;
+				$channel_db_id = bookacti_update_notification_channel( $channel_data );
+			}
 			// Create non existing channels
-			if( ! $channel_db_id ) {
+			else {
 				$channel_db_id = bookacti_create_notification_channel( $notification_db_id, $channel_data );
 			}
 			if( ! $channel_db_id ) { continue; }

@@ -322,9 +322,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 == Changelog ==
 
 = 1.18.0 =
+* Fix - Backend reschedule calendar may be restricted to the original form display period
 * Dev - Migrate notifications data from wp_options to wp_bookacti_notitfications and wp_bookacti_notitfication_channels tables
 * Dev - Refactor most functions and hooks related to notifications, and their parameters
-* Dev - Add key on "active" database columns
+* Dev - Add database index on "active" columns to improve performances
 
 = 1.17.2 =
 * Tweak - Keep form values after being redirected to log in page, when trying to make a booking without account with an email already associated with an account

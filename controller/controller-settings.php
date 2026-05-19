@@ -389,9 +389,10 @@ add_action( 'admin_head-booking-activities_page_bookacti_notifications', 'bookac
  * @version 1.18.0
  */
 function bookacti_save_screen_options( $status, $option, $value ) {
-	if( 'bookacti_bookings_per_page' == $option || 'bookacti_forms_per_page' == $option || 'bookacti_notifications_per_page' == $option ) {
+	if( in_array( $option, array( 'bookacti_bookings_per_page', 'bookacti_forms_per_page', 'bookacti_notifications_per_page' ) ) ) {
 		return $value;
 	}
+	
 	return $status;
 }
 add_filter( 'set-screen-option', 'bookacti_save_screen_options', 10, 3 );
@@ -497,38 +498,35 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 					<?php 
 						echo esc_html_x( 'Email content', 'email message', 'booking-activities' ); 
 						$tags = bookacti_get_notifications_tags( $notification_id );
-						if( $tags ) {
-					?>
-						<div class='bookacti-notifications-tags-list'>
-							<p><?php esc_html_e( 'Use these tags:', 'booking-activities' ); ?></p>
-					<?php
-							foreach( $tags as $tag => $tip ) {
-								?>
-								<div class='bookacti-notifications-tag'>
-									<span><?php echo str_replace( '}{', '}<br/>{', $tag ); ?></span>
-									<?php bookacti_help_tip( $tip ); ?>
-								</div>
-								<?php
-							}
-							
-							// Notification Pack promo
-							$is_plugin_active = bookacti_is_plugin_active( 'ba-notification-pack/ba-notification-pack.php' );
-							if( ! $is_plugin_active ) {
-								$addon_link  = '<a href="https://booking-activities.fr/en/downloads/notification-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=notification-pack&utm_content=settings-notification-list" target="_blank" >Notification Pack</a>';
-								/* translators: %1$s is the placeholder for Notification Pack add-on link */
-								$tip = sprintf( esc_html__( 'You can set a specific message on events, activities, groups of events and group categories and use it in your notifications thanks to %1$s add-on.', 'booking-activities' ), $addon_link );
-								?>
-								<div class='bookacti-notifications-tag'>
-									<code class='bookacti-notifications-tag-promo'>{specific_message}</code>
-									<?php bookacti_help_tip( $tip ); ?>
-								</div>
-								<?php
-							}
-					?>
-						</div>
-					<?php
-						}
-					?>
+						if( $tags ) { ?>
+							<div class='bookacti-notifications-tags'>
+								<p><?php esc_html_e( 'Use these tags:', 'booking-activities' ); ?></p>
+							<?php
+								foreach( $tags as $tag => $tip ) {
+									?>
+									<div class='bookacti-notifications-tag'>
+										<span><?php echo str_replace( '}{', '}<br/>{', $tag ); ?></span>
+										<?php bookacti_help_tip( $tip ); ?>
+									</div>
+									<?php
+								}
+
+								// Notification Pack promo
+								$is_plugin_active = bookacti_is_plugin_active( 'ba-notification-pack/ba-notification-pack.php' );
+								if( ! $is_plugin_active ) {
+									$addon_link  = '<a href="https://booking-activities.fr/en/downloads/notification-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=notification-pack&utm_content=settings-notification-list" target="_blank" >Notification Pack</a>';
+									/* translators: %1$s is the placeholder for Notification Pack add-on link */
+									$tip = sprintf( esc_html__( 'You can set a specific message on events, activities, groups of events and group categories and use it in your notifications thanks to %1$s add-on.', 'booking-activities' ), $addon_link );
+									?>
+									<div class='bookacti-notifications-tag'>
+										<code class='bookacti-notifications-tag-promo'>{specific_message}</code>
+										<?php bookacti_help_tip( $tip ); ?>
+									</div>
+									<?php
+								}
+							?>
+							</div>
+						<?php } ?>
 					</th>
 					<td>
 						<?php 

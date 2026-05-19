@@ -648,7 +648,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-notification-pack', 
 			'end_of_life' => '', 
 			'download_id' => 1393,
-			'min_version' => '1.3.13'
+			'min_version' => '1.4.0'
 		),
 		'bapap' => array( 
 			'title'       => 'Prices and Credits', 

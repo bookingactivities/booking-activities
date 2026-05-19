@@ -2162,7 +2162,7 @@ function bookacti_display_form_publish_meta_box( $form_raw ) {
 /**
  * Display 'integration tuto' metabox content for forms
  * @since 1.5.0
- * @version 1.14.0
+ * @version 1.18.0
  * @param array $form_raw
  */
 function bookacti_display_form_integration_tuto_meta_box( $form_raw ) {
@@ -2172,7 +2172,7 @@ function bookacti_display_form_integration_tuto_meta_box( $form_raw ) {
 	<div>
 		<p><em><label for='bookacti-form-shortcode'><?php esc_html_e( 'Copy this shortcode and paste it into your post, page, or text widget content:', 'booking-activities' ); ?></label></em></p>
 		<p class='shortcode wp-ui-highlight'>
-			<input type='text' id='bookacti-form-shortcode' onfocus='this.select();' readonly='readonly' class='large-text code' value='<?php echo esc_attr( $shortcode ); ?>' />
+			<input type='text' id='bookacti-form-shortcode' onfocus='this.select(); document.execCommand("Copy");' readonly='readonly' class='large-text code' value='<?php echo esc_attr( $shortcode ); ?>' />
 		</p>
 	</div>
 <?php

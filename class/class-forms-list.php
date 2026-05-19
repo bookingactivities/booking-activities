@@ -301,7 +301,7 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 				}
 				
 				// Build shortcode
-				$shortcode = "<input type='text' onfocus='this.select();' readonly='readonly' value='" . esc_attr( '[bookingactivities_form form="' . $id . '"]' ) . "' class='large-text code'>";
+				$shortcode = "<input type='text' onfocus='this.select(); document.execCommand(\"Copy\");' readonly='readonly' value='" . esc_attr( '[bookingactivities_form form="' . $id . '"]' ) . "' class='large-text code'>";
 				
 				// Author name
 				$user_object = ! empty( $users[ $form->user_id ] ) ? $users[ $form->user_id ] : null;

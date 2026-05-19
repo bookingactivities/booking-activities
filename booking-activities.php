@@ -285,7 +285,7 @@ add_action( 'admin_enqueue_scripts', 'bookacti_enqueue_high_priority_backend_scr
 
 /**
  * Enqueue low priority scripts in backend only
- * @version 1.15.17
+ * @version 1.18.0
  */
 function bookacti_enqueue_backend_scripts() {
 	// Include WooCommerce scripts
@@ -301,6 +301,7 @@ function bookacti_enqueue_backend_scripts() {
 	// INCLUDE STYLESHEETS
 	wp_enqueue_style ( 'bookacti-css-backend',   plugins_url( 'css/backend.min.css', __FILE__ ), array(), BOOKACTI_VERSION );
 	wp_enqueue_style ( 'bookacti-css-templates', plugins_url( 'css/templates.min.css', __FILE__ ), array(), BOOKACTI_VERSION );
+	wp_enqueue_style ( 'bookacti-css-notifications', plugins_url( 'css/notifications.min.css', __FILE__ ), array(), BOOKACTI_VERSION );
 	wp_enqueue_style ( 'bookacti-css-landing',   plugins_url( 'css/landing.min.css', __FILE__ ), array(), BOOKACTI_VERSION );
 	
 	// INCLUDE JAVASCRIPT FILES

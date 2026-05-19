@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Get all translatable texts
  * @since 1.14.0
- * @version 1.17.0
+ * @version 1.18.0
  * @return array
  */
 function bookacti_get_translatable_texts() {
@@ -16,16 +16,17 @@ function bookacti_get_translatable_texts() {
 	
 	$texts             = array();
 	$alloptions        = wp_load_alloptions();
-	$notifications_raw = bookacti_get_notifications_data();
+	$notifications_raw = bookacti_get_notifications_data( true, true );
 	
 	// Get Notifications strings
 	foreach( $notifications_raw as $notification_id => $notification_raw ) {
 		$notification_texts = array();
 		
-		if( ! empty( $notification_raw[ 'email' ][ 'subject' ] ) ) { $texts[] = array( 'value' => $notification_raw[ 'email' ][ 'subject' ], 'string_name' => 'Notification - ' . $notification_id . ' - email subject' ); }
-		if( ! empty( $notification_raw[ 'email' ][ 'message' ] ) ) { $texts[] = array( 'value' => $notification_raw[ 'email' ][ 'message' ], 'string_name' => 'Notification - ' . $notification_id . ' - email message' ); }
+		$notification_edit = bookacti_format_notification_data( $notification_raw, 'edit' );
+		if( ! empty( $notification_edit[ 'email' ][ 'subject' ] ) ) { $texts[] = array( 'value' => $notification_edit[ 'email' ][ 'subject' ], 'string_name' => 'Notification - ' . $notification_id . ' - email subject' ); }
+		if( ! empty( $notification_edit[ 'email' ][ 'message' ] ) ) { $texts[] = array( 'value' => $notification_edit[ 'email' ][ 'message' ], 'string_name' => 'Notification - ' . $notification_id . ' - email message' ); }
 		
-		$notification_texts = apply_filters( 'bookacti_translatable_texts_notification', $notification_texts, $notification_raw, $notification_id );
+		$notification_texts = apply_filters( 'bookacti_translatable_texts_notification', $notification_texts, $notification_edit, $notification_id );
 		if( $notification_texts ) { $texts = array_merge( $texts, $notification_texts ); }
 	}
 	

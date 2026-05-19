@@ -60,7 +60,7 @@ if( ! class_exists( 'BOOKACTI_Notifications_List_Table' ) ) {
 			 * @param array $columns
 			 */
 			$columns = apply_filters( 'bookacti_notification_list_columns', array(
-				'cb'              => '<input type="checkbox"/>',
+//				'cb'              => '<input type="checkbox"/>',
 				'id'              => esc_html_x( 'id', 'An id is a unique identification number', 'booking-activities' ),
 				'title'           => esc_html__( 'Notification', 'booking-activities' ),
 				'notification_id' => esc_html__( 'Notification ID', 'booking-activities' ),
@@ -78,14 +78,14 @@ if( ! class_exists( 'BOOKACTI_Notifications_List_Table' ) ) {
 			 * @param array $columns
 			 */
 			$columns_order = apply_filters( 'bookacti_notification_list_columns_order', array(
-				10 => 'cb',
+//				10 => 'cb',
 				20 => 'id',
-				30 => 'title',
-				40 => 'notification_id',
-				50 => 'subject',
-				60 => 'target',
-				70 => 'update_date',
-				80 => 'active'
+				30 => 'active',
+				40 => 'title',
+				50 => 'notification_id',
+				60 => 'subject',
+				70 => 'target',
+				80 => 'update_date'
 			));
 
 			ksort( $columns_order );
@@ -109,7 +109,7 @@ if( ! class_exists( 'BOOKACTI_Notifications_List_Table' ) ) {
 		 */
 		public function get_default_hidden_columns( $hidden, $screen ) {
 			if( $screen->id == $this->screen->id ) {
-				$hidden = apply_filters( 'bookacti_notification_list_default_hidden_columns', array( 'id', 'notification_id' ) );
+				$hidden = apply_filters( 'bookacti_notification_list_default_hidden_columns', array( 'id', 'notification_id', 'update_date' ) );
 			}
 			return $hidden;
 		}
@@ -230,14 +230,6 @@ if( ! class_exists( 'BOOKACTI_Notifications_List_Table' ) ) {
 				if( in_array( $item[ 'status' ], array( 'permanent', 'publish' ), true ) ) {
 					$actions[ 'edit' ] = '<a href="' . esc_url( admin_url( 'admin.php?page=bookacti_notifications&action=edit&notification_id=' . $notification_id ) ) . '" >' . esc_html__( 'Edit' ) . '</a>';
 				}
-				if( current_user_can( 'bookacti_delete_notifications' ) ) {
-					if( $item[ 'status' ] === 'publish' ) {
-						$actions[ 'trash' ]   = '<a href="' . esc_url( wp_nonce_url( admin_url( 'admin.php?page=bookacti_notifications&action=trash&notification_id=' . $notification_id ), 'trash-notification_' . $notification_id ) ) . '" >' . esc_html_x( 'Trash', 'verb' ) . '</a>';
-					} else if( $item[ 'status' ] === 'trash' ) {
-						$actions[ 'restore' ] = '<a href="' . esc_url( wp_nonce_url( admin_url( 'admin.php?page=bookacti_notifications&action=restore&notification_id=' . $notification_id ), 'restore-notification_' . $notification_id ) ) . '" >' . esc_html__( 'Restore' ) . '</a>';
-						$actions[ 'delete' ]  = '<a href="' . esc_url( wp_nonce_url( admin_url( 'admin.php?page=bookacti_notifications&status=trash&action=delete&notification_id=' . $notification_id ), 'delete-notification_' . $notification_id ) ) . '" >' . esc_html__( 'Delete Permanently' ) . '</a>';
-					}
-				}
 			}
 			
 			// Add primary data for responsive views
@@ -287,7 +279,7 @@ if( ! class_exists( 'BOOKACTI_Notifications_List_Table' ) ) {
 			catch ( Exception $ex ) { $timezone_obj = clone $utc_timezone_obj; }
 			
 			// Build booking list
-			$notification_list_items = array();
+			$notification_items = array();
 			foreach( $notifications as $notification_id => $notification ) {
 				// Is active
 				$is_active   = $notification[ 'active' ] && $notification[ 'email' ][ 'active' ];
@@ -295,8 +287,10 @@ if( ! class_exists( 'BOOKACTI_Notifications_List_Table' ) ) {
 				
 				// Format title column
 				$title = ! empty( $notification[ 'title' ] ) ? $notification[ 'title' ] : $notification_id;
-				if( $can_edit_notifications ) {
-					$title = '<a class="row-title" href="' . esc_url( admin_url( 'admin.php?page=bookacti_notifications&action=edit&notification_id=' . $notification[ 'id' ] ) ) . '" >' . $title . '</a>';
+				if( $can_edit_notifications && in_array( $notification[ 'status' ], array( 'permanent', 'publish' ), true ) ) {
+					$title = '<a class="row-title" href="' . esc_url( admin_url( 'admin.php?page=bookacti_notifications&action=edit&notification_id=' . $notification[ 'id' ] ) ) . '">' . $title . '</a>';
+				} else {
+					$title = '<span class="row-title">' . $title . '</span>';
 				}
 				
 				// Find a subject
@@ -327,40 +321,43 @@ if( ! class_exists( 'BOOKACTI_Notifications_List_Table' ) ) {
 				
 				// Add info on the primary column to make them directly visible in responsive view
 				$primary_data = array( 
-					'<span class="bookacti-column-id" >(' . esc_html_x( 'id', 'An id is a unique identification number', 'booking-activities' ) . ': ' . $notification[ 'id' ] . ')</span>', 
-					$active
+					'id'     => '<span class="bookacti-column-id" >(' . esc_html_x( 'id', 'An id is a unique identification number', 'booking-activities' ) . ': ' . $notification[ 'id' ] . ')</span>', 
+					'active' => $active
 				);
-				$primary_data_html = '';
-				if( $primary_data ) {
-					$primary_data_html = '<div class="bookacti-primary-data-container">';
-					foreach( $primary_data as $single_primary_data ) {
-						$primary_data_html .= '<span class="bookacti-primary-data">' . $single_primary_data . '</span>';
-					}
-					$primary_data_html .= '</div>';
-				}
 				
 				$notification_item = apply_filters( 'bookacti_notification_list_item', array( 
-					'id'                => $notification[ 'db_id' ],
-					'notification_id'   => $notification[ 'id' ],
-					'type'              => $notification[ 'target' ] . '_' . $notification[ 'trigger' ],
-					'title'             => $title,
-					'subject'           => $subject,
-					'target'            => $notification[ 'target' ] === 'admin' ? esc_html__( 'Administrator', 'booking-activities' ) : esc_html__( 'Customer', 'booking-activities' ),
-					'author'            => $author,
-					'creation_date'     => $creation_date,
-					'update_date'       => $update_date,
-					'status'            => $notification[ 'status' ],
-					'active'            => $active,
-					'primary_data'      => $primary_data,
-					'primary_data_html' => $primary_data_html
+					'id'              => $notification[ 'db_id' ],
+					'notification_id' => $notification_id,
+					'type'            => $notification[ 'target' ] . '_' . $notification[ 'trigger' ],
+					'title'           => $title,
+					'subject'         => $subject,
+					'target'          => $notification[ 'target' ] === 'admin' ? esc_html__( 'Administrator', 'booking-activities' ) : esc_html__( 'Customer', 'booking-activities' ),
+					'author'          => $author,
+					'creation_date'   => $creation_date,
+					'update_date'     => $update_date,
+					'status'          => $notification[ 'status' ],
+					'active'          => $active,
+					'primary_data'    => $primary_data
 				), $notification, $this );
 				
-				$notification_list_items[ $notification_id ] = $notification_item;
+				$notification_items[ $notification_id ] = $notification_item;
 			}
 			
-			$notification_list_items = apply_filters( 'bookacti_notification_list_items', $notification_list_items, $notifications, $this );
+			$notification_items = apply_filters( 'bookacti_notification_list_items', $notification_items, $notifications, $this );
 			
-			return $notification_list_items;
+			// Build primary data HTML
+			foreach( $notification_items as $i => $notification_item ) {
+				if( ! isset( $notification_item[ 'primary_data_html' ] ) && $notification_item[ 'primary_data' ] ) {
+					$primary_data_html = '<div class="bookacti-primary-data-container">';
+					foreach( $notification_item[ 'primary_data' ] as $single_primary_data_key => $single_primary_data ) {
+						$primary_data_html .= '<span class="bookacti-primary-data bookacti-primary-data-' . $single_primary_data_key . '">' . $single_primary_data . '</span>';
+					}
+					$primary_data_html .= '</div>';
+					$notification_items[ $i ][ 'primary_data_html' ] = $primary_data_html;
+				}
+			}
+			
+			return $notification_items;
 		}
 		
 		
@@ -375,16 +372,16 @@ if( ! class_exists( 'BOOKACTI_Notifications_List_Table' ) ) {
 		public function format_filters( $filters_raw = array(), $merge_url_param = false ) {
 			$filters         = $filters_raw;
 			$default_filters = bookacti_get_default_notification_filters();
-				
+			
 			// Get filters from URL if no filter was directly passed
 			if( ! $filters_raw || $merge_url_param ) {
 				// Get the filters from URL
 				foreach( $default_filters as $filter_name => $default_value ) {
-					if( isset( $_REQUEST[ $filter_name ] ) ) { $filters[ $filter_name ] = $_REQUEST[ $filter_name ]; }
+					if( isset( $_GET[ $filter_name ] ) ) { $filters[ $filter_name ] = $_GET[ $filter_name ]; }
 				}
 				
 				// Specific cases
-				if( ! empty( $_REQUEST[ 'orderby' ] ) ) { $filters[ 'order_by' ] = $_REQUEST[ 'orderby' ]; }
+				if( ! empty( $_GET[ 'orderby' ] ) ) { $filters[ 'order_by' ] = $_GET[ 'orderby' ]; }
 			}
 			
 			// Format filters before making the request
@@ -485,7 +482,7 @@ if( ! class_exists( 'BOOKACTI_Notifications_List_Table' ) ) {
 		protected function get_views() {
 			$published_current = 'current';
 			$trash_current     = '';
-			if( isset( $_REQUEST[ 'in__status' ] ) && $_REQUEST[ 'in__status' ] == 'trash' ) { 
+			if( isset( $_GET[ 'in__status' ] ) && $_GET[ 'in__status' ] == 'trash' ) { 
 				$published_current = '';
 				$trash_current     = 'current';
 			}

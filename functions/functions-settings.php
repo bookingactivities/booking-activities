@@ -223,33 +223,6 @@ function bookacti_display_forms_screen_options() {
 }
 
 
-// NOTIFICATIONS SETTINGS
-
-/**
- * Display Notifications page options in screen options area
- * @since 1.18.0
- */
-function bookacti_display_notifications_screen_options() {
-	$screen = get_current_screen();
-
-	// Don't do anything if we are not on the booking page
-	if( ! is_object( $screen ) || $screen->id != 'booking-activities_page_bookacti_notifications' ) { return; }
-
-	if( ! empty( $_REQUEST[ 'action' ] ) && in_array( $_REQUEST[ 'action' ], array( 'edit', 'new' ), true ) ) {
-		// Layout columns number
-		add_screen_option( 'layout_columns', array( 
-			'max' => 2, 
-			'default' => 2 
-		));
-	} else {
-		// Bookings per page
-		add_screen_option( 'per_page', array(
-			'label' => __( 'Notifications per page:', 'booking-activities' ),
-			'default' => 20,
-			'option' => 'bookacti_notifications_per_page'
-		));
-	}
-}
 
 
 // GENERAL SETTINGS
@@ -747,7 +720,7 @@ function bookacti_settings_field_admin_reschedule_scope_callback() {
  */
 function bookacti_sort_notifications( $notifications ) {
 	// Triggers order
-	$triggers_order = apply_filters( 'bookacti_notification_triggers_order', array( 'new_booking', 'pending', 'booked', 'delivered', 'cancelled', 'refund_requested', 'refunded', 'rescheduled' ) );
+	$triggers_order = apply_filters( 'bookacti_notification_triggers_order', array( 'new_booking', 'pending_booking', 'booked_booking', 'delivered_booking', 'cancelled_booking', 'refund_requested_booking', 'refunded_booking', 'rescheduled_booking' ) );
 	
 	// Sort notifications by id
 	ksort( $notifications );

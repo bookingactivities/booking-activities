@@ -28,7 +28,7 @@ label[for="bookacti-booking-filter-dates-to"] + input#bookacti-booking-filter-da
 #bookacti-booking-filter-customer,
 #bookacti-booking-filter-customer + .select2 .select2-selection,
 #bookacti-booking-filter-customer + .select2 .select2-selection__rendered,
-#bookacti-booking-filter-customer + .select2 .select2-selection__arrow { min-height: 32px; line-height: 32px; }
+#bookacti-booking-filter-customer + .select2 .select2-selection__arrow { min-height: 32px; line-height: 32px; padding-top: 0; }
 
 
 

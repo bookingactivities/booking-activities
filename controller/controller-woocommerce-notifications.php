@@ -2,6 +2,8 @@
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
+// NOTIFICATIONS DATA
+
 /**
  * Get default notification meta
  * @since 1.18.0
@@ -74,6 +76,259 @@ function bookacti_wc_notifications_default_values( $notifications_default_values
 }
 add_filter( 'bookacti_notifications_default_values', 'bookacti_wc_notifications_default_values', 100, 1 );
 
+
+/**
+ * Add WC message to the refund requested notification sent to administrators
+ * @since 1.15.17 (was bookacti_woocommerce_add_refund_request_email_message)
+ * @version 1.16.0
+ * @param array $notification
+ * @param array $tags
+ * @param string $locale
+ * @param object $booking
+ * @param string $booking_type
+ * @param array $args
+ * @return array
+ */
+function bookacti_wc_add_refund_request_email_message( $notification, $tags, $locale, $booking, $booking_type, $args ) {
+	if( strpos( $notification[ 'id' ], 'admin_refund_requested' ) === false || empty( $booking->order_id ) ) { return $notification; }
+	
+	$edit_order_url = '';
+	if( class_exists( '\Automattic\WooCommerce\Utilities\OrderUtil' ) ) {
+		$edit_order_url = \Automattic\WooCommerce\Utilities\OrderUtil::get_order_admin_edit_url( absint( $booking->order_id ) );
+	} else {
+		// WooCommerce Backward Compatibility
+		$order = wc_get_order( absint( $booking->order_id ) );
+		if( $order ) {
+			$edit_order_url = $order->get_edit_order_url();
+		}
+	}
+	
+	$go_to_order =	'<div style="background-color: #f5faff; padding: 10px; border: 1px solid #abc; margin-bottom: 30px;">' 
+						. esc_html__( 'Click here to go to the order page and process the refund:', 'booking-activities' ) 
+						. ' <a href="' . $edit_order_url . '" target="_blank">' 
+							. esc_html__( 'Go to refund page', 'booking-activities' ) 
+						. '</a>'
+					. '</div>';
+	
+	$notification[ 'email' ][ 'message' ] = $go_to_order . $notification[ 'email' ][ 'message' ];
+	return $notification;
+}
+add_filter( 'bookacti_notification_data', 'bookacti_wc_add_refund_request_email_message', 10, 6 );
+
+
+/**
+ * Replace recipient email with order email if the booking is bound to an order
+ * @since 1.14.2
+ * @param array $notification
+ * @param array $tags
+ * @param string $locale
+ * @param object $booking
+ * @param string $booking_type
+ * @param array $args
+ * @return array
+ */
+function bookacti_wc_replace_notification_recipient_user_email_with_order_email( $notification, $tags, $locale, $booking, $booking_type, $args ) {
+	if( substr( $notification[ 'id' ], 0, 6 ) === 'admin_' || empty( $booking->order_id ) ) { return $notification; }
+	
+	$order = wc_get_order( $booking->order_id );
+	if( ! $order ) { return $notification; }
+	
+	$billing_email = $order->get_billing_email( 'edit' );
+	if( $billing_email && is_email( $billing_email ) ) { $notification[ 'email' ][ 'to' ] = array( $billing_email ); }
+	
+	return $notification;
+}
+add_filter( 'bookacti_notification_data', 'bookacti_wc_replace_notification_recipient_user_email_with_order_email', 5, 6 );
+
+
+/**
+ * Add WC notifications tags descriptions
+ * @since 1.6.0
+ * @version 1.16.29
+ * @param array $tags
+ * @param int $notification_id
+ * @return array
+ */
+function bookacti_wc_notifications_tags( $tags, $notification_id ) {
+	if( strpos( $notification_id, 'refund' ) !== false ) {
+		$tags[ '{refund_coupon_code}' ] = esc_html__( 'The WooCommerce coupon code generated when the booking was refunded.', 'booking-activities' );
+	}
+	
+	$tags[ '{product_id}' ]           = esc_html__( 'The order item product ID.', 'booking-activities' );
+	$tags[ '{product_title}' ]        = esc_html__( 'The order item title.', 'booking-activities' );
+	$tags[ '{order_status}' ]         = esc_html__( 'The order status.', 'booking-activities' );
+	$tags[ '{order_payment_status}' ] = esc_html__( 'The order payment status (Paid or Owed).', 'booking-activities' );
+	$tags[ '{customer_order_note}' ]  = esc_html__( 'Customer order note', 'booking-activities' );
+	
+	return $tags;
+}
+add_filter( 'bookacti_notifications_tags', 'bookacti_wc_notifications_tags', 15, 2 );
+
+
+/**
+ * Set WC notifications tags values
+ * @since 1.6.0
+ * @version 1.16.29
+ * @param array $tags
+ * @param object $booking
+ * @param string $booking_type
+ * @param array $notification
+ * @return array
+ */
+function bookacti_wc_notifications_tags_values( $tags, $booking, $booking_type, $notification ) {
+	if( ! $booking ) { return $tags; }
+	
+	$item = $booking_type === 'group' ? bookacti_get_order_item_by_booking_group_id( $booking ) : bookacti_get_order_item_by_booking_id( $booking );
+	
+	// Use WC user data if the booking was made with WC, or if we only have these data
+	$user = is_numeric( $booking->user_id ) ? get_user_by( 'id', $booking->user_id ) : null;
+	if( $user ) {
+		if( ! empty( $user->billing_first_name ) && ( $item || empty( $tags[ '{user_firstname}' ] ) ) ) { $tags[ '{user_firstname}' ] = $user->billing_first_name; }
+		if( ! empty( $user->billing_last_name )  && ( $item || empty( $tags[ '{user_lastname}' ] ) ) )  { $tags[ '{user_lastname}' ]  = $user->billing_last_name; }
+		if( ! empty( $user->billing_email )      && ( $item || empty( $tags[ '{user_email}' ] ) ) )     { $tags[ '{user_email}' ]     = $user->billing_email; }
+		if( ! empty( $user->billing_phone )      && ( $item || empty( $tags[ '{user_phone}' ] ) ) )     { $tags[ '{user_phone}' ]     = $user->billing_phone; }
+	}
+	
+	if( ! $item ) { return $tags; }
+	
+	$item_id         = $item->get_id();
+	$product_id      = $item->get_variation_id() ? $item->get_variation_id() : $item->get_product_id();
+	$order_id        = $item->get_order_id();
+	$order           = $item->get_order();
+	$order_item_name = $item->get_name();
+	$item_price      = (float) $item->get_total() + (float) $item->get_total_tax();
+	$currency        = $order->get_currency();
+	$currency_symbol = $currency ? get_woocommerce_currency_symbol( $currency ) : '';
+	
+	$tags[ '{product_id}' ]           = $product_id ? $product_id : '';
+	$tags[ '{product_title}' ]        = $order_item_name !== '' ? apply_filters( 'bookacti_translate_text_external', $order_item_name, '', true, array( 'domain' => 'woocommerce', 'object_type' => 'order_item', 'object_id' => $item_id, 'field' => 'title', 'order_id' => $order_id ) ) : $order_item_name;
+	$tags[ '{order_status}' ]         = wc_get_order_status_name( $order->get_status() );
+	$tags[ '{order_payment_status}' ] = $order->get_date_paid() ? esc_html__( 'Paid', 'booking-activities' ) : esc_html__( 'Owed', 'booking-activities' );
+	$tags[ '{customer_order_note}' ]  = $order->get_customer_note();
+	
+	if( empty( $booking->booking_pass_id ) ) {
+		$tags[ '{price_raw}' ] = $item_price;
+		$tags[ '{price}' ]     = bookacti_format_price( $item_price, array( 'currency_symbol' => $currency_symbol ) );
+	}
+	
+	if( strpos( $notification[ 'id' ], 'refund' ) !== false ) {
+		$coupon_code = '';
+		$refunds = ! empty( $booking->refunds ) ? maybe_unserialize( $booking->refunds ) : array();
+		$refunds = is_array( $refunds ) ? bookacti_format_booking_refunds( $refunds, $booking->id, $booking_type ) : array();
+		foreach( $refunds as $refund ) {
+			if( isset( $refund[ 'coupon' ] ) ) { $coupon_code = $refund[ 'coupon' ]; break; }
+		}
+		
+		// Backward compatibility
+		if( ! $coupon_code ) {
+			$coupon_code = wc_get_order_item_meta( $item_id, 'bookacti_refund_coupon', true );
+		}
+		
+		$tags[ '{refund_coupon_code}' ]	= strtoupper( $coupon_code );
+	}
+	
+	return $tags;
+}
+add_filter( 'bookacti_notifications_tags_values', 'bookacti_wc_notifications_tags_values', 100, 4 );
+
+
+
+
+// WC NOTIFICATIONS DATA
+
+/**
+ * Make sure that WC order data are up to date when a WC notification is sent
+ * @since 1.2.2
+ * @version 1.9.0
+ * @param array $args
+ * @return array
+ */
+function bookacti_wc_email_order_item_args( $args ) {
+	// Check if the order contains bookings
+	$has_bookings = false;
+	foreach( $args[ 'items' ] as $item ) {
+		$order_item_bookings_ids = bookacti_wc_format_order_item_bookings_ids( $item );
+		if( $order_item_bookings_ids ) {
+			$has_bookings = true;
+			break;
+		}
+	}
+	
+	// If the order has no bookings, change nothing
+	if( ! $has_bookings ) { return $args; }
+		
+	// If the order has bookings, refresh the order instance to make sure data are up to date
+	$order_id = $args[ 'order' ]->get_id();
+	$fresh_order_instance = wc_get_order( $order_id );
+	
+	$args[ 'order' ] = $fresh_order_instance;
+	$args[ 'items' ] = $fresh_order_instance->get_items();
+	
+	return $args;
+}
+add_filter( 'woocommerce_email_order_items_args', 'bookacti_wc_email_order_item_args', 10, 1 );
+
+
+
+
+// NOTIFICATION EDITOR
+
+/**
+ * Add global settings fields to notification edit page
+ * @since 1.18.0
+ * @param array $fields
+ * @param array $notification_edit
+ * @return array
+ */
+function bookacti_wc_notification_global_fields( $fields, $notification_edit ) {
+	$fields_per_trigger = apply_filters( 'bookacti_wc_notification_field_active_with_wc_per_trigger', array( 
+		'_default'          => array( 
+			'title' => esc_html__( 'Send when the order status changes', 'booking-activities' ), 
+			'tip'   => esc_html__( 'Send this notification when a WooCommerce order status changes accordingly, for each relevant booking in the order.', 'booking-activities' ) . ' ' . esc_html__( 'It may be sent together with the corresponding WooCommerce email.', 'booking-activities' ), 
+		),
+		'new_booking'       => array( 
+			'title' => esc_html__( 'Send when an order is made', 'booking-activities' ), 
+			'tip'   => esc_html__( 'Send this notification when a new WooCommerce order is made, for each booking of the order.', 'booking-activities' ) . ' ' . esc_html__( 'It may be sent together with the corresponding WooCommerce email.', 'booking-activities' ), 
+		),
+		'cancelled_booking' => array( 
+			'title' => esc_html__( 'Send when an order is cancelled', 'booking-activities' ), 
+			'tip'   => esc_html__( 'Send this notification when a WooCommerce order is "Cancelled", for each relevant booking in the order. It will not be sent for "Failed" orders (when a pending payment fails), because the booking is still considered as temporary.', 'booking-activities' ) . ' ' . esc_html__( 'It may be sent together with the corresponding WooCommerce email.', 'booking-activities' ),
+		),
+		'pending_booking'   => array( 
+			'title' => esc_html__( 'Send when an order is processing', 'booking-activities' ), 
+			'tip'   => esc_html__( 'Send this notification when a WooCommerce order is "Processing", for each relevant booking in the order. It will not be sent for "Pending" orders (when an order is pending payment), because the booking is still considered as temporary.', 'booking-activities' ) . ' ' . esc_html__( 'It may be sent together with the corresponding WooCommerce email.', 'booking-activities' ), 
+		),
+		'booked_booking'    => array( 
+			'title' => esc_html__( 'Send when an order is completed', 'booking-activities' ), 
+			'tip'   => esc_html__( 'Send this notification when a WooCommerce order is "Completed", for each relevant booking in the order.', 'booking-activities' ) . ' ' . esc_html__( 'It may be sent together with the corresponding WooCommerce email.', 'booking-activities' ), 
+		),
+		'refunded_booking'  => array( 
+			'title' => esc_html__( 'Send when an order is refunded', 'booking-activities' ), 
+			'tip'   => esc_html__( 'Send this notification when a WooCommerce order is "Refunded", for each relevant booking in the order.', 'booking-activities' ) . ' ' . esc_html__( 'It may be sent together with the corresponding WooCommerce email.', 'booking-activities' )
+		)
+	), $notification_edit );
+	
+	$trigger_data = $notification_edit[ 'trigger' ] ? ( isset( $fields_per_trigger[ $notification_edit[ 'trigger' ] ] ) ? $fields_per_trigger[ $notification_edit[ 'trigger' ] ] : array() ) : $fields_per_trigger[ '_default' ];
+	
+	if( $trigger_data ) {
+		$fields[ 'active_with_wc' ] = array_merge( array(
+			'name'    => 'active_with_wc',
+			'type'    => 'select',
+			'options' => array( 
+				1 => esc_html__( 'Yes', 'booking-activities' ),
+				0 => esc_html__( 'No', 'booking-activities' )
+			),
+			'value'   => $notification_edit[ 'active_with_wc' ]
+		), $trigger_data );
+	}
+	
+	return $fields;
+}
+add_filter( 'bookacti_notification_global_fields', 'bookacti_wc_notification_global_fields', 20, 2 );
+
+
+
+// SEND NOTIFICATIONS
 
 /**
  * Send a new status notification for a booking attached to an order item
@@ -178,130 +433,6 @@ add_action( 'bookacti_wc_order_item_booking_updated', 'bookacti_wc_send_notifica
 
 
 /**
- * Make sure that WC order data are up to date when a WC notification is sent
- * @since 1.2.2
- * @version 1.9.0
- * @param array $args
- * @return array
- */
-function bookacti_wc_email_order_item_args( $args ) {
-	// Check if the order contains bookings
-	$has_bookings = false;
-	foreach( $args[ 'items' ] as $item ) {
-		$order_item_bookings_ids = bookacti_wc_format_order_item_bookings_ids( $item );
-		if( $order_item_bookings_ids ) {
-			$has_bookings = true;
-			break;
-		}
-	}
-	
-	// If the order has no bookings, change nothing
-	if( ! $has_bookings ) { return $args; }
-		
-	// If the order has bookings, refresh the order instance to make sure data are up to date
-	$order_id = $args[ 'order' ]->get_id();
-	$fresh_order_instance = wc_get_order( $order_id );
-	
-	$args[ 'order' ] = $fresh_order_instance;
-	$args[ 'items' ] = $fresh_order_instance->get_items();
-	
-	return $args;
-}
-add_filter( 'woocommerce_email_order_items_args', 'bookacti_wc_email_order_item_args', 10, 1 );
-
-
-/**
- * Add WC notifications tags descriptions
- * @since 1.6.0
- * @version 1.16.29
- * @param array $tags
- * @param int $notification_id
- * @return array
- */
-function bookacti_wc_notifications_tags( $tags, $notification_id ) {
-	if( strpos( $notification_id, 'refund' ) !== false ) {
-		$tags[ '{refund_coupon_code}' ] = esc_html__( 'The WooCommerce coupon code generated when the booking was refunded.', 'booking-activities' );
-	}
-	
-	$tags[ '{product_id}' ]           = esc_html__( 'The order item product ID.', 'booking-activities' );
-	$tags[ '{product_title}' ]        = esc_html__( 'The order item title.', 'booking-activities' );
-	$tags[ '{order_status}' ]         = esc_html__( 'The order status.', 'booking-activities' );
-	$tags[ '{order_payment_status}' ] = esc_html__( 'The order payment status (Paid or Owed).', 'booking-activities' );
-	$tags[ '{customer_order_note}' ]  = esc_html__( 'Customer order note', 'booking-activities' );
-	
-	return $tags;
-}
-add_filter( 'bookacti_notifications_tags', 'bookacti_wc_notifications_tags', 15, 2 );
-
-
-/**
- * Set WC notifications tags values
- * @since 1.6.0
- * @version 1.16.29
- * @param array $tags
- * @param object $booking
- * @param string $booking_type
- * @param array $notification
- * @return array
- */
-function bookacti_wc_notifications_tags_values( $tags, $booking, $booking_type, $notification ) {
-	if( ! $booking ) { return $tags; }
-	
-	$item = $booking_type === 'group' ? bookacti_get_order_item_by_booking_group_id( $booking ) : bookacti_get_order_item_by_booking_id( $booking );
-	
-	// Use WC user data if the booking was made with WC, or if we only have these data
-	$user = is_numeric( $booking->user_id ) ? get_user_by( 'id', $booking->user_id ) : null;
-	if( $user ) {
-		if( ! empty( $user->billing_first_name ) && ( $item || empty( $tags[ '{user_firstname}' ] ) ) ) { $tags[ '{user_firstname}' ] = $user->billing_first_name; }
-		if( ! empty( $user->billing_last_name )  && ( $item || empty( $tags[ '{user_lastname}' ] ) ) )  { $tags[ '{user_lastname}' ]  = $user->billing_last_name; }
-		if( ! empty( $user->billing_email )      && ( $item || empty( $tags[ '{user_email}' ] ) ) )     { $tags[ '{user_email}' ]     = $user->billing_email; }
-		if( ! empty( $user->billing_phone )      && ( $item || empty( $tags[ '{user_phone}' ] ) ) )     { $tags[ '{user_phone}' ]     = $user->billing_phone; }
-	}
-	
-	if( ! $item ) { return $tags; }
-	
-	$item_id         = $item->get_id();
-	$product_id      = $item->get_variation_id() ? $item->get_variation_id() : $item->get_product_id();
-	$order_id        = $item->get_order_id();
-	$order           = $item->get_order();
-	$order_item_name = $item->get_name();
-	$item_price      = (float) $item->get_total() + (float) $item->get_total_tax();
-	$currency        = $order->get_currency();
-	$currency_symbol = $currency ? get_woocommerce_currency_symbol( $currency ) : '';
-	
-	$tags[ '{product_id}' ]           = $product_id ? $product_id : '';
-	$tags[ '{product_title}' ]        = $order_item_name !== '' ? apply_filters( 'bookacti_translate_text_external', $order_item_name, '', true, array( 'domain' => 'woocommerce', 'object_type' => 'order_item', 'object_id' => $item_id, 'field' => 'title', 'order_id' => $order_id ) ) : $order_item_name;
-	$tags[ '{order_status}' ]         = wc_get_order_status_name( $order->get_status() );
-	$tags[ '{order_payment_status}' ] = $order->get_date_paid() ? esc_html__( 'Paid', 'booking-activities' ) : esc_html__( 'Owed', 'booking-activities' );
-	$tags[ '{customer_order_note}' ]  = $order->get_customer_note();
-	
-	if( empty( $booking->booking_pass_id ) ) {
-		$tags[ '{price_raw}' ] = $item_price;
-		$tags[ '{price}' ]     = bookacti_format_price( $item_price, array( 'currency_symbol' => $currency_symbol ) );
-	}
-	
-	if( strpos( $notification[ 'id' ], 'refund' ) !== false ) {
-		$coupon_code = '';
-		$refunds = ! empty( $booking->refunds ) ? maybe_unserialize( $booking->refunds ) : array();
-		$refunds = is_array( $refunds ) ? bookacti_format_booking_refunds( $refunds, $booking->id, $booking_type ) : array();
-		foreach( $refunds as $refund ) {
-			if( isset( $refund[ 'coupon' ] ) ) { $coupon_code = $refund[ 'coupon' ]; break; }
-		}
-		
-		// Backward compatibility
-		if( ! $coupon_code ) {
-			$coupon_code = wc_get_order_item_meta( $item_id, 'bookacti_refund_coupon', true );
-		}
-		
-		$tags[ '{refund_coupon_code}' ]	= strtoupper( $coupon_code );
-	}
-	
-	return $tags;
-}
-add_filter( 'bookacti_notifications_tags_values', 'bookacti_wc_notifications_tags_values', 100, 4 );
-
-
-/**
  * Decide whether to send the notification when a refund is processed via WC
  * @since 1.16.0 (was bookacti_allow_refund_notification_during_manual_refund)
  * @param boolean $sending_allowed
@@ -341,67 +472,3 @@ add_filter( 'bookacti_send_event_rescheduled_notification', 'bookacti_wc_disallo
 add_filter( 'bookacti_send_event_rescheduled_notification_count', 'bookacti_wc_disallow_event_notifications_for_in_cart_bookings', 10, 2 );
 add_filter( 'bookacti_send_event_cancelled_notification_count', 'bookacti_wc_disallow_event_notifications_for_in_cart_bookings', 10, 2 );
 add_filter( 'bookacti_send_group_of_events_cancelled_notification_count', 'bookacti_wc_disallow_event_notifications_for_in_cart_bookings', 10, 2 );
-
-
-/**
- * Add WC message to the refund requested notification sent to administrators
- * @since 1.15.17 (was bookacti_woocommerce_add_refund_request_email_message)
- * @version 1.16.0
- * @param array $notification
- * @param array $tags
- * @param string $locale
- * @param object $booking
- * @param string $booking_type
- * @param array $args
- * @return array
- */
-function bookacti_wc_add_refund_request_email_message( $notification, $tags, $locale, $booking, $booking_type, $args ) {
-	if( strpos( $notification[ 'id' ], 'admin_refund_requested' ) === false || empty( $booking->order_id ) ) { return $notification; }
-	
-	$edit_order_url = '';
-	if( class_exists( '\Automattic\WooCommerce\Utilities\OrderUtil' ) ) {
-		$edit_order_url = \Automattic\WooCommerce\Utilities\OrderUtil::get_order_admin_edit_url( absint( $booking->order_id ) );
-	} else {
-		// WooCommerce Backward Compatibility
-		$order = wc_get_order( absint( $booking->order_id ) );
-		if( $order ) {
-			$edit_order_url = $order->get_edit_order_url();
-		}
-	}
-	
-	$go_to_order =	'<div style="background-color: #f5faff; padding: 10px; border: 1px solid #abc; margin-bottom: 30px;">' 
-						. esc_html__( 'Click here to go to the order page and process the refund:', 'booking-activities' ) 
-						. ' <a href="' . $edit_order_url . '" target="_blank">' 
-							. esc_html__( 'Go to refund page', 'booking-activities' ) 
-						. '</a>'
-					. '</div>';
-	
-	$notification[ 'email' ][ 'message' ] = $go_to_order . $notification[ 'email' ][ 'message' ];
-	return $notification;
-}
-add_filter( 'bookacti_notification_data', 'bookacti_wc_add_refund_request_email_message', 10, 6 );
-
-
-/**
- * Replace recipient email with order email if the booking is bound to an order
- * @since 1.14.2
- * @param array $notification
- * @param array $tags
- * @param string $locale
- * @param object $booking
- * @param string $booking_type
- * @param array $args
- * @return array
- */
-function bookacti_wc_replace_notification_recipient_user_email_with_order_email( $notification, $tags, $locale, $booking, $booking_type, $args ) {
-	if( substr( $notification[ 'id' ], 0, 6 ) === 'admin_' || empty( $booking->order_id ) ) { return $notification; }
-	
-	$order = wc_get_order( $booking->order_id );
-	if( ! $order ) { return $notification; }
-	
-	$billing_email = $order->get_billing_email( 'edit' );
-	if( $billing_email && is_email( $billing_email ) ) { $notification[ 'email' ][ 'to' ] = array( $billing_email ); }
-	
-	return $notification;
-}
-add_filter( 'bookacti_notification_data', 'bookacti_wc_replace_notification_recipient_user_email_with_order_email', 5, 6 );
