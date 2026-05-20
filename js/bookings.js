@@ -158,7 +158,7 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Restrict calendars date according to date filter - on bookacti_booking_system_reloaded
-	 * @since 1.17.2
+	 * @since 1.18.0
 	 */
 	$j( 'body' ).on( 'bookacti_booking_system_reloaded', '#bookacti-booking-system-bookings-page', function() {
 		bookacti_refresh_calendar_according_to_date_filter();

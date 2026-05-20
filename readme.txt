@@ -321,15 +321,15 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.18.0 =
+= 1.18.0 - 2026/05/20 =
+* Notification management improvements - **[See the user-friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-18-improved-notification-management/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
+* Tweak - Keep form values after being redirected to log in page, when trying to make a booking without account with an email already associated with an account
+* Fix - Backend booking calendar was no longer restricted to Date filter after changing another filter
+* Fix - Backend booking list rows may not expand on small screens
 * Fix - Backend reschedule calendar may be restricted to the original form display period
 * Dev - Migrate notifications data from wp_options to wp_bookacti_notitfications and wp_bookacti_notitfication_channels tables
 * Dev - Refactor most functions and hooks related to notifications, and their parameters
 * Dev - Add database index on "active" columns to improve performances
-
-= 1.17.2 =
-* Tweak - Keep form values after being redirected to log in page, when trying to make a booking without account with an email already associated with an account
-* Fix - Backend booking calendar no longer restrict to Date filter after changing another filter
 
 = 1.17.1 - 2026/03/30 =
 * Tweak - Replace booking calendar settings icon with button in Bookings page

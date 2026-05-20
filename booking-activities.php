@@ -11,7 +11,7 @@
  * Requires at least: 4.1
  * Requires PHP: 5.6
  * WC requires at least: 3.0
- * WC tested up to: 10.7
+ * WC tested up to: 10.8
  * License: GPL3
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  * 
@@ -197,7 +197,7 @@ add_action( 'wp_enqueue_scripts', 'bookacti_enqueue_high_priority_global_scripts
 
 /**
  * Enqueue normal priority scripts
- * @version 1.16.9
+ * @version 1.18.0
  */
 function bookacti_enqueue_global_scripts() {
 	// Include WooCommerce style and scripts
@@ -235,7 +235,7 @@ function bookacti_enqueue_global_scripts() {
 	wp_enqueue_script( 'bookacti-js-booking-system-dialogs',  plugins_url( 'js/booking-system-dialogs.min.js', __FILE__ ),  array( 'jquery', 'moment', 'jquery-ui-dialog', 'bookacti-js-global-var', 'bookacti-js-global-functions' ), BOOKACTI_VERSION, true );
 	wp_enqueue_script( 'bookacti-js-booking-method-calendar', plugins_url( 'js/booking-method-calendar.min.js', __FILE__ ), array( 'jquery', 'moment', 'fullcalendar', 'bookacti-js-global-var', 'bookacti-js-global-functions' ), BOOKACTI_VERSION, true );
 	wp_enqueue_script( 'bookacti-js-booking-system',          plugins_url( 'js/booking-system.min.js', __FILE__ ),          array( 'jquery', 'moment', 'fullcalendar', 'bookacti-js-global-var', 'bookacti-js-global-functions', 'bookacti-js-booking-system-functions', 'bookacti-js-booking-system-dialogs' ), BOOKACTI_VERSION, true );
-	wp_enqueue_script( 'bookacti-js-bookings-functions',      plugins_url( 'js/bookings-functions.min.js', __FILE__ ),      array( 'jquery', 'moment', 'fullcalendar', 'bookacti-js-global-var', 'bookacti-js-global-functions', ), BOOKACTI_VERSION, true );
+	wp_enqueue_script( 'bookacti-js-bookings-functions',      plugins_url( 'js/bookings-functions.min.js', __FILE__ ),      array( 'jquery', 'moment', 'fullcalendar', 'bookacti-js-global-var', 'bookacti-js-global-functions' ), BOOKACTI_VERSION, true );
 	wp_enqueue_script( 'bookacti-js-bookings-dialogs',        plugins_url( 'js/bookings-dialogs.min.js', __FILE__ ),        array( 'jquery', 'jquery-ui-dialog', 'bookacti-js-global-var', 'bookacti-js-global-functions', 'bookacti-js-bookings-functions' ), BOOKACTI_VERSION, true );
 	wp_enqueue_script( 'bookacti-js-forms',                   plugins_url( 'js/forms.min.js', __FILE__ ),                   array( 'jquery', 'jquery-ui-dialog', 'bookacti-js-global-functions' ), BOOKACTI_VERSION, true );
 }
@@ -510,8 +510,8 @@ function bookacti_bookings_page() {
  * @since 1.18.0
  */
 function bookacti_notifications_page() {
-	$can_create_notifications = current_user_can( 'bookacti_create_notifications' );
-	$can_edit_notifications   = current_user_can( 'bookacti_edit_notifications' );
+	$can_create_notifications  = current_user_can( 'bookacti_create_notifications' );
+	$can_edit_notifications    = current_user_can( 'bookacti_edit_notifications' );
 	$load_notifications_editor = false;
 	
 	if( ! empty( $_GET[ 'action' ] ) ) {

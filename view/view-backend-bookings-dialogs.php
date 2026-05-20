@@ -180,7 +180,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						'tip'     => sprintf(
 							/* Translators: %s is a link to the "Notifications settings" */
 							esc_html__( 'Send the booking status change notifications configured in %s.', 'booking-activities' ), 
-							'<a href="' . admin_url( 'admin.php?page=bookacti_settings&tab=notifications' ) . '">' . esc_html__( 'Notifications settings', 'booking-activities' ) . '</a>'
+							'<a href="' . admin_url( 'admin.php?page=bookacti_notifications' ) . '">' . esc_html__( 'Notifications settings', 'booking-activities' ) . '</a>'
 						)
 					)
 				));
@@ -258,17 +258,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			// Get notifications
 			$notifications_data = bookacti_get_notifications_data();
 			
-			// Sort notifications
-			$notifications_data = bookacti_sort_notifications( $notifications_data );
-			
 			// Build notification options
 			$notification_options = array();
 			foreach( $notifications_data as $notification_id => $notification_data ) {
-				$notification_options[ $notification_id ] = substr( $notification_id, 0, 6 ) === 'admin_' ? esc_html__( 'Administrator', 'booking-activities' ) : esc_html__( 'Customer', 'booking-activities' );
+				$notification_options[ $notification_id ] = $notification_data[ 'target' ] === 'admin' ? esc_html__( 'Administrator', 'booking-activities' ) : esc_html__( 'Customer', 'booking-activities' );
 				$notification_options[ $notification_id ] .= ' - ';
-				$notification_options[ $notification_id ] .= ! empty( $notification_data[ 'title' ] ) ? $notification_data[ 'title' ] : $notification_id;
+				$notification_options[ $notification_id ] .= ! empty( $notification_data[ 'title' ] ) ? $notification_data[ 'title' ] . ' (' . $notification_id . ' / #' . $notification_data[ 'db_id' ] . ')' : $notification_id;
 			}
-
+			
 			$fields = array(
 				'notification_id' => array(
 					'name'        => 'notification_id',
@@ -292,7 +289,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			<span class='dashicons dashicons-warning'></span>
 			<span>
 			<?php 
-				$settings_url = admin_url( 'admin.php?page=bookacti_settings&tab=notifications' );
+				$settings_url = admin_url( 'admin.php?page=bookacti_notifications' );
 				echo sprintf( 
 						/* translators: %s = link to "Booking Activities > Settings > Notifications" */
 						esc_html__( 'The notification is sent according to its settings, so make sure to properly configure it before, in %s.', 'booking-activities' ), 

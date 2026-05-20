@@ -20,6 +20,10 @@ $notification_raw = $notification_db_id || $notification_id ? bookacti_get_notif
 if( ! $is_new && ! $notification_raw ) { return; }
 
 if( $is_new ) {
+	if( ! $notification_raw && $notification_id ) {
+		$notification_raw = bookacti_get_notification_default_values( $notification_id );
+	}
+	
 	$notification_raw[ 'db_id' ]  = 0;
 	$notification_raw[ 'status' ] = '';
 }

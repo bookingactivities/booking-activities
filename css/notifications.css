@@ -1,3 +1,23 @@
+/***** NOTIFICATION LIST *****/
+#bookacti-banp-promo { margin-top: 20px; }
+#bookacti-banp-promo-notification-list-row-title strong { display: inline; }
+
+@media screen and ( max-width: 782px ) {
+	.bookacti-list-table .bookacti-primary-data-container { display: inline-block; }
+	.bookacti-list-table .column-primary:has(+.column-notification_id.hidden) .bookacti-primary-data-notification_id,
+	.bookacti-list-table .column-active.hidden ~ .column-primary .bookacti-primary-data-active,
+	.bookacti-list-table .is-expanded td.column-active,
+	.bookacti-list-table .is-expanded td.column-notification_id,
+	.bookacti-list-table .column-active,
+	.bookacti-list-table .column-notification_id { display: none !important; }
+	.bookacti-list-table .button    { padding: 3px 6px; font-size: 1em; }
+	.bookacti-list-table .is-expanded td      { text-align: left; }
+	.rtl .bookacti-list-table .is-expanded td { text-align: right; }
+}
+
+
+
+
 /***** NOTIFICATION EDIT PAGE *****/
 
 /** METABOXES **/
@@ -16,7 +36,8 @@
 #bookacti-notification-editor-page-container .bookacti-select        { width: 260px; }
 #bookacti-notification-editor-page-container #bookacti-email-subject { width: 100%; }
 
-/** EMAIL **/
+
+/** TAGS **/
 .bookacti-notification-tag-promo   { background: #ffff78; }
 .bookacti-notification-tags        { display: block; max-height: 400px; overflow: auto; padding-inline-end: 10px; }
 .bookacti-notification-tag         { display: block; width: 100%; max-width: 250px; margin-bottom: 4px; }

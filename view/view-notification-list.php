@@ -169,6 +169,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		<?php do_action( 'bookacti_after_notification_list' ); ?>
 	</div>
 	
-	<?php do_action( 'bookacti_notification_list_page_after' ); ?>
+	<?php
+	do_action( 'bookacti_notification_list_page_after' );
+	
+	// Notification Pack add-on promo
+	bookacti_display_banp_promo();
+	?>
 </div>
 <?php

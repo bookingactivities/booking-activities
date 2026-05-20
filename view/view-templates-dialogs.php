@@ -1423,7 +1423,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 					'tip'   => sprintf(
 						/* Translators: %s is a link to the "Notifications settings" */
 						esc_html__( 'Send the reschedule booking notifications configured in %s.', 'booking-activities' ), 
-						'<a href="' . admin_url( 'admin.php?page=bookacti_settings&tab=notifications' ) . '">' . esc_html__( 'Notifications settings', 'booking-activities' ) . '</a>'
+						'<a href="' . admin_url( 'admin.php?page=bookacti_notifications' ) . '">' . esc_html__( 'Notifications settings', 'booking-activities' ) . '</a>'
 					) . ' ' . esc_html__( 'No notification will be sent for past bookings.', 'booking-activities' )
 				)
 			);
@@ -1473,7 +1473,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 				$send_notifications_tip = sprintf( 
 					/* Translators: %s is a link to the "Notifications settings" */
 					esc_html__( 'Send the booking status change notifications configured in %s.', 'booking-activities' ), 
-					'<a href="' . admin_url( 'admin.php?page=bookacti_settings&tab=notifications' ) . '">' . esc_html__( 'Notifications settings', 'booking-activities' ) . '</a>'
+					'<a href="' . admin_url( 'admin.php?page=bookacti_notifications' ) . '">' . esc_html__( 'Notifications settings', 'booking-activities' ) . '</a>'
 				) . ' ' . esc_html__( 'No notification will be sent for past bookings.', 'booking-activities' );
 				
 				$fields = apply_filters( 'bookacti_delete_booked_event_fields', array(

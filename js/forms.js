@@ -39,7 +39,7 @@ $j( document ).ready( function() {
 	/**
 	 * Switch to "Log in" tab - on click on "Log in" link
 	 * @since 1.16.33
-	 * @version 1.17.2
+	 * @version 1.18.0
 	 * @param {Event} e
 	 */
 	$j( 'body' ).on( 'click', '.bookacti-login-link', function( e ) {

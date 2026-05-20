@@ -528,9 +528,12 @@ function bookacti_controller_update_notification_data() {
 	$can_manage_notification = bookacti_user_can_manage_notification( $notification_db_id );
 	if( ! $can_edit_notification || ! $can_manage_notification ) { esc_html_e( 'You are not allowed to do that.', 'booking-activities' ); exit; }
 	
+	// Check if the notification exists
+	$old_notification = $notification_db_id ? bookacti_get_notification_data( $notification_db_id ) : array();
+	if( ! $old_notification ) { esc_html_e( 'Invalid notification.', 'booking-activities' ); exit; }
+	
 	// Sanitize data
-	$old_notification  = bookacti_get_notification_data( $notification_db_id );
-	$notification_data = bookacti_sanitize_notification_data( array_merge( $_POST, array( 'db_id' => $notification_db_id ) ) );
+	$notification_data = bookacti_sanitize_notification_data( array_merge( $old_notification, $_POST, array( 'db_id' => $notification_db_id ) ) );
 	
 	// Do not update certain data
 	$notification_data[ 'object_type' ] = '';

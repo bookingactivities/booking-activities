@@ -20,6 +20,8 @@ function bookacti_get_notifications( $filters = array() ) {
 		}
 	}
 	
+	$variables = array();
+	
 	// Get notifications
 	$query = ' SELECT DISTINCT N.id as db_id, N.object_type, N.target, N.trigger, N.title, N.user_id, N.creation_date, N.update_date, N.status, N.active ' 
 	       . ' FROM ' . BOOKACTI_TABLE_NOTIFICATIONS . ' as N ';
@@ -31,8 +33,6 @@ function bookacti_get_notifications( $filters = array() ) {
 		        . ' WHERE P.user_id = %d ';
 		$variables[] = $filters[ 'manager_id' ];
 	}
-	
-	$variables = array();
 	
 	if( $filters[ 'in__id' ] ) {
 		$query .= ' AND N.id IN ( %d ';
@@ -137,8 +137,10 @@ function bookacti_get_notifications( $filters = array() ) {
 	
 	// Get notifications IDs
 	$notification_db_ids = array();
-	foreach( $results as $result ) {
-		$notification_db_ids[] = $result[ 'db_id' ];
+	if( $results ) {
+		foreach( $results as $result ) {
+			$notification_db_ids[] = $result[ 'db_id' ];
+		}
 	}
 	
 	// Get notification channels
@@ -198,18 +200,20 @@ function bookacti_get_notification_channels( $notification_db_ids = array() ) {
 	$results = $wpdb->get_results( $query, ARRAY_A );
 	
 	$notification_channels = array();
-	foreach( $results as $result ) {
-		$notification_db_id      = $result[ 'notification_db_id' ];
-		$channel                 = $result[ 'channel' ];
-		$result[ 'to' ]          = maybe_unserialize( $result[ 'to' ] );
-		$result[ 'attachments' ] = maybe_unserialize( $result[ 'attachments' ] );
-		unset( $result[ 'notification_db_id' ] );
-		
-		if( ! isset( $notification_channels[ $notification_db_id ] ) ) {
-			$notification_channels[ $notification_db_id ] = array();
+	if( $results ) {
+		foreach( $results as $result ) {
+			$notification_db_id      = $result[ 'notification_db_id' ];
+			$channel                 = $result[ 'channel' ];
+			$result[ 'to' ]          = maybe_unserialize( $result[ 'to' ] );
+			$result[ 'attachments' ] = maybe_unserialize( $result[ 'attachments' ] );
+			unset( $result[ 'notification_db_id' ] );
+
+			if( ! isset( $notification_channels[ $notification_db_id ] ) ) {
+				$notification_channels[ $notification_db_id ] = array();
+			}
+
+			$notification_channels[ $notification_db_id ][ $channel ] = $result;
 		}
-		
-		$notification_channels[ $notification_db_id ][ $channel ] = $result;
 	}
 	
 	return $notification_channels;
@@ -234,6 +238,8 @@ function bookacti_get_number_of_notification_rows( $filters = array() ) {
 		}
 	}
 	
+	$variables = array();
+	
 	// Get notifications
 	$query = ' SELECT COUNT( DISTINCT N.id ) FROM ' . BOOKACTI_TABLE_NOTIFICATIONS . ' as N ';
 	
@@ -249,8 +255,6 @@ function bookacti_get_number_of_notification_rows( $filters = array() ) {
 		        . ' AND P.user_id = %d ';
 		$variables[] = $filters[ 'manager_id' ];
 	}
-	
-	$variables = array();
 	
 	if( $filters[ 'in__id' ] ) {
 		$query .= ' AND N.id IN ( %d ';
@@ -331,8 +335,8 @@ function bookacti_get_number_of_notification_rows( $filters = array() ) {
 	}
 	
 	$count = $wpdb->get_var( $query );
-
-	return $count ? $count : 0;
+	
+	return is_numeric( $count ) ? intval( $count ) : 0;
 }
 
 

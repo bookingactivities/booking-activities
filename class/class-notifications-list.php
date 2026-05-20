@@ -321,8 +321,8 @@ if( ! class_exists( 'BOOKACTI_Notifications_List_Table' ) ) {
 				
 				// Add info on the primary column to make them directly visible in responsive view
 				$primary_data = array( 
-					'id'     => '<span class="bookacti-column-id" >(' . esc_html_x( 'id', 'An id is a unique identification number', 'booking-activities' ) . ': ' . $notification[ 'id' ] . ')</span>', 
-					'active' => $active
+					'notification_id' => '<span class="bookacti-column-notification_id" >(' . esc_html_x( 'id', 'An id is a unique identification number', 'booking-activities' ) . ': ' . $notification[ 'id' ] . ' / #' . $notification[ 'db_id' ] . ')</span>', 
+					'active'          => $active
 				);
 				
 				$notification_item = apply_filters( 'bookacti_notification_list_item', array( 
@@ -344,6 +344,32 @@ if( ! class_exists( 'BOOKACTI_Notifications_List_Table' ) ) {
 			}
 			
 			$notification_items = apply_filters( 'bookacti_notification_list_items', $notification_items, $notifications, $this );
+			
+			// Notification Pack add-on promo
+			$is_plugin_active = bookacti_is_plugin_active( 'ba-notification-pack/ba-notification-pack.php' );
+			if( ! $is_plugin_active ) {
+				$addon_link = '<a href="https://booking-activities.fr/en/downloads/notification-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=notification-pack&utm_content=settings-notification-list" target="_blank" >Notification Pack</a>';
+				$notification_items[ 'customer_scheduled_booking' ] = array(
+					'id'              => '',
+					'notification_id' => '',
+					'type'            => '',
+					'title'           => '<div id="bookacti-banp-promo-notification-list-row-title">'
+						. '<strong>' . esc_html__( '1 hour before / after a booked event', 'booking-activities' ) . '</strong>' 
+						/* translators: %1$s is the placeholder for Notification Pack add-on link */
+						. bookacti_help_tip( sprintf( esc_html__( 'You can send automated notifications with the %1$s add-on before or after booked events (you can set the desired delay). This add-on also allows you to send all notifications through SMS and Push.', 'booking-activities' ), $addon_link ), false )
+						. '<br/><small>' . esc_html__( 'Set up automated notifications (booking reminders, request a feedback, marketing automation...)', 'booking-activities' ) . '</small>'
+						. '<br/><a href="https://booking-activities.fr/en/downloads/notification-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=notification-pack&utm_content=settings-notification-list" class="button" target="_blank" >' . esc_html__( 'Learn more', 'booking-activities' ) . '</a>'
+						. '</div>',
+					'subject'         => '',
+					'target'          => esc_html__( 'Customer', 'booking-activities' ) . ' / ' . esc_html__( 'Administrator', 'booking-activities' ),
+					'author'          => '',
+					'creation_date'   => '',
+					'update_date'     => '',
+					'status'          => '',
+					'active'          => '<span class="dashicons dashicons-no" title="' . esc_html__( 'No', 'booking-activities' ) . '"></span>',
+					'primary_data'    => array()
+				);
+			}
 			
 			// Build primary data HTML
 			foreach( $notification_items as $i => $notification_item ) {

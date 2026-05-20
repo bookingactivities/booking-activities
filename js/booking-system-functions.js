@@ -2031,7 +2031,7 @@ function bookacti_redirect_to_group_category_url( booking_system, group_id ) {
 /**
  * Redirect to url with the booking form values as parameters
  * @since 1.7.10
- * @version 1.17.2
+ * @version 1.18.0
  * @param {HTMLElement} booking_system
  * @param {String} redirect_url
  */

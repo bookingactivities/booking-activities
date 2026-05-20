@@ -1518,7 +1518,7 @@ function bookacti_validate_login( $login_values ) {
 /**
  * Process login form: log in / register / book without account the user
  * @since 1.16.42
- * @version 1.17.2
+ * @version 1.18.0
  * @param int $form_id
  * @param array $login_values
  * @return array

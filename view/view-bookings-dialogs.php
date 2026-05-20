@@ -1,7 +1,7 @@
 <?php 
 /**
  * Frontend and Backend booking dialogs
- * @version 1.16.0
+ * @version 1.18.0
  */
 
 // Exit if accessed directly
@@ -76,7 +76,7 @@ $messages = bookacti_get_messages();
 						'id'	=> 'bookacti-send-notifications-on-reschedule',
 						'value'	=> 0,
 						/* Translators: %s is a link to the "Notifications settings" */
-						'tip'	=> sprintf( esc_html__( 'Send the booking rescheduling notifications configured in %s.', 'booking-activities' ), '<a href="' . admin_url( 'admin.php?page=bookacti_settings&tab=notifications' ) . '">' . esc_html__( 'Notifications settings', 'booking-activities' ) . '</a>' )
+						'tip'	=> sprintf( esc_html__( 'Send the booking rescheduling notifications configured in %s.', 'booking-activities' ), '<a href="' . admin_url( 'admin.php?page=bookacti_notifications' ) . '">' . esc_html__( 'Notifications settings', 'booking-activities' ) . '</a>' )
 					);
 					bookacti_display_field( $args );
 				}
