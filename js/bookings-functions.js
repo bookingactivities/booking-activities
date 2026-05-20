@@ -22,23 +22,6 @@ $j( document ).ready( function() {
 			data.form_data.append( 'locale', bookacti_localized.current_locale );
 		}
 	});
-	
-	
-	/**
-	 * Toggle list table rows on small screens
-	 * (must be used with AJAXed bookings list)
-	 * @since 1.8.0
-	 */
-	$j( '#bookacti-booking-list' ).on( 'click', 'tbody .toggle-row', function() {
-		$j( this ).closest( 'tr' ).toggleClass( 'is-expanded' );
-	});
-	
-	
-	/**
-	 * Disable the default toggle for list table rows on small screens
-	 * @since 1.8.0
-	 */
-	$j( '#bookacti-booking-list tbody' ).off( 'click', '.toggle-row' );
 });
 
 
@@ -47,7 +30,7 @@ $j( document ).ready( function() {
 /**
  * Filter the booking list with current filters values
  * @since 1.8.0
- * @version 1.16.0
+ * @version 1.18.0
  * @param {Int} paged
  */
 function bookacti_filter_booking_list( paged ) {
@@ -86,6 +69,11 @@ function bookacti_filter_booking_list( paged ) {
 				// Refresh tooltips and grouped bookings visual frame
 				bookacti_refresh_booking_group_frame();
 				bookacti_init_tooltip();
+				
+				// Toggle list table rows on small screens (must be used with AJAXed bookings list)
+				$j( '#bookacti-booking-list tbody' ).on( 'click', '.toggle-row', function( e ) {
+					$j( this ).closest( 'tr' ).toggleClass( 'is-expanded' );
+				});
 				
 				$j( '#bookacti-booking-list' ).trigger( 'bookacti_booking_list_filtered', [ response, data ] );
 

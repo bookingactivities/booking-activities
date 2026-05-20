@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking Activities settings page
- * @version 1.15.5
+ * @version 1.18.0
  */
 
 // Exit if accessed directly
@@ -64,20 +64,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		// NOTIFICATIONS
 		} else if( $active_tab === 'notifications' ) {
-			if( isset( $_GET[ 'notification_id' ] ) ) {
-				$notification_id = sanitize_title_with_dashes( $_GET[ 'notification_id' ] );
-				
-				echo '<input type="hidden" name="option_page" value="' . esc_attr( 'bookacti_notifications_settings_' . $notification_id ) . '" />';
-				echo '<input type="hidden" name="notification_id" value="' . $notification_id . '" />';
-				echo '<input type="hidden" name="action" value="bookactiUpdateNotification" />';
-				echo '<input type="hidden" name="nonce" value="' . wp_create_nonce( 'bookacti_notifications_settings_' . $notification_id ) . '" />';
-				
-				do_action( 'bookacti_notification_settings_page', $notification_id );
-				
-			} else {
-				settings_fields( 'bookacti_notifications_settings' );
-				do_settings_sections( 'bookacti_notifications_settings' );
-			}
+			settings_fields( 'bookacti_notifications_settings' );
+			do_settings_sections( 'bookacti_notifications_settings' );
 
 		// MESSAGES
 		} else if( $active_tab === 'messages' ) {

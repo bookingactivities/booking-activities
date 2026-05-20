@@ -1,4 +1,4 @@
-{ "vendor": { "plugins/booking-activities": "1.16.9" },
+{ "vendor": { "plugins/booking-activities": "1.18.0" },
 	"admin-config":{
 		"bookacti_calendars":{
 			"pages":{ "admin.php":"" },
@@ -6,6 +6,8 @@
 				"bookacti-settings-lang-switcher": { "where": "first" },
 				"bookacti-notification-global-settings": { "where": "after" }, 
 				"bookacti-notification-email-settings": { "where": "after" }, 
+				"bookacti-notification-editor-page-lang-switcher": { "where": "first" },
+				"bookacti-notification-email-fields": { "where": "last" }, 
 				"bookacti-template-dialog-lang-switcher": { "where": "first" }, 
 				"bookacti-activity-dialog-lang-switcher": { "where": "first" }, 
 				"bookacti-event-dialog-lang-switcher": { "where": "first" }, 
@@ -84,6 +86,13 @@
 				"bookacti-group-category-form":{
 					"fields":{
 						"bookacti-group-category-title-field":{}
+					}
+				},
+				"bookacti-notification-editor-page-form":{
+					"fields":{
+						"title":{},
+						"bookacti-email-subject":{},
+						"bookacti-email-message":{}
 					}
 				},
 				"bookacti-form-editor-page-form":{

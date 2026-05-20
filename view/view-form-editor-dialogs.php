@@ -2,7 +2,7 @@
 /**
  * Form editor dialogs
  * @since 1.5.0
- * @version 1.17.0
+ * @version 1.18.0
  */
 
 // Exit if accessed directly
@@ -1227,7 +1227,7 @@ foreach( $fields_default as $field_name => $field_data ) {
 		<div>
 			<p><strong><?php esc_html_e( 'Secret address in iCal format', 'booking-activities' ); ?></strong></p>
 			<div class='bookacti_export_url'>
-				<div class='bookacti_export_url_field'><input type='text' id='bookacti_export_events_url_secret' data-value='<?php echo $ical_url; ?>' value='<?php echo $ical_url; ?>' readonly onfocus='this.select();'/></div>
+				<div class='bookacti_export_url_field'><input type='text' id='bookacti_export_events_url_secret' data-value='<?php echo $ical_url; ?>' value='<?php echo $ical_url; ?>' readonly onfocus='this.select(); document.execCommand("Copy");'/></div>
 				<div class='bookacti_export_button'><input type='button' value='<?php echo esc_attr_x( 'Export', 'action', 'booking-activities' ); ?>' class='button button-primary button-large'/></div>
 			</div>
 			<p>
@@ -1276,7 +1276,7 @@ foreach( $fields_default as $field_name => $field_data ) {
 	<h4><?php esc_html_e( 'Integrate in a post, page, or text widget', 'booking-activities' ) ?></h4>
 	<p><em><label for='bookacti-login-form-shortcode'><?php esc_html_e( 'Copy this shortcode and paste it into your post, page, or text widget content:', 'booking-activities' ); ?></label></em></p>
 	<p class='shortcode wp-ui-highlight'>
-		<input type='text' id='bookacti-login-form-shortcode' onfocus='this.select();' readonly='readonly' class='large-text code' value='<?php echo esc_attr( '[bookingactivities_login form="' . $form_id . '" redirect_url=""]' ); ?>' />
+		<input type='text' id='bookacti-login-form-shortcode' onfocus='this.select(); document.execCommand("Copy");' readonly='readonly' class='large-text code' value='<?php echo esc_attr( '[bookingactivities_login form="' . $form_id . '" redirect_url=""]' ); ?>' />
 	</p>
 </div>
 

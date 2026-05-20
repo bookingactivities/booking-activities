@@ -1,7 +1,7 @@
 <?php
 /**
  * Calendar editor page
- * @version 1.16.48
+ * @version 1.18.0
  */
 
 // Exit if accessed directly
@@ -26,9 +26,7 @@ $templates = bookacti_get_templates_data();
 				/* translators: %s is a link to the official FAQ. The label of this link is "FAQ". */
 				echo sprintf( esc_html__( 'A fatal error occurred. Please try to refresh the page. If the error persists, follow the process under "Booking Activities doesn’t work as it should" here: %s.', 'booking-activities' ), '<a href="https://booking-activities.fr/en/documentation/faq">' . esc_html__( 'FAQ', 'booking-activities' ) . '</a>' );
 			?>
-			</strong>
-		<li><em><?php esc_html_e( 'Advanced users, you can stop loading and free the fields to try to solve your problem:', 'booking-activities' ); ?></em>
-			<input type='button' id='bookacti-exit-loading' value='<?php esc_attr_e( 'Stop loading and free fields', 'booking-activities' ) ?>' />
+		</strong></li>
 	</ul>
 </div>
 

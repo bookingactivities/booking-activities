@@ -1,7 +1,7 @@
 <?php 
 /**
  * Backend booking dialogs
- * @version 1.16.45
+ * @version 1.18.0
  */
 
 // Exit if accessed directly
@@ -180,7 +180,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						'tip'     => sprintf(
 							/* Translators: %s is a link to the "Notifications settings" */
 							esc_html__( 'Send the booking status change notifications configured in %s.', 'booking-activities' ), 
-							'<a href="' . admin_url( 'admin.php?page=bookacti_settings&tab=notifications' ) . '">' . esc_html__( 'Notifications settings', 'booking-activities' ) . '</a>'
+							'<a href="' . admin_url( 'admin.php?page=bookacti_notifications' ) . '">' . esc_html__( 'Notifications settings', 'booking-activities' ) . '</a>'
 						)
 					)
 				));
@@ -256,23 +256,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_send_booking_notification' ); ?>'/>
 		<?php
 			// Get notifications
-			$notifications_ids      = array_keys( bookacti_get_notifications_default_settings() );
-			$notifications_settings = array();
-			foreach( $notifications_ids as $notification_id ) {
-				$notifications_settings[ $notification_id ] = bookacti_get_notification_settings( $notification_id, false );
-			}
-			
-			// Sort notifications
-			$notifications_settings = bookacti_sort_notifications( $notifications_settings );
+			$notifications_data = bookacti_get_notifications_data();
 			
 			// Build notification options
 			$notification_options = array();
-			foreach( $notifications_settings as $notification_id => $notification_settings ) {
-				$notification_options[ $notification_id ] = substr( $notification_id, 0, 6 ) === 'admin_' ? esc_html__( 'Administrator', 'booking-activities' ) : esc_html__( 'Customer', 'booking-activities' );
+			foreach( $notifications_data as $notification_id => $notification_data ) {
+				$notification_options[ $notification_id ] = $notification_data[ 'target' ] === 'admin' ? esc_html__( 'Administrator', 'booking-activities' ) : esc_html__( 'Customer', 'booking-activities' );
 				$notification_options[ $notification_id ] .= ' - ';
-				$notification_options[ $notification_id ] .= ! empty( $notification_settings[ 'title' ] ) ? $notification_settings[ 'title' ] : $notification_id;
+				$notification_options[ $notification_id ] .= ! empty( $notification_data[ 'title' ] ) ? $notification_data[ 'title' ] . ' (' . $notification_id . ' / #' . $notification_data[ 'db_id' ] . ')' : $notification_id;
 			}
-
+			
 			$fields = array(
 				'notification_id' => array(
 					'name'        => 'notification_id',
@@ -296,7 +289,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			<span class='dashicons dashicons-warning'></span>
 			<span>
 			<?php 
-				$settings_url = admin_url( 'admin.php?page=bookacti_settings&tab=notifications' );
+				$settings_url = admin_url( 'admin.php?page=bookacti_notifications' );
 				echo sprintf( 
 						/* translators: %s = link to "Booking Activities > Settings > Notifications" */
 						esc_html__( 'The notification is sent according to its settings, so make sure to properly configure it before, in %s.', 'booking-activities' ), 
@@ -415,7 +408,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		/**
 		 * Display the content of the "iCal" tab of the "Export bookings" dialog
 		 * @since 1.8.0
-		 * @version 1.15.4
+		 * @version 1.18.0
 		 * @param array $args
 		 */
 		function bookacti_fill_export_bookings_ical_tab( $args ) {
@@ -547,7 +540,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		<div id='bookacti-export-bookings-url-container' style='display:none;'>
 			<p><strong><?php esc_html_e( 'Secret address', 'booking-activities' ); ?></strong></p>
 			<div class='bookacti_export_url'>
-				<div class='bookacti_export_url_field'><input type='text' id='bookacti_export_bookings_url_secret' value='' readonly onfocus='this.select();'/></div>
+				<div class='bookacti_export_url_field'><input type='text' id='bookacti_export_bookings_url_secret' value='' readonly onfocus='this.select(); document.execCommand("Copy");'/></div>
 				<div class='bookacti_export_button'><input type='button' value='<?php echo esc_html_x( 'Export', 'action', 'booking-activities' ); ?>' class='button button-primary button-large'/></div>
 			</div>
 			<p>

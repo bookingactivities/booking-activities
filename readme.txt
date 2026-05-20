@@ -3,7 +3,7 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
 Tested up to: 7.0
-Stable tag: 1.17.1
+Stable tag: 1.18.0
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -211,7 +211,7 @@ Or read the full [features description](https://booking-activities.fr/en/documen
 
 
 = Display user's booking list = 
-*Make sure the user has bookings and he / she is logged in, otherwise it will not show anything* 
+*Make sure the user has bookings and they are logged in, otherwise it will not show anything* 
 
 1. Past this shortcode in any post or page you like: `[bookingactivities_list]`
 2. Go on this post / page frontend, the booking list appears!
@@ -321,9 +321,19 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.18.0 - 2026/05/20 =
+* Notification management improvements - **[See the user-friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-18-improved-notification-management/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
+* Tweak - Keep form values after being redirected to log in page, when trying to make a booking without account with an email already associated with an account
+* Fix - Backend booking calendar was no longer restricted to Date filter after changing another filter
+* Fix - Backend booking list rows may not expand on small screens
+* Fix - Backend reschedule calendar may be restricted to the original form display period
+* Dev - Migrate notifications data from wp_options to wp_bookacti_notitfications and wp_bookacti_notitfication_channels tables
+* Dev - Refactor most functions and hooks related to notifications, and their parameters
+* Dev - Add database index on "active" columns to improve performances
+
 = 1.17.1 - 2026/03/30 =
 * Tweak - Replace booking calendar settings icon with button in Bookings page
-* Fix - Missing JS dependency for globa-function.min.js
+* Fix - Missing JS dependency for global-function.min.js
 * Fix - Grouped events may appear as available in reschedule booking form
 * Fix - Bookings calendar was not restricted by date on page load when date filters was passed via URL parameters
 * Dev - Add custom_dataset and context booking system attributes to allow third party to override booking system data processing

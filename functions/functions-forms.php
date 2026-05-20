@@ -1518,7 +1518,7 @@ function bookacti_validate_login( $login_values ) {
 /**
  * Process login form: log in / register / book without account the user
  * @since 1.16.42
- * @version 1.16.45
+ * @version 1.18.0
  * @param int $form_id
  * @param array $login_values
  * @return array
@@ -1583,8 +1583,7 @@ function bookacti_process_login_form( $form_id, $login_values ) {
 			if( is_email( $return_array[ 'user_id' ] ) ) {
 				$user = get_user_by( 'email', $return_array[ 'user_id' ] );
 				if( is_a( $user, 'WP_User' ) ) {
-					$current_url    = ! empty( $_POST[ 'current_url' ] ) ? sanitize_url( $_POST[ 'current_url' ] ) : ( ! empty( $_SERVER[ 'HTTP_REFERER' ] ) ? sanitize_url( $_SERVER[ 'HTTP_REFERER' ] ) : '' );
-					$login_url      = bookacti_get_login_link( $current_url, true );
+					$login_url      = bookacti_get_login_link( '', true );
 					$login_field_id = ! empty( $login_field[ 'field_id' ] ) ? $login_field[ 'field_id' ] : '';
 					
 					$return_array[ 'error' ] = 'user_already_exists';
@@ -2163,7 +2162,7 @@ function bookacti_display_form_publish_meta_box( $form_raw ) {
 /**
  * Display 'integration tuto' metabox content for forms
  * @since 1.5.0
- * @version 1.14.0
+ * @version 1.18.0
  * @param array $form_raw
  */
 function bookacti_display_form_integration_tuto_meta_box( $form_raw ) {
@@ -2173,7 +2172,7 @@ function bookacti_display_form_integration_tuto_meta_box( $form_raw ) {
 	<div>
 		<p><em><label for='bookacti-form-shortcode'><?php esc_html_e( 'Copy this shortcode and paste it into your post, page, or text widget content:', 'booking-activities' ); ?></label></em></p>
 		<p class='shortcode wp-ui-highlight'>
-			<input type='text' id='bookacti-form-shortcode' onfocus='this.select();' readonly='readonly' class='large-text code' value='<?php echo esc_attr( $shortcode ); ?>' />
+			<input type='text' id='bookacti-form-shortcode' onfocus='this.select(); document.execCommand("Copy");' readonly='readonly' class='large-text code' value='<?php echo esc_attr( $shortcode ); ?>' />
 		</p>
 	</div>
 <?php

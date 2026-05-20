@@ -11,7 +11,7 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 	/**
 	 * Forms WP_List_Table
 	 * @since 1.5.0
-	 * @version 1.16.22
+	 * @version 1.18.0
 	 */
 	class Forms_List_Table extends WP_List_Table {
 		
@@ -259,7 +259,7 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 		
 		/**
 		 * Get form list items. Parameters can be passed in the URL.
-		 * @version 1.16.13
+		 * @version 1.18.0
 		 * @access public
 		 * @return array
 		 */
@@ -297,11 +297,11 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 				// Format title column
 				$title = ! empty( $form->title ) ? esc_html( apply_filters( 'bookacti_translate_text', $form->title ) ) : sprintf( esc_html__( 'Form #%d', 'booking-activities' ), $id );
 				if( $can_edit_forms ) {
-					$title = '<a href="' . esc_url( admin_url( 'admin.php?page=bookacti_forms&action=edit&form_id=' . $id ) ) . '" >' . $title . '</a>';
+					$title = '<a class="row-title" href="' . esc_url( admin_url( 'admin.php?page=bookacti_forms&action=edit&form_id=' . $id ) ) . '" >' . $title . '</a>';
 				}
 				
 				// Build shortcode
-				$shortcode = "<input type='text' onfocus='this.select();' readonly='readonly' value='" . esc_attr( '[bookingactivities_form form="' . $id . '"]' ) . "' class='large-text code'>";
+				$shortcode = "<input type='text' onfocus='this.select(); document.execCommand(\"Copy\");' readonly='readonly' value='" . esc_attr( '[bookingactivities_form form="' . $id . '"]' ) . "' class='large-text code'>";
 				
 				// Author name
 				$user_object = ! empty( $users[ $form->user_id ] ) ? $users[ $form->user_id ] : null;

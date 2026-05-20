@@ -6,21 +6,23 @@ global $wpdb;
 $db_prefix = $wpdb->prefix;
 
 // TABLES NAMES
-if( ! defined( 'BOOKACTI_TABLE_TEMPLATES' ) )        { define( 'BOOKACTI_TABLE_TEMPLATES', $db_prefix . 'bookacti_templates' ); }
-if( ! defined( 'BOOKACTI_TABLE_ACTIVITIES' ) )       { define( 'BOOKACTI_TABLE_ACTIVITIES', $db_prefix . 'bookacti_activities' ); }
-if( ! defined( 'BOOKACTI_TABLE_TEMP_ACTI' ) )        { define( 'BOOKACTI_TABLE_TEMP_ACTI', $db_prefix . 'bookacti_templates_activities' ); }
-if( ! defined( 'BOOKACTI_TABLE_EVENTS' ) )           { define( 'BOOKACTI_TABLE_EVENTS', $db_prefix . 'bookacti_events' ); }
-if( ! defined( 'BOOKACTI_TABLE_EXCEPTIONS' ) )       { define( 'BOOKACTI_TABLE_EXCEPTIONS', $db_prefix . 'bookacti_exceptions' ); }
-if( ! defined( 'BOOKACTI_TABLE_EVENT_GROUPS' ) )     { define( 'BOOKACTI_TABLE_EVENT_GROUPS', $db_prefix . 'bookacti_event_groups' ); }
-if( ! defined( 'BOOKACTI_TABLE_GROUPS_EVENTS' ) )    { define( 'BOOKACTI_TABLE_GROUPS_EVENTS', $db_prefix . 'bookacti_groups_events' ); }
-if( ! defined( 'BOOKACTI_TABLE_GROUP_CATEGORIES' ) ) { define( 'BOOKACTI_TABLE_GROUP_CATEGORIES', $db_prefix . 'bookacti_group_categories' ); }
-if( ! defined( 'BOOKACTI_TABLE_FORMS' ) )            { define( 'BOOKACTI_TABLE_FORMS', $db_prefix . 'bookacti_forms' ); }
-if( ! defined( 'BOOKACTI_TABLE_FORM_FIELDS' ) )      { define( 'BOOKACTI_TABLE_FORM_FIELDS', $db_prefix . 'bookacti_form_fields' ); }
-if( ! defined( 'BOOKACTI_TABLE_BOOKINGS' ) )         { define( 'BOOKACTI_TABLE_BOOKINGS', $db_prefix . 'bookacti_bookings' ); }
-if( ! defined( 'BOOKACTI_TABLE_BOOKING_GROUPS' ) )   { define( 'BOOKACTI_TABLE_BOOKING_GROUPS', $db_prefix . 'bookacti_booking_groups' ); }
-if( ! defined( 'BOOKACTI_TABLE_META' ) )             { define( 'BOOKACTI_TABLE_META', $db_prefix . 'bookacti_meta' ); }
-if( ! defined( 'BOOKACTI_TABLE_EXPORTS' ) )          { define( 'BOOKACTI_TABLE_EXPORTS', $db_prefix . 'bookacti_exports' ); }
-if( ! defined( 'BOOKACTI_TABLE_PERMISSIONS' ) )      { define( 'BOOKACTI_TABLE_PERMISSIONS', $db_prefix . 'bookacti_permissions' ); }
+if( ! defined( 'BOOKACTI_TABLE_TEMPLATES' ) )             { define( 'BOOKACTI_TABLE_TEMPLATES', $db_prefix . 'bookacti_templates' ); }
+if( ! defined( 'BOOKACTI_TABLE_ACTIVITIES' ) )            { define( 'BOOKACTI_TABLE_ACTIVITIES', $db_prefix . 'bookacti_activities' ); }
+if( ! defined( 'BOOKACTI_TABLE_TEMP_ACTI' ) )             { define( 'BOOKACTI_TABLE_TEMP_ACTI', $db_prefix . 'bookacti_templates_activities' ); }
+if( ! defined( 'BOOKACTI_TABLE_EVENTS' ) )                { define( 'BOOKACTI_TABLE_EVENTS', $db_prefix . 'bookacti_events' ); }
+if( ! defined( 'BOOKACTI_TABLE_EXCEPTIONS' ) )            { define( 'BOOKACTI_TABLE_EXCEPTIONS', $db_prefix . 'bookacti_exceptions' ); }
+if( ! defined( 'BOOKACTI_TABLE_EVENT_GROUPS' ) )          { define( 'BOOKACTI_TABLE_EVENT_GROUPS', $db_prefix . 'bookacti_event_groups' ); }
+if( ! defined( 'BOOKACTI_TABLE_GROUPS_EVENTS' ) )         { define( 'BOOKACTI_TABLE_GROUPS_EVENTS', $db_prefix . 'bookacti_groups_events' ); }
+if( ! defined( 'BOOKACTI_TABLE_GROUP_CATEGORIES' ) )      { define( 'BOOKACTI_TABLE_GROUP_CATEGORIES', $db_prefix . 'bookacti_group_categories' ); }
+if( ! defined( 'BOOKACTI_TABLE_FORMS' ) )                 { define( 'BOOKACTI_TABLE_FORMS', $db_prefix . 'bookacti_forms' ); }
+if( ! defined( 'BOOKACTI_TABLE_FORM_FIELDS' ) )           { define( 'BOOKACTI_TABLE_FORM_FIELDS', $db_prefix . 'bookacti_form_fields' ); }
+if( ! defined( 'BOOKACTI_TABLE_BOOKINGS' ) )              { define( 'BOOKACTI_TABLE_BOOKINGS', $db_prefix . 'bookacti_bookings' ); }
+if( ! defined( 'BOOKACTI_TABLE_BOOKING_GROUPS' ) )        { define( 'BOOKACTI_TABLE_BOOKING_GROUPS', $db_prefix . 'bookacti_booking_groups' ); }
+if( ! defined( 'BOOKACTI_TABLE_META' ) )                  { define( 'BOOKACTI_TABLE_META', $db_prefix . 'bookacti_meta' ); }
+if( ! defined( 'BOOKACTI_TABLE_EXPORTS' ) )               { define( 'BOOKACTI_TABLE_EXPORTS', $db_prefix . 'bookacti_exports' ); }
+if( ! defined( 'BOOKACTI_TABLE_PERMISSIONS' ) )           { define( 'BOOKACTI_TABLE_PERMISSIONS', $db_prefix . 'bookacti_permissions' ); }
+if( ! defined( 'BOOKACTI_TABLE_NOTIFICATIONS' ) )         { define( 'BOOKACTI_TABLE_NOTIFICATIONS', $db_prefix . 'bookacti_notifications' ); }
+if( ! defined( 'BOOKACTI_TABLE_NOTIFICATION_CHANNELS' ) ) { define( 'BOOKACTI_TABLE_NOTIFICATION_CHANNELS', $db_prefix . 'bookacti_notification_channels' ); }
 
 
 // USERS
@@ -389,46 +391,7 @@ function bookacti_delete_metadata( $object_type, $object_id, $metadata_key_array
 
 
 
-// NOTIFICATIONS
-
-/**
- * Get notifications data from database
- * @since 1.16.37
- * @version 1.16.38
- * @param boolean $raw
- * @return array
- */
-function bookacti_get_notifications() {
-	global $wpdb;
-	
-	$query = 'SELECT option_name, option_value '
-	       . ' FROM ' . $wpdb->options
-	       . ' WHERE option_name LIKE %s ';
-	
-	$query   = $wpdb->prepare( $query, $wpdb->esc_like( 'bookacti_notifications_settings_' ) . '%' );
-	$results = $wpdb->get_results( $query );
-	
-	$notifications = array();
-	if( $results ) {
-		foreach( $results as $result ) {
-			if( ! ( ! empty( $result->option_name ) && substr( $result->option_name, 0, strlen( 'bookacti_notifications_settings_' ) ) === 'bookacti_notifications_settings_' ) ) { continue; }
-			
-			$notification_id = substr( $result->option_name, strlen( 'bookacti_notifications_settings_' ) );
-			$notification    = ! empty( $result->option_value ) ? maybe_unserialize( $result->option_value ) : false;
-			
-			if( ! ( $notification && is_array( $notification ) ) ) { continue; }
-			
-			$notifications[ $notification_id ] = array_merge( $notification, array( 'id' => $notification_id ) );
-		}
-	}
-	
-	return $notifications;
-}
-
-
-
-
-// MISC
+// CRON
 
 /**
  * Retrieve a cron job by hook from database (no cache)

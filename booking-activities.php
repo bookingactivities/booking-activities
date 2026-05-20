@@ -3,7 +3,7 @@
  * Plugin Name: Booking Activities
  * Plugin URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Description: Booking system specialized in activities (sports, cultural, leisure, events...). Works great with WooCommerce.
- * Version: 1.17.1
+ * Version: 1.18.0
  * Author: Booking Activities Team
  * Author URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Text Domain: booking-activities
@@ -11,7 +11,7 @@
  * Requires at least: 4.1
  * Requires PHP: 5.6
  * WC requires at least: 3.0
- * WC tested up to: 10.7
+ * WC tested up to: 10.8
  * License: GPL3
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  * 
@@ -42,7 +42,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 // GLOBALS AND CONSTANTS
-if( ! defined( 'BOOKACTI_VERSION' ) )     { define( 'BOOKACTI_VERSION', '1.17.1' ); }
+if( ! defined( 'BOOKACTI_VERSION' ) )     { define( 'BOOKACTI_VERSION', '1.18.0' ); }
 if( ! defined( 'BOOKACTI_PLUGIN_NAME' ) ) { define( 'BOOKACTI_PLUGIN_NAME', 'booking-activities' ); }
 if( ! defined( 'BOOKACTI_PATH' ) )        { define( 'BOOKACTI_PATH', __DIR__ ); }
 
@@ -76,12 +76,14 @@ require_once( 'model/model-templates.php' );
 require_once( 'model/model-booking-system.php' );
 require_once( 'model/model-bookings.php' );
 require_once( 'model/model-forms.php' );
+require_once( 'model/model-notifications.php' );
 
 
 // INCLUDE CLASSES
 if( is_admin() ) {
 	require_once( 'class/class-bookings-list.php' );
 	require_once( 'class/class-forms-list.php' );
+	require_once( 'class/class-notifications-list.php' );
 }
 
 // Get active plugins
@@ -195,7 +197,7 @@ add_action( 'wp_enqueue_scripts', 'bookacti_enqueue_high_priority_global_scripts
 
 /**
  * Enqueue normal priority scripts
- * @version 1.16.9
+ * @version 1.18.0
  */
 function bookacti_enqueue_global_scripts() {
 	// Include WooCommerce style and scripts
@@ -233,7 +235,7 @@ function bookacti_enqueue_global_scripts() {
 	wp_enqueue_script( 'bookacti-js-booking-system-dialogs',  plugins_url( 'js/booking-system-dialogs.min.js', __FILE__ ),  array( 'jquery', 'moment', 'jquery-ui-dialog', 'bookacti-js-global-var', 'bookacti-js-global-functions' ), BOOKACTI_VERSION, true );
 	wp_enqueue_script( 'bookacti-js-booking-method-calendar', plugins_url( 'js/booking-method-calendar.min.js', __FILE__ ), array( 'jquery', 'moment', 'fullcalendar', 'bookacti-js-global-var', 'bookacti-js-global-functions' ), BOOKACTI_VERSION, true );
 	wp_enqueue_script( 'bookacti-js-booking-system',          plugins_url( 'js/booking-system.min.js', __FILE__ ),          array( 'jquery', 'moment', 'fullcalendar', 'bookacti-js-global-var', 'bookacti-js-global-functions', 'bookacti-js-booking-system-functions', 'bookacti-js-booking-system-dialogs' ), BOOKACTI_VERSION, true );
-	wp_enqueue_script( 'bookacti-js-bookings-functions',      plugins_url( 'js/bookings-functions.min.js', __FILE__ ),      array( 'jquery', 'moment', 'fullcalendar', 'bookacti-js-global-var', 'bookacti-js-global-functions', ), BOOKACTI_VERSION, true );
+	wp_enqueue_script( 'bookacti-js-bookings-functions',      plugins_url( 'js/bookings-functions.min.js', __FILE__ ),      array( 'jquery', 'moment', 'fullcalendar', 'bookacti-js-global-var', 'bookacti-js-global-functions' ), BOOKACTI_VERSION, true );
 	wp_enqueue_script( 'bookacti-js-bookings-dialogs',        plugins_url( 'js/bookings-dialogs.min.js', __FILE__ ),        array( 'jquery', 'jquery-ui-dialog', 'bookacti-js-global-var', 'bookacti-js-global-functions', 'bookacti-js-bookings-functions' ), BOOKACTI_VERSION, true );
 	wp_enqueue_script( 'bookacti-js-forms',                   plugins_url( 'js/forms.min.js', __FILE__ ),                   array( 'jquery', 'jquery-ui-dialog', 'bookacti-js-global-functions' ), BOOKACTI_VERSION, true );
 }
@@ -283,7 +285,7 @@ add_action( 'admin_enqueue_scripts', 'bookacti_enqueue_high_priority_backend_scr
 
 /**
  * Enqueue low priority scripts in backend only
- * @version 1.15.17
+ * @version 1.18.0
  */
 function bookacti_enqueue_backend_scripts() {
 	// Include WooCommerce scripts
@@ -299,6 +301,7 @@ function bookacti_enqueue_backend_scripts() {
 	// INCLUDE STYLESHEETS
 	wp_enqueue_style ( 'bookacti-css-backend',   plugins_url( 'css/backend.min.css', __FILE__ ), array(), BOOKACTI_VERSION );
 	wp_enqueue_style ( 'bookacti-css-templates', plugins_url( 'css/templates.min.css', __FILE__ ), array(), BOOKACTI_VERSION );
+	wp_enqueue_style ( 'bookacti-css-notifications', plugins_url( 'css/notifications.min.css', __FILE__ ), array(), BOOKACTI_VERSION );
 	wp_enqueue_style ( 'bookacti-css-landing',   plugins_url( 'css/landing.min.css', __FILE__ ), array(), BOOKACTI_VERSION );
 	
 	// INCLUDE JAVASCRIPT FILES
@@ -438,7 +441,7 @@ add_action( 'init', 'bookacti_check_version', 5 );
 
 /**
  * Create the Admin Menu
- * @version 1.12.3
+ * @version 1.18.0
  */
 function bookacti_create_menu() {
 	// Add a menu and submenus
@@ -451,6 +454,7 @@ function bookacti_create_menu() {
     
 	do_action( 'bookacti_admin_menu' );
 	
+	add_submenu_page( 'booking-activities', esc_html__( 'Notifications', 'booking-activities' ), esc_html__( 'Notifications', 'booking-activities' ), 'bookacti_manage_notifications', 'bookacti_notifications', 'bookacti_notifications_page' );
 	add_submenu_page( 'booking-activities', esc_html__( 'Settings', 'booking-activities' ), esc_html__( 'Settings', 'booking-activities' ), 'bookacti_manage_booking_activities_settings', 'bookacti_settings', 'bookacti_settings_page' );
 }
 add_action( 'admin_menu', 'bookacti_create_menu' );
@@ -499,6 +503,30 @@ function bookacti_forms_page() {
  */
 function bookacti_bookings_page() {
     include_once( 'view/view-bookings.php' );
+}
+
+/**
+ * Include content of Notifications top-level menu page
+ * @since 1.18.0
+ */
+function bookacti_notifications_page() {
+	$can_create_notifications  = current_user_can( 'bookacti_create_notifications' );
+	$can_edit_notifications    = current_user_can( 'bookacti_edit_notifications' );
+	$load_notifications_editor = false;
+	
+	if( ! empty( $_GET[ 'action' ] ) ) {
+		$has_id_parameter = ( ! empty( $_GET[ 'notification_db_id' ] ) && is_numeric( $_GET[ 'notification_db_id' ] ) ) || ( ! empty( $_GET[ 'notification_id' ] ) && is_string( $_GET[ 'notification_id' ] ) );
+		if( ( $_GET[ 'action' ] === 'new' && $can_create_notifications )
+		 || ( $_GET[ 'action' ] === 'edit' && $can_edit_notifications && $has_id_parameter ) ) {
+			$load_notifications_editor = true;
+		}
+	}
+	
+	if( $load_notifications_editor ) {
+		include_once( BOOKACTI_PATH . '/view/view-notification-editor.php' );
+	} else {
+		include_once( BOOKACTI_PATH . '/view/view-notification-list.php' );
+	}
 }
 
 /**

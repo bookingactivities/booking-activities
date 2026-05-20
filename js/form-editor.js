@@ -275,13 +275,6 @@ $j( document ).ready( function() {
 	window.onerror = function ( errorMsg, url, lineNumber, column, errorObj ) {
 		$j( '#bookacti-fatal-error' ).show();
 	};
-	$j( '#bookacti-exit-loading' ).on( 'click', function(){
-		bookacti_form_editor_exit_loading_state();
-		var booking_system = $j( '#bookacti-booking-system-form-editor-container .bookacti-booking-system' );
-		if( booking_system.length ) {
-			bookacti_stop_loading_booking_system( booking_system, true );
-		}
-	});
 });
 
 

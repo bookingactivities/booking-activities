@@ -223,6 +223,8 @@ function bookacti_display_forms_screen_options() {
 }
 
 
+
+
 // GENERAL SETTINGS
 
 /**
@@ -655,7 +657,7 @@ function bookacti_settings_field_cancellation_delay_callback() {
 
 /**
  * Possible actions to take after cancellation needing refund
- * @version 1.9.0
+ * @version 1.18.0
  */
 function bookacti_settings_field_cancellation_refund_actions_callback() {
 
@@ -670,7 +672,7 @@ function bookacti_settings_field_cancellation_refund_actions_callback() {
 		'id'      => 'refund_action_after_cancellation',
 		'options' => bookacti_get_refund_actions(),
 		'value'   => $actions,
-		'tip'     => esc_html__( 'Define the actions a customer will be able to take to be refunded after he / she cancels a booking.', 'booking-activities' )
+		'tip'     => esc_html__( 'Define the actions a customer will be able to take to be refunded after they cancel a booking.', 'booking-activities' )
 		          . '<br/>' . esc_html__( 'This option has no effect for administrators.', 'booking-activities' )
 	);
 
@@ -711,169 +713,23 @@ function bookacti_settings_field_admin_reschedule_scope_callback() {
 // NOTIFICATIONS SETTINGS 
 
 /**
- * Sort notifications array
- * @since 1.16.45
- * @param array $notifications
- * @return array
- */
-function bookacti_sort_notifications( $notifications ) {
-	// Triggers order
-	$triggers_order = apply_filters( 'bookacti_notification_triggers_order', array( 'new_booking', 'pending', 'booked', 'delivered', 'cancelled', 'refund_requested', 'refunded', 'rescheduled' ) );
-	
-	// Sort notifications by id
-	ksort( $notifications );
-	
-	// Sort notifications by recipient and trigger
-	uasort( $notifications, function( $a, $b ) use ( $triggers_order ) {
-		// Recipient: Admin first, Customer next
-		$a_is_admin = substr( $a[ 'id' ], 0, 6 ) === 'admin_';
-		$b_is_admin = substr( $b[ 'id' ], 0, 6 ) === 'admin_';
-		if( $a_is_admin !== $b_is_admin ) {
-			return $a_is_admin ? -1 : 1;
-		}
-		
-		// Trigger: sort by trigger order
-		$a_trigger_position = $b_trigger_position = 0;
-		foreach( $triggers_order as $i => $trigger ) {
-			if( ! $a_trigger_position ) {
-				$a_trigger = ( $a_is_admin ? 'admin' : 'customer' ) . '_' . $trigger;
-				if( substr( $a[ 'id' ], 0, strlen( $a_trigger ) ) === $a_trigger ) {
-					$a_trigger_position = $i + 1;
-				}
-			}
-			
-			if( ! $b_trigger_position ) {
-				$b_trigger = ( $b_is_admin ? 'admin' : 'customer' ) . '_' . $trigger;
-				if( substr( $b[ 'id' ], 0, strlen( $b_trigger ) ) === $b_trigger ) {
-					$b_trigger_position = $i + 1;
-				}
-			}
-			
-			if( $a_trigger_position && $b_trigger_position ) {
-				break;
-			}
-		}
-		
-		return $a_trigger_position && $b_trigger_position ? ( $a_trigger_position < $b_trigger_position ? -1 : 1 ) : 0;
-	});
-	
-	return apply_filters( 'bookacti_notifications_sorted', $notifications );
-}
-
-
-/**
  * Settings section callback - Notifications - General settings (displayed before settings)
  * @since 1.2.1 (was bookacti_settings_section_notifications_callback in 1.2.0)
- * @version 1.16.45
+ * @version 1.18.0
  */
 function bookacti_settings_section_notifications_general_callback() { 
-	// Display a table of configurable notifications
-	// Set up booking list columns
-	$columns_titles = bookacti_get_notifications_list_columns_titles();
-	
-	do_action( 'bookacti_before_notifications_table' );
-	
-	?>
-	<div id='bookacti-notifications-list-container' class='bookacti-custom-scrollbar'>
-		<table class='bookacti-settings-table' id='bookacti-notifications-list' >
-			<thead>
-				<tr>
-				<?php foreach( $columns_titles as $column ) { ?>
-					<th id='bookacti-notifications-list-column-<?php echo sanitize_title_with_dashes( $column[ 'id' ] ); ?>' >
-						<?php echo esc_html( $column[ 'title' ] ); ?>
-					</th>
-				<?php } ?>
-				</tr>
-			</thead>
-			<tbody>
-		<?php
-			// Get notifications IDs and their settings
-			$notifications_settings = array();
-			$notifications_ids = array_keys( bookacti_get_notifications_default_settings() );
-			foreach( $notifications_ids as $notification_id ) {
-				$notifications_settings[ $notification_id ] = bookacti_get_notification_settings( $notification_id, false );
-			}
-			
-			// Sort notifications
-			$notifications_settings = bookacti_sort_notifications( $notifications_settings );
-			
-			foreach( $notifications_settings as $notification_id => $notification_settings ) {
-				$active_icon = $notification_settings[ 'active' ] ? 'dashicons-yes' : 'dashicons-no';
-				$description = $notification_settings[ 'description' ] ? bookacti_help_tip( $notification_settings[ 'description' ], false ) : '';
-
-				$columns_values = apply_filters( 'bookacti_notifications_list_columns_values', array(
-					'active'     => '<span class="dashicons ' . $active_icon . '"></span>',
-					'title'      => '<a href="' . esc_url( '?page=bookacti_settings&tab=notifications&notification_id=' . sanitize_title_with_dashes( $notification_id ) ) . '" >' . esc_html( $notification_settings[ 'title' ] ) . '</a>' . $description,
-					'recipients' => substr( $notification_id, 0, 8 ) === 'customer' ? esc_html__( 'Customer', 'booking-activities' ) : esc_html__( 'Administrator', 'booking-activities' ),
-					'actions'    => '<a href="' . esc_url( '?page=bookacti_settings&tab=notifications&notification_id=' . sanitize_title_with_dashes( $notification_id ) ) . '" title="' . esc_attr__( 'Edit this notification', 'booking-activities' ) . '" class="button button-secondary" >' . esc_html__( 'Settings', 'booking-activities' ) . '</a>'
-				), $notification_settings, $notification_id );
-
-				?>
-				<tr id='bookacti-notification-row-<?php echo $notification_id; ?>' class='bookacti-notification-row'>
-				<?php foreach( $columns_titles as $column ) { ?>
-					<td class='bookacti-notifications-list-column-value-<?php echo sanitize_title_with_dashes( $column[ 'id' ] ); ?>' >
-					<?php
-						if( isset( $columns_values[ $column[ 'id' ] ] ) ) { 
-							echo $columns_values[ $column[ 'id' ] ];
-						}
-					?>
-					</td>
-				<?php } ?>
-				</tr>
-			<?php } 
-			$is_plugin_active = bookacti_is_plugin_active( 'ba-notification-pack/ba-notification-pack.php' );
-			if( ! $is_plugin_active ) {
-				$addon_link = '<a href="https://booking-activities.fr/en/downloads/notification-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=notification-pack&utm_content=settings-notification-list" target="_blank" >Notification Pack</a>';
-				$columns_values = array(
-					'active'     => '<span class="dashicons dashicons-no"></span>',
-					'title'      => '<strong>' . esc_html__( '1 hour before / after a booked event', 'booking-activities' ) . '</strong>' 
-						/* translators: %1$s is the placeholder for Notification Pack add-on link */
-						.  bookacti_help_tip( sprintf( esc_html__( 'You can send automated notifications with the %1$s add-on before or after booked events (you can set the desired delay). This add-on also allows you to send all notifications through SMS and Push.', 'booking-activities' ), $addon_link ), false )
-						.  '<br/><small>' . esc_html__( 'Set up automated notifications (booking reminders, request a feedback, marketing automation...)', 'booking-activities' ) . '</small>',
-					'recipients' => esc_html__( 'Customer', 'booking-activities' ) . ' / ' . esc_html__( 'Administrator', 'booking-activities' ),
-					'actions'    => "<a href='https://booking-activities.fr/en/downloads/notification-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=notification-pack&utm_content=settings-notification-list' class='button' target='_blank' >" . esc_html__( 'Learn more', 'booking-activities' ) . "</a>"
-				);
-
-				?>
-				<tr id='bookacti-notification-row-customer_reminder' class='bookacti-notification-row'>
-				<?php foreach( $columns_titles as $column ) { ?>
-					<td class='bookacti-notifications-list-column-value-<?php echo sanitize_title_with_dashes( $column[ 'id' ] ); ?>' >
-					<?php
-						if( isset( $columns_values[ $column[ 'id' ] ] ) ) { 
-							echo $columns_values[ $column[ 'id' ] ];
-						}
-					?>
-					</td>
-				<?php } ?>
-				</tr>
-			<?php } ?>
-			</tbody>
-		</table>
-	</div>
+	// Link to Notification list
+?>
+	<div id='bookacti-link-to-notification-list-container'>
 	<?php
-	bookacti_display_banp_promo();
-	
-	do_action( 'bookacti_after_notifications_table' );
-}
-
-
-/**
- * Get notification list columns titles
- * @since 1.8.5
- * @return array
- */
-function bookacti_get_notifications_list_columns_titles() {
-	$columns_titles = apply_filters( 'bookacti_notifications_list_columns_titles', array(
-		10  => array( 'id' => 'active',     'title' => esc_html_x( 'Active', 'is the notification active', 'booking-activities' ) ),
-		20  => array( 'id' => 'title',      'title' => esc_html_x( 'Trigger', 'what triggers a notification', 'booking-activities' ) ),
-		30  => array( 'id' => 'recipients', 'title' => esc_html_x( 'Send to', 'who the notification is sent to', 'booking-activities' ) ),
-		100 => array( 'id' => 'actions',    'title' => esc_html__( 'Actions', 'booking-activities' ) )
-	) );
-
-	// Order columns
-	ksort( $columns_titles, SORT_NUMERIC );
-	
-	return $columns_titles;
+		echo sprintf( 
+			/* translators: %s = link to "Booking Activities > Notifications" */
+			esc_html__( 'You can manage your notifications from the %s menu.', 'booking-activities' ),
+			'<strong><a href="' . esc_url( admin_url( 'admin.php?page=bookacti_notifications' ) ) . '">Booking Activities > ' . esc_html__( 'Notifications', 'booking-activities' ) . '</a></strong>'
+		);
+	?>
+	</div>
+<?php
 }
 
 
@@ -982,6 +838,7 @@ function bookacti_settings_field_notifications_async_callback() {
 	);
 	bookacti_display_field( $args );
 }
+
 
 
 
@@ -1240,7 +1097,7 @@ function bookacti_reset_notices() {
 
 /**
  * Get Booking Activities admin screen ids
- * @version 1.5.0
+ * @version 1.18.0
  */
 function bookacti_get_screen_ids() {
 	$screens = array(
@@ -1248,6 +1105,7 @@ function bookacti_get_screen_ids() {
 		'booking-activities_page_bookacti_calendars',
 		'booking-activities_page_bookacti_forms',
 		'booking-activities_page_bookacti_bookings',
+		'booking-activities_page_bookacti_notifications',
 		'booking-activities_page_bookacti_settings'
 	);
 
@@ -1280,7 +1138,7 @@ function bookacti_is_booking_activities_screen( $screen = '' ) {
 // ROLES AND CAPABILITIES
 /**
  * Add roles and capabilities
- * @version 1.8.0
+ * @version 1.18.0
  */
 function bookacti_set_role_and_cap() {
 	$administrator = get_role( 'administrator' );
@@ -1289,6 +1147,7 @@ function bookacti_set_role_and_cap() {
 		$administrator->add_cap( 'bookacti_manage_bookings' );
 		$administrator->add_cap( 'bookacti_manage_templates' );
 		$administrator->add_cap( 'bookacti_manage_forms' );
+		$administrator->add_cap( 'bookacti_manage_notifications' );
 		$administrator->add_cap( 'bookacti_manage_booking_activities_settings' );
 		$administrator->add_cap( 'bookacti_read_templates' );
 		$administrator->add_cap( 'bookacti_create_templates' );
@@ -1302,6 +1161,7 @@ function bookacti_set_role_and_cap() {
 		$administrator->add_cap( 'bookacti_create_forms' );
 		$administrator->add_cap( 'bookacti_edit_forms' );
 		$administrator->add_cap( 'bookacti_delete_forms' );
+		$administrator->add_cap( 'bookacti_edit_notifications' );
 	}
 	
 	do_action( 'bookacti_set_capabilities' );
@@ -1310,7 +1170,7 @@ function bookacti_set_role_and_cap() {
 
 /**
  * Remove roles and capabilities
- * @version 1.8.0
+ * @version 1.18.0
  */
 function bookacti_unset_role_and_cap() {
 	$administrator = get_role( 'administrator' );
@@ -1319,6 +1179,7 @@ function bookacti_unset_role_and_cap() {
 		$administrator->remove_cap( 'bookacti_manage_bookings' );
 		$administrator->remove_cap( 'bookacti_manage_templates' );
 		$administrator->remove_cap( 'bookacti_manage_forms' );
+		$administrator->remove_cap( 'bookacti_manage_notifications' );
 		$administrator->remove_cap( 'bookacti_manage_booking_activities_settings' );
 		$administrator->remove_cap( 'bookacti_read_templates' );
 		$administrator->remove_cap( 'bookacti_create_templates' );
@@ -1332,6 +1193,7 @@ function bookacti_unset_role_and_cap() {
 		$administrator->remove_cap( 'bookacti_create_forms' );
 		$administrator->remove_cap( 'bookacti_edit_forms' );
 		$administrator->remove_cap( 'bookacti_delete_forms' );
+		$administrator->remove_cap( 'bookacti_edit_notifications' );
 	}
 	
 	do_action( 'bookacti_unset_capabilities' );
