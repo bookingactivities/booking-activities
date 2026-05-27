@@ -729,3 +729,4 @@ function bookacti_bypass_checks_for_shop_managers( $true, $user_id = 0 ) {
 add_filter( 'bookacti_bypass_template_managers_check', 'bookacti_bypass_checks_for_shop_managers', 10, 2 );
 add_filter( 'bookacti_bypass_activity_managers_check', 'bookacti_bypass_checks_for_shop_managers', 10, 2 );
 add_filter( 'bookacti_bypass_form_managers_check', 'bookacti_bypass_checks_for_shop_managers', 10, 2 );
+add_filter( 'bookacti_bypass_notification_managers_check', 'bookacti_bypass_checks_for_shop_managers', 10, 2 );

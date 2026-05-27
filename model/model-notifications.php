@@ -532,12 +532,13 @@ function bookacti_get_legacy_notifications() {
 /**
  * Migrate legacy notifications data from wp_options table
  * @since 1.18.0
- * @return array
+ * @version 1.18.1
+ * @return false|int
  */
 function bookacti_migrate_legacy_notifications() {
 	// Do it only once
 	$migrated = get_option( 'bookacti_1_18_notifications_migrated' );
-	if( $migrated ) { return; }
+	if( $migrated ) { return false; }
 	
 	// First, create missing notifications
 	bookacti_create_missing_permanent_notifications();
@@ -580,13 +581,19 @@ function bookacti_migrate_legacy_notifications() {
 		)
 	);
 	
+	// Count the number of migrated notifications
+	$migrated_nb = 0;
+	
 	foreach( $legacy_notifications as $legacy_notification_id => $legacy_notification ) {
 		$target  = substr( $legacy_notification_id, 0, 6 ) === 'admin_' ? 'admin' : 'customer';
 		$trigger = substr( $legacy_notification_id, strlen( $target . '_' ) );
 		
-		// Find custom notification trigger
+		// Check if the notification is permanent
 		$_custom_strpos = strpos( $trigger, '_custom_' );
-		if( $_custom_strpos !== false ) {
+		$is_custom      = $_custom_strpos !== false;
+		
+		// Find custom notification trigger
+		if( $is_custom ) {
 			$trigger = substr( $trigger, 0, $_custom_strpos );
 		}
 		
@@ -601,9 +608,6 @@ function bookacti_migrate_legacy_notifications() {
 		// Get notification type and default values
 		$notification_type = $target . '_' . $trigger;
 		$default_values    = isset( $notifications_default_values[ $notification_type ] ) ? $notifications_default_values[ $notification_type ] : array();
-		
-		// Check if the notification is permanent
-		$is_custom = ! in_array( $notification_type, $permanent_notification_types, true );
 		
 		// Unset empty fields that should use default value
 		$default_empty_keys = array( 'title', 'description' );
@@ -674,18 +678,24 @@ function bookacti_migrate_legacy_notifications() {
 		if( is_array( $sanitized_data[ 'push' ][ 'to' ] ) )          { $sanitized_data[ 'push' ][ 'to' ]          = maybe_serialize( $sanitized_data[ 'push' ][ 'to' ] ); }
 		if( is_array( $sanitized_data[ 'push' ][ 'attachments' ] ) ) { $sanitized_data[ 'push' ][ 'attachments' ] = maybe_serialize( $sanitized_data[ 'push' ][ 'attachments' ] ); }
 		
+		// Flag the notification as custom or permanent
+		$sanitized_data[ 'status' ] = ! $is_custom && in_array( $notification_type, $permanent_notification_types, true ) ? 'permanent' : 'publish';
+		
 		// Update existing notification
 		$existing_notification = ! $is_custom && isset( $notifications[ $notification_type ] ) ? $notifications[ $notification_type ] : array();
 		if( $existing_notification ) {
 			$sanitized_data[ 'db_id' ] = $existing_notification[ 'db_id' ];
 			bookacti_update_notification( $sanitized_data );
+			++$migrated_nb;
 		}
 		// Create custom notifications
 		else {
-			$sanitized_data[ 'id' ] = '';
+			$sanitized_data[ 'id' ]    = '';
+			$sanitized_data[ 'db_id' ] = '';
 			$notification_db_id = bookacti_create_notification( $sanitized_data );
 			if( $notification_db_id ) {
 				$existing_notification = bookacti_get_notification_data( $notification_db_id, true );
+				++$migrated_nb;
 			}
 		}
 		
@@ -754,5 +764,7 @@ function bookacti_migrate_legacy_notifications() {
 	// Delete cache
 	wp_cache_delete( 'notifications_data', 'bookacti' );
 	
-	update_option( 'bookacti_1_18_notifications_migrated', 1 );
+	update_option( 'bookacti_1_18_notifications_migrated', 2 );
+	
+	return $migrated_nb;
 }

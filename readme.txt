@@ -3,7 +3,7 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
 Tested up to: 7.0
-Stable tag: 1.18.0
+Stable tag: 1.18.1
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -320,6 +320,12 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.18.1 - 2026/05/27 =
+* Tweak - Add "Total price" column to booking export
+* Fix - Administrators or Shop Managers may not be able to see notifications in multisite installs if they were not super admin
+* Fix - Custom notifications made with Notification Pack add-on may not be migrated after updating to 1.18.0
+* Dev - Improve notification integration with add-ons or third party codes
 
 = 1.18.0 - 2026/05/20 =
 * Notification management improvements - **[See the user-friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-18-improved-notification-management/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
