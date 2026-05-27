@@ -2962,3 +2962,4 @@ function bookacti_bypass_managers_check_for_administrators( $true, $user_id = 0 
 add_filter( 'bookacti_bypass_template_managers_check', 'bookacti_bypass_managers_check_for_administrators', 100, 2 );
 add_filter( 'bookacti_bypass_activity_managers_check', 'bookacti_bypass_managers_check_for_administrators', 100, 2 );
 add_filter( 'bookacti_bypass_form_managers_check', 'bookacti_bypass_managers_check_for_administrators', 100, 2 );
+add_filter( 'bookacti_bypass_notification_managers_check', 'bookacti_bypass_managers_check_for_administrators', 100, 2 );

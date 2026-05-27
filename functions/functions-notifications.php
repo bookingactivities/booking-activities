@@ -1301,7 +1301,7 @@ function bookacti_get_notifications_tags_values( $booking, $booking_type, $notif
 /**
  * Send a notification
  * @since 1.2.1 (was bookacti_send_email in 1.2.0)
- * @version 1.18.0
+ * @version 1.18.1
  * @param string $notification_id The notification user-friendly identifier. May be $target_$trigger or custom_$target_$trigger_$db_id.
  * @param int $booking_id         Main booking (group) ID
  * @param string $booking_type    Main booking type ("single" or "group")
@@ -1439,17 +1439,16 @@ function bookacti_send_notification( $notification_id, $booking_id, $booking_typ
 	$tags          = apply_filters( 'bookacti_notification_tags', $tags, $notification, $locale, $booking, $booking_type, $args );
 	$allow_sending = apply_filters( 'bookacti_notification_sending_allowed', true, $notification, $tags, $locale, $booking, $booking_type, $args );
 	
-	if( ! $allow_sending ) { if( $lang_switched ) { bookacti_restore_locale(); } return array(); } 
+	$sent = array();
 	
-	// Send email notification
-	$sent = array( 'email' => 0 );
-	$sent_email = bookacti_send_email_notification( $notification, $tags, $args );
-	
-	if( $sent_email ) {
-		$sent[ 'email' ] = count( $notification[ 'email' ][ 'to' ] );
+	if( $allow_sending ) {
+		// Send email notification
+		$sent_email      = bookacti_send_email_notification( $notification, $tags, $args );
+		$sent[ 'email' ] = $sent_email ? count( $notification[ 'email' ][ 'to' ] ) : 0;
+		
+		// Notifications may be sent via other channels
+		$sent = apply_filters( 'bookacti_send_notifications', $sent, $notification_id, $notification, $tags, $booking, $booking_type, $args, $locale );
 	}
-	
-	$sent = apply_filters( 'bookacti_send_notifications', $sent, $notification_id, $notification, $tags, $booking, $booking_type, $args, $locale );
 	
 	// Switch locale back to normal
 	if( $lang_switched ) { bookacti_restore_locale(); }
@@ -1461,6 +1460,7 @@ function bookacti_send_notification( $notification_id, $booking_id, $booking_typ
 /**
  * Merge notifications before they are sent
  * @since 1.16.0
+ * @version 1.18.1
  * @param array $planned_notifications
  * @return array
  */
@@ -1493,6 +1493,8 @@ function bookacti_merge_planned_notifications( $planned_notifications ) {
 		// Get the bookings
 		$notification_ids = $booking_ids = $booking_groups_ids = $notification_uids = array();
 		foreach( $planned_notifications as $i => $planned_notification ) {
+			if( empty( $planned_notification[ 'booking_type' ] ) || empty( $planned_notification[ 'booking_id' ] ) ) { continue; }
+			
 			// Remove duplicates notifications
 			$notification_uid = $planned_notification[ 'notification_id' ] . '_' . $planned_notification[ 'booking_type' ] . '_' . $planned_notification[ 'booking_id' ];
 			if( in_array( $notification_uid, $notification_uids, true ) ) {
@@ -1515,10 +1517,13 @@ function bookacti_merge_planned_notifications( $planned_notifications ) {
 			
 			$notifications_to_merge = array();
 			foreach( $planned_notifications as $i => $planned_notification ) {
+				if( empty( $planned_notification[ 'booking_type' ] ) || empty( $planned_notification[ 'booking_id' ] ) ) { continue; }
+				
 				$booking_id      = $planned_notification[ 'booking_id' ];
 				$notification_id = $planned_notification[ 'notification_id' ];
 				$booking         = $planned_notification[ 'booking_type' ] === 'group' && isset( $booking_groups[ $booking_id ] ) ? $booking_groups[ $booking_id ] : ( $planned_notification[ 'booking_type' ] === 'single' && isset( $bookings[ $booking_id ] ) ? $bookings[ $booking_id ] : array() );
 				if( ! $booking ) { continue; }
+				
 				if( substr( $notification_id, 0, 6 ) === 'admin_' ) {
 					$user_id = 'admin'; // Always merge notifications sent to the administrators
 				} else {
@@ -1576,7 +1581,7 @@ function bookacti_merge_planned_notifications( $planned_notifications ) {
 /**
  * Send an email notification
  * @since 1.2.0
- * @version 1.16.0
+ * @version 1.18.1
  * @param array $notification
  * @param array $tags
  * @param array $args
@@ -1586,9 +1591,10 @@ function bookacti_send_email_notification( $notification, $tags = array(), $args
 	// Do not send email notification if it is deactivated
 	if( empty( $notification[ 'active' ] ) || empty( $notification[ 'email' ][ 'active' ] ) ) { return false; }
 	
-	$to      = ! empty( $notification[ 'email' ][ 'to' ] ) ? $notification[ 'email' ][ 'to' ] : array();
-	$subject = ! empty( $notification[ 'email' ][ 'subject' ] ) ? str_replace( array_keys( $tags ), array_values( $tags ), $notification[ 'email' ][ 'subject' ] ) : '';
-	$message = ! empty( $notification[ 'email' ][ 'message' ] ) ? $notification[ 'email' ][ 'message' ] : '';
+	$to          = ! empty( $notification[ 'email' ][ 'to' ] ) ? $notification[ 'email' ][ 'to' ] : array();
+	$subject     = ! empty( $notification[ 'email' ][ 'subject' ] ) ? $notification[ 'email' ][ 'subject' ] : '';
+	$message     = ! empty( $notification[ 'email' ][ 'message' ] ) ? $notification[ 'email' ][ 'message' ] : '';
+	$attachments = ! empty( $notification[ 'email' ][ 'attachments' ] ) ? $notification[ 'email' ][ 'attachments' ] : array();
 	
 	// Process booking loops
 	$bookings_to_loop = array_merge( array( array( 'tags' => array_merge( $tags, array( '{booking_list}' => '{_booking_list}', '{booking_list_raw}' => '{_booking_list_raw}' ) ) ) ), ! empty( $args[ 'additional_bookings' ] ) ? $args[ 'additional_bookings' ] : array() );
@@ -1602,6 +1608,7 @@ function bookacti_send_email_notification( $notification, $tags = array(), $args
 	}
 	
 	// Process main booking tags
+	$subject = str_replace( array_keys( $tags ), array_values( $tags ), $subject );
 	$message = str_replace( array_keys( $tags ), array_values( $tags ), $message );
 	
 	// Do shortcodes
@@ -1621,7 +1628,7 @@ function bookacti_send_email_notification( $notification, $tags = array(), $args
 		'subject'     => $subject,
 		'message'     => wpautop( $message ),
 		'headers'     => $headers,
-		'attachments' => array()
+		'attachments' => array_values( $attachments )
 	), $notification, $tags );
 	
 	if( empty( $email_data[ 'to' ] ) ) { return false; }

@@ -11,6 +11,7 @@ if( ! class_exists( 'BOOKACTI_Notifications_List_Table' ) ) {
 	/**
 	 * Notifications WP_List_Table
 	 * @since 1.18.0
+	 * @version 1.18.1
 	 */
 	class BOOKACTI_Notifications_List_Table extends WP_List_Table {
 		
@@ -455,19 +456,11 @@ if( ! class_exists( 'BOOKACTI_Notifications_List_Table' ) ) {
 		/**
 		 * Message to be displayed when there are no items
 		 * @since 1.18.0
+		 * @version 1.18.1
 		 * @access public
 		 */
 		function no_items() {
 			_e( 'No items found.' );
-			
-			$ignored_keys    = array( 'order_by', 'order', 'offset', 'per_page' );
-			$default_filters = array_diff_key( bookacti_get_default_notification_filters(), array_flip( $ignored_keys ) );
-			$current_filters = array_diff_key( $this->filters, array_flip( $ignored_keys ) );
-			$has_filters     = $current_filters != $default_filters;
-			
-			if( ! $has_filters && $current_filters[ 'in__status' ] == array( 'permanent', 'publish' ) ) {
-				echo ' <a href="' . esc_url( wp_nonce_url( admin_url( 'admin.php?page=bookacti_notifications&action=reset_permanent_notifications' ), 'reset-permanent-notifications' ) ) . '" class="button">' . esc_html__( 'Reset default notifications', 'booking-activities' ) . '</a>';
-			}
 		}
 		
 		

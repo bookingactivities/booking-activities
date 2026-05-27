@@ -2005,7 +2005,7 @@ function bookacti_get_booking_group_actions_html( $booking_group, $group_booking
 /**
  * Booking data that can be exported
  * @since 1.6.0
- * @version 1.8.0
+ * @version 1.18.1
  * @return array
  */
 function bookacti_get_bookings_export_columns() {
@@ -2032,7 +2032,8 @@ function bookacti_get_bookings_export_columns() {
 		'activity_id'           => esc_html__( 'Activity / Category ID', 'booking-activities' ),
 		'activity_title'        => esc_html__( 'Activity / Category title', 'booking-activities' ),
 		'form_id'               => esc_html__( 'Form ID', 'booking-activities' ),
-		'order_id'              => esc_html__( 'Order ID', 'booking-activities' )
+		'order_id'              => esc_html__( 'Order ID', 'booking-activities' ),
+		'price'                 => esc_html__( 'Total price', 'booking-activities' )
 	) );
 }
 
@@ -2239,7 +2240,7 @@ function bookacti_convert_bookings_to_ical( $filters = array(), $args_raw = arra
 	);
 	$booking_items = bookacti_get_bookings_for_export( $export_args );
 	$events_tags   = bookacti_get_bookings_export_events_tags_values( $booking_items, $args );
-		
+	
 	$vcalendar = apply_filters( 'bookacti_bookings_ical_vcalendar', array(
 		'X-WR-CALNAME' => esc_html__( 'My bookings', 'booking-activities' ),
 		'X-WR-CALDESC' => esc_html__( 'My bookings', 'booking-activities' ) . '.'
@@ -2371,7 +2372,7 @@ function bookacti_get_bookings_export_events_tags_values( $booking_items, $args 
 /**
  * Get an array of bookings data formatted to be exported
  * @since 1.6.0
- * @version 1.16.43
+ * @version 1.18.1
  * @param array $args_raw
  * @return array
  */
@@ -2416,12 +2417,22 @@ function bookacti_get_bookings_for_export( $args_raw = array() ) {
 	}
 
 	// Retrieve the required groups data only
-	$booking_groups   = array();
-	$displayed_groups = array();
+	$booking_groups = $displayed_groups = $bookings_by_group = array();
 	if( ( $may_have_groups || $single_only ) && $group_ids ) {
 		// Get only the groups that will be displayed
-		$group_filters  = bookacti_format_booking_filters( array( 'in__booking_group_id' => $group_ids, 'fetch_meta' => true ) );
-		$booking_groups = bookacti_get_booking_groups( $group_filters );
+		$group_filters   = bookacti_format_booking_filters( array( 'in__booking_group_id' => $group_ids, 'fetch_meta' => true ) );
+		$booking_groups  = bookacti_get_booking_groups( $group_filters );
+		
+		// Get grouped bookings
+		$group_ids       = $booking_groups ? bookacti_ids_to_array( array_keys( $booking_groups ) ) : array();
+		$grouped_filters = $group_ids ? bookacti_format_booking_filters( array( 'in__booking_group_id' => $group_ids, 'fetch_meta' => true ) ) : array();
+		$groups_bookings = $grouped_filters ? bookacti_get_bookings( $grouped_filters ) : array();
+		foreach( $groups_bookings as $groups_booking_id => $groups_booking ) {
+			if( ! isset( $bookings_by_group[ $groups_booking->group_id ] ) ) {
+				$bookings_by_group[ $groups_booking->group_id ] = array();
+			}
+			$bookings_by_group[ $groups_booking->group_id ][ $groups_booking_id ] = $groups_booking;
+		}
 	}
 
 	// Retrieve information about users and stock them into an array sorted by user id
@@ -2447,13 +2458,15 @@ function bookacti_get_bookings_for_export( $args_raw = array() ) {
 	$booking_items = array();
 	foreach( $bookings as $booking ) {
 		$group = $booking->group_id && ! empty( $booking_groups[ $booking->group_id ] ) ? $booking_groups[ $booking->group_id ] : null;
-
+		
+		$selected_bookings = array( 'bookings' => array(), 'booking_groups' => array(), 'groups_bookings' => array() );
+		
 		// Display one single row for a booking group, instead of each bookings of the group
 		if( $booking->group_id && $may_have_groups && ! $single_only ) {
 			// If the group row has already been displayed, or if it is not found, continue
 			if( isset( $displayed_groups[ $booking->group_id ] ) ) { continue; }
 			if( empty( $booking_groups[ $booking->group_id ] ) )   { continue; }
-
+			
 			$booking_type   = 'group';
 			$id             = $group->id;
 			$user_id        = $group->user_id;
@@ -2470,8 +2483,10 @@ function bookacti_get_bookings_for_export( $args_raw = array() ) {
 			$activity_id    = $group->category_id;
 			$activity_title = $group->category_title;
 			$active         = $group->active;
-
-			$displayed_groups[ $booking->group_id ] = $booking->id;
+			
+			$displayed_groups[ $booking->group_id ]               = $booking->id;
+			$selected_bookings[ 'booking_groups' ][ $group->id ]  = $group;
+			$selected_bookings[ 'groups_bookings' ][ $group->id ] = isset( $bookings_by_group[ $group->id ] ) ? $bookings_by_group[ $group->id ] : array( $booking->id => $booking );
 
 		// Single booking
 		} else {
@@ -2491,6 +2506,8 @@ function bookacti_get_bookings_for_export( $args_raw = array() ) {
 			$activity_id    = $booking->activity_id;
 			$activity_title = $booking->activity_title;
 			$active         = $booking->active;
+			
+			$selected_bookings[ 'bookings' ][ $booking->id ] = $booking;
 		}
 		
 		// Creation date
@@ -2523,6 +2540,7 @@ function bookacti_get_bookings_for_export( $args_raw = array() ) {
 			'activity_title'        => $activity_title ? apply_filters( 'bookacti_translate_text', $activity_title ) : '',
 			'form_id'               => $form_id,
 			'order_id'              => $order_id,
+			'price'                 => bookacti_get_selected_bookings_total_price( $selected_bookings, ! $args[ 'raw' ] ),
 			'customer_id'           => $user_id,
 			'customer_display_name' => '',
 			'customer_first_name'   => '',

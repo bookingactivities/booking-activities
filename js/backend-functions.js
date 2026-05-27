@@ -128,7 +128,6 @@ $j( document ).ready( function() {
 	/**
 	 * Show or hide days off table according to use_global value - on load
 	 * @since 1.17.0
-	 * @param {HTMLElement} container
 	 */
 	$j( '.bookacti-date-intervals-container' ).each( function() {
 		bookacti_toggle_days_off_table( $j( this ) );

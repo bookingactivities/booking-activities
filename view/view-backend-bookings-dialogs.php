@@ -1,7 +1,7 @@
 <?php 
 /**
  * Backend booking dialogs
- * @version 1.18.0
+ * @version 1.18.1
  */
 
 // Exit if accessed directly
@@ -314,6 +314,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// Display tabs
 		$user_settings  = bookacti_get_bookings_export_settings();
 		$export_columns = bookacti_get_bookings_export_columns();
+		$tags           = bookacti_get_bookings_export_event_tags();
 		$export_tabs    = apply_filters( 'bookacti_export_bookings_dialog_tabs', array(
 			array( 
 				'label'      => esc_html__( 'CSV', 'booking-activities' ),
@@ -326,7 +327,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				'label'      => esc_html__( 'iCal', 'booking-activities' ),
 				'id'         => 'ical',
 				'callback'   => 'bookacti_fill_export_bookings_ical_tab',
-				'parameters' => array( 'user_settings' => $user_settings, 'export_columns' => $export_columns ),
+				'parameters' => array( 'user_settings' => $user_settings, 'export_columns' => $export_columns, 'tags' => $tags ),
 				'order'      => 20
 			)
 		), $user_settings );
@@ -408,7 +409,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		/**
 		 * Display the content of the "iCal" tab of the "Export bookings" dialog
 		 * @since 1.8.0
-		 * @version 1.18.0
+		 * @version 1.18.1
 		 * @param array $args
 		 */
 		function bookacti_fill_export_bookings_ical_tab( $args ) {
@@ -453,12 +454,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				<span><?php esc_html_e( 'HTML may not be supported by your calendar app.', 'booking-activities' ); ?></span>
 			</div>
 			<?php
-				$tags_args = array( 
+				$tags_args = apply_filters( 'bookacti_export_bookings_ical_tags_field', array( 
 					'title' => esc_html__( 'Available tags', 'booking-activities' ),
 					'tip'   => esc_html__( 'Use these tags in the event title and description to display event specific data.', 'booking-activities' ),
-					'tags'  => bookacti_get_bookings_export_event_tags(),
+					'tags'  => $args[ 'tags' ],
 					'id'    => 'bookacti-tags-ical-bookings-export'
-				);
+				), $args );
 				bookacti_display_tags_fieldset( $tags_args );
 			?>
 			<fieldset id='booakcti-ical-booking-list-fields-container' class='bookacti-fieldset-no-css'>

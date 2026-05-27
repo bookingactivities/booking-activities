@@ -66,7 +66,7 @@ add_action( 'init', 'bookacti_controller_send_async_notifications', 100 );
 /**
  * Send async notifications
  * @since 1.16.0
- * @version 1.16.37
+ * @version 1.18.1
  */
 function bookacti_send_async_notifications() {
 	$nb_sent = array();
@@ -95,8 +95,12 @@ function bookacti_send_async_notifications() {
 	
 	// Send the notifications
 	foreach( $async_notifications as $async_notification ) {
-		bookacti_send_notification( $async_notification[ 'notification_id' ], $async_notification[ 'booking_id' ], $async_notification[ 'booking_type'], $async_notification[ 'args' ], 0 );
+		if( ! empty( $async_notification[ 'booking_type' ] ) && ! empty( $async_notification[ 'booking_id' ] ) ) {
+			bookacti_send_notification( $async_notification[ 'notification_id' ], $async_notification[ 'booking_id' ], $async_notification[ 'booking_type'], $async_notification[ 'args' ], 0 );
+		}
 	}
+	
+	do_action( 'bookacti_send_async_notifications', $async_notifications );
 }
 add_action( 'bookacti_cron_send_async_notifications', 'bookacti_send_async_notifications', 10 );
 
@@ -523,7 +527,7 @@ function bookacti_controller_update_notification_data() {
 	
 	$notification_db_id = intval( $_POST[ 'notification_db_id' ] );
 	
-	// Exit if not allowed to create a notification
+	// Exit if not allowed to edit a notification
 	$can_edit_notification   = current_user_can( 'bookacti_edit_notifications' );
 	$can_manage_notification = bookacti_user_can_manage_notification( $notification_db_id );
 	if( ! $can_edit_notification || ! $can_manage_notification ) { esc_html_e( 'You are not allowed to do that.', 'booking-activities' ); exit; }
