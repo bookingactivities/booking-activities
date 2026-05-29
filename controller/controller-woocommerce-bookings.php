@@ -466,7 +466,7 @@ function bookacti_wc_update_paid_order_bookings( $order_id, $order = null ) {
 		$where = array(
 			'in__status' => array( 'pending', 'in_cart', 'waiting_list_accepted' )
 		);
-
+		
 		bookacti_wc_update_order_items_bookings( $order, $new_data, $where );
 	} 
 
@@ -600,18 +600,27 @@ add_action( 'woocommerce_order_status_pending_to_failed', 'bookacti_wc_update_fa
 /**
  * Update order status according to the bookings status bound to its items
  * @since 1.9.0
- * @version 1.16.0
+ * @version 1.18.2
  * @param string $new_status
  * @param object $booking_object
+ * @param array $grouped_bookings
  * @param array $args
  */
-function bookacti_wc_update_booking_order_status_according_to_its_bookings( $new_status, $booking_object, $args = array() ) {
+function bookacti_wc_update_booking_order_status_according_to_its_bookings( $new_status, $booking_object, $grouped_bookings = array(), $args = array() ) {
+	// Swap parameters according to current hook
+	if( current_action() === 'bookacti_booking_status_changed' ) {
+		$args             = $grouped_bookings;
+		$grouped_bookings = array( $booking_object );
+	}
+	
 	if( empty( $booking_object->order_id ) ) { return; }
+	if( ! empty( $args[ 'context' ] ) && $args[ 'context' ] === 'wc_order_status_changed' ) { return; }
 	if( ! empty( $args[ 'booking_group_status_changed' ] ) ) { return; }
+	
 	bookacti_wc_update_order_status_according_to_its_bookings( $booking_object->order_id );
 }
 add_action( 'bookacti_booking_status_changed', 'bookacti_wc_update_booking_order_status_according_to_its_bookings', 10, 3 );
-add_action( 'bookacti_booking_group_status_changed', 'bookacti_wc_update_booking_order_status_according_to_its_bookings', 10, 2 );
+add_action( 'bookacti_booking_group_status_changed', 'bookacti_wc_update_booking_order_status_according_to_its_bookings', 10, 4 );
 
 
 /**

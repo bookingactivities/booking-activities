@@ -1,7 +1,7 @@
 <?php 
 /**
  * Backend booking dialogs
- * @version 1.18.1
+ * @version 1.18.2
  */
 
 // Exit if accessed directly
@@ -256,12 +256,18 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_send_booking_notification' ); ?>'/>
 		<?php
 			// Get notifications
-			$notifications_data = bookacti_get_notifications_data();
+			$notifications_data = bookacti_get_notifications_data( false );
+			$default_filters    = bookacti_get_default_notification_filters();
 			
 			// Build notification options
 			$notification_options = array();
 			foreach( $notifications_data as $notification_id => $notification_data ) {
-				$notification_options[ $notification_id ] = $notification_data[ 'target' ] === 'admin' ? esc_html__( 'Administrator', 'booking-activities' ) : esc_html__( 'Customer', 'booking-activities' );
+				if( ! in_array( $notification_data[ 'status' ], array( 'publish', 'permanent' ), true ) ) { continue; }
+				
+				$notification_type = $notification_data[ 'target' ] . '_' . $notification_data[ 'trigger' ];
+				if( $default_filters[ 'in__notification_type' ] && ! in_array( $notification_type, $default_filters[ 'in__notification_type' ], true ) ) { continue; }
+				
+				$notification_options[ $notification_id ]  = $notification_data[ 'target' ] === 'admin' ? esc_html__( 'Administrator', 'booking-activities' ) : esc_html__( 'Customer', 'booking-activities' );
 				$notification_options[ $notification_id ] .= ' - ';
 				$notification_options[ $notification_id ] .= ! empty( $notification_data[ 'title' ] ) ? $notification_data[ 'title' ] . ' (' . $notification_id . ' / #' . $notification_data[ 'db_id' ] . ')' : $notification_id;
 			}
@@ -291,9 +297,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			<?php 
 				$settings_url = admin_url( 'admin.php?page=bookacti_notifications' );
 				echo sprintf( 
-						/* translators: %s = link to "Booking Activities > Settings > Notifications" */
+						/* translators: %s = link to "Booking Activities > Notifications" */
 						esc_html__( 'The notification is sent according to its settings, so make sure to properly configure it before, in %s.', 'booking-activities' ), 
-						'<a href="' . $settings_url . '">Booking Activities > ' . esc_html__( 'Settings', 'booking-activities' ) . ' > ' . esc_html__( 'Notifications', 'booking-activities' ) . '</a>'
+						'<a href="' . $settings_url . '">Booking Activities > ' . esc_html__( 'Notifications', 'booking-activities' ) . '</a>'
 					);
 			?>
 			</span>

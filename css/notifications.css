@@ -36,6 +36,9 @@
 #bookacti-notification-editor-page-container .bookacti-select        { width: 260px; }
 #bookacti-notification-editor-page-container #bookacti-email-subject { width: 100%; }
 
+.bookacti-field-container > .bookacti-field-container { display: inline-block; vertical-align: top; }
+.bookacti-field-container select[name$="_exclude]"] { width: 105px !important; margin-bottom: 10px; }
+
 
 /** TAGS **/
 .bookacti-notification-tag-promo   { background: #ffff78; }

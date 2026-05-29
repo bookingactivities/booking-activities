@@ -791,7 +791,7 @@ function bookacti_dialog_change_bookings_quantity( booking_selection ) {
 /**
  * Reschedule bookings dialog
  * @since 1.16.0
- * @version 1.16.1
+ * @version 1.18.2
  * @param {Object} booking_selection
  */
 function bookacti_dialog_reschedule_bookings( booking_selection ) {
@@ -817,7 +817,7 @@ function bookacti_dialog_reschedule_bookings( booking_selection ) {
 	$j( '#bookacti-reschedule-booking-dialog > .bookacti-notices' ).remove();
 	$j( '#bookacti-reschedule-booking-dialog .bookacti-booking-system-container .bookacti-notices' ).empty().hide();
 	if( bookacti_localized.is_admin ) {
-		$j( '#bookacti-send-notifications-on-reschedule' ).prop( 'checked', false );
+		$j( '#bookacti-send-notifications-on-reschedule' ).prop( 'checked', false ).trigger( 'change' );
 	}
 	
 	$j( 'body' ).trigger( 'bookacti_booking_action_dialog_opened', [ booking_selection, 'reschedule' ] );

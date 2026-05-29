@@ -139,32 +139,20 @@ add_action( 'bookacti_clean_latest_notifications', 'bookacti_clean_latest_emails
 /**
  * Send a notification to admin and customer when a new booking is made
  * @since 1.2.2 (was bookacti_send_notification_admin_new_booking in 1.2.1)
- * @version 1.16.45
+ * @version 1.18.2
  * @param array $return_array
  * @param array $booking_form_values
  * @param int $form_id
  */
 function bookacti_send_notification_when_booking_is_made( $return_array, $booking_form_values, $form_id ) {
-	foreach( $return_array[ 'bookings' ] as $booking ) {
-		$booking_data = array();
-		if( $booking[ 'type' ] === 'group' ) {
-			$booking_data = bookacti_sanitize_booking_group_data( array_merge( array( 
-				'event_group_id' => $booking[ 'picked_event' ][ 'group_id' ],
-				'group_date'     => $booking[ 'picked_event' ][ 'group_date' ],
-				'grouped_events' => $booking[ 'picked_event' ][ 'events' ]
-			), $booking_form_values ) );
-		} else {
-			$booking_data = bookacti_sanitize_booking_data( array_merge( array(
-				'event_id'    => $booking[ 'picked_event' ][ 'events' ][ 0 ][ 'id' ],
-				'event_start' => $booking[ 'picked_event' ][ 'events' ][ 0 ][ 'start' ],
-				'event_end'   => $booking[ 'picked_event' ][ 'events' ][ 0 ][ 'end' ],
-			), $booking_form_values ) );
-		}
-		$booking_data[ 'id' ] = $booking[ 'id' ];
+	foreach( $return_array[ 'bookings' ] as $booking_info ) {
+		// Get the booking (group)
+		$booking = $booking_info[ 'type' ] === 'group' ? bookacti_get_booking_group_by_id( $booking_info[ 'id' ], true ) : bookacti_get_booking_by_id( $booking_info[ 'id' ], true );
+		if( ! $booking ) { continue; }
 		
 		// Send a booking confirmation to admin and customers
-		bookacti_send_booking_status_change_notification( 'new', (object) $booking_data, null, $booking[ 'type' ] );
-		bookacti_send_booking_status_change_notification( $booking_data[ 'status' ], (object) $booking_data, null, $booking[ 'type' ] );
+		bookacti_send_booking_status_change_notification( 'new', $booking, null, $booking[ 'type' ] );
+		bookacti_send_booking_status_change_notification( $booking->state, $booking, null, $booking[ 'type' ] );
 	}
 }
 add_action( 'bookacti_booking_form_validated', 'bookacti_send_notification_when_booking_is_made', 100, 3 );

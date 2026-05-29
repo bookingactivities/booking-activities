@@ -1245,7 +1245,7 @@ function bookacti_wc_validate_order_item_bookings_new_quantity( $order_item_book
 /**
  * Update bookings attached to all order items
  * @since 1.9.0
- * @version 1.16.45
+ * @version 1.18.2
  * @param int|WC_Order $order_id
  * @param array $new_data
  * @param array $where
@@ -1259,7 +1259,7 @@ function bookacti_wc_update_order_items_bookings( $order_id, $new_data, $where =
 	if( ! $order || ! $new_data ) { return $updated; }
 	
 	$default_args = array( 'context' => 'wc_order_status_changed' );
-	$args         = wp_parse_args( $args, $default_args );
+	$args         = array_merge( $default_args, $args );
 	
 	// Sanitize where clauses
 	$in__order_item_id    = ! empty( $where[ 'in__order_item_id' ] ) ? array_map( 'intval', $where[ 'in__order_item_id' ] ) : array();
@@ -1310,7 +1310,7 @@ function bookacti_wc_update_order_items_bookings( $order_id, $new_data, $where =
 				$is_updated1    = bookacti_update_booking_group_bookings( $sanitized_data );
 				$is_updated2    = bookacti_update_booking_group( $sanitized_data );
 				$is_updated     = $is_updated1 || $is_updated2;
-			
+				
 				$old_group_quantity = ! empty( $item_booking[ 'booking_group' ]->quantity ) ? intval( $item_booking[ 'booking_group' ]->quantity ) : intval( $item_booking[ 'bookings' ][ 0 ]->quantity );
 				$new_group_quantity = $sanitized_data[ 'quantity' ] > 0 ? $sanitized_data[ 'quantity' ] : 0;
 

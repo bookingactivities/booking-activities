@@ -1899,7 +1899,7 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 
 /**
  * Update a group of events with selected events 
- * @version 1.15.13
+ * @version 1.18.2
  * @param {int} group_id
  */
 function bookacti_dialog_update_group_of_events( group_id ) {
@@ -2071,8 +2071,11 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 			bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ] = init_selected_events.slice();
 			bookacti_fill_selected_events_list();
 			bookacti_refresh_selected_events_display();
-			bookacti.fc_calendar[ 'bookacti-template-calendar' ].gotoDate( init_selected_events[ 0 ][ 'start' ] );
-
+			
+			if( init_selected_events?.[ 0 ]?.[ 'start' ] ) {
+				bookacti.fc_calendar[ 'bookacti-template-calendar' ].gotoDate( init_selected_events[ 0 ][ 'start' ] );
+			}
+		
 			var data = {
 				'action': 'bookactiBeforeDeleteGroupOfEvents',
 				'group_id': group_id,
@@ -2153,7 +2156,10 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ] = init_selected_events.slice();
 		bookacti_fill_selected_events_list();
 		bookacti_refresh_selected_events_display();
-		bookacti.fc_calendar[ 'bookacti-template-calendar' ].gotoDate( init_selected_events[ 0 ][ 'start' ] );
+		
+		if( init_selected_events?.[ 0 ]?.[ 'start' ] ) {
+			bookacti.fc_calendar[ 'bookacti-template-calendar' ].gotoDate( init_selected_events[ 0 ][ 'start' ] );
+		}
 	});
 	
 	// Open the modal dialog

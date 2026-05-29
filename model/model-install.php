@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Create Booking Activities database tables
- * @version 1.18.0
+ * @version 1.18.2
  * @global wpdb $wpdb
  */
 function bookacti_create_tables() {
@@ -129,7 +129,6 @@ function bookacti_create_tables() {
 		order_id BIGINT UNSIGNED,
 		form_id BIGINT UNSIGNED,
 		group_id BIGINT UNSIGNED,
-		activity_id BIGINT UNSIGNED,
 		event_id BIGINT UNSIGNED,
 		event_start DATETIME,
 		event_end DATETIME,

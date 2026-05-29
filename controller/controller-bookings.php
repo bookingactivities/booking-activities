@@ -1002,7 +1002,7 @@ add_action( 'wp_ajax_nopriv_bookactiRescheduleBookings', 'bookacti_controller_re
 /**
  * AJAX Controller - Send a notification for bookings (groups)
  * @since 1.16.0
- * @version 1.16.45
+ * @version 1.18.2
  */
 function bookacti_controller_send_bookings_notification() {
 	// Check nonce
@@ -1042,12 +1042,16 @@ function bookacti_controller_send_bookings_notification() {
 	do_action( 'bookacti_before_send_bookings_notification', $notification_id, $selected_bookings );
 	
 	$sent = array( 'bookings' => array(), 'booking_groups' => array() );
+	
 	foreach( $selected_bookings[ 'bookings' ] as $booking_id => $booking ) {
-		bookacti_send_notification( $notification_id, $booking_id, 'single', array( 'notification' => array( 'active' => true ) ) );
+		$notification_args = apply_filters( 'bookacti_send_booking_notification_args', array( 'notification' => array( 'active' => true ) ), $notification_id, $booking, 'single' );
+		bookacti_send_notification( $notification_id, $booking_id, 'single', $notification_args );
 		$sent[ 'bookings' ][ $booking_id ] = true;
 	}
+	
 	foreach( $selected_bookings[ 'booking_groups' ] as $booking_group_id => $booking_group ) {
-		bookacti_send_notification( $notification_id, $booking_group_id, 'group', array( 'notification' => array( 'active' => true ) ) );
+		$notification_args = apply_filters( 'bookacti_send_booking_notification_args', array( 'notification' => array( 'active' => true ) ), $notification_id, $booking_group, 'group' );
+		bookacti_send_notification( $notification_id, $booking_group_id, 'group', $notification_args );
 		$sent[ 'booking_groups' ][ $booking_group_id ] = true;
 	}
 	

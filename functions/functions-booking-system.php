@@ -4595,7 +4595,7 @@ function bookacti_get_bounding_events_from_groups_of_events_heuristic( $groups, 
 /**
  * Get occurrences of repeated events
  * @since 1.12.0
- * @version 1.17.0
+ * @version 1.18.2
  * @param object $groups Groups data 
  * @param array $raw_args {
  *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
@@ -4638,6 +4638,9 @@ function bookacti_get_occurrences_of_repeated_groups_of_events( $groups, $raw_ar
 		// Remove non-repeated groups from the array
 		unset( $groups[ $group_id ] );
 		
+		// Skip group if it has no events
+		if( empty( $group[ 'events' ] ) ) { continue; }
+		
 		// Check if the group is past or has started and maybe include it, according to past_events and started_groups options
 		$last_event     = end( $group[ 'events' ] );
 		$first_event    = reset( $group[ 'events' ] );
@@ -4674,6 +4677,9 @@ function bookacti_get_occurrences_of_repeated_groups_of_events( $groups, $raw_ar
 	$repeated_interval_start_dt = false;
 	$repeated_interval_end_dt   = false;
 	foreach( $groups as $group_id => $group ) {
+		// Skip group if it has no events
+		if( empty( $group[ 'events' ] ) ) { continue; }
+		
 		if( ! empty( $group[ 'template_id' ] ) && ! in_array( $group[ 'template_id' ], $repeated_args[ 'templates' ], true ) )	{ $repeated_args[ 'templates' ][] = $group[ 'template_id' ]; }
 		foreach( $group[ 'events' ] as $group_event ) {
 			if( ! empty( $group_event[ 'activity_id' ] ) && ! in_array( $group_event[ 'activity_id' ], $repeated_args[ 'activities' ], true ) )	{ $repeated_args[ 'activities' ][] = $group_event[ 'activity_id' ]; }
@@ -4716,6 +4722,9 @@ function bookacti_get_occurrences_of_repeated_groups_of_events( $groups, $raw_ar
 	
 	// Compute the groups occurrences
 	foreach( $groups as $group_id => $group ) {
+		// Skip group if it has no events
+		if( empty( $group[ 'events' ] ) ) { continue; }
+		
 		// The occurrences of the groups are based on its first event, so compute the occurrences of the first event
 		$first_event = reset( $group[ 'events' ] );
 		$dummy_event = array( 
