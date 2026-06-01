@@ -3,6 +3,27 @@
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
+ * Rename form meta
+ * This function is temporary
+ * @since 1.18.2
+ * @global wpdb $wpdb
+ * @param string $old_version
+ */
+function bookacti_update_db_to_1_18_2( $old_version ) {
+	// Do it only once, when Booking Activities is updated for the first time to 1.18.2
+	if( ! $old_version || version_compare( $old_version, '1.18.2', '>=' ) ) { return; }
+	
+	global $wpdb;
+	
+	$query = 'UPDATE ' . BOOKACTI_TABLE_META . ' SET meta_key = "css_id" WHERE object_type = "form" AND meta_key = "id"';
+	$wpdb->query( $query );
+	$query = 'UPDATE ' . BOOKACTI_TABLE_META . ' SET meta_key = "css_class" WHERE object_type = "form" AND meta_key = "class"';
+	$wpdb->query( $query );
+}
+add_action( 'bookacti_db_updated', 'bookacti_update_db_to_1_18_2', 120 );
+
+
+/**
  * Migrate notifications data to their own tables
  * This function is temporary
  * @since 1.18.0

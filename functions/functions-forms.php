@@ -38,38 +38,85 @@ function bookacti_create_form( $title = '', $insert_default_fields = false ) {
 
 
 /**
+ * Get forms data and metadata
+ * @since 1.18.2
+ * @param boolean $active_only
+ * @param boolean $raw
+ * @return array
+ */
+function bookacti_get_forms_data( $active_only = true, $raw = false ) {
+	$forms = wp_cache_get( 'forms_data', 'bookacti' );
+	
+	if( $forms === false ) {
+		$filters = bookacti_format_form_filters();
+		$forms   = bookacti_get_forms( $filters );
+		
+		if( $forms ) {
+			// Get forms meta and managers
+			$forms_meta     = bookacti_get_metadata( 'form', array_keys( $forms ) );
+			$forms_managers = bookacti_get_managers( 'notification', array_keys( $forms ) );
+			foreach( $forms as $form_id => $form ) {
+				// Add form meta
+				$form_meta = isset( $forms_meta[ $form_id ] ) ? $forms_meta[ $form_id ] : array();
+				if( is_array( $form_meta ) ) { 
+					$forms[ $form_id ] = array_merge( $form, $form_meta );
+				}
+				
+				// Add notification managers
+				$forms[ $form_id ][ 'managers' ] = ! empty( $forms_managers[ $form_id ] ) ? $forms_managers[ $form_id ] : array();
+			}
+		}
+		
+		$forms = apply_filters( 'bookacti_forms_data_raw', $forms ? $forms : array() );
+		
+		// Cache data
+		wp_cache_set( 'forms_data', $forms, 'bookacti' );
+	}
+	
+	// Format data
+	if( ! $raw && $forms ) { 
+		$forms = array_filter( array_map( 'bookacti_format_form_data', $forms ) );
+	}
+	
+	// Remove inactive forms
+	$forms = $forms ? $forms : array();
+	if( $forms && $active_only ) {
+		foreach( $forms as $form_id => $form ) {
+			$status = ! empty( $form[ 'status' ] ) ? $form[ 'status' ] : '';
+			if( empty( $form[ 'active' ] ) || $status !== 'publish' ) {
+				unset( $forms[ $form_id ] );
+			}
+		}
+	}
+	
+	return apply_filters( 'bookacti_forms_data', $forms );
+}
+
+
+/**
  * Get form data and metadata
  * @since 1.5.0
- * @version 1.14.0
+ * @version 1.18.2
  * @param int $form_id
  * @param boolean $raw
  * @return array
  */
 function bookacti_get_form_data( $form_id, $raw = false ) {
-	$form = bookacti_get_form( $form_id );
-	if( ! $form ) { return array(); }
+	$forms_data = bookacti_get_forms_data( false, $raw );
 	
-	// Add form metadata
-	$form_meta = bookacti_get_metadata( 'form', $form_id );
-	if( is_array( $form_meta ) ) { 
-		$form = array_merge( $form, $form_meta );
-	}
-
-	// Format data
-	if( ! $raw ) { $form = bookacti_format_form_data( $form ); }
-	
-	return apply_filters( 'bookacti_form_data', $form, $form_id, $raw );
+	return isset( $forms_data[ $form_id ] ) ? $forms_data[ $form_id ] : array();
 }
 
 
 /**
  * Get default form data
  * @since 1.5.0
+ * @version 1.18.2
  * @return array
  */
 function bookacti_get_default_form_data() {
 	return apply_filters( 'bookacti_default_form_data', array( 
-		'form_id'       => 0,  // Form ID
+		'id'            => 0,  // Form ID
 		'title'         => '', // Form title displayed in form list and form editor
 		'user_id'       => -1, // Author user ID
 		'creation_date' => '', // Datetime when the form was created
@@ -82,12 +129,13 @@ function bookacti_get_default_form_data() {
 /**
  * Get default form meta
  * @since 1.5.0
+ * @version 1.18.2
  * @return array
  */
 function bookacti_get_default_form_meta() {
 	return apply_filters( 'bookacti_default_form_meta', array(
-		'id' => '',           // Form's id
-		'class' => '',        // Form's classes
+		'css_id' => '',       // Form's id
+		'css_class' => '',    // Form's classes
 		'redirect_url' => '', // URL to redirect to when the form is submitted
 	));
 }
@@ -96,7 +144,7 @@ function bookacti_get_default_form_meta() {
 /**
  * Format form data
  * @since 1.5.0
- * @version 1.14.0
+ * @version 1.18.2
  * @param array|string $raw_form_data
  * @param string $context "view" or "edit"
  * @return array
@@ -106,35 +154,17 @@ function bookacti_format_form_data( $raw_form_data = array(), $context = 'view' 
 	
 	$default_data = bookacti_get_default_form_data();
 	$default_meta = bookacti_get_default_form_meta();
-	if( ! $default_data ) { return array(); }
-	
-	// Empty default strings in edit mode
-	if( $context === 'edit' ) {
-		$default_data[ 'title' ] = $default_meta[ 'redirect_url' ] = '';
-	}
-	
-	// Format meta values
-	$keys_by_type = array( 
-		'str_id' => array( 'id' ),
-		'str'    => array( 'class', 'redirect_url' )
-	);
-	$form_meta = bookacti_sanitize_values( $default_meta, $raw_form_data, $keys_by_type );
-	
-	// Exception: Keep field_order and format it
-	$form_meta[ 'field_order' ] = isset( $raw_form_data[ 'field_order' ] ) ? maybe_unserialize( $raw_form_data[ 'field_order' ] ) : array();
 	
 	// Format common values
 	$keys_by_type = array( 
-		'int'      => array( 'form_id', 'user_id' ),
-		'str_id'   => array( 'status' ),
-		'str'      => array( 'title' ),
-		'datetime' => array( 'creation_date' ),
-		'bool'     => array( 'active' )
+		'int'       => array( 'id', 'user_id' ),
+		'str_id'    => array( 'status', 'css_id' ),
+		'str'       => array( 'title', 'css_class', 'redirect_url' ),
+		'datetime'  => array( 'creation_date' ),
+		'array_ids' => array( 'managers', 'field_order' ),
+		'bool'      => array( 'active' )
 	);
-	$form_data = bookacti_sanitize_values( $default_data, $raw_form_data, $keys_by_type );
-	
-	// Merge common data and metadata
-	$form_data = array_merge( $form_data, $form_meta );
+	$form_data = bookacti_sanitize_values( array_merge( $default_data, $default_meta, array( 'managers' => array(), 'field_order' => array() ) ), $raw_form_data, $keys_by_type );
 	
 	// Translate texts
 	if( $context !== 'edit' ) { 
@@ -142,16 +172,14 @@ function bookacti_format_form_data( $raw_form_data = array(), $context = 'view' 
 		if( ! empty( $form_data[ 'redirect_url' ] ) ) { $form_data[ 'redirect_url' ] = apply_filters( 'bookacti_translate_text', $form_data[ 'redirect_url' ] ); }
 	}
 	
-	$form_data = apply_filters( 'bookacti_formatted_form_data', $form_data, $raw_form_data, $context );
-	
-	return $form_data;
+	return apply_filters( 'bookacti_formatted_form_data', $form_data, $raw_form_data, $context );
 }
 
 
 /**
  * Sanitize form data
  * @since 1.5.0
- * @version 1.14.0
+ * @version 1.18.2
  * @param array|string $raw_form_data
  * @return array|false
  */
@@ -160,31 +188,17 @@ function bookacti_sanitize_form_data( $raw_form_data ) {
 	
 	$default_data = bookacti_get_default_form_data();
 	$default_meta = bookacti_get_default_form_meta();
-	if( ! $default_data ) { return array(); }
-	
-	// Empty default translatable strings
-	if( ! empty( $default_data[ 'title' ] ) )        { $default_data[ 'title' ] = ''; }
-	if( ! empty( $default_meta[ 'redirect_url' ] ) ) { $default_meta[ 'redirect_url' ] = ''; }
-	
-	// Sanitize meta values
-	$keys_by_type = array( 
-		'str_id' => array( 'id' ),
-		'str'    => array( 'class', 'redirect_url' )
-	);
-	$form_meta = bookacti_sanitize_values( $default_meta, $raw_form_data, $keys_by_type );
 	
 	// Sanitize common values
 	$keys_by_type = array( 
-		'int'      => array( 'form_id', 'user_id' ),
-		'str_id'   => array( 'status' ),
-		'str'      => array( 'title' ),
-		'datetime' => array( 'creation_date' ),
-		'bool'     => array( 'active' )
+		'int'       => array( 'id', 'user_id' ),
+		'str_id'    => array( 'status', 'css_id' ),
+		'str'       => array( 'title', 'css_class', 'redirect_url' ),
+		'datetime'  => array( 'creation_date' ),
+		'array_ids' => array( 'managers' ),
+		'bool'      => array( 'active' )
 	);
-	$form_data = bookacti_sanitize_values( $default_data, $raw_form_data, $keys_by_type );
-	
-	// Merge common data and metadata
-	$form_data = array_merge( $form_data, $form_meta );
+	$form_data = bookacti_sanitize_values( array_merge( $default_data, $default_meta, array( 'managers' => array() ) ), $raw_form_data, $keys_by_type );
 	
 	return apply_filters( 'bookacti_sanitized_form_data', $form_data, $raw_form_data );
 }
@@ -192,7 +206,7 @@ function bookacti_sanitize_form_data( $raw_form_data ) {
 
 /**
  * Display a booking form
- * @version 1.14.0
+ * @version 1.18.2
  * @param int $form_id
  * @param string $instance_id
  * @param string $context
@@ -208,7 +222,7 @@ function bookacti_display_form( $form_id, $instance_id = '', $context = 'display
 	$form_action = 'bookactiSubmitBookingForm';
 	
 	// Set the form unique CSS selector
-	$form_css_id = ! empty( $form[ 'id' ] ) ? esc_attr( $form[ 'id' ] ) : ( $instance_id ? esc_attr( $instance_id ) : esc_attr( ( $context === 'login_form' ? 'login-form-' : 'form-' ) . $form[ 'form_id' ] . '-' . rand() ) );
+	$form_css_id = ! empty( $form[ 'css_id' ] ) ? esc_attr( $form[ 'css_id' ] ) : ( $instance_id ? esc_attr( $instance_id ) : esc_attr( ( $context === 'login_form' ? 'login-form-' : 'form-' ) . $form[ 'id' ] . '-' . rand() ) );
 	if( ! $instance_id ) { $instance_id = $form_css_id; }
 	
 	$fields = bookacti_get_form_fields_data( $form_id );
@@ -252,8 +266,8 @@ function bookacti_display_form( $form_id, $instance_id = '', $context = 'display
 	// Set form attributes
 	$form_attributes = apply_filters( 'bookacti_form_attributes', array(
 		'action'       => $form_redirect_url,
-		'id'           => empty( $form[ 'id' ] ) ? 'bookacti-' . $form_css_id : $form_css_id,
-		'class'        => 'bookacti-booking-form-' . $form_id . ' ' . $form[ 'class' ],
+		'id'           => empty( $form[ 'css_id' ] ) ? 'bookacti-' . $form_css_id : $form_css_id,
+		'class'        => 'bookacti-booking-form-' . $form_id . ' ' . $form[ 'css_class' ],
 		'autocomplete' => 'off'
 	), $form, $instance_id, $context, $displayed_form_fields );
 	
@@ -2056,16 +2070,16 @@ function bookacti_format_form_filters( $filters = array() ) {
 /**
  * Display 'managers' metabox content for forms
  * @since 1.5.0
- * @version 1.16.2
- * @param array $form_raw
+ * @version 1.18.2
+ * @param array $form_edit
  */
-function bookacti_display_form_managers_meta_box( $form_raw ) {
-	$manager_ids  = bookacti_get_form_managers( $form_raw[ 'form_id' ] );
+function bookacti_display_form_managers_meta_box( $form_edit ) {
+	$manager_ids  = bookacti_get_form_managers( $form_edit[ 'id' ] );
 	$capabilities = array( 'bookacti_edit_forms' );
 	$role_in      = apply_filters( 'bookacti_managers_roles', array_merge( bookacti_get_roles_by_capabilities( $capabilities ), $capabilities ), 'form' );
 	$role_not_in  = apply_filters( 'bookacti_managers_roles_exceptions', array( 'administrator' ), 'form' );
 	
-	$user_id             = intval( $form_raw[ 'user_id' ] );
+	$user_id             = intval( $form_edit[ 'user_id' ] );
 	$author_capabilities = array( 'bookacti_create_forms', 'bookacti_edit_forms' );
 	$author_role_in      = apply_filters( 'bookacti_author_roles', array_merge( bookacti_get_roles_by_capabilities( $author_capabilities ), $author_capabilities ), 'form' );
 	
@@ -2119,22 +2133,22 @@ function bookacti_display_form_managers_meta_box( $form_raw ) {
 /**
  * Display 'publish' metabox content for forms
  * @since 1.5.0
- * @version 1.15.4
- * @param array $form_raw
+ * @version 1.18.2
+ * @param array $form_edit
  */
-function bookacti_display_form_publish_meta_box( $form_raw ) {
+function bookacti_display_form_publish_meta_box( $form_edit ) {
 ?>
 	<div class='submitbox' id='submitpost'>
-		<div id='major-publishing-actions' data-popup='<?php echo ! $form_raw[ 'active' ] && $form_raw[ 'status' ] !== 'trash' ? 1 : 0; ?>' >
+		<div id='major-publishing-actions' data-popup='<?php echo ! $form_edit[ 'active' ] && $form_edit[ 'status' ] !== 'trash' ? 1 : 0; ?>' >
 			<div id='delete-action'>
 			<?php
 				if ( current_user_can( 'bookacti_delete_forms' ) ) {
-					if( ! $form_raw[ 'active' ] ) {
-						echo '<a href="' . esc_url( wp_nonce_url( admin_url( 'admin.php?page=bookacti_forms&action=delete&form_id=' . $form_raw[ 'form_id' ] ), 'delete-form_' . $form_raw[ 'form_id' ] ) ) . '" class="submitdelete deletion" >'
+					if( ! $form_edit[ 'active' ] ) {
+						echo '<a href="' . esc_url( wp_nonce_url( admin_url( 'admin.php?page=bookacti_forms&action=delete&form_id=' . $form_edit[ 'id' ] ), 'delete-form_' . $form_edit[ 'id' ] ) ) . '" class="submitdelete deletion" >'
 								. esc_html__( 'Delete Permanently' )
 							. '</a>';
 					} else {
-						echo '<a href="' . esc_url( wp_nonce_url( admin_url( 'admin.php?page=bookacti_forms&status=trash&action=trash&form_id=' . $form_raw[ 'form_id' ] ), 'trash-form_' . $form_raw[ 'form_id' ] ) ) . '" class="submitdelete deletion" >'
+						echo '<a href="' . esc_url( wp_nonce_url( admin_url( 'admin.php?page=bookacti_forms&status=trash&action=trash&form_id=' . $form_edit[ 'id' ] ), 'trash-form_' . $form_edit[ 'id' ] ) ) . '" class="submitdelete deletion" >'
 								. esc_html_x( 'Trash', 'verb' )
 							. '</a>';
 					}
@@ -2149,7 +2163,7 @@ function bookacti_display_form_publish_meta_box( $form_raw ) {
 					   type='submit' 
 					   class='button button-primary button-large' 
 					   id='publish' 
-					   value='<?php echo $form_raw[ 'active' ] ? esc_attr__( 'Update' ) : ( $form_raw[ 'status' ] === 'auto-draft' ? esc_attr__( 'Publish' ) : esc_attr__( 'Restore' ) ); ?>' 
+					   value='<?php echo $form_edit[ 'active' ] ? esc_attr__( 'Update' ) : ( $form_edit[ 'status' ] === 'auto-draft' ? esc_attr__( 'Publish' ) : esc_attr__( 'Restore' ) ); ?>' 
 				/>
 			</div>
 			<div class='clear'></div>
@@ -2162,11 +2176,11 @@ function bookacti_display_form_publish_meta_box( $form_raw ) {
 /**
  * Display 'integration tuto' metabox content for forms
  * @since 1.5.0
- * @version 1.18.0
- * @param array $form_raw
+ * @version 1.18.2
+ * @param array $form_edit
  */
-function bookacti_display_form_integration_tuto_meta_box( $form_raw ) {
-	$shortcode = '[bookingactivities_form form="' . $form_raw[ 'form_id' ] . '"]';
+function bookacti_display_form_integration_tuto_meta_box( $form_edit ) {
+	$shortcode = '[bookingactivities_form form="' . $form_edit[ 'id' ] . '"]';
 ?>
 	<h4><?php _e( 'Integrate in a post, page, or text widget', 'booking-activities' ) ?></h4>
 	<div>
@@ -2176,7 +2190,7 @@ function bookacti_display_form_integration_tuto_meta_box( $form_raw ) {
 		</p>
 	</div>
 <?php
-	do_action( 'bookacti_after_form_integration_tuto', $form_raw );
+	do_action( 'bookacti_after_form_integration_tuto', $form_edit );
 }
 
 

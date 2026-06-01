@@ -338,7 +338,7 @@ add_filter( 'woocommerce_product_data_tabs', 'bookacti_create_activity_tab', 10,
 
 /**
  * Content of the activity tab
- * @version 1.15.17
+ * @version 1.18.2
  * @global WP_Post $post
  */
 function bookacti_activity_tab_content() {
@@ -349,7 +349,7 @@ function bookacti_activity_tab_content() {
 		<div class='options_group'>
 			<?php
 				$form_id_key    = '_bookacti_form'; 
-				$forms          = bookacti_get_forms( bookacti_format_form_filters( array( 'active' => 1 ) ) );
+				$forms          = bookacti_get_forms_data();
 				$current_form   = $product->get_meta( $form_id_key );
 				$can_edit_forms = current_user_can( 'bookacti_edit_forms' );
 			?>
@@ -365,13 +365,13 @@ function bookacti_activity_tab_content() {
 						<?php if( $can_edit_forms ) { echo 'style="margin-right:10px;"'; } ?> >
 				<?php
 					$forms_nb = 0;
-					foreach( $forms as $form ) {
+					foreach( $forms as $form_id => $form ) {
 						// If the user is not allowed to manage this form, do not display it at all
-						if( ! bookacti_user_can_manage_form( $form->id ) ) { continue; }
+						if( ! bookacti_user_can_manage_form( $form_id ) ) { continue; }
 						++$forms_nb;
 						?>
-						<option value='<?php echo esc_attr( $form->id ); ?>' <?php echo selected( $form->id, $current_form, true ); ?>>
-							<?php echo ! empty( $form->title ) ? esc_html( apply_filters( 'bookacti_translate_text', $form->title ) ) : sprintf( esc_html__( 'Form #%d', 'booking-activities' ), $form->id ); ?>
+						<option value='<?php echo esc_attr( $form_id ); ?>' <?php echo selected( $form_id, $current_form, true ); ?>>
+							<?php echo $form[ 'title' ] ? esc_html( $form[ 'title' ] ) : sprintf( esc_html__( 'Form #%d', 'booking-activities' ), $form_id ); ?>
 						</option>
 						<?php
 					}
@@ -455,7 +455,7 @@ add_action( 'woocommerce_variation_options', 'bookacti_add_variation_option', 10
 
 /**
  * Add custom fields for activity variation product type
- * @version 1.15.17
+ * @version 1.18.2
  * @param int $loop
  * @param array $variation_data
  * @param WP_Post $post
@@ -463,7 +463,7 @@ add_action( 'woocommerce_variation_options', 'bookacti_add_variation_option', 10
 function bookacti_add_variation_fields( $loop, $variation_data, $post ) {
 	$variation      = wc_get_product( $post );
 	$form_id_key    = 'bookacti_variable_form'; 
-	$forms          = bookacti_get_forms( bookacti_format_form_filters( array( 'active' => 1 ) ) );
+	$forms          = bookacti_get_forms_data();
 	$current_form   = $variation->get_meta( $form_id_key );
 	$can_edit_forms = current_user_can( 'bookacti_edit_forms' );
 
@@ -484,13 +484,13 @@ function bookacti_add_variation_fields( $loop, $variation_data, $post ) {
 					<?php if( $can_edit_forms ) { echo 'style="margin-right:10px;"'; } ?>>
 				<?php
 				$forms_nb = 0;
-				foreach( $forms as $form ) {
+				foreach( $forms as $form_id => $form ) {
 					// If the user is not allowed to manage this form, do not display it at all
-					if( ! bookacti_user_can_manage_form( $form->id ) ) { continue; }
+					if( ! bookacti_user_can_manage_form( $form_id ) ) { continue; }
 					++$forms_nb;
 					?>
-					<option value='<?php echo esc_attr( $form->id ); ?>' <?php echo selected( $form->id, $current_form, true ); ?>>
-						<?php echo ! empty( $form->title ) ? esc_html( apply_filters( 'bookacti_translate_text', $form->title ) ) : sprintf( esc_html__( 'Form #%d', 'booking-activities' ), $form->id ); ?>
+					<option value='<?php echo esc_attr( $form_id ); ?>' <?php echo selected( $form_id, $current_form, true ); ?>>
+						<?php echo $form[ 'title' ] ? esc_html( $form[ 'title' ] ) : sprintf( esc_html__( 'Form #%d', 'booking-activities' ), $form_id ); ?>
 					</option>
 					<?php
 				}

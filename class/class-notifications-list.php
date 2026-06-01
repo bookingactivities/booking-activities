@@ -11,7 +11,7 @@ if( ! class_exists( 'BOOKACTI_Notifications_List_Table' ) ) {
 	/**
 	 * Notifications WP_List_Table
 	 * @since 1.18.0
-	 * @version 1.18.1
+	 * @version 1.18.2
 	 */
 	class BOOKACTI_Notifications_List_Table extends WP_List_Table {
 		
@@ -253,6 +253,7 @@ if( ! class_exists( 'BOOKACTI_Notifications_List_Table' ) ) {
 		/**
 		 * Get notification list items. Parameters can be passed in the URL.
 		 * @since 1.18.0
+		 * @version 1.18.2
 		 * @access public
 		 * @return array
 		 */
@@ -260,7 +261,7 @@ if( ! class_exists( 'BOOKACTI_Notifications_List_Table' ) ) {
 			// Get notifications
 			$notifications_data = bookacti_get_notifications_data( false );
 			$notifications_raw  = bookacti_get_notifications( $this->filters );
-			$notifications      = $notifications_raw ? array_intersect_key( array_replace( $notifications_raw, $notifications_data ), $notifications_raw ) : array();
+			$notifications      = $notifications_raw ? array_intersect_key( array_replace( $notifications_raw, $notifications_data ), $notifications_raw, $notifications_data ) : array();
 			$channel_names      = bookacti_get_notification_channel_names();
 			
 			$can_edit_notifications = current_user_can( 'bookacti_edit_notifications' );

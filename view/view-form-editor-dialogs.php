@@ -2,7 +2,7 @@
 /**
  * Form editor dialogs
  * @since 1.5.0
- * @version 1.18.0
+ * @version 1.18.2
  */
 
 // Exit if accessed directly
@@ -73,26 +73,26 @@ foreach( $fields_default as $field_name => $field_data ) {
 		?>
 		<div id='bookacti-form-meta-dialog-lang-switcher' class='bookacti-lang-switcher' ></div>
 		<div>
-			<label for='bookacti-form-meta-id'><?php esc_html_e( 'ID', 'booking-activities' ); ?></label>
+			<label for='bookacti-form-css_id'><?php esc_html_e( 'ID', 'booking-activities' ); ?></label>
 			<?php 
 				$args = array(
 					'type'  => 'text',
-					'name'  => 'id',
-					'id'    => 'bookacti-form-meta-id',
-					'value' => ! empty( $form_edit[ 'id' ] ) ? $form_edit[ 'id' ] : '',
+					'name'  => 'css_id',
+					'id'    => 'bookacti-form-css_id',
+					'value' => ! empty( $form_edit[ 'css_id' ] ) ? $form_edit[ 'css_id' ] : '',
 					'tip'   => esc_html__( 'Set the form CSS id. Leave this empty if you display this form multiple times on the same page.', 'booking-activities' )
 				);
 				bookacti_display_field( $args );
 			?>
 		</div>
 		<div>
-			<label for='bookacti-form-meta-class'><?php esc_html_e( 'Class', 'booking-activities' ); ?></label>
+			<label for='bookacti-form-css_class'><?php esc_html_e( 'Class', 'booking-activities' ); ?></label>
 			<?php 
 				$args = array(
 					'type'  => 'text',
-					'name'  => 'class',
-					'id'    => 'bookacti-form-meta-class',
-					'value' => ! empty( $form_edit[ 'class' ] ) ? $form_edit[ 'class' ] : '',
+					'name'  => 'css_class',
+					'id'    => 'bookacti-form-css_class',
+					'value' => ! empty( $form_edit[ 'css_class' ] ) ? $form_edit[ 'css_class' ] : '',
 					'tip'   => esc_html__( 'Set the form CSS classes. Leave an empty space between each class.', 'booking-activities' )
 				);
 				bookacti_display_field( $args );
@@ -135,7 +135,7 @@ foreach( $fields_default as $field_name => $field_data ) {
 		$calendar_field_edit = $calendar_field_id && ! empty( $form_fields_edit[ $calendar_field_id ] ) ? $form_fields_edit[ $calendar_field_id ] : ( ! empty( $fields_default[ 'calendar' ] ) ? $fields_default[ 'calendar' ] : array() );
 		
 		// Fill the array of tabs with their label, callback for content and display order
-		$calendar_tabs = apply_filters( 'bookacti_form_field_calendar_dialog_tabs', array (
+		$calendar_tabs = apply_filters( 'bookacti_form_field_calendar_dialog_tabs', array(
 			array( 
 				'label'      => esc_html__( 'Filters', 'booking-activities' ),
 				'id'         => 'filters',

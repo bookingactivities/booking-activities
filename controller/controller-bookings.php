@@ -634,7 +634,7 @@ add_action( 'wp_ajax_bookactiChangeBookingsQuantity', 'bookacti_controller_chang
 /**
  * AJAX Controller - Get reschedule booking system data by booking selection
  * @since 1.8.0 (was bookacti_controller_get_booking_data)
- * @version 1.18.0
+ * @version 1.18.2
  */
 function bookacti_controller_get_reschedule_booking_system_data() {
 	$is_admin          = current_user_can( 'bookacti_edit_bookings' ) && ! empty( $_POST[ 'is_admin' ] );
@@ -766,15 +766,14 @@ function bookacti_controller_get_reschedule_booking_system_data() {
 	// Display events from all calendars if the reschedule scope is set accordingly
 	if( count( $bookings ) === $all_nb ) {
 		$atts[ 'form_id' ]      = 0;
-		$forms                  = $form_ids ? bookacti_get_forms( bookacti_format_form_filters( array( 'id' => $form_ids ) ) ) : array();
+		$forms                  = $form_ids ? array_intersect_key( bookacti_get_forms_data(), array_flip( $form_ids ) ) : array();
 		$templates_per_activity = bookacti_fetch_activities_with_templates_association();
 		
 		$all_calendar_ids = bookacti_ids_to_array( array_keys( bookacti_fetch_templates( array(), 0 ) ) );
 		$allowed_calendars_per_user = $allowed_calendars_per_form = $allowed_calendars_for_current_user = array();
 		if( ! current_user_can( 'bookacti_edit_bookings' ) ) {
-			foreach( $forms as $form ) {
-				$form_id = ! empty( $form->id ) ? intval( $form->id ) : 0;
-				$form_author_id = ! empty( $form->user_id ) ? intval( $form->user_id ) : 0;
+			foreach( $forms as $form_id => $form ) {
+				$form_author_id = $form[ 'user_id' ];
 				if( $form_author_id && ! isset( $allowed_calendars_per_user[ $form_author_id ] ) ) {
 					$allowed_calendars_per_user[ $form_author_id ] = bookacti_ids_to_array( array_keys( bookacti_fetch_templates( array(), $form_author_id ) ) );
 				}
@@ -1002,7 +1001,7 @@ add_action( 'wp_ajax_nopriv_bookactiRescheduleBookings', 'bookacti_controller_re
 /**
  * AJAX Controller - Send a notification for bookings (groups)
  * @since 1.16.0
- * @version 1.16.45
+ * @version 1.18.2
  */
 function bookacti_controller_send_bookings_notification() {
 	// Check nonce
@@ -1016,6 +1015,8 @@ function bookacti_controller_send_bookings_notification() {
 	$groups_bookings   = $selected_bookings[ 'groups_bookings' ];
 	$group_ids         = bookacti_ids_to_array( array_keys( $booking_groups ) );
 	$booking_ids       = bookacti_ids_to_array( array_keys( $bookings ) );
+	$allow_async       = apply_filters( 'bookacti_allow_async_notifications', bookacti_get_setting_value( 'bookacti_notifications_settings', 'notifications_async' ) ) ? 1 : 0;
+	$async             = $allow_async && ( ! isset( $_POST[ 'async' ] ) || ! empty( $_POST[ 'async' ] ) ) ? 1 : 0;
 	
 	if( ! $bookings && ! $booking_groups ) {
 		bookacti_send_json( array( 'status' => 'failed', 'error' => 'booking_not_found', 'message' => esc_html__( 'Invalid booking selection.', 'booking-activities' ) ), 'send_booking_notification' );
@@ -1041,31 +1042,100 @@ function bookacti_controller_send_bookings_notification() {
 	
 	do_action( 'bookacti_before_send_bookings_notification', $notification_id, $selected_bookings );
 	
-	$sent = array( 'bookings' => array(), 'booking_groups' => array() );
+	$sent = array( 'bookings' => array(), 'booking_groups' => array(), 'not_sent' => 0 );
+	
+	$channels = bookacti_get_notification_channel_labels();
+	foreach( $channels as $channel_name => $channel_label ) {
+		$sent[ $channel_name ] = 0;
+	}
+	
 	foreach( $selected_bookings[ 'bookings' ] as $booking_id => $booking ) {
-		bookacti_send_notification( $notification_id, $booking_id, 'single', array( 'notification' => array( 'active' => true ) ) );
-		$sent[ 'bookings' ][ $booking_id ] = true;
+		// Get notification args and overrides
+		$notification_args = apply_filters( 'bookacti_send_booking_notification_args', array( 'notification' => array( 'active' => true ) ), $notification_id, $booking, 'single' );
+		
+		// Bypass the 3 minutes cooldown
+		if( $allow_async && ! $async ) {
+			$notification_unique_key = md5( json_encode( array( $notification_id, $booking_id, 'single', $notification_args ) ) );
+			delete_transient( 'bookacti_notif_' . $notification_unique_key );
+		}
+		
+		$_sent = bookacti_send_notification( $notification_id, $booking_id, 'single', $notification_args, $async );
+		$sent[ 'bookings' ][ $booking_id ] = $async ? 1 : $_sent;
+		
+		if( ! $_sent && ! $async ) {
+			++$sent[ 'not_sent' ];
+			continue;
+		}
+		
+		foreach( $channels as $channel_name => $channel_label ) {
+			if( ! empty( $_sent[ $channel_name ] ) && is_numeric( $_sent[ $channel_name ] ) ) {
+				$sent[ $channel_name ] += $_sent[ $channel_name ];
+			}
+		}
 	}
+	
 	foreach( $selected_bookings[ 'booking_groups' ] as $booking_group_id => $booking_group ) {
-		bookacti_send_notification( $notification_id, $booking_group_id, 'group', array( 'notification' => array( 'active' => true ) ) );
-		$sent[ 'booking_groups' ][ $booking_group_id ] = true;
+		// Get notification args and overrides
+		$notification_args = apply_filters( 'bookacti_send_booking_notification_args', array( 'notification' => array( 'active' => true ) ), $notification_id, $booking_group, 'group' );
+		
+		// Bypass the 3 minutes cooldown
+		if( $allow_async && ! $async ) {
+			$notification_unique_key = md5( json_encode( array( $notification_id, $booking_group_id, 'group', $notification_args ) ) );
+			delete_transient( 'bookacti_notif_' . $notification_unique_key );
+		}
+		
+		// Send notification
+		$_sent = bookacti_send_notification( $notification_id, $booking_group_id, 'group', $notification_args, $async );
+		
+		if( ! $_sent && ! $async ) {
+			++$sent[ 'not_sent' ];
+			continue;
+		}
+		
+		$sent[ 'booking_groups' ][ $booking_group_id ] = $async ? 1 : $_sent;
+		foreach( $channels as $channel_name => $channel_label ) {
+			if( ! empty( $_sent[ $channel_name ] ) && is_numeric( $_sent[ $channel_name ] ) ) {
+				$sent[ $channel_name ] += $_sent[ $channel_name ];
+			}
+		}
 	}
 	
-	$sent = apply_filters( 'bookacti_bookings_notification_sent', $sent, $notification_id, $selected_bookings );
+	$sent            = apply_filters( 'bookacti_bookings_notification_sent', $sent, $notification_id, $selected_bookings );
+	$sent_booking_nb = count( $sent[ 'bookings' ] ) + count( $sent[ 'booking_groups' ] );
+	$status          = 'success';
 	
-	$sent_nb = count( $sent[ 'bookings' ] ) + count( $sent[ 'booking_groups' ] );
-	/* translators: %s = number of notifications sent */
-	$message = sprintf( esc_html( _n( '%s notification has been sent.', '%s notifications have been sent.', $sent_nb, 'booking-activities' ) ), $sent_nb );
-	$async   = apply_filters( 'bookacti_allow_async_notifications', bookacti_get_setting_value( 'bookacti_notifications_settings', 'notifications_async' ) );
+	// Feedback message
+	/* translators: %s = number of bookings */
+	$message = sprintf( esc_html( _n( 'The notification has been sent for %s booking.', 'The notification has been sent for %s bookings.', $sent_booking_nb, 'booking-activities' ) ), $sent_booking_nb );
+	
 	if( $async ) {
 		$secret_key = get_option( 'bookacti_cron_key' );
+		
 		/* translators: %s = link labelled "Trigger manually" */
 		$message .= '</li><li>' . sprintf( esc_html__( 'Please be patient, the notifications are sent asynchronously (%s).', 'booking-activities' ), '<a href="' . esc_url( get_site_url() . '/wp-cron.php?bookacti_send_async_notifications=1&key=' . $secret_key ) . '" target="_blank">' . esc_html__( 'Trigger manually', 'booking-activities' ) . '</a>' );
 	
-		if( $sent_nb > 1 ) {
+		if( $sent_booking_nb > 1 ) {
 			$message .= '</li><li>' . esc_html__( 'Notifications sent to the same recipient will be merged.', 'booking-activities' );
 		}
 		$message .= '</li><li>' . esc_html__( 'You must wait 3 minutes before you can send the same notification again to the same recipient.', 'booking-activities' );
+	}
+	else {
+		$total_sent_nb = 0; $messages_per_channel = array();
+		foreach( $channels as $channel_name => $channel_label ) {
+			if( isset( $sent[ $channel_name ] ) && is_numeric( $sent[ $channel_name ] ) ) {
+				$total_sent_nb += $sent[ $channel_name ];
+				$messages_per_channel[ $channel_name ] = '<span class="bookacti-' . $channel_name . '-sent-nb"><strong>' . $channel_label . '</strong>: ' . $sent[ $channel_name ] . '</span>';
+			}
+		}
+		
+		$message .= '</li><li>' . implode( ', ', $messages_per_channel );
+		
+		if( $sent[ 'not_sent' ] ) {
+			$message .= '</li><li>' . esc_html__( 'Some notifications have not been sent due to their settings.', 'booking-activities' );
+		}
+		else if( ! $total_sent_nb ) {
+			$message .= '</li><li>' . esc_html__( 'Some notifications have been sent, but the server returned an error. This may be an error in your SMTP server configuration.', 'booking-activities' );
+		}
 	}
 	
 	bookacti_send_json( array( 'status' => 'success', 'message' => $message, 'sent' => $sent ), 'send_booking_notification' );

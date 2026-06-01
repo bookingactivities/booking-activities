@@ -3,7 +3,7 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
 Tested up to: 7.0
-Stable tag: 1.18.1
+Stable tag: 1.18.2
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -234,7 +234,7 @@ Or read the full [features description](https://booking-activities.fr/en/documen
 = Does this plugin accept reservation online payments? =
 Yes, you can accept payments for bookings through WooCommerce. Booking Activities is perfectly integrated to WooCommerce:
 
-* Booking forms will appears automatically on product pages 
+* Booking forms will appear automatically on product pages 
 * A cart expiration system is implemented to make sure that bookings in the shopping basket won't stay in the basket forever, taking the place of someone else
 * Bookings are automatically validated when the payment is received, or cancelled if not
 * If you change order quantity or state, so do the bookings, and vice versa
@@ -320,6 +320,17 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.18.2 - 2026/06/02 =
+* Feature - Add an option to send notification right away in send booking notification dialog (if async notification is allowed)
+* Tweak - Improve feedback message in send booking notification dialog
+* Fix - JS error when trying to delete a group of events if events have already been deleted
+* Fix - When paying for a Failed WC order containing booking groups, the order may not be marked as Completed and Paid
+* Dev - Add bookacti_send_booking_notification_args hook
+* Dev - Remove unused activity_id column from wp_bookacti_bookings database table
+* Dev - Pass full booking object in bookacti_send_booking_status_change_notification function instead of partial data
+* Dev - Replace bookacti_form_data hook with bookacti_forms_data
+* Dev - Refactor booking form data, all functions using form data has been adapted
 
 = 1.18.1 - 2026/05/27 =
 * Tweak - Add "Total price" column to booking export
