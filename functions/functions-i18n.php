@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Get all translatable texts
  * @since 1.14.0
- * @version 1.18.0
+ * @version 1.18.2
  * @return array
  */
 function bookacti_get_translatable_texts() {
@@ -42,23 +42,21 @@ function bookacti_get_translatable_texts() {
 	}
 	
 	// Get forms and form fields strings
-	$forms_raw = bookacti_get_forms( bookacti_format_form_filters( array( 'active' => 1 ) ) );
+	$forms_raw = bookacti_get_forms_data( true, true );
 	if( $forms_raw ) {
 		$register_defaults   = bookacti_get_register_fields_default_data( 'edit' );
 		$log_in_defaults     = bookacti_get_log_in_fields_default_data( 'edit' );
 		$login_type_defaults = bookacti_get_login_type_field_default_options( array(), 'edit' );
 		$login_subfields     = array_merge( $register_defaults, $log_in_defaults, $login_type_defaults );
 		
-		foreach( $forms_raw as $i => $form_raw ) {
+		foreach( $forms_raw as $form_id => $form_raw ) {
 			// Get forms strings
 			$form_texts = array();
-			$form_raw   = (array) $form_raw;
-			$form_id    = $form_raw[ 'id' ];
 			$form_meta  = bookacti_get_metadata( 'form', $form_id );
 			$fields_raw = bookacti_get_form_fields_data( $form_id, true, false, true );
 			if( is_array( $form_meta ) ) { $form_raw = array_merge( $form_raw, $form_meta ); }
 			$form_raw[ 'fields_raw' ] = $fields_raw;
-			$forms_raw[ $i ] = $form_raw;
+			$forms_raw[ $form_id ] = $form_raw;
 			
 			if( ! empty( $form_raw[ 'redirect_url' ] ) ) { $form_texts[] = array( 'value' => $form_raw[ 'redirect_url' ] ); }
 			

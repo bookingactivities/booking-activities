@@ -11,7 +11,7 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 	/**
 	 * Forms WP_List_Table
 	 * @since 1.5.0
-	 * @version 1.18.0
+	 * @version 1.18.2
 	 */
 	class Forms_List_Table extends WP_List_Table {
 		
@@ -259,13 +259,15 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 		
 		/**
 		 * Get form list items. Parameters can be passed in the URL.
-		 * @version 1.18.0
+		 * @version 1.18.2
 		 * @access public
 		 * @return array
 		 */
 		public function get_form_list_items() {
-			$forms    = bookacti_get_forms( $this->filters );
-			$form_ids = $forms ? array_keys( $forms ) : array();
+			$forms_data = bookacti_get_forms_data( false );
+			$forms_raw  = bookacti_get_forms( $this->filters );
+			$forms      = $forms_raw ? array_intersect_key( array_replace( $forms_raw, $forms_data ), $forms_raw, $forms_data ) : array();
+			$form_ids   = $forms ? array_keys( $forms ) : array();
 			
 			$forms_calendar = $form_ids ? bookacti_get_forms_field_data_by_name( $form_ids, 'calendar' ) : array();
 			
@@ -275,7 +277,7 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 			// Get author users
 			$user_ids = array();
 			foreach( $forms as $form ) {
-				if( $form->user_id && is_numeric( $form->user_id ) && ! in_array( $form->user_id, $user_ids, true ) ){ $user_ids[] = $form->user_id; }
+				if( $form[ 'user_id' ] && ! in_array( $form[ 'user_id' ], $user_ids, true ) ) { $user_ids[] = $form[ 'user_id' ]; }
 			}
 			$users = $user_ids ? bookacti_get_users_data( array( 'include' => $user_ids ) ) : array();
 			
@@ -289,13 +291,13 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 			$form_list_items = array();
 			foreach( $forms as $form ) {
 				// If the user is not allowed to manage this form, do not display it at all
-				if( ! bookacti_user_can_manage_form( $form->id ) ) { continue; }
+				if( ! bookacti_user_can_manage_form( $form[ 'id' ] ) ) { continue; }
 				
-				$id     = $form->id;
-				$active = $form->active ? __( 'Yes', 'booking-activities' ) : __( 'No', 'booking-activities' );
+				$id     = $form[ 'id' ];
+				$active = $form[ 'active' ] ? __( 'Yes', 'booking-activities' ) : __( 'No', 'booking-activities' );
 				
 				// Format title column
-				$title = ! empty( $form->title ) ? esc_html( apply_filters( 'bookacti_translate_text', $form->title ) ) : sprintf( esc_html__( 'Form #%d', 'booking-activities' ), $id );
+				$title = $form[ 'title' ] ? $form[ 'title' ] : sprintf( esc_html__( 'Form #%d', 'booking-activities' ), $id );
 				if( $can_edit_forms ) {
 					$title = '<a class="row-title" href="' . esc_url( admin_url( 'admin.php?page=bookacti_forms&action=edit&form_id=' . $id ) ) . '" >' . $title . '</a>';
 				}
@@ -304,18 +306,18 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 				$shortcode = "<input type='text' onfocus='this.select(); document.execCommand(\"Copy\");' readonly='readonly' value='" . esc_attr( '[bookingactivities_form form="' . $id . '"]' ) . "' class='large-text code'>";
 				
 				// Author name
-				$user_object = ! empty( $users[ $form->user_id ] ) ? $users[ $form->user_id ] : null;
-				$author      = $user_object ? $user_object->display_name : esc_html( __( 'Unknown user', 'booking-activities' ) . ' (' . $form->user_id . ')' );
+				$user_object = ! empty( $users[ $form[ 'user_id' ] ] ) ? $users[ $form[ 'user_id' ] ] : null;
+				$author      = $user_object ? $user_object->display_name : esc_html( __( 'Unknown user', 'booking-activities' ) . ' (' . $form[ 'user_id' ] . ')' );
 				if( $can_edit_users && $user_object ) {
 					$author = '<a href="' . get_edit_user_link( $user_object->ID ) . '">' . $author . '</a>';
 				}
 				
 				// Creation date
-				$creation_date_raw = ! empty( $form->creation_date ) ? bookacti_sanitize_datetime( $form->creation_date ) : '';
-				$creation_date_dt = new DateTime( $creation_date_raw, $utc_timezone_obj );
+				$creation_date_raw = $form[ 'creation_date' ] ? bookacti_sanitize_datetime( $form[ 'creation_date' ] ) : '';
+				$creation_date_dt  = new DateTime( $creation_date_raw, $utc_timezone_obj );
 				$creation_date_dt->setTimezone( $timezone_obj );
-				$creation_date = $creation_date_raw ? bookacti_format_datetime( $creation_date_dt->format( 'Y-m-d H:i:s' ), $date_format ) : '';
-				$creation_date = $creation_date ? '<span title="' . esc_attr( $form->creation_date ) . '">' . $creation_date . '</span>' : '';
+				$creation_date     = $creation_date_raw ? bookacti_format_datetime( $creation_date_dt->format( 'Y-m-d H:i:s' ), $date_format ) : '';
+				$creation_date     = $creation_date ? '<span title="' . esc_attr( $form[ 'creation_date' ] ) . '">' . $creation_date . '</span>' : '';
 				
 				// Add info on the primary column to make them directly visible in responsive view
 				$primary_data = array( '<span class="bookacti-column-id" >(' . esc_html_x( 'id', 'An id is a unique identification number', 'booking-activities' ) . ': ' . $id . ')</span>' );
@@ -326,7 +328,7 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 				$primary_data_html .= '</div>';
 				
 				// Check calendar permissions
-				$calendar_field = isset( $forms_calendar[ $form->id ] ) ? $forms_calendar[ $form->id ] : array();
+				$calendar_field = isset( $forms_calendar[ $id ] ) ? $forms_calendar[ $id ] : array();
 				$template_ids   = ! empty( $calendar_field[ 'calendars' ] ) ? array_values( bookacti_ids_to_array( $calendar_field[ 'calendars' ] ) ) : array();
 				$can_manage_calendars = $user_object ? bookacti_user_can_manage_template( $template_ids, intval( $user_object->ID ) ) : false;
 				
@@ -347,11 +349,11 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 					'title'             => $title,
 					'shortcode'         => $shortcode,
 					'author'            => $author,
-					'user_id'           => $form->user_id,
+					'user_id'           => $form[ 'user_id' ],
 					'date'              => $creation_date,
-					'status'            => $form->status,
+					'status'            => $form[ 'status' ],
 					'active'            => $active,
-					'active_raw'        => $form->active,
+					'active_raw'        => $form[ 'active' ],
 					'errors'            => $errors,
 					'primary_data'      => $primary_data,
 					'primary_data_html' => $primary_data_html

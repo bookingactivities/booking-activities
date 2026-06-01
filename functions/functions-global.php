@@ -627,7 +627,7 @@ function bookacti_get_active_add_ons( $prefix = '', $exclude = array( 'balau' ) 
 /**
  * Get add-on data by prefix
  * @since 1.7.14
- * @version 1.18.0
+ * @version 1.18.2
  * @param string $prefix
  * @param array $exclude
  * @return array
@@ -648,7 +648,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-notification-pack', 
 			'end_of_life' => '', 
 			'download_id' => 1393,
-			'min_version' => '1.4.0'
+			'min_version' => '1.4.2'
 		),
 		'bapap' => array(
 			'title'       => 'Prices and Credits', 
@@ -656,7 +656,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-prices-and-credits', 
 			'end_of_life' => '', 
 			'download_id' => 438,
-			'min_version' => '1.8.39'
+			'min_version' => '1.8.40'
 		),
 		'baaf' => array(
 			'title'       => 'Advanced Forms', 
@@ -664,7 +664,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-advanced-forms', 
 			'end_of_life' => '', 
 			'download_id' => 2705,
-			'min_version' => '1.5.8'
+			'min_version' => '1.5.9'
 		),
 		'baofc' => array(
 			'title'	      => 'Order for Customers', 
@@ -672,7 +672,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-order-for-customers', 
 			'end_of_life' => '', 
 			'download_id' => 436,
-			'min_version' => '1.3.9'
+			'min_version' => '1.3.11'
 		),
 		'bara' => array(
 			'title'       => 'Resource Availability', 
@@ -680,7 +680,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-resource-availability', 
 			'end_of_life' => '', 
 			'download_id' => 29249,
-			'min_version' => '1.3.2'
+			'min_version' => '1.3.3'
 		),
 		'bawl' => array(
 			'title'       => 'Waiting List', 

@@ -314,6 +314,23 @@ function bookacti_get_notification_channel_names() {
 
 
 /**
+ * Get notification channel labels
+ * @since 1.18.2
+ * @return array
+ */
+function bookacti_get_notification_channel_labels() {
+	$channel_names  = bookacti_get_notification_channel_names();
+	$default_labels = array_combine( $channel_names, $channel_names );
+	
+	$labels = apply_filters( 'bookacti_notification_channel_labels', array(
+		'email' => esc_html__( 'Email', 'booking-activities' )
+	) );
+	
+	return array_intersect_key( array_merge( $default_labels, $labels ), $default_labels );
+}
+
+
+/**
  * Get notifications data
  * @since 1.16.37
  * @version 1.18.0
@@ -1460,7 +1477,7 @@ function bookacti_send_notification( $notification_id, $booking_id, $booking_typ
 /**
  * Merge notifications before they are sent
  * @since 1.16.0
- * @version 1.18.1
+ * @version 1.18.2
  * @param array $planned_notifications
  * @return array
  */
@@ -1491,7 +1508,7 @@ function bookacti_merge_planned_notifications( $planned_notifications ) {
 		}
 		
 		// Get the bookings
-		$notification_ids = $booking_ids = $booking_groups_ids = $notification_uids = array();
+		$notification_ids = $bookings = $booking_groups = $booking_ids = $booking_groups_ids = $notification_uids = array();
 		foreach( $planned_notifications as $i => $planned_notification ) {
 			if( empty( $planned_notification[ 'booking_type' ] ) || empty( $planned_notification[ 'booking_id' ] ) ) { continue; }
 			
@@ -1512,8 +1529,8 @@ function bookacti_merge_planned_notifications( $planned_notifications ) {
 		}
 		$notification_ids = array_unique( $notification_ids );
 		if( count( $notification_ids ) < count( $planned_notifications ) ) {
-			$bookings       = $booking_ids ? bookacti_get_bookings( bookacti_format_booking_filters( array( 'in__booking_id' => $booking_ids ) ) ) : array();
-			$booking_groups = $booking_groups_ids ? bookacti_get_booking_groups( bookacti_format_booking_filters( array( 'in__booking_group_id' => $booking_groups_ids ) ) ) : array();
+			$bookings       = $booking_ids ? bookacti_get_bookings( bookacti_format_booking_filters( array( 'in__booking_id' => $booking_ids, 'fetch_meta' => 1 ) ) ) : array();
+			$booking_groups = $booking_groups_ids ? bookacti_get_booking_groups( bookacti_format_booking_filters( array( 'in__booking_group_id' => $booking_groups_ids, 'fetch_meta' => 1 ) ) ) : array();
 			
 			$notifications_to_merge = array();
 			foreach( $planned_notifications as $i => $planned_notification ) {
@@ -1535,6 +1552,10 @@ function bookacti_merge_planned_notifications( $planned_notifications ) {
 						}
 					}
 				}
+				
+				$merge = apply_filters( 'bookacti_merge_planned_notification', true, $planned_notification, $init_planned_notifications, $booking );
+				if( ! $merge ) { continue; }
+				
 				if( ! isset( $notifications_to_merge[ $notification_id . $user_id ] ) ) {
 					$notifications_to_merge[ $notification_id . $user_id ] = array();
 				}
@@ -1574,7 +1595,7 @@ function bookacti_merge_planned_notifications( $planned_notifications ) {
 		}
 	}
 	
-	return apply_filters( 'bookacti_planned_notifications_merged', $planned_notifications, $init_planned_notifications );
+	return apply_filters( 'bookacti_planned_notifications_merged', $planned_notifications, $init_planned_notifications, $bookings, $booking_groups );
 }
 
 

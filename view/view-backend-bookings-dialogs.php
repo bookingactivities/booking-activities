@@ -272,7 +272,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$notification_options[ $notification_id ] .= ! empty( $notification_data[ 'title' ] ) ? $notification_data[ 'title' ] . ' (' . $notification_id . ' / #' . $notification_data[ 'db_id' ] . ')' : $notification_id;
 			}
 			
-			$fields = array(
+			$fields = apply_filters( 'bookacti_send_booking_notification_fields', array(
 				'notification_id' => array(
 					'name'        => 'notification_id',
 					'type'        => 'select',
@@ -285,8 +285,22 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					'value'       => '', 
 					'title'       => esc_html__( 'Notification', 'booking-activities' ),
 					'tip'         => esc_html__( 'The notification to send.', 'booking-activities' )
+				),
+				'async' => array(
+					'type'  => 'checkbox',
+					'name'  => 'async',
+					'id'    => 'bookacti-booking-notification-async',
+					'value' => 1,
+					'title' => esc_html__( 'Send asynchronously', 'booking-activities' ),
+					'tip'   => esc_html__( 'Send the notifications asynchronously. You do not need to wait until all notifications are sent, they will be automatically sent later in the background, on the next page refresh.', 'booking-activities' ) . ' ' . esc_html__( 'Notifications sent to the same recipient will be merged.', 'booking-activities' )
 				)
-			);
+			) );
+			
+			$allow_async = apply_filters( 'bookacti_allow_async_notifications', bookacti_get_setting_value( 'bookacti_notifications_settings', 'notifications_async' ) );
+			if( ! $allow_async ) {
+				unset( $fields[ 'async' ] );
+			}
+			
 			bookacti_display_fields( $fields );
 
 			do_action( 'bookacti_send_booking_notification_form_after' );

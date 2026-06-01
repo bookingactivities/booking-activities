@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Get forms according to filters
  * @since 1.5.0
- * @version 1.16.2
+ * @version 1.18.2
  * @global wpdb $wpdb
  * @param array $filters Use bookacti_format_form_filters() before
  * @return array
@@ -15,9 +15,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 function bookacti_get_forms( $filters = array() ) {
 	global $wpdb;
 	
-	$query	= ' SELECT DISTINCT F.* ' 
+	$query	= ' SELECT F.id, F.title, F.user_id, F.creation_date, F.status, F.active ' 
 			. ' FROM ' . BOOKACTI_TABLE_FORMS . ' as F '
-			. ' WHERE true ';
+			. ' WHERE TRUE ';
 	
 	$variables = array();
 	
@@ -85,11 +85,11 @@ function bookacti_get_forms( $filters = array() ) {
 	if( $variables ) {
 		$query = $wpdb->prepare( $query, $variables );
 	}
-	$results = $wpdb->get_results( $query, OBJECT );
+	$results = $wpdb->get_results( $query, ARRAY_A );
 	
 	$forms = array();
 	foreach( $results as $result ) {
-		$forms[ $result->id ] = $result;
+		$forms[ intval( $result[ 'id' ] ) ] = $result;
 	}
 	
 	return $forms;
@@ -158,24 +158,6 @@ function bookacti_get_number_of_form_rows( $filters = array() ) {
 	$count = $wpdb->get_var( $query );
 
 	return $count ? $count : 0;
-}
-
-
-/**
- * Get form by id
- * @since 1.5.0
- * @global wpdb $wpdb
- * @param int $form_id
- * @return array
- */
-function bookacti_get_form( $form_id ) {
-	global $wpdb;
-
-	$query	= ' SELECT F.id as form_id, title, user_id, creation_date, status, active FROM ' . BOOKACTI_TABLE_FORMS . ' as F WHERE F.id = %d ';
-	$query	= $wpdb->prepare( $query, $form_id );
-	$form	= $wpdb->get_row( $query, ARRAY_A );
-
-	return $form;
 }
 
 

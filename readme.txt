@@ -321,12 +321,16 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.18.2 =
+= 1.18.2 - 2026/06/02 =
+* Feature - Add an option to send notification right away in send booking notification dialog (if async notification is allowed)
+* Tweak - Improve feedback message in send booking notification dialog
 * Fix - JS error when trying to delete a group of events if events have already been deleted
 * Fix - When paying for a Failed WC order containing booking groups, the order may not be marked as Completed and Paid
 * Dev - Add bookacti_send_booking_notification_args hook
 * Dev - Remove unused activity_id column from wp_bookacti_bookings database table
 * Dev - Pass full booking object in bookacti_send_booking_status_change_notification function instead of partial data
+* Dev - Replace bookacti_form_data hook with bookacti_forms_data
+* Dev - Refactor booking form data, all functions using form data has been adapted
 
 = 1.18.1 - 2026/05/27 =
 * Tweak - Add "Total price" column to booking export

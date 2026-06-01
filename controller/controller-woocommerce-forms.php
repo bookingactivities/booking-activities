@@ -23,10 +23,10 @@ add_filter( 'bookacti_calendar_integration_tuto', 'bookacti_display_wc_calendar_
 /**
  * Add a description how to embbed forms to woocommerce products
  * @since 1.5.0
- * @version 1.14.0
- * @param array $form_raw
+ * @version 1.18.2
+ * @param array $form_edit
  */
-function bookacti_display_wc_form_integration_description( $form_raw ) {
+function bookacti_display_wc_form_integration_description( $form_edit ) {
 	$img_link = esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/wc-integration.png' );
 ?>
 	<h4><?php _e( 'Integrate with a WooCommerce product', 'booking-activities' ) ?></h4>
@@ -62,7 +62,7 @@ add_action( 'bookacti_form_editor_description_after', 'bookacti_form_editor_wc_d
 /**
  * Display a WC notice in the form editor, Calendar field settings, "Actions" tab
  * @since 1.7.15
- * @version 1.11.3
+ * @version 1.18.2
  * @param array $params
  */
 function bookacti_form_action_wc_notice( $params ) {
@@ -73,7 +73,7 @@ function bookacti_form_action_wc_notice( $params ) {
 		<span>
 		<?php 
 			/* translators: %1$s = "Form action" option label. %2$s = the shortcode (e.g.: [bookingactivities_form form="21"]) */
-			echo sprintf( esc_html__( 'The "%1$s" option is taken into account only if the form is displayed with its shortcode (%2$s).', 'booking-activities' ), '<strong>' . esc_html__( 'Form action', 'booking-activities' ) . '</strong>', '<code>[bookingactivities_form form="' . $params[ 'form' ][ 'form_id' ] . '"]</code>' );
+			echo sprintf( esc_html__( 'The "%1$s" option is taken into account only if the form is displayed with its shortcode (%2$s).', 'booking-activities' ), '<strong>' . esc_html__( 'Form action', 'booking-activities' ) . '</strong>', '<code>[bookingactivities_form form="' . $params[ 'form' ][ 'id' ] . '"]</code>' );
 		?>
 		</span>
 	</div>

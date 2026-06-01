@@ -151,8 +151,8 @@ function bookacti_send_notification_when_booking_is_made( $return_array, $bookin
 		if( ! $booking ) { continue; }
 		
 		// Send a booking confirmation to admin and customers
-		bookacti_send_booking_status_change_notification( 'new', $booking, null, $booking[ 'type' ] );
-		bookacti_send_booking_status_change_notification( $booking->state, $booking, null, $booking[ 'type' ] );
+		bookacti_send_booking_status_change_notification( 'new', $booking, null, $booking_info[ 'type' ] );
+		bookacti_send_booking_status_change_notification( $booking->state, $booking, null, $booking_info[ 'type' ] );
 	}
 }
 add_action( 'bookacti_booking_form_validated', 'bookacti_send_notification_when_booking_is_made', 100, 3 );
