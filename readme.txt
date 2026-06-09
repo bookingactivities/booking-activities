@@ -3,7 +3,7 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
 Tested up to: 7.0
-Stable tag: 1.18.2
+Stable tag: 1.18.3
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -320,6 +320,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.18.3 - 2026/06/09 =
+* Fix - Option to display past events may not work depending on the value of other options related to the availability period
+* Fix - PHP warning undefined variable may occur when sending a single notification asynchronously
 
 = 1.18.2 - 2026/06/02 =
 * Feature - Add an option to send notification right away in send booking notification dialog (if async notification is allowed)
