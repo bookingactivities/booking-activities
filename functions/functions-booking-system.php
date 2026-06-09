@@ -3268,6 +3268,7 @@ function bookacti_get_availability_period( $absolute_period = array(), $relative
 /**
  * Get booking system trimmed display period
  * @since 1.17.0
+ * @version 1.18.3
  * @param array $booking_system_data
  * @return array
  */
@@ -3283,6 +3284,10 @@ function bookacti_get_booking_system_display_period( $booking_system_data ) {
 		$display_period_atts[ 'start' ] = '';
 		$display_period_atts[ 'end' ]   = '';
 		$display_period_atts[ 'availability_period' ] = $display_period_atts[ 'display_period' ];
+	}
+	if( $booking_system_data[ 'past_events' ] ) {
+		$display_period_atts[ 'start' ] = '';
+		$display_period_atts[ 'availability_period' ][ 'start' ] = $display_period_atts[ 'display_period' ][ 'start' ];
 	}
 	
 	// Get period
