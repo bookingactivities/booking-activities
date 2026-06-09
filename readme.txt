@@ -323,6 +323,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 = 1.18.3 - 2026/06/09 =
 * Fix - Option to display past events may not work depending on the value of other options related to the availability period
+* Fix - PHP warning undefined variable may occur when sending a single notification asynchronously
 
 = 1.18.2 - 2026/06/02 =
 * Feature - Add an option to send notification right away in send booking notification dialog (if async notification is allowed)

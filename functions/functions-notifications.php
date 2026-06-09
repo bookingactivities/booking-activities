@@ -1477,12 +1477,13 @@ function bookacti_send_notification( $notification_id, $booking_id, $booking_typ
 /**
  * Merge notifications before they are sent
  * @since 1.16.0
- * @version 1.18.2
+ * @version 1.18.3
  * @param array $planned_notifications
  * @return array
  */
 function bookacti_merge_planned_notifications( $planned_notifications ) {
 	$init_planned_notifications = $planned_notifications;
+	$bookings = $booking_groups = array();
 	
 	if( count( $planned_notifications ) > 1 ) {
 		// First, separate the notifications containing multiple bookings (they will be merged again later)
