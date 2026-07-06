@@ -321,6 +321,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.18.4 =
+* Fix - Caching issue may occur after editing a booking form until object cache is cleared
+
 = 1.18.3 - 2026/06/09 =
 * Fix - Option to display past events may not work depending on the value of other options related to the availability period
 * Fix - PHP warning undefined variable may occur when sending a single notification asynchronously

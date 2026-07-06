@@ -1160,7 +1160,7 @@ add_action( 'admin_footer-booking-activities_page_bookacti_forms', 'bookacti_pri
 /**
  * Create a booking form from REQUEST parameters
  * @since 1.5.0
- * @version 1.17.0
+ * @version 1.18.4
  */
 function bookacti_controller_create_form() {
 	if( empty( $_REQUEST[ 'action' ] ) || ( isset( $_REQUEST[ 'action' ] ) && $_REQUEST[ 'action' ] !== 'new' ) ) { return; }
@@ -1179,6 +1179,9 @@ function bookacti_controller_create_form() {
 	if( $lang_switched ) { bookacti_restore_locale(); }
 	
 	if( ! $form_id ) { esc_html_e( 'Error occurs when trying to create the form.', 'booking-activities' ); exit; }
+	
+	// Reset cache
+	wp_cache_delete( 'forms_data', 'bookacti' );
 	
 	// Insert calendar data (if any)
 	if( ! empty( $_REQUEST[ 'calendar_field' ] ) && is_array( $_REQUEST[ 'calendar_field' ] ) ) {
@@ -1201,6 +1204,10 @@ function bookacti_controller_create_form() {
 				// Update calendar metadata
 				if( $field_sanitized_meta ) {
 					bookacti_update_metadata( 'form_field', $field[ 'field_id' ], $field_sanitized_meta );
+					
+					// Reset cache
+					wp_cache_delete( 'form_field_data_' . $field[ 'field_id' ], 'bookacti' );
+					wp_cache_delete( 'form_field_data_' . $field[ 'name' ] . '_' . $form_id, 'bookacti' );
 				}
 			}
 		}
@@ -1218,7 +1225,7 @@ add_action( 'load-booking-activities_page_bookacti_forms', 'bookacti_controller_
 /**
  * AJAX Controller - Update a booking form
  * @since 1.5.0
- * @version 1.16.2
+ * @version 1.18.4
  */
 function bookacti_controller_update_form() {
 	// Check nonce and capabilities
@@ -1252,6 +1259,9 @@ function bookacti_controller_update_form() {
 	// Update Managers
 	bookacti_update_managers( 'form', $form_id, $form_managers );
 	
+	// Reset cache
+	wp_cache_delete( 'forms_data', 'bookacti' );
+	
 	do_action( 'bookacti_form_updated', $form_id );
 	
 	$message = ! $was_active ? esc_html__( 'The booking form is published.', 'booking-activities' ) : esc_html__( 'The booking form has been updated.', 'booking-activities' );
@@ -1263,7 +1273,7 @@ add_action( 'wp_ajax_bookactiUpdateForm', 'bookacti_controller_update_form' );
 /**
  * Duplicate a booking form
  * @since 1.7.18
- * @version 1.16.47
+ * @version 1.18.4
  */
 function bookacti_controller_duplicate_form() {
 	if( empty( $_REQUEST[ 'form_id' ] ) || empty( $_REQUEST[ 'action' ] ) || empty( $_REQUEST[ 'page' ] ) ) { return; }
@@ -1360,6 +1370,9 @@ function bookacti_controller_duplicate_form() {
 	
 	if( $lang_switched ) { bookacti_restore_locale(); }
 	
+	// Reset cache
+	wp_cache_delete( 'forms_data', 'bookacti' );
+	
 	// Allow plugins to hook here
 	do_action( 'bookacti_form_duplicated', $form_id, $original_form_id );
 	
@@ -1374,7 +1387,7 @@ add_action( 'all_admin_notices', 'bookacti_controller_duplicate_form', 10 );
 /**
  * Trash / Remove / Restore a booking form according to URL parameters and display an admin notice to feedback
  * @since 1.5.0
- * @version 1.14.0
+ * @version 1.18.4
  */
 function bookacti_controller_remove_form() {
 	if( empty( $_REQUEST[ 'form_id' ] ) || empty( $_REQUEST[ 'action' ] ) || empty( $_REQUEST[ 'page' ] ) ) { return; }
@@ -1413,6 +1426,9 @@ function bookacti_controller_remove_form() {
 		}
 		
 		if( $removed ) {
+			// Reset cache
+			wp_cache_delete( 'forms_data', 'bookacti' );
+			
 			do_action( 'bookacti_form_removed', $form_id );
 			
 			$notice[ 'type' ] = 'success';
@@ -1435,6 +1451,9 @@ function bookacti_controller_remove_form() {
 		$restored = bookacti_activate_form( $form_id );
 		
 		if( $restored ) {
+			// Reset cache
+			wp_cache_delete( 'forms_data', 'bookacti' );
+			
 			do_action( 'bookacti_form_restored', $form_id );
 			
 			$notice[ 'type' ] = 'success';
@@ -1454,7 +1473,7 @@ add_action( 'all_admin_notices', 'bookacti_controller_remove_form', 10 );
 /**
  * AJAX Controller - Update form meta
  * @since 1.5.0
- * @version 1.14.0
+ * @version 1.18.4
  */
 function bookacti_controller_update_form_meta() {
 	$form_id = intval( $_POST[ 'form_id' ] );
@@ -1476,7 +1495,10 @@ function bookacti_controller_update_form_meta() {
 	// Update form metadata
 	$updated = bookacti_update_metadata( 'form', $form_id, $form_meta );
 	if( $updated === false ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_updated' ), 'update_form_meta' ); }
-
+	
+	// Reset cache
+	wp_cache_delete( 'forms_data', 'bookacti' );
+	
 	do_action( 'bookacti_form_meta_updated', $form_id );
 	
 	// Get form data
@@ -1499,7 +1521,7 @@ add_action( 'wp_ajax_bookactiUpdateFormMeta', 'bookacti_controller_update_form_m
 /**
  * AJAX Controller - Insert a form field
  * @since 1.5.0
- * @version 1.14.0
+ * @version 1.18.4
  */
 function bookacti_controller_insert_form_field() {
 	// Check nonce
@@ -1548,6 +1570,8 @@ function bookacti_controller_insert_form_field() {
 	$field_order[] = $field_id;
 	bookacti_update_metadata( 'form', $form_id, array( 'field_order' => $field_order ) );
 	
+	// Reset cache
+	wp_cache_delete( 'forms_data', 'bookacti' );
 	wp_cache_delete( 'form_fields_' . $form_id, 'bookacti' );
 	wp_cache_delete( 'form_fields_data_' . $form_id, 'bookacti' );
 	wp_cache_delete( 'form_fields_order_' . $form_id, 'bookacti' );
@@ -1573,7 +1597,7 @@ add_action( 'wp_ajax_bookactiInsertFormField', 'bookacti_controller_insert_form_
 /**
  * AJAX Controller - Remove a form field
  * @since 1.5.0
- * @version 1.14.0
+ * @version 1.18.4
  */
 function bookacti_controller_remove_form_field() {
 	$field_id = intval( $_POST[ 'field_id' ] );
@@ -1593,7 +1617,8 @@ function bookacti_controller_remove_form_field() {
 
 	if( $removed === false ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_updated' ), 'remove_form_field' ); }
 
-	// Remove cache
+	// Reset cache
+	wp_cache_delete( 'forms_data', 'bookacti' );
 	wp_cache_delete( 'form_fields_' . $field[ 'form_id' ], 'bookacti' );
 	wp_cache_delete( 'form_fields_data_' . $field[ 'form_id' ], 'bookacti' );
 	wp_cache_delete( 'form_field_data_' . $field_id, 'bookacti' );
@@ -1624,7 +1649,7 @@ add_action( 'wp_ajax_bookactiRemoveFormField', 'bookacti_controller_remove_form_
 /**
  * AJAX Controller - Save form field order
  * @since 1.5.0
- * @version 1.15.5
+ * @version 1.18.4
  */
 function bookacti_controller_save_form_field_order() {
 	$form_id = intval( $_POST[ 'form_id' ] );
@@ -1640,6 +1665,7 @@ function bookacti_controller_save_form_field_order() {
 	$updated	 = bookacti_update_metadata( 'form', $form_id, array( 'field_order' => $field_order ) );
 	if( $updated === false ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_updated' ), 'save_form_field_order' ); }
 	
+	wp_cache_delete( 'forms_data', 'bookacti' );
 	wp_cache_delete( 'form_fields_order_' . $form_id, 'bookacti' );
 	
 	do_action( 'bookacti_form_field_order_updated', $form_id, $field_order );
