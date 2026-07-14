@@ -328,6 +328,7 @@ add_filter( 'bookacti_notification_global_fields', 'bookacti_wc_notification_glo
 
 
 
+
 // SEND NOTIFICATIONS
 
 /**
