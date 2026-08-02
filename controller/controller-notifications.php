@@ -139,7 +139,7 @@ add_action( 'bookacti_clean_latest_notifications', 'bookacti_clean_latest_emails
 /**
  * Send a notification to admin and customer when a new booking is made
  * @since 1.2.2 (was bookacti_send_notification_admin_new_booking in 1.2.1)
- * @version 1.18.2
+ * @version 1.18.5
  * @param array $return_array
  * @param array $booking_form_values
  * @param int $form_id
@@ -153,6 +153,8 @@ function bookacti_send_notification_when_booking_is_made( $return_array, $bookin
 		// Send a booking confirmation to admin and customers
 		bookacti_send_booking_status_change_notification( 'new', $booking, null, $booking_info[ 'type' ] );
 		bookacti_send_booking_status_change_notification( $booking->state, $booking, null, $booking_info[ 'type' ] );
+		
+		do_action( 'bookacti_booking_form_validated_notifications_sent', $booking, $booking_info[ 'type' ] );
 	}
 }
 add_action( 'bookacti_booking_form_validated', 'bookacti_send_notification_when_booking_is_made', 100, 3 );

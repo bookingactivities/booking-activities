@@ -53,6 +53,7 @@ table.woocommerce_order_items ul.bookacti-booking-events-list { margin: 0; }
 	.product.bookacti-activity #wc-stripe-express-checkout-element,
 	.product.bookacti-activity #wc-stripe-payment-request-wrapper,
 	.product.bookacti-activity #wc-stripe-payment-request-button-separator,
+	.product.bookacti-activity .wc-stripe-product-checkout-container,
 	.product.bookacti-activity .wc-stripe-payment-request-wrapper,
 	.product.bookacti-activity .wc-stripe-payment-request-button-separator { display: none !important; }
 	
