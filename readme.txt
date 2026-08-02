@@ -2,7 +2,7 @@
 Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
-Tested up to: 7.0
+Tested up to: 7.1
 Stable tag: 1.18.5
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -321,7 +321,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.18.5 =
+= 1.18.5 - 2026/08/03 =
 * Fix - Do not allow serialized value when sanitizing text field for security reasons
 * Lib - Update FullCalendar to 6.1.21
 
