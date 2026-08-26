@@ -321,7 +321,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.18.6 =
+= 1.18.6 - 2026/08/27 =
 * Tweak - Add new notification tags: {order_id}, {booking_old_event_id} (for reschedule notifications)
 * Dev - Improve functions performance: bookacti_product_is_activity and bookacti_get_product_form_id
 
