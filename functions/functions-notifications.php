@@ -1079,7 +1079,7 @@ function bookacti_format_notification_managers( $notification_managers = array()
 /**
  * Get notifications tags
  * @since 1.2.0
- * @version 1.16.45
+ * @version 1.18.6
  * @param string $notification_id Optional.
  * @return array
  */
@@ -1128,6 +1128,7 @@ function bookacti_get_notifications_tags( $notification_id = '' ) {
 	}
 	
 	if( strpos( $notification_id, '_rescheduled' ) !== false ) {
+		$tags[ '{booking_old_event_id}' ]  = esc_html__( 'Booking event ID before reschedule.', 'booking-activities' );
 		$tags[ '{booking_old_start_raw}' ] = esc_html__( 'Booking start date and time before reschedule. Displayed in the ISO format.', 'booking-activities' );
 		$tags[ '{booking_old_end_raw}' ]   = esc_html__( 'Booking end date and time before reschedule. Displayed in the ISO format.', 'booking-activities' );
 		$tags[ '{booking_old_start}' ]     = esc_html__( 'Booking start date and time before reschedule. Displayed in a user-friendly format.', 'booking-activities' );
@@ -1823,6 +1824,7 @@ function bookacti_send_booking_status_change_notification( $status, $booking, $o
 /**
  * Send a notification to admin and customer when a booking is rescheduled
  * @since 1.16.0 (was bookacti_send_notification_when_booking_is_rescheduled)
+ * @version 1.18.6
  * @param object $booking
  * @param object $old_booking
  * @param string $send_to
@@ -1831,6 +1833,7 @@ function bookacti_send_booking_rescheduled_notification( $booking, $old_booking,
 	$send_to           = apply_filters( 'bookacti_reschedule_notification_recipient', $send_to && in_array( $send_to, array( 'both', 'customer', 'admin' ), true ) ? $send_to : 'both', $booking, $old_booking );
 	$notification_args = apply_filters( 'bookacti_booking_rescheduled_notification_args', array( 
 		'tags' => array(
+			'{booking_old_event_id}'  => intval( $old_booking->event_id ),
 			'{booking_old_start_raw}' => $old_booking->event_start,
 			'{booking_old_end_raw}'   => $old_booking->event_end
 		)

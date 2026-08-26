@@ -687,18 +687,19 @@ add_action( 'wp_ajax_nopriv_bookactiAddBoundProductToCart', 'bookacti_controller
 /**
  * Change the booking form bound to a product if the product is added to cart via a booking form
  * @since 1.7.0
+ * @version 1.18.6
  * @param int $form_id
- * @param int $product_id
- * @param boolean $is_variation
+ * @param WC_Product $product
  * @return int
  */
-function bookacti_change_product_form_id_if_added_to_cart_via_booking_form( $form_id, $product_id, $is_variation ) {
+function bookacti_change_product_form_id_if_added_to_cart_via_booking_form( $form_id, $product ) {
 	if( ! empty( $_POST[ 'action' ] ) && $_POST[ 'action' ] === 'bookactiAddBoundProductToCart' && ! empty( $_POST[ 'form_id' ] ) ) {
 		$form_id = intval( $_POST[ 'form_id' ] );
 	}
+	
 	return $form_id;
 }
-add_filter( 'bookacti_product_booking_form_id', 'bookacti_change_product_form_id_if_added_to_cart_via_booking_form', 10, 3 );
+add_filter( 'bookacti_product_booking_form_id', 'bookacti_change_product_form_id_if_added_to_cart_via_booking_form', 10, 2 );
 
 
 /**

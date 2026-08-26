@@ -144,7 +144,7 @@ add_filter( 'bookacti_notification_data', 'bookacti_wc_replace_notification_reci
 /**
  * Add WC notifications tags descriptions
  * @since 1.6.0
- * @version 1.16.29
+ * @version 1.18.6
  * @param array $tags
  * @param int $notification_id
  * @return array
@@ -156,6 +156,7 @@ function bookacti_wc_notifications_tags( $tags, $notification_id ) {
 	
 	$tags[ '{product_id}' ]           = esc_html__( 'The order item product ID.', 'booking-activities' );
 	$tags[ '{product_title}' ]        = esc_html__( 'The order item title.', 'booking-activities' );
+	$tags[ '{order_id}' ]             = esc_html__( 'The order ID.', 'booking-activities' );
 	$tags[ '{order_status}' ]         = esc_html__( 'The order status.', 'booking-activities' );
 	$tags[ '{order_payment_status}' ] = esc_html__( 'The order payment status (Paid or Owed).', 'booking-activities' );
 	$tags[ '{customer_order_note}' ]  = esc_html__( 'Customer order note', 'booking-activities' );
@@ -168,7 +169,7 @@ add_filter( 'bookacti_notifications_tags', 'bookacti_wc_notifications_tags', 15,
 /**
  * Set WC notifications tags values
  * @since 1.6.0
- * @version 1.16.29
+ * @version 1.18.6
  * @param array $tags
  * @param object $booking
  * @param string $booking_type
@@ -202,6 +203,7 @@ function bookacti_wc_notifications_tags_values( $tags, $booking, $booking_type, 
 	
 	$tags[ '{product_id}' ]           = $product_id ? $product_id : '';
 	$tags[ '{product_title}' ]        = $order_item_name !== '' ? apply_filters( 'bookacti_translate_text_external', $order_item_name, '', true, array( 'domain' => 'woocommerce', 'object_type' => 'order_item', 'object_id' => $item_id, 'field' => 'title', 'order_id' => $order_id ) ) : $order_item_name;
+	$tags[ '{order_id}' ]             = $order_id ? $order_id : '';
 	$tags[ '{order_status}' ]         = wc_get_order_status_name( $order->get_status() );
 	$tags[ '{order_payment_status}' ] = $order->get_date_paid() ? esc_html__( 'Paid', 'booking-activities' ) : esc_html__( 'Owed', 'booking-activities' );
 	$tags[ '{customer_order_note}' ]  = $order->get_customer_note();
