@@ -407,16 +407,20 @@ add_action( 'woocommerce_product_data_panels', 'bookacti_activity_tab_content' )
 
 /**
  * Save custom activity product type and activity tab content
- * @version 1.15.17
+ * @version 1.18.6
  * @param WC_Product $product
  */
 function bookacti_save_custom_product_type_and_tab_content( $product ) { 
-	$is_activity = ! empty( $_POST['_bookacti_is_activity'] ) ? 'yes' : 'no';
+	$is_activity = ! empty( $_POST[ '_bookacti_is_activity' ] ) ? 'yes' : 'no';
 	$product->update_meta_data( '_bookacti_is_activity', sanitize_text_field( $is_activity ) );
-
-	if( isset( $_POST['_bookacti_form'] ) ) {
-		$product->update_meta_data( '_bookacti_form', intval( $_POST['_bookacti_form'] ) );
+	
+	if( isset( $_POST[ '_bookacti_form' ] ) ) {
+		$product->update_meta_data( '_bookacti_form', intval( $_POST[ '_bookacti_form' ] ) );
 	}
+	
+	// Delete cache
+	wp_cache_delete( 'product_form_id_' . $product->get_id(), 'bookacti_wc' );
+	wp_cache_delete( 'product_is_activity_' . $product->get_id(), 'bookacti_wc' );
 }
 add_action( 'woocommerce_admin_process_product_object', 'bookacti_save_custom_product_type_and_tab_content', 10, 1 ); 
 
@@ -524,21 +528,25 @@ add_action( 'woocommerce_product_after_variable_attributes', 'bookacti_add_varia
 
 /**
  * Save custom variation product
- * @version 1.15.17
+ * @version 1.18.6
  * @param WC_Product_Variation $variation
  * @param int $i
  */
 function bookacti_save_variation_option( $variation, $i ) {
 	// Save 'is_activity' checkbox
 	if( isset( $_POST[ 'bookacti_variable_is_activity' ][ $i ] ) ) {
-		$variable_is_activity = $_POST[ 'bookacti_variable_is_activity' ][ $i ] === 'yes' ? 'yes' : 'no';
-		$variation->update_meta_data( 'bookacti_variable_is_activity', $variable_is_activity );
+		$variation_is_activity = $_POST[ 'bookacti_variable_is_activity' ][ $i ] === 'yes' ? 'yes' : 'no';
+		$variation->update_meta_data( 'bookacti_variable_is_activity', $variation_is_activity );
 	}
 	// Save form
 	if( isset( $_POST[ 'bookacti_variable_form' ][ $i ] ) ) {
-		$variable_form = intval( $_POST[ 'bookacti_variable_form' ][ $i ] );
-		$variation->update_meta_data( 'bookacti_variable_form', $variable_form );
+		$variation_form_id = intval( $_POST[ 'bookacti_variable_form' ][ $i ] );
+		$variation->update_meta_data( 'bookacti_variable_form', $variation_form_id );
 	}
+	
+	// Delete cache
+	wp_cache_delete( 'product_form_id_' . $variation->get_id(), 'bookacti_wc' );
+	wp_cache_delete( 'product_is_activity_' . $variation->get_id(), 'bookacti_wc' );
 }
 add_action( 'woocommerce_admin_process_variation_object', 'bookacti_save_variation_option', 10, 2 );
 

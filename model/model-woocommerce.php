@@ -86,6 +86,66 @@ function bookacti_get_products_titles( $search = '' ) {
 }
 
 
+/**
+ * Get the form ID bound to the first available activity variation of a variable product
+ * @since 1.18.6
+ * @param int $product_id
+ * @return int
+ */
+function bookacti_get_variable_product_form_id( $product_id ) {
+	global $wpdb;
+	
+	$query = 'SELECT M1.meta_value FROM ' . $wpdb->posts . ' as P '
+	       . ' LEFT JOIN ' . $wpdb->postmeta . ' as M1 ON M1.post_id = P.ID AND M1.meta_key = "bookacti_variable_form" '
+	       . ' LEFT JOIN ' . $wpdb->postmeta . ' as M2 ON M2.post_id = P.ID AND M2.meta_key = "_price" '
+	       . ' LEFT JOIN ' . $wpdb->postmeta . ' as M3 ON M3.post_id = P.ID AND M3.meta_key = "_stock_status" '
+	       . ' WHERE P.post_parent = %d '
+	       . ' AND P.post_type = "product_variation" '
+	       . ' AND P.post_status = "publish" '
+	       . ' AND M1.meta_value IS NOT NULL AND M1.meta_value != "" AND M1.meta_value != 0 AND M1.meta_value != "0" '
+	       . ' AND M2.meta_value IS NOT NULL AND M2.meta_value != "" '
+	       . ' AND ( M3.meta_value IS NULL OR M3.meta_value = "" OR M3.meta_value = "instock" ) '
+	       . ' LIMIT 1 ';
+	
+	$query  = $wpdb->prepare( $query, $product_id );
+	$result = $wpdb->get_var( $query );
+	
+	$form_id = $result && is_numeric( $result ) ? intval( $result ) : 0;
+	
+	return $form_id;
+}
+
+
+/**
+ * Check if variable product has at least one available variation that is activity
+ * @since 1.18.6
+ * @param int $product_id
+ * @return int
+ */
+function bookacti_variable_product_is_activity( $product_id ) {
+	global $wpdb;
+	
+	$query = 'SELECT P.ID as variation_id FROM ' . $wpdb->posts . ' as P '
+	       . ' LEFT JOIN ' . $wpdb->postmeta . ' as M1 ON M1.post_id = P.ID AND M1.meta_key = "bookacti_variable_is_activity" '
+	       . ' LEFT JOIN ' . $wpdb->postmeta . ' as M2 ON M2.post_id = P.ID AND M2.meta_key = "_price" '
+	       . ' LEFT JOIN ' . $wpdb->postmeta . ' as M3 ON M3.post_id = P.ID AND M3.meta_key = "_stock_status" '
+	       . ' WHERE P.post_parent = %d '
+	       . ' AND P.post_type = "product_variation" '
+	       . ' AND P.post_status = "publish" '
+	       . ' AND M1.meta_value = "yes" '
+	       . ' AND M2.meta_value IS NOT NULL AND M2.meta_value != "" '
+	       . ' AND ( M3.meta_value IS NULL OR M3.meta_value = "" OR M3.meta_value = "instock" ) '
+	       . ' LIMIT 1 ';
+	
+	$query  = $wpdb->prepare( $query, $product_id );
+	$result = $wpdb->get_var( $query );
+	
+	$variation_id = $result && is_numeric( $result ) ? intval( $result ) : 0;
+	
+	return $variation_id;
+}
+
+
 
 
 // BOOKINGS

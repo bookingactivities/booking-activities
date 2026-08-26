@@ -1932,39 +1932,6 @@ function bookacti_display_product_selectbox( $raw_args = array() ) {
 
 
 /**
- * Tell if the product is activity or has variations that are activities
- * @version 1.16.48
- * @param WC_Product|int $product
- * @return boolean
- */
-function bookacti_product_is_activity( $product ) {
-	// Get product or variation from ID
-	if( ! is_object( $product ) ) {
-		$product_id = intval( $product );
-		$product    = wc_get_product( $product_id );
-		if( ! $product ) { return false; }
-	}
-
-	$is_activity = false;
-	
-	if( is_a( $product, 'WC_Product_Variation' ) ) {
-		$is_activity = $product->get_meta( 'bookacti_variable_is_activity' ) === 'yes';
-	}
-	else if( is_a( $product, 'WC_Product_Variable' ) ) {
-		$variations = $product->get_available_variations();
-		foreach( $variations as $variation ) {
-			if( ! empty( $variation[ 'bookacti_is_activity' ] ) ) { $is_activity = true; break; }
-		}
-	}
-	else if( ! $product->is_type( 'grouped' ) && ! $product->is_type( 'external' ) ) {
-		$is_activity = $product->get_meta( '_bookacti_is_activity' ) === 'yes';
-	}
-
-	return apply_filters( 'bookacti_product_is_activity', $is_activity, $product );
-}
-
-
-/**
  * Find matching product variation
  * @since 1.5.0
  * @version 1.14.0
@@ -2027,28 +1994,88 @@ function bookacti_get_product_default_attributes( $product ) {
 
 
 /**
- * Get the form ID bound to a product / variation
- * @since 1.9.0
- * @version 1.15.17
- * @param int $product_id
- * @param boolean $is_variation
- * @return int
+ * Check if a product is activity or has at least one available variation that is activity
+ * @version 1.18.6
+ * @param WC_Product|int $product
+ * @return boolean
  */
-function bookacti_get_product_form_id( $product_id, $is_variation = 'check' ) {
-	$form_id = 0;
-	$product = wc_get_product( $product_id );
+function bookacti_product_is_activity( $product ) {
+	$is_activity = false;
 	
-	if( $product ) {
-		// Check if the product is simple or a variation
-		if( $is_variation === 'check' ) {
-			$is_variation = $product->get_type() === 'variation';
-		}
-		
-		$meta_key = $is_variation ? 'bookacti_variable_form' : '_bookacti_form';
-		$form_id  = $product->get_meta( $meta_key );
+	// Get product or variation from ID
+	if( is_numeric( $product ) ) {
+		$product = wc_get_product( $product );
 	}
 	
-	return apply_filters( 'bookacti_product_booking_form_id', intval( $form_id ), $product_id, $is_variation );
+	if( is_a( $product, 'WC_Product' ) ) {
+		$product_id = $product->get_id();
+		
+		$cache = wp_cache_get( 'product_is_activity_' . $product_id, 'bookacti_wc' );
+		if( $cache !== false ) {
+			return intval( $cache ) ? true : false;
+		}
+		
+		if( is_a( $product, 'WC_Product_Variation' ) ) {
+			$is_activity = $product->get_meta( 'bookacti_variable_is_activity' ) === 'yes';
+		}
+		else if( is_a( $product, 'WC_Product_Variable' ) ) {
+			$is_activity = bookacti_variable_product_is_activity( $product_id ) ? true : false;
+		}
+		else if( ! $product->is_type( 'grouped' ) && ! $product->is_type( 'external' ) ) {
+			$is_activity = $product->get_meta( '_bookacti_is_activity' ) === 'yes';
+		}
+		
+		$is_activity = apply_filters( 'bookacti_product_is_activity', $is_activity, $product );
+		
+		wp_cache_set( 'product_is_activity_' . $product_id, $is_activity ? 1 : 0, 'bookacti_wc' );
+	}
+
+	return $is_activity;
+}
+
+
+/**
+ * Get the form ID bound to a product / variation
+ * @since 1.9.0
+ * @version 1.18.6
+ * @param WC_Product|int $product
+ * @param boolean $check_variations
+ * @return int
+ */
+function bookacti_get_product_form_id( $product, $check_variations = false ) {
+	$form_id = 0;
+	if( is_numeric( $product ) ) {
+		$product = wc_get_product( $product );
+	}
+	
+	if( is_a( $product, 'WC_Product' ) ) {
+		if( is_a( $product, 'WC_Product_Variable' ) && ! $check_variations ) {
+			return 0;
+		}
+		
+		$product_id = $product->get_id();
+		
+		$cache = wp_cache_get( 'product_form_id_' . $product_id, 'bookacti_wc' );
+		if( $cache !== false ) {
+			return intval( $cache ) ? true : false;
+		}
+		
+		if( is_a( $product, 'WC_Product_Variation' ) ) {
+			$form_id = intval( $product->get_meta( 'bookacti_variable_form' ) );
+		}
+		else if( is_a( $product, 'WC_Product_Variable' ) ) {
+			$form_id = bookacti_get_variable_product_form_id( $product_id );
+		}
+		else if( ! $product->is_type( 'grouped' ) && ! $product->is_type( 'external' ) ) {
+			$form_id = intval( $product->get_meta( '_bookacti_form' ) );
+		}
+		
+		$form_id = apply_filters( 'bookacti_product_booking_form_id', $form_id, $product );
+		
+		wp_cache_set( 'product_form_id_' . $product_id, $form_id, 'bookacti_wc' );
+	}
+	
+	return $form_id;
 }
 
 

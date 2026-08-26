@@ -266,7 +266,7 @@ add_action( 'woocommerce_before_single_product_summary', 'bookacti_move_add_to_c
 
 /**
  * Add booking forms to single product page (front-end)
- * @version 1.16.48
+ * @version 1.18.6
  * @global WC_Product $product
  */
 function bookacti_add_booking_system_in_single_product_page() {
@@ -277,15 +277,7 @@ function bookacti_add_booking_system_in_single_product_page() {
 	if( ! $is_activity ) { return; }
 
 	// Check if the product or one of its available variation is bound to a booking form
-	$form_id = bookacti_get_product_form_id( $product->get_id() );
-	if( is_a( $product, 'WC_Product_Variable' ) ) {
-		$variations = $product->get_available_variations();
-		foreach( $variations as $variation ) {
-			if( empty( $variation[ 'bookacti_is_activity' ] ) || empty( $variation[ 'bookacti_form_id' ] ) ) { continue; }
-			$form_id = apply_filters( 'bookacti_product_booking_form_id', $variation[ 'bookacti_form_id' ], $variation[ 'variation_id' ], true );
-			break;
-		}
-	}
+	$form_id = bookacti_get_product_form_id( $product, true );
 	if( ! $form_id ) { return; }
 
 	$form_instance_id     = '';
@@ -498,7 +490,7 @@ add_filter( 'woocommerce_quantity_input_args', 'bookacti_set_wc_quantity_via_url
 
 /**
  * Validate add to cart form and temporarily book the event
- * @version 1.16.45
+ * @version 1.18.6
  * @global WooCommerce $woocommerce
  * @global array $global_bookacti_wc
  * @param boolean $true
@@ -512,7 +504,7 @@ function bookacti_validate_add_to_cart_and_book_temporarily( $true, $product_id,
 	
 	$variation_id = $variation_id ? $variation_id : ( isset( $_POST[ 'variation_id' ] ) ? intval( $_POST[ 'variation_id' ] ) : 0 );
 	
-	$is_activity = $variation_id ? bookacti_product_is_activity( $variation_id ) : bookacti_product_is_activity( $product_id );
+	$is_activity = bookacti_product_is_activity( $variation_id ? $variation_id : $product_id );
 	if( ! $is_activity ) { return $true; }
 	
 	$picked_events = ! empty( $_POST[ 'selected_events' ] ) ? bookacti_format_picked_events( $_POST[ 'selected_events' ] ) : array();
@@ -527,7 +519,7 @@ function bookacti_validate_add_to_cart_and_book_temporarily( $true, $product_id,
 	$user_id = apply_filters( 'bookacti_current_user_id', get_current_user_id() );
 	
 	// Get product form ID
-	$form_id = $variation_id ? bookacti_get_product_form_id( $variation_id, true ) : bookacti_get_product_form_id( $product_id, false );
+	$form_id = bookacti_get_product_form_id( $variation_id ? $variation_id : $product_id );
 	
 	// Sanitize the variables
 	$form_fields_validated = bookacti_validate_form_fields( $form_id );

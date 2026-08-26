@@ -3,7 +3,7 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
 Tested up to: 7.1
-Stable tag: 1.18.5
+Stable tag: 1.18.6
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -320,6 +320,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.18.6 - 2026/08/27 =
+* Tweak - Add new notification tags: {order_id}, {booking_old_event_id} (for reschedule notifications)
+* Dev - Improve functions performance: bookacti_product_is_activity and bookacti_get_product_form_id
 
 = 1.18.5 - 2026/08/03 =
 * Fix - Do not allow serialized value when sanitizing text field for security reasons
