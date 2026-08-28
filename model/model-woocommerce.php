@@ -146,6 +146,49 @@ function bookacti_variable_product_is_activity( $product_id ) {
 }
 
 
+/**
+ * Get product / variation IDs bound to the booking form
+ * @since 1.18.7
+ * @return array
+ */
+function bookacti_wc_get_booking_forms_product_ids() {
+	$cache = wp_cache_get( 'booking_forms_product_ids', 'bookacti_wc' );
+	if( $cache !== false ) {
+		return $cache;
+	}
+	
+	global $wpdb;
+	
+	$query = 'SELECT DISTINCT P.ID as product_id, M2.meta_value as form_id FROM ' . $wpdb->posts . ' as P '
+	       . ' LEFT JOIN ' . $wpdb->postmeta . ' as M1 ON M1.post_id = P.ID AND IF( P.post_type = "product", M1.meta_key = "_bookacti_is_activity", M1.meta_key = "bookacti_variable_is_activity" ) '
+	       . ' LEFT JOIN ' . $wpdb->postmeta . ' as M2 ON M2.post_id = P.ID AND IF( P.post_type = "product", M2.meta_key = "_bookacti_form", M2.meta_key = "bookacti_variable_form" ) '
+	       . ' LEFT JOIN ' . $wpdb->postmeta . ' as M3 ON M3.post_id = P.ID AND M3.meta_key = "_price" '
+	       . ' LEFT JOIN ' . $wpdb->postmeta . ' as M4 ON M4.post_id = P.ID AND M4.meta_key = "_stock_status" '
+	       . ' WHERE P.post_type IN ( "product", "product_variation" ) '
+	       . ' AND P.post_status = "publish" '
+	       . ' AND M1.meta_value = "yes" '
+	       . ' AND M2.meta_value IS NOT NULL AND M2.meta_value != "" AND M2.meta_value != 0 AND M2.meta_value != "0" '
+	       . ' AND M3.meta_value IS NOT NULL AND M3.meta_value != "" '
+	       . ' AND ( M4.meta_value IS NULL OR M4.meta_value = "" OR M4.meta_value = "instock" ) ';
+	
+	$results = $wpdb->get_results( $query );
+	
+	$product_ids_by_form_id = array();
+	foreach( $results as $result ) {
+		$form_id = intval( $result->form_id );
+		if( ! isset( $product_ids_by_form_id[ $form_id ] ) ) {
+			$product_ids_by_form_id[ $form_id ] = array();
+		}
+		$product_ids_by_form_id[ $form_id ][] = intval( $result->product_id );
+	}
+	$product_ids_by_form_id = array_map( 'array_values', array_map( 'bookacti_ids_to_array', $product_ids_by_form_id ) );
+	
+	wp_cache_set( 'booking_forms_product_ids', $product_ids_by_form_id, 'bookacti_wc' );
+	
+	return $product_ids_by_form_id;
+}
+
+
 
 
 // BOOKINGS

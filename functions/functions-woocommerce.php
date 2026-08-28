@@ -1995,7 +1995,7 @@ function bookacti_get_product_default_attributes( $product ) {
 
 /**
  * Check if a product is activity or has at least one available variation that is activity
- * @version 1.18.6
+ * @version 1.18.7
  * @param WC_Product|int $product
  * @return boolean
  */
@@ -2025,9 +2025,9 @@ function bookacti_product_is_activity( $product ) {
 			$is_activity = $product->get_meta( '_bookacti_is_activity' ) === 'yes';
 		}
 		
-		$is_activity = apply_filters( 'bookacti_product_is_activity', $is_activity, $product );
-		
 		wp_cache_set( 'product_is_activity_' . $product_id, $is_activity ? 1 : 0, 'bookacti_wc' );
+		
+		$is_activity = apply_filters( 'bookacti_product_is_activity', $is_activity, $product );
 	}
 
 	return $is_activity;
@@ -2037,7 +2037,7 @@ function bookacti_product_is_activity( $product ) {
 /**
  * Get the form ID bound to a product / variation
  * @since 1.9.0
- * @version 1.18.6
+ * @version 1.18.7
  * @param WC_Product|int $product
  * @param boolean $check_variations
  * @return int
@@ -2057,7 +2057,7 @@ function bookacti_get_product_form_id( $product, $check_variations = false ) {
 		
 		$cache = wp_cache_get( 'product_form_id_' . $product_id, 'bookacti_wc' );
 		if( $cache !== false ) {
-			return intval( $cache ) ? true : false;
+			return intval( $cache );
 		}
 		
 		if( is_a( $product, 'WC_Product_Variation' ) ) {
@@ -2070,12 +2070,26 @@ function bookacti_get_product_form_id( $product, $check_variations = false ) {
 			$form_id = intval( $product->get_meta( '_bookacti_form' ) );
 		}
 		
-		$form_id = apply_filters( 'bookacti_product_booking_form_id', $form_id, $product );
-		
 		wp_cache_set( 'product_form_id_' . $product_id, $form_id, 'bookacti_wc' );
+		
+		$form_id = apply_filters( 'bookacti_product_booking_form_id', $form_id, $product );
 	}
 	
 	return $form_id;
+}
+
+
+/**
+ * Get product / variation IDs bound to the booking form
+ * @since 1.18.7
+ * @param int $form_id
+ * @return array
+ */
+function bookacti_wc_get_booking_form_product_ids( $form_id ) {
+	$product_ids_by_form = bookacti_wc_get_booking_forms_product_ids();
+	$product_ids         = ! empty( $product_ids_by_form[ $form_id ] ) ? bookacti_ids_to_array( $product_ids_by_form[ $form_id ] ) : array();
+	
+	return apply_filters( 'bookacti_wc_booking_form_product_ids', $product_ids, $form_id );
 }
 
 

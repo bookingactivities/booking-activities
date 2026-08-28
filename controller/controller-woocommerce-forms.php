@@ -685,6 +685,104 @@ add_action( 'wp_ajax_nopriv_bookactiAddBoundProductToCart', 'bookacti_controller
 
 
 /**
+ * Prevent direct booking using a booking form that is bound to a product
+ * @since 1.18.7
+ * @param array $validated
+ * @param int $form_id
+ * @param string $form_action
+ * @return array
+ */
+function bookacti_wc_validate_form_action( $validated, $form_id, $form_action ) {
+	if( $validated[ 'status' ] !== 'success' ) { return $validated; }
+	
+	$product_ids = bookacti_wc_get_booking_form_product_ids( $form_id );
+	
+	if( $product_ids ) {
+		$product_id = reset( $product_ids );
+		$product    = wc_get_product( $product_id );
+		$validated[ 'status' ] = 'failed';
+		$validated[ 'messages' ][ 'form_bound_to_product' ] = esc_html( 'You cannot make a direct booking using this form.', 'booking-activities' ) 
+		. ' ' . sprintf(
+			/* translators: %s = product title with a link. */
+			esc_html( 'Please visit the "%s" product page to add the booking to your cart.', 'booking-activities' ),
+			$product ? '<a href="' . $product->get_permalink() . '">' . $product->get_title() . '</a>' : ''
+		);
+	}
+	
+	return $validated;
+}
+add_filter( 'bookacti_validate_form_action', 'bookacti_wc_validate_form_action', 10, 3 );
+
+
+/**
+ * Do not display booking form with a shortcode if it is bound to a product and if its form action is "default"
+ * @since 1.18.7
+ * @param string $output
+ * @param array $raw_atts
+ * @param string $content
+ * @return string
+ */
+function bookacti_wc_prevent_display_product_booking_form_with_shortcode( $output, $raw_atts, $content ) {
+	$atts    = array_change_key_case( (array) $raw_atts, CASE_LOWER );
+	$form_id = ! empty( $atts[ 'form' ] ) ? intval( $atts[ 'form' ] ) : 0;
+	if( ! $form_id ) {
+		return $output;
+	}
+	
+	// Check form action
+	$fields_data = $form_id ? bookacti_get_form_fields_data( $form_id, true, true ) : array();
+	$form_action = isset( $fields_data[ 'calendar' ][ 'form_action' ] ) ? $fields_data[ 'calendar' ][ 'form_action' ] : '';
+	
+	if( $form_action !== 'default' ) {
+		return $output;
+	}
+	
+	// Check id form is bound to a product
+	$product_ids = bookacti_wc_get_booking_form_product_ids( $form_id );
+	if( ! $product_ids ) {
+		return $output;
+	}
+	
+	$product_id = reset( $product_ids );
+	$product    = wc_get_product( $product_id );
+
+	ob_start();
+	?>
+	<div class='bookacti-notices bookacti-wc-product-booking-form-direct-booking-forbidden' style='display:block;'>
+		<ul class='bookacti-error-list'>
+			<li>
+				<?php echo esc_html( 'The booking form cannot be displayed because it is linked to a product.', 'booking-activities' ) 
+				. ' ' . sprintf(
+					/* translators: %s = product title with a link. */
+					esc_html( 'Please visit the "%s" product page to add the booking to your cart.', 'booking-activities' ),
+					$product ? '<a href="' . $product->get_permalink() . '">' . $product->get_title() . '</a>' : ''
+				); ?>
+			</li>
+			<?php if( current_user_can( 'bookacti_edit_forms' ) && bookacti_user_can_manage_form( $form_id ) ) { ?>
+			<li>
+			<?php 
+				$docs_link      = 'https://booking-activities.fr/en/docs/user-documentation/advanced-use-of-booking-activities/add-product-to-cart-or-redirect-to-url-from-calendar/';
+				$docs_link_html = '<a href="' . $docs_link . '" target="_blank">' . esc_html__( 'documentation', 'booking-activities' ) . '</a>';
+
+				echo sprintf(
+					/* translators: %s = "documentation" with a link. */
+					esc_html( 'To display a booking form using a shortcode at this location, the administrator can either modify the form\'s action (%s) or create a separate one.', 'booking-activities' ),
+					$docs_link_html
+				);
+			?>
+			</li>
+			<?php } ?>
+		</ul>
+	</div>
+	<?php
+	$output = ob_get_clean();
+	
+	return $output;
+}
+add_filter( 'bookacti_shortcode_bookingactivities_form_output', 'bookacti_wc_prevent_display_product_booking_form_with_shortcode', 10, 3 );
+
+
+/**
  * Change the booking form bound to a product if the product is added to cart via a booking form
  * @since 1.7.0
  * @version 1.18.6

@@ -407,7 +407,7 @@ add_action( 'woocommerce_product_data_panels', 'bookacti_activity_tab_content' )
 
 /**
  * Save custom activity product type and activity tab content
- * @version 1.18.6
+ * @version 1.18.7
  * @param WC_Product $product
  */
 function bookacti_save_custom_product_type_and_tab_content( $product ) { 
@@ -421,8 +421,10 @@ function bookacti_save_custom_product_type_and_tab_content( $product ) {
 	// Delete cache
 	wp_cache_delete( 'product_form_id_' . $product->get_id(), 'bookacti_wc' );
 	wp_cache_delete( 'product_is_activity_' . $product->get_id(), 'bookacti_wc' );
+	wp_cache_delete( 'booking_forms_product_ids', 'bookacti_wc' );
 }
 add_action( 'woocommerce_admin_process_product_object', 'bookacti_save_custom_product_type_and_tab_content', 10, 1 ); 
+
 
 
 
@@ -528,7 +530,7 @@ add_action( 'woocommerce_product_after_variable_attributes', 'bookacti_add_varia
 
 /**
  * Save custom variation product
- * @version 1.18.6
+ * @version 1.18.7
  * @param WC_Product_Variation $variation
  * @param int $i
  */
@@ -547,6 +549,7 @@ function bookacti_save_variation_option( $variation, $i ) {
 	// Delete cache
 	wp_cache_delete( 'product_form_id_' . $variation->get_id(), 'bookacti_wc' );
 	wp_cache_delete( 'product_is_activity_' . $variation->get_id(), 'bookacti_wc' );
+	wp_cache_delete( 'booking_forms_product_ids', 'bookacti_wc' );
 }
 add_action( 'woocommerce_admin_process_variation_object', 'bookacti_save_variation_option', 10, 2 );
 

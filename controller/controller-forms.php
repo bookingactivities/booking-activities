@@ -852,7 +852,7 @@ add_action( 'wp_ajax_nopriv_bookactiSubmitLoginForm', 'bookacti_controller_valid
 /**
  * AJAX Controller - Check if booking form is correct and then book the event, or send the error message
  * @since 1.5.0
- * @version 1.16.42
+ * @version 1.18.7
  */
 function bookacti_controller_validate_booking_form() {
 	$return_array = array(
@@ -880,6 +880,15 @@ function bookacti_controller_validate_booking_form() {
 	
 	// Send the redirect URL
 	$return_array[ 'redirect_url' ] = $form[ 'redirect_url' ];
+	
+	// Validate form action
+	$form_action_validated = bookacti_validate_form_action( $form_id );
+	$return_array          = array_replace_recursive( $return_array, $form_action_validated );
+	if( $form_action_validated[ 'status' ] !== 'success' ) {
+		$return_array[ 'error' ]   = 'invalid_form_action';
+		$return_array[ 'message' ] = implode( '</li><li>', $return_array[ 'messages' ] );
+		bookacti_send_json( $return_array, 'submit_booking_form' );
+	}
 	
 	// Validate the booking form fields
 	$form_fields_validated = bookacti_validate_form_fields( $form_id );
