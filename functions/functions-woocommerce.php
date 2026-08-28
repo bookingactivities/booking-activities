@@ -1995,7 +1995,7 @@ function bookacti_get_product_default_attributes( $product ) {
 
 /**
  * Check if a product is activity or has at least one available variation that is activity
- * @version 1.18.7
+ * @version 1.18.7.1
  * @param WC_Product|int $product
  * @return boolean
  */
@@ -2012,32 +2012,32 @@ function bookacti_product_is_activity( $product ) {
 		
 		$cache = wp_cache_get( 'product_is_activity_' . $product_id, 'bookacti_wc' );
 		if( $cache !== false ) {
-			return intval( $cache ) ? true : false;
+			$is_activity = intval( $cache ) ? true : false;
 		}
 		
-		if( is_a( $product, 'WC_Product_Variation' ) ) {
-			$is_activity = $product->get_meta( 'bookacti_variable_is_activity' ) === 'yes';
+		else {
+			if( is_a( $product, 'WC_Product_Variation' ) ) {
+				$is_activity = $product->get_meta( 'bookacti_variable_is_activity' ) === 'yes';
+			}
+			else if( is_a( $product, 'WC_Product_Variable' ) ) {
+				$is_activity = bookacti_variable_product_is_activity( $product_id ) ? true : false;
+			}
+			else if( ! $product->is_type( 'grouped' ) && ! $product->is_type( 'external' ) ) {
+				$is_activity = $product->get_meta( '_bookacti_is_activity' ) === 'yes';
+			}
+
+			wp_cache_set( 'product_is_activity_' . $product_id, $is_activity ? 1 : 0, 'bookacti_wc' );
 		}
-		else if( is_a( $product, 'WC_Product_Variable' ) ) {
-			$is_activity = bookacti_variable_product_is_activity( $product_id ) ? true : false;
-		}
-		else if( ! $product->is_type( 'grouped' ) && ! $product->is_type( 'external' ) ) {
-			$is_activity = $product->get_meta( '_bookacti_is_activity' ) === 'yes';
-		}
-		
-		wp_cache_set( 'product_is_activity_' . $product_id, $is_activity ? 1 : 0, 'bookacti_wc' );
-		
-		$is_activity = apply_filters( 'bookacti_product_is_activity', $is_activity, $product );
 	}
 
-	return $is_activity;
+	return apply_filters( 'bookacti_product_is_activity', $is_activity, $product );
 }
 
 
 /**
  * Get the form ID bound to a product / variation
  * @since 1.9.0
- * @version 1.18.7
+ * @version 1.18.7.1
  * @param WC_Product|int $product
  * @param boolean $check_variations
  * @return int
@@ -2050,32 +2050,34 @@ function bookacti_get_product_form_id( $product, $check_variations = false ) {
 	
 	if( is_a( $product, 'WC_Product' ) ) {
 		if( is_a( $product, 'WC_Product_Variable' ) && ! $check_variations ) {
-			return 0;
+			$form_id = 0;
 		}
 		
-		$product_id = $product->get_id();
-		
-		$cache = wp_cache_get( 'product_form_id_' . $product_id, 'bookacti_wc' );
-		if( $cache !== false ) {
-			return intval( $cache );
+		else {
+			$product_id = $product->get_id();
+
+			$cache = wp_cache_get( 'product_form_id_' . $product_id, 'bookacti_wc' );
+			if( $cache !== false ) {
+				$form_id = intval( $cache );
+			}
+
+			else {
+				if( is_a( $product, 'WC_Product_Variation' ) ) {
+					$form_id = intval( $product->get_meta( 'bookacti_variable_form' ) );
+				}
+				else if( is_a( $product, 'WC_Product_Variable' ) ) {
+					$form_id = bookacti_get_variable_product_form_id( $product_id );
+				}
+				else if( ! $product->is_type( 'grouped' ) && ! $product->is_type( 'external' ) ) {
+					$form_id = intval( $product->get_meta( '_bookacti_form' ) );
+				}
+
+				wp_cache_set( 'product_form_id_' . $product_id, $form_id, 'bookacti_wc' );
+			}
 		}
-		
-		if( is_a( $product, 'WC_Product_Variation' ) ) {
-			$form_id = intval( $product->get_meta( 'bookacti_variable_form' ) );
-		}
-		else if( is_a( $product, 'WC_Product_Variable' ) ) {
-			$form_id = bookacti_get_variable_product_form_id( $product_id );
-		}
-		else if( ! $product->is_type( 'grouped' ) && ! $product->is_type( 'external' ) ) {
-			$form_id = intval( $product->get_meta( '_bookacti_form' ) );
-		}
-		
-		wp_cache_set( 'product_form_id_' . $product_id, $form_id, 'bookacti_wc' );
-		
-		$form_id = apply_filters( 'bookacti_product_booking_form_id', $form_id, $product );
 	}
 	
-	return $form_id;
+	return apply_filters( 'bookacti_product_booking_form_id', $form_id, $product, $check_variations );
 }
 
 
