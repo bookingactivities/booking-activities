@@ -1704,6 +1704,30 @@ function bookacti_validate_form_fields( $form_id = 0, $fields_data = array() ) {
 
 
 /**
+ * Validate form action when submitting a booking form
+ * @since 1.18.7
+ * @param int $form_id
+ * @return array
+ */
+function bookacti_validate_form_action( $form_id ) {
+	$validated = array( 
+		'status'   => 'success',
+		'messages' => array()
+	);
+	
+	$fields_data = $form_id ? bookacti_get_form_fields_data( $form_id, true, true ) : array();
+	$form_action = isset( $fields_data[ 'calendar' ][ 'form_action' ] ) ? $fields_data[ 'calendar' ][ 'form_action' ] : '';
+	
+	if( $form_action !== 'default' ) {
+		$validated[ 'status' ] = 'failed';
+		$validated[ 'messages' ][ 'invalid_form_action' ] = esc_html( 'You cannot make a direct booking using this form.', 'booking-activities' );
+	}
+	
+	return apply_filters( 'bookacti_validate_form_action', $validated, $form_id, $form_action );
+}
+
+
+/**
  * Validate reschedule form fields according to values received with $_POST
  * @since 1.15.6
  * @version 1.16.0

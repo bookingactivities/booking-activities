@@ -627,7 +627,7 @@ function bookacti_get_active_add_ons( $prefix = '', $exclude = array( 'balau' ) 
 /**
  * Get add-on data by prefix
  * @since 1.7.14
- * @version 1.18.5
+ * @version 1.18.7
  * @param string $prefix
  * @param array $exclude
  * @return array
@@ -672,7 +672,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-order-for-customers', 
 			'end_of_life' => '', 
 			'download_id' => 436,
-			'min_version' => '1.3.11'
+			'min_version' => '1.3.12'
 		),
 		'bara' => array(
 			'title'       => 'Resource Availability', 
@@ -688,7 +688,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-waiting-list', 
 			'end_of_life' => '', 
 			'download_id' => 39100,
-			'min_version' => '1.0.5'
+			'min_version' => '1.0.7'
 		),
 		'balau' => array(
 			'title'       => 'Licenses & Updates', 
