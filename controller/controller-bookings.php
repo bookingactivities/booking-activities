@@ -259,7 +259,7 @@ add_action( 'wp_ajax_nopriv_bookactiGetBookingsRefundActionsHTML', 'bookacti_con
 /**
  * AJAX Controller - Refund bookings
  * @since 1.16.0
- * @version 1.18.5
+ * @version 1.19.0
  */
 function bookacti_controller_refund_bookings() {
 	// Check nonce
@@ -297,8 +297,10 @@ function bookacti_controller_refund_bookings() {
 		}
 	}
 	
-	$refund_action  = ! empty( $_POST[ 'refund_action' ] ) ? sanitize_title_with_dashes( $_POST[ 'refund_action' ] ) : '';
-	$refund_message = ! empty( $_POST[ 'refund_message' ] ) && is_string( $_POST[ 'refund_message' ] ) && ! is_serialized( $_POST[ 'refund_message' ] ) ? ( function_exists( 'sanitize_textarea_field' ) ? sanitize_textarea_field( stripslashes( $_POST[ 'refund_message' ] ) ) : sanitize_text_field( stripslashes( $_POST[ 'refund_message' ] ) ) ) : '';
+	$refund_action  = ! empty( $_POST[ 'refund_action' ] ) ? sanitize_title_with_dashes( stripslashes( $_POST[ 'refund_action' ] ) ) : '';
+	$refund_message = ! empty( $_POST[ 'refund_message' ] ) && is_string( $_POST[ 'refund_message' ] ) ? ( function_exists( 'sanitize_textarea_field' ) ? sanitize_textarea_field( stripslashes( $_POST[ 'refund_message' ] ) ) : sanitize_text_field( stripslashes( $_POST[ 'refund_message' ] ) ) ) : '';
+	if( is_serialized( $refund_action ) )  { $refund_action = ''; }
+	if( is_serialized( $refund_message ) ) { $refund_message = ''; }
 	
 	// Check if the refund action exists
 	$refund_actions_array = bookacti_get_selected_bookings_refund_actions( $selected_bookings, ! $is_admin );

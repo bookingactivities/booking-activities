@@ -1169,7 +1169,7 @@ add_action( 'admin_footer-booking-activities_page_bookacti_forms', 'bookacti_pri
 /**
  * Create a booking form from REQUEST parameters
  * @since 1.5.0
- * @version 1.18.5
+ * @version 1.19.0
  */
 function bookacti_controller_create_form() {
 	if( empty( $_REQUEST[ 'action' ] ) || ( isset( $_REQUEST[ 'action' ] ) && $_REQUEST[ 'action' ] !== 'new' ) ) { return; }
@@ -1178,7 +1178,8 @@ function bookacti_controller_create_form() {
 	$can_create_form = current_user_can( 'bookacti_create_forms' );
 	if( ! $can_create_form ) { esc_html_e( 'You are not allowed to create booking forms.', 'booking-activities' ); exit; }
 	
-	$title = ! empty( $_REQUEST[ 'title' ] ) && is_string( $_REQUEST[ 'title' ] ) && ! is_serialized( $_REQUEST[ 'title' ] ) ? sanitize_text_field( stripslashes( $_REQUEST[ 'title' ] ) ) : '';
+	$title = ! empty( $_REQUEST[ 'title' ] ) && is_string( $_REQUEST[ 'title' ] ) ? sanitize_text_field( stripslashes( $_REQUEST[ 'title' ] ) ) : '';
+	if( is_serialized( $title ) ) { $title = ''; }
 	
 	// Switch to default language
 	$lang_switched = bookacti_switch_locale( bookacti_get_site_default_locale() );
@@ -1234,7 +1235,7 @@ add_action( 'load-booking-activities_page_bookacti_forms', 'bookacti_controller_
 /**
  * AJAX Controller - Update a booking form
  * @since 1.5.0
- * @version 1.18.5
+ * @version 1.19.0
  */
 function bookacti_controller_update_form() {
 	// Check nonce and capabilities
@@ -1246,9 +1247,11 @@ function bookacti_controller_update_form() {
 	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'update_form' ); }
 	
 	$was_active     = ! empty( $_REQUEST[ 'is_active' ] );
-	$form_title     = ! empty( $_REQUEST[ 'form_title' ] ) && is_string( $_REQUEST[ 'form_title' ] ) && ! is_serialized( $_REQUEST[ 'form_title' ] ) ? sanitize_text_field( stripslashes( $_REQUEST[ 'form_title' ] ) ) : '';
+	$form_title     = ! empty( $_REQUEST[ 'form_title' ] ) && is_string( $_REQUEST[ 'form_title' ] ) ? sanitize_text_field( stripslashes( $_REQUEST[ 'form_title' ] ) ) : '';
 	$managers_array = isset( $_REQUEST[ 'form-managers' ] ) ? bookacti_ids_to_array( $_REQUEST[ 'form-managers' ] ) : array();
 	$form_managers  = bookacti_format_form_managers( $managers_array );
+	
+	if( is_serialized( $form_title ) ) { $form_title = ''; }
 	
 	// Update author ID (Administrators only)
 	$user_id = -1;

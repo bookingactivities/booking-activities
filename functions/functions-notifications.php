@@ -524,7 +524,7 @@ function bookacti_sanitize_notification_data( $raw_data = array() ) {
 /**
  * Format notification data
  * @since 1.18.0
- * @version 1.18.5
+ * @version 1.19.0
  * @param array $raw_data
  * @param string $context "view" or "edit"
  * @return array
@@ -559,8 +559,10 @@ function bookacti_format_notification_data( $raw_data = array(), $context = 'vie
 	
 	// Translate texts
 	if( $context !== 'edit' ) {
-		if( ! empty( $raw_data[ 'title' ] ) && is_string( $raw_data[ 'title' ] ) && ! is_serialized( $raw_data[ 'title' ] ) ) {
-			$notification_data[ 'title' ] = sanitize_text_field( apply_filters( 'bookacti_translate_text', stripslashes( $raw_data[ 'title' ] ) ) );
+		$raw_title = ! empty( $raw_data[ 'title' ] ) && is_string( $raw_data[ 'title' ] ) ? stripslashes( $raw_data[ 'title' ] ) : '';
+		if( $raw_title && ! is_serialized( $raw_title ) ) {
+			$sanitized_title = sanitize_text_field( apply_filters( 'bookacti_translate_text', $raw_title ) );
+			$notification_data[ 'title' ] = ! is_serialized( $sanitized_title ) ? $sanitized_title : ''; // Double check is_serialized on the final value
 		}
 	}
 	

@@ -1497,6 +1497,7 @@ function bookacti_display_tags_fieldset( $args_raw = array() ) {
 /**
  * Sanitize text from HTML editor in form fields
  * @since 1.5.2
+ * @version 1.19.0
  * @param string $html
  * @return string
  */
@@ -1505,6 +1506,9 @@ function bookacti_sanitize_form_field_free_text( $html ) {
 	// Strip form tags
 	$tags = array( 'form', 'input', 'textarea', 'select', 'option', 'output' );
 	$html = preg_replace( '#<(' . implode( '|', $tags) . ')(?:[^>]+)?>.*?</\1>#s', '', $html );
+	
+	if( is_serialized( $html ) ) { $html = ''; }
+	
 	return $html;
 }
 
@@ -2553,7 +2557,7 @@ function bookacti_maybe_decode_json( $string, $assoc = false ) {
 /**
  * Sanitize the values of an array
  * @since 1.5.0
- * @version 1.18.5
+ * @version 1.19.0
  * @param array $default_data
  * @param array $raw_data
  * @param array $keys_by_type
@@ -2618,12 +2622,14 @@ function bookacti_sanitize_values( $default_data, $raw_data, $keys_by_type, $san
 
 		// Sanitize text
 		else if( in_array( $key, $keys_by_type[ 'str' ], true ) ) { 
-			$sanitized_data[ $key ] = is_string( $raw_data[ $key ] ) && ! is_serialized( $raw_data[ $key ] ) ? sanitize_text_field( stripslashes( $raw_data[ $key ] ) ) : $default_value;
+			$sanitized_data[ $key ] = is_string( $raw_data[ $key ] ) ? sanitize_text_field( stripslashes( $raw_data[ $key ] ) ) : $default_value;
+			if( is_serialized( $sanitized_data[ $key ] ) ) { $sanitized_data[ $key ] = ''; }
 		}
 
 		// Sanitize text with html
 		else if( in_array( $key, $keys_by_type[ 'str_html' ], true ) ) { 
-			$sanitized_data[ $key ] = is_string( $raw_data[ $key ] ) && ! is_serialized( $raw_data[ $key ] ) ? wp_kses_post( stripslashes( $raw_data[ $key ] ) ) : $default_value;
+			$sanitized_data[ $key ] = is_string( $raw_data[ $key ] ) ? wp_kses_post( stripslashes( $raw_data[ $key ] ) ) : $default_value;
+			if( is_serialized( $sanitized_data[ $key ] ) ) { $sanitized_data[ $key ] = ''; }
 		}
 		
 		// Sanitize hex color
