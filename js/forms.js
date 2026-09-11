@@ -64,7 +64,7 @@ $j( document ).ready( function() {
 		else {
 			var redirect_url = window.location.href;
 			
-			// Add current URL with form values as redirect_to parameter
+			// Add current URL as redirect_to parameter
 			var link_url = $j( this ).attr( 'href' );
 			link_url    += ( link_url.indexOf( '?' ) >= 0 ? '&' : '?' ) + 'redirect_to=' + encodeURIComponent( redirect_url );
 
