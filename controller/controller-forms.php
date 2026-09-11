@@ -852,7 +852,7 @@ add_action( 'wp_ajax_nopriv_bookactiSubmitLoginForm', 'bookacti_controller_valid
 /**
  * AJAX Controller - Check if booking form is correct and then book the event, or send the error message
  * @since 1.5.0
- * @version 1.18.7
+ * @version 1.18.8
  */
 function bookacti_controller_validate_booking_form() {
 	$return_array = array(
@@ -871,7 +871,7 @@ function bookacti_controller_validate_booking_form() {
 	// Check form
 	$form_id = ! empty( $_POST[ 'form_id' ] ) ? intval( $_POST[ 'form_id' ] ) : 0;
 	$form = $form_id ? bookacti_get_form_data( $form_id ) : array();
-	if( ! $form_id || ! $form ) {
+	if( ! ( $form && ! empty( $form[ 'active' ] ) && $form[ 'status' ] === 'publish' ) ) {
 		$return_array[ 'error' ] = 'invalid_form_id';
 		$return_array[ 'messages' ][ 'invalid_form_id' ] = esc_html__( 'Invalid form ID.', 'booking-activities' ) . ' ' . esc_html__( 'Please reload the page and try again.', 'booking-activities' );
 		$return_array[ 'message' ] = implode( '</li><li>', $return_array[ 'messages' ] );
@@ -1169,7 +1169,7 @@ add_action( 'admin_footer-booking-activities_page_bookacti_forms', 'bookacti_pri
 /**
  * Create a booking form from REQUEST parameters
  * @since 1.5.0
- * @version 1.19.0
+ * @version 1.18.8
  */
 function bookacti_controller_create_form() {
 	if( empty( $_REQUEST[ 'action' ] ) || ( isset( $_REQUEST[ 'action' ] ) && $_REQUEST[ 'action' ] !== 'new' ) ) { return; }
@@ -1235,7 +1235,7 @@ add_action( 'load-booking-activities_page_bookacti_forms', 'bookacti_controller_
 /**
  * AJAX Controller - Update a booking form
  * @since 1.5.0
- * @version 1.19.0
+ * @version 1.18.8
  */
 function bookacti_controller_update_form() {
 	// Check nonce and capabilities

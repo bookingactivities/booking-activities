@@ -984,7 +984,7 @@ function bookacti_format_form_field_data( $raw_field_data, $context = 'view' ) {
 /**
  * Sanitize field data according to its type
  * @since 1.5.0
- * @version 1.19.0
+ * @version 1.18.8
  * @param array|string $raw_field_data
  * @return array
  */
@@ -1184,7 +1184,7 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 /**
  * Sanitize the values entered by the user in the form fields
  * @since 1.5.0
- * @version 1.19.0
+ * @version 1.18.8
  * @param array $values
  * @param string $field_type
  * @return array

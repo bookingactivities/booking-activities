@@ -1497,7 +1497,7 @@ function bookacti_display_tags_fieldset( $args_raw = array() ) {
 /**
  * Sanitize text from HTML editor in form fields
  * @since 1.5.2
- * @version 1.19.0
+ * @version 1.18.8
  * @param string $html
  * @return string
  */
@@ -2557,7 +2557,7 @@ function bookacti_maybe_decode_json( $string, $assoc = false ) {
 /**
  * Sanitize the values of an array
  * @since 1.5.0
- * @version 1.19.0
+ * @version 1.18.8
  * @param array $default_data
  * @param array $raw_data
  * @param array $keys_by_type

@@ -524,7 +524,7 @@ function bookacti_sanitize_notification_data( $raw_data = array() ) {
 /**
  * Format notification data
  * @since 1.18.0
- * @version 1.19.0
+ * @version 1.18.8
  * @param array $raw_data
  * @param string $context "view" or "edit"
  * @return array

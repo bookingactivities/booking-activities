@@ -259,7 +259,7 @@ add_action( 'wp_ajax_nopriv_bookactiGetBookingsRefundActionsHTML', 'bookacti_con
 /**
  * AJAX Controller - Refund bookings
  * @since 1.16.0
- * @version 1.19.0
+ * @version 1.18.8
  */
 function bookacti_controller_refund_bookings() {
 	// Check nonce

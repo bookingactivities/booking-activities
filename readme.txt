@@ -3,7 +3,7 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
 Tested up to: 7.1
-Stable tag: 1.18.7.1
+Stable tag: 1.18.8
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -320,6 +320,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.18.8 - 2026/09/11 =
+* Fix - Security: Prevent using trashed or inactive booking form in booking request
+* Fix - Security: Do not allow serialized value when sanitizing text field (bis)
+* Fix - Security: Remove any serialized PHP objects from wp_bookacti_meta table and prevent unserializing PHP objects
 
 = 1.18.7.1 - 2026/08/28 =
 * Fix - Apply bookacti_product_is_activity and bookacti_product_booking_form_id hooks to cached values
