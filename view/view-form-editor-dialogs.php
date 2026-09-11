@@ -2,7 +2,7 @@
 /**
  * Form editor dialogs
  * @since 1.5.0
- * @version 1.18.2
+ * @version 1.18.9
  */
 
 // Exit if accessed directly
@@ -863,7 +863,7 @@ foreach( $fields_default as $field_name => $field_data ) {
 		/**
 		 * Display the content of the "Register" tab of the "Login" dialog
 		 * @since 1.5.0
-		 * @version 1.9.0
+		 * @version 1.18.9
 		 * @param array $params
 		 */
 		function bookacti_fill_login_dialog_register_tab( $params ) {
@@ -912,30 +912,6 @@ foreach( $fields_default as $field_name => $field_data ) {
 						'id'    => 'bookacti-send-new-account-email',
 						'value' => 0,
 						'tip'   => esc_html__( 'Whether to automatically send an email to the user if the user has created an account with the booking form.', 'booking-activities' )
-					);
-					bookacti_display_field( $args );
-				?>
-			</div>
-			<div class='bookacti-hidden-field'>
-				<label for='bookacti-new-user-role'>
-					<?php /* translators: Option name corresponding to this description: Choose a role to give to a user who has registered while booking an event with this form.  */ 
-					esc_html_e( 'New user role', 'booking-activities' ); ?>
-				</label>
-				<?php 
-					// Get roles options
-					$roles = get_editable_roles();
-					$roles_options = array( 'default' => esc_html__( 'Default role', 'booking-activities' ) );
-					foreach( $roles as $role_id => $role ) { $roles_options[ $role_id ] = $role[ 'name' ]; }
-
-					$args = array(
-						'type'    => 'select',
-						'name'    => 'new_user_role',
-						'id'      => 'bookacti-new-user-role',
-						'options' => $roles_options,
-						'value'   => 'default',
-						'tip'     => esc_html__( 'Choose a role to give to a user who has registered while booking an event with this form.', 'booking-activities' )
-						          /* translators: %1$s = "Default role". %2$s = link to "New User Default Role". */
-						          . ' ' . sprintf( esc_html__( 'Select "%1$s" to use the "%2$s" option in Wordpress General settings.', 'booking-activities' ), esc_html__( 'Default role', 'booking-activities' ), '<a href="' . admin_url( 'options-general.php' ) . '">' . esc_html__( 'New User Default Role' ) . '</a>' )
 					);
 					bookacti_display_field( $args );
 				?>
