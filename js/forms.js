@@ -39,7 +39,7 @@ $j( document ).ready( function() {
 	/**
 	 * Switch to "Log in" tab - on click on "Log in" link
 	 * @since 1.16.33
-	 * @version 1.18.0
+	 * @version 1.18.9
 	 * @param {Event} e
 	 */
 	$j( 'body' ).on( 'click', '.bookacti-login-link', function( e ) {
@@ -62,26 +62,11 @@ $j( document ).ready( function() {
 		}
 		
 		else {
+			// Add current URL as redirect_to parameter
 			var redirect_url = window.location.href;
-			var form         = $j( this ).closest( 'form, .bookacti-form-fields' );
+			var link_url     = $j( this ).attr( 'href' );
+			link_url += ( link_url.indexOf( '?' ) >= 0 ? '&' : '?' ) + 'redirect_to=' + encodeURIComponent( redirect_url );
 			
-			if( form.length ) {
-				// Get form values as object
-				var is_form = form.is( 'form' );
-				if( ! is_form ) { form.wrap( '<form></form>' ); }
-				var form_values_object = bookacti_serialize_object( form.closest( 'form' ) );
-				if( ! is_form ) { form.unwrap( 'form' ); }
-
-				if( ! $j.isEmptyObject( form_values_object ) ) {
-					// Append form values to current URL as parameters
-					redirect_url += ( redirect_url.indexOf( '?' ) >= 0 ? '&' : '?' ) + $j.param( form_values_object );
-				}
-			}
-			
-			// Add current URL with form values as redirect_to parameter
-			var link_url = $j( this ).attr( 'href' );
-			link_url    += ( link_url.indexOf( '?' ) >= 0 ? '&' : '?' ) + 'redirect_to=' + encodeURIComponent( redirect_url );
-
 			// Change the link destination
 			$j( this ).attr( 'href', link_url );
 			e.originalEvent.currentTarget.href = link_url;

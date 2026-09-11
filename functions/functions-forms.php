@@ -640,7 +640,7 @@ function bookacti_get_default_form_fields_data( $field_name = '', $context = 'vi
  * Get fields metadata
  * @see bookacti_format_form_field_data to properly format your array
  * @since 1.5.0
- * @version 1.17.0
+ * @version 1.18.9
  * @param string $field_name
  * @param string $context 'view' or 'edit'
  * @return array
@@ -715,7 +715,6 @@ function bookacti_get_default_form_fields_meta( $field_name = '', $context = 'vi
 			'generate_password'      => 0,
 			'remember'               => 0,
 			'send_new_account_email' => 1,
-			'new_user_role'          => 'default',
 			'displayed_fields'       => array_merge( $log_in_defaults[ 'displayed' ], $login_type_defaults[ 'displayed' ], $register_defaults[ 'displayed' ] ),
 			'required_fields'        => array_merge( $log_in_defaults[ 'required' ], $login_type_defaults[ 'required' ], $register_defaults[ 'required' ] )
 		),
@@ -774,7 +773,7 @@ function bookacti_get_available_hide_calendar_options() {
 /**
  * Format field data according to its type
  * @since 1.5.0
- * @version 1.17.0
+ * @version 1.18.9
  * @param array|string $raw_field_data
  * @param $context "view" or "edit"
  * @return array
@@ -854,7 +853,6 @@ function bookacti_format_form_field_data( $raw_field_data, $context = 'view' ) {
 		$keys_by_type = array( 
 			'bool'   => array( 'automatic_login', 'generate_password', 'send_new_account_email', 'login_first', 'login_button', 'remember' ),
 			'int'    => array( 'min_password_strength' ),
-			'str_id' => array( 'new_user_role' ),
 			'str'    => array( 'login_button_label', 'register_button_label' )
 		);
 		$field_meta = bookacti_sanitize_values( $default_meta, $raw_field_data, $keys_by_type );
@@ -984,7 +982,7 @@ function bookacti_format_form_field_data( $raw_field_data, $context = 'view' ) {
 /**
  * Sanitize field data according to its type
  * @since 1.5.0
- * @version 1.18.8
+ * @version 1.18.9
  * @param array|string $raw_field_data
  * @return array
  */
@@ -1077,7 +1075,6 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 		$keys_by_type = array( 
 			'bool'   => array( 'automatic_login', 'generate_password', 'send_new_account_email', 'login_first', 'login_button', 'remember' ),
 			'int'    => array( 'min_password_strength' ),
-			'str_id' => array( 'new_user_role' ),
 			'str'    => array( 'login_button_label', 'register_button_label' )
 		);
 		$field_meta = bookacti_sanitize_values( $default_meta, $raw_field_data, $keys_by_type );
@@ -1427,7 +1424,7 @@ function bookacti_validate_registration( $login_values, $login_data ) {
 /**
  * Register a new user through a booking form
  * @since 1.5.0
- * @version 1.16.42
+ * @version 1.18.9
  * @param array $login_values
  * @param array $login_data
  * @return WP_User|false
@@ -1464,9 +1461,8 @@ function bookacti_register_a_new_user( $login_values, $login_data ) {
 			'user_email' => $login_values[ 'email' ],
 			'first_name' => ! empty( $login_values[ 'first_name' ] ) ? $login_values[ 'first_name' ] : '',
 			'last_name'  => ! empty( $login_values[ 'last_name' ] ) ? $login_values[ 'last_name' ] : '',
-			'role'       => $login_data[ 'new_user_role' ] === 'default' ? get_option( 'default_role' ) : $login_data[ 'new_user_role' ]
 		), $login_values );
-
+		
 		// Create the user
 		$user_id = wp_insert_user( $new_user_data );
 		if( is_wp_error( $user_id ) ) { 
