@@ -62,12 +62,11 @@ $j( document ).ready( function() {
 		}
 		
 		else {
-			var redirect_url = window.location.href;
-			
 			// Add current URL as redirect_to parameter
-			var link_url = $j( this ).attr( 'href' );
-			link_url    += ( link_url.indexOf( '?' ) >= 0 ? '&' : '?' ) + 'redirect_to=' + encodeURIComponent( redirect_url );
-
+			var redirect_url = window.location.href;
+			var link_url     = $j( this ).attr( 'href' );
+			link_url += ( link_url.indexOf( '?' ) >= 0 ? '&' : '?' ) + 'redirect_to=' + encodeURIComponent( redirect_url );
+			
 			// Change the link destination
 			$j( this ).attr( 'href', link_url );
 			e.originalEvent.currentTarget.href = link_url;
