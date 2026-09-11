@@ -3,6 +3,27 @@
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
+ * Delete serialized PHP objects from metadata
+ * This function is temporary
+ * @since 1.18.8
+ * @global wpdb $wpdb
+ * @param string $old_version
+ */
+function bookacti_update_db_to_1_18_8( $old_version ) {
+	// Do it only once, when Booking Activities is updated for the first time to 1.18.8
+	if( ! $old_version || version_compare( $old_version, '1.18.8', '>=' ) ) { return; }
+	
+	global $wpdb;
+	
+	$query     = 'DELETE FROM ' . BOOKACTI_TABLE_META . ' WHERE meta_value LIKE %s;';
+	$variables = array( '%' . $wpdb->esc_like( 'O:' ) . '%' );
+	$query     = $wpdb->prepare( $query, $variables );
+	$wpdb->query( $query );
+}
+add_action( 'bookacti_db_updated', 'bookacti_update_db_to_1_18_8', 130 );
+
+
+/**
  * Rename form meta
  * This function is temporary
  * @since 1.18.2

@@ -83,7 +83,7 @@ function bookacti_get_user_id_by_secret_key( $secret_key ) {
 
 /**
  * Get metadata
- * @version 1.7.4
+ * @version 1.18.8
  * @global wpdb $wpdb
  * @param string $object_type
  * @param int|array $object_id
@@ -133,8 +133,9 @@ function bookacti_get_metadata( $object_type, $object_id, $meta_key = '', $singl
 	$query = $wpdb->prepare( $query, $variables );
 
 	if( $single ) {
-		$metadata = $wpdb->get_row( $query );
-		return isset( $metadata->meta_value ) ? maybe_unserialize( $metadata->meta_value ) : false;
+		$metadata   = $wpdb->get_row( $query );
+		$meta_value = isset( $metadata->meta_value ) ? ( is_serialized( $metadata->meta_value ) ? unserialize( trim( $metadata->meta_value ), array( 'allowed_classes' => false ) ) : $metadata->meta_value ) : false;
+		return gettype( $meta_value ) !== 'object' ? $meta_value : false;
 	}
 
 	$metadata = $wpdb->get_results( $query );
@@ -143,11 +144,14 @@ function bookacti_get_metadata( $object_type, $object_id, $meta_key = '', $singl
 
 	$metadata_array = array();
 	foreach( $metadata as $metadata_pair ) {
+		$meta_value = is_serialized( $metadata_pair->meta_value ) ? unserialize( trim( $metadata_pair->meta_value ), array( 'allowed_classes' => false ) ) : $metadata_pair->meta_value;
+		if( gettype( $meta_value ) === 'object' ) { continue; }
+		
 		if( is_array( $object_id ) ) {
 			if( ! isset( $metadata_array[ $metadata_pair->object_id ] ) ) { $metadata_array[ $metadata_pair->object_id ] = array(); }
-			$metadata_array[ $metadata_pair->object_id ][ $metadata_pair->meta_key ] = maybe_unserialize( $metadata_pair->meta_value );
+			$metadata_array[ $metadata_pair->object_id ][ $metadata_pair->meta_key ] = $meta_value;
 		} else {
-			$metadata_array[ $metadata_pair->meta_key ] = maybe_unserialize( $metadata_pair->meta_value );
+			$metadata_array[ $metadata_pair->meta_key ] = $meta_value;
 		}
 	}
 
@@ -386,36 +390,4 @@ function bookacti_delete_metadata( $object_type, $object_id, $metadata_key_array
 	$deleted = $wpdb->query( $query );
 	
 	return $deleted;
-}
-
-
-
-
-// CRON
-
-/**
- * Retrieve a cron job by hook from database (no cache)
- * Used for debug purposes
- * @since 1.7.13
- * @global wpdb $wpdb
- * @param string $hook
- * @return array
- */
-function bookacti_get_cron_from_db( $hook = '' ) {
-	global $wpdb;
-	
-	$cron = maybe_unserialize( $wpdb->get_var( 'SELECT option_value FROM ' . $wpdb->options . ' WHERE option_name = "cron"' ) );
-	
-	if( ! $hook ) { return $cron; }
-	
-	$results = array();
-	if( ! is_array( $cron ) ) { return $results; }
-	
-	foreach( $cron as $timestamp => $tasks ) {
-		if( isset( $tasks[ $hook ] ) ) {
-			$results[ $timestamp ] = $tasks[ $hook ];
-		}
-	}
-	
-	return $results;
 }
