@@ -321,6 +321,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.19.0 =
+* Dev - Add support for WPML 5.0
+
 = 1.18.9 - 2026/09/11 =
 * Tweak - Security: Remove "New user role" option from "User data (login / registration)" form fields settings, use bookacti_register_user_data PHP hook instead
 * Tweak - Security: Do not save form values ​​in the redirect URL when navigating back and forth between the booking form page and the login page
