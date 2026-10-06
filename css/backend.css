@@ -29,7 +29,9 @@ ul[id$='-select-box-results'] li[aria-disabled='true'] { display: none; }
 .bookacti-addon-promo         { border: 2px solid #52b7e9; border-radius: 3px; padding: 10px; text-align: center; }
 .bookacti-addon-promo .button { margin-top: 10px; }
 
-#bookacti-fatal-error  { margin: 1em; }
+#bookacti-fatal-error        { margin: 1em; }
+.bookacti-error-details      { padding-left: 1em; border-left: 1px dashed black; }
+.rtl .bookacti-error-details { padding-right: 1em; border-right: 1px dashed black; padding-left: 0; border-left: none; }
 
 .bookacti-help-list    { list-style-type: disc; padding-inline-start: 20px; }
 .bookacti-help-list ul { list-style-type: circle; padding-inline-start: 20px; margin-top: 3px; }

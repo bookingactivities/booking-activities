@@ -1424,7 +1424,7 @@ function bookacti_validate_registration( $login_values, $login_data ) {
 /**
  * Register a new user through a booking form
  * @since 1.5.0
- * @version 1.18.9
+ * @version 1.19.0
  * @param array $login_values
  * @param array $login_data
  * @return WP_User|false
@@ -1461,7 +1461,7 @@ function bookacti_register_a_new_user( $login_values, $login_data ) {
 			'user_email' => $login_values[ 'email' ],
 			'first_name' => ! empty( $login_values[ 'first_name' ] ) ? $login_values[ 'first_name' ] : '',
 			'last_name'  => ! empty( $login_values[ 'last_name' ] ) ? $login_values[ 'last_name' ] : '',
-		), $login_values );
+		), $login_values, $login_data );
 		
 		// Create the user
 		$user_id = wp_insert_user( $new_user_data );

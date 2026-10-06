@@ -225,7 +225,7 @@ $j( document ).ready( function() {
 	/**
 	 * Rerender field HTML after settings update
 	 * @since 1.5.0
-	 * @version 1.7.17
+	 * @version 1.19.0
 	 * @param {Event} e
 	 * @param {Int} field_id
 	 * @param {String} field_name
@@ -239,10 +239,9 @@ $j( document ).ready( function() {
 			// Clear booking system
 			booking_system.empty();
 			bookacti_clear_booking_system_displayed_info( booking_system );
-
-			// Reload booking system
-			bookacti.booking_system[ booking_system_id ] = response.booking_system_attributes ? response.booking_system_attributes : [];
 			
+			// Reload booking system
+			bookacti.booking_system[ booking_system_id ] = $j.extend( bookacti.booking_system[ booking_system_id ], response.booking_system_attributes ? response.booking_system_attributes : {} );
 			bookacti_reload_booking_system( booking_system );
 		}
 		
@@ -266,6 +265,7 @@ $j( document ).ready( function() {
 	/**
 	 * If an error occurs, stop loading and allow every interactions
 	 * @since 1.7.0
+	 * @version 1.19.0
 	 * @param {string} errorMsg
 	 * @param {string} url
 	 * @param {int} lineNumber
@@ -273,7 +273,11 @@ $j( document ).ready( function() {
 	 * @param {Error} errorObj
 	 */
 	window.onerror = function ( errorMsg, url, lineNumber, column, errorObj ) {
-		$j( '#bookacti-fatal-error' ).show();
+		if( url && lineNumber && errorObj ) {
+			$j( '#bookacti-fatal-error .bookacti-error-details' ).remove();
+			$j( '#bookacti-fatal-error .bookacti-error-list' ).append( '<li class="bookacti-error-details"><ul><li>' + errorMsg + '</li><li>URL: ' + url + '</li><li>Line: ' + lineNumber + '</li></ul></li>' ).show();
+			$j( '#bookacti-fatal-error' ).show();
+		}
 	};
 });
 

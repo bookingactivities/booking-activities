@@ -349,7 +349,7 @@ function bookacti_wpml_switch_locale( $locale ) {
 /**
  * WPML's function for restore_previous_locale
  * @since 1.14.0
- * @version 1.16.23
+ * @version 1.19.0
  * @return string
  */
 function bookacti_wpml_restore_locale() {
@@ -358,7 +358,10 @@ function bookacti_wpml_restore_locale() {
 	
 	$old_locale = $bookacti_wpml_stack ? array_pop( $bookacti_wpml_stack ) : null;
 	$lang_code  = $old_locale && strpos( (string) $old_locale, '_' ) !== false ? substr( $old_locale, 0, strpos( $old_locale, '_' ) ) : $old_locale;
-	do_action( 'wpml_switch_language', $lang_code );
+	
+	$has_stack = defined( 'ICL_SITEPRESS_VERSION' ) && version_compare( ICL_SITEPRESS_VERSION, '5.0', '>=' );
+	
+	do_action( 'wpml_switch_language', $has_stack ? null : $lang_code );
 	
 	$new_locale = bookacti_get_current_lang_code( true );
 	

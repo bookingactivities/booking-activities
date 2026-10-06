@@ -125,6 +125,7 @@ add_filter( 'bookacti_translate_text_external', 'bookacti_translate_external_tex
 /**
  * Get current lang code with plugin
  * @since 1.14.0
+ * @version 1.19.0
  * @global string $bookacti_locale
  * @global array $q_config
  * @param string $lang_code
@@ -139,17 +140,28 @@ function bookacti_current_lang_code_with_plugin( $lang_code, $with_locale ) {
 	$plugin = bookacti_get_translation_plugin();
 	
 	if( $plugin === 'wpml' ) {
-		$lang_code = apply_filters( 'wpml_current_language', '' );
-		if( $lang_code && $with_locale ) {
+		$wpml_lang = apply_filters( 'wpml_current_language', '' );
+		$lang_code = strpos( $wpml_lang, '-' ) ? substr( $wpml_lang, 0, strpos( $wpml_lang, '-' ) ) : $wpml_lang;
+		
+		if( $wpml_lang && $with_locale ) {
 			$languages = apply_filters( 'wpml_active_languages', array() );
-			if( ! empty( $languages[ $lang_code ][ 'default_locale' ] ) ) { $lang_code = $languages[ $lang_code ][ 'default_locale' ]; }
+			if( $languages && ! empty( $languages[ $wpml_lang ][ 'default_locale' ] ) ) {
+				$lang_code = $languages[ $wpml_lang ][ 'default_locale' ];
+			} else if( strpos( $wpml_lang, '-' ) ) {
+				$country_code = strtoupper( substr( $wpml_lang, strpos( $wpml_lang, '-' ) + 1 ) );
+				if( $country_code ) {
+					$lang_code .= '_' . $country_code;
+				}
+			}
 		}
 	}
 	else if( $plugin === 'qtranslate' ) {
 		$lang_code = function_exists( 'qtranxf_getLanguage' ) ? qtranxf_getLanguage() : '';
 		if( $lang_code && $with_locale ) {
 			global $q_config;
-			if( isset( $q_config[ 'locale' ][ $lang_code ] ) ) { $lang_code = $q_config[ 'locale' ][ $lang_code ]; }
+			if( isset( $q_config[ 'locale' ][ $lang_code ] ) ) {
+				$lang_code = $q_config[ 'locale' ][ $lang_code ];
+			}
 		}
 	}
 	
@@ -161,6 +173,7 @@ add_filter( 'bookacti_current_lang_code', 'bookacti_current_lang_code_with_plugi
 /**
  * Get site default locale with WPML
  * @since 1.14.0
+ * @version 1.19.0
  * @global array $q_config
  * @param string $locale
  * @param boolean $with_locale
@@ -170,10 +183,19 @@ function bookacti_site_default_locale_with_plugin( $locale, $with_locale ) {
 	$plugin = bookacti_get_translation_plugin();
 	
 	if( $plugin === 'wpml' ) {
-		$locale = apply_filters( 'wpml_default_language', '' );
-		if( $with_locale && $locale ) {
+		$wpml_lang = apply_filters( 'wpml_default_language', '' );
+		$locale    = strpos( $wpml_lang, '-' ) ? substr( $wpml_lang, 0, strpos( $wpml_lang, '-' ) ) : $wpml_lang;
+		
+		if( $wpml_lang && $with_locale ) {
 			$languages = apply_filters( 'wpml_active_languages', array() );
-			if( $languages && ! empty( $languages[ $locale ][ 'default_locale' ] ) ) { $locale = $languages[ $locale ][ 'default_locale' ]; }
+			if( $languages && ! empty( $languages[ $wpml_lang ][ 'default_locale' ] ) ) {
+				$locale = $languages[ $wpml_lang ][ 'default_locale' ];
+			} else if( strpos( $wpml_lang, '-' ) ) {
+				$country_code = strtoupper( substr( $wpml_lang, strpos( $wpml_lang, '-' ) + 1 ) );
+				if( $country_code ) {
+					$locale .= '_' . $country_code;
+				}
+			}
 		}
 	}
 	else if( $plugin === 'qtranslate' ) {
@@ -181,7 +203,9 @@ function bookacti_site_default_locale_with_plugin( $locale, $with_locale ) {
 		if( $q_config && ! empty( $q_config[ 'default_language' ] ) ) { 
 			$locale = $q_config[ 'default_language' ];
 			if( $with_locale && $locale ) {
-				if( ! empty( $q_config[ 'locale' ][ $locale ] ) ) { $locale = $q_config[ 'locale' ][ $locale ]; }
+				if( ! empty( $q_config[ 'locale' ][ $locale ] ) ) {
+					$locale = $q_config[ 'locale' ][ $locale ];
+				}
 			}
 		}
 	}

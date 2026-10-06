@@ -1441,6 +1441,7 @@ function bookacti_display_bara_promo( $type ) {
 /**
  * Display a promotional area for Waiting List add-on
  * @since 1.16.46
+ * @since 1.19.0
  */
 function bookacti_display_bawl_promo() {
 	$is_plugin_active = bookacti_is_plugin_active( 'ba-waiting-list/ba-waiting-list.php' );
@@ -1484,10 +1485,10 @@ function bookacti_display_bawl_promo() {
 				?>
 				
 				<div class='bookacti-promo-events-examples'>
-					<a class='fc-timegrid-event fc-v-event fc-event fc-event-start fc-event-end bookacti-narrow-event bookacti-event-unavailable bookacti-event-waitlistable'>
+					<a class='fc-event fc-event-start fc-event-end bookacti-narrow-event bookacti-event-unavailable bookacti-event-waitlistable'>
 						<div class='fc-event-main'>
 							<div class='fc-event-time'><span>7:00 - 8:30</span></div>
-							<div class='fc-event-title-container'><div class='fc-event-title'><?php esc_html_e( 'My event', 'booking-activities' ); ?></div></div>
+							<div class='fc-event-title'><?php esc_html_e( 'My event', 'booking-activities' ); ?></div>
 							<div class='bookacti-availability-container'>
 								<span class='bookacti-available-places bookacti-booked bookacti-full'>
 									<span class='bookacti-available-places-number'>0</span>

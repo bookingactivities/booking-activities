@@ -147,7 +147,7 @@ function bookacti_get_activity_managers( $activity_ids ) {
 
 /**
  * Retrieve template activities list
- * @version 1.16.4
+ * @version 1.19.0
  * @param array $activities see bookacti_get_activities_by_template
  * @param int $template_id
  * @return string 
@@ -177,7 +177,7 @@ function bookacti_get_template_activities_list( $activities, $template_id = 0 ) 
 			<div class='bookacti-activity-container'>
 				<div
 					class='bookacti-activity-draggable'
-					data-event='{"title": "<?php echo htmlentities( esc_attr( $title ), ENT_QUOTES ); ?>", "duration": "<?php echo esc_attr( $duration ); ?>", "textColor": "<?php echo esc_attr( $color ) ?>", "color": "<?php echo esc_attr( $activity[ 'color' ] ); ?>", "extendedProps": { "activity_id": <?php echo intval( $activity[ 'id' ] ); ?> } }' 
+					data-event='{"title": "<?php echo htmlentities( esc_attr( $title ), ENT_QUOTES ); ?>", "duration": "<?php echo esc_attr( $duration ); ?>", "contrastColor": "<?php echo esc_attr( $color ) ?>", "color": "<?php echo esc_attr( $activity[ 'color' ] ); ?>", "extendedProps": { "activity_id": <?php echo intval( $activity[ 'id' ] ); ?> } }' 
 					data-activity-id='<?php echo esc_attr( $activity[ 'id' ] ); ?>'
 					data-duration='<?php echo esc_attr( $duration ); ?>'
 					title='<?php esc_attr_e( $title ); ?>'
@@ -890,7 +890,7 @@ function bookacti_get_template_groups_of_events_list( $categories, $groups, $tem
 
 /**
  * Display a promo area of Prices and Credits add-on
- * @version 1.16.46
+ * @version 1.19.0
  * @param string $type
  */
 function bookacti_promo_for_bapap_addon( $type = 'event' ) {
@@ -941,10 +941,10 @@ function bookacti_promo_for_bapap_addon( $type = 'event' ) {
 			echo sprintf( $message, $addon_link );
 			?>
 			<div class='bookacti-promo-events-examples'>
-				<a class='fc-timegrid-event fc-v-event fc-event fc-event-start fc-event-end bookacti-narrow-event'>
+				<a class='fc-event fc-event-start fc-event-end bookacti-narrow-event'>
 					<div class='fc-event-main'>
 						<div class='fc-event-time'><span>7:00 - 8:30</span></div>
-						<div class='fc-event-title-container'><div class='fc-event-title'><?php echo $event_name; ?></div></div>
+						<div class='fc-event-title'><?php echo $event_name; ?></div>
 						<div class='bookacti-price-container'>
 							<span class='bookacti-price bookacti-promo'>$30</span>
 						</div>
@@ -957,10 +957,10 @@ function bookacti_promo_for_bapap_addon( $type = 'event' ) {
 						</div>
 					</div>
 				</a>
-				<a class='fc-timegrid-event fc-v-event fc-event fc-event-start fc-event-end bookacti-narrow-event'>
+				<a class='fc-event fc-event-start fc-event-end bookacti-narrow-event'>
 					<div class='fc-event-main'>
 						<div class='fc-event-time'><span>7:00 - 8:30</span></div>
-						<div class='fc-event-title-container'><div class='fc-event-title'><?php echo $event_name; ?></div></div>
+						<div class='fc-event-title'><?php echo $event_name; ?></div>
 					
 						<div class='bookacti-price-container'>
 							<span class='bookacti-price bookacti-promo'>- 20%</span>
@@ -974,10 +974,10 @@ function bookacti_promo_for_bapap_addon( $type = 'event' ) {
 						</div>
 					</div>
 				</a>
-				<a class='fc-timegrid-event fc-v-event fc-event fc-event-start fc-event-end bookacti-narrow-event'>
+				<a class='fc-event fc-event-start fc-event-end bookacti-narrow-event'>
 					<div class='fc-event-main'>
 						<div class='fc-event-time'><span>7:00 - 8:30</span></div>
-						<div class='fc-event-title-container'><div class='fc-event-title'><?php echo $event_name; ?></div></div>
+						<div class='fc-event-title'><?php echo $event_name; ?></div>
 						<div class='bookacti-price-container'>
 							<span class='bookacti-price bookacti-promo'>
 								<?php 

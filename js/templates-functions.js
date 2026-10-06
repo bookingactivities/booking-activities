@@ -247,9 +247,10 @@ function bookacti_refresh_show_hide_activities_icons() {
 /**
  * Make activities draggable
  * @since 1.15.0
+ * @version 1.19.0
  */
 function bookacti_make_activities_draggable() {
-	new FullCalendar.Draggable( 
+	new FullCalendar.Interaction.Draggable( 
 		document.getElementById( 'bookacti-template-activity-list' ),
 		{ "itemSelector": '.bookacti-activity-draggable:not(.bookacti-activity-disabled)' }
 	);
