@@ -8,7 +8,8 @@
 #bookacti-template-container + hr { margin: 30px auto; }
 
 #bookacti-template-container .fc-toolbar-chunk { position: relative; }
-.bookacti-go-to-datepicker { position: absolute; z-index: 10; height: 34px; }
+.bookacti-go-to-datepicker              { margin-left: 5px; }
+.rtl .bookacti-go-to-datepicker         { margin-left: 0; margin-right: 5px; }
 .fc-goTo-button .bookacti-spinner       { zoom: .5; display: inline-block; vertical-align: middle; margin-left: 15px; }
 .rtl .fc-goTo-button .bookacti-spinner  { margin-left: 0; margin-right: 15px; }
 .fc-goTo-button .bookacti-spinner:after { background-color: #F5F5F5; }
@@ -24,8 +25,8 @@
 
 #bookacti-template-calendar .fc-event:hover .fc-event-main { background: linear-gradient( to bottom, rgba( 44,62,80,0.15 ) 0%, rgba( 0,0,0,0 ) 100% ); }
 
-#bookacti-template-calendar .fc-timegrid-event .fc-event-resizer             { color: #fff; text-align: center; font-family: monospace; }
-#bookacti-template-calendar .fc-timegrid-event:hover .fc-event-resizer:after { content: "="; display: inline-block; vertical-align: top; line-height: 0px; }
+#bookacti-template-calendar .fc-timegrid .fc-event-resizer                       { color: #fff; text-align: center; font-family: monospace; }
+#bookacti-template-calendar .fc-timegrid .fc-event:hover .fc-event-resizer:after { content: "="; display: inline-block; vertical-align: top; line-height: 0px; }
 
 /* Event actions */
 .bookacti-event-actions      { position: absolute; right: 0; top: -24px; opacity: 0; pointer-events: none; height: 24px; white-space: nowrap; padding: 2px 3px; border-radius: 0 0 0 3px; z-index: 5; background: rgba( 0, 0, 0, 0.4 ); color: #fff; transition: all 0.2s; }
@@ -47,7 +48,7 @@
 .bookacti-event-action-select-checkbox:not(:checked):hover::before	{ content: "\f147"; margin: -3px 0 0 -4px; color: #aaa; float: left; display: inline-block; vertical-align: middle; width: 16px !important; font: 400 21px/1 dashicons; speak: none; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 .bookacti-event-action-select-checkbox::before      { margin: -3px 0 0 -4px !important; font: 400 21px/1 dashicons !important; }
 .rtl .bookacti-event-action-select-checkbox::before { margin: -3px -2px 0 0 !important; }
-#bookacti-template-calendar .fc-timegrid-event-harness-inset .fc-timegrid-event.bookacti-selected-event,
+#bookacti-template-calendar .fc-timegrid .fc-event.bookacti-selected-event,
 #bookacti-template-calendar .bookacti-selected-event				{ box-shadow: inset 0 0 1px #000, 0 0 0 1px #fff; }
 #bookacti-template-calendar .bookacti-selected-event:not(.bookacti-picked-event) .fc-event-main { background: linear-gradient( to bottom, rgba( 255,255,255,0.15 ) 0%, rgba( 255,255,255,0 ) 75% ); transition: background 0.2s; }
 
@@ -149,10 +150,10 @@
 .bookacti-tabs .bookacti-tab-content .bookacti-promo-events-examples div  { margin-bottom: 0; }
 .bookacti-promo-events-examples a.fc-event                                { position: relative; display: inline-block; width: 115px; height: 84px; text-align: left; cursor: auto; overflow: clip; }
 .rtl .bookacti-promo-events-examples a.fc-event                           { text-align: right; }
-.bookacti-promo-events-examples	a.fc-event .fc-event-main                 { background: rgba(255,255,255,0.15); height: 100%; }
-.bookacti-promo-events-examples	a.fc-event .bookacti-price-container      { display: block; width: fit-content; white-space: nowrap; margin: 4px auto; padding: 5px; font-weight: bolder; font-size: 1.2em; border-radius: 3px; background-color: rgba(0,0,0,0.3); color: #fff; }
+.bookacti-promo-events-examples a.fc-event .fc-event-main                 { background: rgba(255,255,255,0.15); height: 100%; }
+.bookacti-promo-events-examples a.fc-event .bookacti-price-container      { display: block; width: fit-content; white-space: nowrap; margin: 4px auto; padding: 5px; font-weight: bolder; font-size: 1.2em; border-radius: 3px; background-color: rgba(0,0,0,0.3); color: #fff; }
 .bookacti-promo-events-examples .fc-event-time, 
-.bookacti-promo-events-examples .fc-event-title-container                 { line-height: 1.5em; }
+.bookacti-promo-events-examples .fc-event-title                           { line-height: 1.5em; }
 .bookacti-promo-events-examples .bookacti-available-places > span         { display: inline; }
 .bookacti-promo-events-examples .bookacti-available-places-avail-particle { margin: 0; }
 

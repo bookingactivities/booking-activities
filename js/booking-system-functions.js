@@ -115,7 +115,7 @@ function bookacti_get_booking_system_data_by_interval( booking_system, interval 
 
 /**
  * Reload a booking system
- * @version 1.16.0
+ * @version 1.19.0
  * @param {HTMLElement} booking_system
  * @param {boolean} keep_picked_events
  */
@@ -140,12 +140,12 @@ function bookacti_reload_booking_system( booking_system, keep_picked_events ) {
 		dataType: 'json',
 		success: function( response ) {
 			if( response.status === 'success' ) {
+				// Update booking system data
+				bookacti.booking_system[ booking_system_id ] = response.booking_system_data;
+				
 				// Clear booking system
 				booking_system.empty();
 				bookacti_clear_booking_system_displayed_info( booking_system );
-				
-				// Update events and settings
-				bookacti.booking_system[ booking_system_id ] = response.booking_system_data;
 				
 				// Specific data
 				if( typeof original_attributes.rescheduled_bookings_data !== 'undefined' ) { bookacti.booking_system[ booking_system_id ][ 'rescheduled_bookings_data' ] = $j.extend( true, {}, original_attributes.rescheduled_bookings_data ); }

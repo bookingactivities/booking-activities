@@ -95,7 +95,7 @@ $j( document ).ready( function() {
 
 	/**
 	 * If an error occurs, stop loading and allow every interactions
-	 * @version 1.7.6
+	 * @version 1.19.0
 	 * @param {Event|String} errorMsg
 	 * @param {String} url
 	 * @param {Int} lineNumber
@@ -103,18 +103,22 @@ $j( document ).ready( function() {
 	 * @param {Error} errorObj
 	 */
 	window.onerror = function ( errorMsg, url, lineNumber, column, errorObj ) {
-		$j( '#bookacti-fatal-error' ).show();
+		if( url && lineNumber && errorObj ) {
+			$j( '#bookacti-fatal-error .bookacti-error-details' ).remove();
+			$j( '#bookacti-fatal-error .bookacti-error-list' ).append( '<li class="bookacti-error-details"><ul><li>' + errorMsg + '</li><li>URL: ' + url + '</li><li>Line: ' + lineNumber + '</li></ul></li>' ).show();
+			$j( '#bookacti-fatal-error' ).show();
+		}
 	};
 });
 
 
 /**
  * Initialize and display the template calendar
- * @version 1.17.0
+ * @version 1.19.0
  */
 function bookacti_load_template_calendar() {
 	var booking_system = $j( '#bookacti-template-calendar' );
-
+	
 	// Get calendar settings
 	var display_period     = bookacti_get_display_period( booking_system );
 	var display_data       = typeof bookacti.booking_system[ 'bookacti-template-calendar' ][ 'display_data' ] !== 'undefined' ? bookacti.booking_system[ 'bookacti-template-calendar' ][ 'display_data' ] : {};
@@ -132,6 +136,7 @@ function bookacti_load_template_calendar() {
 		initialView:             'timeGridWeek',
 		eventShortHeight:        0,
 		eventMinHeight:          event_min_height,
+		dayNarrowWidth:          bookacti_localized?.event_narrow_width ?? 70,
 		nextDayThreshold:        next_day_threshold,
 		slotMinTime:             slot_min_time,
 		slotMaxTime:             slot_max_time,
@@ -163,18 +168,26 @@ function bookacti_load_template_calendar() {
 			end:   display_period.end ? moment.utc( display_period.end.substr( 0, 10 ) ).add( 1, 'days' ).format( 'YYYY-MM-DD' ) : null
 		},
 		
-		customButtons: {
+		buttons: {
 			goTo: {
 				text: bookacti_localized.go_to_button,
+				className: 'fc-goTo-button',
+				
 				/**
 				 * Toggle "Go to" date input - on click on "Go to" button
-				 * @version 1.15.12
+				 * @version 1.19.0
 				 */
-				click: function() {
+				click: function( e ) {
+					// If click on date input, do nothing
+					if( $j( e.target ).hasClass( 'bookacti-go-to-datepicker' ) ) {
+						return; 
+					}
+					
 					if( ! $j( '.bookacti-go-to-datepicker' ).length ) {
-						$j( '.fc-goTo-button' ).after( '<input type="date" class="bookacti-go-to-datepicker"/>' );
+						$j( '.fc-goTo-button' ).append( '<input type="date" class="bookacti-go-to-datepicker"/>' );
 						$j( '.bookacti-go-to-datepicker' ).hide();
 					}
+					
 					$j( '.bookacti-go-to-datepicker' ).toggle( 200 );
 					$j( '.fc-goTo-button .bookacti-spinner' ).remove();
 				}
@@ -186,7 +199,40 @@ function bookacti_load_template_calendar() {
 			center: 'title',
 			end: 'dayGridMonth,timeGridWeek,timeGridDay'
 		},
-
+		
+		toolbarClass: 'fc-toolbar',
+		headerToolbarClass: 'fc-header-toolbar',
+		toolbarSectionClass: 'fc-toolbar-chunk',
+		toolbarTitleClass: 'fc-toolbar-title',
+		buttonGroupClass: 'fc-button-group',
+		
+		
+		/**
+		 * Add classes to toolbar buttons
+		 * @since 1.19.0
+		 * @param {Object} info {
+		 *  @type {String} name - the button’s name (e.g. prev, next, today, or a view name like dayGridMonth)
+		 *  @type {String} text - the button’s localized display text
+		 *  @type {Boolean} isPrimary - true if the button is styled as the primary action
+		 *  @type {Boolean} isSelected - true if the button is currently in the selected/active state
+		 *  @type {Boolean} isDisabled - true if the button is disabled
+		 *  @type {Boolean} isIconOnly - true if the button renders as an icon without accompanying text
+		 *  @type {Object|null} buttonGroup - info about the enclosing button group, or null if the button is not part of a group. When present, an object with a hasSelection boolean (see above)
+		 * }
+		 * @returns {String}
+		 */
+		buttonClass: function( info ) {
+			var return_object = { 'class_names': [ 'fc-button' ] };
+			
+			if( info.isSelected ) {
+				return_object.class_names.push( 'fc-button-active' );
+			}
+			
+			booking_system.trigger( 'bookacti_calendar_editor_button_class_names', [ return_object, info ] );
+			
+			return return_object.class_names.join( ' ' );
+		},
+		
 		
 		/**
 		 * Default events (empty because events will be added with bookacti_fc_add_events())
@@ -201,18 +247,65 @@ function bookacti_load_template_calendar() {
 		},
 		
 		
+		views: {
+			dayGrid: {
+				tableBodyClass: 'fc-daygrid-body',
+				dayCellInnerClass: 'fc-daygrid-day-events'
+			},
+			timeGrid: {
+				tableBodyClass: 'fc-timegrid-body',
+				slotHeaderClass: 'fc-timegrid-slot fc-timegrid-slot-label',
+				slotLaneClass: 'fc-timegrid-slot',
+				dayLaneInnerClass: 'fc-timegrid-col-events'
+			}
+		},
+		
+		
+		/**
+		 * Add classes to the the header row (where day names appear)
+		 * @since 1.19.0
+		 * @param {Object} info {
+		 *  @type {Boolean} borderlessX - true when the table has no left or right outer borders
+		 *  @type {Boolean} borderlessTop - true when the table has no top outer border
+		 *  @type {Boolean} borderlessBottom - true when the table has no bottom outer border
+		 *  @type {Int} multiMonthColumns - in MultiMonth view, the number of month columns rendered per row. 0 in other views
+		 *  @type {Boolean} isSticky - true when the element is rendered in a sticky position (e.g. the header row stays pinned while scrolling). Only available in tableHeaderClass
+		 * }
+		 * @returns {String}
+		 */
+		tableHeaderClass: function( info ) {
+			var return_object = { 'class_names': [ 'fc-col-header' ] };
+			
+			if( info.isSticky ) {
+				return_object.class_names.push( 'fc-scrollgrid-section-sticky' );
+			}
+			
+			booking_system.trigger( 'bookacti_calendar_table_header_class_names', [ return_object, info ] );
+			
+			return return_object.class_names.join( ' ' );
+		},
+		
+		
 		/**
 		 * Add classes to the view
 		 * @since 1.15.0
-		 * @version 1.15.4
+		 * @version 1.19.0
 		 * @param {Object} info {
 		 *  @type {FullCalendar.ViewApi} view
 		 *  @type {HTMLElement} el
 		 * }
-		 * @returns {Array}
+		 * @returns {String}
 		 */
-		viewClassNames: function( info ) {
-			var return_object = { 'class_names': [] };
+		viewClass: function( info ) {
+			var return_object = { 'class_names': [ 'fc-view', 'fc-' + info.view.type + '-view' ] };
+			
+			// Add legacy FC classes
+			if( info.view.type.indexOf( 'dayGrid' ) > -1 ) {
+				return_object.class_names.push( 'fc-daygrid' );
+			}
+			if( info.view.type.indexOf( 'timeGrid' ) > -1 ) {
+				return_object.class_names.push( 'fc-timegrid' );
+			}
 			
 			// Always enable "Today" button, except on today's view
 			if( booking_system.find( '.fc-today-button' ).length && ! booking_system.find( '.fc-day-today' ).length ) {
@@ -223,26 +316,36 @@ function bookacti_load_template_calendar() {
 			
 			booking_system.trigger( 'bookacti_calendar_editor_view_class_names', [ return_object, info ] );
 			
-			return return_object.class_names;
+			return return_object.class_names.join( ' ' );
 		},
 		
 		
 		/**
 		 * Add classes to the day header
 		 * @since 1.15.0
-		 * @version 1.17.0
+		 * @version 1.19.0
 		 * @param {Object} info {
 		 *  @type {Date} date
-		 *  @type {String} dayNumberText
+		 *  @type {String} text
 		 *  @type {Boolean} isPast
 		 *  @type {Boolean} isFuture
 		 *  @type {Boolean} isToday
 		 *  @type {Boolean} isOther
+		 *  @type {Boolean} hasNavLink
+		 *  @type {HTMLElement} el
+		 *  @type {Int} level
 		 * }
-		 * @returns {Array}
+		 * @returns {String}
 		 */
-		dayHeaderClassNames: function( info ) {
-			var return_object = { 'class_names': [] };
+		dayHeaderClass: function( info ) {
+			var return_object = { 'class_names': [ 'fc-col-header-cell' ] };
+			
+			var day_names = { 0: 'sun', 1: 'mon', 2: 'tue', 3: 'wed', 4: 'thu', 5: 'fri', 6: 'sat' };
+			return_object.class_names.push( 'fc-day-' + day_names[ info.date.getUTCDay() ] );
+			
+			if( info.inPopover ) {
+				return_object.class_names.push( 'fc-popover-header' );
+			}
 			
 			// Gray out days off
 			var template_data       = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ];
@@ -265,26 +368,61 @@ function bookacti_load_template_calendar() {
 			
 			booking_system.trigger( 'bookacti_calendar_editor_day_header_class_names', [ return_object, info ] );
 			
-			return return_object.class_names;
+			return return_object.class_names.join( ' ' );
 		},
 		
 		
 		/**
 		 * Add classes to the day cell
 		 * @since 1.15.0
-		 * @version 1.17.0
+		 * @version 1.19.0
 		 * @param {Object} info {
 		 *  @type {Date} date
+		 *  @type {String} text
+		 *  @type {String} textParts
 		 *  @type {String} dayNumberText
+		 *  @type {String} weekdayText
+		 *  @type {String} monthText
 		 *  @type {Boolean} isPast
 		 *  @type {Boolean} isFuture
 		 *  @type {Boolean} isToday
 		 *  @type {Boolean} isOther
+		 *  @type {Boolean} isMajor
+		 *  @type {Boolean} isNarrow
+		 *  @type {Boolean} inPopover
+		 *  @type {Boolean} hasNavLink
+		 *  @type {Object} options - the calendar options object, useful for reading settings like businessHours
+		 *  @type {Object} resource - if the date cell lives under a specific resource in vertical resource view, this value will be the Resource Object
+		 *  @type {HTMLElement} el
 		 * }
-		 * @returns {Array}
+		 * @returns {String}
 		 */
-		dayCellClassNames: function( info ) {
-			var return_object = { 'class_names': [] };
+		dayCellClass: function( info ) {
+			var return_object = { 'class_names': [ 'fc-daygrid-day' ] };
+			
+			var day_names = { 0: 'sun', 1: 'mon', 2: 'tue', 3: 'wed', 4: 'thu', 5: 'fri', 6: 'sat' };
+			return_object.class_names.push( 'fc-day-' + day_names[ info.date.getUTCDay() ] );
+			
+			if( info.isDisabled ) {
+				return_object.class_names.push( 'fc-day-disabled' );
+			}
+			else {
+				if( info.isToday ) {
+					return_object.class_names.push( 'fc-day-today' );
+				}
+				if( info.isPast ) {
+					return_object.class_names.push( 'fc-day-past' );
+				}
+				if( info.isFuture ) {
+					return_object.class_names.push( 'fc-day-future' );
+				}
+				if( info.isOther ) {
+					return_object.class_names.push( 'fc-day-other' );
+				}
+				if( info.inPopover ) {
+					return_object.class_names.push( 'fc-popover-body' );
+				}
+			}
 			
 			// Gray out days off
 			var template_data       = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ];
@@ -307,7 +445,24 @@ function bookacti_load_template_calendar() {
 			
 			booking_system.trigger( 'bookacti_calendar_editor_day_cell_class_names', [ return_object, info ] );
 			
-			return return_object.class_names;
+			return return_object.class_names.join( ' ' );
+		},
+		
+		
+		/**
+		 * Add classes to the Month text within the day cell
+		 * @since 1.19.0
+		 * @param {Object} info Same as dayCellClass
+		 * @returns {String}
+		 */
+		dayCellTopInnerClass: function( info ) {
+			var return_object = { 'class_names': [] };
+			
+			return_object.class_names.push( info.text !== info.dayNumberText ? 'fc-daygrid-day-number' : 'fc-daygrid-month-start' );
+			
+			booking_system.trigger( 'bookacti_calendar_editor_day_cell_top_inner_class_names', [ return_object, info ] );
+			
+			return return_object.class_names.join( ' ' );
 		},
 		
 		
@@ -387,6 +542,7 @@ function bookacti_load_template_calendar() {
 		 * Add classes to the event
 		 * It is called every time the associated event data changes
 		 * @since 1.15.0
+		 * @version 1.19.0
 		 * @param {Object} info {
 		 *  @type {FullCalendar.EventApi} event
 		 *  @type {String} timeText
@@ -396,15 +552,60 @@ function bookacti_load_template_calendar() {
 		 *  @type {Boolean} isPast
 		 *  @type {Boolean} isFuture
 		 *  @type {Boolean} isToday
+		 *  @type {String} color
+		 *  @type {String} contrastColor
+		 *  @type {Boolean} isInteractive
+		 *  @type {Boolean} isNarrow
+		 *  @type {Boolean} isShort
+		 *  @type {Boolean} level
+		 *  @type {String} timeClass
+		 *  @type {String} titleClass
+		 *  @type {Object} options - the calendar options object, useful for reading settings like eventOverlap
+		 *  @type {Object} resource - if the date cell lives under a specific resource in vertical resource view, this value will be the Resource Object
+		 *  @type {HTMLElement} el
 		 *  @type {FullCalendar.ViewApi} view The current View Object.
 		 * }
-		 * @returns {Array}
+		 * @returns {String}
 		 */
-		eventClassNames: function( info ) {
-			var return_object = { 'class_names': [] };
+		eventClass: function( info ) {
+			var return_object = { 'class_names': [ 'fc-event' ] };
+			
+			if( info.isMirror ) {
+				return_object.class_names.push( 'fc-event-mirror' );
+			}
+			if( info.isDraggable ) {
+				return_object.class_names.push( 'fc-event-draggable' );
+			}
+			if( info.isStartResizable || info.isEndResizable ) {
+				return_object.class_names.push( 'fc-event-resizable' );
+			}
+			if( info.isDragging ) {
+				return_object.class_names.push( 'fc-event-dragging' );
+			}
+			if( info.isResizing ) {
+				return_object.class_names.push( 'fc-event-resizing' );
+			}
+			if( info.isSelected ) {
+				return_object.class_names.push( 'fc-event-selected' );
+			}
+			if( info.isStart ) {
+				return_object.class_names.push( 'fc-event-start' );
+			}
+			if( info.isEnd ) {
+				return_object.class_names.push( 'fc-event-end' );
+			}
+			if( info.isPast ) {
+				return_object.class_names.push( 'fc-event-past' );
+			}
+			if( info.isToday ) {
+				return_object.class_names.push( 'fc-event-today' );
+			}
+			if( info.isFuture ) {
+				return_object.class_names.push( 'fc-event-future' );
+			}
 			
 			// Directly return if the event is hidden, or resizing or dragging to avoid overload
-			if( info.isMirror || info.event.display === 'none' ) { return return_object; }
+			if( info.isMirror || info.event.display === 'none' ) { return return_object.class_names.join( ' ' ); }
 			
 			// Check if the activity is hidden
 			var event_data = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ info.event.groupId ];
@@ -442,8 +643,118 @@ function bookacti_load_template_calendar() {
 			
 			booking_system.trigger( 'bookacti_calendar_editor_event_class_names', [ return_object, info ] );
 			
-			return return_object.class_names;
+			return return_object.class_names.join( ' ' );
 		},
+		
+		
+		/**
+		 * Add classes to the the element before the "inner" wrapper of the event
+		 * @since 1.19.0
+		 * @param {Object} info Same as eventClass
+		 * @returns {String}
+		 */
+		eventBeforeClass: function( info ) {
+			var return_object = { 'class_names': [] };
+			
+			if( info.isStartResizable ) {
+				return_object.class_names.push( 'fc-event-resizer' );
+				return_object.class_names.push( 'fc-event-resizer-start' );
+			}
+			
+			booking_system.trigger( 'bookacti_calendar_editor_event_before_class_names', [ return_object, info ] );
+			
+			return return_object.class_names.join( ' ' );
+		},
+		
+		
+		/**
+		 * Add classes to the the element after the "inner" wrapper of the event
+		 * @since 1.19.0
+		 * @param {Object} info Same as eventClass
+		 * @returns {String}
+		 */
+		eventAfterClass: function( info ) {
+			var return_object = { 'class_names': [] };
+			
+			if( info.isEndResizable ) {
+				return_object.class_names.push( 'fc-event-resizer' );
+				return_object.class_names.push( 'fc-event-resizer-end' );
+			}
+			
+			booking_system.trigger( 'bookacti_calendar_editor_event_after_class_names', [ return_object, info ] );
+			
+			return return_object.class_names.join( ' ' );
+		},
+		
+		
+		/**
+		 * Add classes to the the "inner" wrapper of the event
+		 * @since 1.19.0
+		 * @param {Object} info Same as eventClass
+		 * @returns {String}
+		 */
+		eventInnerClass: function( info ) {
+			var return_object = { 'class_names': [ 'fc-event-main' ] };
+			
+			booking_system.trigger( 'bookacti_calendar_editor_event_inner_class_names', [ return_object, info ] );
+			
+			return return_object.class_names.join( ' ' );
+		},
+		
+		
+		/**
+		 * Add classes to the time element within the "inner"
+		 * @since 1.19.0
+		 * @param {Object} info Same as eventClass
+		 * @returns {String}
+		 */
+		eventTimeClass: function( info ) {
+			var return_object = { 'class_names': [ 'fc-event-time' ] };
+			
+			booking_system.trigger( 'bookacti_calendar_editor_event_time_class_names', [ return_object, info ] );
+			
+			return return_object.class_names.join( ' ' );
+		},
+		
+		
+		/**
+		 * Add classes to the title element within the "inner"
+		 * @since 1.19.0
+		 * @param {Object} info Same as eventClass
+		 * @returns {String}
+		 */
+		eventTitleClass: function( info ) {
+			var return_object = { 'class_names': [ 'fc-event-title' ] };
+			
+			booking_system.trigger( 'bookacti_calendar_editor_event_title_class_names', [ return_object, info ] );
+			
+			return return_object.class_names.join( ' ' );
+		},
+		
+		
+		/**
+		 * Add classes to the more-link element
+		 * @since 1.19.0
+		 * @param {Object} info {
+		 *  @type {Integer} num - the number of hidden events
+		 *  @type {String} text - the localized text that would appear in the link by default
+		 *  @type {String} numericText - the numeric portion of the text (e.g. "+5")
+		 *  @type {String} longText - the full localized text (e.g. "+5 events")
+		 *  @type {Boolean} isNarrow
+		 * }
+		 * @returns {String}
+		 */
+		moreLinkClass: function( info ) {
+			var return_object = { 'class_names': [ 'fc-more-link' ] };
+			
+			booking_system.trigger( 'bookacti_calendar_editor_more_link_class_names', [ return_object, info ] );
+			
+			return return_object.class_names.join( ' ' );
+		},
+		
+		
+		popoverClass: 'fc-popover bookacti-fc-popover bookacti-fc-popover-bookacti-template-calendar',
+		popoverCloseClass: 'fc-popover-close',
 		
 		
 		/**
@@ -498,7 +809,7 @@ function bookacti_load_template_calendar() {
 			return_object.domNodes.push( time_div[ 0 ] );
 			
 			// Display event title
-			var title_div = $j( '<div></div>', { 'class': 'fc-event-title-container', 'html': '<div class="fc-event-title">' + info.event.title + '</div>' } );
+			var title_div = $j( '<div></div>', { 'class': 'fc-event-title', 'html': info.event.title } );
 			return_object.domNodes.push( title_div[ 0 ] );
 			
 			// Directly return if the event is resizing or dragging or hidden to avoid overload
@@ -951,10 +1262,10 @@ function bookacti_load_template_calendar() {
 	};
 	
 	if( bookacti_localized.calendar_localization === 'wp_settings' ) {
-		var fc_time_format_obj    = bookacti_convert_php_datetime_format_to_fc_date_formatting_object( bookacti_localized.wp_time_format );
-		init_data.firstDay        = bookacti_localized.wp_start_of_week;
-		init_data.slotLabelFormat = fc_time_format_obj;
-		init_data.eventTimeFormat = fc_time_format_obj;
+		var fc_time_format_obj     = bookacti_convert_php_datetime_format_to_fc_date_formatting_object( bookacti_localized.wp_time_format );
+		init_data.firstDay         = bookacti_localized.wp_start_of_week;
+		init_data.slotHeaderFormat = fc_time_format_obj;
+		init_data.eventTimeFormat  = fc_time_format_obj;
 	}
 	
 	// Let third-party plugin change initial calendar data
