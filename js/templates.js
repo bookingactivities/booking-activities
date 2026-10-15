@@ -114,7 +114,7 @@ $j( document ).ready( function() {
 
 /**
  * Initialize and display the template calendar
- * @version 1.19.0
+ * @version 1.19.1
  */
 function bookacti_load_template_calendar() {
 	var booking_system = $j( '#bookacti-template-calendar' );
@@ -176,6 +176,7 @@ function bookacti_load_template_calendar() {
 				/**
 				 * Toggle "Go to" date input - on click on "Go to" button
 				 * @version 1.19.0
+				 * @param {Event} e
 				 */
 				click: function( e ) {
 					// If click on date input, do nothing
@@ -250,6 +251,7 @@ function bookacti_load_template_calendar() {
 		views: {
 			dayGrid: {
 				tableBodyClass: 'fc-daygrid-body',
+				dayRowClass: 'fc-daygrid-row',
 				dayCellInnerClass: 'fc-daygrid-day-events'
 			},
 			timeGrid: {
@@ -369,6 +371,49 @@ function bookacti_load_template_calendar() {
 			booking_system.trigger( 'bookacti_calendar_editor_day_header_class_names', [ return_object, info ] );
 			
 			return return_object.class_names.join( ' ' );
+		},
+		
+		
+		/**
+		 * Set the day header content
+		 * TEMP FIX: https://github.com/fullcalendar/fullcalendar/issues/8121
+		 * @since 1.19.1
+		 * @param {Object} info {
+		 *  @type {Date} date
+		 *  @type {String} text
+		 *  @type {Boolean} isPast
+		 *  @type {Boolean} isFuture
+		 *  @type {Boolean} isToday
+		 *  @type {Boolean} isOther
+		 *  @type {Boolean} inPopover
+		 *  @type {Boolean} hasNavLink
+		 *  @type {FullCalendar.ViewApi} view The current View Object
+		 *  @type {HTMLElement} el
+		 *  @type {Int} level
+		 * }
+		 * @returns {String}
+		 */
+		dayHeaderContent: function( info ) {
+			var return_object  = { 'domNodes': [] };
+			var formatted_date = '';
+			
+			if( info.weekdayText ) {
+				formatted_date += info.weekdayText;
+			}
+			
+			if( info.dayNumberText ) {
+				if( info.weekdayText ) {
+					formatted_date += ' ';
+				}
+				formatted_date += info.dayNumberText;
+			}
+			
+			var day_header_div = $j( '<div></div>', { 'class': 'fc-col-header-cell-cushion', 'html': formatted_date } );
+			return_object.domNodes.push( day_header_div[ 0 ] );
+			
+			booking_system.trigger( 'bookacti_calendar_editor_day_header_content', [ return_object, info ] );
+			
+			return return_object;
 		},
 		
 		

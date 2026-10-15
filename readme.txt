@@ -3,7 +3,7 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
 Tested up to: 7.1
-Stable tag: 1.19.0
+Stable tag: 1.19.1
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -320,6 +320,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.19.1 - 2026/10/15 =
+* Fix - Display date in week and day calendar header on small screens
+* Dev - Rely on classnames rather than :visible to identify and hide empty rows in calendar DayGrid views
+* Lib - Update FullCalendar to 7.1.2
 
 = 1.19.0 - 2026/10/06 =
 * FullCalendar v7 - **[See the user-friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-19-fullcalendar-v7/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**

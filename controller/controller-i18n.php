@@ -275,12 +275,16 @@ add_filter( 'bookacti_sanitized_settings_general', 'bookacti_sanitize_wpml_gener
 /**
  * Register all translatable texts - on WPML String Translation page
  * @since 1.14.0
- * @version 1.16.0
+ * @version 1.19.1
  */
 function bookacti_wpml_controller_register_all_translatable_texts() {
 	// Make sure we are on WPML String Translation page, "Booking Activities" domain, and register_all parameter is set to "1"
 	if( empty( $_GET[ 'page' ] ) || empty( $_GET[ 'context' ] ) || empty( $_GET[ 'register_all' ] ) || ! defined( 'WPML_ST_FOLDER' ) ) { return; }
-	if( $_GET[ 'page' ]    !== WPML_ST_FOLDER . '/menu/string-translation.php' ) { return; }
+	
+	$is_wpml5 = defined( 'ICL_SITEPRESS_VERSION' ) && version_compare( ICL_SITEPRESS_VERSION, '5.0', '>=' );
+	$page     = $is_wpml5 ? ( defined( 'WPML_TM_FOLDER' ) ? constant( 'WPML_TM_FOLDER' ) : 'tm' ) . '/menu/main.php' : WPML_ST_FOLDER . '/menu/string-translation.php';
+	
+	if( $_GET[ 'page' ]    !== $page ) { return; }
 	if( $_GET[ 'context' ] !== 'Booking Activities' ) { return; }
 	
 	$texts = bookacti_get_translatable_texts();

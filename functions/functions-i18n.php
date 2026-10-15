@@ -297,6 +297,7 @@ function bookacti_settings_section_wpml_general_callback() {}
 /**
  * Display "Register translatable texts" setting
  * @since 1.14.0
+ * @version 1.19.1
  */
 function bookacti_settings_wpml_register_translatable_texts_callback() {
 	if( ! bookacti_is_plugin_active( 'wpml-string-translation/plugin.php' ) ) {
@@ -309,8 +310,10 @@ function bookacti_settings_wpml_register_translatable_texts_callback() {
 		</div>
 	<?php
 	} else {
+		$is_wpml5    = defined( 'ICL_SITEPRESS_VERSION' ) && version_compare( ICL_SITEPRESS_VERSION, '5.0', '>=' );
+		$wpml_st_url = $is_wpml5 ? admin_url( 'admin.php?page=' . ( defined( 'WPML_TM_FOLDER' ) ? WPML_TM_FOLDER : 'tm' ) . '/menu/main.php&tab=strings&context=Booking%20Activities&register_all=1' ) : 'admin.php?page=' . WPML_ST_FOLDER . '/menu/string-translation.php&context=Booking%20Activities&register_all=1';
 	?>
-		<a href='<?php echo admin_url( 'admin.php?page=' . WPML_ST_FOLDER . '/menu/string-translation.php&context=Booking%20Activities&register_all=1' ); ?>' class='button secondary-button'>
+		<a href='<?php echo admin_url( $wpml_st_url ); ?>' class='button secondary-button'>
 			<?php esc_html_e( 'Find and translate', 'booking-activities' ); ?>
 		</a>
 	<?php
