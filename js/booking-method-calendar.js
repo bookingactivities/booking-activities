@@ -272,7 +272,7 @@ $j( document ).ready( function() {
 
 /**
  * Initialize the calendar
- * @version 1.19.0
+ * @version 1.19.1
  * @param {HTMLElement} booking_system
  * @param {boolean} reload_events
  */
@@ -391,6 +391,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		views: {
 			dayGrid: {
 				tableBodyClass: 'fc-daygrid-body',
+				dayRowClass: 'fc-daygrid-row',
 				dayCellInnerClass: 'fc-daygrid-day-events'
 			},
 			timeGrid: {
@@ -474,6 +475,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		 *  @type {Boolean} isOther
 		 *  @type {Boolean} inPopover
 		 *  @type {Boolean} hasNavLink
+		 *  @type {FullCalendar.ViewApi} view The current View Object.
 		 *  @type {HTMLElement} el
 		 *  @type {Int} level
 		 * }
@@ -506,6 +508,49 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 			booking_system.trigger( 'bookacti_calendar_day_header_class_names', [ return_object, info ] );
 			
 			return return_object.class_names.join( ' ' );
+		},
+		
+		
+		/**
+		 * Set the day header content
+		 * TEMP FIX: https://github.com/fullcalendar/fullcalendar/issues/8121
+		 * @since 1.19.1
+		 * @param {Object} info {
+		 *  @type {Date} date
+		 *  @type {String} text
+		 *  @type {Boolean} isPast
+		 *  @type {Boolean} isFuture
+		 *  @type {Boolean} isToday
+		 *  @type {Boolean} isOther
+		 *  @type {Boolean} inPopover
+		 *  @type {Boolean} hasNavLink
+		 *  @type {FullCalendar.ViewApi} view The current View Object
+		 *  @type {HTMLElement} el
+		 *  @type {Int} level
+		 * }
+		 * @returns {String}
+		 */
+		dayHeaderContent: function( info ) {
+			var return_object  = { 'domNodes': [] };
+			var formatted_date = '';
+			
+			if( info.weekdayText ) {
+				formatted_date += info.weekdayText;
+			}
+			
+			if( info.dayNumberText ) {
+				if( info.weekdayText ) {
+					formatted_date += ' ';
+				}
+				formatted_date += info.dayNumberText;
+			}
+			
+			var day_header_div = $j( '<div></div>', { 'class': 'fc-col-header-cell-cushion', 'html': formatted_date } );
+			return_object.domNodes.push( day_header_div[ 0 ] );
+			
+			booking_system.trigger( 'bookacti_calendar_day_header_content', [ return_object, info ] );
+			
+			return return_object;
 		},
 		
 		
@@ -1244,7 +1289,7 @@ function bookacti_exit_calendar_loading_state( calendar ) {
 
 /**
  * Hide rows without any events on Day Grid views
- * @version 1.19.0
+ * @version 1.19.1
  * @param {HTMLElement} booking_system
  */
 function bookacti_fc_hide_daygrid_empty_rows( booking_system ) {
@@ -1258,13 +1303,13 @@ function bookacti_fc_hide_daygrid_empty_rows( booking_system ) {
 	
 	var fc_events = bookacti.fc_calendar[ booking_system_id ].getEvents();
 	
-	calendar.find( '[role="row"].bookacti-no-events-row' ).remove();
-	calendar.find( '.fc-daygrid-body [role="row"]' ).removeClass( 'bookacti-daygrid-week-month-start bookacti-daygrid-week-disabled bookacti-daygrid-week-empty' );
+	calendar.find( ' .fc-daygrid-row.bookacti-no-events-row' ).remove();
+	calendar.find( '.fc-daygrid-body .fc-daygrid-row' ).removeClass( 'bookacti-daygrid-week-month-start bookacti-daygrid-week-disabled bookacti-daygrid-week-empty' );
 		
-	calendar.find( '.fc-daygrid-body [role="row"]' ).each( function() {
+	calendar.find( '.fc-daygrid-body .fc-daygrid-row' ).each( function() {
 		var are_days_empty    = true;
 		var are_days_disabled = true;
-		$j( this ).find( '> [role="gridcell"]' ).each( function() {
+		$j( this ).find( '> .fc-daygrid-day' ).each( function() {
 			var date = $j( this ).data( 'date' );
 			if( ! date ) { return true; } // continue
 			
@@ -1298,9 +1343,9 @@ function bookacti_fc_hide_daygrid_empty_rows( booking_system ) {
 		}
 	});
 	
-	if( ! calendar.find( '.fc-daygrid-body [role="row"]:visible' ).length ) {
+	if( ! calendar.find( '.fc-daygrid-body .fc-daygrid-row' ).not( '.bookacti-daygrid-week-empty:not(.bookacti-daygrid-week-month-start), .bookacti-daygrid-week-disabled' ).length ) {
 		var no_events = typeof bookacti_localized.no_events !== 'undefined' ? bookacti_localized.no_events : 'No events.';
-		calendar.find( '.fc-daygrid-body [role="row"]:last' ).after( '<div role="row" class="bookacti-no-events-row"><div class="bookacti-no-events">' + no_events + '</div></div>' );
+		calendar.find( '.fc-daygrid-body .fc-daygrid-row:last' ).after( '<div role="row" class="fc-daygrid-row bookacti-no-events-row"><div class="bookacti-no-events">' + no_events + '</div></div>' );
 	} else {
 		bookacti_booking_method_rerender_events( booking_system );
 	}
