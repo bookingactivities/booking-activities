@@ -288,41 +288,6 @@ add_filter( 'bookacti_translate_external_text_with_wpml', 'bookacti_translate_wc
 
 
 /**
- * Display "WPML" settings section
- * @since 1.14.0
- */
-function bookacti_settings_section_wpml_general_callback() {}
-
-
-/**
- * Display "Register translatable texts" setting
- * @since 1.14.0
- * @version 1.19.1
- */
-function bookacti_settings_wpml_register_translatable_texts_callback() {
-	if( ! bookacti_is_plugin_active( 'wpml-string-translation/plugin.php' ) ) {
-	?>
-		<div>
-		<?php 
-			/* translators: %s = external link to "WPML String Translation" */ 
-			echo sprintf( esc_html__( 'You need the %s add-on to translate user generated content.', 'booking-activities' ), '<strong><a href="https://wpml.org/documentation/getting-started-guide/string-translation/" target="_blank">WPML String Translation</a></strong>' );
-		?>
-		</div>
-	<?php
-	} else {
-		$is_wpml5    = defined( 'ICL_SITEPRESS_VERSION' ) && version_compare( ICL_SITEPRESS_VERSION, '5.0', '>=' );
-		$wpml_st_url = $is_wpml5 ? admin_url( 'admin.php?page=' . ( defined( 'WPML_TM_FOLDER' ) ? WPML_TM_FOLDER : 'tm' ) . '/menu/main.php&tab=strings&context=Booking%20Activities&register_all=1' ) : 'admin.php?page=' . WPML_ST_FOLDER . '/menu/string-translation.php&context=Booking%20Activities&register_all=1';
-	?>
-		<a href='<?php echo admin_url( $wpml_st_url ); ?>' class='button secondary-button'>
-			<?php esc_html_e( 'Find and translate', 'booking-activities' ); ?>
-		</a>
-	<?php
-		bookacti_help_tip( esc_html__( 'Search all the translatable settings values that you have manually input. Then, you will be able to translate them in WPML > String Translation. This process can last several minutes and can be ressource intensive, depending on your amount of data.', 'booking-activities' ) );
-	}
-}
-
-
-/**
  * WPML's function for switch_to_locale
  * @since 1.14.0
  * @version 1.16.23
