@@ -3,7 +3,7 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
 Tested up to: 7.1
-Stable tag: 1.19.1
+Stable tag: 1.19.2
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -79,7 +79,7 @@ Try this reservation tool live on the [demo website](https://demo.booking-activi
 
 * **Automatic emails** are sent to both administrator and customer when a booking is made, when its state changes, and when it is rescheduled
 * **Fully customize** and configure all your email notifications
-* In multilangual sites, emails are sent to your customers **in their own language**
+* In multilingual sites, emails are sent to your customers **in their own language**
 * *Send activity-specific notifications and **reminders** via email, **SMS and ★ Push** thanks to [Notification Pack](https://booking-activities.fr/en/downloads/notification-pack/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=notification-pack&utm_content=readme) add-on*
 
 **Translation ready**
@@ -157,7 +157,7 @@ Then feel free to tell us if you miss a feature, if you find a bug or anything t
 == Frequently Asked Questions ==
 
 = I am not an activity provider, can this plugin still meet my needs? =
-Yes of course. It is basically a reservation system based on event scheduling. In other words, you build your event calendar and allow them to be booked. You can find another purposes to it.
+Yes, of course. It is basically a reservation system based on event scheduling. In other words, you build your event calendar and allow them to be booked. You can find another purpose to it.
 To know if it actually meets your needs, simply try it, it's free. 
 If you are on a hurry, you can just check the [demo website](https://demo.booking-activities.fr/en/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme).
 Or read the full [features description](https://booking-activities.fr/en/documentation/features/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme) if you are looking for something in particular.
@@ -253,39 +253,39 @@ Here is a pros and cons analysis:
 **CONS:**
 
 * May discourage customers, depending on the type of activity you provide and your target
-* Takes more time for customers, and more diffult process, higher cart abandonment rate
+* Takes more time for customers, and more difficult process, higher cart abandonment rate
 * You will have to do much more development, administrative and legal procedures, and you will have more expenses (bank commission, maintenance ...)
 
-We recommend to accept online payments since it's a great way to automate your business management and make it grow.
+We recommend accepting online payments since it's a great way to automate your business management and make it grow.
 
 
 = Events are not "Booked" after booking form submission, they are "Pending", why? =
-Don't worry, the reservation is well registered. Now, it is up to you to turn it to "Booked" right away or when your customer comes, or when your customer gives you the money...
+Don't worry, the reservation is well registered. Now, it is up to you to turn it into "Booked" right away or when your customer comes, or when your customer gives you the money...
 But you can just turn the default booking status to "Booked" in Booking Activities settings.
-Note that if you use WooCommerce and online payments, booking status turn automatically to "Booked" if the payment is complete, or "Cancelled" if not.
+Note that if you use WooCommerce and online payments, booking status automatically turns to "Booked" if the payment is complete, or "Cancelled" if not.
 
 
 = Cart expires but events are still booked = 
 A bot cleans expired bookings hourly. So just wait up to 1 hour.
-Usually, users are still on your website when their bookings expire, if so, they are immediatly removed.
+Usually, users are still on your website when their bookings expire, if so, they are immediately removed.
 Else, they will be cancelled later, with the others in that case.
 
 
 = My events appear to be booked, but no bookings appear in the list =
 Temporary bookings (such as In cart events) take active slots but may not appear in the booking list.
 Go to the "Bookings" page, under the "States" filter select "Delivered", "Booked", "Pending" and "In cart".
-Then, just click on "Apply Filters". Now you can see all kind of active bookings.
+Then, just click on "Apply Filters". Now you can see all kinds of active bookings.
 
 
-= Cancelled bookings disapeared from the list, I need to see them! =
+= Cancelled bookings disappeared from the list, I need to see them! =
 Go to the "Bookings" page. Under the "States" filter, select all the available status.
 Click on "Apply Filters" and then you will be able to see inactive bookings (cancelled, expired, removed, refunded, refund requested).
 
 
 = Email notifications are not sent =
-If you enabled "Asynchronous email" option in Booking Activities settings ("Notifications" tab), emails will be sent the next time someone (anyone) loads any page of your website.
+If you enabled the "Asynchronous email" option in Booking Activities settings ("Notifications" tab), emails will be sent the next time someone (anyone) loads any page of your website.
 Then, you only need to refresh or visit any page of your website and then check your inbox.
-If you disable "Asynchronous email" option, then the loading will last until the email is actually sent.
+If you disable the "Asynchronous email" option, then the loading will last until the email is actually sent.
 
 
 = Ask for support = 
@@ -294,7 +294,7 @@ If you disable "Asynchronous email" option, then the loading will last until the
 - On [WordPress support forum](https://wordpress.org/support/plugin/booking-activities)
 - On [GitHub issue tracker](https://github.com/bookingactivities/booking-activities/issues/)
 
-If you don't receive a reply within 48h by email, a technical problem has probably occurred, please try again, or try on an other medium.
+If you don't receive a reply within 48h by email, a technical problem has probably occurred, please try again, or try on another medium.
 
 
 == Screenshots ==
@@ -304,7 +304,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 3. Create daily, weekly or monthly repeated events. You can add exception dates to the repetition.
 4. Grouping your events is simple: just select multiple events and click on 'Add a group'. Or select an existing group and start editing it right away.
 5. Create and customize your booking form. You can combine events and settings of multiple schedules. You can make each form unique.
-6. Use a shortcode to display a booking form (or a calendar alone). Your customers can log in or register as they book, they can also book without account.
+6. Use a shortcode to display a booking form (or a calendar alone). Your customers can log in or register as they book, they can also book without an account.
 7. When a customer clicks on a grouped event, the whole group is selected. If the event is part of several groups, the customer has to choose one from a dialog.
 8. There is also an option to allow your customers to pick multiple events of their choice at once.
 9. Easily bind a reservation form to a WooCommerce product. You can set a different event calendar to each variation.
@@ -312,14 +312,18 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 11. WooCommerce cart expiration system: when time is up, bookings are cancelled and cart emptied. You can also disable it.
 12. Your bookings are displayed on a calendar, when you mouseover an event, and in a list that you can filter, sort and customize. Manage your bookings: change state (cancel, validate), reschedule, refund...
 13. Synchronize your bookings and display them in your Google Calendar events' description
-14. Customers also have their booking list and calendar thanks to a shortcode. They can cancel, reschedule or ask a refund by their own (if you allow them).
+14. Customers also have their booking list and calendar thanks to a shortcode. They can cancel, reschedule or ask for a refund on their own (if you allow them).
 15. Your customers can manage their bookings from their WooCommerce orders as well.
-16. Orders status are bound to their bookings status. If bookings are cancelled / booked / refunded, so do the order (and vice-versa).
+16. Orders status is bound to their bookings status. If bookings are cancelled / booked / refunded, so do the order (and vice-versa).
 17. Email notifications are automatically sent to the customer or the administrator when they need to be informed of a change.
 18. Make your emails look just like you want thanks to the HTML editor and special tags. You can also choose to deactivate a notification.
 
 
 == Changelog ==
+
+= 1.19.2 - 2026/10/23 =
+* Tweak - Improve compatibility with Polylang (via WPML compatibility)
+* Lib - Update FullCalendar to 7.1.3
 
 = 1.19.1 - 2026/10/15 =
 * Fix - Display date in week and day calendar header on small screens

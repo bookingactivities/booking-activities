@@ -265,7 +265,7 @@ $j( document ).ready( function() {
 	/**
 	 * If an error occurs, stop loading and allow every interactions
 	 * @since 1.7.0
-	 * @version 1.19.0
+	 * @version 1.19.2
 	 * @param {string} errorMsg
 	 * @param {string} url
 	 * @param {int} lineNumber
@@ -275,7 +275,7 @@ $j( document ).ready( function() {
 	window.onerror = function ( errorMsg, url, lineNumber, column, errorObj ) {
 		if( url && lineNumber && errorObj ) {
 			$j( '#bookacti-fatal-error .bookacti-error-details' ).remove();
-			$j( '#bookacti-fatal-error .bookacti-error-list' ).append( '<li class="bookacti-error-details"><ul><li>' + errorMsg + '</li><li>URL: ' + url + '</li><li>Line: ' + lineNumber + '</li></ul></li>' ).show();
+			$j( '#bookacti-fatal-error .bookacti-error-list' ).append( '<li class="bookacti-error-details"><ul><li>' + errorMsg + '</li><li>URL: ' + url + '</li><li>Line: ' + lineNumber + ' | Column: ' + column + '</li></ul></li>' ).show();
 			$j( '#bookacti-fatal-error' ).show();
 		}
 	};
