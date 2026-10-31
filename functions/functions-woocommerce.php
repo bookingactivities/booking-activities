@@ -2102,6 +2102,7 @@ function bookacti_wc_get_booking_form_product_ids( $form_id ) {
 /**
  * Get WC additional refund actions
  * @since 1.9.0
+ * @version 1.19.3
  * @return array
  */
 function bookacti_wc_get_refund_actions() {
@@ -2109,7 +2110,8 @@ function bookacti_wc_get_refund_actions() {
 		'coupon' => array(
 			'id'          => 'coupon',
 			'label'       => esc_html__( 'Coupon', 'booking-activities' ),
-			'description' => esc_html__( 'Create a coupon worth the price paid. The coupon can be used once for any orders at any time. ', 'booking-activities' )
+			'description' => esc_html__( 'Create a coupon worth the price paid. The coupon can be used once for any orders at any time.', 'booking-activities' )
+			              . ( ! wc_prices_include_tax() ? ' ' . esc_html__( 'The coupon amount will exclude taxes, as coupons apply to product prices before tax calculation.', 'booking-activities' ) : '' )
 		),
 		'auto' => array(
 			'id'          => 'auto',
@@ -2117,6 +2119,7 @@ function bookacti_wc_get_refund_actions() {
 			'description' => esc_html__( 'Refund automatically via the gateway used for payment.', 'booking-activities' )
 		)
 	);
+	
 	return apply_filters( 'bookacti_wc_refund_actions', $wc_refund_actions );
 }
 
@@ -2407,7 +2410,7 @@ function bookacti_update_order_bookings_on_order_refund( $refund ) {
 /**
  * Create coupons to refund selected bookings (1 coupon per user)
  * @since 1.16.0 (was bookacti_refund_booking_with_coupon)
- * @version 1.16.15
+ * @version 1.19.3
  * @param array $selected_bookings
  * @param string $booking_type Determine if the given id is a booking id or a booking group. Accepted values are 'single' or 'group'.
  * @param string $refund_message
@@ -2427,6 +2430,9 @@ function bookacti_refund_selected_bookings_with_coupon( $selected_bookings, $ref
 	// Sort bookings by user (to create only one coupon per user)
 	$selected_bookings_per_user   = bookacti_sort_selected_bookings_by_user( $selected_bookings );
 	$already_refunded_with_coupon = false;
+	
+	$price_decimals = wc_get_price_decimals();
+	$incl_tax       = wc_prices_include_tax();
 	
 	foreach( $selected_bookings_per_user as $user_id => $user_selected_bookings ) {
 		// Calculate coupon amount
@@ -2452,7 +2458,8 @@ function bookacti_refund_selected_bookings_with_coupon( $selected_bookings, $ref
 			if( ! $existing_coupon_code ) { $existing_coupon_code = wc_get_order_item_meta( $item_id, 'bookacti_refund_coupon', true ); }
 			if( $existing_coupon_code )   { $already_refunded_with_coupon = true; continue; }
 			
-			$item_refund_amount = bookacti_wc_get_item_remaining_refund_amount( $item );
+			$to_refund          = bookacti_wc_get_item_remaining_refund_amount( $item, true );
+			$item_refund_amount = $incl_tax ? round( $to_refund[ 'total' ] + $to_refund[ 'tax' ], $price_decimals ) : round( $to_refund[ 'total' ], $price_decimals );
 			if( $item_refund_amount ) {
 				$coupon_amount += $item_refund_amount;
 				$refund_data[ 'bookings' ][ $booking_id ] = array(
@@ -2485,7 +2492,8 @@ function bookacti_refund_selected_bookings_with_coupon( $selected_bookings, $ref
 			if( ! $existing_coupon_code ) { $existing_coupon_code = wc_get_order_item_meta( $item_id, 'bookacti_refund_coupon', true ); }
 			if( $existing_coupon_code )   { $already_refunded_with_coupon = true; continue; }
 			
-			$item_refund_amount = bookacti_wc_get_item_remaining_refund_amount( $item );
+			$to_refund          = bookacti_wc_get_item_remaining_refund_amount( $item, true );
+			$item_refund_amount = $incl_tax ? round( $to_refund[ 'total' ] + $to_refund[ 'tax' ], $price_decimals ) : round( $to_refund[ 'total' ], $price_decimals );
 			if( $item_refund_amount ) {
 				$coupon_amount += $item_refund_amount;
 				$refund_data[ 'booking_groups' ][ $group_id ] = array(
