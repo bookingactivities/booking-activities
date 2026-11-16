@@ -562,7 +562,7 @@ function bookacti_get_booking_system_default_attributes() {
 
 /**
  * Format booking system attributes
- * @version 1.17.1
+ * @version 1.19.5
  * @param array $raw_atts 
  * @return array
  */
@@ -686,6 +686,11 @@ function bookacti_format_booking_system_attributes( $raw_atts = array() ) {
 	$available_booking_methods  = array_keys( bookacti_get_available_booking_methods() );
 	$method                     = esc_attr( $atts[ 'method' ] );
 	$formatted_atts[ 'method' ] = in_array( $method, $available_booking_methods, true ) ? $method : ( in_array( $defaults[ 'method' ], $available_booking_methods, true ) ? $defaults[ 'method' ] : 'calendar' );
+	
+	// Make sure current user can see other users' bookings, otherwise, display their own bookings only
+	if( ! current_user_can( 'bookacti_edit_bookings' ) ) {
+		$atts[ 'user_id' ] = array( 'current' );
+	}
 	
 	// Sanitize user id
 	if( ! is_array( $atts[ 'user_id' ] ) ) { $atts[ 'user_id' ] = $atts[ 'user_id' ] ? array( $atts[ 'user_id' ] ) : array(); }
