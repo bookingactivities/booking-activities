@@ -562,7 +562,7 @@ function bookacti_get_booking_system_default_attributes() {
 
 /**
  * Format booking system attributes
- * @version 1.19.5
+ * @version 1.19.6
  * @param array $raw_atts 
  * @return array
  */
@@ -629,10 +629,9 @@ function bookacti_format_booking_system_attributes( $raw_atts = array() ) {
 	// Check if desired activities are active and allowed according to current user role
 	if( ! in_array( 'none', $activities, true ) ) { 
 		$activities             = array_values( array_unique( array_map( 'intval', array_filter( $activities, 'is_numeric' ) ) ) );
-		$available_activity_ids = bookacti_get_activity_ids_by_template( $formatted_atts[ 'calendars' ], false, $formatted_atts[ 'check_roles' ] );
-		$had_activities         = ! empty( $activities );
+		$available_activity_ids = bookacti_get_activity_ids_by_template( $formatted_atts[ 'calendars' ], true, $formatted_atts[ 'check_roles' ] );
 		$allowed_activities     = array_values( array_intersect( $activities, array_map( 'intval', $available_activity_ids ) ) );
-		$activities             = ! empty( $allowed_activities ) ? $allowed_activities : ( ! $had_activities && $available_activity_ids ? $available_activity_ids : array( 'none' ) );
+		$activities             = ! empty( $allowed_activities ) ? $allowed_activities : ( empty( $activities ) && $available_activity_ids ? $available_activity_ids : array( 'none' ) );
 	}
 	$formatted_atts[ 'activities' ] = $activities;
 	
@@ -1708,7 +1707,7 @@ function bookacti_validate_picked_events( $picked_events, $args = array() ) {
 			$max_quantity  = isset( $activity_meta[ 'max_bookings_per_user' ] ) ? intval( $activity_meta[ 'max_bookings_per_user' ] ) : 0;
 			$max_users     = isset( $activity_meta[ 'max_users_per_event' ] ) ? intval( $activity_meta[ 'max_users_per_event' ] ) : 0;
 			$allowed_roles = isset( $activity_meta[ 'allowed_roles' ] ) && $activity_meta[ 'allowed_roles' ] ? $activity_meta[ 'allowed_roles' ] : array();
-
+			
 			// Init boolean test variables
 			$is_qty_inf_to_avail = false;
 			$is_qty_sup_to_min   = false;

@@ -321,8 +321,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.19.6 =
+* Fix - Events from deleted activities may not be displayed on booking forms
+
 = 1.19.5 - 2026/11/16 =
-* Fix - Security: Prevent displaying other users' booking calendar to non priviledged users
+* Fix - Security: Prevent displaying other users' booking calendar to non priviledged users (thanks kta1kri)
 * Lib - Update FullCalendar to 7.1.5
 
 = 1.19.4 - 2026/11/10 =
