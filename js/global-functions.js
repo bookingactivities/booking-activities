@@ -294,7 +294,7 @@ function bookacti_serialize_object( form ) {
 /**
  * Init selectbox with AJAX search
  * @since 1.7.19
- * @version 1.17.1
+ * @version 1.19.6
  */
 function bookacti_select2_init() {
 	if( ! $j.fn.select2 ) { return; }
@@ -302,7 +302,7 @@ function bookacti_select2_init() {
 	/**
 	 * Add the select "option" data to the rendered "li"
 	 * @since 1.16.45
-	 * @version 1.17.1
+	 * @version 1.19.6
 	 * @param {Object} data
 	 * @param {HTMLElement} li
 	 * @returns {String}
@@ -313,7 +313,7 @@ function bookacti_select2_init() {
 		
 		$j( li ).data( 'data', data );
 		
-		return data.text;
+		return typeof data.text === 'string' || data.text instanceof String ? data.text : '';
 	}
 	
 	var select2_data = {
@@ -326,7 +326,6 @@ function bookacti_select2_init() {
 		width: 'element',
 		dropdownAutoWidth: false, // Temp fix https://github.com/woocommerce/woocommerce/issues/56009
 		dropdownParent: $j( this ).closest( '.bookacti-backend-dialog' ).length ? $j( this ).closest( '.bookacti-backend-dialog' ) : $j( 'body' ),
-		escapeMarkup: function( text ) { return text; },
 		templateResult: bookacti_select2_add_option_data,
 		templateSelection: bookacti_select2_add_option_data
 	};
