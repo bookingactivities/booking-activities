@@ -8,7 +8,7 @@
  * Author URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Text Domain: booking-activities
  * Domain Path: /languages/
- * Requires at least: 4.1
+ * Requires at least: 5.9
  * Requires PHP: 5.6
  * WC requires at least: 3.0
  * WC tested up to: 11.3
