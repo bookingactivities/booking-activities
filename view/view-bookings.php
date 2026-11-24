@@ -205,7 +205,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					</div>
 					<div class='bookacti-filter-content'>
 					<?php
-						$selected_user = isset( $_REQUEST[ 'user_id' ] ) ? sanitize_text_field( stripslashes( $_REQUEST[ 'user_id' ] ) ) : array();
+						$selected_user = isset( $_REQUEST[ 'user_id' ] ) && ! is_array( $_REQUEST[ 'user_id' ] ) ? sanitize_text_field( stripslashes( $_REQUEST[ 'user_id' ] ) ) : '';
 						if( is_numeric( $selected_user ) ) {
 							$selected_user = intval( $selected_user );
 						} else {

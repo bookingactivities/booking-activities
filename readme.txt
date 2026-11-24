@@ -2,7 +2,7 @@
 Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
-Tested up to: 7.1
+Tested up to: 7.2
 Stable tag: 1.19.6
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -351,93 +351,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Dev - Add support for WPML 5.0
 * Dev - Improve displayed feedback in case of jasvascript fatal error in calendar editor and form editor
 
-= 1.18.9 - 2026/09/11 =
-* Tweak - Security: Remove "New user role" option from "User data (login / registration)" form fields settings, use bookacti_register_user_data PHP hook instead
-* Tweak - Security: Do not save form values ​​in the redirect URL when navigating back and forth between the booking form page and the login page
-
-= 1.18.8 - 2026/09/11 =
-* Fix - Security: Prevent using trashed or inactive booking form in booking request
-* Fix - Security: Do not allow serialized value when sanitizing text field (bis)
-* Fix - Security: Remove any serialized PHP objects from wp_bookacti_meta table and prevent unserializing PHP objects
-
-= 1.18.7.1 - 2026/08/28 =
-* Fix - Apply bookacti_product_is_activity and bookacti_product_booking_form_id hooks to cached values
-
-= 1.18.7 - 2026/08/28 =
-* Tweak - Booking forms bound to WooCommerce products can no longer be used for direct booking (with their shortcode). You need to change its form action, or to create a separate booking form.
-* Fix - Regression where wrong booking form was loaded on product page with persistent object cache
-
-= 1.18.6 - 2026/08/27 =
-* Tweak - Add new notification tags: {order_id}, {booking_old_event_id} (for reschedule notifications)
-* Dev - Improve functions performance: bookacti_product_is_activity and bookacti_get_product_form_id
-
-= 1.18.5 - 2026/08/03 =
-* Fix - Do not allow serialized value when sanitizing text field for security reasons
-* Lib - Update FullCalendar to 6.1.21
-
-= 1.18.4 - 2026/07/14 =
-* Fix - Caching issue may occur after editing a booking form until object cache is cleared
-
-= 1.18.3 - 2026/06/09 =
-* Fix - Option to display past events may not work depending on the value of other options related to the availability period
-* Fix - PHP warning undefined variable may occur when sending a single notification asynchronously
-
-= 1.18.2 - 2026/06/02 =
-* Feature - Add an option to send notification right away in send booking notification dialog (if async notification is allowed)
-* Tweak - Improve feedback message in send booking notification dialog
-* Fix - JS error when trying to delete a group of events if events have already been deleted
-* Fix - When paying for a Failed WC order containing booking groups, the order may not be marked as Completed and Paid
-* Dev - Add bookacti_send_booking_notification_args hook
-* Dev - Remove unused activity_id column from wp_bookacti_bookings database table
-* Dev - Pass full booking object in bookacti_send_booking_status_change_notification function instead of partial data
-* Dev - Replace bookacti_form_data hook with bookacti_forms_data
-* Dev - Refactor booking form data, all functions using form data has been adapted
-
-= 1.18.1 - 2026/05/27 =
-* Tweak - Add "Total price" column to booking export
-* Fix - Administrators or Shop Managers may not be able to see notifications in multisite installs if they were not super admin
-* Fix - Custom notifications made with Notification Pack add-on may not be migrated after updating to 1.18.0
-* Dev - Improve notification integration with add-ons or third party codes
-
 = 1.18.0 - 2026/05/20 =
 * Notification management improvements - **[See the user-friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-18-improved-notification-management/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
-* Tweak - Keep form values after being redirected to log in page, when trying to make a booking without account with an email already associated with an account
-* Fix - Backend booking calendar was no longer restricted to Date filter after changing another filter
-* Fix - Backend booking list rows may not expand on small screens
-* Fix - Backend reschedule calendar may be restricted to the original form display period
-* Dev - Migrate notifications data from wp_options to wp_bookacti_notitfications and wp_bookacti_notitfication_channels tables
-* Dev - Refactor most functions and hooks related to notifications, and their parameters
-* Dev - Add database index on "active" columns to improve performances
-
-= 1.17.1 - 2026/03/30 =
-* Tweak - Replace booking calendar settings icon with button in Bookings page
-* Fix - Missing JS dependency for global-function.min.js
-* Fix - Grouped events may appear as available in reschedule booking form
-* Fix - Bookings calendar was not restricted by date on page load when date filters was passed via URL parameters
-* Dev - Add custom_dataset and context booking system attributes to allow third party to override booking system data processing
-* Dev - Allow both date and datetime format for availability_period and display_period booking system attributes
-* Dev - Allow backend booking calendar to be filtered by end_from, created_from, end_to, created_to iinstead of from and to via URL parameters 
-* Dev - Add bookacti_select2_option_data JS hook
-* Dev - Refactor parameters of bookacti_events_booking_lists hook
-* Dev - Refactor parameters of bookacti_event_booking_list_displayed JS hook
-* Dev - Add bookacti_booking_system_tooltip_booking_list_filters PHP hook
 
 = 1.17.0 - 2026/03/05 =
 * Calendar settings improvements - **[See the user-friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-17-calendar-settings-improvements/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
-* Feature - Add an option to display events out of the availability period as unavailable instead of not retrieving them at all (in form calendar settings)
-* Feature - Add an option to select the first available event by default (in form calendar settings)
-* Feature - Add an option to hide calendar if an event is automatically preselected (in form calendar settings)
-* Feature - Add an option to set days off globally (in Booking Activities settings)
-* Feature - Add an option to prevent booking events taking place partly on days off (in Booking Activities settings)
-* Tweak - Display started (groups of) events if they are bookable without having to turn ON Past Events (in form calendar settings)
-* Tweak - Make "At the latest" option compatible with "Display past events" and "Make past events bookable" options (in form calendar settings)
-* Tweak - Make "Booked only" and "Groups only" filters compatible together (in form calendar settings)
-* Fix - Grouped events could be booked individually if group has started and Group category was set to "All"
-* Dev - Separate the availability period from the display period: the former corresponds to the period during which events can be booked, the latter to the period during which they are displayed
-* Dev - Refactor parameters of bookacti_fetch_events_of_group_of_events_occurrences function and bookacti_get_grouped_events hook
-* Dev - Replace bookacti_booking_system_grouped_events_filters, bookacti_booking_system_booked_events_filters and bookacti_booking_system_events_filters hooks with bookacti_booking_system_event_filters
-* Dev - bookacti_encrypt and bookacti_decrypt functions now return an empty string in case of failure
-* Dev - Parameters of these functions have changed: bookacti_get_template_data, bookacti_get_templates_data, bookacti_get_mixed_template_data and bookacti_format_template_data
 
 = 1.16.0 - 2024/03/21 =
 * Bookings bulk actions, reschedule scope - **[See the user-friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-16-bookings-bulk-actions-reschedule-scope-etc/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
@@ -498,34 +416,3 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 = 1.19.0 =
 Major changes in code:
 * If you have custom javascript and CSS affecting the calendars, you will probably need to adapt them. No support can be provided for your custom code.
-
-= 1.16.45 =
-Major changes in code:
-* If you have purchased add-ons, you need to update them too.
-* If you have custom code, you may need to adapt it. No support can be provided for your custom code.
-
-= 1.15.8 =
-Requires MySQL 5.7.22 or later, or MariaDB 10.5.4 or later
-
-= 1.15.0 =
-Major changes in code:
-* If you have custom code, especially javascript and CSS affecting the calendars, you will probably need to adapt it. No support can be provided for your custom code.
-
-= 1.12.0 =
-Major changes in code:
-* If you have purchased add-ons, you need to update them too.
-* If you have custom code, you may need to adapt it. No support can be provided for your custom code.
-* The archiving tool has been removed. You can still find the backups you have made in wp-content/uploads/booking-activities/archives and manually import them with phpMyAdmin.
-* You won't be able to restore your previous backups of the wp_bookacti_exceptions table as is after the update
-
-= 1.9.0 =
-Major changes in code:
-* If you have purchased add-ons, you need to update them too.
-* If you have custom code, you may need to adapt it. No support can be provided for your custom code.
-
-= 1.1.0 =
-Major update with breaking changes. To be safe, make a backup of your database. 
-You need to update your Booking Activities add-ons in the same time (if you have any) as they will not be compatible anymore.
-
-= 1.0.4 =
-If you are using Booking Activities with WooCommerce, make sure you are using 2.6.0 or later, and try to update to WooCommerce 3.* as soon as possible since BW compatibility functions are now deprecated
