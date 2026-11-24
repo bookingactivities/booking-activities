@@ -141,6 +141,7 @@ Then feel free to tell us if you miss a feature, if you find a bug or anything t
 
 * [Documentation](https://booking-activities.fr/en/documentation/user-documentation/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)
 * [Report a bug / Request a feature](https://github.com/bookingactivities/booking-activities/issues/)
+* Report security issues at contact@booking-activities.fr
 * [Contact us](https://booking-activities.fr/en/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme#contact) at contact@booking-activities.fr (French and English)
 
 
