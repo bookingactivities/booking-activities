@@ -3,7 +3,7 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
 Tested up to: 7.1
-Stable tag: 1.19.5
+Stable tag: 1.19.6
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -321,8 +321,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.19.6 =
+= 1.19.6 - 2026/11/24 =
 * Fix - Events from deleted activities may not be displayed on booking forms
+* Fix - Security: fix security issue with user selectbox (thanks Bradley Street)
+* Fix - Security: fix security issues involving select2 selectboxes (thanks KAIS0ps)
 
 = 1.19.5 - 2026/11/16 =
 * Fix - Security: Prevent displaying other users' booking calendar to non priviledged users (thanks kta1kri)

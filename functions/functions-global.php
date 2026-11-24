@@ -1526,9 +1526,9 @@ function bookacti_help_tip( $tip, $echo = true ){
 
 
 /**
- * Create a user selectbox
+ * Display a user selectbox
  * @since 1.3.0
- * @version 1.16.2
+ * @version 1.19.6
  * @param array $raw_args
  * @return string|void
  */
@@ -1552,8 +1552,22 @@ function bookacti_display_user_selectbox( $raw_args ) {
 	$args[ 'class' ] = $args[ 'ajax' ] ? 'bookacti-select2-ajax ' . trim( $args[ 'class' ] ) : ( $args[ 'select2' ] ? 'bookacti-select2-no-ajax ' . trim( $args[ 'class' ] ) : trim( $args[ 'class' ] ) );
 	
 	// Format selected user ids
-	if( ! is_array( $args[ 'selected' ] ) ) { $args[ 'selected' ] = $args[ 'selected' ] || in_array( $args[ 'selected' ], array( 0, '0' ), true ) ? array( $args[ 'selected' ] ) : array(); }
-	$selected_user_ids = bookacti_ids_to_array( $args[ 'selected' ] );
+	
+	if( ! is_array( $args[ 'selected' ] ) ) { 
+		$args[ 'selected' ] = $args[ 'selected' ] || in_array( $args[ 'selected' ], array( 0, '0' ), true ) ? array( $args[ 'selected' ] ) : array();
+	}
+	$selected_user_ids   = bookacti_ids_to_array( $args[ 'selected' ] );
+	$selected_sanitized  = $selected_user_ids;
+	$is_current_selected = false;
+	foreach( $args[ 'selected' ] as $selected_i => $selected ) {
+		if( $selected === 'current' ) {
+			$is_current_selected = true;
+		}
+		if( is_email( $selected ) ) {
+			$selected_sanitized[] = sanitize_email( $selected );
+		}
+	}
+	$args[ 'selected' ] = $selected_sanitized;
 	
 	if( $args[ 'ajax' ] && $args[ 'selected' ] && $is_allowed ) {
 		$selected_users = $selected_user_ids ? bookacti_get_users_data( array( 'include' => $selected_user_ids ) ) : array();
@@ -1565,8 +1579,10 @@ function bookacti_display_user_selectbox( $raw_args ) {
 	$options = array();
 	if( $users ) {
 		foreach( $users as $user ) {
-			$selected_key = array_search( intval( $user->ID ), $selected_user_ids, true );
-			if( $selected_key !== false ) { unset( $selected_user_ids[ $selected_key ] ); }
+			$selected_id_key = array_search( intval( $user->ID ), $args[ 'selected' ], true );
+			if( $selected_id_key !== false ) { unset( $args[ 'selected' ][ $selected_id_key ] ); }
+			$selected_email_key = array_search( $user->user_email, $args[ 'selected' ], true );
+			if( $selected_email_key !== false ) { unset( $args[ 'selected' ][ $selected_email_key ] ); }
 			
 			// Build the option label based on the array
 			$label = '';
@@ -1583,21 +1599,35 @@ function bookacti_display_user_selectbox( $raw_args ) {
 				// Display the value if the key exists, else display the key as is, as a separator
 				if( isset( $user->{ $show } ) ) {
 					$value  = maybe_unserialize( $user->{ $show } );
+					
+					$value = is_serialized( $user->{ $show } ) ? unserialize( trim( $user->{ $show } ), array( 'allowed_classes' => false ) ) : $user->{ $show };
+					if( gettype( $value ) === 'object' ) { continue; }
+					
 					$label .= is_array( $value ) ? implode( ',', $value ) : $value;
 				} else {
 					$label .= $show;
 				}
 			}
-			$options[] = array( 'id' => $user->ID, 'text' => $label, 'selected' => $selected_key !== false );
+			$options[] = array( 
+				'id'       => $user->ID, 
+				'text'     => $label, 
+				'selected' => $selected_id_key !== false || $selected_email_key  !== false
+			);
 		}
 	}
 	
 	// Retrieve user emails from bookings made without accounts
 	if( $args[ 'no_account' ] && ! $args[ 'ajax' ] && $is_allowed ) {
 		$bookings = bookacti_get_bookings_without_account( array( 'distinct' => true ) );
-		$booking_emails = array();
 		foreach( $bookings as $booking ) {
-			$options[] = array( 'id' => $booking->user_id, 'text' => $booking->user_id, 'selected' => in_array( $booking->user_id, $args[ 'selected' ], true ) );
+			$booking_user_email = sanitize_email( $booking->user_id );
+			if( ! $booking_user_email ) { continue; }
+			
+			$options[] = array(
+				'id'       => $booking_user_email,
+				'text'     => $booking_user_email,
+				'selected' => in_array( $booking_user_email, $args[ 'selected' ], true )
+			);
 		}
 	}
 	
@@ -1605,10 +1635,10 @@ function bookacti_display_user_selectbox( $raw_args ) {
 	
 	ob_start();
 	?>
-	<input type='hidden' name='<?php echo $args[ 'name' ]; ?>' value=''/>
-	<select <?php if( $args[ 'id' ] ) { echo 'id="' . $args[ 'id' ] . '"'; } ?> 
-		name='<?php echo $args[ 'name' ]; ?>' 
-		class='bookacti-user-selectbox <?php echo $args[ 'class' ]; ?>'
+	<input type='hidden' name='<?php echo esc_attr( $args[ 'name' ] ); ?>' value=''/>
+	<select <?php if( $args[ 'id' ] ) { echo 'id="' . esc_attr( $args[ 'id' ] ) . '"'; } ?> 
+		name='<?php echo esc_attr( $args[ 'name' ] ); ?>' 
+		class='bookacti-user-selectbox <?php echo esc_attr( $args[ 'class' ] ); ?>'
 		data-tags='<?php echo ! empty( $args[ 'allow_tags' ] ) ? 1 : 0; ?>'
 		data-allow-clear='<?php echo ! empty( $args[ 'allow_clear' ] ) ? 1 : 0; ?>'
 		data-placeholder='<?php echo ! empty( $args[ 'placeholder' ] ) ? esc_attr( $args[ 'placeholder' ] ) : ''; ?>'
@@ -1619,36 +1649,35 @@ function bookacti_display_user_selectbox( $raw_args ) {
 		<?php if( ! $args[ 'multiple' ] ) {  ?>
 			<option><!-- Used for the placeholder --></option>
 		<?php
-			}
-			// Keep both numeric and string values
-			foreach( $args[ 'selected' ] as $selected ) {
-				if( $selected && ! is_numeric( $selected ) && is_string( $selected ) ) {
-					$selected_user_ids[] = $selected;
-				}
-			}
-			
+			}			
 			if( $args[ 'allow_current' ] ) {
-				$selected_key = array_search( 'current', $selected_user_ids, true );
-				if( $selected_key !== false ) { unset( $selected_user_ids[ $selected_key ] ); }
 			?>
-				<option value='current' <?php if( $selected_key !== false ) { echo 'selected'; } ?>><?php esc_html_e( 'Current user', 'booking-activities' ); ?></option>
+				<option value='current' <?php if( $is_current_selected ) { echo 'selected'; } ?>>
+					<?php esc_html_e( 'Current user', 'booking-activities' ); ?>
+				</option>
 			<?php
 			}
-
+			
 			do_action( 'bookacti_add_user_selectbox_options', $args, $users );
 			
 			if( $options ) {
 				foreach( $options as $option ) {
 				?>
-					<option value='<?php echo esc_attr( $option[ 'id' ] ); ?>' <?php if( ! empty( $option[ 'selected' ] ) ) { echo 'selected'; } ?>><?php echo esc_html( $option[ 'text' ] ); ?></option>
+					<option value='<?php echo esc_attr( $option[ 'id' ] ); ?>' <?php if( ! empty( $option[ 'selected' ] ) ) { echo 'selected'; } ?>>
+					<?php
+						echo esc_textarea( $option[ 'text' ] ); // use esc_textarea instead of esc_html because we need double encoding
+					?>
+					</option>
 				<?php
 				}
 			}
 			
-			if( $args[ 'allow_tags' ] && $selected_user_ids ) {
-				foreach( $selected_user_ids as $selected_user_id ) {
+			if( $args[ 'allow_tags' ] && $args[ 'selected' ] ) {
+				foreach( $args[ 'selected' ] as $selected_user_id ) {
 				?>
-					<option value='<?php echo esc_attr( $selected_user_id ); ?>' selected><?php echo esc_html( $selected_user_id ); ?></option>
+					<option value='<?php echo esc_attr( $selected_user_id ); ?>' selected>
+						<?php echo esc_html( $selected_user_id ); ?>
+					</option>
 				<?php
 				}
 			}

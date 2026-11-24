@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking list page
- * @version 1.18.0
+ * @version 1.19.6
  */
 
 // Exit if accessed directly
@@ -205,7 +205,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					</div>
 					<div class='bookacti-filter-content'>
 					<?php
-						$selected_user = isset( $_REQUEST[ 'user_id' ] ) ? sanitize_text_field( $_REQUEST[ 'user_id' ] ) : array();
+						$selected_user = isset( $_REQUEST[ 'user_id' ] ) ? sanitize_text_field( stripslashes( $_REQUEST[ 'user_id' ] ) ) : array();
+						if( is_numeric( $selected_user ) ) {
+							$selected_user = intval( $selected_user );
+						} else {
+							$selected_user = is_email( $selected_user ) ? sanitize_email( $selected_user ) : '';
+						}
+						
 						$args = apply_filters( 'bookacti_booking_list_user_selectbox_args', array(
 							'name'            => 'user_id',
 							'id'              => 'bookacti-booking-filter-customer',
