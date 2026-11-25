@@ -629,7 +629,7 @@ function bookacti_get_active_add_ons( $prefix = '', $exclude = array( 'balau' ) 
 /**
  * Get add-on data by prefix
  * @since 1.7.14
- * @version 1.19.7
+ * @version 1.19.7.1
  * @param string $prefix
  * @param array $exclude
  * @return array
@@ -690,7 +690,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-waiting-list', 
 			'end_of_life' => '', 
 			'download_id' => 39100,
-			'min_version' => '1.0.7'
+			'min_version' => '1.0.10'
 		),
 		'balau' => array(
 			'title'       => 'Licenses & Updates', 
