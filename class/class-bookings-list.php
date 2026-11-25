@@ -10,7 +10,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 	
 	/**
 	 * Bookings WP_List_Table
-	 * @version 1.16.45
+	 * @version 1.19.7
 	 */
 	class Bookings_List_Table extends WP_List_Table {
 		
@@ -227,6 +227,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		/**
 		 * Fill the checbox column
 		 * @since 1.16.0
+		 * @version 1.19.7
 		 * @access public
 		 * @param array $item
 		 * @return string
@@ -239,7 +240,11 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 				<label for='cb-select-<?php echo $uid; ?>'>
 					<span class='screen-reader-text'>
 					<?php
-						printf( __( 'Select %s' ), esc_html__( 'Booking', 'booking-activities' ) );
+						printf(
+							/* translators: Hidden accessibility text. %s: Taxonomy term name. */
+							__( 'Select %s', 'default' ), 
+							esc_html__( 'Booking', 'booking-activities' )
+						);
 					?>
 					</span>
 				</label>

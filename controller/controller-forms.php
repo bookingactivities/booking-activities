@@ -681,17 +681,24 @@ add_action( 'wp_ajax_nopriv_bookactiGetForm', 'bookacti_controller_get_form' );
 /**
  * AJAX Controller - Send the forgotten password email
  * @since 1.5.0
- * @version 1.15.5
+ * @version 1.19.7
  */
 function bookacti_controller_forgotten_password() {
-	$user_login   = isset( $_POST[ 'user_login' ] ) ? sanitize_user( wp_unslash( $_POST[ 'user_login' ] ) ) : '';
-	$callback     = apply_filters( 'bookacti_reset_password_notification_callback', 'retrieve_password' );
 	$return_array = array(
 		'status'  => 'failed', 
 		'message' => ''
 	);
 	
-	$response = false;
+	// Check nonce
+	$is_nonce_valid = check_ajax_referer( 'bookacti_submit_booking_form', 'nonce', false );
+	if( ! $is_nonce_valid ) {
+		bookacti_send_json_invalid_nonce( 'reset_password' );
+	}
+	
+	$user_login = isset( $_POST[ 'user_login' ] ) ? sanitize_user( wp_unslash( $_POST[ 'user_login' ] ) ) : '';
+	$callback   = apply_filters( 'bookacti_reset_password_notification_callback', 'retrieve_password' );
+	$response   = false;
+	
 	if( is_callable( $callback ) ) {
 		$response = call_user_func( $callback, $user_login );
 		
@@ -727,7 +734,7 @@ add_action( 'wp_ajax_nopriv_bookactiForgottenPassword', 'bookacti_controller_for
 /**
  * AJAX Controller - Check if login form is correct and then register / log the user in
  * @since 1.8.0
- * @version 1.16.45
+ * @version 1.19.7
  */
 function bookacti_controller_validate_login_form() {
 	$return_array = array(
@@ -740,6 +747,12 @@ function bookacti_controller_validate_login_form() {
 		'user_id'			=> 0,
 		'redirect_url'		=> ''
 	);
+	
+	// Check nonce
+	$is_nonce_valid = check_ajax_referer( 'bookacti_submit_booking_form', 'nonce', false );
+	if( ! $is_nonce_valid ) {
+		bookacti_send_json_invalid_nonce( 'submit_login_form' );
+	}
 	
 	// Check if the user is already logged in
 	if( is_user_logged_in() ) {
@@ -852,7 +865,7 @@ add_action( 'wp_ajax_nopriv_bookactiSubmitLoginForm', 'bookacti_controller_valid
 /**
  * AJAX Controller - Check if booking form is correct and then book the event, or send the error message
  * @since 1.5.0
- * @version 1.18.8
+ * @version 1.19.7
  */
 function bookacti_controller_validate_booking_form() {
 	$return_array = array(
@@ -867,6 +880,12 @@ function bookacti_controller_validate_booking_form() {
 		'booking_ids'       => array(),
 		'booking_group_ids' => array()
 	);
+	
+	// Check nonce
+	$is_nonce_valid = check_ajax_referer( 'bookacti_submit_booking_form', 'nonce', false );
+	if( ! $is_nonce_valid ) {
+		bookacti_send_json_invalid_nonce( 'submit_booking_form' );
+	}
 	
 	// Check form
 	$form_id = ! empty( $_POST[ 'form_id' ] ) ? intval( $_POST[ 'form_id' ] ) : 0;
@@ -1091,19 +1110,6 @@ function bookacti_save_no_account_user_data( $return_array, $booking_form_values
 add_action( 'bookacti_booking_form_validated', 'bookacti_save_no_account_user_data', 10, 3 );
 
 
-/**
- * Assign the bookings made without account to the account having the same email address
- * @since 1.13.0
- * @param int $user_id
- */
-function bookacti_assign_bookings_made_without_account_to_user( $user_id ) {
-	$user = get_user_by( 'id', $user_id );
-	if( $user && ! empty( $user->user_email ) ) {
-		bookacti_update_bookings_user_id( $user_id, $user->user_email );
-	}
-}
-add_action( 'user_register', 'bookacti_assign_bookings_made_without_account_to_user', 10, 1 );
-
 
 
 // FORM EDITOR PAGE
@@ -1111,13 +1117,13 @@ add_action( 'user_register', 'bookacti_assign_bookings_made_without_account_to_u
 /**
  * Add form editor meta boxes
  * @since 1.5.0
- * @version 1.15.4
+ * @version 1.19.7
  */
 function bookacti_form_editor_meta_boxes() {
 	if( empty( $_REQUEST[ 'action' ] ) || ! in_array( $_REQUEST[ 'action' ], array( 'edit', 'new' ), true ) ) { return; }
 	
 	// Sidebar
-	add_meta_box( 'bookacti_form_publish', esc_html__( 'Publish' ), 'bookacti_display_form_publish_meta_box', 'booking-activities_page_bookacti_forms', 'side', 'high' );
+	add_meta_box( 'bookacti_form_publish', esc_html__( 'Publish', 'default' ), 'bookacti_display_form_publish_meta_box', 'booking-activities_page_bookacti_forms', 'side', 'high' );
 	add_meta_box( 'bookacti_form_managers', esc_html__( 'Managers', 'booking-activities' ), 'bookacti_display_form_managers_meta_box', 'booking-activities_page_bookacti_forms', 'side', 'default' );
 
 	add_meta_box( 'bookacti_form_integration_tuto', esc_html__( 'How to integrate this form', 'booking-activities' ), 'bookacti_display_form_integration_tuto_meta_box', 'booking-activities_page_bookacti_forms', 'side', 'low' );
@@ -1938,7 +1944,7 @@ add_action( 'wp_ajax_bookactiResetExportEventsUrl', 'bookacti_controller_reset_f
 /**
  * Export events of a specific form
  * @since 1.6.0
- * @version 1.16.0
+ * @version 1.19.7
  */
 function bookacti_export_form_events_page() {
 	$action = ! empty( $_REQUEST[ 'action' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'action' ] ) : '';
@@ -1963,8 +1969,8 @@ function bookacti_export_form_events_page() {
 	// Set the file name, and the calendar name and description
 	$form = bookacti_get_form_data( $form_id );
 	$filename = ! empty( $_REQUEST[ 'filename' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'filename' ] ) : 'booking-activities-events-form-' . $form_id;
-	/* translators: %d is the form ID */
-	$calname = ! empty( $form[ 'title' ] ) ? $form[ 'title' ] : sprintf( esc_html__( 'Form #%d', 'booking-activities' ), $form_id );
+	/* translators: %s = form ID (integer). */
+	$calname = ! empty( $form[ 'title' ] ) ? $form[ 'title' ] : sprintf( esc_html__( 'Form #%s', 'booking-activities' ), $form_id );
 	/* translators: %s is the form title */
 	$caldesc = ! empty( $form[ 'title' ] ) ? sprintf( esc_html__( 'Form "%s"', 'booking-activities' ), $form[ 'title' ] ) : $calname;
 	

@@ -250,7 +250,7 @@ add_filter( 'bookacti_default_messages', 'bookacti_wc_default_messages', 10, 1 )
 /**
  * Add WC notice to Default booking status settings
  * @since 1.15.16
- * @version 1.16.45
+ * @version 1.19.7
  * @param array $args
  * @return array
  */
@@ -275,18 +275,18 @@ function bookacti_wc_settings_default_booking_status_field_args( $args ) {
 				<?php 
 					/* translators: "%1$s" = "Virtual" WC option label. "%2$s" = "Activity" WC option label. */ 
 					echo sprintf( esc_html__( 'If the order contains "%1$s" "%2$s" products only', 'booking-activities' ), 
-						'<strong>' . esc_html__( 'Virtual', 'woocommerce' ) . '</strong>', 
+						'<strong>' . esc_html__( 'Virtual', 'woocommerce' ) . '</strong>', // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch
 						'<strong>' . esc_html__( 'Activity', 'booking-activities' ) . '</strong>'
 					);
 				?>
 				</th>
-				<td><?php esc_html_e( 'Order', 'booking-activities' ); ?>: <strong><?php esc_html_e( 'Completed', 'woocommerce' ); ?></strong><br/><?php esc_html_e( 'Bookings', 'booking-activities' ); ?>: <strong><?php esc_html_e( 'Booked', 'booking-activities' ); ?></strong> & <strong><?php esc_html_e( 'Paid', 'booking-activities' ); ?></strong></td>
-				<td><?php esc_html_e( 'Order', 'booking-activities' ); ?>: <strong><?php esc_html_e( 'Processing', 'woocommerce' ); ?></strong><br/><?php esc_html_e( 'Bookings', 'booking-activities' ); ?>: <strong><?php esc_html_e( 'Pending', 'booking-activities' ); ?></strong> & <strong><?php esc_html_e( 'Due', 'booking-activities' ); ?></strong></td>
+				<td><?php esc_html_e( 'Order', 'booking-activities' ); ?>: <strong><?php esc_html_e( 'Completed', 'woocommerce' ); /* phpcs:ignore WordPress.WP.I18n.TextDomainMismatch */ ?></strong><br/><?php esc_html_e( 'Bookings', 'booking-activities' ); ?>: <strong><?php esc_html_e( 'Booked', 'booking-activities' ); ?></strong> & <strong><?php esc_html_e( 'Paid', 'booking-activities' ); ?></strong></td>
+				<td><?php esc_html_e( 'Order', 'booking-activities' ); ?>: <strong><?php esc_html_e( 'Processing', 'woocommerce' ); /* phpcs:ignore WordPress.WP.I18n.TextDomainMismatch */ ?></strong><br/><?php esc_html_e( 'Bookings', 'booking-activities' ); ?>: <strong><?php esc_html_e( 'Pending', 'booking-activities' ); ?></strong> & <strong><?php esc_html_e( 'Due', 'booking-activities' ); ?></strong></td>
 			</tr>
 			<tr>
 				<th><?php esc_html_e( 'Else', 'booking-activities' ); ?></th>
-				<td><?php esc_html_e( 'Order', 'booking-activities' ); ?>: <strong><?php esc_html_e( 'Processing', 'woocommerce' ); ?></strong><br/><?php esc_html_e( 'Bookings', 'booking-activities' ); ?>: <strong><?php esc_html_e( 'Booked', 'booking-activities' ); ?></strong> & <strong><?php esc_html_e( 'Paid', 'booking-activities' ); ?></strong></td>
-				<td><?php esc_html_e( 'Order', 'booking-activities' ); ?>: <strong><?php esc_html_e( 'Processing', 'woocommerce' ); ?></strong><br/><?php esc_html_e( 'Bookings', 'booking-activities' ); ?>: <strong><?php esc_html_e( 'Pending', 'booking-activities' ); ?></strong> & <strong><?php esc_html_e( 'Due', 'booking-activities' ); ?></strong></td>
+				<td><?php esc_html_e( 'Order', 'booking-activities' ); ?>: <strong><?php esc_html_e( 'Processing', 'woocommerce' ); /* phpcs:ignore WordPress.WP.I18n.TextDomainMismatch */ ?></strong><br/><?php esc_html_e( 'Bookings', 'booking-activities' ); ?>: <strong><?php esc_html_e( 'Booked', 'booking-activities' ); ?></strong> & <strong><?php esc_html_e( 'Paid', 'booking-activities' ); ?></strong></td>
+				<td><?php esc_html_e( 'Order', 'booking-activities' ); ?>: <strong><?php esc_html_e( 'Processing', 'woocommerce' ); /* phpcs:ignore WordPress.WP.I18n.TextDomainMismatch */ ?></strong><br/><?php esc_html_e( 'Bookings', 'booking-activities' ); ?>: <strong><?php esc_html_e( 'Pending', 'booking-activities' ); ?></strong> & <strong><?php esc_html_e( 'Due', 'booking-activities' ); ?></strong></td>
 			</tr>
 		</table>
 	</div>

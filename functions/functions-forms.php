@@ -206,7 +206,7 @@ function bookacti_sanitize_form_data( $raw_form_data ) {
 
 /**
  * Display a booking form
- * @version 1.18.2
+ * @version 1.19.7
  * @param int $form_id
  * @param string $instance_id
  * @param string $context
@@ -214,10 +214,8 @@ function bookacti_sanitize_form_data( $raw_form_data ) {
  * @return void|string
  */
 function bookacti_display_form( $form_id, $instance_id = '', $context = 'display', $echo = true ) {
-	if( ! $form_id ) { return ''; }
-	
-	$form = bookacti_get_form_data( $form_id );
-	if( ! $form ) { return ''; }
+	$form = $form_id ? bookacti_get_form_data( $form_id ) : array();
+	if( ! ( $form && ! empty( $form[ 'active' ] ) && $form[ 'status' ] === 'publish' ) ) { return ''; }
 	
 	$form_action = 'bookactiSubmitBookingForm';
 	
@@ -1376,7 +1374,7 @@ function bookacti_display_form_field_for_editor( $field, $echo = true ) {
 /**
  * Validate register fields
  * @since 1.5.0
- * @version 1.16.45
+ * @version 1.19.7
  * @param array $login_values
  * @param array $login_data
  * @return array
@@ -1388,6 +1386,16 @@ function bookacti_validate_registration( $login_values, $login_data ) {
 	if( ! is_email( $login_values[ 'email' ] ) || strlen( $login_values[ 'email' ] ) > 64 ) {
 		$return_array[ 'error' ] = 'invalid_email';
 		$return_array[ 'messages' ][ 'invalid_email' ] = esc_html__( 'Invalid email address.', 'booking-activities' );
+	}
+	
+	// Check if email already exists
+	else if( email_exists( $login_values[ 'email' ] ) ) {
+		$return_array[ 'error' ] = 'email_exists';
+		$return_array[ 'messages' ][ 'email_exists' ] = sprintf(
+			/* translators: %s: Link to the login page. */
+			__( '<strong>Error:</strong> This email address is already registered. <a href="%s">Log in</a> with this address or choose another one.', 'default' ),
+			esc_url( wp_login_url() )
+		);
 	}
 	
 	// Check if password exists
@@ -1493,7 +1501,7 @@ function bookacti_register_a_new_user( $login_values, $login_data ) {
 /**
  * Validate login fields
  * @since 1.5.0
- * @version 1.16.45
+ * @version 1.19.7
  * @param array $login_values
  * @return WP_User|array
  */
@@ -1504,25 +1512,20 @@ function bookacti_validate_login( $login_values ) {
 	
 	$return_array = array( 'status' => 'failed', 'error' => '', 'messages' => array() );
 	
-	if( ! $user ) { 
-		$return_array[ 'error' ] = 'user_not_found';
-		$return_array[ 'messages' ][ 'user_not_found' ] = esc_html__( 'The email address/username provided does not match any account.', 'booking-activities' );
-	}
-
-	// Check if password is correct
-	else {
+	// Check password
+	if( is_a( $user, 'WP_User' ) ) {
 		$password = ! empty( $login_values[ 'password' ] ) ? $login_values[ 'password' ] : '';
 		$user     = wp_authenticate( $user->user_email, $password );
 		
-		if( ! is_a( $user, 'WP_User' ) ) {
-			if( is_wp_error( $user ) ) {
-				$return_array[ 'error' ] = $user->get_error_code();
-				$return_array[ 'messages' ][ $return_array[ 'error' ] ] = $user->get_error_message();
-			}
-			
-			if( empty( $return_array[ 'error' ] ) )    { $return_array[ 'error' ]   = 'authentication_failed'; }
-			if( empty( $return_array[ 'messages' ] ) ) { $return_array[ 'messages' ][ $return_array[ 'error' ] ] = __( '<strong>Error</strong>: Invalid username, email address or incorrect password.' ); }
+		if( ! is_a( $user, 'WP_User' ) && is_wp_error( $user ) ) {
+			$return_array[ 'error' ] = $user->get_error_code();
+			$return_array[ 'messages' ][ $return_array[ 'error' ] ] = $user->get_error_message();
 		}
+	}
+	
+	if( ! is_a( $user, 'WP_User' ) ) {
+		if( empty( $return_array[ 'error' ] ) )    { $return_array[ 'error' ]   = 'authentication_failed'; }
+		if( empty( $return_array[ 'messages' ] ) ) { $return_array[ 'messages' ][ $return_array[ 'error' ] ] = __( '<strong>Error</strong>: Invalid username, email address or incorrect password.', 'default' ); }
 	}
 	
 	return apply_filters( 'bookacti_validate_login_form', is_a( $user, 'WP_User' ) ? $user : $return_array, $login_values );
@@ -2094,7 +2097,7 @@ function bookacti_format_form_filters( $filters = array() ) {
 /**
  * Display 'managers' metabox content for forms
  * @since 1.5.0
- * @version 1.18.2
+ * @version 1.19.7
  * @param array $form_edit
  */
 function bookacti_display_form_managers_meta_box( $form_edit ) {
@@ -2140,9 +2143,12 @@ function bookacti_display_form_managers_meta_box( $form_edit ) {
 			),
 			'title'     => esc_html__( 'Who can manage this form?', 'booking-activities' ),
 			'tip'       => esc_html__( 'Choose who is allowed to access this form.', 'booking-activities' )
+						/* translators: %s = comma separated list of user roles */
 						. '<br/>' . sprintf( esc_html__( 'These roles already have this privilege: %s.', 'booking-activities' ), '<code>' . implode( '</code>, <code>', array_intersect_key( bookacti_get_roles(), array_flip( $role_not_in ) ) ) . '</code>' )
+						/* translators: %s = capabilities name */
 						. '<br/>' . sprintf( esc_html__( 'If the selectbox is empty, it means that no other users have these capabilities: %s.', 'booking-activities' ), '<code>' . implode( '</code>, <code>', $capabilities ) . '</code>' )
-						. ' ' . sprintf( esc_html__( 'If you want to grant a user these capabilities, use a plugin such as %1$s.', 'booking-activities' ), '<a href="https://wordpress.org/plugins/user-role-editor/" target="_blank" >User Role Editor</a>' )
+						/* translators: %s = User Role Editor plugin link. */
+						. ' ' . sprintf( esc_html__( 'If you want to grant a user these capabilities, use a plugin such as %s.', 'booking-activities' ), '<a href="https://wordpress.org/plugins/user-role-editor/" target="_blank" >User Role Editor</a>' )
 		)
 	);
 	
@@ -2157,7 +2163,7 @@ function bookacti_display_form_managers_meta_box( $form_edit ) {
 /**
  * Display 'publish' metabox content for forms
  * @since 1.5.0
- * @version 1.18.2
+ * @version 1.19.7
  * @param array $form_edit
  */
 function bookacti_display_form_publish_meta_box( $form_edit ) {
@@ -2169,11 +2175,11 @@ function bookacti_display_form_publish_meta_box( $form_edit ) {
 				if ( current_user_can( 'bookacti_delete_forms' ) ) {
 					if( ! $form_edit[ 'active' ] ) {
 						echo '<a href="' . esc_url( wp_nonce_url( admin_url( 'admin.php?page=bookacti_forms&action=delete&form_id=' . $form_edit[ 'id' ] ), 'delete-form_' . $form_edit[ 'id' ] ) ) . '" class="submitdelete deletion" >'
-								. esc_html__( 'Delete Permanently' )
+								. esc_html__( 'Delete Permanently', 'default' )
 							. '</a>';
 					} else {
 						echo '<a href="' . esc_url( wp_nonce_url( admin_url( 'admin.php?page=bookacti_forms&status=trash&action=trash&form_id=' . $form_edit[ 'id' ] ), 'trash-form_' . $form_edit[ 'id' ] ) ) . '" class="submitdelete deletion" >'
-								. esc_html_x( 'Trash', 'verb' )
+								. esc_html_x( 'Trash', 'verb', 'default' )
 							. '</a>';
 					}
 				}
@@ -2187,7 +2193,7 @@ function bookacti_display_form_publish_meta_box( $form_edit ) {
 					   type='submit' 
 					   class='button button-primary button-large' 
 					   id='publish' 
-					   value='<?php echo $form_edit[ 'active' ] ? esc_attr__( 'Update' ) : ( $form_edit[ 'status' ] === 'auto-draft' ? esc_attr__( 'Publish' ) : esc_attr__( 'Restore' ) ); ?>' 
+					   value='<?php echo $form_edit[ 'active' ] ? esc_attr__( 'Update', 'default' ) : ( $form_edit[ 'status' ] === 'auto-draft' ? esc_attr__( 'Publish', 'default' ) : esc_attr__( 'Restore', 'default' ) ); ?>' 
 				/>
 			</div>
 			<div class='clear'></div>

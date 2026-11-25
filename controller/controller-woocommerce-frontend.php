@@ -12,7 +12,7 @@ if( ! isset( $GLOBALS[ 'global_bookacti_wc' ] ) ) { $GLOBALS[ 'global_bookacti_w
 
 /**
  * Add woocommerce related translations
- * @version 1.16.9
+ * @version 1.19.7
  * @param array $translation_array
  * @param array $messages
  * @return array
@@ -26,7 +26,7 @@ function bookacti_woocommerce_translation_array( $translation_array, $messages )
 	$translation_array[ 'cart_item_expired' ]               = esc_html__( 'This item has expired.', 'booking-activities' );
 	$translation_array[ 'cart_item_pending' ]               = esc_html__( 'This item is pending payment.', 'booking-activities' );
 	$translation_array[ 'error_cart_expired' ]              = esc_html__( 'Your cart has expired.', 'booking-activities' );
-	$translation_array[ 'add_product_to_cart_button_text' ] = esc_html__( 'Add to cart', 'woocommerce' );
+	$translation_array[ 'add_product_to_cart_button_text' ] = esc_html__( 'Add to cart', 'woocommerce' ); // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch
 	$translation_array[ 'add_booking_to_cart_button_text' ] = ! empty( $messages[ 'booking_form_submit_button' ][ 'value' ] ) ? $messages[ 'booking_form_submit_button' ][ 'value' ] : esc_html__( 'Book', 'booking-activities' );
 	$translation_array[ 'price_format' ]                    = get_woocommerce_price_format();
 	$translation_array[ 'price_currency_symbol' ]           = get_woocommerce_currency_symbol();
@@ -934,7 +934,7 @@ add_filter( 'woocommerce_cart_item_remove_link', 'bookacti_add_timeout_to_cart_i
 
 /**
  * Delete cart items if they are expired
- * @version 1.16.30
+ * @version 1.19.7
  * @global WooCommerce $woocommerce
  */
 function bookacti_remove_expired_product_from_cart() {
@@ -1004,12 +1004,8 @@ function bookacti_remove_expired_product_from_cart() {
 	
 	// Display feedback to tell user that (part of) his cart has expired
 	if( $nb_deleted_cart_item > 0 ) {
-		/* translators: %d is a variable number of products */
-		$message = sprintf( esc_html( _n(
-			'%d product has expired and has been automatically removed from cart.', 
-			'%d products have expired and have been automatically removed from cart.', 
-			$nb_deleted_cart_item, 'booking-activities' )
-		), $nb_deleted_cart_item );
+		/* translators: %s is a number of products (integer). */
+		$message = sprintf( esc_html( _n( '%s product has expired and has been automatically removed from cart.', '%s products have expired and have been automatically removed from cart.', $nb_deleted_cart_item, 'booking-activities' ) ), $nb_deleted_cart_item );
 		if( ! wc_has_notice( $message, 'error' ) ) { wc_add_notice( $message, 'error' ); }
 	}
 }
@@ -1706,7 +1702,7 @@ add_filter( 'woocommerce_cart_item_subtotal', 'bookacti_wc_cart_item_displayed_s
 /**
  * Check bookings availability before validating checkout in case that "in_cart" state is not active
  * @since 1.3.0
- * @version 1.16.18
+ * @version 1.19.7
  * @global WooCommerce $woocommerce
  * @param array $posted_data An array of posted data.
  * @param WP_Error $errors
@@ -1745,10 +1741,8 @@ function bookacti_availability_check_before_checkout( $posted_data, $errors = nu
 	
 	// Prevent checkout if a booking has been removed from cart
 	if( $nb_deleted_cart_item ) {
-		$expired_message = sprintf( esc_html( _n( 
-			'%d product has expired and has been automatically removed from cart.', 
-			'%d products have expired and have been automatically removed from cart.', 
-			$nb_deleted_cart_item, 'booking-activities' ) ), $nb_deleted_cart_item );
+		/* translators: %s is a number of products (integer). */
+		$expired_message = sprintf( esc_html( _n( '%s product has expired and has been automatically removed from cart.', '%s products have expired and have been automatically removed from cart.', $nb_deleted_cart_item, 'booking-activities' ) ), $nb_deleted_cart_item );
 		$errors->add( 'expired_booking', $expired_message );
 	}
 }
@@ -1835,7 +1829,7 @@ add_action( 'woocommerce_checkout_create_order', 'bookacti_wc_checkout_create_on
 /**
  * Check availability before paying for an order
  * @since 1.7.13
- * @version 1.16.45
+ * @version 1.19.7
  * @param WC_Order $order
  */
 function bookacti_availability_check_before_pay_action( $order ) {
@@ -1907,7 +1901,7 @@ function bookacti_availability_check_before_pay_action( $order ) {
 		}
 		
 		// Display default error message
-		wc_add_notice( esc_html__( 'Sorry, this order is invalid and cannot be paid for.', 'woocommerce' ), 'error' );
+		wc_add_notice( esc_html__( 'Sorry, this order is invalid and cannot be paid for.', 'woocommerce' ), 'error' ); // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch
 		
 		// Refresh page
 		$checkout_url = $order->get_checkout_payment_url();
@@ -1921,7 +1915,7 @@ add_action( 'woocommerce_before_pay_action', 'bookacti_availability_check_before
 /**
  * Change order bookings status after the customer validates checkout
  * @since 1.16.0 (was bookacti_change_booking_state_after_checkout)
- * @version 1.16.48
+ * @version 1.19.7
  * @param int $order_id
  * @param array $posted_data
  * @param WC_Order $order
@@ -1946,6 +1940,7 @@ function bookacti_wc_checkout_order_processed_booking_status( $order_id, $posted
 						$last_booking     = end( $order_item_booking[ 'bookings' ] );
 						$first_booking    = reset( $order_item_booking[ 'bookings' ] );
 						$dates            = bookacti_get_formatted_event_dates( $first_booking->event_start, $last_booking->event_end, false );
+						/* translators: %1$s = the booking ID. %2$s = the event title and dates. %3$s = the order ID. */
 						$error_messages[] = sprintf( esc_html__( 'You have already purchased the booking #%1$s "%2$s" in the order #%3$s.', 'booking-activities' ), $order_item_booking[ 'id' ], $title ? apply_filters( 'bookacti_translate_text', $title ) . ' (' . $dates . ')' : $dates, $booking_order_id );
 						wc_delete_order_item( $item_id );
 					}
@@ -2129,7 +2124,7 @@ add_filter( 'bookacti_user_booking_list_default_columns', 'bookacti_reorder_wooc
 /**
  * Add WC data to the user booking list
  * @since 1.7.12 (was bookacti_fill_wc_price_column_in_booking_list)
- * @version 1.16.24
+ * @version 1.19.7
  * @param array $booking_list_items
  * @param array $bookings
  * @param array $booking_groups
@@ -2244,6 +2239,7 @@ function bookacti_add_wc_data_to_user_booking_list_items( $booking_list_items, $
 				$coupon_class = is_wp_error( $coupon_valid ) ? 'bookacti-refund-coupon-not-valid bookacti-refund-coupon-error-' . esc_attr( $coupon_valid->get_error_code() ) : 'bookacti-refund-coupon-valid';
 				$coupon_error_label = is_wp_error( $coupon_valid ) ? $coupon_valid->get_error_message() : '';
 				
+				/* translators: %s is the coupon code used for the refund */
 				$coupon_label = sprintf( esc_html__( 'Refunded with coupon %s', 'booking-activities' ), '<span class="bookacti-refund-coupon-code ' . esc_attr( $coupon_class ) . '">' . strtoupper( $coupon_code ) . '</span>' );
 				$coupon_tip   = $coupon_error_label ? $coupon_label . '<br/>' . $coupon_error_label : $coupon_label;
 				$booking_list_items[ $booking_id ][ 'status' ] = '<span class="bookacti-booking-status bookacti-booking-status-refunded bookacti-converted-to-coupon bookacti-tip" data-booking-status="refunded" data-tip="' . esc_attr( $coupon_tip ) . '" aria-label="' . esc_attr( $coupon_tip ) . '">' . $coupon_label . '</span>';

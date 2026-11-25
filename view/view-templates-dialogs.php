@@ -1,7 +1,7 @@
 <?php 
 /**
  * Calendar editor dialogs
- * @version 1.18.0
+ * @version 1.19.7
  */
 
 // Exit if accessed directly
@@ -324,7 +324,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			
 			/**
 			 * Display the 'Permission' tab content of calendar settings
-			 * @version 1.16.45
+			 * @version 1.19.7
 			 * @param array $params
 			 */
 			function bookacti_fill_template_tab_permissions( $params = array() ) {
@@ -354,10 +354,10 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 									. '<br/>' . sprintf( esc_html__( 'These roles already have this privilege: %s.', 'booking-activities' ), '<code>' . implode( '</code>, <code>', array_intersect_key( bookacti_get_roles(), array_flip( $role_not_in ) ) ) . '</code>' )
 									/* translators: %s = capabilities name */
 									. '<br/>' . sprintf( esc_html__( 'If the selectbox is empty, it means that no other users have these capabilities: %s.', 'booking-activities' ), '<code>' . implode( '</code>, <code>', $capabilities ) . '</code>' )
-									/* translators: %1$s = Order for Customers add-on link. */
-									. '<br/>' . sprintf( esc_html__( 'Operators from %1$s add-on have these capabilities.', 'booking-activities' ), '<a href="https://booking-activities.fr/en/downloads/order-for-customers/?utm_source=plugin&utm_medium=plugin&utm_campaign=order-for-customers&utm_content=infobulle-permission" target="_blank" >Order for Customers</a>' )
-									/* translators: %1$s = User Role Editor plugin link. */
-									. ' ' . sprintf( esc_html__( 'If you want to grant a user these capabilities, use a plugin such as %1$s.', 'booking-activities' ), '<a href="https://wordpress.org/plugins/user-role-editor/" target="_blank">User Role Editor</a>' )
+									/* translators: %s = Order for Customers add-on link. */
+									. '<br/>' . sprintf( esc_html__( 'Operators from %s add-on have these capabilities.', 'booking-activities' ), '<a href="https://booking-activities.fr/en/downloads/order-for-customers/?utm_source=plugin&utm_medium=plugin&utm_campaign=order-for-customers&utm_content=infobulle-permission" target="_blank" >Order for Customers</a>' )
+									/* translators: %s = User Role Editor plugin link. */
+									. ' ' . sprintf( esc_html__( 'If you want to grant a user these capabilities, use a plugin such as %s.', 'booking-activities' ), '<a href="https://wordpress.org/plugins/user-role-editor/" target="_blank">User Role Editor</a>' )
 					)
 				) );
 				bookacti_display_fields( $fields );
@@ -622,7 +622,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			
 			/**
 			 * Display the fields in the "Permissions" tab of the Activity dialog
-			 * @version 1.16.45
+			 * @version 1.19.7
 			 * @param array $params
 			 */
 			function bookacti_fill_activity_tab_permissions( $params = array() ) {
@@ -679,10 +679,14 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 						),
 						'title'     => esc_html__( 'Who can manage this activity?', 'booking-activities' ),
 						'tip'       => esc_html__( 'Choose who is allowed to access this activity.', 'booking-activities' )
+									/* translators: %s = comma separated list of user roles */
 						            . '<br/>' . sprintf( esc_html__( 'These roles already have this privilege: %s.', 'booking-activities' ), '<code>' . implode( '</code>, <code>', array_intersect_key( bookacti_get_roles(), array_flip( $role_not_in ) ) ) . '</code>' )
-						            . '<br/>' . sprintf( esc_html__( 'If the selectbox is empty, it means that no other users have these capabilities: %s.', 'booking-activities' ), '<code>' . implode( '</code>, <code>', $capabilities ) . '</code>' )
-						            . '<br/>' . sprintf( esc_html__( 'Operators from %1$s add-on have these capabilities.', 'booking-activities' ), '<a href="https://booking-activities.fr/en/downloads/order-for-customers/?utm_source=plugin&utm_medium=plugin&utm_campaign=order-for-customers&utm_content=infobulle-permission" target="_blank" >Order for Customers</a>' )
-						            . ' ' . sprintf( esc_html__( 'If you want to grant a user these capabilities, use a plugin such as %1$s.', 'booking-activities' ), '<a href="https://wordpress.org/plugins/user-role-editor/" target="_blank" >User Role Editor</a>' )
+						            /* translators: %s = capabilities name */
+									. '<br/>' . sprintf( esc_html__( 'If the selectbox is empty, it means that no other users have these capabilities: %s.', 'booking-activities' ), '<code>' . implode( '</code>, <code>', $capabilities ) . '</code>' )
+						            /* translators: %s = Order for Customers add-on link. */
+									. '<br/>' . sprintf( esc_html__( 'Operators from %s add-on have these capabilities.', 'booking-activities' ), '<a href="https://booking-activities.fr/en/downloads/order-for-customers/?utm_source=plugin&utm_medium=plugin&utm_campaign=order-for-customers&utm_content=infobulle-permission" target="_blank" >Order for Customers</a>' )
+						            /* translators: %s = User Role Editor plugin link. */
+									. ' ' . sprintf( esc_html__( 'If you want to grant a user these capabilities, use a plugin such as %s.', 'booking-activities' ), '<a href="https://wordpress.org/plugins/user-role-editor/" target="_blank" >User Role Editor</a>' )
 					)
 				) );
 				

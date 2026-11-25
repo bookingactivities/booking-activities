@@ -743,7 +743,7 @@ function bookacti_wc_get_displayed_product_price( $product, $price = '', $qty = 
 /**
  * Get booking events list as WC item attributes
  * @since 1.9.0 (was bookacti_wc_get_item_bookings_events_list_html)
- * @version 1.16.38
+ * @version 1.19.7
  * @param array $item_booking
  * @param boolean $show_quantity
  * @param string $context
@@ -767,7 +767,8 @@ function bookacti_wc_get_item_booking_events_attributes( $item_booking, $show_qu
 	foreach( $sorted_bookings as $booking ) {
 		// Get the group title if it is a group of events
 		if( ! empty( $booking->group_id ) && ! $group_title ) {
-			$group_title = ! empty( $booking->group_title ) ? apply_filters( 'bookacti_translate_text', $booking->group_title ) : sprintf( esc_html__( 'Booking group #%d', 'booking-activities' ), $booking->group_id );
+			/* translators: %s = Booking group ID (integer) */
+			$group_title = ! empty( $booking->group_title ) ? apply_filters( 'bookacti_translate_text', $booking->group_title ) : sprintf( esc_html__( 'Booking group #%s', 'booking-activities' ), $booking->group_id );
 		}
 		
 		$start = isset( $booking->event_start ) ? bookacti_sanitize_datetime( $booking->event_start ) : '';
@@ -1853,14 +1854,14 @@ function bookacti_get_order_items_rows( $order_items = array() ) {
 /**
  * Display a products selectbox
  * @since 1.7.0
- * @version 1.16.44
+ * @version 1.19.7
  * @param array $raw_args
  * @return string
  */
 function bookacti_display_product_selectbox( $raw_args = array() ) {
 	$defaults = array(
 		'field_name'  => 'product_id',
-		'selected'    => '',
+		'selected'    => 0,
 		'id'          => '',
 		'class'       => '',
 		'allow_tags'  => 0,
@@ -1872,15 +1873,18 @@ function bookacti_display_product_selectbox( $raw_args = array() ) {
 		'placeholder' => esc_html__( 'Search...', 'booking-activities' )
 	);
 	$args = apply_filters( 'bookacti_product_selectbox_args', wp_parse_args( $raw_args, $defaults ), $raw_args );
-
+	
+	// Sanitize selected product
+	$args[ 'selected' ] = is_numeric( $args[ 'selected' ] ) ? intval( $args[ 'selected' ] ) : 0;
+	
 	$products_titles = ! $args[ 'ajax' ] ? bookacti_get_products_titles() : ( $args[ 'selected' ] ? bookacti_get_products_titles( $args[ 'selected' ] ) : array() );
 	$args[ 'class' ] = $args[ 'ajax' ] ? 'bookacti-select2-ajax ' . trim( $args[ 'class' ] ) : ( $args[ 'select2' ] ? 'bookacti-select2-no-ajax ' . trim( $args[ 'class' ] ) : trim( $args[ 'class' ] ) );
 
 	ob_start();
 	?>
-	<select <?php if( $args[ 'id' ] ) { echo 'id="' . $args[ 'id' ] . '"'; } ?> 
-		name='<?php echo $args[ 'field_name' ]; ?>' 
-		class='bookacti-wc-products-selectbox <?php echo $args[ 'class' ]; ?>'
+	<select <?php if( $args[ 'id' ] ) { echo 'id="' . esc_attr( $args[ 'id' ] ) . '"'; } ?> 
+		name='<?php echo esc_attr( $args[ 'field_name' ] ); ?>' 
+		class='bookacti-wc-products-selectbox <?php echo esc_attr( $args[ 'class' ] ); ?>'
 		data-tags='<?php echo ! empty( $args[ 'allow_tags' ] ) ? 1 : 0; ?>'
 		data-allow-clear='<?php echo ! empty( $args[ 'allow_clear' ] ) ? 1 : 0; ?>'
 		data-placeholder='<?php echo ! empty( $args[ 'placeholder' ] ) ? esc_attr( $args[ 'placeholder' ] ) : ''; ?>'
@@ -1897,7 +1901,7 @@ function bookacti_display_product_selectbox( $raw_args = array() ) {
 				if( empty( $product[ 'variations' ] ) ) {
 					$_selected = selected( $product_id, $args[ 'selected' ], false );
 					if( $_selected ) { $is_selected = true; }
-					?><option class='bookacti-wc-product-option' value='<?php echo esc_attr( $product_id ); ?>' <?php echo $_selected; ?>><?php echo $product[ 'title' ] ? esc_html( apply_filters( 'bookacti_translate_text_external', $product[ 'title' ], false, true, array( 'domain' => 'woocommerce', 'object_type' => 'product', 'object_id' => $product_id, 'field' => 'post_title' ) ) ) : $product[ 'title' ]; ?></option><?php
+					?><option class='bookacti-wc-product-option' value='<?php echo esc_attr( intval( $product_id ) ); ?>' <?php echo $_selected; ?>><?php echo esc_textarea( $product[ 'title' ] ? apply_filters( 'bookacti_translate_text_external', $product[ 'title' ], false, true, array( 'domain' => 'woocommerce', 'object_type' => 'product', 'object_id' => $product_id, 'field' => 'post_title' ) ) : $product[ 'title' ] ); ?></option><?php
 
 				// Display variations options
 				} else {
@@ -1907,9 +1911,9 @@ function bookacti_display_product_selectbox( $raw_args = array() ) {
 						foreach( $product[ 'variations' ] as $variation_id => $variation ) {
 							$_selected = selected( $variation_id, $args[ 'selected' ], false );
 							if( $_selected ) { $is_selected = true; }
-							$variation_title = $variation[ 'title' ] ? esc_html( apply_filters( 'bookacti_translate_text_external', $variation[ 'title' ], false, true, array( 'domain' => 'woocommerce', 'object_type' => 'product_variation', 'object_id' => $variation_id, 'field' => 'post_excerpt', 'product_id' => $product_id ) ) ) : $variation[ 'title' ];
+							$variation_title = $variation[ 'title' ] ? apply_filters( 'bookacti_translate_text_external', $variation[ 'title' ], false, true, array( 'domain' => 'woocommerce', 'object_type' => 'product_variation', 'object_id' => $variation_id, 'field' => 'post_excerpt', 'product_id' => $product_id ) ) : $variation[ 'title' ];
 							$formatted_variation_title = trim( preg_replace( '/,[\s\S]+?:/', ',', ',' . $variation_title ), ', ' );
-							?><option class='bookacti-wc-product-variation-option' value='<?php echo esc_attr( $variation_id ); ?>' <?php echo $_selected; ?>><?php echo $formatted_variation_title; ?></option><?php
+							?><option class='bookacti-wc-product-variation-option' value='<?php echo esc_attr( intval( $variation_id ) ); ?>' <?php echo $_selected; ?>><?php echo esc_textarea( $formatted_variation_title ); ?></option><?php
 						}
 					?>
 					</optgroup>
@@ -1918,7 +1922,7 @@ function bookacti_display_product_selectbox( $raw_args = array() ) {
 			}
 		}
 
-		if( $args[ 'allow_tags' ] && $args[ 'selected' ] !== '' && ! $is_selected ) {
+		if( $args[ 'allow_tags' ] && $args[ 'selected' ] && ! $is_selected ) {
 			?><option value='<?php echo esc_attr( $args[ 'selected' ] ); ?>' selected="selected"><?php echo esc_html( $args[ 'selected' ] ); ?></option><?php
 		}
 	?>
@@ -2410,7 +2414,7 @@ function bookacti_update_order_bookings_on_order_refund( $refund ) {
 /**
  * Create coupons to refund selected bookings (1 coupon per user)
  * @since 1.16.0 (was bookacti_refund_booking_with_coupon)
- * @version 1.19.3
+ * @version 1.19.7
  * @param array $selected_bookings
  * @param string $booking_type Determine if the given id is a booking id or a booking group. Accepted values are 'single' or 'group'.
  * @param string $refund_message
@@ -2661,11 +2665,13 @@ function bookacti_refund_selected_bookings_with_coupon( $selected_bookings, $ref
 			$refunded_bookings_txt = '';
 			if( $booking_ids ) {
 				$bookings_nb += count( $booking_ids );
+				/* translators: %s = Booking ID (integer) */
 				$refunded_bookings_txt .= sprintf( esc_html__( 'Booking #%s', 'booking-activities' ), implode( ', ', $booking_ids ) );
 			}
 			if( $booking_group_ids ) {
 				$bookings_nb += count( $booking_group_ids );
 				if( $refunded_bookings_txt ) { $refunded_bookings_txt .= '<br/>'; }
+				/* translators: %s = Booking group ID (integer) */
 				$refunded_bookings_txt .= sprintf( esc_html__( 'Booking group #%s', 'booking-activities' ), implode( ', ', $booking_group_ids ) );
 			}
 			
@@ -2675,6 +2681,7 @@ function bookacti_refund_selected_bookings_with_coupon( $selected_bookings, $ref
 		$return_data[ 'message' ] = '<span>' . sprintf( 
 			/* translators: %1$s = number of bookings refunded. E.g.: "2 bookings". %2$s = number of the coupons created, e.g.: "2 coupons".  */
 			esc_html( _n( '%1$s has been refunded with %2$s.', '%1$s have been refunded with %2$s.', $bookings_nb, 'booking-activities' ) ),
+			/* translators: %s is the number of bookings */
 			'<strong>' . sprintf( esc_html( _n( '%s booking', '%s bookings', $bookings_nb, 'booking-activities' ) ), $bookings_nb ) . '</strong>',
 			/* translators: %s = number of the coupon(s). */
 			'<strong>' . sprintf( esc_html( _n( '%s coupon', '%s coupons', $coupons_nb, 'booking-activities' ) ), $coupons_nb ) . '</strong>'
@@ -2754,7 +2761,7 @@ function bookacti_wc_is_coupon_code_valid( $coupon_code ) {
 /**
  * Refund selected bookings through the payment gateway (for supported gateways)
  * @since 1.16.0 (was bookacti_auto_refund_booking)
- * @version 1.16.48
+ * @version 1.19.7
  * @param array $selected_bookings
  * @param string $refund_message
  * @return array
@@ -2923,11 +2930,13 @@ function bookacti_refund_selected_bookings_with_gateway( $selected_bookings, $re
 			$refunded_bookings_txt = '';
 			if( $booking_ids ) {
 				$bookings_nb += count( $booking_ids );
+				/* translators: %s = Booking ID (integer) */
 				$refunded_bookings_txt .= sprintf( esc_html__( 'Booking #%s', 'booking-activities' ), implode( ', ', $booking_ids ) );
 			}
 			if( $booking_group_ids ) {
 				$bookings_nb += count( $booking_group_ids );
 				if( $refunded_bookings_txt ) { $refunded_bookings_txt .= '<br/>'; }
+				/* translators: %s = Booking group ID (integer) */
 				$refunded_bookings_txt .= sprintf( esc_html__( 'Booking group #%s', 'booking-activities' ), implode( ', ', $booking_group_ids ) );
 			}
 			
@@ -2937,6 +2946,7 @@ function bookacti_refund_selected_bookings_with_gateway( $selected_bookings, $re
 		$return_data[ 'message' ] = '<span>' . sprintf( 
 			/* translators: %1$s = number of bookings refunded. E.g.: "2 bookings". %2$s = number of the orders, e.g.: "2 orders".  */
 			esc_html( _n( '%1$s has been refunded in %2$s.', '%1$s have been refunded in %2$s.', $bookings_nb, 'booking-activities' ) ),
+			/* translators: %s is the number of bookings */
 			'<strong>' . sprintf( esc_html( _n( '%s booking', '%s bookings', $bookings_nb, 'booking-activities' ) ), $bookings_nb ) . '</strong>',
 			/* translators: %s = number of the orders. */
 			'<strong>' . sprintf( esc_html( _n( '%s order', '%s orders', $refunds_nb, 'booking-activities' ) ), $refunds_nb ) . '</strong>'
