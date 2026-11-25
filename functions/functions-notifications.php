@@ -7,6 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Get default notification type data
  * @since 1.18.0 (was bookacti_get_notifications_default_settings)
+ * @version 1.19.7
  * @return array
  */
 function bookacti_get_notifications_default_values() {
@@ -134,12 +135,20 @@ function bookacti_get_notifications_default_values() {
 			'trigger'     => 'pending_booking',
 			'status'      => 'permanent',
 			'active'      => 1,
-			/* translators: %s = a booking status. E.g.: "Pending", "Booked"... */
-			'title'       => sprintf( esc_html__( 'Booking status turns to "%s"', 'booking-activities' ), esc_html__( 'Pending', 'booking-activities' ) ),
-			/* translators: %s = a booking status. E.g.: "Pending", "Booked"... */
-			'description' => sprintf( esc_html__( 'This notification is sent to customers when one of their bookings becomes "%s".', 'booking-activities' ), esc_html__( 'Pending', 'booking-activities' ) ) 
-			/* translators: %s = a booking status. E.g.: "Pending", "Booked"... */
-						  . ' ' . sprintf( esc_html__( 'If you set the "Default booking status" option to "%s", this notification will be sent right after the booking is made.', 'booking-activities' ), esc_html__( 'Pending', 'booking-activities' ) ),
+			'title'       => sprintf(
+				/* translators: %s = a booking status. E.g.: "Pending", "Booked"... */
+				esc_html__( 'Booking status turns to "%s"', 'booking-activities' ), 
+				esc_html__( 'Pending', 'booking-activities' )
+			),
+			'description' => sprintf(
+				/* translators: %s = a booking status. E.g.: "Pending", "Booked"... */
+				esc_html__( 'This notification is sent to customers when one of their bookings becomes "%s".', 'booking-activities' ), 
+				esc_html__( 'Pending', 'booking-activities' )
+			) . ' ' . sprintf( 
+				/* translators: %s = a booking status. E.g.: "Pending", "Booked"... */
+				esc_html__( 'If you set the "Default booking status" option to "%s", this notification will be sent right after the booking is made.', 'booking-activities' ), 
+				esc_html__( 'Pending', 'booking-activities' ) 
+			),
 			'email'       => array(
 				'active'  => 1,
 				'to'      => array(),
@@ -155,9 +164,20 @@ function bookacti_get_notifications_default_values() {
 			'trigger'     => 'booked_booking',
 			'status'      => 'permanent',
 			'active'      => 1,
-			'title'       => sprintf( esc_html__( 'Booking status turns to "%s"', 'booking-activities' ), esc_html__( 'Booked', 'booking-activities' ) ),
-			'description' => sprintf( esc_html__( 'This notification is sent to customers when one of their bookings becomes "%s".', 'booking-activities' ), esc_html__( 'Booked', 'booking-activities' ) ) 
-						  . ' ' . sprintf( esc_html__( 'If you set the "Default booking status" option to "%s", this notification will be sent right after the booking is made.', 'booking-activities' ), esc_html__( 'Booked', 'booking-activities' ) ),
+			'title'       => sprintf(
+				/* translators: %s = a booking status. E.g.: "Pending", "Booked"... */
+				esc_html__( 'Booking status turns to "%s"', 'booking-activities' ), 
+				esc_html__( 'Booked', 'booking-activities' )
+			),
+			'description' => sprintf(
+				/* translators: %s = a booking status. E.g.: "Pending", "Booked"... */
+				esc_html__( 'This notification is sent to customers when one of their bookings becomes "%s".', 'booking-activities' ), 
+				esc_html__( 'Booked', 'booking-activities' )
+			) . ' ' . sprintf(
+				/* translators: %s = a booking status. E.g.: "Pending", "Booked"... */
+				esc_html__( 'If you set the "Default booking status" option to "%s", this notification will be sent right after the booking is made.', 'booking-activities' ), 
+				esc_html__( 'Booked', 'booking-activities' )
+			),
 			'email'       => array(
 				'active'  => 1,
 				'to'      => array(),
@@ -173,8 +193,16 @@ function bookacti_get_notifications_default_values() {
 			'trigger'     => 'delivered_booking',
 			'status'      => 'permanent',
 			'active'      => 1,
-			'title'       => sprintf( esc_html__( 'Booking status turns to "%s"', 'booking-activities' ), esc_html__( 'Delivered', 'booking-activities' ) ),
-			'description' => sprintf( esc_html__( 'This notification is sent to customers when one of their bookings becomes "%s".', 'booking-activities' ), esc_html__( 'Delivered', 'booking-activities' ) ),
+			'title'       => sprintf(
+				/* translators: %s = a booking status. E.g.: "Pending", "Booked"... */
+				esc_html__( 'Booking status turns to "%s"', 'booking-activities' ),
+				esc_html__( 'Delivered', 'booking-activities' )
+			),
+			'description' => sprintf(
+				/* translators: %s = a booking status. E.g.: "Pending", "Booked"... */
+				esc_html__( 'This notification is sent to customers when one of their bookings becomes "%s".', 'booking-activities' ),
+				esc_html__( 'Delivered', 'booking-activities' )
+			),
 			'email'       => array(
 				'active'  => 1,
 				'to'      => array(),
@@ -190,8 +218,16 @@ function bookacti_get_notifications_default_values() {
 			'trigger'     => 'cancelled_booking',
 			'status'      => 'permanent',
 			'active'      => 1,
-			'title'       => sprintf( esc_html__( 'Booking status turns to "%s"', 'booking-activities' ), esc_html__( 'Cancelled', 'booking-activities' ) ),
-			'description' => sprintf( esc_html__( 'This notification is sent to customers when one of their bookings becomes "%s".', 'booking-activities' ), esc_html__( 'Cancelled', 'booking-activities' ) ),
+			'title'       => sprintf(
+				/* translators: %s = a booking status. E.g.: "Pending", "Booked"... */
+				esc_html__( 'Booking status turns to "%s"', 'booking-activities' ),
+				esc_html__( 'Cancelled', 'booking-activities' )
+			),
+			'description' => sprintf(
+				/* translators: %s = a booking status. E.g.: "Pending", "Booked"... */
+				esc_html__( 'This notification is sent to customers when one of their bookings becomes "%s".', 'booking-activities' ),
+				esc_html__( 'Cancelled', 'booking-activities' )
+			),
 			'email'       => array(
 				'active'  => 1,
 				'to'      => array(),
@@ -207,8 +243,16 @@ function bookacti_get_notifications_default_values() {
 			'trigger'     => 'refund_requested_booking',
 			'status'      => 'permanent',
 			'active'      => 1,
-			'title'       => sprintf( esc_html__( 'Booking status turns to "%s"', 'booking-activities' ), esc_html__( 'Refund requested', 'booking-activities' ) ),
-			'description' => sprintf( esc_html__( 'This notification is sent to customers when one of their bookings becomes "%s".', 'booking-activities' ), esc_html__( 'Refund requested', 'booking-activities' ) ),
+			'title'       => sprintf(
+				/* translators: %s = a booking status. E.g.: "Pending", "Booked"... */
+				esc_html__( 'Booking status turns to "%s"', 'booking-activities' ),
+				esc_html__( 'Refund requested', 'booking-activities' )
+			),
+			'description' => sprintf(
+				/* translators: %s = a booking status. E.g.: "Pending", "Booked"... */
+				esc_html__( 'This notification is sent to customers when one of their bookings becomes "%s".', 'booking-activities' ),
+				esc_html__( 'Refund requested', 'booking-activities' )
+			),
 			'email'       => array(
 				'active'  => 1,
 				'to'      => array(),
@@ -224,8 +268,16 @@ function bookacti_get_notifications_default_values() {
 			'trigger'     => 'refunded_booking',
 			'status'      => 'permanent',
 			'active'      => 1,
-			'title'       => sprintf( esc_html__( 'Booking status turns to "%s"', 'booking-activities' ), esc_html__( 'Refunded', 'booking-activities' ) ),
-			'description' => sprintf( esc_html__( 'This notification is sent to customers when one of their bookings becomes "%s".', 'booking-activities' ), esc_html__( 'Refunded', 'booking-activities' ) ),
+			'title'       => sprintf(
+				/* translators: %s = a booking status. E.g.: "Pending", "Booked"... */
+				esc_html__( 'Booking status turns to "%s"', 'booking-activities' ),
+				esc_html__( 'Refunded', 'booking-activities' )
+			),
+			'description' => sprintf(
+				/* translators: %s = a booking status. E.g.: "Pending", "Booked"... */
+				esc_html__( 'This notification is sent to customers when one of their bookings becomes "%s".', 'booking-activities' ),
+				esc_html__( 'Refunded', 'booking-activities' )
+			),
 			'email'       => array(
 				'active'  => 1,
 				'to'      => array(),

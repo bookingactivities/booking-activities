@@ -442,7 +442,7 @@ add_filter( 'bookacti_group_category_redirect_url_table', 'bookacti_add_wc_colum
 /**
  * Search products for AJAX selectbox
  * @since 1.7.19
- * @version 1.16.18
+ * @version 1.19.7
  */
 function bookacti_controller_search_select2_products() {
 	// Check nonce
@@ -470,11 +470,11 @@ function bookacti_controller_search_select2_products() {
 			foreach( $product[ 'variations' ] as $variation_id => $variation ) {
 				$variation_title = $variation[ 'title' ] !== '' ? esc_html( apply_filters( 'bookacti_translate_text_external', $variation[ 'title' ], false, true, array( 'domain' => 'woocommerce', 'object_type' => 'product_variation', 'object_id' => $variation_id, 'field' => 'post_excerpt', 'product_id' => $product_id ) ) ) : $variation[ 'title' ];
 				$formatted_variation_title = trim( preg_replace( '/,[\s\S]+?:/', ',', ',' . $variation_title ), ', ' );
-				$children_options[] = array( 'id' => $variation_id, 'text' => $formatted_variation_title );
+				$children_options[] = array( 'id' => intval( $variation_id ), 'text' => esc_textarea( $formatted_variation_title ) );
 			}
-			$options[] = array( 'children' => $children_options, 'text' => $product_title );
+			$options[] = array( 'children' => $children_options, 'text' => esc_textarea( $product_title ) );
 		} else {
-			$options[] = array( 'id' => $product_id, 'text' => $product_title );
+			$options[] = array( 'id' => intval( $product_id ), 'text' => esc_textarea( $product_title ) );
 		}
 	}
 	

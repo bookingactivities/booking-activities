@@ -1552,7 +1552,7 @@ function bookacti_get_fullcalendar_fields_default_data( $fields = array() ) {
 /**
  * Check picked event / group of events availability
  * @since 1.15.6 (was bookacti_validate_booking_form)
- * @version 1.16.45
+ * @version 1.19.7
  * @param array $picked_events formatted with bookacti_format_picked_events with $one_entry_per_group = false
  * @param array $args {
  *  @type int $quantity Desired number of bookings
@@ -1751,10 +1751,11 @@ function bookacti_validate_picked_events( $picked_events, $args = array() ) {
 					/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or increase the quantity.' */
 					$message .= ' ' . sprintf( esc_html__( 'but the minimum number of reservations required per user is %1$s.', 'booking-activities' ), $min_quantity );
 				}
-				/* translators: %1$s is a variable quantity. */
-				$message .= $min_quantity - $quantity_already_booked > 0 ? ' ' . sprintf( esc_html__( 'Please choose another event or increase the quantity to %1$s.', 'booking-activities' ), $min_quantity - $quantity_already_booked ) : ' ' . esc_html__( 'Please choose another event.', 'booking-activities' );
+				/* translators: %s = quantity (integer). */
+				$message .= $min_quantity - $quantity_already_booked > 0 ? ' ' . sprintf( esc_html__( 'Please choose another event or increase the quantity to %s.', 'booking-activities' ), $min_quantity - $quantity_already_booked ) : ' ' . esc_html__( 'Please choose another event.', 'booking-activities' );
 			} else if( ! $is_qty_inf_to_max ) {
 				$error = 'qty_sup_to_max';
+				/* translators: %1$s is a variable number of bookings, %2$s is the event title. */
 				$message = sprintf( esc_html( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $args[ 'quantity' ], 'booking-activities' ) ), $args[ 'quantity' ], $title . ' (' . $dates . ')' );
 				if( $quantity_already_booked ) {
 					/* translators: %1$s and %2$s are variable numbers of bookings, always >= 1. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or decrease the quantity.' */
@@ -1763,16 +1764,18 @@ function bookacti_validate_picked_events( $picked_events, $args = array() ) {
 					/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or decrease the quantity.' */
 					$message .= ' ' . sprintf( esc_html__( 'but the maximum number of reservations allowed per user is %1$s.', 'booking-activities' ), $max_quantity );
 				}
-				/* translators: %1$s is a variable quantity. */
-				$message .= $max_quantity - $quantity_already_booked > 0  ? ' ' . sprintf( esc_html__( 'Please choose another event or decrease the quantity to %1$s.', 'booking-activities' ), $max_quantity - $quantity_already_booked ) : ' ' . esc_html__( 'Please choose another event.', 'booking-activities' );
+				/* translators: %s = quantity (integer). */
+				$message .= $max_quantity - $quantity_already_booked > 0  ? ' ' . sprintf( esc_html__( 'Please choose another event or decrease the quantity to %s.', 'booking-activities' ), $max_quantity - $quantity_already_booked ) : ' ' . esc_html__( 'Please choose another event.', 'booking-activities' );
 			} else if( ! $is_users_inf_to_max ) {
 				$error = 'users_sup_to_max';
 				/* translators: %s = The event title and dates. E.g.: The event "Basketball (Sep, 22nd - 3:00 PM to 6:00 PM)" has reached the maximum number of users allowed. */
 				$message = sprintf( esc_html__( 'The event "%s" has reached the maximum number of users allowed. Bookings from other users are no longer accepted. Please choose another event.', 'booking-activities' ), $title . ' (' . $dates . ')' );
 			} else if( ! $is_qty_inf_to_avail ) {
 				$error = 'qty_sup_to_avail';
+				/* translators: %1$s is a variable number of bookings, %2$s is the event title. */
 				$message = sprintf( esc_html( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $args[ 'quantity' ], 'booking-activities' ) ), $args[ 'quantity' ], $title . ' (' . $dates . ')' )
-				         . ' ' . sprintf( esc_html( _n( 'but only %1$s is available on this time slot.', 'but only %1$s are available on this time slot. ', $availability, 'booking-activities' ) ), $availability )
+				         /* translators: %s is the number of available places */
+				         . ' ' . sprintf( esc_html( _n( 'but only %s is available on this time slot.', 'but only %s are available on this time slot. ', $availability, 'booking-activities' ) ), $availability )
 				         . ' ' . esc_html__( 'Please choose another event or decrease the quantity.', 'booking-activities' );
 			} else if( ! $has_allowed_roles ) {
 				$error = 'role_not_allowed';
@@ -3937,7 +3940,7 @@ function bookacti_is_date_in_days_off( $date, $days_off ) {
 /**
  * Build a user-friendly events list
  * @since 1.1.0
- * @version 1.14.0
+ * @version 1.19.7
  * @param array $booking_events
  * @param boolean $show_quantity
  * @return string
@@ -3949,8 +3952,8 @@ function bookacti_get_formatted_booking_events_list( $booking_events, $show_quan
 	$formatted_events = array();
 	foreach( $booking_events as $booking_event ) {
 		$formatted_events[] = array( 
-			/* translators: %d = the booking group ID */
-			'group_title' => ! empty( $booking_event->group_title ) ? apply_filters( 'bookacti_translate_text', $booking_event->group_title ) : ( isset( $booking_event->group_id ) ? sprintf( esc_html__( 'Booking group #%d', 'booking-activities' ), $booking_event->group_id ) : '' ),
+			/* translators: %s = Booking group ID (integer) */
+			'group_title' => ! empty( $booking_event->group_title ) ? apply_filters( 'bookacti_translate_text', $booking_event->group_title ) : ( isset( $booking_event->group_id ) ? sprintf( esc_html__( 'Booking group #%s', 'booking-activities' ), $booking_event->group_id ) : '' ),
 			'title'       => isset( $booking_event->title ) ? $booking_event->title : ( isset( $booking_event->event_title ) ? $booking_event->event_title : '' ),
 			'start'       => isset( $booking_event->start ) ? bookacti_sanitize_datetime( $booking_event->start ) : ( isset( $booking_event->event_start ) ? bookacti_sanitize_datetime( $booking_event->event_start ) : '' ),
 			'end'         => isset( $booking_event->end ) ? bookacti_sanitize_datetime( $booking_event->end ) : ( isset( $booking_event->event_end ) ? bookacti_sanitize_datetime( $booking_event->event_end ) : '' ),
@@ -4062,7 +4065,7 @@ function bookacti_get_formatted_event_dates( $start, $end, $html = true ) {
 /**
  * Build a user-friendly comma separated events list
  * @since 1.7.0
- * @version 1.14.0
+ * @version 1.19.7
  * @param array $booking_events
  * @param boolean $show_quantity
  * @return string
@@ -4073,8 +4076,9 @@ function bookacti_get_formatted_booking_events_list_raw( $booking_events, $show_
 	// Format $events
 	$formatted_events = array();
 	foreach( $booking_events as $booking_event ) {
-		$formatted_events[] = array( 
-			'group_title' => ! empty( $booking_event->group_title ) ? apply_filters( 'bookacti_translate_text', $booking_event->group_title ) : ( isset( $booking_event->group_id ) ? sprintf( esc_html__( 'Booking group #%d', 'booking-activities' ), $booking_event->group_id ) : '' ),
+		$formatted_events[] = array(
+			/* translators: %s = Booking group ID (integer) */
+			'group_title' => ! empty( $booking_event->group_title ) ? apply_filters( 'bookacti_translate_text', $booking_event->group_title ) : ( isset( $booking_event->group_id ) ? sprintf( esc_html__( 'Booking group #%s', 'booking-activities' ), $booking_event->group_id ) : '' ),
 			'title'       => isset( $booking_event->title )    ? $booking_event->title : ( isset( $booking_event->event_title ) ? $booking_event->event_title : '' ),
 			'start'       => isset( $booking_event->start )    ? bookacti_sanitize_datetime( $booking_event->start ) : ( isset( $booking_event->event_start ) ? bookacti_sanitize_datetime( $booking_event->event_start ) : '' ),
 			'end'         => isset( $booking_event->end )      ? bookacti_sanitize_datetime( $booking_event->end )   : ( isset( $booking_event->event_end ) ? bookacti_sanitize_datetime( $booking_event->event_end ) : '' ),

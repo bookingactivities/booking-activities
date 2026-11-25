@@ -864,7 +864,7 @@ add_action( 'wp_ajax_nopriv_bookactiGetRescheduleBookingSystemData', 'bookacti_c
 /**
  * AJAX Controller - Reschedule bookings
  * @since 1.16.0
- * @version 1.16.44
+ * @version 1.19.7
  */
 function bookacti_controller_reschedule_bookings() {
 	// Check nonce
@@ -921,6 +921,7 @@ function bookacti_controller_reschedule_bookings() {
 		$validated = bookacti_validate_picked_events( $picked_events, $reschedule_form_values );
 
 		if( $validated[ 'status' ] !== 'success' ) {
+			/* translators: %s = Booking ID (integer) */
 			$message_prefix = count( $bookings ) > 1 ? sprintf( esc_html__( 'Booking #%s', 'booking-activities' ), $booking_id ) . ': ' : '';
 			$messages = ! empty( $validated[ 'message' ] ) ? array( $validated[ 'message' ] ) : array();
 			foreach( $validated[ 'messages' ] as $error => $error_messages ) {

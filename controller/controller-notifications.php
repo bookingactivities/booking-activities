@@ -234,6 +234,7 @@ function bookacti_display_notifications_screen_options() {
 /**
  * Add notification edit page meta boxes
  * @since 1.18.0
+ * @version 1.19.7
  */
 function bookacti_notification_editor_meta_boxes() {
 	if( empty( $_REQUEST[ 'action' ] ) || ! in_array( $_REQUEST[ 'action' ], array( 'edit', 'new' ), true ) ) { return; }
@@ -243,7 +244,7 @@ function bookacti_notification_editor_meta_boxes() {
 	add_meta_box( 'bookacti_notification_email', esc_html__( 'Email', 'booking-activities' ), 'bookacti_display_notification_email_meta_box', 'booking-activities_page_bookacti_notifications', 'normal', 'default' );
 	
 	// Sidebar
-	add_meta_box( 'bookacti_notification_publish', esc_html__( 'Publish' ), 'bookacti_display_notification_publish_meta_box', 'booking-activities_page_bookacti_notifications', 'side', 'high' );
+	add_meta_box( 'bookacti_notification_publish', esc_html__( 'Publish', 'default' ), 'bookacti_display_notification_publish_meta_box', 'booking-activities_page_bookacti_notifications', 'side', 'high' );
 	add_meta_box( 'bookacti_notification_managers', esc_html__( 'Managers', 'booking-activities' ), 'bookacti_display_notification_managers_meta_box', 'booking-activities_page_bookacti_notifications', 'side', 'default' );
 	add_meta_box( 'bookacti_notification_tags', esc_html__( 'Tags', 'booking-activities' ), 'bookacti_display_notification_tags_meta_box', 'booking-activities_page_bookacti_notifications', 'side', 'default' );
 }
@@ -277,6 +278,7 @@ add_action( 'admin_footer-booking-activities_page_bookacti_notifications', 'book
 /**
  * Display 'Publish' metabox content in notification edit page
  * @since 1.18.0
+ * @version 1.19.7
  * @param array $notification_edit
  */
 function bookacti_display_notification_publish_meta_box( $notification_edit ) {
@@ -289,7 +291,7 @@ function bookacti_display_notification_publish_meta_box( $notification_edit ) {
 			?>
 			<div id='publishing-action'>
 				<span class='spinner'></span>
-				<input id='bookacti-save-notification-button' name='save' type='submit' class='button button-primary button-large' id='publish' value='<?php echo $is_new || $notification_edit[ 'status' ] === 'trash' ? esc_attr__( 'Publish' ) : esc_attr__( 'Update' ); ?>'/>
+				<input id='bookacti-save-notification-button' name='save' type='submit' class='button button-primary button-large' id='publish' value='<?php echo $is_new || $notification_edit[ 'status' ] === 'trash' ? esc_attr__( 'Publish', 'default' ) : esc_attr__( 'Update', 'default' ); ?>'/>
 			</div>
 			<div class='clear'></div>
 		</div>
@@ -301,6 +303,7 @@ function bookacti_display_notification_publish_meta_box( $notification_edit ) {
 /**
  * Display 'Managers' metabox content in notification edit page
  * @since 1.18.0
+ * @version 1.19.7
  * @param array $notification_edit
  */
 function bookacti_display_notification_managers_meta_box( $notification_edit ) {
@@ -325,9 +328,12 @@ function bookacti_display_notification_managers_meta_box( $notification_edit ) {
 		),
 		'title'     => esc_html__( 'Who can manage this notification?', 'booking-activities' ),
 		'tip'       => esc_html__( 'Choose who is allowed to access this notification.', 'booking-activities' )
+					/* translators: %s = comma separated list of user roles */
 					. '<br/>' . sprintf( esc_html__( 'These roles already have this privilege: %s.', 'booking-activities' ), '<code>' . implode( '</code>, <code>', array_intersect_key( bookacti_get_roles(), array_flip( $role_not_in ) ) ) . '</code>' )
+					/* translators: %s = capabilities name */
 					. '<br/>' . sprintf( esc_html__( 'If the selectbox is empty, it means that no other users have these capabilities: %s.', 'booking-activities' ), '<code>' . implode( '</code>, <code>', $capabilities ) . '</code>' )
-					. ' ' . sprintf( esc_html__( 'If you want to grant a user these capabilities, use a plugin such as %1$s.', 'booking-activities' ), '<a href="https://wordpress.org/plugins/user-role-editor/" target="_blank" >User Role Editor</a>' )
+					/* translators: %s = User Role Editor plugin link. */
+					. ' ' . sprintf( esc_html__( 'If you want to grant a user these capabilities, use a plugin such as %s.', 'booking-activities' ), '<a href="https://wordpress.org/plugins/user-role-editor/" target="_blank" >User Role Editor</a>' )
 	) );
 	bookacti_display_fields( $fields );
 }

@@ -3,7 +3,7 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
 Tested up to: 7.2
-Stable tag: 1.19.6
+Stable tag: 1.19.7
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -141,13 +141,13 @@ Then feel free to tell us if you miss a feature, if you find a bug or anything t
 
 * [Documentation](https://booking-activities.fr/en/documentation/user-documentation/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)
 * [Report a bug / Request a feature](https://github.com/bookingactivities/booking-activities/issues/)
-* Report security issues at contact@booking-activities.fr
+* Report security issues on [Patchstack](https://patchstack.com/database/vdp/07216456-bb96-4bb7-acfb-f5b6fd8a8790) or at contact@booking-activities.fr (this email is reliable for security issues)
 * [Contact us](https://booking-activities.fr/en/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme#contact) at contact@booking-activities.fr (French and English)
 
 
 = Requirements =
 
-* **WordPress**: 3.6 or later
+* **WordPress**: 5.9 or later
 * **PHP**: 5.6 or later
 * **MySQL**: 5.7.22 or later (or MariaDB 10.5.4 or later)
 * **WooCommerce**: 3.x or later
@@ -288,10 +288,12 @@ If you enabled the "Asynchronous email" option in Booking Activities settings ("
 Then, you only need to refresh or visit any page of your website and then check your inbox.
 If you disable the "Asynchronous email" option, then the loading will last until the email is actually sent.
 
+= Where do I report security bugs found in this plugin? =
+Please report security bugs found in the source code of the Booking Activities plugin through the [Patchstack Vulnerability Disclosure Program](https://patchstack.com/database/vdp/07216456-bb96-4bb7-acfb-f5b6fd8a8790). The Patchstack team will assist you with verification, CVE assignment, and notify the developers of this plugin.
 
 = Ask for support = 
 **We answer within 48h**. You can contact us in many ways:
-- By email at [contact@booking-activities.fr](mailto:contact@booking-activities.fr)
+- By email at [contact@booking-activities.fr](mailto:contact@booking-activities.fr) (this email is also reliable for security issues)
 - On [WordPress support forum](https://wordpress.org/support/plugin/booking-activities)
 - On [GitHub issue tracker](https://github.com/bookingactivities/booking-activities/issues/)
 
@@ -321,6 +323,13 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.19.7 - 2026/11/25 =
+* Tweak - Fix some Plugin Check Plugin errors (WIP)
+* Fix - Prevent inactive / trashed booking forms from being displayed
+* Fix - Security: fix security issue with user selectbox (bis) (thanks Bradley Street)
+* Fix - Security: no longer reassign guest bookings to the account having the same email address when it is created (thanks Vũ Đức Hậu)
+* Dev - Add nonce for bookactiSubmitLoginForm, bookactiSubmitBookingForm, bookactiForgottenPassword actions
 
 = 1.19.6 - 2026/11/24 =
 * Fix - Events from deleted activities may not be displayed on booking forms

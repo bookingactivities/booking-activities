@@ -399,6 +399,7 @@ function bookacti_qtranxf_restore_locale() {
 /**
  * TEMP BUG FIX #52695 https://core.trac.wordpress.org/ticket/52695
  * @since 1.15.0
+ * @version 1.19.7
  * @global WP_Locale $wp_locale
  */
 function bookacti_wp_moment_updateLocale_temp_fix() {
@@ -443,11 +444,11 @@ function bookacti_wp_moment_updateLocale_temp_fix() {
 					'dow'            => (int) get_option( 'start_of_week', 0 ),
 					'meridiem'       => (object) $wp_locale->meridiem,
 					'longDateFormat' => array(
-						'LT'   => bookacti_convert_php_datetime_format_to_moment_js( get_option( 'time_format', __( 'g:i a' ) ) ),
+						'LT'   => bookacti_convert_php_datetime_format_to_moment_js( get_option( 'time_format', __( 'g:i a', 'default' ) ) ),
 						'LTS'  => null,
 						'L'    => null,
-						'LL'   => bookacti_convert_php_datetime_format_to_moment_js( get_option( 'date_format', __( 'F j, Y' ) ) ),
-						'LLL'  => bookacti_convert_php_datetime_format_to_moment_js( __( 'F j, Y g:i a' ) ),
+						'LL'   => bookacti_convert_php_datetime_format_to_moment_js( get_option( 'date_format', __( 'F j, Y', 'default' ) ) ),
+						'LLL'  => bookacti_convert_php_datetime_format_to_moment_js( __( 'F j, Y g:i a', 'default' ) ),
 						'LLLL' => null,
 					),
 				)

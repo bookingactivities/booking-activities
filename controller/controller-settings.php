@@ -405,7 +405,7 @@ add_filter( 'set-screen-option', 'bookacti_save_screen_options', 10, 3 );
 /**
  * Display messages fields
  * @since 1.2.0
- * @version 1.14.0
+ * @version 1.19.7
  */
 function bookacti_display_messages_fields() {
 	$messages = bookacti_get_messages( true );
@@ -414,9 +414,9 @@ function bookacti_display_messages_fields() {
 		<div class='bookacti-message-setting'>
 			<em><?php echo $message[ 'description' ] ?></em><br/>
 			<?php if( isset( $message[ 'input_type' ] ) && $message[ 'input_type' ] === 'textarea' ) { ?>
-				<textarea id='bookacti_messages_settings_<?php echo $message_id; ?>' class='bookacti-translatable' name='bookacti_messages_settings[<?php echo $message_id; ?>]'><?php echo esc_textarea( $message[ 'value' ] ); ?></textarea>
+				<textarea id='bookacti_messages_settings_<?php echo esc_attr( $message_id ); ?>' class='bookacti-translatable' name='bookacti_messages_settings[<?php echo esc_attr( $message_id ); ?>]'><?php echo esc_textarea( $message[ 'value' ] ); ?></textarea>
 			<?php } else { ?>
-				<input type='text' id='bookacti_messages_settings_<?php echo $message_id; ?>' class='bookacti-translatable' name='bookacti_messages_settings[<?php echo $message_id; ?>]' value='<?php esc_attr_e( $message[ 'value' ] ); ?>' />
+				<input type='text' id='bookacti_messages_settings_<?php echo esc_attr( $message_id ); ?>' class='bookacti-translatable' name='bookacti_messages_settings[<?php echo esc_attr( $message_id ); ?>]' value='<?php echo esc_attr( $message[ 'value' ] ); ?>'/>
 			<?php } ?>
 		</div>
 <?php
@@ -732,7 +732,7 @@ add_filter( 'editable_extensions', 'bookacti_add_editable_extensions', 10, 2 );
 /**
  * Search users for AJAX selectbox
  * @since 1.7.19
- * @version 1.16.0
+ * @version 1.19.7
  */
 function bookacti_controller_search_select2_users() {
 	// Check nonce
@@ -786,20 +786,31 @@ function bookacti_controller_search_select2_users() {
 
 			// Display the value if the key exists, else display the key as is, as a separator
 			if( isset( $user->{ $show } ) ) {
-				$label .= $user->{ $show };
+				$value = is_serialized( $user->{ $show } ) ? unserialize( trim( $user->{ $show } ), array( 'allowed_classes' => false ) ) : $user->{ $show };
+				if( gettype( $value ) === 'object' ) { continue; }
+
+				$label .= is_array( $value ) ? implode( ',', $value ) : $value;
 			} else {
 				$label .= $show;
 			}
 		}
-		$options[] = array( 'id' => $user->ID, 'text' => esc_html( $label ) );
+		$options[] = array( 
+			'id'   => $user->ID, 
+			'text' => esc_textarea( $label ) // use esc_textarea instead of esc_html because we need double encoding
+		);
 	}
 	
 	// Retrieve user emails from bookings made without accounts
 	if( $no_account && $term ) {
 		$bookings = bookacti_get_bookings_without_account( array( 'emails' => array( $term ), 'like' => true, 'distinct' => true ) );
-		$booking_emails = array();
 		foreach( $bookings as $booking ) {
-			$options[] = array( 'id' => esc_attr( $booking->user_id ), 'text' => esc_html( $booking->user_id ) );
+			$booking_user_email = sanitize_email( $booking->user_id );
+			if( ! $booking_user_email ) { continue; }
+			
+			$options[] = array(
+				'id'   => $booking_user_email,
+				'text' => esc_html( $booking_user_email )
+			);
 		}
 	}
 	

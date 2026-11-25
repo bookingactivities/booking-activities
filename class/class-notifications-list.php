@@ -11,7 +11,7 @@ if( ! class_exists( 'BOOKACTI_Notifications_List_Table' ) ) {
 	/**
 	 * Notifications WP_List_Table
 	 * @since 1.18.0
-	 * @version 1.18.2
+	 * @version 1.19.7
 	 */
 	class BOOKACTI_Notifications_List_Table extends WP_List_Table {
 		
@@ -199,6 +199,7 @@ if( ! class_exists( 'BOOKACTI_Notifications_List_Table' ) ) {
 		/**
 		 * Fill the checbox column
 		 * @since 1.18.0
+		 * @version 1.19.7
 		 * @access public
 		 * @param array $item
 		 * @return string
@@ -209,7 +210,13 @@ if( ! class_exists( 'BOOKACTI_Notifications_List_Table' ) ) {
 				<input id='cb-select-<?php echo esc_attr( $item[ 'id' ] ); ?>' type='checkbox' name='notification_db_ids[]' value='<?php echo esc_attr( $item[ 'id' ] ); ?>'/>
 				<label for='cb-select-<?php echo esc_attr( $item[ 'id' ] ); ?>'>
 					<span class='screen-reader-text'>
-						<?php printf( __( 'Select %s' ), esc_html__( 'Notification', 'booking-activities' ) ); ?>
+					<?php 
+						printf(
+							/* translators: Hidden accessibility text. %s: Taxonomy term name. */
+							__( 'Select %s', 'default' ),
+							esc_html__( 'Notification', 'booking-activities' )
+						);
+					?>
 					</span>
 				</label>
 			<?php
@@ -219,6 +226,7 @@ if( ! class_exists( 'BOOKACTI_Notifications_List_Table' ) ) {
 		/**
 		 * Fill "Title" column and add action buttons
 		 * @since 1.18.0
+		 * @version 1.19.7
 		 * @access public
 		 * @param array $item
 		 * @return string
@@ -229,7 +237,7 @@ if( ! class_exists( 'BOOKACTI_Notifications_List_Table' ) ) {
 			
 			if( current_user_can( 'bookacti_edit_notifications' ) ) {
 				if( in_array( $item[ 'status' ], array( 'permanent', 'publish' ), true ) ) {
-					$actions[ 'edit' ] = '<a href="' . esc_url( admin_url( 'admin.php?page=bookacti_notifications&action=edit&notification_id=' . $notification_id ) ) . '" >' . esc_html__( 'Edit' ) . '</a>';
+					$actions[ 'edit' ] = '<a href="' . esc_url( admin_url( 'admin.php?page=bookacti_notifications&action=edit&notification_id=' . $notification_id ) ) . '" >' . esc_html__( 'Edit', 'default' ) . '</a>';
 				}
 			}
 			
@@ -457,11 +465,11 @@ if( ! class_exists( 'BOOKACTI_Notifications_List_Table' ) ) {
 		/**
 		 * Message to be displayed when there are no items
 		 * @since 1.18.0
-		 * @version 1.18.1
+		 * @version 1.19.7
 		 * @access public
 		 */
 		function no_items() {
-			_e( 'No items found.' );
+			_e( 'No items found.', 'default' );
 		}
 		
 		
@@ -496,6 +504,7 @@ if( ! class_exists( 'BOOKACTI_Notifications_List_Table' ) ) {
 		/**
 		 * Get an associative array ( id => link ) with the list of views available on this table
 		 * @since 1.18.0
+		 * @version 1.19.7
 		 * @access protected
 		 * @return array
 		 */
@@ -515,8 +524,8 @@ if( ! class_exists( 'BOOKACTI_Notifications_List_Table' ) ) {
 			$trash_count     = bookacti_get_number_of_notification_rows( $trash_filter );
 			
 			return array(
-				'published' => '<a href="' . esc_url( remove_query_arg( array( 'action', 'in__status' ) ) ) . '" class="' . $published_current . '" >' . esc_html__( 'Published' ) . ' <span class="count">(' . $published_count . ')</span></a>',
-				'trash'     => '<a href="' . esc_url( add_query_arg( array( 'in__status' => 'trash' ), remove_query_arg( array( 'action' ) ) ) ) . '" class="' . $trash_current . '" >' . esc_html_x( 'Trash', 'noun' ) . ' <span class="count">(' . $trash_count . ')</span></a>'
+				'published' => '<a href="' . esc_url( remove_query_arg( array( 'action', 'in__status' ) ) ) . '" class="' . $published_current . '" >' . esc_html__( 'Published', 'default' ) . ' <span class="count">(' . $published_count . ')</span></a>',
+				'trash'     => '<a href="' . esc_url( add_query_arg( array( 'in__status' => 'trash' ), remove_query_arg( array( 'action' ) ) ) ) . '" class="' . $trash_current . '" >' . esc_html_x( 'Trash', 'noun', 'default' ) . ' <span class="count">(' . $trash_count . ')</span></a>'
 			);
 		}
 		
