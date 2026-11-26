@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Display the form field 'calendar'
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.19.8
  * @param array $field
  * @param string $instance_id
  * @param string $context
@@ -26,7 +26,7 @@ function bookacti_display_form_field_calendar( $field, $instance_id, $context ) 
 	$booking_system_atts = bookacti_get_calendar_field_booking_system_attributes( $field );
 	
 	// Display the booking system
-	echo bookacti_get_booking_system( $booking_system_atts );
+	echo bookacti_get_booking_system( $booking_system_atts ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 }
 add_action( 'bookacti_display_form_field_calendar', 'bookacti_display_form_field_calendar', 10, 3 );
 
@@ -34,7 +34,7 @@ add_action( 'bookacti_display_form_field_calendar', 'bookacti_display_form_field
 /**
  * Display the form field 'login'
  * @since 1.5.0
- * @version 1.16.45
+ * @version 1.19.8
  * @param string $html
  * @param array $field
  * @param string $instance_id
@@ -54,7 +54,7 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 	
 	ob_start();
 	?>
-	<div class='<?php echo esc_attr( $field_class ); ?> bookacti-user-is-not-logged-in' id='<?php echo esc_attr( $field_id ); ?>' <?php echo trim( $field_css_data ); ?>>
+	<div class='<?php echo esc_attr( $field_class ); ?> bookacti-user-is-not-logged-in' id='<?php echo esc_attr( $field_id ); ?>' <?php echo trim( $field_css_data ); /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?>>
 	<?php
 		// Display login types
 		$login_types = bookacti_get_login_type_field_default_options();
@@ -66,7 +66,7 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 		if( $login_types ) {
 			$login_types_class = count( $login_types ) === 1 ? 'bookacti-login-types-hidden' : '';
 		?>
-			<div class='bookacti-form-field-login-field-container bookacti-login-field-login-type bookacti-custom-radio-button-container <?php echo $login_types_class; ?>' data-field-name='login_type'>
+			<div class='bookacti-form-field-login-field-container bookacti-login-field-login-type bookacti-custom-radio-button-container <?php echo esc_attr( $login_types_class ); ?>' data-field-name='login_type'>
 		<?php
 			// Set the default login type on the first available by default
 			reset( $login_types );
@@ -77,9 +77,9 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 			foreach( $login_types as $login_type_name => $login_type ) {
 				if( empty( $field[ 'displayed_fields' ][ $login_type_name ] ) ) { continue; }
 				?>
-				<div class='bookacti-login-type-container bookacti-custom-radio-button bookacti-login-type-<?php echo $login_type_name; ?>' data-separator='<?php echo esc_html_x( 'or', 'separator between different options', 'booking-activities' ); ?>'>
-					<input type='radio' name='login_type' value='<?php echo $login_type_name; ?>' id='bookacti-<?php echo $instance_id; ?>-login-type-<?php echo $login_type_name; ?>' required <?php checked( $default_login_type, $login_type_name, true ); ?>/>
-					<label for='bookacti-<?php echo $instance_id; ?>-login-type-<?php echo $login_type_name; ?>' 
+				<div class='bookacti-login-type-container bookacti-custom-radio-button bookacti-login-type-<?php echo esc_attr( $login_type_name ); ?>' data-separator='<?php echo esc_html_x( 'or', 'separator between different options', 'booking-activities' ); ?>'>
+					<input type='radio' name='login_type' value='<?php echo esc_attr( $login_type_name ); ?>' id='<?php echo esc_attr( 'bookacti-' . $instance_id . '-login-type-' . $login_type_name ); ?>' required <?php checked( $default_login_type, $login_type_name, true ); ?>/>
+					<label for='<?php echo esc_attr( 'bookacti-' . $instance_id . '-login-type-' . $login_type_name ); ?>' 
 						<?php
 							if( ! empty( $field[ 'tip' ][ $login_type_name ] ) ) {
 								echo 'class="bookacti-tip" data-tip="' . esc_attr( $field[ 'tip' ][ $login_type_name ] ) . '"';
@@ -87,7 +87,7 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 						?>   
 					>
 					<?php
-						echo $field[ 'label' ][ $login_type_name ];
+						echo esc_html( $field[ 'label' ][ $login_type_name ] );
 					?>
 					</label>
 				</div>
@@ -153,7 +153,7 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 							?>
 							<div class='bookacti-password-strength' style='display:none;'>
 								<span class='bookacti-password-strength-meter'></span>
-								<input type='hidden' name='password_strength' class='bookacti-password_strength' value='0' min='<?php echo $field[ 'min_password_strength' ]; ?>' />
+								<input type='hidden' name='password_strength' class='bookacti-password_strength' value='0' min='<?php echo esc_attr( $field[ 'min_password_strength' ] ); ?>' />
 							</div>
 							<?php
 						}
@@ -162,7 +162,7 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 							$forgotten_password_url = esc_attr( $field[ 'placeholder' ][ 'forgotten_password' ] );
 						?>
 							<div class='bookacti-forgotten-password' >
-								<a href='<?php echo $forgotten_password_url ? $forgotten_password_url : '#'; ?>' class='bookacti-forgotten-password-link' data-field-id='<?php echo esc_attr( $field_id ); ?>'><?php echo esc_html( $field[ 'label' ][ 'forgotten_password' ] ); ?></a>
+								<a href='<?php echo esc_attr( $forgotten_password_url ? $forgotten_password_url : '#' ); ?>' class='bookacti-forgotten-password-link' data-field-id='<?php echo esc_attr( $field_id ); ?>'><?php echo esc_html( $field[ 'label' ][ 'forgotten_password' ] ); ?></a>
 							<?php
 								if( ! empty( $field[ 'tip' ][ 'forgotten_password' ] ) ) {
 									bookacti_help_tip( esc_html( $field[ 'tip' ][ 'forgotten_password' ] ) );
@@ -174,7 +174,7 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 								<div class='bookacti-forgotten-password-dialog-description' >
 									<p>
 									<?php
-										echo apply_filters( 'bookacti_forgotten_password_description', esc_html__( 'Please enter your email address. You will receive a link to create a new password via email.', 'booking-activities' ), $field, $instance_id, $context );
+										echo apply_filters( 'bookacti_forgotten_password_description', esc_html__( 'Please enter your email address. You will receive a link to create a new password via email.', 'booking-activities' ), $field, $instance_id, $context ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 									?>
 									</p>
 								</div>
@@ -243,7 +243,7 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 
 						foreach( $register_fields as $register_field_name => $register_field ) {
 							if( ! empty( $field[ 'displayed_fields' ][ $register_field_name ] ) ) { ?>
-								<div class='bookacti-form-field-login-field-container bookacti-login-field-<?php echo $register_field_name; ?>' id='<?php echo esc_attr( $field_id . '-' . $register_field_name . '-container' ); ?>' data-field-name='<?php echo esc_attr( $register_field_name ); ?>' data-field-type='<?php echo esc_attr( $register_field[ 'type' ] ); ?>'>
+								<div class='bookacti-form-field-login-field-container bookacti-login-field-<?php echo esc_attr( $register_field_name ); ?>' id='<?php echo esc_attr( $field_id . '-' . $register_field_name . '-container' ); ?>' data-field-name='<?php echo esc_attr( $register_field_name ); ?>' data-field-type='<?php echo esc_attr( $register_field[ 'type' ] ); ?>'>
 									<?php if( $register_field[ 'type' ] !== 'checkbox' ) { ?>
 										<div class='bookacti-form-field-label' >
 											<label for='<?php echo esc_attr( $field_id . '-' . $register_field_name ); ?>' >
@@ -309,7 +309,7 @@ add_filter( 'bookacti_html_form_field_login', 'bookacti_display_form_field_login
 /**
  * Display the form field "Login / Registration" when the user is already logged in
  * @since 1.5.0
- * @version 1.13.0
+ * @version 1.19.8
  * @param string $html
  * @param array $field
  * @param string $instance_id
@@ -333,16 +333,20 @@ function bookacti_display_form_field_login_when_logged_in( $html, $field, $insta
 	if( ! empty( $field[ 'class' ] ) )    { $field_class .= ' ' . esc_attr( $field[ 'class' ] ); }
 	ob_start();
 	?>
-	<div class='<?php echo $field_class; ?> bookacti-user-is-logged-in' id='<?php echo $field_id; ?>' <?php echo trim( $field_css_data ); ?>>
-		<div class='bookacti-form-field-login-field-container bookacti-login-field-log-out' id='<?php echo $field_id; ?>-email-container' >
+	<div class='<?php echo esc_attr( $field_class ); ?> bookacti-user-is-logged-in' id='<?php echo esc_attr( $field_id ); ?>' <?php echo trim( $field_css_data ); /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?>>
+		<div class='bookacti-form-field-login-field-container bookacti-login-field-log-out' id='<?php echo esc_attr( $field_id . '-email-container' ); ?>' >
 			<div class='bookacti-logout-form-field-container'>
 				<span>
-					<?php 
-					/* translators: %1$s = user name. %2$s = user email address */
-					echo sprintf( esc_html__( 'You are currently logged in as %1$s (%2$s).', 'booking-activities' ), $user->display_name, $user->user_email );
-					?>
+				<?php 
+					echo esc_html( sprintf( 
+						/* translators: %1$s = user name. %2$s = user email address */
+						__( 'You are currently logged in as %1$s (%2$s).', 'booking-activities' ), 
+						$user->display_name, 
+						$user->user_email
+					) );
+				?>
 				</span>
-				<a href='<?php echo wp_logout_url( apply_filters( 'bookacti_logout_redirect_url', get_permalink(), $field, $instance_id, $context ) ); ?>' class='bookacti-logout-link'>
+				<a href='<?php echo esc_url( wp_logout_url( apply_filters( 'bookacti_logout_redirect_url', get_permalink(), $field, $instance_id, $context ) ) ); ?>' class='bookacti-logout-link'>
 					<?php esc_html_e( 'Click here to log out.', 'booking-activities' ); ?>
 				</a>
 			</div>
@@ -380,7 +384,7 @@ add_action( 'bookacti_display_form_field_quantity', 'bookacti_display_form_field
 /**
  * Display the form field 'checkbox'
  * @since 1.5.2
- * @version 1.14.0
+ * @version 1.19.8
  * @param string $html
  * @param array $field
  * @param string $instance_id
@@ -409,7 +413,7 @@ function bookacti_display_form_field_checkbox( $html, $field, $instance_id, $con
 	
 	ob_start();
 	?>
-	<div class='<?php echo $field_class; ?>' id='<?php echo $field_id; ?>' <?php echo trim( $field_css_data ); ?>>
+	<div class='<?php echo esc_attr( $field_class ); ?>' id='<?php echo esc_attr( $field_id ); ?>' <?php echo trim( $field_css_data ); /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?>>
 		<div class='bookacti-form-field-checkbox-field-container bookacti-form-field-content' >
 			<div class='bookacti-form-field-checkbox-input' >
 				<input type='hidden' name='<?php echo esc_attr( $args[ 'name' ] ); ?>' value='0'/>
@@ -418,14 +422,14 @@ function bookacti_display_form_field_checkbox( $html, $field, $instance_id, $con
 					   id='<?php echo esc_attr( $args[ 'id' ] ); ?>'
 					   class='<?php echo esc_attr( $args[ 'class' ] ); ?>'
 					   value='1'
-					   <?php if( $args[ 'attr' ] )        { echo $args[ 'attr' ]; } ?>
+					   <?php if( $args[ 'attr' ] )        { echo $args[ 'attr' ]; /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ } ?>
 					   <?php if( $args[ 'required' ] )    { echo 'required'; } ?>
 					   <?php if( $args[ 'value' ] === 1 ) { echo 'checked'; } ?> />
 			</div>
 			<div class='bookacti-form-field-checkbox-label' >
 				<label for='<?php echo esc_attr( $args[ 'id' ] ); ?>' >
 				<?php
-					echo $field[ 'label' ];
+					echo wp_kses_post( $field[ 'label' ] );
 					if( $args[ 'required' ] ) {
 						echo '<span class="bookacti-required-field-indicator" title="' . esc_attr__( 'Required field', 'booking-activities' ) . '"></span>';
 					}
@@ -445,7 +449,7 @@ add_filter( 'bookacti_html_form_field_checkbox', 'bookacti_display_form_field_ch
 /**
  * Display the form field 'submit'
  * @since 1.5.0
- * @version 1.14.0
+ * @version 1.19.8
  * @param string $html
  * @param array $field
  * @param string $instance_id
@@ -462,9 +466,9 @@ function bookacti_display_form_field_submit( $html, $field, $instance_id, $conte
 	if( ! empty( $field[ 'class' ] ) )    { $field_class .= ' ' . esc_attr( $field[ 'class' ] ); }
 	ob_start();
 	?>
-	<div class='<?php echo $field_class; ?>' id='<?php echo $field_id; ?>' <?php echo trim( $field_css_data ); ?>>
+	<div class='<?php echo esc_attr( $field_class ); ?>' id='<?php echo esc_attr( $field_id ); ?>' <?php echo trim( $field_css_data ); /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?>>
 		<input type='<?php echo $context === 'edit' ? 'button' : 'submit'; ?>' class='bookacti-submit-form button' value='<?php echo esc_attr( $field[ 'value' ] ); ?>'/>
-		<input type='button' class='bookacti-new-booking-button button' value='<?php echo bookacti_get_message( 'booking_form_new_booking_button' ); ?>' style='display:none;'/>
+		<input type='button' class='bookacti-new-booking-button button' value='<?php echo esc_attr( bookacti_get_message( 'booking_form_new_booking_button' ) ); ?>' style='display:none;'/>
 	</div>
 	<?php
 	return ob_get_clean();
@@ -475,17 +479,17 @@ add_filter( 'bookacti_html_form_field_submit', 'bookacti_display_form_field_subm
 /**
  * Display the form field 'free_text'
  * @since 1.5.0
- * @version 1.14.0
+ * @version 1.19.8
  * @param array $field
  * @param string $instance_id
  * @param string $context
  */
 function bookacti_display_form_field_free_text( $field, $instance_id, $context ) {
-	$field_id = ! empty( $field[ 'id' ] ) ? esc_attr( $field[ 'id' ] ) : esc_attr( 'bookacti-form-field-' . $field[ 'type' ] . '-' . $field[ 'field_id' ] . '-' . $instance_id );
+	$field_id = ! empty( $field[ 'id' ] ) ? $field[ 'id' ] : 'bookacti-form-field-' . $field[ 'type' ] . '-' . $field[ 'field_id' ] . '-' . $instance_id;
 	?>
-	<div id='<?php echo $field_id; ?>' class='bookacti-form-free-text <?php echo esc_attr( $field[ 'class' ] ); ?>' >
+	<div id='<?php echo esc_attr( $field_id ); ?>' class='bookacti-form-free-text <?php echo esc_attr( $field[ 'class' ] ); ?>'>
 	<?php
-		echo $field[ 'value' ] && $context !== 'edit' ? do_shortcode( $field[ 'value' ] ) : $field[ 'value' ]; 
+		echo wp_kses_post( $field[ 'value' ] && $context !== 'edit' ? do_shortcode( $field[ 'value' ] ) : $field[ 'value' ] ); 
 	?>
 	</div>
 	<?php
@@ -551,7 +555,7 @@ add_filter( 'bookacti_default_form_fields_meta', 'bookacti_remove_unused_total_p
 /**
  * Display the form field "Total price"
  * @since 1.12.4
- * @version 1.15.15
+ * @version 1.19.8
  * @param string $html
  * @param array $field
  * @param string $instance_id
@@ -559,7 +563,7 @@ add_filter( 'bookacti_default_form_fields_meta', 'bookacti_remove_unused_total_p
  */
 function bookacti_display_form_field_total_price( $html, $field, $instance_id = '', $context = '' ) {
 	if( ! $instance_id ) { $instance_id = rand(); }
-	$field_id = ! empty( $field[ 'id' ] ) ? esc_attr( $field[ 'id' ] ) : esc_attr( 'bookacti-form-field-' . $field[ 'type' ] . '-' . $field[ 'field_id' ] . '-' . $instance_id );
+	$field_id = ! empty( $field[ 'id' ] ) ? $field[ 'id' ] : 'bookacti-form-field-' . $field[ 'type' ] . '-' . $field[ 'field_id' ] . '-' . $instance_id;
 	
 	$field_class    = 'bookacti-form-field-container';
 	$field_css_data = empty( $field[ 'items' ] ) ? 'style="display:none;"' : '';
@@ -568,7 +572,7 @@ function bookacti_display_form_field_total_price( $html, $field, $instance_id = 
 	if( ! empty( $field[ 'field_id' ] ) ) { $field_class .= ' bookacti-form-field-id-' . esc_attr( $field[ 'field_id' ] ); $field_css_data .= ' data-field-id="' . esc_attr( $field[ 'field_id' ] ) . '"'; }
 	if( ! empty( $field[ 'class' ] ) )    { $field_class .= ' ' . esc_attr( $field[ 'class' ] ); }
 	
-	$tip = esc_attr( $field[ 'tip' ] ) ? bookacti_help_tip( $field[ 'tip' ], false ) : '';
+	$tip = $field[ 'tip' ] ? bookacti_help_tip( $field[ 'tip' ], false ) : '';
 	
 	// Compute grand total
 	$grand_total_item = array(
@@ -589,11 +593,11 @@ function bookacti_display_form_field_total_price( $html, $field, $instance_id = 
 	
 	ob_start();
 ?>
-	<div class='<?php echo $field_class; ?>' id='<?php echo $field_id; ?>' <?php echo trim( $field_css_data ); ?>>
-		<input type='hidden' name='total_price' value='<?php echo $grand_total_item[ 'price' ]; ?>' class='bookacti-total-price-value'/>
+	<div class='<?php echo esc_attr( $field_class ); ?>' id='<?php echo esc_attr( $field_id ); ?>' <?php echo trim( $field_css_data ); /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?>>
+		<input type='hidden' name='total_price' value='<?php echo esc_attr( $grand_total_item[ 'price' ] ); ?>' class='bookacti-total-price-value'/>
 	<?php if( ! empty( $field[ 'label' ] ) ) { ?>
-			<label><?php echo $field[ 'label' ]; ?></label>
-			<?php echo $tip; ?>
+			<label><?php echo esc_html( $field[ 'label' ] ); ?></label>
+			<?php echo $tip; /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?>
 	<?php } 
 	if( ! empty( $field[ 'price_breakdown' ] ) ) { ?>
 		<table class='bookacti-total-price-table'>
@@ -610,9 +614,9 @@ function bookacti_display_form_field_total_price( $html, $field, $instance_id = 
 						if( ! ( isset( $item[ 'label' ] ) || isset( $item[ 'id' ] ) ) 
 						||  ! ( isset( $item[ 'price_to_display' ] ) || isset( $item[ 'price' ] ) ) ) { continue; }
 					?>
-						<tr data-item-id='<?php echo isset( $item[ 'id' ] ) ? $item[ 'id' ] : ''; ?>'>
-							<td><?php echo isset( $item[ 'label' ] ) ? $item[ 'label' ] : $item[ 'id' ]; ?></td>
-							<td><?php echo isset( $item[ 'price_to_display' ] ) ? $item[ 'price_to_display' ] : $item[ 'price' ]; ?></td>
+						<tr data-item-id='<?php echo esc_attr( isset( $item[ 'id' ] ) ? $item[ 'id' ] : '' ); ?>'>
+							<td><?php echo wp_kses_post( isset( $item[ 'label' ] ) ? $item[ 'label' ] : $item[ 'id' ] ); ?></td>
+							<td><?php echo wp_kses_post( isset( $item[ 'price_to_display' ] ) ? $item[ 'price_to_display' ] : $item[ 'price' ] ); ?></td>
 						</tr>
 					<?php
 					}
@@ -623,15 +627,15 @@ function bookacti_display_form_field_total_price( $html, $field, $instance_id = 
 				<tr>
 					<th>
 					<?php 
-						echo $grand_total_item[ 'label' ]; 
+						echo esc_html( $grand_total_item[ 'label' ] ); 
 						if( empty( $field[ 'label' ] ) ) { 
-							echo $tip;
+							echo $tip; /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */
 						}
 					?>
 					</th>
 					<th class='bookacti-grand-total-price-container'>
 					<?php 
-						echo $grand_total_item[ 'price_to_display' ];
+						echo wp_kses_post( $grand_total_item[ 'price_to_display' ] );
 					?>
 					</th>
 				</tr>
@@ -640,11 +644,13 @@ function bookacti_display_form_field_total_price( $html, $field, $instance_id = 
 	<?php } else { ?>
 		<span class='bookacti-grand-total-price-container'>
 		<?php 
-			echo $grand_total_item[ 'price_to_display' ];
+			echo wp_kses_post( $grand_total_item[ 'price_to_display' ] );
 		?>
 		</span>
 	<?php 
-		if( empty( $field[ 'label' ] ) ) { echo $tip; }
+		if( empty( $field[ 'label' ] ) ) {
+			echo $tip; /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */
+		}
 	} ?>
 	</div>
 <?php
@@ -681,19 +687,13 @@ add_action( 'wp_ajax_nopriv_bookactiGetForm', 'bookacti_controller_get_form' );
 /**
  * AJAX Controller - Send the forgotten password email
  * @since 1.5.0
- * @version 1.19.7
+ * @version 1.19.8
  */
 function bookacti_controller_forgotten_password() {
 	$return_array = array(
 		'status'  => 'failed', 
 		'message' => ''
 	);
-	
-	// Check nonce
-	$is_nonce_valid = check_ajax_referer( 'bookacti_submit_booking_form', 'nonce', false );
-	if( ! $is_nonce_valid ) {
-		bookacti_send_json_invalid_nonce( 'reset_password' );
-	}
 	
 	$user_login = isset( $_POST[ 'user_login' ] ) ? sanitize_user( wp_unslash( $_POST[ 'user_login' ] ) ) : '';
 	$callback   = apply_filters( 'bookacti_reset_password_notification_callback', 'retrieve_password' );
@@ -734,7 +734,7 @@ add_action( 'wp_ajax_nopriv_bookactiForgottenPassword', 'bookacti_controller_for
 /**
  * AJAX Controller - Check if login form is correct and then register / log the user in
  * @since 1.8.0
- * @version 1.19.7
+ * @version 1.16.45
  */
 function bookacti_controller_validate_login_form() {
 	$return_array = array(
@@ -747,12 +747,6 @@ function bookacti_controller_validate_login_form() {
 		'user_id'			=> 0,
 		'redirect_url'		=> ''
 	);
-	
-	// Check nonce
-	$is_nonce_valid = check_ajax_referer( 'bookacti_submit_booking_form', 'nonce', false );
-	if( ! $is_nonce_valid ) {
-		bookacti_send_json_invalid_nonce( 'submit_login_form' );
-	}
 	
 	// Check if the user is already logged in
 	if( is_user_logged_in() ) {
@@ -865,7 +859,7 @@ add_action( 'wp_ajax_nopriv_bookactiSubmitLoginForm', 'bookacti_controller_valid
 /**
  * AJAX Controller - Check if booking form is correct and then book the event, or send the error message
  * @since 1.5.0
- * @version 1.19.7
+ * @version 1.18.8
  */
 function bookacti_controller_validate_booking_form() {
 	$return_array = array(
@@ -880,12 +874,6 @@ function bookacti_controller_validate_booking_form() {
 		'booking_ids'       => array(),
 		'booking_group_ids' => array()
 	);
-	
-	// Check nonce
-	$is_nonce_valid = check_ajax_referer( 'bookacti_submit_booking_form', 'nonce', false );
-	if( ! $is_nonce_valid ) {
-		bookacti_send_json_invalid_nonce( 'submit_booking_form' );
-	}
 	
 	// Check form
 	$form_id = ! empty( $_POST[ 'form_id' ] ) ? intval( $_POST[ 'form_id' ] ) : 0;

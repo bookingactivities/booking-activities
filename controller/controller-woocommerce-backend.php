@@ -338,7 +338,7 @@ add_filter( 'woocommerce_product_data_tabs', 'bookacti_create_activity_tab', 10,
 
 /**
  * Content of the activity tab
- * @version 1.19.7
+ * @version 1.19.8
  * @global WP_Post $post
  */
 function bookacti_activity_tab_content() {
@@ -353,14 +353,14 @@ function bookacti_activity_tab_content() {
 				$current_form   = $product->get_meta( $form_id_key );
 				$can_edit_forms = current_user_can( 'bookacti_edit_forms' );
 			?>
-			<p class='form-field <?php echo $form_id_key; ?>_field' >
-				<label for='<?php echo $form_id_key; ?>'>
+			<p class='form-field <?php echo esc_attr( $form_id_key . '_field' ); ?>'>
+				<label for='<?php echo esc_attr( $form_id_key ); ?>'>
 				<?php
 					echo esc_html__( 'Booking form', 'booking-activities' );
 				?>
 				</label>
-				<select id='<?php echo $form_id_key; ?>' 
-						name='<?php echo $form_id_key; ?>' 
+				<select id='<?php echo esc_attr( $form_id_key ); ?>' 
+						name='<?php echo esc_attr( $form_id_key ); ?>' 
 						class='select short'
 						<?php if( $can_edit_forms ) { echo 'style="margin-right:10px;"'; } ?> >
 				<?php
@@ -371,13 +371,13 @@ function bookacti_activity_tab_content() {
 						++$forms_nb;
 						?>
 						<option value='<?php echo esc_attr( $form_id ); ?>' <?php echo selected( $form_id, $current_form, true ); ?>>
-							<?php echo $form[ 'title' ] ? esc_html( $form[ 'title' ] ) : /* translators: %s = form ID (integer). */ sprintf( esc_html__( 'Form #%s', 'booking-activities' ), $form_id ); ?>
+							<?php echo esc_html( $form[ 'title' ] ? $form[ 'title' ] : /* translators: %s = form ID (integer). */ sprintf( __( 'Form #%s', 'booking-activities' ), $form_id ) ); ?>
 						</option>
 						<?php
 					}
 				?>
 				</select>
-				<span class='bookacti-form-selectbox-link' data-form-selectbox-id='<?php echo $form_id_key; ?>'>
+				<span class='bookacti-form-selectbox-link' data-form-selectbox-id='<?php echo esc_attr( $form_id_key ); ?>'>
 				<?php 
 					if( $can_edit_forms ) {
 						if( $forms_nb ) {
@@ -432,7 +432,7 @@ add_action( 'woocommerce_admin_process_product_object', 'bookacti_save_custom_pr
 
 /**
  * Add custom variation product type option
- * @version 1.15.17
+ * @version 1.19.8
  * @param int $loop
  * @param array $variation_data
  * @param WP_Post $post
@@ -442,9 +442,9 @@ function bookacti_add_variation_option( $loop, $variation_data, $post ) {
 	/* translators: Help tip to explain why and when you should check the 'Activity' type of product in WooCommerce */
 	$tip = esc_html__( 'Enable this option if the product is a bookable activity', 'booking-activities' );
 ?>
-	<label class='tips' data-tip='<?php echo $tip; ?>'>
+	<label class='tips' data-tip='<?php echo esc_attr( $tip ); ?>'>
 		<?php esc_html_e( 'Activity', 'booking-activities' ); ?> 
-		<input type='hidden' name='bookacti_variable_is_activity[<?php echo $loop; ?>]' value='no' />
+		<input type='hidden' name='bookacti_variable_is_activity[<?php echo esc_attr( $loop ); ?>]' value='no' />
 		<input 
 			type='checkbox' 
 			id='bookacti_variable_is_activity_<?php echo esc_attr( $loop ); ?>' 
@@ -461,7 +461,7 @@ add_action( 'woocommerce_variation_options', 'bookacti_add_variation_option', 10
 
 /**
  * Add custom fields for activity variation product type
- * @version 1.19.7
+ * @version 1.19.8
  * @param int $loop
  * @param array $variation_data
  * @param WP_Post $post
@@ -477,15 +477,15 @@ function bookacti_add_variation_fields( $loop, $variation_data, $post ) {
 	$is_variation_activity = $variation->get_meta( 'bookacti_variable_is_activity' );
 	$variation_class = $is_variation_activity === 'yes' ? 'bookacti-show-fields' : 'bookacti-hide-fields';
 	?>
-	<div class='show_if_variation_activity <?php echo $variation_class; ?>'>
+	<div class='show_if_variation_activity <?php echo esc_attr( $variation_class ); ?>'>
 		<p class='form-row form-row-full bookacti-woo-title'>
 			<strong><?php esc_html_e( 'Activity', 'booking-activities' ) ?></strong>
 		</p>
 		<p class='form-row form-row-full' >
-			<label for='<?php echo $form_id_key . '_' . esc_attr( $loop ); ?>' ><?php esc_html_e( 'Booking form', 'booking-activities' ); ?></label>
-			<select name='<?php echo $form_id_key; ?>[<?php echo esc_attr( $loop ); ?>]' 
-					id='<?php echo $form_id_key . '_' . esc_attr( $loop ); ?>' 
-					class='<?php echo $form_id_key; ?>' 
+			<label for='<?php echo esc_attr( $form_id_key . '_' . $loop ); ?>' ><?php esc_html_e( 'Booking form', 'booking-activities' ); ?></label>
+			<select name='<?php echo esc_attr( $form_id_key . '[' . $loop . ']' ); ?>' 
+					id='<?php echo esc_attr( $form_id_key . '_' . $loop ); ?>' 
+					class='<?php echo esc_attr( $form_id_key ); ?>' 
 					data-loop='<?php echo esc_attr( $loop ); ?>'
 					<?php if( $can_edit_forms ) { echo 'style="margin-right:10px;"'; } ?>>
 				<?php
@@ -496,13 +496,13 @@ function bookacti_add_variation_fields( $loop, $variation_data, $post ) {
 					++$forms_nb;
 					?>
 					<option value='<?php echo esc_attr( $form_id ); ?>' <?php echo selected( $form_id, $current_form, true ); ?>>
-						<?php echo $form[ 'title' ] ? esc_html( $form[ 'title' ] ) : /* translators: %s = form ID (integer). */ sprintf( esc_html__( 'Form #%s', 'booking-activities' ), $form_id ); ?>
+						<?php echo esc_html( $form[ 'title' ] ? $form[ 'title' ] : /* translators: %s = form ID (integer). */ sprintf( __( 'Form #%s', 'booking-activities' ), $form_id ) ); ?>
 					</option>
 					<?php
 				}
 			?>
 			</select>
-			<span class='bookacti-form-selectbox-link' data-form-selectbox-id='<?php echo $form_id_key . '_' . esc_attr( $loop ); ?>'>
+			<span class='bookacti-form-selectbox-link' data-form-selectbox-id='<?php echo esc_attr( $form_id_key . '_' . $loop ); ?>'>
 			<?php 
 				if( $can_edit_forms ) {
 					if( $forms_nb ) {

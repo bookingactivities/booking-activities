@@ -10,7 +10,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 	
 	/**
 	 * Bookings WP_List_Table
-	 * @version 1.19.7
+	 * @version 1.19.8
 	 */
 	class Bookings_List_Table extends WP_List_Table {
 		
@@ -227,7 +227,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		/**
 		 * Fill the checbox column
 		 * @since 1.16.0
-		 * @version 1.19.7
+		 * @version 1.19.8
 		 * @access public
 		 * @param array $item
 		 * @return string
@@ -236,13 +236,13 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			if( ! current_user_can( 'bookacti_edit_bookings' ) ) { return ''; }
 			$uid = $item[ 'booking_type' ] === 'group' ? 'G' . $item[ 'raw_id' ] : $item[ 'raw_id' ];
 			?>
-				<input id='cb-select-<?php echo $uid; ?>' type='checkbox' name='<?php echo $item[ 'booking_type' ] === 'group' ? 'booking_group_ids' : 'booking_ids' ?>[]' value='<?php echo $item[ 'raw_id' ]; ?>' />
-				<label for='cb-select-<?php echo $uid; ?>'>
+				<input id='cb-select-<?php echo esc_attr( $uid ); ?>' type='checkbox' name='<?php echo $item[ 'booking_type' ] === 'group' ? 'booking_group_ids' : 'booking_ids' ?>[]' value='<?php echo esc_attr( $item[ 'raw_id' ] ); ?>'/>
+				<label for='cb-select-<?php echo esc_attr( $uid ); ?>'>
 					<span class='screen-reader-text'>
 					<?php
 						printf(
 							/* translators: Hidden accessibility text. %s: Taxonomy term name. */
-							__( 'Select %s', 'default' ), 
+							esc_html__( 'Select %s', 'default' ), 
 							esc_html__( 'Booking', 'booking-activities' )
 						);
 					?>
@@ -660,17 +660,19 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		
 		/**
 		 * Display content for a single row of the table
-		 * @version 1.16.0
+		 * @version 1.19.8
 		 * @access public
 		 * @param array $item The current item
 		 */
 		public function single_row( $item ) {
 			$booking_type = ! empty( $item[ 'booking_type' ] ) && $item[ 'booking_type' ] === 'group' ? 'group' : 'single';
 			$class        = ! empty( $item[ 'tr_class' ] ) ? $item[ 'tr_class' ] : '';
-			$tr_data      = ! empty( $item[ 'raw_id' ] ) && $booking_type !== 'group' ? ' data-booking-id="' . $item[ 'raw_id' ] . '"' : '';
-			$tr_data     .= ! empty( $item[ 'raw_group_id' ] ) ? ' data-booking-group-id="' . $item[ 'raw_group_id' ] . '"' : '';
 			
-			echo '<tr class="' . $class . '" ' . $tr_data . '>';
+			echo '<tr '
+				. 'class="' . esc_attr( $class ) . '" '
+				. ( ! empty( $item[ 'raw_id' ] ) && $booking_type !== 'group' ? ' data-booking-id="' . esc_attr( $item[ 'raw_id' ] ) . '"' : '' )
+				. ( ! empty( $item[ 'raw_group_id' ] ) ? ' data-booking-group-id="' . esc_attr( $item[ 'raw_group_id' ] ) . '"' : '' )
+				. '>';
 			$this->single_row_columns( $item );
 			echo '</tr>';
 		}

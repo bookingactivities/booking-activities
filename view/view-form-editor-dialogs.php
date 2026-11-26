@@ -2,7 +2,7 @@
 /**
  * Form editor dialogs
  * @since 1.5.0
- * @version 1.18.9
+ * @version 1.19.8
  */
 
 // Exit if accessed directly
@@ -395,7 +395,7 @@ foreach( $fields_default as $field_name => $field_data ) {
 
 
 <!-- Login field dialog -->
-<div id='bookacti-form-field-dialog-login' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php echo sprintf( esc_html__( '%s options', 'booking-activities' ), strip_tags( $fields_default[ 'login' ][ 'title' ] ) ); ?>' >
+<div id='bookacti-form-field-dialog-login' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php /* translators: Title of the Update field dialog. %s is the field title. */ echo sprintf( esc_html__( '%s options', 'booking-activities' ), strip_tags( $fields_default[ 'login' ][ 'title' ] ) ); ?>' >
 	<form id='bookacti-form-field-form-login' >
 		<input type='hidden' name='action' value='bookactiUpdateFormField' />
 		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_update_form_field' ); ?>' />
@@ -863,7 +863,7 @@ foreach( $fields_default as $field_name => $field_data ) {
 		/**
 		 * Display the content of the "Register" tab of the "Login" dialog
 		 * @since 1.5.0
-		 * @version 1.18.9
+		 * @version 1.19.8
 		 * @param array $params
 		 */
 		function bookacti_fill_login_dialog_register_tab( $params ) {
@@ -892,10 +892,10 @@ foreach( $fields_default as $field_name => $field_data ) {
 						'name'    => 'min_password_strength',
 						'id'      => 'bookacti-min_password_strength',
 						'options' => array(
-							1 => esc_html_x( 'Very weak', 'password strength' ),
-							2 => esc_html_x( 'Weak', 'password strength' ),
-							3 => esc_html_x( 'Medium', 'password strength' ),
-							4 => esc_html_x( 'Strong', 'password strength' )
+							1 => esc_html_x( 'Very weak', 'password strength', 'default' ),
+							2 => esc_html_x( 'Weak', 'password strength', 'default' ),
+							3 => esc_html_x( 'Medium', 'password strength', 'default' ),
+							4 => esc_html_x( 'Strong', 'password strength', 'default' )
 						),
 						'value'   => 1,
 						'tip'     => esc_html__( 'How strong the user password must be if it is not generated?', 'booking-activities' )
@@ -946,7 +946,7 @@ foreach( $fields_default as $field_name => $field_data ) {
 
 
 <!-- Quantity field dialog -->
-<div id='bookacti-form-field-dialog-quantity' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php echo sprintf( esc_html__( '%s options', 'booking-activities' ), strip_tags( $fields_default[ 'quantity' ][ 'title' ] ) ); ?>' >
+<div id='bookacti-form-field-dialog-quantity' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php /* translators: Title of the Update field dialog. %s is the field title. */ echo sprintf( esc_html__( '%s options', 'booking-activities' ), strip_tags( $fields_default[ 'quantity' ][ 'title' ] ) ); ?>' >
 	<form id='bookacti-form-field-form-quantity' >
 		<input type='hidden' name='action' value='bookactiUpdateFormField' />
 		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_update_form_field' ); ?>' />
@@ -1008,7 +1008,7 @@ foreach( $fields_default as $field_name => $field_data ) {
 
 
 <!-- Submit button dialog -->
-<div id='bookacti-form-field-dialog-submit' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php echo sprintf( __( '%s options', 'booking-activities' ), strip_tags( $fields_default[ 'submit' ][ 'title' ] ) ); ?>' >
+<div id='bookacti-form-field-dialog-submit' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php /* translators: Title of the Update field dialog. %s is the field title. */ echo sprintf( __( '%s options', 'booking-activities' ), strip_tags( $fields_default[ 'submit' ][ 'title' ] ) ); ?>' >
 	<form id='bookacti-form-field-form-submit' >
 		<input type='hidden' name='action' value='bookactiUpdateFormField' />
 		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_update_form_field' ); ?>' />
@@ -1038,7 +1038,7 @@ foreach( $fields_default as $field_name => $field_data ) {
 
 
 <!-- Free text field dialog -->
-<div id='bookacti-form-field-dialog-free_text' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php echo sprintf( esc_html__( '%s options', 'booking-activities' ), strip_tags( $fields_default[ 'free_text' ][ 'title' ] ) ); ?>' >
+<div id='bookacti-form-field-dialog-free_text' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php /* translators: Title of the Update field dialog. %s is the field title. */ echo sprintf( esc_html__( '%s options', 'booking-activities' ), strip_tags( $fields_default[ 'free_text' ][ 'title' ] ) ); ?>' >
 	<form id='bookacti-form-field-form-free_text' >
 		<input type='hidden' name='action' value='bookactiUpdateFormField' />
 		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_update_form_field' ); ?>' />
@@ -1080,7 +1080,7 @@ foreach( $fields_default as $field_name => $field_data ) {
 
 
 <!-- Total price field dialog -->
-<div id='bookacti-form-field-dialog-total_price' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php echo sprintf( esc_html__( '%s options', 'booking-activities' ), isset( $fields_default[ 'total_price' ][ 'title' ] ) ? strip_tags( $fields_default[ 'total_price' ][ 'title' ] ) : '' ); ?>' >
+<div id='bookacti-form-field-dialog-total_price' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php /* translators: Title of the Update field dialog. %s is the field title. */ echo sprintf( esc_html__( '%s options', 'booking-activities' ), isset( $fields_default[ 'total_price' ][ 'title' ] ) ? strip_tags( $fields_default[ 'total_price' ][ 'title' ] ) : '' ); ?>' >
 	<form id='bookacti-form-field-form-total_price' >
 		<input type='hidden' name='action' value='bookactiUpdateFormField'/>
 		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_update_form_field' ); ?>'/>
@@ -1135,7 +1135,7 @@ foreach( $fields_default as $field_name => $field_data ) {
 
 
 <!-- Terms field dialog -->
-<div id='bookacti-form-field-dialog-terms' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php echo sprintf( esc_html__( '%s options', 'booking-activities' ), strip_tags( $fields_default[ 'terms' ][ 'title' ] ) ); ?>' >
+<div id='bookacti-form-field-dialog-terms' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php /* translators: Title of the Update field dialog. %s is the field title. */ echo sprintf( esc_html__( '%s options', 'booking-activities' ), strip_tags( $fields_default[ 'terms' ][ 'title' ] ) ); ?>' >
 	<form id='bookacti-form-field-form-terms' >
 		<input type='hidden' name='action' value='bookactiUpdateFormField' />
 		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_update_form_field' ); ?>' />

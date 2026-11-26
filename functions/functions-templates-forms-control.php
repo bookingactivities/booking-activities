@@ -830,7 +830,7 @@ function bookacti_sanitize_group_category_data( $raw_data ) {
 /**
  * Validate group category data
  * @since 1.1.0
- * @version 1.12.0
+ * @version 1.19.8
  * @param array $data
  * @return array
  */
@@ -840,7 +840,11 @@ function bookacti_validate_group_category_data( $data ) {
 	if( ! $data[ 'title' ] ) {
 		$return_array[ 'status' ] = 'failed';
 		$return_array[ 'errors' ][] = 'missing_fields';
-		$return_array[ 'messages' ][ 'missing_fields' ] = sprintf( esc_html__( 'You must fill these fields: %s', 'booking-activities' ), esc_html__( 'New category title', 'booking-activities' ) );
+		$return_array[ 'messages' ][ 'missing_fields' ] = sprintf(
+			/* translators: %s is a comma-sperated list of field labels */
+			esc_html__( 'You must fill these fields: %s', 'booking-activities' ),
+			esc_html__( 'New category title', 'booking-activities' )
+		);
 	}
 	if( ! $data[ 'template_id' ] ) { 
 		$return_array[ 'status' ] = 'failed';

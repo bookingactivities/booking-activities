@@ -147,7 +147,7 @@ function bookacti_get_activity_managers( $activity_ids ) {
 
 /**
  * Retrieve template activities list
- * @version 1.19.0
+ * @version 1.19.8
  * @param array $activities see bookacti_get_activities_by_template
  * @param int $template_id
  * @return string 
@@ -180,7 +180,7 @@ function bookacti_get_template_activities_list( $activities, $template_id = 0 ) 
 					data-event='{"title": "<?php echo htmlentities( esc_attr( $title ), ENT_QUOTES ); ?>", "duration": "<?php echo esc_attr( $duration ); ?>", "contrastColor": "<?php echo esc_attr( $color ) ?>", "color": "<?php echo esc_attr( $activity[ 'color' ] ); ?>", "extendedProps": { "activity_id": <?php echo intval( $activity[ 'id' ] ); ?> } }' 
 					data-activity-id='<?php echo esc_attr( $activity[ 'id' ] ); ?>'
 					data-duration='<?php echo esc_attr( $duration ); ?>'
-					title='<?php esc_attr_e( $title ); ?>'
+					title='<?php echo esc_attr( $title ); ?>'
 					style='border-color:<?php echo esc_attr( $activity[ 'color' ] ); ?>; background-color:<?php echo esc_attr( $activity[ 'color' ] );?>;  color: <?php echo esc_attr( $color ); ?>'
 				>
 					<?php echo $title; ?>

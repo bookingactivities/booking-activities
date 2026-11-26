@@ -3108,11 +3108,11 @@ function bookacti_settings_section_wc_account_callback() {}
 /**
  * Setting for: Bookings page in My Account
  * @since 1.7.16
- * @version 1.16.38
+ * @version 1.19.8
  */
 function bookacti_settings_wc_my_account_bookings_page_id_callback() {
 	$options = array(
-		'-1' => esc_html__( 'Disabled' ),
+		'-1' => esc_html__( 'Disabled', 'default' ),
 		'0'  => esc_html__( 'Default booking list', 'booking-activities' ),
 	);
 	$pages = get_pages( array( 'sort_column' => 'menu_order', 'sort_order' => 'ASC', 'post_status' => array( 'publish', 'private', 'draft', 'pending', 'future' ) ) );

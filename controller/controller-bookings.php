@@ -1482,7 +1482,7 @@ add_action( 'wp_ajax_bookactiExportBookingsUrl', 'bookacti_controller_generate_e
 /**
  * Export bookings according to filters
  * @since 1.6.0
- * @version 1.17.1
+ * @version 1.19.8
  */
 function bookacti_export_bookings_page() {
 	if( empty( $_REQUEST[ 'action' ] ) ) { return; }
@@ -1585,7 +1585,7 @@ function bookacti_export_bookings_page() {
 			'raw'     => ! empty( $args[ 'raw' ] ) ? 1 : 0,
 			'locale'  => $locale
 		) );
-		echo bookacti_convert_bookings_to_csv( $filters, $csv_args );
+		echo bookacti_convert_bookings_to_csv( $filters, $csv_args ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	
 	} else if( $export_type === 'ical' ) { 
 		$ical_args = apply_filters( 'bookacti_export_bookings_ical_args', array( 
@@ -1597,7 +1597,7 @@ function bookacti_export_bookings_page() {
 			'sequence'             => ! empty( $args[ 'sequence' ] ) ? intval( $args[ 'sequence' ] ) : 0,
 			'locale'               => $locale
 		) );
-		echo bookacti_convert_bookings_to_ical( $filters, $ical_args );
+		echo bookacti_convert_bookings_to_ical( $filters, $ical_args ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 	
 	// Switch locale back to normal
@@ -1614,7 +1614,7 @@ add_action( 'init', 'bookacti_export_bookings_page', 10 );
 /**
  * Export a user's bookings events as iCal
  * @since 1.12.0 (was bookacti_export_user_booked_events_page)
- * @version 1.17.1
+ * @version 1.19.8
  */
 function bookacti_export_user_bookings_events_page() {
 	if( empty( $_REQUEST[ 'action' ] ) ) { return; }
@@ -1663,7 +1663,7 @@ function bookacti_export_user_bookings_events_page() {
 	header( 'Cache-Control: no-cache, must-revalidate' ); // HTTP/1.1
 	header( 'Expires: Sat, 26 Dec 1992 00:50:00 GMT' ); // Expired date to force third-party calendars to refresh soon
 	
-	echo bookacti_convert_bookings_to_ical( $filters, $ical_args );
+	echo bookacti_convert_bookings_to_ical( $filters, $ical_args ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 
 	// Switch locale back to normal
 	if( $lang_switched ) { bookacti_restore_locale(); }
@@ -1676,7 +1676,7 @@ add_action( 'init', 'bookacti_export_user_bookings_events_page', 10 );
 /**
  * Export a booking (group) event(s) as iCal
  * @since 1.12.0 (was bookacti_export_booked_events_page)
- * @version 1.17.1
+ * @version 1.19.8
  */
 function bookacti_export_booking_events_page() {
 	if( empty( $_REQUEST[ 'action' ] ) ) { return; }
@@ -1722,7 +1722,7 @@ function bookacti_export_booking_events_page() {
 	header( 'Cache-Control: no-cache, must-revalidate' ); // HTTP/1.1
 	header( 'Expires: Sat, 26 Dec 1992 00:50:00 GMT' ); // Expired date to force third-party calendars to refresh soon
 	
-	echo bookacti_convert_bookings_to_ical( $filters, $ical_args );
+	echo bookacti_convert_bookings_to_ical( $filters, $ical_args ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	
 	// Switch locale back to normal
 	if( $lang_switched ) { bookacti_restore_locale(); }

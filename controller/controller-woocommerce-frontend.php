@@ -266,7 +266,7 @@ add_action( 'woocommerce_before_single_product_summary', 'bookacti_move_add_to_c
 
 /**
  * Add booking forms to single product page (front-end)
- * @version 1.18.6
+ * @version 1.19.8
  * @global WC_Product $product
  */
 function bookacti_add_booking_system_in_single_product_page() {
@@ -338,7 +338,7 @@ function bookacti_add_booking_system_in_single_product_page() {
 	// Convert $form_atts array to inline attributes
 	$form_attributes_str = '';
 	foreach( $form_atts as $form_attribute_key => $form_attribute_value ) {
-		if( $form_attribute_value !== '' ) { $form_attributes_str .= $form_attribute_key . '="' . $form_attribute_value . '" '; }
+		if( $form_attribute_value !== '' ) { $form_attributes_str .= sanitize_title_with_dashes( $form_attribute_key ) . '="' . esc_attr( $form_attribute_value ) . '" '; }
 	}
 
 	// If no default variation are selected, or if it's not an activity, or if doesn't have a form bound
@@ -349,15 +349,15 @@ function bookacti_add_booking_system_in_single_product_page() {
 	}
 
 	?>
-	<div <?php echo $form_attributes_str; ?>>
+	<div <?php echo $form_attributes_str; /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?>>
 		<?php 
 			$form_html = bookacti_display_form( $form_id, $form_atts[ 'id' ], 'wc_product_init', false ); 
-			echo $form_html;
+			echo $form_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			if( empty( $form_atts[ 'data-default-variation-id' ] ) && ! empty( $form_atts[ 'data-variation-id' ] ) ) {
 			?>
 				<script>
 					if( typeof bookacti.form_fields === 'undefined' ) { bookacti.form_fields = []; }
-					bookacti.form_fields[ '<?php echo $form_id; ?>' ] = <?php echo json_encode( $form_html ); ?>;
+					bookacti.form_fields[ '<?php echo intval( $form_id ); ?>' ] = <?php echo json_encode( $form_html ); ?>;
 				</script>
 			<?php
 			}
@@ -868,7 +868,7 @@ add_action( 'woocommerce_cart_emptied', 'bookacti_wc_clean_session_data' );
 
 /**
  * Add the timeout to cart and checkout
- * @version 1.9.0
+ * @version 1.19.8
  * @global WooCommerce $woocommerce
  */
 function bookacti_add_timeout_to_cart() { 
@@ -900,9 +900,8 @@ function bookacti_add_timeout_to_cart() {
 			$cart_expiration_dt = new DateTime( $cart_expiration_date );
 			$now_dt = new DateTime();
 			if( $cart_expiration_dt > $now_dt ) {
-				$container = '<div class="bookacti-cart-expiration-container woocommerce-info">' . bookacti_get_message( 'cart_countdown' ) . '</div>';
 				$countdown_html = '<span class="bookacti-countdown bookacti-cart-expiration" data-expiration-date="' . esc_attr( $cart_expiration_date ) . '" ></span>';
-				echo str_replace( '{countdown}', $countdown_html, $container );
+				echo '<div class="bookacti-cart-expiration-container woocommerce-info">' . str_replace( '{countdown}', $countdown_html, esc_html( bookacti_get_message( 'cart_countdown' ) ) ) . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			}
 		}
 	} else {
@@ -1598,6 +1597,7 @@ add_filter( 'woocommerce_cart_item_name', 'bookacti_add_timeout_to_cart_item_in_
 /**
  * Cart item price display
  * @since 1.16.20 (was bookacti_wc_cart_item_price)
+ * @version 1.19.8
  * @param string $default_unit_price
  * @param array $cart_item
  * @param string $cart_item_key
@@ -1637,7 +1637,7 @@ function bookacti_wc_cart_item_price_html( $default_unit_price, $cart_item, $car
 	ob_start();
 	foreach( $subtotals as $key => $subtotal ) {
 		if( empty( $subtotal[ 'display_value' ] ) ) { continue; }
-		echo '<div class="bookacti-cart-item-price bookacti-cart-item-price-' . $key . '">' . $subtotal[ 'display_value' ] . '</div>';
+		echo '<div class="bookacti-cart-item-price ' . esc_attr( 'bookacti-cart-item-price-' . $key ) . '">' . wp_kses_post( $subtotal[ 'display_value' ] ) . '</div>';
 	}
 	
 	return ob_get_clean();
@@ -1648,7 +1648,7 @@ add_filter( 'woocommerce_cart_item_price', 'bookacti_wc_cart_item_price_html', 1
 /**
  * Cart item total price displayed in cart
  * @since 1.15.15
- * @version 1.16.0
+ * @version 1.19.8
  * @global WooCommerce $woocommerce
  * @param string $default_subtotal
  * @param array $cart_item
@@ -1691,7 +1691,7 @@ function bookacti_wc_cart_item_displayed_subtotals( $default_subtotal, $cart_ite
 	ob_start();
 	foreach( $subtotals as $key => $subtotal ) {
 		if( empty( $subtotal[ 'display_value' ] ) ) { continue; }
-		echo '<div class="bookacti-cart-item-subtotal bookacti-cart-item-subtotal-' . $key . '">' . $subtotal[ 'display_value' ] . '</div>';
+		echo '<div class="bookacti-cart-item-subtotal ' . esc_attr( 'bookacti-cart-item-subtotal-' . $key ) . '">' . wp_kses_post( $subtotal[ 'display_value' ] ) . '</div>';
 	}
 	
 	return ob_get_clean();
@@ -1915,7 +1915,7 @@ add_action( 'woocommerce_before_pay_action', 'bookacti_availability_check_before
 /**
  * Change order bookings status after the customer validates checkout
  * @since 1.16.0 (was bookacti_change_booking_state_after_checkout)
- * @version 1.19.7
+ * @version 1.19.8
  * @param int $order_id
  * @param array $posted_data
  * @param WC_Order $order
@@ -1940,8 +1940,13 @@ function bookacti_wc_checkout_order_processed_booking_status( $order_id, $posted
 						$last_booking     = end( $order_item_booking[ 'bookings' ] );
 						$first_booking    = reset( $order_item_booking[ 'bookings' ] );
 						$dates            = bookacti_get_formatted_event_dates( $first_booking->event_start, $last_booking->event_end, false );
-						/* translators: %1$s = the booking ID. %2$s = the event title and dates. %3$s = the order ID. */
-						$error_messages[] = sprintf( esc_html__( 'You have already purchased the booking #%1$s "%2$s" in the order #%3$s.', 'booking-activities' ), $order_item_booking[ 'id' ], $title ? apply_filters( 'bookacti_translate_text', $title ) . ' (' . $dates . ')' : $dates, $booking_order_id );
+						$error_messages[] = sprintf( 
+							/* translators: %1$s = the booking ID. %2$s = the event title and dates. %3$s = the order ID. */
+							esc_html__( 'You have already purchased the booking #%1$s "%2$s" in the order #%3$s.', 'booking-activities' ), 
+							$order_item_booking[ 'id' ], 
+							$title ? apply_filters( 'bookacti_translate_text', $title ) . ' (' . $dates . ')' : $dates, 
+							$booking_order_id
+						);
 						wc_delete_order_item( $item_id );
 					}
 				}
@@ -1949,7 +1954,7 @@ function bookacti_wc_checkout_order_processed_booking_status( $order_id, $posted
 		}
 	}
 	
-	if( $error_messages ) { throw new Exception( implode( '<br/>', $error_messages ) ); }
+	if( $error_messages ) { throw new Exception( wp_kses_post( implode( '<br/>', $error_messages ) ) ); }
 	if( $order->get_status() === 'failed' ) { return; }
 	
 	$needs_payment = WC()->cart->needs_payment();

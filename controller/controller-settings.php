@@ -405,14 +405,14 @@ add_filter( 'set-screen-option', 'bookacti_save_screen_options', 10, 3 );
 /**
  * Display messages fields
  * @since 1.2.0
- * @version 1.19.7
+ * @version 1.19.8
  */
 function bookacti_display_messages_fields() {
 	$messages = bookacti_get_messages( true );
 	foreach( $messages as $message_id => $message ) {
 ?>
 		<div class='bookacti-message-setting'>
-			<em><?php echo $message[ 'description' ] ?></em><br/>
+			<em><?php echo wp_kses_post( $message[ 'description' ] ); ?></em><br/>
 			<?php if( isset( $message[ 'input_type' ] ) && $message[ 'input_type' ] === 'textarea' ) { ?>
 				<textarea id='bookacti_messages_settings_<?php echo esc_attr( $message_id ); ?>' class='bookacti-translatable' name='bookacti_messages_settings[<?php echo esc_attr( $message_id ); ?>]'><?php echo esc_textarea( $message[ 'value' ] ); ?></textarea>
 			<?php } else { ?>
@@ -511,7 +511,7 @@ add_filter( 'plugin_row_meta', 'bookacti_meta_links_in_plugins_table', 10, 2 );
 /**
  * Display an admin error notice if an add-on is outdated and will cause malfunction
  * @since 1.9.0
- * @version 1.13.0
+ * @version 1.19.8
  */
 function bookacti_add_ons_compatibility_error_notice() {
 	$add_ons = bookacti_get_active_add_ons( '', array() );
@@ -545,10 +545,10 @@ function bookacti_add_ons_compatibility_error_notice() {
 				foreach( $outdated_add_ons as $prefix => $outdated_add_on ) {
 					$add_on_version = constant( strtoupper( $prefix ) . '_VERSION' );
 					?>
-					<li><strong><?php echo $outdated_add_on[ 'title' ]; ?></strong> <em><?php echo $add_on_version; ?></em> &#8594; 
+					<li><strong><?php echo esc_html( $outdated_add_on[ 'title' ] ); ?></strong> <em><?php echo esc_html( $add_on_version ); ?></em> &#8594; 
 					<?php 
 					/* translators: %s = a version number (e.g.: 1.2.6) */
-					echo sprintf( esc_html__( 'version %s or later required.', 'booking-activities' ), '<strong>' . $outdated_add_on[ 'min_version' ] . '</strong>' );
+					echo sprintf( esc_html__( 'version %s or later required.', 'booking-activities' ), '<strong>' . esc_html( $outdated_add_on[ 'min_version' ] ) . '</strong>' );
 				}
 			?>
 		</ul>
@@ -556,10 +556,11 @@ function bookacti_add_ons_compatibility_error_notice() {
 			<?php
 				if( isset( $outdated_add_ons[ 'bookacti' ] ) ) { unset( $outdated_add_ons[ 'bookacti' ] ); }
 				if( $outdated_add_ons ) {
-					$docs_link = 'https://booking-activities.fr/en/faq/the-add-ons-are-not-updated-automatically-or-an-error-occurs-during-the-updates/';
-					$docs_link_html = '<a href="' . $docs_link . '" target="_blank">' . esc_html__( 'documentation', 'booking-activities' ) . '</a>';
-					/* translators: %s = Link to the "documentation" */
-					echo '<em>' . sprintf( esc_html__( 'If the add-ons update doesn\'t work, follow the instructions here: %s.', 'booking-activities' ), '<strong>' . $docs_link_html . '</strong>' ) . '</em>';
+					echo '<em>' . sprintf( 
+						/* translators: %s = Link to the "documentation" */
+						esc_html__( 'If the add-ons update doesn\'t work, follow the instructions here: %s.', 'booking-activities' ), 
+						'<strong><a href="' . esc_url( 'https://booking-activities.fr/en/faq/the-add-ons-are-not-updated-automatically-or-an-error-occurs-during-the-updates/' ) . '" target="_blank">' . esc_html__( 'documentation', 'booking-activities' ) . '</a></strong>' 
+					) . '</em>';
 				}
 			?>
 		</p>

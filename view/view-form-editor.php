@@ -2,7 +2,7 @@
 /**
  * Form editor page
  * @since 1.5.0
- * @version 1.18.0
+ * @version 1.19.8
  */
 
 // Exit if accessed directly
@@ -120,7 +120,11 @@ if( ! $form_edit ) { return; }
 								if( ! $templates ) {
 									$editor_path   = 'admin.php?page=bookacti_calendars';
 									$editor_url    = admin_url( $editor_path );
-									$error_message = sprintf( esc_html__( 'Welcome! It seems you don\'t have any calendar yet. Go to %s to create your first calendar', 'booking-activities' ), '<a href="' . esc_url( $editor_url ) . '" >' . esc_html__( 'Calendar Editor', 'booking-activities' ) . '</a>' );
+									$error_message = sprintf(
+										/* translators: %s is a link to "Calendar Editor" page. */
+										esc_html__( 'Welcome! It seems you don\'t have any calendar yet. Go to %s to create your first calendar', 'booking-activities' ),
+										'<a href="' . esc_url( $editor_url ) . '" >' . esc_html__( 'Calendar Editor', 'booking-activities' ) . '</a>'
+									);
 								}
 							}
 							
@@ -169,7 +173,17 @@ if( ! $form_edit ) { return; }
 									</div>
 									<div id='bookacti-fatal-error' class='bookacti-notices' style='display:none;'>
 										<ul class='bookacti-error-list'>
-											<li><strong><?php echo sprintf( esc_html__( 'A fatal error occurred. Please try to refresh the page. If the error persists, follow the process under "Booking Activities doesn’t work as it should" here: %s.', 'booking-activities' ), '<a href="https://booking-activities.fr/en/documentation/faq">' . esc_html__( 'FAQ', 'booking-activities' ) . '</a>' ); ?></strong></li>
+											<li>
+												<strong>
+												<?php 
+													echo sprintf(
+														/* translators: %s is a link to the official FAQ. The label of this link is "FAQ". */
+														esc_html__( 'A fatal error occurred. Please try to refresh the page. If the error persists, follow the process under "Booking Activities doesn’t work as it should" here: %s.', 'booking-activities' ),
+														'<a href="https://booking-activities.fr/en/documentation/faq">' . esc_html__( 'FAQ', 'booking-activities' ) . '</a>'
+													);
+												?>
+												</strong>
+											</li>
 										</ul>
 									</div>
 									<div id='bookacti-form-editor'>

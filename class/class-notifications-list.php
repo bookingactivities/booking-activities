@@ -11,7 +11,7 @@ if( ! class_exists( 'BOOKACTI_Notifications_List_Table' ) ) {
 	/**
 	 * Notifications WP_List_Table
 	 * @since 1.18.0
-	 * @version 1.19.7
+	 * @version 1.19.8
 	 */
 	class BOOKACTI_Notifications_List_Table extends WP_List_Table {
 		
@@ -199,7 +199,7 @@ if( ! class_exists( 'BOOKACTI_Notifications_List_Table' ) ) {
 		/**
 		 * Fill the checbox column
 		 * @since 1.18.0
-		 * @version 1.19.7
+		 * @version 1.19.8
 		 * @access public
 		 * @param array $item
 		 * @return string
@@ -213,7 +213,7 @@ if( ! class_exists( 'BOOKACTI_Notifications_List_Table' ) ) {
 					<?php 
 						printf(
 							/* translators: Hidden accessibility text. %s: Taxonomy term name. */
-							__( 'Select %s', 'default' ),
+							esc_html__( 'Select %s', 'default' ),
 							esc_html__( 'Notification', 'booking-activities' )
 						);
 					?>
@@ -465,11 +465,11 @@ if( ! class_exists( 'BOOKACTI_Notifications_List_Table' ) ) {
 		/**
 		 * Message to be displayed when there are no items
 		 * @since 1.18.0
-		 * @version 1.19.7
+		 * @version 1.19.8
 		 * @access public
 		 */
 		function no_items() {
-			_e( 'No items found.', 'default' );
+			esc_html_e( 'No items found.', 'default' );
 		}
 		
 		
@@ -489,13 +489,16 @@ if( ! class_exists( 'BOOKACTI_Notifications_List_Table' ) ) {
 		/**
 		 * Display content for a single row of the table
 		 * @since 1.18.0
+		 * @version 1.19.8
 		 * @access public
 		 * @param array $item The current item
 		 */
 		public function single_row( $item ) {
-			$tr_data = ! empty( $item[ 'id' ] ) ? ' data-notification-db-id="' . $item[ 'id' ] . '"' : '';
+			$tr_data = ! empty( $item[ 'id' ] ) ? ' ' : '';
 			
-			echo '<tr ' . $tr_data . '>';
+			echo '<tr ' 
+				. ( ! empty( $item[ 'id' ] ) ? 'data-notification-db-id="' . esc_attr( $item[ 'id' ] ) . '"' : '' )
+				. '>';
 			$this->single_row_columns( $item );
 			echo '</tr>';
 		}
