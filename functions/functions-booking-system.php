@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Get a booking system based on given parameters
- * @version 1.17.0
+ * @version 1.19.8
  * @param array $atts (see bookacti_format_booking_system_attributes())
  * @return string
  */
@@ -36,7 +36,7 @@ function bookacti_get_booking_system( $atts ) {
 		<script>
 			// Compatibility with Optimization plugins
 			if( typeof bookacti === 'undefined' ) { var bookacti = { booking_system:[] }; }
-			bookacti.booking_system[ '<?php echo $booking_system_data[ 'id' ]; ?>' ] = <?php echo json_encode( $public_booking_system_data ); ?>;
+			bookacti.booking_system[ '<?php echo esc_attr( $booking_system_data[ 'id' ] ); ?>' ] = <?php echo json_encode( $public_booking_system_data ); ?>;
 		</script>
 				
 		<div class='bookacti-booking-system-inputs'>
@@ -44,11 +44,11 @@ function bookacti_get_booking_system( $atts ) {
 				$i = 0;
 				foreach( $booking_system_data[ 'picked_events' ] as $picked_event ) {
 				?>
-					<input type='hidden' name='selected_events[<?php echo $i; ?>][group_id]' value='<?php echo esc_attr( $picked_event[ 'group_id' ] ); ?>'/>
-					<input type='hidden' name='selected_events[<?php echo $i; ?>][group_date]' value='<?php echo esc_attr( $picked_event[ 'group_date' ] ); ?>'/>
-					<input type='hidden' name='selected_events[<?php echo $i; ?>][id]' value='<?php echo esc_attr( $picked_event[ 'id' ] ); ?>'/>
-					<input type='hidden' name='selected_events[<?php echo $i; ?>][start]' value='<?php echo esc_attr( $picked_event[ 'start' ] ); ?>'/>
-					<input type='hidden' name='selected_events[<?php echo $i; ?>][end]' value='<?php echo esc_attr( $picked_event[ 'end' ] ); ?>'/>
+					<input type='hidden' name='selected_events[<?php echo esc_attr( $i ); ?>][group_id]' value='<?php echo esc_attr( $picked_event[ 'group_id' ] ); ?>'/>
+					<input type='hidden' name='selected_events[<?php echo esc_attr( $i ); ?>][group_date]' value='<?php echo esc_attr( $picked_event[ 'group_date' ] ); ?>'/>
+					<input type='hidden' name='selected_events[<?php echo esc_attr( $i ); ?>][id]' value='<?php echo esc_attr( $picked_event[ 'id' ] ); ?>'/>
+					<input type='hidden' name='selected_events[<?php echo esc_attr( $i ); ?>][start]' value='<?php echo esc_attr( $picked_event[ 'start' ] ); ?>'/>
+					<input type='hidden' name='selected_events[<?php echo esc_attr( $i ); ?>][end]' value='<?php echo esc_attr( $picked_event[ 'end' ] ); ?>'/>
 				<?php
 					++$i;
 				}
@@ -59,8 +59,8 @@ function bookacti_get_booking_system( $atts ) {
 		<?php do_action( 'bookacti_booking_system_container_before', $atts, $booking_system_data ); ?>
 		
 		<div id='<?php echo esc_attr( $booking_system_data[ 'id' ] ); ?>' class='bookacti-booking-system <?php echo esc_attr( $booking_system_data[ 'class' ] ); ?>'>
-			<?php echo bookacti_get_booking_method_html( $booking_system_data[ 'method' ], $booking_system_data ); 
-			if( $booking_system_data[ 'auto_load' ] ) { echo bookacti_get_loading_html(); } ?>
+			<?php echo bookacti_get_booking_method_html( $booking_system_data[ 'method' ], $booking_system_data ); /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */
+			if( $booking_system_data[ 'auto_load' ] ) { echo bookacti_get_loading_html(); /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ } ?>
 		</div>
 		
 		<?php do_action( 'bookacti_after_booking_system', $atts, $booking_system_data ); ?>
@@ -82,7 +82,7 @@ function bookacti_get_booking_system( $atts ) {
 		
 		<?php do_action( 'bookacti_booking_system_container_after', $atts, $booking_system_data ); ?>
 	</div>
-	<div id='<?php echo $atts[ 'id' ] . '-dialogs'; ?>' class='bookacti-booking-system-dialogs'>
+	<div id='<?php echo esc_attr( $atts[ 'id' ] . '-dialogs' ); ?>' class='bookacti-booking-system-dialogs'>
 		<?php
 			bookacti_display_booking_system_dialogs( $booking_system_data[ 'id' ] );
 		?>
@@ -426,19 +426,19 @@ function bookacti_get_booking_system_data( $atts ) {
 /**
  * Display booking system dialogs
  * @since 1.5.0
- * @version 1.15.5
+ * @version 1.19.8
  * @param string $booking_system_id
  */
 function bookacti_display_booking_system_dialogs( $booking_system_id ) {
 ?>
 	<!-- Choose a group of events -->
-	<div id='<?php echo $booking_system_id . '-choose-group-of-events-dialog'; ?>' 
-		 data-booking-system-id='<?php echo $booking_system_id; ?>' 
+	<div id='<?php echo esc_attr( $booking_system_id . '-choose-group-of-events-dialog' ); ?>' 
+		 data-booking-system-id='<?php echo esc_attr( $booking_system_id ); ?>' 
 		 class='bookacti-backend-dialog bookacti-choose-group-of-events-dialog bookacti-booking-system-dialog' 
-		 title='<?php echo bookacti_get_message( 'choose_group_dialog_title' ); ?>' 
-		 style='display:none;' >
-		<?php echo bookacti_get_message( 'choose_group_dialog_content' ); ?>
-		<div id='<?php echo $booking_system_id . '-groups-of-events-list' ?>' class='bookacti-groups-of-events-list' ></div>
+		 title='<?php echo esc_attr( bookacti_get_message( 'choose_group_dialog_title' ) ); ?>' 
+		 style='display:none;'>
+		<?php echo wp_kses_post( bookacti_get_message( 'choose_group_dialog_content' ) ); ?>
+		<div id='<?php echo esc_attr( $booking_system_id . '-groups-of-events-list' ); ?>' class='bookacti-groups-of-events-list'></div>
 	</div>
 
 	<?php do_action( 'bookacti_display_booking_system_dialogs', $booking_system_id );
@@ -485,7 +485,7 @@ function bookacti_get_booking_method_html( $method, $booking_system_data = array
 /**
  * Retrieve Calendar booking system HTML to include in the booking system
  * @since 1.8.0 (was bookacti_retrieve_calendar_elements)
- * @version 1.17.0
+ * @version 1.19.8
  * @param array $booking_system_data
  * @return string
  */
@@ -495,7 +495,7 @@ function bookacti_get_calendar_html( $booking_system_data = array() ) {
 	ob_start();
 	?>
 		<div class='bookacti-calendar-title bookacti-booking-system-title <?php if( $hide_calendar ) { echo 'bookacti-hidden-field'; } ?>'>
-			<?php echo bookacti_get_message( 'calendar_title' ); ?>
+			<?php echo wp_kses_post( bookacti_get_message( 'calendar_title' ) ); ?>
 		</div>
 		<div class='bookacti-calendar <?php if( $hide_calendar ) { echo 'bookacti-hidden-field'; } ?>'></div>
 	<?php
@@ -4201,7 +4201,7 @@ function bookacti_convert_events_to_ical( $events, $name = '', $description = ''
 /**
  * Generate a ICAL file of events according to booking system attributes
  * @since 1.6.0
- * @version 1.17.0
+ * @version 1.19.8
  * @param array $atts Booking system attributes
  * @param string $calname
  * @param string $caldesc
@@ -4264,7 +4264,7 @@ function bookacti_export_events_page( $atts, $calname = '', $caldesc = '', $sequ
 	header( 'Cache-Control: no-cache, must-revalidate' ); // HTTP/1.1
 	header( 'Expires: Sat, 26 Jul 1997 05:00:00 GMT' ); // Expired date to force third-party calendars to refresh soon
 	
-	echo bookacti_convert_events_to_ical( $events, $calname, $caldesc, $sequence );
+	echo bookacti_convert_events_to_ical( $events, $calname, $caldesc, $sequence ); /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */
 	
 	exit;
 }

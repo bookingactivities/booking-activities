@@ -2756,7 +2756,7 @@ function bookacti_get_selected_bookings_refund_actions( $selected_bookings, $is_
 /**
  * Get refund actions html
  * @since 1.16.0 (was bookacti_get_booking_refund_options_html)
- * @version 1.19.7
+ * @version 1.19.8
  * @param array $actions
  * @return string
  */
@@ -2786,17 +2786,17 @@ function bookacti_get_refund_actions_html( $actions = array() ) {
 		?>
 			<div class='bookacti-refund-option' >
 				<div class='bookacti-refund-option-radio'>
-					<input type='radio' name='refund_action' value='<?php echo $action_id; ?>' id='bookacti-refund-action-<?php echo $action_id; ?>' class='bookacti-refund-action'/>
+					<input type='radio' name='refund_action' value='<?php echo esc_attr( $action_id ); ?>' id='<?php echo esc_attr( 'bookacti-refund-action-' . $action_id ); ?>' class='bookacti-refund-action'/>
 				</div>
 				<div class='bookacti-refund-option-text'>
-					<label class='bookacti-refund-option-label' for='bookacti-refund-action-<?php echo $action_id; ?>'>
+					<label class='bookacti-refund-option-label' for='<?php echo esc_attr( 'bookacti-refund-action-' . $action_id ); ?>'>
 						<span><?php echo esc_html( $action[ 'label' ] ); ?></span>
 						<span class='bookacti-refund-option-description'><?php echo esc_html( $action[ 'description' ] ); ?></span>
 					</label>
 					<?php if( $warning ) { ?>
 					<span class='bookacti-warning bookacti-refund-option-warning'>
 						<span class='dashicons dashicons-warning'></span>
-						<span><em><?php echo $warning ?></em></span>
+						<span><em><?php echo esc_html( $warning )?></em></span>
 					</span>
 					<?php } ?>
 				</div>
@@ -3335,7 +3335,7 @@ function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
 /**
  * Display a booking list
  * @since 1.7.6
- * @version 1.16.45
+ * @version 1.19.8
  * @param array $filters
  * @param array $columns
  * @param int $per_page
@@ -3363,9 +3363,9 @@ function bookacti_get_user_booking_list( $filters, $columns = array(), $per_page
 	
 	ob_start();
 	?>
-	<div id='bookacti-user-booking-list-<?php echo $bookacti_booking_list_count; ?>' class='bookacti-user-booking-list <?php echo empty( $booking_list_items ) ? 'bookacti-no-items' : '' ?>' data-user-id='<?php echo $filters[ 'user_id' ] ? $filters[ 'user_id' ] : ''; ?>' >
+	<div id='<?php echo esc_attr( 'bookacti-user-booking-list-' . $bookacti_booking_list_count ); ?>' class='bookacti-user-booking-list <?php echo empty( $booking_list_items ) ? 'bookacti-no-items' : '' ?>' data-user-id='<?php echo esc_attr( $filters[ 'user_id' ] ? $filters[ 'user_id' ] : '' ); ?>' >
 		<?php
-			echo bookacti_get_user_booking_list_table_html( $booking_list_items, $columns );
+			echo bookacti_get_user_booking_list_table_html( $booking_list_items, $columns ); /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */
 		
 		if( $page_max > 1 ) { ?>
 		<div class='bookacti-user-booking-list-pagination'>
@@ -3381,7 +3381,7 @@ function bookacti_get_user_booking_list( $filters, $columns = array(), $per_page
 			}
 			?>
 			<span class='bookacti-user-booking-list-current-page'>
-				<span class='bookacti-user-booking-list-page-counter'><strong><?php echo $page_nb; ?></strong><span> / </span><em><?php echo $page_max; ?></em></span>
+				<span class='bookacti-user-booking-list-page-counter'><strong><?php echo esc_html( $page_nb ); ?></strong><span> / </span><em><?php echo esc_html( $page_max ); ?></em></span>
 				<span class='bookacti-user-booking-list-total-bookings'><?php /* translators: %s is the number of bookings */ echo esc_html( sprintf( _n( '%s booking', '%s bookings', $bookings_nb, 'booking-activities' ), $bookings_nb ) ); ?></span>
 			</span>
 			<?php
@@ -3442,7 +3442,7 @@ function bookacti_include_booking_dialogs( $context = 'front', $in_footer = true
 /**
  * Get the booking list table HTML
  * @since 1.8.0
- * @version 1.16.33
+ * @version 1.19.8
  * @param array $booking_items
  * @param array $columns
  * @return array
@@ -3458,9 +3458,9 @@ function bookacti_get_user_booking_list_table_html( $booking_items, $columns = a
 				$columns_labels = bookacti_get_user_booking_list_columns_labels();
 				foreach( $columns as $column_id ) {
 				?>
-					<th class='bookacti-column-<?php echo sanitize_title_with_dashes( $column_id ); ?>' >
-						<div class='bookacti-column-title-<?php echo $column_id; ?>' >
-							<?php echo ! empty( $columns_labels[ $column_id ] ) ? esc_html( $columns_labels[ $column_id ] ) : $column_id; ?>
+					<th class='<?php echo esc_attr( 'bookacti-column-' . $column_id ); ?>' >
+						<div class='<?php echo esc_attr( 'bookacti-column-title-' . $column_id ); ?>' >
+							<?php echo esc_html( ! empty( $columns_labels[ $column_id ] ) ? $columns_labels[ $column_id ] : $column_id ); ?>
 						</div>
 					</th>
 				<?php
@@ -3470,7 +3470,7 @@ function bookacti_get_user_booking_list_table_html( $booking_items, $columns = a
 		</thead>
 		<tbody>
 		<?php
-			echo bookacti_get_user_booking_list_rows( $booking_items, $columns );
+			echo bookacti_get_user_booking_list_rows( $booking_items, $columns ); /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */
 		?>
 		</tbody>
 	</table>
@@ -3482,7 +3482,7 @@ function bookacti_get_user_booking_list_table_html( $booking_items, $columns = a
 /**
  * Display booking list rows
  * @since 1.7.6
- * @version 1.16.0
+ * @version 1.19.8
  * @param array $booking_list_items
  * @param array $columns
  * @return string
@@ -3503,16 +3503,17 @@ function bookacti_get_user_booking_list_rows( $booking_list_items, $columns = ar
 			</td>
 		</tr>
 	<?php
-	} 
+	}
 	
 	// Display rows
 	else {
 		foreach( $booking_list_items as $list_item ) {
 			$booking_type = ! empty( $list_item[ 'booking_type' ] ) && $list_item[ 'booking_type' ] === 'group' ? 'group' : 'single';
-			$tr_data  = ! empty( $list_item[ 'booking_id_raw' ] ) && $booking_type !== 'group' ? ' data-booking-id="' . $list_item[ 'booking_id_raw' ] . '"' : '';
-			$tr_data .= ! empty( $list_item[ 'booking_group_id_raw' ] ) ? ' data-booking-group-id="' . $list_item[ 'booking_group_id_raw' ] . '"' : '';
 		?>
-			<tr class='<?php echo ! empty( $list_item[ 'tr_class' ] ) ? $list_item[ 'tr_class' ] : ''; ?>' <?php echo $tr_data; ?>>
+			<tr class='<?php echo esc_attr( ! empty( $list_item[ 'tr_class' ] ) ? $list_item[ 'tr_class' ] : '' ); ?>' 
+			<?php echo ( ! empty( $list_item[ 'booking_id_raw' ] ) && $booking_type !== 'group' ? ' data-booking-id="' . esc_attr( $list_item[ 'booking_id_raw' ] ) . '"' : '' )
+					 . ( ! empty( $list_item[ 'booking_group_id_raw' ] ) ? ' data-booking-group-id="' . esc_attr( $list_item[ 'booking_group_id_raw' ] ) . '"' : '' ); ?>
+			>
 			<?php
 				foreach( $columns as $column_id ) {
 					$value        = isset( $list_item[ $column_id ] ) && ( is_string( $list_item[ $column_id ] ) || is_numeric( $list_item[ $column_id ] ) ) ? $list_item[ $column_id ] : '';
@@ -3520,9 +3521,9 @@ function bookacti_get_user_booking_list_rows( $booking_list_items, $columns = ar
 					$class_group  = $list_item[ 'booking_type' ] === 'group' ? 'bookacti-booking-group-' . $column_id : '';
 					$column_label = ! empty( $columns_labels[ $column_id ] ) ? $columns_labels[ $column_id ] : $column_id;
 				?>
-					<td data-column-id='<?php echo esc_attr( $column_id ); ?>' data-column-label='<?php echo esc_attr( $column_label ); ?>' class='bookacti-column-<?php echo $column_id . ' ' . $class_empty; ?>' >
-						<div class='bookacti-booking-<?php echo $column_id . ' ' . $class_group; ?>' >
-							<?php echo $value; ?>
+					<td data-column-id='<?php echo esc_attr( $column_id ); ?>' data-column-label='<?php echo esc_attr( $column_label ); ?>' class='<?php echo esc_attr( 'bookacti-column-' . $column_id . ' ' . $class_empty ); ?>'>
+						<div class='<?php echo esc_attr( 'bookacti-booking-' . $column_id . ' ' . $class_group ); ?>' >
+							<?php echo wp_kses_post( $value ); ?>
 						</div>
 					</td>
 				<?php

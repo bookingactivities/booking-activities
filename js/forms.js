@@ -374,7 +374,7 @@ function bookacti_check_password_strength( password_field, password_confirm_fiel
 /**
  * Submit login form
  * @since 1.8.0
- * @version 1.19.7
+ * @version 1.16.33
  * @param {HTMLElement} submit_button
  */
 function bookacti_submit_login_form( submit_button ) {
@@ -429,7 +429,6 @@ function bookacti_submit_login_form( submit_button ) {
 	
 	// Change action
 	data.form_data.set( 'action', 'bookactiSubmitLoginForm' );
-	data.form_data.set( 'nonce', bookacti_localized.nonce_submit_booking_form );
 	data.form_data.set( 'current_url', window.location.href );
 	
 	// Display a loader after the submit button
@@ -494,7 +493,7 @@ function bookacti_submit_login_form( submit_button ) {
 /**
  * Submit booking form
  * @since 1.7.6 (was bookacti_sumbit_booking_form)
- * @version 1.19.7
+ * @version 1.16.45
  * @param {HTMLElement} form
  */
 function bookacti_submit_booking_form( form ) {
@@ -563,7 +562,6 @@ function bookacti_submit_booking_form( form ) {
 	
 	// Change action
 	data.form_data.set( 'action', 'bookactiSubmitBookingForm' );
-	data.form_data.set( 'nonce', bookacti_localized.nonce_submit_booking_form );
 	data.form_data.set( 'current_url', window.location.href );
 	
 	bookacti_start_loading_booking_system( booking_system );
@@ -705,7 +703,7 @@ function bookacti_perform_form_action( booking_system ) {
 /**
  * Forgotten password dialog
  * @since 1.5.0
- * @version 1.19.7
+ * @version 1.15.16
  * @param {string} field_id
  */
 function bookacti_dialog_forgotten_password( field_id ) {
@@ -732,9 +730,8 @@ function bookacti_dialog_forgotten_password( field_id ) {
 					url: bookacti_localized.ajaxurl,
 					type: 'POST',
 					data: { 
-						"action": 'bookactiForgottenPassword',
-						"nonce": bookacti_localized.nonce_submit_booking_form,
-						"user_login": user_login
+						'action': 'bookactiForgottenPassword',
+						'user_login': user_login
 					},
 					dataType: 'json',
 					success: function( response ) {

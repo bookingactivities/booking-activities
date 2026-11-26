@@ -415,7 +415,7 @@ function bookacti_is_db_version_outdated() {
 /**
  * Get the variables used with javascript
  * @since 1.8.0
- * @version 1.19.7
+ * @version 1.19.8
  * @return array
  */
 function bookacti_get_js_variables() {
@@ -460,7 +460,6 @@ function bookacti_get_js_variables() {
 
 		// VARIABLES
 		'ajaxurl'                            => admin_url( 'admin-ajax.php' ),
-		'nonce_submit_booking_form'          => wp_create_nonce( 'bookacti_submit_booking_form' ),
 		'nonce_query_select2_options'        => wp_create_nonce( 'bookacti_query_select2_options' ),
 		
 		'fullcalendar_timezone'              => 'UTC',
@@ -629,7 +628,7 @@ function bookacti_get_active_add_ons( $prefix = '', $exclude = array( 'balau' ) 
 /**
  * Get add-on data by prefix
  * @since 1.7.14
- * @version 1.19.7.1
+ * @version 1.19.8
  * @param string $prefix
  * @param array $exclude
  * @return array
@@ -674,7 +673,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-order-for-customers', 
 			'end_of_life' => '', 
 			'download_id' => 436,
-			'min_version' => '1.3.14'
+			'min_version' => '1.3.15'
 		),
 		'bara' => array(
 			'title'       => 'Resource Availability', 
@@ -690,7 +689,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name' => 'ba-waiting-list', 
 			'end_of_life' => '', 
 			'download_id' => 39100,
-			'min_version' => '1.0.10'
+			'min_version' => '1.0.11'
 		),
 		'balau' => array(
 			'title'       => 'Licenses & Updates', 

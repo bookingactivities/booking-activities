@@ -553,6 +553,7 @@ add_action( 'load-booking-activities_page_bookacti_notifications', 'bookacti_con
 /**
  * Display an admin notice to feedback the result of an action taken on a notification
  * @since 1.18.0
+ * @version 1.19.8
  */
 function bookacti_controller_notification_admin_notices() {
 	$message = '';
@@ -561,17 +562,17 @@ function bookacti_controller_notification_admin_notices() {
 	if( isset( $GLOBALS[ 'bookacti_notification_updated' ] ) ) {
 		if( $GLOBALS[ 'bookacti_notification_updated' ] !== false ) {
 			$message_type = 'success';
-			$message = esc_html__( 'The notification has been updated.', 'booking-activities' );
+			$message = __( 'The notification has been updated.', 'booking-activities' );
 		} else {
 			$message_type = 'error';
-			$message = esc_html__( 'An error occurred while trying to update the notification.', 'booking-activities' );
+			$message = __( 'An error occurred while trying to update the notification.', 'booking-activities' );
 		}
 	}
 	
 	if( $message ) {
 	?>
-		<div class='notice notice-<?php echo esc_attr( $message_type ); ?> is-dismissible bookacti-notification-notice' >
-			<p><?php echo $message; ?></p>
+		<div class='notice <?php echo esc_attr( 'notice-' . $message_type ); ?> is-dismissible bookacti-notification-notice'>
+			<p><?php echo esc_html( $message ); ?></p>
 		</div>
 	<?php
 	}

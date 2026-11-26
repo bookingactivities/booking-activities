@@ -1,7 +1,7 @@
 <?php 
 /**
  * Calendar editor dialogs
- * @version 1.19.7
+ * @version 1.19.8
  */
 
 // Exit if accessed directly
@@ -83,7 +83,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 		
 		/**
 		 * Display the 'Repetition' tab content of event settings
-		 * @version 1.16.45
+		 * @version 1.19.8
 		 * @param array $params
 		 */
 		function bookacti_fill_event_tab_repetition( $params ) {
@@ -188,18 +188,20 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 				bookacti_display_fields( array_intersect_key( $fields, array_flip( array( 'repeat_step', 'repeat_freq' ) ) ) );
 
 				$start_of_week = intval( get_option( 'start_of_week' ) );
-				$weekdays = array( 0 => esc_html__( 'Sunday' ), 1 => esc_html__( 'Monday' ), 2 => esc_html__( 'Tuesday' ), 3 => esc_html__( 'Wednesday' ), 4 => esc_html__( 'Thursday' ), 5 => esc_html__( 'Friday' ), 6 => esc_html__( 'Saturday' ) );
+				$weekdays = array( 0 => esc_html__( 'Sunday', 'default' ), 1 => esc_html__( 'Monday', 'default' ), 2 => esc_html__( 'Tuesday', 'default' ), 3 => esc_html__( 'Wednesday', 'default' ), 4 => esc_html__( 'Thursday', 'default' ), 5 => esc_html__( 'Friday', 'default' ), 6 => esc_html__( 'Saturday', 'default' ) );
 				$start_of_weekday = $weekdays[ $start_of_week ];
 			?>
 				<div class='bookacti-repeat-freq-start-of-week-notice bookacti-info' data-start-of-week='<?php echo $start_of_week; ?>'>
 					<span class='dashicons dashicons-warning'></span>
 					<span>
 						<?php 
-							/* translators: %1$s = "Week Starts On" option label. %2$s = "Week Starts On" option value (e.g.: Monday). %3$s = link to "WordPress Settings > General" */
-							echo sprintf( esc_html__( 'You have set the "%1$s" option to "%2$s" in %3$s. This setting will be used to skip weeks.', 'booking-activities' ), 
-									'<strong>' . esc_html__( 'Week Starts On' ) . '</strong>', 
-									'<strong>' . $weekdays[ $start_of_week ] . '</strong>', 
-									'<a href="' . admin_url( 'options-general.php' ) . '">' . esc_html__( 'WordPress Settings > General', 'booking-activities' ) . '</a>' );
+							echo sprintf(
+								/* translators: %1$s = "Week Starts On" option label. %2$s = "Week Starts On" option value (e.g.: Monday). %3$s = link to "WordPress Settings > General" */
+								esc_html__( 'You have set the "%1$s" option to "%2$s" in %3$s. This setting will be used to skip weeks.', 'booking-activities' ), 
+								'<strong>' . esc_html__( 'Week Starts On', 'default' ) . '</strong>', 
+								'<strong>' . $weekdays[ $start_of_week ] . '</strong>', 
+								'<a href="' . admin_url( 'options-general.php' ) . '">' . esc_html__( 'WordPress Settings > General', 'booking-activities' ) . '</a>'
+							);
 						?>
 					</span>
 				</div>
@@ -854,7 +856,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 		/**
 		 * Display the 'Repetition' tab content of group of events settings
 		 * @since 1.12.0
-		 * @version 1.16.45
+		 * @version 1.19.8
 		 * @param array $params
 		 */
 		function bookacti_fill_group_of_events_tab_repetition( $params ) {
@@ -954,17 +956,20 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 					bookacti_display_fields( array_intersect_key( $fields, array_flip( array( 'repeat_step', 'repeat_freq' ) ) ) );
 				
 					$start_of_week = intval( get_option( 'start_of_week' ) );
-					$weekdays = array( 0 => esc_html__( 'Sunday' ), 1 => esc_html__( 'Monday' ), 2 => esc_html__( 'Tuesday' ), 3 => esc_html__( 'Wednesday' ), 4 => esc_html__( 'Thursday' ), 5 => esc_html__( 'Friday' ), 6 => esc_html__( 'Saturday' ) );
+					$weekdays = array( 0 => esc_html__( 'Sunday', 'default' ), 1 => esc_html__( 'Monday', 'default' ), 2 => esc_html__( 'Tuesday', 'default' ), 3 => esc_html__( 'Wednesday', 'default' ), 4 => esc_html__( 'Thursday', 'default' ), 5 => esc_html__( 'Friday', 'default' ), 6 => esc_html__( 'Saturday', 'default' ) );
 					$start_of_weekday = $weekdays[ $start_of_week ];
 				?>
 				<div class='bookacti-repeat-freq-start-of-week-notice bookacti-info' data-start-of-week='<?php echo $start_of_week; ?>'>
 					<span class='dashicons dashicons-warning'></span>
 					<span>
 						<?php 
-							echo sprintf( esc_html__( 'You have set the "%1$s" option to "%2$s" in %3$s. This setting will be used to skip weeks.', 'booking-activities' ), 
-								'<strong>' . esc_html__( 'Week Starts On' ) . '</strong>', 
+							echo sprintf( 
+								/* translators: %1$s = "Week Starts On" option label. %2$s = "Week Starts On" option value (e.g.: Monday). %3$s = link to "WordPress Settings > General" */
+								esc_html__( 'You have set the "%1$s" option to "%2$s" in %3$s. This setting will be used to skip weeks.', 'booking-activities' ), 
+								'<strong>' . esc_html__( 'Week Starts On', 'default' ) . '</strong>', 
 								'<strong>' . $weekdays[ $start_of_week ] . '</strong>', 
-								'<a href="' . admin_url( 'options-general.php' ) . '">' . esc_html__( 'WordPress Settings > General', 'booking-activities' ) . '</a>' );
+								'<a href="' . admin_url( 'options-general.php' ) . '">' . esc_html__( 'WordPress Settings > General', 'booking-activities' ) . '</a>'
+							);
 						?>
 					</span>
 				</div>

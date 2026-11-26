@@ -23,18 +23,18 @@ add_filter( 'bookacti_calendar_integration_tuto', 'bookacti_display_wc_calendar_
 /**
  * Add a description how to embbed forms to woocommerce products
  * @since 1.5.0
- * @version 1.18.2
+ * @version 1.19.8
  * @param array $form_edit
  */
 function bookacti_display_wc_form_integration_description( $form_edit ) {
-	$img_link = esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/wc-integration.png' );
+	$img_link = plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/wc-integration.png';
 ?>
-	<h4><?php _e( 'Integrate with a WooCommerce product', 'booking-activities' ) ?></h4>
+	<h4><?php esc_html_e( 'Integrate with a WooCommerce product', 'booking-activities' ) ?></h4>
 	<div>
 		<p><em><?php esc_html_e( 'Select this form in your product data, in the "Activity" tab.', 'booking-activities' ); ?></em></p>
 		<p id='bookacti-form-wc-integration-tuto' >
-			<a href='<?php echo $img_link; ?>' target='_blank' style='display:block;'>
-				<img src='<?php echo $img_link; ?>'/>
+			<a href='<?php echo esc_url( $img_link ); ?>' target='_blank' style='display:block;'>
+				<img src='<?php echo esc_url( $img_link ); ?>'/>
 			</a>
 		</p>
 		<p><em><?php esc_html_e( 'For variable products, you can set a different form for each variation.', 'booking-activities' ); ?></em></p>
@@ -47,13 +47,13 @@ add_action( 'bookacti_after_form_integration_tuto', 'bookacti_display_wc_form_in
 /**
  * Add a WooCommerce-related description to the form editor
  * @since 1.5.0
- * @version 1.7.8
+ * @version 1.19.8
  * @param array $form
  */
 function bookacti_form_editor_wc_description( $form ) {
 	/* translators: %1$s is replaced with an image */
-	echo '<p>' . sprintf( __( 'The fields with this icon %1$s will NOT appear on WooCommerce product pages.', 'booking-activities' ), '<span class="bookacti-wc-icon-not-supported"></span>' );
-	bookacti_help_tip( __( 'These fields already exist in WooCommerce. E.g.: Quantity and Submit are already part of product pages. Login and register fields are already asked on checkout page.', 'booking-activities' ) );
+	echo '<p>' . sprintf( esc_html__( 'The fields with this icon %1$s will NOT appear on WooCommerce product pages.', 'booking-activities' ), '<span class="bookacti-wc-icon-not-supported"></span>' );
+	bookacti_help_tip( esc_html__( 'These fields already exist in WooCommerce. E.g.: Quantity and Submit are already part of product pages. Login and register fields are already asked on checkout page.', 'booking-activities' ) );
 	echo '</p>';
 }
 add_action( 'bookacti_form_editor_description_after', 'bookacti_form_editor_wc_description', 20, 1 );
@@ -62,28 +62,30 @@ add_action( 'bookacti_form_editor_description_after', 'bookacti_form_editor_wc_d
 /**
  * Display a WC notice in the form editor, Calendar field settings, "Actions" tab
  * @since 1.7.15
- * @version 1.18.2
+ * @version 1.19.8
  * @param array $params
  */
 function bookacti_form_action_wc_notice( $params ) {
-	$docs = $links[ 'docs' ] = '<a href="' . esc_url( 'https://booking-activities.fr/en/docs/user-documentation/get-started-with-booking-activities/display-calendars-on-product-page/?utm_source=plugin&utm_medium=plugin&utm_content=form-action-notice' ) . '" title="' . esc_attr( __( 'View Booking Activities Documentation', 'booking-activities' ) ) . '" target="_blank" >' . esc_html__( 'Docs', 'booking-activities' ) . '</a>';
 	?>
 	<div class='bookacti-info bookacti-form-action-with-wc-notice' style='display:none;'>
 		<span class='dashicons dashicons-info'></span>
 		<span>
 		<?php 
 			/* translators: %1$s = "Form action" option label. %2$s = the shortcode (e.g.: [bookingactivities_form form="21"]) */
-			echo sprintf( esc_html__( 'The "%1$s" option is taken into account only if the form is displayed with its shortcode (%2$s).', 'booking-activities' ), '<strong>' . esc_html__( 'Form action', 'booking-activities' ) . '</strong>', '<code>[bookingactivities_form form="' . $params[ 'form' ][ 'id' ] . '"]</code>' );
+			echo sprintf( esc_html__( 'The "%1$s" option is taken into account only if the form is displayed with its shortcode (%2$s).', 'booking-activities' ), '<strong>' . esc_html__( 'Form action', 'booking-activities' ) . '</strong>', '<code>[bookingactivities_form form="' . esc_attr( $params[ 'form' ][ 'id' ] ) . '"]</code>' );
 		?>
 		</span>
 	</div>
 	<div class='bookacti-info bookacti-add-product-to-cart-form-action-notice' style='display:none;'>
 		<span class='dashicons dashicons-info'></span>
 		<span>
-		<?php 
-			$activity_label = '<strong>' . esc_html__( 'Activity', 'booking-activities' ) . '</strong>';
-			/* translators: %1$s = "Activity" option label. %2$s = "Docs" (link to the documentation) */
-			echo sprintf( esc_html__( 'The products must be configured as "%1$s" in the product data (%2$s).', 'booking-activities' ), $activity_label, $docs );
+		<?php
+			echo sprintf( 
+				/* translators: %1$s = "Activity" option label. %2$s = "Docs" (link to the documentation) */
+				esc_html__( 'The products must be configured as "%1$s" in the product data (%2$s).', 'booking-activities' ), 
+				'<strong>' . esc_html__( 'Activity', 'booking-activities' ) . '</strong>', 
+				'<a href="' . esc_url( 'https://booking-activities.fr/en/docs/user-documentation/get-started-with-booking-activities/display-calendars-on-product-page/?utm_source=plugin&utm_medium=plugin&utm_content=form-action-notice' ) . '" title="' . esc_attr__( 'View Booking Activities Documentation', 'booking-activities' ) . '" target="_blank" >' . esc_html__( 'Docs', 'booking-activities' ) . '</a>'
+			);
 		?>
 		</span>
 	</div>
@@ -717,6 +719,7 @@ add_filter( 'bookacti_validate_form_action', 'bookacti_wc_validate_form_action',
 /**
  * Do not display booking form with a shortcode if it is bound to a product and if its form action is "default"
  * @since 1.18.7
+ * @version 1.19.8
  * @param string $output
  * @param array $raw_atts
  * @param string $content
@@ -755,19 +758,16 @@ function bookacti_wc_prevent_display_product_booking_form_with_shortcode( $outpu
 				. ' ' . sprintf(
 					/* translators: %s = product title with a link. */
 					esc_html( 'Please visit the "%s" product page to add the booking to your cart.', 'booking-activities' ),
-					$product ? '<a href="' . $product->get_permalink() . '">' . $product->get_title() . '</a>' : ''
+					( $product ? '<a href="' . esc_url( $product->get_permalink() ) . '">' . esc_html( $product->get_title() ) . '</a>' : '' )
 				); ?>
 			</li>
 			<?php if( current_user_can( 'bookacti_edit_forms' ) && bookacti_user_can_manage_form( $form_id ) ) { ?>
 			<li>
 			<?php 
-				$docs_link      = 'https://booking-activities.fr/en/docs/user-documentation/advanced-use-of-booking-activities/add-product-to-cart-or-redirect-to-url-from-calendar/';
-				$docs_link_html = '<a href="' . $docs_link . '" target="_blank">' . esc_html__( 'documentation', 'booking-activities' ) . '</a>';
-
 				echo sprintf(
 					/* translators: %s = "documentation" with a link. */
 					esc_html( 'To display a booking form using a shortcode at this location, the administrator can either modify the form\'s action (%s) or create a separate one.', 'booking-activities' ),
-					$docs_link_html
+					'<a href="' . esc_url( 'https://booking-activities.fr/en/docs/user-documentation/advanced-use-of-booking-activities/add-product-to-cart-or-redirect-to-url-from-calendar/' ) . '" target="_blank">' . esc_html__( 'documentation', 'booking-activities' ) . '</a>'
 				);
 			?>
 			</li>

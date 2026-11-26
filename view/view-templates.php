@@ -1,7 +1,7 @@
 <?php
 /**
  * Calendar editor page
- * @version 1.18.0
+ * @version 1.19.8
  */
 
 // Exit if accessed directly
@@ -21,12 +21,17 @@ $templates = bookacti_get_templates_data();
 
 <div id='bookacti-fatal-error' class='bookacti-notices' style='display:none;'>
 	<ul class='bookacti-error-list'>
-		<li><strong>
-			<?php 
-				/* translators: %s is a link to the official FAQ. The label of this link is "FAQ". */
-				echo sprintf( esc_html__( 'A fatal error occurred. Please try to refresh the page. If the error persists, follow the process under "Booking Activities doesn’t work as it should" here: %s.', 'booking-activities' ), '<a href="https://booking-activities.fr/en/documentation/faq">' . esc_html__( 'FAQ', 'booking-activities' ) . '</a>' );
+		<li>
+			<strong>
+			<?php
+				echo sprintf( 
+					/* translators: %s is a link to the official FAQ. The label of this link is "FAQ". */
+					esc_html__( 'A fatal error occurred. Please try to refresh the page. If the error persists, follow the process under "Booking Activities doesn’t work as it should" here: %s.', 'booking-activities' ),
+					'<a href="https://booking-activities.fr/en/documentation/faq">' . esc_html__( 'FAQ', 'booking-activities' ) . '</a>'
+				);
 			?>
-		</strong></li>
+			</strong>
+		</li>
 	</ul>
 </div>
 

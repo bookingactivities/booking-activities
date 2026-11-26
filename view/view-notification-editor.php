@@ -2,6 +2,7 @@
 /**
  * Notification editor page
  * @since 1.18.0
+ * @version 1.19.8
  */
 
 // Exit if accessed directly
@@ -69,7 +70,7 @@ if( ! $can_edit_notification || ! $can_manage_notification ) { esc_html_e( 'You 
 							<div id='titlewrap'>
 								<?php $title_placeholder = esc_html__( 'Enter notification title here', 'booking-activities' ); ?>
 								<label class='screen-reader-text' id='title-prompt-text' for='title'><?php echo $title_placeholder; ?></label>
-								<input type='text' name='title' size='30' value='<?php esc_attr_e( $notification_edit[ 'title' ] ); ?>' id='title' class='bookacti-translatable' spellcheck='true' autocomplete='off' placeholder='<?php echo esc_attr( $title_placeholder ); ?>' required/>
+								<input type='text' name='title' size='30' value='<?php echo esc_attr( $notification_edit[ 'title' ] ); ?>' id='title' class='bookacti-translatable' spellcheck='true' autocomplete='off' placeholder='<?php echo esc_attr( $title_placeholder ); ?>' required/>
 							</div>
 						</div>
 						<div id='postdivrich' class='postarea'></div>

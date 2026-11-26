@@ -281,7 +281,7 @@ function bookacti_settings_field_timezone_callback() {
 /**
  * Display "Calendar localization" setting
  * @since 1.7.16
- * @version 1.14.0
+ * @version 1.19.8
  */
 function bookacti_settings_field_calendar_localization_callback() {
 	$args = array(
@@ -291,11 +291,11 @@ function bookacti_settings_field_calendar_localization_callback() {
 		'options' => array( 
 						'default' => esc_html__( 'Based on the Site Language only (default)', 'booking-activities' ),
 						/* translators: %s is a comma separated list of option name */
-						'wp_settings' => sprintf( esc_html__( 'Based on more WP settings (%s)', 'booking-activities' ), implode( ', ', array( __( 'Site Language' ), __( 'Time Format' ), __( 'Week Starts On' ) ) ) )
+						'wp_settings' => sprintf( esc_html__( 'Based on more WP settings (%s)', 'booking-activities' ), implode( ', ', array( __( 'Site Language', 'default' ), __( 'Time Format', 'default' ), __( 'Week Starts On', 'default' ) ) ) )
 					),
 		'value'   => bookacti_get_setting_value( 'bookacti_general_settings', 'calendar_localization' ),
 		/* translators: %s = "Site Language (WordPress Settings > General)" with a link to WP general settings */
-		'tip'     => sprintf( esc_html__( 'Many elements of the calendar are localized according to your %s: time format (12 or 24-hour), date format, first day of the week, text in buttons, names of the days and the months, and RTL display.', 'booking-activities' ), __( 'Site Language' ) . ' (<a href="' . admin_url( 'options-general.php' ) . '">' . esc_html__( 'WordPress Settings > General', 'booking-activities' ) . '</a>)' )
+		'tip'     => sprintf( esc_html__( 'Many elements of the calendar are localized according to your %s: time format (12 or 24-hour), date format, first day of the week, text in buttons, names of the days and the months, and RTL display.', 'booking-activities' ), __( 'Site Language', 'default' ) . ' (<a href="' . admin_url( 'options-general.php' ) . '">' . esc_html__( 'WordPress Settings > General', 'booking-activities' ) . '</a>)' )
 	);
 	bookacti_display_field( $args );
 }
@@ -860,7 +860,7 @@ function bookacti_settings_section_messages_callback() {
 /**
  * Get all default messages
  * @since 1.2.0
- * @version 1.16.20
+ * @version 1.19.8
  */
 function bookacti_get_default_messages() {
 	$wp_date_format_link = '<a href="https://wordpress.org/support/article/formatting-date-and-time/" target="_blank" >' .  esc_html__( 'Formatting Date and Time', 'booking-activities' ) . '</a>';
@@ -902,12 +902,19 @@ function bookacti_get_default_messages() {
 		),
 		'selected_event' => array(
 			'value'       => esc_html__( 'Selected event', 'booking-activities' ),
-			/* translators: %s can be either "singular" or "plural" */
-			'description' => sprintf( esc_html__( 'Title displayed before the selected events list (%s).', 'booking-activities' ), esc_html__( 'singular', 'booking-activities' ) )
+			'description' => sprintf( 
+				/* translators: %s can be either "singular" or "plural" */
+				esc_html__( 'Title displayed before the selected events list (%s).', 'booking-activities' ),
+				esc_html__( 'singular', 'booking-activities' )
+			)
 		),
 		'selected_events' => array(
 			'value'       => esc_html__( 'Selected events', 'booking-activities' ),
-			'description' => sprintf( esc_html__( 'Title displayed before the selected events list (%s).', 'booking-activities' ), esc_html__( 'plural', 'booking-activities' ) )
+			'description' => sprintf(
+				/* translators: %s can be either "singular" or "plural" */
+				esc_html__( 'Title displayed before the selected events list (%s).', 'booking-activities' ),
+				esc_html__( 'plural', 'booking-activities' )
+			)
 		),
 		'no_events' => array(
 			'value'       => esc_html__( 'No events available.', 'booking-activities' ),
@@ -916,13 +923,20 @@ function bookacti_get_default_messages() {
 		'avail' => array(
 			/* translators: This particle is used right after the quantity of available bookings. Put the singular here. E.g.: 1 avail. . */
 			'value'       => esc_html_x( 'avail.', 'Short for availability [singular noun]', 'booking-activities' ),
-			/* translators: %s can be either "singular" or "plural" */
-			'description' => sprintf( esc_html__( 'Particle displayed after the number of available places on events (%s).', 'booking-activities' ), esc_html__( 'singular', 'booking-activities' ) )
+			'description' => sprintf(
+				/* translators: %s can be either "singular" or "plural" */
+				esc_html__( 'Particle displayed after the number of available places on events (%s).', 'booking-activities' ),
+				esc_html__( 'singular', 'booking-activities' )
+			)
 		),
 		'avails' => array(
 			/* translators: This particle is used right after the quantity of available bookings. Put the plural here. E.g.: 2 avail. . */
 			'value'       => esc_html_x( 'avail.', 'Short for availabilities [plural noun]', 'booking-activities' ),
-			'description' => sprintf( esc_html__( 'Particle displayed after the number of available places on events (%s).', 'booking-activities' ), esc_html__( 'plural', 'booking-activities' ) )
+			'description' => sprintf(
+				/* translators: %s can be either "singular" or "plural" */
+				esc_html__( 'Particle displayed after the number of available places on events (%s).', 'booking-activities' ),
+				esc_html__( 'plural', 'booking-activities' )
+			)
 		),
 		'not_bookable' => array(
 			'value'       => esc_html_x( 'unavail.', 'Short for unavailable', 'booking-activities' ),
@@ -1524,7 +1538,7 @@ function bookacti_display_bawl_promo() {
 /**
  * Export additional user metadata with WP privacy export tool
  * @since 1.7.0
- * @version 1.7.8
+ * @version 1.19.8
  * @param string $email_address
  * @param int $page
  * @return array
@@ -1552,7 +1566,7 @@ function bookacti_privacy_exporter_user_data( $email_address, $page = 1 ) {
 		if( ! empty( $user_personal_data ) ) {
 			$data_to_export[] = array(
 				'group_id'    => 'user',
-				'group_label' => __( 'User' ),
+				'group_label' => __( 'User', 'default' ),
 				'item_id'     => 'user-' . $user->ID,
 				'data'        => $user_personal_data,
 			);
