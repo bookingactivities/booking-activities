@@ -6,6 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  * Delete serialized PHP objects from metadata
  * This function is temporary
  * @since 1.18.8
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param string $old_version
  */
@@ -17,16 +18,16 @@ function bookacti_update_db_to_1_18_8( $old_version ) {
 	
 	$query     = 'DELETE FROM ' . BOOKACTI_TABLE_META . ' WHERE meta_value LIKE %s;';
 	$variables = array( '%' . $wpdb->esc_like( 'O:' ) . '%' );
-	$query     = $wpdb->prepare( $query, $variables );
-	$wpdb->query( $query );
+	$wpdb->query( $wpdb->prepare( $query, $variables ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 }
-add_action( 'bookacti_db_updated', 'bookacti_update_db_to_1_18_8', 130 );
+add_action( 'bookacti_db_updated', 'bookacti_update_db_to_1_18_8', 140 );
 
 
 /**
  * Rename form meta
  * This function is temporary
  * @since 1.18.2
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param string $old_version
  */
@@ -37,11 +38,11 @@ function bookacti_update_db_to_1_18_2( $old_version ) {
 	global $wpdb;
 	
 	$query = 'UPDATE ' . BOOKACTI_TABLE_META . ' SET meta_key = "css_id" WHERE object_type = "form" AND meta_key = "id"';
-	$wpdb->query( $query );
+	$wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	$query = 'UPDATE ' . BOOKACTI_TABLE_META . ' SET meta_key = "css_class" WHERE object_type = "form" AND meta_key = "class"';
-	$wpdb->query( $query );
+	$wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 }
-add_action( 'bookacti_db_updated', 'bookacti_update_db_to_1_18_2', 120 );
+add_action( 'bookacti_db_updated', 'bookacti_update_db_to_1_18_2', 130 );
 
 
 /**
@@ -59,47 +60,3 @@ function bookacti_update_db_to_1_18_0( $old_version ) {
 	bookacti_migrate_legacy_notifications();
 }
 add_action( 'bookacti_db_updated', 'bookacti_update_db_to_1_18_0', 120 );
-
-
-/**
- * Remove corrupted repeated events (groups)
- * This function is temporary
- * @since 1.16.24
- * @global wpdb $wpdb
- * @param string $old_version
- */
-function bookacti_update_db_to_1_16_24( $old_version ) {
-	// Do it only once, when Booking Activities is updated for the first time to 1.16.24
-	if( ! $old_version || version_compare( $old_version, '1.16.24', '>=' ) ) { return; }
-	
-	global $wpdb;
-	
-	$query = 'UPDATE ' . BOOKACTI_TABLE_EVENTS . ' SET repeat_freq = "none", repeat_step = NULL, repeat_on = NULL, repeat_from = NULL, repeat_to = NULL, repeat_exceptions = NULL WHERE repeat_from = "0000-00-00" OR repeat_to = "0000-00-00"';
-	$wpdb->query( $query );
-	$query = 'UPDATE ' . BOOKACTI_TABLE_EVENT_GROUPS . ' SET repeat_freq = "none", repeat_step = NULL, repeat_on = NULL, repeat_from = NULL, repeat_to = NULL, repeat_exceptions = NULL WHERE repeat_from = "0000-00-00" OR repeat_to = "0000-00-00"';
-	$wpdb->query( $query );
-}
-add_action( 'bookacti_db_updated', 'bookacti_update_db_to_1_16_24', 110 );
-
-
-/**
- * Update changes to 1.15.0
- * This function is temporary
- * @since 1.15.0
- * @version 1.16.2
- * @global wpdb $wpdb
- * @param string $old_version
- */
-function bookacti_update_db_to_1_15_0( $old_version ) {
-	// Do it only once, when Booking Activities is updated for the first time to 1.15.0
-	if( ! $old_version || version_compare( $old_version, '1.15.0', '>=' ) ) { return; }
-	
-	global $wpdb;
-	
-	// Rename minTime, maxTime in calendar fields settings and calendar editor settings
-	$query = 'UPDATE ' . BOOKACTI_TABLE_META . ' SET meta_key = "slotMinTime" WHERE meta_key = "minTime"';
-	$wpdb->query( $query );
-	$query = 'UPDATE ' . BOOKACTI_TABLE_META . ' SET meta_key = "slotMaxTime" WHERE meta_key = "maxTime"';
-	$wpdb->query( $query );
-}
-add_action( 'bookacti_db_updated', 'bookacti_update_db_to_1_15_0', 100 );

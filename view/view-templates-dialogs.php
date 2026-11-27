@@ -1,7 +1,7 @@
 <?php 
 /**
  * Calendar editor dialogs
- * @version 1.19.8
+ * @version 1.19.9
  */
 
 // Exit if accessed directly
@@ -14,13 +14,13 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 ?>
 
 <!-- Edit event dialog -->
-<div id='bookacti-event-data-dialog' class='bookacti-backend-dialog bookacti-template-dialog' data-event-id='0' title='<?php esc_html_e( 'Event parameters', 'booking-activities' ); ?>' style='display:none;' >
+<div id='bookacti-event-data-dialog' class='bookacti-backend-dialog bookacti-template-dialog' data-event-id='0' title='<?php esc_attr_e( 'Event parameters', 'booking-activities' ); ?>' style='display:none;' >
 	<form id='bookacti-event-data-form' >
 		<input type='hidden' name='id' id='bookacti-event-data-form-event-id' value='' />
 		<input type='hidden' name='start' id='bookacti-event-data-form-event-start' value='' />
 		<input type='hidden' name='end' id='bookacti-event-data-form-event-end' value='' />
 		<input type='hidden' name='action' id='bookacti-event-data-form-action' value='bookactiUpdateEvent' />
-		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_update_event_data' ); ?>'/>
+		<input type='hidden' name='nonce' value='<?php echo esc_attr( wp_create_nonce( 'bookacti_update_event_data' ) ); ?>'/>
 		
 		<div id='bookacti-event-dialog-lang-switcher' class='bookacti-lang-switcher' ></div>
 		
@@ -83,7 +83,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 		
 		/**
 		 * Display the 'Repetition' tab content of event settings
-		 * @version 1.19.8
+		 * @version 1.19.9
 		 * @param array $params
 		 */
 		function bookacti_fill_event_tab_repetition( $params ) {
@@ -139,13 +139,13 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 					),
 					'attr'	=> array( 
 						/* translators: Keep the {nth_day_of_month} tag as is. Selectbox option, comes after "Repeat on". E.g.: [Repeat on] on the 21st each month. */
-						'nth_day_of_month'  => 'data-default-label="' . esc_html__( 'on the {nth_day_of_month} each month', 'booking-activities' ) . '"',
+						'nth_day_of_month'  => 'data-default-label="' . esc_attr__( 'on the {nth_day_of_month} each month', 'booking-activities' ) . '"',
 						/* translators: Selectbox option, comes after by "Repeat on the". E.g.: [Repeat on] on the last day of each month. */
-						'last_day_of_month' => 'data-default-label="' . esc_html__( 'on the last day of each month', 'booking-activities' ) . '"',
+						'last_day_of_month' => 'data-default-label="' . esc_attr__( 'on the last day of each month', 'booking-activities' ) . '"',
 						/* translators: Keep the {nth_day_of_week} and {day_of_week} tags as is. Selectbox option, comes after by "Repeat on". E.g.: [Repeat on] on the 2nd Monday of each month. */
-						'nth_day_of_week'   => 'data-default-label="' . esc_html__( 'on the {nth_day_of_week} {day_of_week} of each month', 'booking-activities' ) . '"',
+						'nth_day_of_week'   => 'data-default-label="' . esc_attr__( 'on the {nth_day_of_week} {day_of_week} of each month', 'booking-activities' ) . '"',
 						/* translators: Keep the {day_of_week} tag as is. Selectbox option, comes after by "Repeat on". E.g.: [Repeat on] on the last Monday of each month. */
-						'last_day_of_week'  => 'data-default-label="' . esc_html__( 'on the last {day_of_week} of each month', 'booking-activities' ) . '"'
+						'last_day_of_week'  => 'data-default-label="' . esc_attr__( 'on the last {day_of_week} of each month', 'booking-activities' ) . '"'
 					),
 					'tip'		=> esc_html__( 'Select the day of the month on which the event will be repeated.', 'booking-activities' )
 				),
@@ -188,10 +188,10 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 				bookacti_display_fields( array_intersect_key( $fields, array_flip( array( 'repeat_step', 'repeat_freq' ) ) ) );
 
 				$start_of_week = intval( get_option( 'start_of_week' ) );
-				$weekdays = array( 0 => esc_html__( 'Sunday', 'default' ), 1 => esc_html__( 'Monday', 'default' ), 2 => esc_html__( 'Tuesday', 'default' ), 3 => esc_html__( 'Wednesday', 'default' ), 4 => esc_html__( 'Thursday', 'default' ), 5 => esc_html__( 'Friday', 'default' ), 6 => esc_html__( 'Saturday', 'default' ) );
+				$weekdays = array( 0 => __( 'Sunday', 'default' ), 1 => __( 'Monday', 'default' ), 2 => __( 'Tuesday', 'default' ), 3 => __( 'Wednesday', 'default' ), 4 => __( 'Thursday', 'default' ), 5 => __( 'Friday', 'default' ), 6 => __( 'Saturday', 'default' ) );
 				$start_of_weekday = $weekdays[ $start_of_week ];
 			?>
-				<div class='bookacti-repeat-freq-start-of-week-notice bookacti-info' data-start-of-week='<?php echo $start_of_week; ?>'>
+				<div class='bookacti-repeat-freq-start-of-week-notice bookacti-info' data-start-of-week='<?php echo esc_attr( $start_of_week ); ?>'>
 					<span class='dashicons dashicons-warning'></span>
 					<span>
 						<?php 
@@ -199,8 +199,8 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 								/* translators: %1$s = "Week Starts On" option label. %2$s = "Week Starts On" option value (e.g.: Monday). %3$s = link to "WordPress Settings > General" */
 								esc_html__( 'You have set the "%1$s" option to "%2$s" in %3$s. This setting will be used to skip weeks.', 'booking-activities' ), 
 								'<strong>' . esc_html__( 'Week Starts On', 'default' ) . '</strong>', 
-								'<strong>' . $weekdays[ $start_of_week ] . '</strong>', 
-								'<a href="' . admin_url( 'options-general.php' ) . '">' . esc_html__( 'WordPress Settings > General', 'booking-activities' ) . '</a>'
+								'<strong>' . esc_html( $weekdays[ $start_of_week ] ) . '</strong>', 
+								'<a href="' . esc_url( admin_url( 'options-general.php' ) ) . '">' . esc_html__( 'WordPress Settings > General', 'booking-activities' ) . '</a>'
 							);
 						?>
 					</span>
@@ -218,11 +218,11 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 
 
 <!-- Template params -->
-<div id='bookacti-template-data-dialog' class='bookacti-backend-dialog bookacti-template-dialog tabs' title='<?php esc_html_e( 'Calendar parameters', 'booking-activities' ); ?>' style='display:none;' >
+<div id='bookacti-template-data-dialog' class='bookacti-backend-dialog bookacti-template-dialog tabs' title='<?php esc_attr_e( 'Calendar parameters', 'booking-activities' ); ?>' style='display:none;' >
 	<form id='bookacti-template-data-form' >
 		<input type='hidden' name='template_id' id='bookacti-template-data-form-template-id' value=''/>
 		<input type='hidden' name='action' id='bookacti-template-data-form-action' value=''/>
-		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_insert_or_update_template' ); ?>'/>
+		<input type='hidden' name='nonce' value='<?php echo esc_attr( wp_create_nonce( 'bookacti_insert_or_update_template' ) ); ?>'/>
 		<div id='bookacti-template-dialog-lang-switcher' class='bookacti-lang-switcher' ></div>
 		
 		<?php 
@@ -284,7 +284,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			/**
 			 * Fill the "Editor" tab in calendar settings
 			 * @since 1.7.18 (was bookacti_fill_template_tab_agenda)
-			 * @version 1.15.0
+			 * @version 1.19.9
 			 * @param array $params
 			 */
 			function bookacti_fill_template_tab_editor( $params = array() ) {
@@ -293,8 +293,12 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 					<span class='dashicons dashicons-warning'></span>
 					<span>
 					<?php
-						/* translators: %s is a link to the "booking form editor". */
-						echo sprintf( esc_html__( 'These settings are used for the editor only.', 'booking-activities' ) . ' ' .  esc_html__( 'For your frontend calendars, use the "Calendar" field settings in the desired %s.', 'booking-activities' ), '<a href="' . admin_url( 'admin.php?page=bookacti_forms' ) . '">' . esc_html__( 'booking form editor', 'booking-activities' ) . '</a>' );
+						echo sprintf( 
+							esc_html__( 'These settings are used for the editor only.', 'booking-activities' ) . ' ' .
+							/* translators: %s is a link to the "booking form editor". */
+							esc_html__( 'For your frontend calendars, use the "Calendar" field settings in the desired %s.', 'booking-activities' ), 
+							'<a href="' . esc_url( admin_url( 'admin.php?page=bookacti_forms' ) ) . '">' . esc_html__( 'booking form editor', 'booking-activities' ) . '</a>'
+						);
 					?>
 					</span>
 				</div>
@@ -371,12 +375,12 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 
 
 <!-- Activity param -->
-<div id='bookacti-activity-data-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Activity parameters', 'booking-activities' ); ?>' style='display:none;'>
+<div id='bookacti-activity-data-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_attr_e( 'Activity parameters', 'booking-activities' ); ?>' style='display:none;'>
 	<form id='bookacti-activity-data-form'>
 		<input type='hidden' name='template_id' id='bookacti-activity-template-id'/>
 		<input type='hidden' name='activity_id' id='bookacti-activity-activity-id'/>
 		<input type='hidden' name='action' id='bookacti-activity-action'/>
-		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_insert_or_update_activity' ); ?>'/>
+		<input type='hidden' name='nonce' value='<?php echo esc_attr( wp_create_nonce( 'bookacti_insert_or_update_activity' ) ); ?>'/>
 		
 		<div id='bookacti-activity-dialog-lang-switcher' class='bookacti-lang-switcher' ></div>
 			
@@ -408,7 +412,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 			<?php
 			/**
 			 * Display the 'General' tab content of activity settings
-			 * @version 1.16.45
+			 * @version 1.19.9
 			 * @param array $params
 			 */
 			function bookacti_fill_activity_tab_general( $params = array() ) {
@@ -428,17 +432,17 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 						'name'    => 'availability',
 						'id'      => 'bookacti-activity-availability',
 						'title'   => esc_html__( 'Default availability', 'booking-activities' ),
-						'label'   => bookacti_help_tip( esc_html__( 'The default amount of bookings that can be made on each event of this activity. This can be overriden on each event independantly.', 'booking-activities' ), false ) 
-						          . '<br/><small><em>' . esc_html__( 'Used when an event is created only', 'booking-activities' ) . '</em></small>',
-						'options' => array( 'min' => 0, 'step' => 1 )
+						'options' => array( 'min' => 0, 'step' => 1 ),
+						'tip'     => esc_html__( 'The default amount of bookings that can be made on each event of this activity. This can be overriden on each event independantly.', 'booking-activities' ),
+						'after'   => '<br/><small><em>' . esc_html__( 'Used when an event is created only', 'booking-activities' ) . '</em></small>',
 					),
 					'activity-duration' => array(
 						'type'  => 'duration',
 						'name'  => 'duration',
 						'id'    => 'bookacti-activity-duration',
 						'title' => esc_html__( 'Default duration', 'booking-activities' ),
-						'label' => bookacti_help_tip( esc_html__( 'The default duration of an event when you drop this activity onto the calendar. For a better readability, try not to go over your working hours. Best practice for events of several days is to create one event per day and then group them.', 'booking-activities' ), false )
-						        . '<br/><small><em>' . esc_html__( 'Used when an event is created only', 'booking-activities' ) . '</em></small>'
+						'tip'   => esc_html__( 'The default duration of an event when you drop this activity onto the calendar. For a better readability, try not to go over your working hours. Best practice for events of several days is to create one event per day and then group them.', 'booking-activities' ),
+						'after' => '<br/><small><em>' . esc_html__( 'Used when an event is created only', 'booking-activities' ) . '</em></small>'
 					),
 					'activity-color' => array(
 						'type'  => 'color',
@@ -702,7 +706,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 
 
 <!-- Choose between creating a brand new activity or import an existing one -->
-<div id='bookacti-activity-create-method-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Create a new activity or use an existing activity ?', 'booking-activities' ); ?>'  style='display:none;'>
+<div id='bookacti-activity-create-method-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_attr_e( 'Create a new activity or use an existing activity ?', 'booking-activities' ); ?>'  style='display:none;'>
 	<?php do_action( 'bookacti_activity_create_method_dialog_before' ); ?>
 	<div id='bookacti-activity-create-method-container' >
 		<?php 
@@ -715,9 +719,9 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 
 
 <!-- Import an existing activity -->
-<div id='bookacti-activity-import-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Import existing activity', 'booking-activities' ); ?>' style='display:none;'>
+<div id='bookacti-activity-import-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_attr_e( 'Import existing activity', 'booking-activities' ); ?>' style='display:none;'>
     <div id='bookacti-activity-import-container'>
-		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_import_activity' ); ?>'/>
+		<input type='hidden' name='nonce' value='<?php echo esc_attr( wp_create_nonce( 'bookacti_import_activity' ) ); ?>'/>
 		<div>
 			<?php esc_html_e( 'Import an activity that you have already created on an other calendar:', 'booking-activities' ); ?>
 		</div>
@@ -751,10 +755,10 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 
 
 <!-- Group of events -->
-<div id='bookacti-group-of-events-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Group of events parameters', 'booking-activities' ); ?>' style='display:none;'>
+<div id='bookacti-group-of-events-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_attr_e( 'Group of events parameters', 'booking-activities' ); ?>' style='display:none;'>
 	<form id='bookacti-group-of-events-form'>
 		<input type='hidden' name='action' id='bookacti-group-of-events-action'/>
-		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_insert_or_update_group_of_events' ); ?>'/>
+		<input type='hidden' name='nonce' value='<?php echo esc_attr( wp_create_nonce( 'bookacti_insert_or_update_group_of_events' ) ); ?>'/>
 		
 		<div id='bookacti-group-of-events-dialog-lang-switcher' class='bookacti-lang-switcher' ></div>
 			
@@ -832,10 +836,10 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 				<div id='bookacti-group-of-events-summary-label-container'>
 					<label id='bookacti-group-of-events-summary-label' for='bookacti-group-of-events-summary'><?php esc_html_e( 'Selected events', 'booking-activities' ); ?></label>
 					<div id='bookacti-group-of-events-occurrences-navigation'>
-						<span id='bookacti-group-of-events-occurrences-undo' class='button' title='<?php esc_html_e( 'Events that will be saved', 'booking-activities' ) ?>'><span class='dashicons dashicons-undo'></span></span>
-						<span id='bookacti-group-of-events-occurrences-reset' class='button' title='<?php esc_html_e( 'Currently saved events', 'booking-activities' ) ?>'><span class='dashicons dashicons-database-view'></span></span>
-						<span id='bookacti-group-of-events-occurrences-prev' class='button' title='<?php esc_html_e( 'Previous occurrence', 'booking-activities' ) ?>'><span class='dashicons dashicons-arrow-left-alt2'></span></span>
-						<span id='bookacti-group-of-events-occurrences-next' class='button' title='<?php esc_html_e( 'Next occurrence', 'booking-activities' ) ?>'><span class='dashicons dashicons-arrow-right-alt2'></span></span>
+						<span id='bookacti-group-of-events-occurrences-undo' class='button' title='<?php esc_attr_e( 'Events that will be saved', 'booking-activities' ) ?>'><span class='dashicons dashicons-undo'></span></span>
+						<span id='bookacti-group-of-events-occurrences-reset' class='button' title='<?php esc_attr_e( 'Currently saved events', 'booking-activities' ) ?>'><span class='dashicons dashicons-database-view'></span></span>
+						<span id='bookacti-group-of-events-occurrences-prev' class='button' title='<?php esc_attr_e( 'Previous occurrence', 'booking-activities' ) ?>'><span class='dashicons dashicons-arrow-left-alt2'></span></span>
+						<span id='bookacti-group-of-events-occurrences-next' class='button' title='<?php esc_attr_e( 'Next occurrence', 'booking-activities' ) ?>'><span class='dashicons dashicons-arrow-right-alt2'></span></span>
 					</div>
 				</div>
 				<!-- This field is only used for feedback, it is not used to pass any AJAX data, events list is passed through an array made with JS -->
@@ -856,7 +860,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 		/**
 		 * Display the 'Repetition' tab content of group of events settings
 		 * @since 1.12.0
-		 * @version 1.19.8
+		 * @version 1.19.9
 		 * @param array $params
 		 */
 		function bookacti_fill_group_of_events_tab_repetition( $params ) {
@@ -912,13 +916,13 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 					),
 					'attr'    => array( 
 						/* translators: Keep the {nth_day_of_month} tag as is. Selectbox option, comes after "Repeat on". E.g.: [Repeat on] on the 21st each month. */
-						'nth_day_of_month'  => 'data-default-label="' . esc_html__( 'on the {nth_day_of_month} each month', 'booking-activities' ) . '"',
+						'nth_day_of_month'  => 'data-default-label="' . esc_attr__( 'on the {nth_day_of_month} each month', 'booking-activities' ) . '"',
 						/* translators: Selectbox option, comes after by "Repeat on the". E.g.: [Repeat on] on the last day of each month. */
-						'last_day_of_month' => 'data-default-label="' . esc_html__( 'on the last day of each month', 'booking-activities' ) . '"',
+						'last_day_of_month' => 'data-default-label="' . esc_attr__( 'on the last day of each month', 'booking-activities' ) . '"',
 						/* translators: Keep the {nth_day_of_week} and {day_of_week} tags as is. Selectbox option, comes after by "Repeat on". E.g.: [Repeat on] on the 2nd Monday of each month. */
-						'nth_day_of_week'   => 'data-default-label="' . esc_html__( 'on the {nth_day_of_week} {day_of_week} of each month', 'booking-activities' ) . '"',
+						'nth_day_of_week'   => 'data-default-label="' . esc_attr__( 'on the {nth_day_of_week} {day_of_week} of each month', 'booking-activities' ) . '"',
 						/* translators: Keep the {day_of_week} tag as is. Selectbox option, comes after by "Repeat on". E.g.: [Repeat on] on the last Monday of each month. */
-						'last_day_of_week'  => 'data-default-label="' . esc_html__( 'on the last {day_of_week} of each month', 'booking-activities' ) . '"'
+						'last_day_of_week'  => 'data-default-label="' . esc_attr__( 'on the last {day_of_week} of each month', 'booking-activities' ) . '"'
 					),
 					'tip'     => esc_html__( 'Select the day of the month on which the group of events will be repeated.', 'booking-activities' )
 				),
@@ -956,10 +960,10 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 					bookacti_display_fields( array_intersect_key( $fields, array_flip( array( 'repeat_step', 'repeat_freq' ) ) ) );
 				
 					$start_of_week = intval( get_option( 'start_of_week' ) );
-					$weekdays = array( 0 => esc_html__( 'Sunday', 'default' ), 1 => esc_html__( 'Monday', 'default' ), 2 => esc_html__( 'Tuesday', 'default' ), 3 => esc_html__( 'Wednesday', 'default' ), 4 => esc_html__( 'Thursday', 'default' ), 5 => esc_html__( 'Friday', 'default' ), 6 => esc_html__( 'Saturday', 'default' ) );
+					$weekdays = array( 0 => __( 'Sunday', 'default' ), 1 => __( 'Monday', 'default' ), 2 => __( 'Tuesday', 'default' ), 3 => __( 'Wednesday', 'default' ), 4 => __( 'Thursday', 'default' ), 5 => __( 'Friday', 'default' ), 6 => __( 'Saturday', 'default' ) );
 					$start_of_weekday = $weekdays[ $start_of_week ];
 				?>
-				<div class='bookacti-repeat-freq-start-of-week-notice bookacti-info' data-start-of-week='<?php echo $start_of_week; ?>'>
+				<div class='bookacti-repeat-freq-start-of-week-notice bookacti-info' data-start-of-week='<?php echo esc_attr( $start_of_week ); ?>'>
 					<span class='dashicons dashicons-warning'></span>
 					<span>
 						<?php 
@@ -967,8 +971,8 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 								/* translators: %1$s = "Week Starts On" option label. %2$s = "Week Starts On" option value (e.g.: Monday). %3$s = link to "WordPress Settings > General" */
 								esc_html__( 'You have set the "%1$s" option to "%2$s" in %3$s. This setting will be used to skip weeks.', 'booking-activities' ), 
 								'<strong>' . esc_html__( 'Week Starts On', 'default' ) . '</strong>', 
-								'<strong>' . $weekdays[ $start_of_week ] . '</strong>', 
-								'<a href="' . admin_url( 'options-general.php' ) . '">' . esc_html__( 'WordPress Settings > General', 'booking-activities' ) . '</a>'
+								'<strong>' . esc_html( $weekdays[ $start_of_week ] ) . '</strong>', 
+								'<a href="' . esc_url( admin_url( 'options-general.php' ) ) . '">' . esc_html__( 'WordPress Settings > General', 'booking-activities' ) . '</a>'
 							);
 						?>
 					</span>
@@ -1003,12 +1007,12 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 
 
 <!-- Group category -->
-<div id='bookacti-group-category-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Group category parameters', 'booking-activities' ); ?>' style='display:none;'>
+<div id='bookacti-group-category-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_attr_e( 'Group category parameters', 'booking-activities' ); ?>' style='display:none;'>
 	<form id='bookacti-group-category-form'>
 		<input type='hidden' name='template_id' id='bookacti-group-category-template-id'/>
 		<input type='hidden' name='category_id' id='bookacti-group-category-category-id'/>
 		<input type='hidden' name='action' id='bookacti-group-category-action'/>
-		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_insert_or_update_group_category' ); ?>'/>
+		<input type='hidden' name='nonce' value='<?php echo esc_attr( wp_create_nonce( 'bookacti_insert_or_update_group_category' ) ); ?>'/>
 		
 		<div id='bookacti-group-category-dialog-lang-switcher' class='bookacti-lang-switcher' ></div>
 		
@@ -1206,7 +1210,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 
 
 <!-- Delete template -->
-<div id='bookacti-delete-template-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Delete calendar', 'booking-activities' ); ?>' style='display:none;' >
+<div id='bookacti-delete-template-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_attr_e( 'Delete calendar', 'booking-activities' ); ?>' style='display:none;' >
 	<?php do_action( 'bookacti_delete_template_dialog_before' ); ?>
 	
 	<div><?php esc_html_e( 'Are you sure to delete this calendar?', 'booking-activities' ); ?></div>
@@ -1220,8 +1224,8 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 
 
 <!-- Delete activity -->
-<div id='bookacti-delete-activity-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Delete activity', 'booking-activities' ); ?>' style='display:none;' >
-	<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_deactivate_activity' ); ?>'/>
+<div id='bookacti-delete-activity-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_attr_e( 'Delete activity', 'booking-activities' ); ?>' style='display:none;' >
+	<input type='hidden' name='nonce' value='<?php echo esc_attr( wp_create_nonce( 'bookacti_deactivate_activity' ) ); ?>'/>
 	
 	<?php do_action( 'bookacti_delete_activity_dialog_before' ); ?>
 	
@@ -1261,10 +1265,10 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 
 
 <!-- Unbind an occurrence of a repeated event -->
-<div id='bookacti-unbind-event-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Make an occurrence of a repeated event independent', 'booking-activities' ); ?>' style='display:none;'>
+<div id='bookacti-unbind-event-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_attr_e( 'Make an occurrence of a repeated event independent', 'booking-activities' ); ?>' style='display:none;'>
 	<form id='bookacti-unbind-event-form'>
 		<input type='hidden' name='action' id='bookacti-unbind-event-form-action' value='bookactiUnbindEventOccurrences'/>
-		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_unbind_event_occurrences' ); ?>'/>
+		<input type='hidden' name='nonce' value='<?php echo esc_attr( wp_create_nonce( 'bookacti_unbind_event_occurrences' ) ); ?>'/>
 		<input type='hidden' name='unbind_action' value='selected'/>
 		
 		<?php do_action( 'bookacti_unbind_event_dialog_before' ); ?>
@@ -1311,10 +1315,10 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 
 
 <!-- Unbind an occurrence of a repeated group of events -->
-<div id='bookacti-unbind-group-of-events-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Make an occurrence of a repeated group of events independent', 'booking-activities' ); ?>' style='display:none;'>
+<div id='bookacti-unbind-group-of-events-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_attr_e( 'Make an occurrence of a repeated group of events independent', 'booking-activities' ); ?>' style='display:none;'>
 	<form id='bookacti-unbind-group-of-events-form'>
 		<input type='hidden' name='action' id='bookacti-unbind-group-of-events-form-action' value='bookactiUnbindGroupOfEventsOccurrences'/>
-		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_unbind_group_of_events_occurrences' ); ?>'/>
+		<input type='hidden' name='nonce' value='<?php echo esc_attr( wp_create_nonce( 'bookacti_unbind_group_of_events_occurrences' ) ); ?>'/>
 		<input type='hidden' name='unbind_action' value='selected'/>
 		
 		<?php do_action( 'bookacti_unbind_group_of_events_dialog_before' ); ?>
@@ -1361,7 +1365,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 
 
 <!-- Dialog to move / resize an event -->
-<div id='bookacti-update-event-dates-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Change the event\'s dates', 'booking-activities' ); ?>' style='display:none;'>
+<div id='bookacti-update-event-dates-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_attr_e( 'Change the event\'s dates', 'booking-activities' ); ?>' style='display:none;'>
 	<form id='bookacti-update-event-dates-form'>
 		<?php do_action( 'bookacti_update_event_dates_dialog_before' ); ?>
 		
@@ -1416,7 +1420,7 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 
 
 <!-- Warning before moving / resizing a booked event -->
-<div id='bookacti-update-booked-event-dates-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Move a booked event', 'booking-activities' ); ?>' style='display:none;'>
+<div id='bookacti-update-booked-event-dates-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_attr_e( 'Move a booked event', 'booking-activities' ); ?>' style='display:none;'>
 	<form id='bookacti-update-booked-event-dates-form'>
 		<?php do_action( 'bookacti_update_booked_event_dates_dialog_before' ); ?>
 		
@@ -1455,10 +1459,10 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 
 
 <!-- Delete event -->
-<div id='bookacti-delete-event-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Delete event', 'booking-activities' ); ?>' style='display:none;' >
+<div id='bookacti-delete-event-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_attr_e( 'Delete event', 'booking-activities' ); ?>' style='display:none;' >
 	<form id='bookacti-delete-event-form'>
 		<input type='hidden' name='action' id='bookacti-delete-event-form-action' value='bookactiDeleteEvent'/>
-		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_delete_event' ); ?>'/>
+		<input type='hidden' name='nonce' value='<?php echo esc_attr( wp_create_nonce( 'bookacti_delete_event' ) ); ?>'/>
 		
 		<?php do_action( 'bookacti_delete_event_dialog_before' ); ?>
 		
@@ -1517,10 +1521,10 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 
 
 <!-- Delete group of events -->
-<div id='bookacti-delete-group-of-events-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Delete a group of events', 'booking-activities' ); ?>' style='display:none;' >
+<div id='bookacti-delete-group-of-events-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_attr_e( 'Delete a group of events', 'booking-activities' ); ?>' style='display:none;' >
 	<form id='bookacti-delete-group-of-events-form'>
 		<input type='hidden' name='action' id='bookacti-delete-group-of-events-form-action' value='bookactiDeleteGroupOfEvents'/>
-		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_delete_group_of_events' ); ?>'/>
+		<input type='hidden' name='nonce' value='<?php echo esc_attr( wp_create_nonce( 'bookacti_delete_group_of_events' ) ); ?>'/>
 		
 		<?php do_action( 'bookacti_delete_group_of_events_dialog_before' ); ?>
 		
@@ -1571,8 +1575,8 @@ foreach( $templates as $template ) { $templates_options[ $template[ 'id' ] ] = e
 
 
 <!-- Delete group category -->
-<div id='bookacti-delete-group-category-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Delete a group category', 'booking-activities' ); ?>' style='display:none;' >
-	<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_delete_group_category' ); ?>'/>
+<div id='bookacti-delete-group-category-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_attr_e( 'Delete a group category', 'booking-activities' ); ?>' style='display:none;' >
+	<input type='hidden' name='nonce' value='<?php echo esc_attr( wp_create_nonce( 'bookacti_delete_group_category' ) ); ?>'/>
 	
 	<?php do_action( 'bookacti_delete_group_category_dialog_before' ); ?>
 	

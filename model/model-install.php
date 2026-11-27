@@ -248,36 +248,36 @@ function bookacti_create_tables() {
 
 /**
  * Remove Bookings activities tables from database
- * @version 1.18.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  */
 function bookacti_drop_tables() {
 	global $wpdb;
 	$wpdb->hide_errors();
-	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_TEMPLATES . '; ' );
-	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_ACTIVITIES . '; ' );
-	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_TEMP_ACTI . '; ' );
-	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_EVENTS . '; ' );
-	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_EXCEPTIONS . '; ' );
-	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_EVENT_GROUPS . '; ' );
-	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_GROUPS_EVENTS . '; ' );
-	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_GROUP_CATEGORIES . '; ' );
-	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_FORMS . '; ' );
-	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_FORM_FIELDS . '; ' );
-	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_BOOKINGS . '; ' );
-	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_BOOKING_GROUPS . '; ' );
-	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_META . '; ' );
-	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_EXPORTS . '; ' );
-	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_PERMISSIONS . '; ' );
-	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_NOTIFICATIONS . '; ' );
-	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_NOTIFICATION_CHANNELS . '; ' );
+	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_TEMPLATES . '; ' ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_ACTIVITIES . '; ' ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_TEMP_ACTI . '; ' ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_EVENTS . '; ' ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_EXCEPTIONS . '; ' ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_EVENT_GROUPS . '; ' ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_GROUPS_EVENTS . '; ' ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_GROUP_CATEGORIES . '; ' ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_FORMS . '; ' ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_FORM_FIELDS . '; ' ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_BOOKINGS . '; ' ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_BOOKING_GROUPS . '; ' ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_META . '; ' ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_EXPORTS . '; ' ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_PERMISSIONS . '; ' ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_NOTIFICATIONS . '; ' ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_NOTIFICATION_CHANNELS . '; ' ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 }
 
 
 /**
  * Remove Bookings activities user data
  * @since 1.6.0
- * @version 1.18.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  */
 function bookacti_delete_user_data() {
@@ -285,5 +285,5 @@ function bookacti_delete_user_data() {
 	$wpdb->hide_errors();
 	
 	$query = 'DELETE FROM ' . $wpdb->usermeta . ' WHERE meta_key LIKE "bookacti_%";';
-	$wpdb->query( $query );
+	$wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 }

@@ -3,7 +3,7 @@
  * Plugin Name: Booking Activities
  * Plugin URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Description: Booking system specialized in activities (sports, cultural, leisure, events...). Works great with WooCommerce.
- * Version: 1.19.8
+ * Version: 1.19.9
  * Author: Booking Activities Team
  * Author URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Text Domain: booking-activities
@@ -42,7 +42,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 // GLOBALS AND CONSTANTS
-if( ! defined( 'BOOKACTI_VERSION' ) )     { define( 'BOOKACTI_VERSION', '1.19.8' ); }
+if( ! defined( 'BOOKACTI_VERSION' ) )     { define( 'BOOKACTI_VERSION', '1.19.9' ); }
 if( ! defined( 'BOOKACTI_PLUGIN_NAME' ) ) { define( 'BOOKACTI_PLUGIN_NAME', 'booking-activities' ); }
 if( ! defined( 'BOOKACTI_PATH' ) )        { define( 'BOOKACTI_PATH', __DIR__ ); }
 
@@ -340,7 +340,7 @@ add_action( 'wp_enqueue_scripts', 'bookacti_enqueue_frontend_scripts', 30 );
 
 /**
  * Activate Booking Activities
- * @version 1.15.4
+ * @version 1.19.9
  */
 function bookacti_activate() {
 	if( ! is_blog_installed() ) { return; }
@@ -357,11 +357,11 @@ function bookacti_activate() {
 	
 	// Keep in memory the first installed date
 	$install_date = get_option( 'bookacti-install-date' );
-	if( ! $install_date ) { update_option( 'bookacti-install-date', date( 'Y-m-d H:i:s' ) ); }
+	if( ! $install_date ) { update_option( 'bookacti-install-date', gmdate( 'Y-m-d H:i:s' ) ); }
 	
 	// Create a secret key to allow to manually trigger certain cron tasks
 	$cron_key = get_option( 'bookacti_cron_key' );
-	if( ! $cron_key ) { update_option( 'bookacti_cron_key', md5( microtime().rand() ) ); }
+	if( ! $cron_key ) { update_option( 'bookacti_cron_key', md5( wp_rand() ) ); }
 	
 	// Update current version
 	delete_option( 'bookacti_version' );

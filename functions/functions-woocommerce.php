@@ -294,7 +294,7 @@ function bookacti_wc_validate_cart_item_bookings_new_user( $cart_item_bookings, 
 /**
  * Update the bookings bound to a cart item
  * @since 1.9.0
- * @version 1.16.45
+ * @version 1.19.9
  * @global woocommerce $woocommerce
  * @param string $cart_item_key
  * @param array $new_data
@@ -317,7 +317,7 @@ function bookacti_wc_update_cart_item_bookings( $cart_item_key, $new_data, $args
 	$reset_timeout_on_change   = bookacti_get_setting_value( 'bookacti_cart_settings', 'reset_cart_timeout_on_change' );
 	$is_expiration_active      = bookacti_get_setting_value( 'bookacti_cart_settings', 'is_cart_expiration_active' );
 	$timeout                   = bookacti_get_setting_value( 'bookacti_cart_settings', 'cart_timeout' );
-	$new_expiration_date       = $is_expiration_active && ( $reset_timeout_on_change || $is_cart_expired ) ? date( 'Y-m-d H:i:s', strtotime( '+' . $timeout . ' minutes' ) ) : '';
+	$new_expiration_date       = $is_expiration_active && ( $reset_timeout_on_change || $is_cart_expired ) ? gmdate( 'Y-m-d H:i:s', strtotime( '+' . $timeout . ' minutes' ) ) : '';
 	
 	// Update each booking
 	$updated = 0;
@@ -568,6 +568,7 @@ function bookacti_wc_reset_cart_expiration_date( $expiration_date ) {
 /**
  * Get the expiration time for a newly created cart item
  * @since 1.9.0 (was bookacti_get_expiration_time)
+ * @version 1.19.9
  * @global WooCommerce $woocommerce
  * @param string $date_format
  * @return string
@@ -579,7 +580,7 @@ function bookacti_wc_get_new_cart_item_expiration_date() {
 	if( ! $is_expiration_active ) { return $expiration_date; }
 	
 	$timeout = bookacti_get_setting_value( 'bookacti_cart_settings', 'cart_timeout' );
-	$expiration_date = date( 'Y-m-d H:i:s', strtotime( '+' . $timeout . ' minutes' ) );
+	$expiration_date = gmdate( 'Y-m-d H:i:s', strtotime( '+' . $timeout . ' minutes' ) );
 	
 	$is_per_product_expiration = bookacti_get_setting_value( 'bookacti_cart_settings', 'is_cart_expiration_per_product' );
 	if( ! $is_per_product_expiration ) {
@@ -1854,7 +1855,7 @@ function bookacti_get_order_items_rows( $order_items = array() ) {
 /**
  * Display a products selectbox
  * @since 1.7.0
- * @version 1.19.7
+ * @version 1.19.9
  * @param array $raw_args
  * @return string
  */
@@ -1885,10 +1886,10 @@ function bookacti_display_product_selectbox( $raw_args = array() ) {
 	<select <?php if( $args[ 'id' ] ) { echo 'id="' . esc_attr( $args[ 'id' ] ) . '"'; } ?> 
 		name='<?php echo esc_attr( $args[ 'field_name' ] ); ?>' 
 		class='bookacti-wc-products-selectbox <?php echo esc_attr( $args[ 'class' ] ); ?>'
-		data-tags='<?php echo ! empty( $args[ 'allow_tags' ] ) ? 1 : 0; ?>'
-		data-allow-clear='<?php echo ! empty( $args[ 'allow_clear' ] ) ? 1 : 0; ?>'
-		data-placeholder='<?php echo ! empty( $args[ 'placeholder' ] ) ? esc_attr( $args[ 'placeholder' ] ) : ''; ?>'
-		data-sortable='<?php echo ! empty( $args[ 'sortable' ] ) ? 1 : 0; ?>'
+		data-tags='<?php echo esc_attr( ! empty( $args[ 'allow_tags' ] ) ? 1 : 0 ); ?>'
+		data-allow-clear='<?php echo esc_attr( ! empty( $args[ 'allow_clear' ] ) ? 1 : 0 ); ?>'
+		data-placeholder='<?php echo esc_attr( ! empty( $args[ 'placeholder' ] ) ? $args[ 'placeholder' ] : '' ); ?>'
+		data-sortable='<?php echo esc_attr( ! empty( $args[ 'sortable' ] ) ? 1 : 0 ); ?>'
 		data-type='products'>
 		<option><!-- Used for the placeholder --></option>
 	<?php
@@ -1901,19 +1902,19 @@ function bookacti_display_product_selectbox( $raw_args = array() ) {
 				if( empty( $product[ 'variations' ] ) ) {
 					$_selected = selected( $product_id, $args[ 'selected' ], false );
 					if( $_selected ) { $is_selected = true; }
-					?><option class='bookacti-wc-product-option' value='<?php echo esc_attr( intval( $product_id ) ); ?>' <?php echo $_selected; ?>><?php echo esc_textarea( $product[ 'title' ] ? apply_filters( 'bookacti_translate_text_external', $product[ 'title' ], false, true, array( 'domain' => 'woocommerce', 'object_type' => 'product', 'object_id' => $product_id, 'field' => 'post_title' ) ) : $product[ 'title' ] ); ?></option><?php
+					?><option class='bookacti-wc-product-option' value='<?php echo esc_attr( intval( $product_id ) ); ?>' <?php selected( $product_id, $args[ 'selected' ] ); ?>><?php echo esc_textarea( $product[ 'title' ] ? apply_filters( 'bookacti_translate_text_external', $product[ 'title' ], false, true, array( 'domain' => 'woocommerce', 'object_type' => 'product', 'object_id' => $product_id, 'field' => 'post_title' ) ) : $product[ 'title' ] ); ?></option><?php
 
 				// Display variations options
 				} else {
 				?>
-					<optgroup class='bookacti-wc-variable-product-option-group' label='<?php echo $product[ 'title' ] ? esc_attr( apply_filters( 'bookacti_translate_text_external', $product[ 'title' ], false, true, array( 'domain' => 'woocommerce', 'object_type' => 'product', 'object_id' => $product_id, 'field' => 'post_title' ) ) ) : $product[ 'title' ]; ?>'>
+					<optgroup class='bookacti-wc-variable-product-option-group' label='<?php echo esc_attr( $product[ 'title' ] ? apply_filters( 'bookacti_translate_text_external', $product[ 'title' ], false, true, array( 'domain' => 'woocommerce', 'object_type' => 'product', 'object_id' => $product_id, 'field' => 'post_title' ) ) : $product[ 'title' ] ); ?>'>
 					<?php
 						foreach( $product[ 'variations' ] as $variation_id => $variation ) {
 							$_selected = selected( $variation_id, $args[ 'selected' ], false );
 							if( $_selected ) { $is_selected = true; }
 							$variation_title = $variation[ 'title' ] ? apply_filters( 'bookacti_translate_text_external', $variation[ 'title' ], false, true, array( 'domain' => 'woocommerce', 'object_type' => 'product_variation', 'object_id' => $variation_id, 'field' => 'post_excerpt', 'product_id' => $product_id ) ) : $variation[ 'title' ];
 							$formatted_variation_title = trim( preg_replace( '/,[\s\S]+?:/', ',', ',' . $variation_title ), ', ' );
-							?><option class='bookacti-wc-product-variation-option' value='<?php echo esc_attr( intval( $variation_id ) ); ?>' <?php echo $_selected; ?>><?php echo esc_textarea( $formatted_variation_title ); ?></option><?php
+							?><option class='bookacti-wc-product-variation-option' value='<?php echo esc_attr( intval( $variation_id ) ); ?>' <?php selected( $variation_id, $args[ 'selected' ] ); ?>><?php echo esc_textarea( $formatted_variation_title ); ?></option><?php
 						}
 					?>
 					</optgroup>
@@ -1931,7 +1932,7 @@ function bookacti_display_product_selectbox( $raw_args = array() ) {
 	$output = ob_get_clean();
 
 	if( empty( $args[ 'echo' ] ) ) { return $output; }
-	echo $output;
+	echo $output; /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */
 }
 
 

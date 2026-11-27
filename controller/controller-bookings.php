@@ -1363,7 +1363,7 @@ add_action( 'bookacti_clean_expired_exports', 'bookacti_clean_expired_exports' )
 /**
  * Generate the export bookings URL according to current filters and export settings
  * @since 1.6.0
- * @version 1.16.26
+ * @version 1.19.9
  */
 function bookacti_controller_generate_export_bookings_url() {
 	// Check nonce
@@ -1379,7 +1379,7 @@ function bookacti_controller_generate_export_bookings_url() {
 	$secret_key = get_user_meta( $current_user_id, 'bookacti_secret_key', true );
 	if( ( ! $secret_key || ! empty( $_POST[ 'reset_key' ] ) ) && ( $current_user_id && is_numeric( $current_user_id ) ) ) {
 		// Update secret key
-		$secret_key = md5( microtime().rand() );
+		$secret_key = md5( wp_rand() );
 		update_user_meta( $current_user_id, 'bookacti_secret_key', $secret_key );
 		
 		// Remove existing exports

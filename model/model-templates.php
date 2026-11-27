@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Fetch events to display on calendar editor
  * @since 1.1.0 (replace bookacti_fetch_events)
- * @version 1.17.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param array $raw_args {
  *  @type array $templates Array of template IDs
@@ -96,13 +96,13 @@ function bookacti_fetch_events_for_calendar_editor( $raw_args = array() ) {
 
 	// Safely apply variables to the query
 	if( $variables ) {
-		$query = $wpdb->prepare( $query, $variables );
+		$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	}
 
 	// Allow plugins to change the query
 	$query = apply_filters( 'bookacti_calendar_editor_events_query', $query, $args );
 
-	$events = $wpdb->get_results( $query, OBJECT );
+	$events = $wpdb->get_results( $query, OBJECT ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 	// Transform raw events from database to array of individual events
 	$events_array = bookacti_get_events_array_from_db_events( $events, $args );
@@ -152,7 +152,7 @@ function bookacti_fetch_events_for_calendar_editor( $raw_args = array() ) {
 
 /**
  * Insert an event
- * @version 1.13.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param array $data Data sanitized with bookacti_sanitize_event_data
  * @return int
@@ -178,8 +178,8 @@ function bookacti_insert_event( $data ) {
 		maybe_serialize( $data[ 'repeat_exceptions' ] )
 	);
 	
-	$query = $wpdb->prepare( $query, $variables );
-	$wpdb->query( $query );
+	$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	$event_id = $wpdb->insert_id;
 	
@@ -189,7 +189,7 @@ function bookacti_insert_event( $data ) {
 
 /**
  * Duplicate an event
- * @version 1.13.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $event_id
  * @return int|false
@@ -201,8 +201,8 @@ function bookacti_duplicate_event( $event_id ) {
 	       . ' SELECT template_id, activity_id, title, availability, start, end, repeat_freq, repeat_step, repeat_on, repeat_from, repeat_to, repeat_exceptions, active '
 	       . ' FROM ' . BOOKACTI_TABLE_EVENTS 
 	       . ' WHERE id = %d ';
-	$query = $wpdb->prepare( $query, $event_id );
-	$inserted = $wpdb->query( $query );
+	$query = $wpdb->prepare( $query, $event_id ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$inserted = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	$new_event_id = $wpdb->insert_id;
 
 	return $new_event_id;      
@@ -212,6 +212,7 @@ function bookacti_duplicate_event( $event_id ) {
 /** 
  * Duplicate template events
  * @since 1.13.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $from_template_id
  * @param int $to_template_id
@@ -222,8 +223,8 @@ function bookacti_duplicate_template_events( $from_template_id, $to_template_id 
 
 	// Duplicate events and their metadata
 	$query_events = ' SELECT id FROM ' . BOOKACTI_TABLE_EVENTS . ' WHERE template_id = %d ';
-	$query_events = $wpdb->prepare( $query_events, $from_template_id );
-	$events	= $wpdb->get_results( $query_events, OBJECT );
+	$query_events = $wpdb->prepare( $query_events, $from_template_id ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$events       = $wpdb->get_results( $query_events, OBJECT ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	$duplicated = 0;
 	foreach( $events as $event ) {
@@ -232,8 +233,8 @@ function bookacti_duplicate_template_events( $from_template_id, $to_template_id 
 		// Duplicate the event and get its id
 		$query = ' INSERT INTO ' . BOOKACTI_TABLE_EVENTS . ' ( template_id, activity_id, title, start, end, availability, repeat_freq, repeat_step, repeat_on, repeat_from, repeat_to, repeat_exceptions ) '
 		       . ' SELECT %d, activity_id, title, start, end, availability, repeat_freq, repeat_step, repeat_on, repeat_from, repeat_to, repeat_exceptions FROM ' . BOOKACTI_TABLE_EVENTS . ' WHERE id = %d AND active = 1';
-		$query = $wpdb->prepare( $query, $to_template_id, $event->id );
-		$wpdb->query( $query );
+		$query = $wpdb->prepare( $query, $to_template_id, $event->id ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		$wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 		$new_event_id = $wpdb->insert_id;
 
@@ -249,7 +250,7 @@ function bookacti_duplicate_template_events( $from_template_id, $to_template_id 
 /**
  * Update event data
  * @since 1.2.2 (was bookacti_set_event_data)
- * @version 1.13.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param array $data Data sanitized with bookacti_sanitize_event_data
  * @return int|false
@@ -258,8 +259,8 @@ function bookacti_update_event( $data ) {
 	global $wpdb;
 	
 	$query = ' UPDATE ' . BOOKACTI_TABLE_EVENTS . ' SET '
-	       . ' template_id = IFNULL( NULLIF( %d, 0 ), template_id ), '	
-	       . ' activity_id = IFNULL( NULLIF( %d, 0 ), activity_id ), '	
+	       . ' template_id = IFNULL( NULLIF( %d, 0 ), template_id ), '
+	       . ' activity_id = IFNULL( NULLIF( %d, 0 ), activity_id ), '
 	       . ' title = IFNULL( NULLIF( %s, "" ), title ), '
 	       . ' availability = IFNULL( NULLIF( %d, -1 ), availability ), '
 	       . ' start = IFNULL( NULLIF( %s, "" ), start ), '
@@ -288,8 +289,8 @@ function bookacti_update_event( $data ) {
 		$data[ 'id' ]
 	);
 	
-	$query = $wpdb->prepare( $query, $variables );
-	$updated = $wpdb->query( $query );
+	$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$updated = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 	return $updated;
 }
@@ -297,7 +298,7 @@ function bookacti_update_event( $data ) {
 
 /**
  * Deactivate an event
- * @version 1.12.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $event_id
  * @return int|false
@@ -305,8 +306,8 @@ function bookacti_update_event( $data ) {
 function bookacti_deactivate_event( $event_id ) {
 	global $wpdb;
 	$query = ' UPDATE ' . BOOKACTI_TABLE_EVENTS . ' SET active = 0 WHERE id = %d ';
-	$query = $wpdb->prepare( $query, $event_id );
-	$deactivated = $wpdb->query( $query );
+	$query = $wpdb->prepare( $query, $event_id ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$deactivated = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	return $deactivated;
 }
 
@@ -318,7 +319,7 @@ function bookacti_deactivate_event( $event_id ) {
 /**
  * Insert a group of events
  * @since 1.1.0
- * @version 1.13.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param array $data sanitized with bookacti_sanitize_group_of_events_data
  * @return int
@@ -340,8 +341,8 @@ function bookacti_insert_group_of_events( $data ) {
 		maybe_serialize( $data[ 'repeat_exceptions' ] )
 	);
 	
-	$query = $wpdb->prepare( $query, $variables );
-	$wpdb->query( $query );
+	$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	$event_id = $wpdb->insert_id;
 	
@@ -352,7 +353,7 @@ function bookacti_insert_group_of_events( $data ) {
 /**
  * Update a group of events
  * @since 1.1.0
- * @version 1.13.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param array $data sanitized with bookacti_sanitize_group_of_events_data
  * @return int|boolean
@@ -361,7 +362,7 @@ function bookacti_update_group_of_events( $data ) {
 	global $wpdb;
 	
 	$query = ' UPDATE ' . BOOKACTI_TABLE_EVENT_GROUPS . ' SET '
-	       . ' category_id = IFNULL( NULLIF( %d, 0 ), category_id ), '	
+	       . ' category_id = IFNULL( NULLIF( %d, 0 ), category_id ), '
 	       . ' title = IFNULL( NULLIF( %s, "" ), title ), '
 	       . ' repeat_freq = IFNULL( NULLIF( %s, "" ), repeat_freq ), '
 	       . ' repeat_step = NULLIF( IFNULL( NULLIF( %d, 0 ), repeat_step ), -1 ),'
@@ -383,8 +384,8 @@ function bookacti_update_group_of_events( $data ) {
 		$data[ 'id' ]
 	);
 	
-	$query = $wpdb->prepare( $query, $variables );
-	$updated = $wpdb->query( $query );
+	$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$updated = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 	return $updated;
 }
@@ -393,7 +394,7 @@ function bookacti_update_group_of_events( $data ) {
 /**
  * Delete a group of events
  * @since 1.1.0
- * @version 1.12.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $group_id
  * @return boolean
@@ -403,13 +404,13 @@ function bookacti_delete_group_of_events( $group_id ) {
 
 	// Delete events of the group
 	$query_events = 'DELETE FROM ' . BOOKACTI_TABLE_GROUPS_EVENTS . ' WHERE group_id = %d ';
-	$query_events = $wpdb->prepare( $query_events, $group_id );
-	$deleted1 = $wpdb->query( $query_events );
+	$query_events = $wpdb->prepare( $query_events, $group_id ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$deleted1 = $wpdb->query( $query_events ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 	// Delete the group itself
 	$query_group = 'DELETE FROM ' . BOOKACTI_TABLE_EVENT_GROUPS . ' WHERE id = %d ';
-	$query_group = $wpdb->prepare( $query_group, $group_id );
-	$deleted2 = $wpdb->query( $query_group );
+	$query_group = $wpdb->prepare( $query_group, $group_id ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$deleted2 = $wpdb->query( $query_group ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 	return $deleted1 === false && $deleted2 === false ? false : intval( $deleted1 ) + intval( $deleted2 );
 }
@@ -418,7 +419,7 @@ function bookacti_delete_group_of_events( $group_id ) {
 /**
  * Deactivate a group of events
  * @since 1.1.0
- * @version 1.12.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $group_id
  * @return int|false
@@ -427,8 +428,8 @@ function bookacti_deactivate_group_of_events( $group_id ) {
 	global $wpdb;
 	
 	$query_group = 'UPDATE ' . BOOKACTI_TABLE_EVENT_GROUPS . ' SET active = 0 WHERE id = %d ';
-	$query_group = $wpdb->prepare( $query_group, $group_id );
-	$deactivated = $wpdb->query( $query_group );
+	$query_group = $wpdb->prepare( $query_group, $group_id ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$deactivated = $wpdb->query( $query_group ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	return $deactivated;
 }
@@ -437,7 +438,7 @@ function bookacti_deactivate_group_of_events( $group_id ) {
 /**
  * Get an array of all group of events ids bound to designated category
  * @since 1.1.0
- * @version 1.12.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param array $category_ids
  * @param boolean $fetch_inactive
@@ -458,8 +459,8 @@ function bookacti_get_groups_of_events_ids_by_category( $category_ids, $fetch_in
 
 	if( ! $fetch_inactive ) { $query .= ' AND G.active = 1 '; }
 
-	$query = $wpdb->prepare( $query, $category_ids );
-	$groups	= $wpdb->get_results( $query, OBJECT );
+	$query  = $wpdb->prepare( $query, $category_ids ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$groups = $wpdb->get_results( $query, OBJECT ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 	$groups_ids = array();
 	foreach( $groups as $group ) { $groups_ids[] = $group->id; }
@@ -471,7 +472,7 @@ function bookacti_get_groups_of_events_ids_by_category( $category_ids, $fetch_in
 /**
  * Get the template id of a group of events
  * @since 1.1.0
- * @version 1.12.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $group_id
  * @return int
@@ -482,8 +483,8 @@ function bookacti_get_group_of_events_template_id( $group_id ) {
 	       . ' FROM ' . BOOKACTI_TABLE_GROUP_CATEGORIES  . ' as C, ' . BOOKACTI_TABLE_EVENT_GROUPS  . ' as G '
 	       . ' WHERE C.id = G.category_id '
 	       . ' AND G.id = %d ';
-	$query = $wpdb->prepare( $query, $group_id );
-	$template_id = $wpdb->get_var( $query );
+	$query = $wpdb->prepare( $query, $group_id ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$template_id = $wpdb->get_var( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	return intval( $template_id );
 }
 
@@ -495,7 +496,7 @@ function bookacti_get_group_of_events_template_id( $group_id ) {
 /**
  * Insert events into a group
  * @since 1.1.0
- * @version 1.12.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $group_id
  * @param array $events
@@ -519,8 +520,8 @@ function bookacti_insert_events_into_group( $group_id, $events ) {
 		$i++;
 	}
 
-	$query = $wpdb->prepare( $query, $variables );
-	$inserted = $wpdb->query( $query );
+	$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$inserted = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 	return $inserted;
 }
@@ -529,7 +530,7 @@ function bookacti_insert_events_into_group( $group_id, $events ) {
 /**
  * Delete events from a group
  * @since 1.1.0
- * @version 1.12.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $group_id
  * @param array $events
@@ -555,8 +556,8 @@ function bookacti_delete_events_from_group( $group_id, $events = array() ) {
 		$query .= ' ) ';
 	}
 
-	$query = $wpdb->prepare( $query, $variables );
-	$deleted = $wpdb->query( $query );
+	$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$deleted = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 	return $deleted;
 }
@@ -565,7 +566,7 @@ function bookacti_delete_events_from_group( $group_id, $events = array() ) {
 /**
  * Delete events starting on a specific date from a group 
  * @since 1.8.0
- * @version 1.12.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $group_id
  * @param array $events
@@ -586,8 +587,8 @@ function bookacti_delete_events_on_dates_from_group( $group_id, $dates ) {
 	$query .= ' )';
 	
 	$variables = array_merge( array( $group_id ), $dates );
-	$query = $wpdb->prepare( $query, $variables );
-	$deleted = $wpdb->query( $query );
+	$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$deleted = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 	return $deleted;
 }
@@ -596,7 +597,7 @@ function bookacti_delete_events_on_dates_from_group( $group_id, $dates ) {
 /**
  * Delete an event from all groups of events
  * @since 1.1.0
- * @version 1.12.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $event_id
  * @param string $event_start
@@ -619,8 +620,8 @@ function bookacti_delete_event_from_groups( $event_id, $event_start = false, $ev
 		$variables[] = $event_end;
 	}
 
-	$query = $wpdb->prepare( $query, $variables );
-	$deleted = $wpdb->query( $query );
+	$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$deleted = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 	return $deleted;
 }
@@ -629,6 +630,7 @@ function bookacti_delete_event_from_groups( $event_id, $event_start = false, $ev
 /**
  * Delete events from specific activiy and template from all groups of events
  * @since 1.12.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $activity_id
  * @param int $template_id
@@ -649,8 +651,8 @@ function bookacti_delete_activity_events_from_groups( $activity_id, $template_id
 		$variables[] = $template_id;
 	}
 
-	$query = $wpdb->prepare( $query, $variables );
-	$deactivated = $wpdb->query( $query );
+	$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$deactivated = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 	return $deactivated;
 }
@@ -659,7 +661,7 @@ function bookacti_delete_activity_events_from_groups( $activity_id, $template_id
 /**
  * Update dates of an event bound to a group with a relative amount of days
  * @since 1.10.0
- * @version 1.14.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $event_id
  * @param int $delta_seconds_start
@@ -673,8 +675,8 @@ function bookacti_shift_grouped_event_dates( $event_id, $delta_seconds_start = 0
 	       . ' SET  event_start = DATE_ADD( event_start, INTERVAL %d SECOND ), '
 	           .  ' event_end = DATE_ADD( event_end, INTERVAL %d SECOND ) '
 	       . ' WHERE event_id = %d ';
-	$query = $wpdb->prepare( $query, $delta_seconds_start, $delta_seconds_end, $event_id );
-	$updated = $wpdb->query( $query );
+	$query = $wpdb->prepare( $query, $delta_seconds_start, $delta_seconds_end, $event_id ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$updated = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	return $updated;   
 }
@@ -682,7 +684,7 @@ function bookacti_shift_grouped_event_dates( $event_id, $delta_seconds_start = 0
 
 /**
  * Update id of an event bound to a group
- * @version 1.15.6
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $old_event_id
  * @param int $new_event_id
@@ -721,8 +723,8 @@ function bookacti_update_grouped_event_id( $old_event_id, $new_event_id, $event_
 		$variables[] = $to;
 	}
 
-	$query   = $wpdb->prepare( $query, $variables );
-	$updated = $wpdb->query( $query );
+	$query   = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$updated = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 	return $updated;   
 }
@@ -735,7 +737,7 @@ function bookacti_update_grouped_event_id( $old_event_id, $new_event_id, $event_
 /**
  * Insert a group category
  * @since 1.1.0
- * @version 1.12.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param string $category_title
  * @param int $template_id
@@ -747,8 +749,8 @@ function bookacti_insert_group_category( $category_title, $template_id ) {
 	$query = ' INSERT INTO ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' ( template_id, title, active ) '
 	       . ' VALUES ( %d, %s, 1 )';
 	
-	$query = $wpdb->prepare( $query, $template_id, $category_title );
-	$wpdb->query( $query );
+	$query = $wpdb->prepare( $query, $template_id, $category_title ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	return $wpdb->insert_id;
 }
@@ -757,7 +759,7 @@ function bookacti_insert_group_category( $category_title, $template_id ) {
 /**
  * Update a group category
  * @since 1.1.0
- * @version 1.12.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param array $data
  * @return int|false
@@ -771,8 +773,8 @@ function bookacti_update_group_category( $data ) {
 	
 	$variables = array( $data[ 'title' ], $data[ 'id' ] );
 	
-	$query = $wpdb->prepare( $query, $variables );
-	$updated = $wpdb->query( $query );
+	$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$updated = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 	return $updated;
 }
@@ -781,7 +783,7 @@ function bookacti_update_group_category( $data ) {
 /**
  * Delete a group category
  * @since 1.1.0
- * @version 1.12.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param type $category_id
  * @return int|false
@@ -789,8 +791,8 @@ function bookacti_update_group_category( $data ) {
 function bookacti_delete_group_category( $category_id ) {
 	global $wpdb;
 	$query = 'DELETE FROM ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' WHERE id = %d ';
-	$query = $wpdb->prepare( $query, $category_id );
-	$deleted = $wpdb->query( $query );
+	$query = $wpdb->prepare( $query, $category_id ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$deleted = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	return $deleted;
 }
 
@@ -798,7 +800,7 @@ function bookacti_delete_group_category( $category_id ) {
 /**
  * Deactivate a group category 
  * @since 1.1.0
- * @version 1.12.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $category_id
  * @return int|false
@@ -806,8 +808,8 @@ function bookacti_delete_group_category( $category_id ) {
 function bookacti_deactivate_group_category( $category_id ) {
 	global $wpdb;
 	$query = ' UPDATE ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' SET active = 0 WHERE id = %d ';
-	$query = $wpdb->prepare( $query, $category_id );
-	$deactivated = $wpdb->query( $query );
+	$query = $wpdb->prepare( $query, $category_id ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$deactivated = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	return $deactivated;
 }
 
@@ -815,7 +817,7 @@ function bookacti_deactivate_group_category( $category_id ) {
 /**
  * Get the template id of a group category
  * @since 1.1.0
- * @ersion 1.12.0
+ * @ersion 1.19.9
  * @global wpdb $wpdb
  * @param int $category_id
  * @return int
@@ -823,8 +825,8 @@ function bookacti_deactivate_group_category( $category_id ) {
 function bookacti_get_group_category_template_id( $category_id ) {
 	global $wpdb;
 	$query = 'SELECT template_id FROM ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' WHERE id = %d ';
-	$query = $wpdb->prepare( $query, $category_id );
-	$template_id = $wpdb->get_var( $query );
+	$query = $wpdb->prepare( $query, $category_id ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$template_id = $wpdb->get_var( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	return intval( $template_id );
 }
 
@@ -835,7 +837,7 @@ function bookacti_get_group_category_template_id( $category_id ) {
 
 /**
  * Get templates
- * @version 1.16.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param array $template_ids
  * @param int $user_id User ID to check the permissions for. -1 for current user (default). 0 to ignore permission. 
@@ -891,9 +893,9 @@ function bookacti_fetch_templates( $template_ids = array(), $user_id = -1 ) {
 		}
 	}
 
-	if( $variables ) { $query = $wpdb->prepare( $query, $variables ); }
+	if( $variables ) { $query = $wpdb->prepare( $query, $variables ); } // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
-	$templates = $wpdb->get_results( $query, ARRAY_A );
+	$templates = $wpdb->get_results( $query, ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 	$templates_by_id = array();
 	foreach( $templates as $template ) { $templates_by_id[ $template[ 'id' ] ] = $template; }
@@ -904,7 +906,7 @@ function bookacti_fetch_templates( $template_ids = array(), $user_id = -1 ) {
 
 /**
  * Create a new template
- * @version 1.12.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param array $data Data sanitized with bookacti_sanitize_template_data
  * @return int
@@ -917,8 +919,8 @@ function bookacti_insert_template( $data ) {
 
 	$variables = array( $data[ 'title' ] );
 
-	$query = $wpdb->prepare( $query, $variables );
-	$wpdb->query( $query );
+	$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 	$template_id = $wpdb->insert_id;
 
@@ -928,7 +930,7 @@ function bookacti_insert_template( $data ) {
 
 /**
  * Deactivate a template
- * @version 1.12.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $template_id
  * @return int|false
@@ -936,15 +938,15 @@ function bookacti_insert_template( $data ) {
 function bookacti_deactivate_template( $template_id ) {
 	global $wpdb;
 	$query = ' UPDATE ' . BOOKACTI_TABLE_TEMPLATES . ' SET active = 0 WHERE id = %d ';
-	$query = $wpdb->prepare( $query, $template_id );
-	$deactivated = $wpdb->query( $query );
+	$query = $wpdb->prepare( $query, $template_id ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$deactivated = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	return $deactivated;
 }
 
 
 /**
  * Update template
- * @version 1.12.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param array $data
  * @return int|false
@@ -958,8 +960,8 @@ function bookacti_update_template( $data ) {
 	
 	$variables = array( $data[ 'title' ], $data[ 'id' ] );
 	
-	$query = $wpdb->prepare( $query, $variables );
-	$updated = $wpdb->query( $query );
+	$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$updated = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 	return $updated;
 }
@@ -971,7 +973,7 @@ function bookacti_update_template( $data ) {
 
 /**
  * Insert an activity
- * @version 1.12.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param array $data
  * @return int|false
@@ -984,8 +986,8 @@ function bookacti_insert_activity( $data ) {
 
 	$variables = array( $data[ 'title' ], $data[ 'color' ], $data[ 'availability' ], $data[ 'duration' ] );
 
-	$query = $wpdb->prepare( $query, $variables );
-	$wpdb->query( $query );
+	$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 	$activity_id = $wpdb->insert_id;
 
@@ -995,7 +997,7 @@ function bookacti_insert_activity( $data ) {
 
 /**
  * Update an activity
- * @version 1.12.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param array $data
  * @return int|false
@@ -1012,8 +1014,8 @@ function bookacti_update_activity( $data ) {
 	
 	$variables = array( $data[ 'title' ], $data[ 'color' ], $data[ 'availability' ], $data[ 'duration' ], $data[ 'id' ] );
 	
-	$query = $wpdb->prepare( $query, $variables );
-	$updated = $wpdb->query( $query );
+	$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$updated = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 	return $updated;
 }
@@ -1021,7 +1023,7 @@ function bookacti_update_activity( $data ) {
 
 /**
  * Update events title to match the activity title
- * @version 1.8.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $activity_id
  * @param string $new_title
@@ -1036,8 +1038,8 @@ function bookacti_update_events_title( $activity_id, $new_title ) {
 	       . ' WHERE E.activity_id = %d '
 	       . ' AND A.title = E.title ';
 	
-	$query	= $wpdb->prepare( $query, $new_title, $activity_id );
-	$updated = $wpdb->query( $query );
+	$query   = $wpdb->prepare( $query, $new_title, $activity_id ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$updated = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	return $updated;
 }
@@ -1045,7 +1047,7 @@ function bookacti_update_events_title( $activity_id, $new_title ) {
 
 /**
  * Deactivate an activity
- * @version 1.12.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $activity_id
  * @return int|false
@@ -1053,15 +1055,15 @@ function bookacti_update_events_title( $activity_id, $new_title ) {
 function bookacti_deactivate_activity( $activity_id ) {
 	global $wpdb;
 	$query = ' UPDATE ' . BOOKACTI_TABLE_ACTIVITIES . ' SET active = 0 WHERE id = %d ';
-	$query = $wpdb->prepare( $query, $activity_id );
-	$deactivated = $wpdb->query( $query );
+	$query = $wpdb->prepare( $query, $activity_id ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$deactivated = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	return $deactivated;
 }
 
 
 /**
  * Deactivate all events of a specific activity from a specific template
- * @version 1.12.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $activity_id
  * @param int $template_id
@@ -1078,8 +1080,8 @@ function bookacti_deactivate_activity_events( $activity_id, $template_id = 0 ) {
 		$variables[] = $template_id;
 	}
 	
-	$query = $wpdb->prepare( $query, $variables );
-	$deactivated = $wpdb->query( $query );
+	$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$deactivated = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	return $deactivated;
 }
@@ -1091,7 +1093,7 @@ function bookacti_deactivate_activity_events( $activity_id, $template_id = 0 ) {
 
 /**
  * Insert a template x activity association
- * @version 1.12.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param array $template_ids
  * @param array $activity_ids
@@ -1114,8 +1116,8 @@ function bookacti_insert_templates_x_activities( $template_ids, $activity_ids ) 
 		}
 	}
 
-	$query = $wpdb->prepare( $query, $variables_array );
-	$inserted = $wpdb->query( $query );
+	$query = $wpdb->prepare( $query, $variables_array ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$inserted = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 	return $inserted;
 }
@@ -1124,6 +1126,7 @@ function bookacti_insert_templates_x_activities( $template_ids, $activity_ids ) 
 /** 
  * Duplicate a template x activity association
  * @since 1.13.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $from_template_id
  * @param int $to_template_id
@@ -1134,8 +1137,8 @@ function bookacti_duplicate_template_activities( $from_template_id, $to_template
 
 	$query = ' INSERT INTO ' . BOOKACTI_TABLE_TEMP_ACTI . ' ( template_id, activity_id ) '
 	       . ' SELECT %d, activity_id FROM ' . BOOKACTI_TABLE_TEMP_ACTI . ' WHERE template_id = %d ';
-	$query	= $wpdb->prepare( $query, $to_template_id, $from_template_id );
-	$duplicated = $wpdb->query( $query );
+	$query = $wpdb->prepare( $query, $to_template_id, $from_template_id ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$duplicated = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	return $duplicated;
 }
@@ -1143,7 +1146,7 @@ function bookacti_duplicate_template_activities( $from_template_id, $to_template
 
 /**
  * Delete a template x activity association
- * @version 1.12.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param array $template_ids
  * @param array $activity_ids
@@ -1171,8 +1174,8 @@ function bookacti_delete_templates_x_activities( $template_ids, $activity_ids ) 
 
 	$variables_array = array_merge( $template_ids, $activity_ids );
 
-	$query = $wpdb->prepare( $query, $variables_array );
-	$deleted = $wpdb->query( $query );
+	$query = $wpdb->prepare( $query, $variables_array ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$deleted = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 	return $deleted;
 }
@@ -1180,7 +1183,7 @@ function bookacti_delete_templates_x_activities( $template_ids, $activity_ids ) 
 
 /**
  * Get activities by template
- * @version 1.15.5
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param array $template_ids
  * @param boolean $based_on_events Whether to retrieve activities bound to templates or activities bound to events of templates
@@ -1224,12 +1227,12 @@ function bookacti_get_activities_by_template( $template_ids = array(), $based_on
 	}
 
 	if( $template_ids ) {
-		$query = $wpdb->prepare( $query, $template_ids );
+		$query = $wpdb->prepare( $query, $template_ids ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	}
 
 	$query = apply_filters( 'bookacti_get_activities_query', $query, $template_ids, $based_on_events );
 	
-	$activities = $wpdb->get_results( $query, ARRAY_A );
+	$activities = $wpdb->get_results( $query, ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 	$activity_ids = array();
 	foreach( $activities as $activity ) { $activity_ids[] = $activity[ 'id' ]; }
@@ -1264,7 +1267,7 @@ function bookacti_get_activities_by_template( $template_ids = array(), $based_on
 /**
  * Get an array of all activity ids bound to designated templates
  * @since 1.1.0
- * @version 1.15.6
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param array $template_ids
  * @param boolean $based_on_events Whether to retrieve activity ids bound to templates or activity ids bound to events of templates
@@ -1287,18 +1290,18 @@ function bookacti_get_activity_ids_by_template( $template_ids = array(), $based_
 
 	// Join the meta table to filter by roles
 	if( $allowed_roles_only && ! is_super_admin() ) {
-		$query .= ' LEFT JOIN ( 
-						SELECT meta_value as roles, object_id as activity_id 
-						FROM ' . BOOKACTI_TABLE_META . ' 
-						WHERE object_type = "activity" 
-						AND meta_key = "allowed_roles" 
-					) as M ';
+		$query .= ' LEFT JOIN ( '
+		        .     ' SELECT meta_value as roles, object_id as activity_id '
+		        .     ' FROM ' . BOOKACTI_TABLE_META 
+		        .     ' WHERE object_type = "activity" '
+		        .     ' AND meta_key = "allowed_roles" '
+		        . ' ) as M ';
 		$query .= $based_on_events ? ' ON M.activity_id = E.activity_id ' : ' ON M.activity_id = A.id ';
-		$query .= ' LEFT JOIN ( 
-						SELECT user_id as manager_id, object_id as activity_id
-						FROM ' . BOOKACTI_TABLE_PERMISSIONS . ' 
-						WHERE object_type = "activity"
-					) as P ';
+		$query .= ' LEFT JOIN ( '
+		        .     ' SELECT user_id as manager_id, object_id as activity_id '
+		        .     ' FROM ' . BOOKACTI_TABLE_PERMISSIONS 
+		        .     ' WHERE object_type = "activity" '
+		        . ' ) as P ';
 		$query .= $based_on_events ? ' ON P.activity_id = E.activity_id ' : ' ON P.activity_id = A.id ';
 	}
 
@@ -1353,10 +1356,10 @@ function bookacti_get_activity_ids_by_template( $template_ids = array(), $based_
 	}
 
 	if( $variables ) {
-		$query = $wpdb->prepare( $query, $variables );
+		$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	}
 
-	$activities = $wpdb->get_results( $query, OBJECT );
+	$activities = $wpdb->get_results( $query, OBJECT ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 	$activities_ids = array();
 	foreach( $activities as $activity ) {
@@ -1369,7 +1372,7 @@ function bookacti_get_activity_ids_by_template( $template_ids = array(), $based_
 
 /**
  * Get templates by activity
- * @version 1.16.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param array $activity_ids
  * @param boolean $id_only
@@ -1404,9 +1407,9 @@ function bookacti_get_templates_by_activity( $activity_ids, $id_only = true ) {
 		}
 	}
 
-	$query = $wpdb->prepare( $query, $activity_ids );
+	$query = $wpdb->prepare( $query, $activity_ids ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
-	$templates = $wpdb->get_results( $query, OBJECT );
+	$templates = $wpdb->get_results( $query, OBJECT ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 	$templates_array = array();
 	foreach( $templates as $template ) {
@@ -1423,7 +1426,7 @@ function bookacti_get_templates_by_activity( $activity_ids, $id_only = true ) {
 
 /**
  * Fetch activities with the list of associated templated
- * @version 1.15.6
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param array $template_ids
  * @return array [ activity_id ][id, title, color, duration, availability, active, template_ids] where template_ids = [id, id, id, ...]
@@ -1460,10 +1463,10 @@ function bookacti_fetch_activities_with_templates_association( $template_ids = a
 	}
 
 	if( $template_ids ) {
-		$query = $wpdb->prepare( $query, $template_ids );
+		$query = $wpdb->prepare( $query, $template_ids ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	}
 
-	$activities = $wpdb->get_results( $query, ARRAY_A );
+	$activities = $wpdb->get_results( $query, ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 	$activities_array = array();
 	foreach( $activities as $activity ) {

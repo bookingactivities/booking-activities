@@ -3,7 +3,7 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
 Tested up to: 7.2
-Stable tag: 1.19.8
+Stable tag: 1.19.9
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -323,6 +323,12 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.19.9 - 2026/11/27 =
+* Fix - Security: Prevent login / registration from inactive / trashed booking forms login field (thanks Priyanshu Kumar Thakur)
+* Dev - Sanitize settings in Settings submenu
+* Dev - Fix all Plugin Check Plugin errors
+* Dev - Refactor bookacti_sanitized_settings_general hook to bookacti_sanitized_general_settings
 
 = 1.19.8 - 2026/11/26 =
 * Fix - Revert nonces added in the previous release, because nonces are useless for public forms and caused cache issues

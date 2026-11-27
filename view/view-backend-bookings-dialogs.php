@@ -1,7 +1,7 @@
 <?php 
 /**
  * Backend booking dialogs
- * @version 1.18.2
+ * @version 1.19.9
  */
 
 // Exit if accessed directly
@@ -11,13 +11,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 <div id='bookacti-bookings-calendar-settings-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' style='display:none;' title='<?php esc_html_e( 'Bookings page calendar settings', 'booking-activities' ); ?>'>
 	<form id='bookacti-bookings-calendar-settings-form'>
 		<input type='hidden' name='action' value='bookactiUpdateBookingsCalendarSettings'/>
-		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_update_bookings_calendar_settings' ); ?>'/>
+		<input type='hidden' name='nonce' value='<?php echo esc_attr( wp_create_nonce( 'bookacti_update_bookings_calendar_settings' ) ); ?>'/>
 		<div class='bookacti-backend-settings-only-notice bookacti-warning'>
 			<span class='dashicons dashicons-warning'></span>
 			<span>
 			<?php
-				/* translators: %s is a link to the "booking form editor". */
-				echo sprintf( esc_html__( 'These settings are used for the bookings page calendar only.', 'booking-activities' ) . ' ' .  esc_html__( 'For your frontend calendars, use the "Calendar" field settings in the desired %s.', 'booking-activities' ), '<a href="' . admin_url( 'admin.php?page=bookacti_forms' ) . '">' . esc_html__( 'booking form editor', 'booking-activities' ) . '</a>' );
+				echo sprintf(
+					esc_html__( 'These settings are used for the bookings page calendar only.', 'booking-activities' ) . ' ' .  
+					/* translators: %s is a link to the "booking form editor". */
+					esc_html__( 'For your frontend calendars, use the "Calendar" field settings in the desired %s.', 'booking-activities' ), 
+					'<a href="' . esc_url( admin_url( 'admin.php?page=bookacti_forms' ) ) . '">' . esc_html__( 'booking form editor', 'booking-activities' ) . '</a>'
+				);
 			?>
 			</span>
 		</div>
@@ -157,7 +161,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 <div id='bookacti-change-booking-status-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' style='display:none;' title='<?php esc_html_e( 'Change booking status', 'booking-activities' ); ?>'>
 	<form id='bookacti-change-booking-status-form'>
-		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_change_booking_status' ); ?>'/>
+		<input type='hidden' name='nonce' value='<?php echo esc_attr( wp_create_nonce( 'bookacti_change_booking_status' ) ); ?>'/>
 		<fieldset>
 			<legend><?php esc_html_e( 'Booking status', 'booking-activities' ); ?></legend>
 			<?php
@@ -180,7 +184,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						'tip'     => sprintf(
 							/* Translators: %s is a link to the "Notifications settings" */
 							esc_html__( 'Send the booking status change notifications configured in %s.', 'booking-activities' ), 
-							'<a href="' . admin_url( 'admin.php?page=bookacti_notifications' ) . '">' . esc_html__( 'Notifications settings', 'booking-activities' ) . '</a>'
+							'<a href="' . esc_url( admin_url( 'admin.php?page=bookacti_notifications' ) ) . '">' . esc_html__( 'Notifications settings', 'booking-activities' ) . '</a>'
 						)
 					)
 				));
@@ -210,7 +214,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 <div id='bookacti-change-booking-quantity-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' style='display:none;' title='<?php esc_html_e( 'Change booking quantity', 'booking-activities' ); ?>'>
 	<form id='bookacti-change-booking-quantity-form'>
-		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_change_booking_quantity' ); ?>'/>
+		<input type='hidden' name='nonce' value='<?php echo esc_attr( wp_create_nonce( 'bookacti_change_booking_quantity' ) ); ?>'/>
 		<p class='bookacti-dialog-intro' ><?php esc_html_e( 'Input the desired booking quantity:', 'booking-activities' ); ?></p>
 		<?php
 			$booking_qty_fields = apply_filters( 'bookacti_change_booking_quantity_dialog_fields', array(
@@ -235,7 +239,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 <div id='bookacti-delete-booking-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' style='display:none;' title='<?php esc_html_e( 'Delete a booking', 'booking-activities' ); ?>'>
 	<form id='bookacti-delete-booking-form'>
-		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_delete_booking' ); ?>'/>
+		<input type='hidden' name='nonce' value='<?php echo esc_attr( wp_create_nonce( 'bookacti_delete_booking' ) ); ?>'/>
 		<p class='bookacti-dialog-intro'>
 			<?php esc_html_e( 'Are you sure to delete this booking permanently?', 'booking-activities' ); ?>
 		</p>
@@ -253,7 +257,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 <div id='bookacti-send-booking-notification-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' style='display:none;' title='<?php esc_html_e( 'Send booking notification', 'booking-activities' ); ?>'>
 	<form id='bookacti-send-booking-notification-form'>
-		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_send_booking_notification' ); ?>'/>
+		<input type='hidden' name='nonce' value='<?php echo esc_attr( wp_create_nonce( 'bookacti_send_booking_notification' ) ); ?>'/>
 		<?php
 			// Get notifications
 			$notifications_data = bookacti_get_notifications_data( false );
@@ -309,11 +313,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			<span class='dashicons dashicons-warning'></span>
 			<span>
 			<?php 
-				$settings_url = admin_url( 'admin.php?page=bookacti_notifications' );
 				echo sprintf( 
 						/* translators: %s = link to "Booking Activities > Notifications" */
 						esc_html__( 'The notification is sent according to its settings, so make sure to properly configure it before, in %s.', 'booking-activities' ), 
-						'<a href="' . $settings_url . '">Booking Activities > ' . esc_html__( 'Notifications', 'booking-activities' ) . '</a>'
+						'<a href="' . esc_url( admin_url( 'admin.php?page=bookacti_notifications' ) ) . '">Booking Activities > ' . esc_html__( 'Notifications', 'booking-activities' ) . '</a>'
 					);
 			?>
 			</span>
@@ -324,7 +327,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 <div id='bookacti-export-bookings-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' style='display:none;' title='<?php esc_html_e( 'Export bookings', 'booking-activities' ); ?>'>
 	<form id='bookacti-export-bookings-form'>
-		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_export_bookings_url' ); ?>'/>
+		<input type='hidden' name='nonce' value='<?php echo esc_attr( wp_create_nonce( 'bookacti_export_bookings_url' ) ); ?>'/>
 		<input type='hidden' name='export_type' value='csv' id='bookacti-export-type-field'/>
 		<div class='bookacti-info'>
 			<span class='dashicons dashicons-info'></span>
@@ -358,7 +361,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		 * Display the content of the "csv" tab of the "Export bookings" dialog
 		 * @param array $args
 		 * @since 1.8.0
-		 * @version 1.15.4
+		 * @version 1.19.9
 		 */
 		function bookacti_fill_export_bookings_csv_tab( $args ) {
 			do_action( 'bookacti_fill_export_bookings_csv_tab_before', $args );
@@ -371,7 +374,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			<div class='bookacti-info'>
 				<span class='dashicons dashicons-info'></span>
-				<span><?php echo '<strong>' . esc_html__( 'Types of use:', 'booking-activities' ) . '</strong> MS Excel (' . implode( ', ', array( $excel_import_csv, $excel_sync_csv ) ) . '), Google Sheets (' . implode( ', ', array( $gsheets_import_csv, $gsheets_sync_csv ) ) . ')...'; ?></span>
+				<span><?php echo '<strong>' . esc_html__( 'Types of use:', 'booking-activities' ) . '</strong> MS Excel (' . implode( ', ', array( $excel_import_csv, $excel_sync_csv ) ) . '), Google Sheets (' . implode( ', ', array( $gsheets_import_csv, $gsheets_sync_csv ) ) . ')...'; /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?></span>
 			</div>
 			
 			<?php
@@ -429,7 +432,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		/**
 		 * Display the content of the "iCal" tab of the "Export bookings" dialog
 		 * @since 1.8.0
-		 * @version 1.18.1
+		 * @version 1.19.9
 		 * @param array $args
 		 */
 		function bookacti_fill_export_bookings_ical_tab( $args ) {
@@ -443,7 +446,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 			<div class='bookacti-info'>
 				<span class='dashicons dashicons-info'></span>
-				<span><?php echo '<strong>' . esc_html__( 'Types of use:', 'booking-activities' ) . '</strong> Google Calendar (' . implode( ', ', array( $gcal_import_ical, $gcal_sync_ical ) ) . '), Outlook.com (' . $outlook_com_ical . '), MS Outlook (' . $outlook_ms_ical . ')...'; ?></span>
+				<span><?php echo '<strong>' . esc_html__( 'Types of use:', 'booking-activities' ) . '</strong> Google Calendar (' . implode( ', ', array( $gcal_import_ical, $gcal_sync_ical ) ) . '), Outlook.com (' . $outlook_com_ical . '), MS Outlook (' . $outlook_ms_ical . ')...'; /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?></span>
 			</div>
 			
 			<?php

@@ -562,7 +562,7 @@ function bookacti_get_booking_system_default_attributes() {
 
 /**
  * Format booking system attributes
- * @version 1.19.6
+ * @version 1.19.9
  * @param array $raw_atts 
  * @return array
  */
@@ -714,10 +714,10 @@ function bookacti_format_booking_system_attributes( $raw_atts = array() ) {
 	
 	// Give a random id if not supplied
 	// Prefix the ID with bookacti-booking-system-
-	$formatted_atts[ 'id' ] = empty( $atts[ 'id' ] ) || ! is_string( $atts[ 'id' ] ) ? rand() : ( substr( strval( $atts[ 'id' ] ), 0, 9 ) !== 'bookacti-' ? 'bookacti-booking-system-' . esc_attr( $atts[ 'id' ] ) : esc_attr( $atts[ 'id' ] ) );
+	$formatted_atts[ 'id' ] = empty( $atts[ 'id' ] ) || ! is_string( $atts[ 'id' ] ) ? wp_rand() : ( substr( strval( $atts[ 'id' ] ), 0, 9 ) !== 'bookacti-' ? 'bookacti-booking-system-' . $atts[ 'id' ] : $atts[ 'id' ] );
 	
 	// Format classes
-	$formatted_atts[ 'class' ] = is_string( $atts[ 'class' ] ) ? esc_attr( $atts[ 'class' ] ) : $defaults[ 'class' ];
+	$formatted_atts[ 'class' ] = is_string( $atts[ 'class' ] ) ? $atts[ 'class' ] : $defaults[ 'class' ];
 	
 	// Format the threshold to hide events availability
 	$formatted_atts[ 'hide_availability' ] = is_numeric( $atts[ 'hide_availability' ] ) ? max( min( intval( $atts[ 'hide_availability' ] ), 100 ), 0 ) : $defaults[ 'hide_availability' ];
@@ -1164,7 +1164,7 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 		$activities_options_attr = array( '<select>' => ' data-allow-clear="0"' );
 		foreach( $activities as $activity ) {
 			$activities_options[ $activity[ 'id' ] ]      = ! empty( $activity[ 'title' ] ) ? apply_filters( 'bookacti_translate_text', $activity[ 'title' ] ) : '';
-			$activities_options_attr[ $activity[ 'id' ] ] = 'data-bookacti-show-if-templates="' .esc_attr( implode( ',', $activity[ 'template_ids' ] ) ) . '"';
+			$activities_options_attr[ $activity[ 'id' ] ] = 'data-bookacti-show-if-templates="' . esc_attr( implode( ',', $activity[ 'template_ids' ] ) ) . '"';
 		}
 		
 		$defaults[ 'activities' ] = array( 

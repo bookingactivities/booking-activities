@@ -2,7 +2,7 @@
 /**
  * Notification editor page
  * @since 1.18.0
- * @version 1.19.8
+ * @version 1.19.9
  */
 
 // Exit if accessed directly
@@ -43,7 +43,7 @@ if( ! $can_edit_notification || ! $can_manage_notification ) { esc_html_e( 'You 
 
 ?>
 <div class='wrap'>
-	<h1><?php echo $is_new ? esc_html__( 'Add new notification', 'booking-activities' ) : /* translators: %1$s is the database ID, %2$s is the notification user-friendly identifier. */ sprintf( esc_html__( 'Edit notification #%1$s - %2$s', 'booking-activities' ), $notification_db_id, '<code>' . $notification_id . '</code>' ); ?></h1>
+	<h1><?php echo $is_new ? esc_html__( 'Add new notification', 'booking-activities' ) : /* translators: %1$s is the database ID, %2$s is the notification user-friendly identifier. */ sprintf( esc_html__( 'Edit notification #%1$s - %2$s', 'booking-activities' ), intval( $notification_db_id ), '<code>' . esc_html( $notification_id ) . '</code>' ); ?></h1>
 	<hr class='wp-header-end'/>
 	<div id='bookacti-notification-editor-page-container'>
 		<?php
@@ -58,7 +58,7 @@ if( ! $can_edit_notification || ! $can_manage_notification ) { esc_html_e( 'You 
 			?>
 			<input type='hidden' name='page' value='bookacti_notifications'/>
 			<input type='hidden' name='action' value='<?php echo esc_attr( $is_new ? 'create' : 'edit' ); ?>'/>
-			<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_update_notification' ); ?>'/>
+			<input type='hidden' name='nonce' value='<?php echo esc_attr( wp_create_nonce( 'bookacti_update_notification' ) ); ?>'/>
 			<input type='hidden' name='notification_db_id' value='<?php echo esc_attr( $notification_db_id ); ?>' id='bookacti-notification-db-id'/>
 			
 			<div id='bookacti-notification-editor-page-lang-switcher' class='bookacti-lang-switcher'></div>
@@ -68,9 +68,8 @@ if( ! $can_edit_notification || ! $can_manage_notification ) { esc_html_e( 'You 
 					<div id='post-body-content'>
 						<div id='titlediv'>
 							<div id='titlewrap'>
-								<?php $title_placeholder = esc_html__( 'Enter notification title here', 'booking-activities' ); ?>
-								<label class='screen-reader-text' id='title-prompt-text' for='title'><?php echo $title_placeholder; ?></label>
-								<input type='text' name='title' size='30' value='<?php echo esc_attr( $notification_edit[ 'title' ] ); ?>' id='title' class='bookacti-translatable' spellcheck='true' autocomplete='off' placeholder='<?php echo esc_attr( $title_placeholder ); ?>' required/>
+								<label class='screen-reader-text' id='title-prompt-text' for='title'><?php esc_html_e( 'Enter notification title here', 'booking-activities' ); ?></label>
+								<input type='text' name='title' size='30' value='<?php echo esc_attr( $notification_edit[ 'title' ] ); ?>' id='title' class='bookacti-translatable' spellcheck='true' autocomplete='off' placeholder='<?php esc_attr_e( 'Enter notification title here', 'booking-activities' ); ?>' required/>
 							</div>
 						</div>
 						<div id='postdivrich' class='postarea'></div>

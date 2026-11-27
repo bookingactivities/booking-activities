@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking list page
- * @version 1.19.8
+ * @version 1.19.9
  */
 
 // Exit if accessed directly
@@ -64,12 +64,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		<div id='bookacti-bookings-filters-container'>
 			<form id='bookacti-booking-list-filters-form' action=''>
 				<input type='hidden' name='page' value='bookacti_bookings'/>
-				<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_get_booking_list' ); ?>'/>
+				<input type='hidden' name='nonce' value='<?php echo esc_attr( wp_create_nonce( 'bookacti_get_booking_list' ) ); ?>'/>
 				<input type='hidden' name='context' value='<?php echo esc_attr( $context ); ?>'/>
-				<input type='hidden' name='created_from' value='<?php echo ! empty( $_REQUEST[ 'created_from' ] ) ? esc_attr( bookacti_sanitize_datetime( $_REQUEST[ 'created_from' ] ) ) : ''; ?>'/>
-				<input type='hidden' name='created_to' value='<?php echo ! empty( $_REQUEST[ 'created_to' ] ) ? esc_attr( bookacti_sanitize_datetime( $_REQUEST[ 'created_to' ] ) ) : ''; ?>'/>
-				<input type='hidden' name='end_from' value='<?php echo ! empty( $_REQUEST[ 'end_from' ] ) ? esc_attr( bookacti_sanitize_datetime( $_REQUEST[ 'end_from' ] ) ) : ''; ?>'/>
-				<input type='hidden' name='end_to' value='<?php echo ! empty( $_REQUEST[ 'end_to' ] ) ? esc_attr( bookacti_sanitize_datetime( $_REQUEST[ 'end_to' ] ) ) : ''; ?>'/>
+				<input type='hidden' name='created_from' value='<?php echo esc_attr( ! empty( $_REQUEST[ 'created_from' ] ) ? bookacti_sanitize_datetime( $_REQUEST[ 'created_from' ] ) : '' ); ?>'/>
+				<input type='hidden' name='created_to' value='<?php echo esc_attr( ! empty( $_REQUEST[ 'created_to' ] ) ? bookacti_sanitize_datetime( $_REQUEST[ 'created_to' ] ) : '' ); ?>'/>
+				<input type='hidden' name='end_from' value='<?php echo esc_attr( ! empty( $_REQUEST[ 'end_from' ] ) ? bookacti_sanitize_datetime( $_REQUEST[ 'end_from' ] ) : '' ); ?>'/>
+				<input type='hidden' name='end_to' value='<?php echo esc_attr( ! empty( $_REQUEST[ 'end_to' ] ) ? bookacti_sanitize_datetime( $_REQUEST[ 'end_to' ] ) : '' ); ?>'/>
 				<?php
 					// Display sorting data
 					$order_by = ! empty( $_REQUEST[ 'order_by' ] ) ? $_REQUEST[ 'order_by' ] : ( ! empty( $_REQUEST[ 'orderby' ] ) ? $_REQUEST[ 'orderby' ] : array() );
@@ -80,7 +80,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							if( $i === 0 ) {
 								echo '<input type="hidden" name="orderby" value="' . esc_attr( $column_name ) . '" />';
 							}
-							echo '<input type="hidden" name="order_by[' . $i . ']" value="' . esc_attr( $column_name ) . '" />';
+							echo '<input type="hidden" name="' . esc_attr( 'order_by[' . $i . ']' ) . '" value="' . esc_attr( $column_name ) . '" />';
 							++$i;
 						}
 					}
@@ -256,12 +256,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							// Get selected (group of) event(s) data (if any)
 							$picked_events = ! empty( $_REQUEST[ 'selected_events' ] ) ? bookacti_format_picked_events( $_REQUEST[ 'selected_events' ] ) : array();
 							
-							$calendar_button_label_show = esc_html__( 'Show calendar', 'booking-activities' );
-							$calendar_button_label_hide = esc_html__( 'Hide calendar', 'booking-activities' );
+							$calendar_button_label_show = __( 'Show calendar', 'booking-activities' );
+							$calendar_button_label_hide = __( 'Hide calendar', 'booking-activities' );
 							$calendar_button_label      = $picked_events || $user_calendar_settings[ 'show' ] ? $calendar_button_label_hide : $calendar_button_label_show;
 						?>
 						<a class='button' id='bookacti-pick-event-filter' title='<?php echo esc_attr( $calendar_button_label ); ?>' data-label-hide='<?php echo esc_attr( $calendar_button_label_hide ); ?>' data-label-show='<?php echo esc_attr( $calendar_button_label_show ); ?>'>
-							<?php echo $calendar_button_label; ?>
+							<?php echo esc_html( $calendar_button_label ); ?>
 						</a>
 					</div>
 					<div class='bookacti-filter-content'>
@@ -348,7 +348,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						// Format booking system attributes
 						$atts = bookacti_format_booking_system_attributes( $atts );
 						
-						echo bookacti_get_booking_system( $atts );
+						echo bookacti_get_booking_system( $atts ); /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */
 					?>
 					<script>
 						bookacti.booking_system[ 'bookacti-booking-system-bookings-page' ][ 'templates_per_activities' ] = <?php echo json_encode( $activities ); ?>;

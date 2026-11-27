@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Get forms according to filters
  * @since 1.5.0
- * @version 1.18.2
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param array $filters Use bookacti_format_form_filters() before
  * @return array
@@ -15,9 +15,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 function bookacti_get_forms( $filters = array() ) {
 	global $wpdb;
 	
-	$query	= ' SELECT F.id, F.title, F.user_id, F.creation_date, F.status, F.active ' 
-			. ' FROM ' . BOOKACTI_TABLE_FORMS . ' as F '
-			. ' WHERE TRUE ';
+	$query = ' SELECT F.id, F.title, F.user_id, F.creation_date, F.status, F.active ' 
+	       . ' FROM ' . BOOKACTI_TABLE_FORMS . ' as F '
+	       . ' WHERE TRUE ';
 	
 	$variables = array();
 	
@@ -83,9 +83,9 @@ function bookacti_get_forms( $filters = array() ) {
 	}
 	
 	if( $variables ) {
-		$query = $wpdb->prepare( $query, $variables );
+		$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	}
-	$results = $wpdb->get_results( $query, ARRAY_A );
+	$results = $wpdb->get_results( $query, ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	$forms = array();
 	foreach( $results as $result ) {
@@ -99,6 +99,7 @@ function bookacti_get_forms( $filters = array() ) {
 /**
  * Get the total amount of booking rows according to filters
  * @since 1.5.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param array $filters Use bookacti_format_form_filters() before
  * @return int
@@ -106,9 +107,9 @@ function bookacti_get_forms( $filters = array() ) {
 function bookacti_get_number_of_form_rows( $filters = array() ) {
 	global $wpdb;
 	
-	$query	= ' SELECT COUNT( DISTINCT F.id ) ' 
-			. ' FROM ' . BOOKACTI_TABLE_FORMS . ' as F '
-			. ' WHERE true ';
+	$query = ' SELECT COUNT( DISTINCT F.id ) ' 
+	       . ' FROM ' . BOOKACTI_TABLE_FORMS . ' as F '
+	       . ' WHERE true ';
 	
 	$variables = array();
 	
@@ -152,10 +153,10 @@ function bookacti_get_number_of_form_rows( $filters = array() ) {
 	}
 	
 	if( $variables ) {
-		$query = $wpdb->prepare( $query, $variables );
+		$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	}
 	
-	$count = $wpdb->get_var( $query );
+	$count = $wpdb->get_var( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 	return $count ? $count : 0;
 }
@@ -164,7 +165,7 @@ function bookacti_get_number_of_form_rows( $filters = array() ) {
 /**
  * Create a form
  * @since 1.5.0
- * @version 1.14.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $form_id
  * @param string $title
@@ -187,8 +188,8 @@ function bookacti_insert_form( $title = '' ) {
 		$current_datetime_object->format( 'Y-m-d H:i:s' )
 	);
 	
-	$query = $wpdb->prepare( $query, $variables );
-	$created = $wpdb->query( $query );
+	$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$created = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	return $created ? $wpdb->insert_id : $created;
 }
@@ -197,6 +198,7 @@ function bookacti_insert_form( $title = '' ) {
 /**
  * Update a form
  * @since 1.5.0
+ * @verion 1.19.9
  * @global wpdb $wpdb
  * @param int $form_id
  * @param string $title
@@ -210,24 +212,24 @@ function bookacti_insert_form( $title = '' ) {
 function bookacti_update_form( $form_id, $title = '', $user_id = -1, $creation_date = '', $status = '', $active = -1 ) {
 	global $wpdb;
 	
-	$query	= 'UPDATE ' . BOOKACTI_TABLE_FORMS
-			. ' SET '
-			. ' title = IFNULL( NULLIF( %s, "" ), title ), '
-			. ' user_id = IFNULL( NULLIF( %d, -1 ), user_id ), '
-			. ' creation_date = IFNULL( NULLIF( %s, "" ), creation_date ), '
-			. ' status = IFNULL( NULLIF( %s, "" ), status ), '
-			. ' active = IFNULL( NULLIF( %d, -1 ), active ) '
-			. ' WHERE id = %d ';
+	$query = 'UPDATE ' . BOOKACTI_TABLE_FORMS
+	       . ' SET '
+	       . ' title = IFNULL( NULLIF( %s, "" ), title ), '
+	       . ' user_id = IFNULL( NULLIF( %d, -1 ), user_id ), '
+	       . ' creation_date = IFNULL( NULLIF( %s, "" ), creation_date ), '
+	       . ' status = IFNULL( NULLIF( %s, "" ), status ), '
+	       . ' active = IFNULL( NULLIF( %d, -1 ), active ) '
+	       . ' WHERE id = %d ';
 	
 	$variables = array( $title, $user_id, $creation_date, $status, $active, $form_id );
 	
 	// Safely apply variables to the query
 	if( $variables ) {
-		$query = $wpdb->prepare( $query, $variables );
+		$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	}
 	
 	// Update form
-	$updated = $wpdb->query( $query );
+	$updated = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	return $updated;
 }
@@ -236,6 +238,7 @@ function bookacti_update_form( $form_id, $title = '', $user_id = -1, $creation_d
 /**
  * Update forms' author id
  * @since 1.16.21
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $old_user_id
  * @param int $new_user_id
@@ -248,8 +251,8 @@ function bookacti_update_forms_user_id( $old_user_id, $new_user_id ) {
 	       . ' SET user_id = %d '
 	       . ' WHERE user_id = %d ';
 	
-	$query   = $wpdb->prepare( $query, $new_user_id, $old_user_id );
-	$updated = $wpdb->query( $query );
+	$query   = $wpdb->prepare( $query, $new_user_id, $old_user_id ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$updated = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	return $updated;
 }
@@ -356,7 +359,7 @@ function bookacti_delete_form( $form_id ) {
 /**
  * Insert default form fields
  * @since 1.5.0
- * @version 1.14.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $form_id
  * @return int
@@ -385,10 +388,10 @@ function bookacti_insert_default_form_fields( $form_id ) {
 	$query = rtrim( $query, ',' ); // remove trailing comma
 	
 	// Safely apply variables to the query
-	if( $variables ) { $query = $wpdb->prepare( $query, $variables ); }
+	if( $variables ) { $query = $wpdb->prepare( $query, $variables ); } // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 	// Insert form fields
-	$inserted = $wpdb->query( $query );
+	$inserted = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	return $inserted;
 }
@@ -397,7 +400,7 @@ function bookacti_insert_default_form_fields( $form_id ) {
 /**
  * Insert a form field without any data
  * @since 1.5.0
- * @version 1.15.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $form_id
  * @param array $field_data
@@ -417,8 +420,8 @@ function bookacti_insert_form_field( $form_id, $field_data ) {
 		! empty( $field_data[ 'required' ] ) ? 1 : 0
 	);
 	
-	$query = $wpdb->prepare( $query, $variables );
-	$created = $wpdb->query( $query );
+	$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$created = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	return $created ? $wpdb->insert_id : $created;
 }
@@ -427,6 +430,7 @@ function bookacti_insert_form_field( $form_id, $field_data ) {
 /**
  * Get the desired field by id
  * @since 1.5.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $form_id
  * @return array
@@ -434,16 +438,16 @@ function bookacti_insert_form_field( $form_id, $field_data ) {
 function bookacti_get_form_field( $field_id ) {
 	global $wpdb;
 	
-	$query	= 'SELECT id as field_id, form_id, name, type, title, label, options, value, placeholder, tip, required, active FROM ' . BOOKACTI_TABLE_FORM_FIELDS . ' as FF '
-			. ' WHERE FF.id = %d';
+	$query = 'SELECT id as field_id, form_id, name, type, title, label, options, value, placeholder, tip, required, active FROM ' . BOOKACTI_TABLE_FORM_FIELDS . ' as FF '
+	       . ' WHERE FF.id = %d';
 	
 	$variables = array( $field_id );
 	
 	if( $variables ) {
-		$query = $wpdb->prepare( $query, $variables );
+		$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	}
 	
-	$field = $wpdb->get_row( $query, ARRAY_A );
+	$field = $wpdb->get_row( $query, ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	if( ! $field ) { return array(); }
 	
@@ -458,6 +462,7 @@ function bookacti_get_form_field( $field_id ) {
 /**
  * Get a field by name in the desired form
  * @since 1.5.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $form_id
  * @param string $field_name
@@ -466,18 +471,18 @@ function bookacti_get_form_field( $field_id ) {
 function bookacti_get_form_field_by_name( $form_id, $field_name ) {
 	global $wpdb;
 	
-	$query	= 'SELECT id as field_id, form_id, name, type, title, label, options, value, placeholder, tip, required, active FROM ' . BOOKACTI_TABLE_FORM_FIELDS . ' as FF '
-			. ' WHERE FF.form_id = %d '
-			. ' AND FF.name = %s '
-			. ' LIMIT 1 ';
+	$query = 'SELECT id as field_id, form_id, name, type, title, label, options, value, placeholder, tip, required, active FROM ' . BOOKACTI_TABLE_FORM_FIELDS . ' as FF '
+	       . ' WHERE FF.form_id = %d '
+	       . ' AND FF.name = %s '
+	       . ' LIMIT 1 ';
 	
 	$variables = array( $form_id, $field_name );
 	
 	if( $variables ) {
-		$query = $wpdb->prepare( $query, $variables );
+		$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	}
 	
-	$field = $wpdb->get_row( $query, ARRAY_A );
+	$field = $wpdb->get_row( $query, ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	if( ! $field ) { return array(); }
 	
@@ -492,6 +497,7 @@ function bookacti_get_form_field_by_name( $form_id, $field_name ) {
 /**
  * Get fields by name per form
  * @since 1.16.2
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $form_ids
  * @param string $field_name
@@ -515,10 +521,10 @@ function bookacti_get_forms_field_by_name( $form_ids, $field_name ) {
 	$variables = array_merge( $form_ids, array( $field_name ) );
 	
 	if( $variables ) {
-		$query = $wpdb->prepare( $query, $variables );
+		$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	}
 	
-	$results = $wpdb->get_results( $query, ARRAY_A );
+	$results = $wpdb->get_results( $query, ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	if( ! $results ) { return array(); }
 	
 	$forms_fields = array();
@@ -539,23 +545,23 @@ function bookacti_get_forms_field_by_name( $form_ids, $field_name ) {
 /**
  * Get the fields of the desired form
  * @since 1.5.0
- * @version 1.14.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $form_id
  * @param boolean $active_only Whether to fetch only active fields. Default "true".
  * @return array|false
  */
 function bookacti_get_form_fields( $form_id, $active_only = true ) {
-	$fields = wp_cache_get( 'form_fields_' . $form_id, 'bookacti' );	
+	$fields = wp_cache_get( 'form_fields_' . $form_id, 'bookacti' );
 	if( $fields === false ) { 
 		global $wpdb;
 
 		$query = 'SELECT id as field_id, form_id, name, type, title, label, options, value, placeholder, tip, required, active '
-			   . ' FROM ' . BOOKACTI_TABLE_FORM_FIELDS . ' as FF '
-			   . ' WHERE FF.form_id = %d '
-			   . ' ORDER BY id ASC ';
-		$query  = $wpdb->prepare( $query, $form_id );
-		$fields = $wpdb->get_results( $query, ARRAY_A );
+		       . ' FROM ' . BOOKACTI_TABLE_FORM_FIELDS . ' as FF '
+		       . ' WHERE FF.form_id = %d '
+		       . ' ORDER BY id ASC ';
+		$query  = $wpdb->prepare( $query, $form_id ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		$fields = $wpdb->get_results( $query, ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 		
 		wp_cache_set( 'form_fields_' . $form_id, $fields, 'bookacti' );
 	}
@@ -577,7 +583,7 @@ function bookacti_get_form_fields( $form_id, $active_only = true ) {
 /**
  * Update a form field
  * @since 1.5.0
- * @version 1.16.45
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param array $field_data
  * @return int|false
@@ -607,8 +613,8 @@ function bookacti_update_form_field( $field_data ) {
 		$field_data[ 'field_id' ]
 	);
 	
-	$query = $wpdb->prepare( $query, $variables );
-	$updated = $wpdb->query( $query );
+	$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$updated = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	return $updated;
 }
@@ -648,7 +654,7 @@ function bookacti_delete_form_field( $field_id ) {
 /**
  * Delete all form fields
  * @since 1.5.0
- * @version 1.14.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $form_id
  * @return int|false
@@ -657,14 +663,14 @@ function bookacti_delete_form_fields( $form_id ) {
 	global $wpdb;
 	
 	// Remove form fields metadata
-	$query	= 'DELETE M.* '
-			. ' FROM ' . BOOKACTI_TABLE_META . ' as M, ' . BOOKACTI_TABLE_FORM_FIELDS . ' as FF '
-			. ' WHERE M.object_type = "form_field" '
-			. ' AND M.object_id = FF.id '
-			. ' AND FF.form_id = %d ';
+	$query = 'DELETE M.* '
+	       . ' FROM ' . BOOKACTI_TABLE_META . ' as M, ' . BOOKACTI_TABLE_FORM_FIELDS . ' as FF '
+	       . ' WHERE M.object_type = "form_field" '
+	       . ' AND M.object_id = FF.id '
+	       . ' AND FF.form_id = %d ';
 	
-	$query = $wpdb->prepare( $query, $form_id );
-	$wpdb->query( $query );
+	$query = $wpdb->prepare( $query, $form_id ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	// Delete form fields
 	$deleted = $wpdb->delete( 

@@ -1200,7 +1200,7 @@ function bookacti_get_notifications_tags( $notification_id = '' ) {
 /**
  * Get notifications tags and values corresponding to given booking
  * @since 1.2.0
- * @version 1.16.44
+ * @version 1.19.9
  * @param object $booking
  * @param string $booking_type 'group' or 'single'
  * @param array $notification
@@ -1321,7 +1321,7 @@ function bookacti_get_notifications_tags_values( $booking, $booking_type, $notif
 				if( ! empty( $user_meta[ 'bookacti_secret_key' ][ 0 ] ) ) {
 					$user_ical_key = $user_meta[ 'bookacti_secret_key' ][ 0 ];
 				} else if( ! empty( $booking->user_id ) && is_numeric( $booking->user_id ) ) {
-					$user_ical_key = md5( microtime().rand() );
+					$user_ical_key = md5( wp_rand() );
 					update_user_meta( $booking->user_id, 'bookacti_secret_key', $user_ical_key );
 				}
 				$booking_data[ '{user_ical_url}' ] = esc_url( home_url( '?action=bookacti_export_user_booked_events&filename=my-bookings&key=' . $user_ical_key . '&locale=' . $locale ) );
@@ -1336,7 +1336,7 @@ function bookacti_get_notifications_tags_values( $booking, $booking_type, $notif
 		
 		$booking_ical_key = $user_ical_key ? $user_ical_key : ( ! empty( $booking->secret_key ) ? $booking->secret_key : '' );
 		if( ! $booking_ical_key ) { 
-			$booking_ical_key = md5( microtime().rand() );
+			$booking_ical_key = md5( wp_rand() );
 			$object_type = $booking_type === 'group' ? 'booking_group' : 'booking';
 			bookacti_update_metadata( $object_type, $booking->id, array( 'secret_key' => $booking_ical_key ) );
 		}
@@ -1725,7 +1725,7 @@ if( ! function_exists( 'bookacti_send_new_user_notification' ) ) {
 /**
  * Email login credentials to a newly-registered user in an asynchronous way
  * @since 1.5.0
- * @version 1.7.0
+ * @version 1.19.9
  * @global string  $wp_version
  * @param  int     $user_id   User ID.
  * @param  string  $notify    Optional. Type of notification that should happen. Accepts 'admin' or an empty
@@ -1746,14 +1746,7 @@ function bookacti_send_new_user_notification( $user_id, $notify = 'both', $async
 	global $wp_version;
 	if( $notify === 'user' && version_compare( $wp_version, '4.6.0', '<' ) ) { $notify = 'both'; }
 	
-	if( version_compare( $wp_version, '4.3.1', '>=' ) ) {
-		wp_new_user_notification( $user_id, null, $notify );
-	} else if( version_compare( $wp_version, '4.3.0', '==' ) ) {
-		wp_new_user_notification( $user_id, $notify );
-	} else {
-		$user = get_user_by( 'id', $user_id );
-		wp_new_user_notification( $user_id, $user->user_pass );
-	}
+	wp_new_user_notification( $user_id, null, $notify );
 }
 
 // Hook the asynchronous call and send the new user notification
