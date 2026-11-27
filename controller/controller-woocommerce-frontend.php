@@ -46,7 +46,7 @@ add_filter( 'bookacti_translation_array', 'bookacti_woocommerce_translation_arra
 /**
  * Format price with WC settings
  * @since 1.15.15
- * @version 1.16.0
+ * @version 1.19.9
  * @param string $formatted_price
  * @param int|float $amount
  * @param int|float $price_raw
@@ -58,7 +58,7 @@ function bookacti_wc_formatted_price( $formatted_price, $amount, $price_raw, $ar
 	if( empty( $args_raw[ 'plain_text' ] ) ) { 
 		$wc_price = '<span class="bookacti-price">' . $wc_price . '</span>';
 	} else {
-		$wc_price = trim( strip_tags( $wc_price ) );
+		$wc_price = trim( wp_strip_all_tags( $wc_price ) );
 	}
 	return $wc_price;
 }
@@ -728,7 +728,7 @@ add_filter( 'woocommerce_add_cart_item', 'bookacti_merge_cart_items_with_same_bo
 
 /**
  * Set the timeout for a product added to cart
- * @version 1.9.0
+ * @version 1.19.9
  * @global array $global_bookacti_wc
  * @global WooCommerce $woocommerce
  * @param string $cart_item_key
@@ -761,7 +761,7 @@ function bookacti_set_timeout_to_cart_item( $cart_item_key, $product_id, $quanti
 	$reset_timeout_on_change = bookacti_get_setting_value( 'bookacti_cart_settings', 'reset_cart_timeout_on_change' );
 	$timeout                 = bookacti_get_setting_value( 'bookacti_cart_settings', 'cart_timeout' );
 	$cart_expiration_date    = bookacti_wc_get_cart_expiration_date();
-	$expiration_date         = date( 'Y-m-d H:i:s', strtotime( '+' . $timeout . ' minutes' ) );
+	$expiration_date         = gmdate( 'Y-m-d H:i:s', strtotime( '+' . $timeout . ' minutes' ) );
 
 	// Reset cart timeout and its items timeout
 	if( $reset_timeout_on_change 
@@ -1513,6 +1513,7 @@ add_filter( 'woocommerce_attribute_label', 'bookacti_define_label_of_item_data',
 /**
  * Take into account the in_cart bookings to compute events availability
  * @since 1.10.1 (was bookacti_wc_number_of_bookings_per_user_by_events_query)
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param string $query
  * @param array $events
@@ -1523,7 +1524,7 @@ function bookacti_wc_number_of_bookings_per_event_per_user_query_include_current
 	$current_user_id = apply_filters( 'bookacti_current_user_id', get_current_user_id() );
 	$search  = 'LEFT JOIN ' . BOOKACTI_TABLE_BOOKINGS . ' as B ON B.event_id = E.id AND B.active = 1';
 	$replace = 'LEFT JOIN ' . BOOKACTI_TABLE_BOOKINGS . ' as B ON B.event_id = E.id AND ( B.active = 1 OR ( B.state = "in_cart" AND B.user_id = %s ) )';
-	$replace = $wpdb->prepare( $replace, $current_user_id );
+	$replace = $wpdb->prepare( $replace, $current_user_id ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	$query   = str_replace( $search, $replace, $query );
 	return $query;
 }

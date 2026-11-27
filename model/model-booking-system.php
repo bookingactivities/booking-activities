@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Fetch events by templates and / or activities
- * @version 1.17.0
+ * @version 1.19.9
  * @param array $raw_args {
  *  @type array $templates Array of template IDs
  *  @type array $activities Array of activity IDs
@@ -150,10 +150,10 @@ function bookacti_fetch_events( $raw_args = array() ) {
 	$query .= ' ORDER BY E.start ASC ';
 
 	// Allow plugins to change the query
-	$query = apply_filters( 'bookacti_get_events_query', $wpdb->prepare( $query, $variables ), $args );
+	$query = apply_filters( 'bookacti_get_events_query', $wpdb->prepare( $query, $variables ), $args ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	// Get events complying with parameters
-	$events = $wpdb->get_results( $query, OBJECT );
+	$events = $wpdb->get_results( $query, OBJECT ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	// Transform raw events from database to array of individual events
 	$events_array = bookacti_get_events_array_from_db_events( $events, $args );
@@ -165,7 +165,7 @@ function bookacti_fetch_events( $raw_args = array() ) {
 /**
  * Fetch booked events only
  * @since 1.2.2
- * @version 1.17.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param array $raw_args {
  *  @type array $templates Array of template IDs
@@ -228,12 +228,12 @@ function bookacti_fetch_booked_events( $raw_args = array() ) {
 	
 	if( ! $args[ 'past_events' ] && $args[ 'started_groups' ] ) {
 		// Join the meta table to filter groups already started
-		$query .= ' LEFT JOIN ( 
-						SELECT object_id as group_category_id, IFNULL( NULLIF( meta_value, -1 ), %d ) as started_groups_bookable
-						FROM ' . BOOKACTI_TABLE_META . ' 
-						WHERE object_type = "group_category" 
-						AND meta_key = "started_groups_bookable" 
-					) as M ON M.group_category_id = BG.category_id ';
+		$query .= ' LEFT JOIN ( '
+		       .     ' SELECT object_id as group_category_id, IFNULL( NULLIF( meta_value, -1 ), %d ) as started_groups_bookable '
+		       .     ' FROM ' . BOOKACTI_TABLE_META
+		       .     ' WHERE object_type = "group_category" '
+		       .     ' AND meta_key = "started_groups_bookable" '
+		       . ' ) as M ON M.group_category_id = BG.category_id ';
 
 		$started_groups_bookable = bookacti_get_setting_value( 'bookacti_general_settings', 'started_groups_bookable' );
 		$variables[] = $started_groups_bookable;
@@ -406,12 +406,12 @@ function bookacti_fetch_booked_events( $raw_args = array() ) {
 
 	// Safely apply variables to the query
 	if( $variables ) {
-		$query = $wpdb->prepare( $query, $variables );
+		$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	}
 	$query = apply_filters( 'bookacti_get_booked_events_query', $query, $args );
 
 	// Get events complying with parameters
-	$events = $wpdb->get_results( $query, OBJECT );
+	$events = $wpdb->get_results( $query, OBJECT ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	// Transform raw events from database to array of individual events
 	$events_array = bookacti_get_events_array_from_db_events( $events, $args );
@@ -422,7 +422,7 @@ function bookacti_fetch_booked_events( $raw_args = array() ) {
 
 /**
  * Get event by id
- * @version 1.17.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $event_id
  * @return object|false
@@ -435,8 +435,8 @@ function bookacti_get_event_by_id( $event_id ) {
 	       . ' LEFT JOIN ' . BOOKACTI_TABLE_ACTIVITIES . ' as A ON E.activity_id = A.id '
 	       . ' LEFT JOIN ' . BOOKACTI_TABLE_TEMPLATES . ' as T ON E.template_id = T.id '
 	       . ' WHERE E.id = %d';
-	$query = $wpdb->prepare( $query, $event_id );
-	$event = $wpdb->get_row( $query, OBJECT );
+	$query = $wpdb->prepare( $query, $event_id ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$event = $wpdb->get_row( $query, OBJECT ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	if( ! is_object( $event ) ) { return false; }
 	
@@ -449,8 +449,7 @@ function bookacti_get_event_by_id( $event_id ) {
 
 /**
  * Get the number of remaining places of an event (total places - booked places)
- * 
- * @version 1.4.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $event_id
  * @param string $event_start Format "YYYY-MM-DD HH:mm:ss"
@@ -471,8 +470,8 @@ function bookacti_get_event_availability( $event_id, $event_start, $event_end ) 
 	       . ' ) as B ON B.event_id = E.id '
 	       . ' WHERE E.id = %d'
 	       . ' LIMIT 1 ';
-	$query	= $wpdb->prepare( $query, $event_id, $event_start, $event_end, $event_id );
-	$availability = $wpdb->get_var( $query );
+	$query	= $wpdb->prepare( $query, $event_id, $event_start, $event_end, $event_id ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$availability = $wpdb->get_var( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 	return $availability;
 }
@@ -485,7 +484,7 @@ function bookacti_get_event_availability( $event_id, $event_start, $event_end ) 
 /**
  * Get groups of events data
  * @since 1.4.0 (was bookacti_get_groups_of_events_by_template and bookacti_get_groups_of_events_by_category)
- * @version 1.18.49
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param array $raw_args {
  *  @type array $templates
@@ -531,22 +530,22 @@ function bookacti_get_groups_of_events( $raw_args = array() ) {
 	       . ' LEFT JOIN ' . BOOKACTI_TABLE_TEMPLATES . ' as T ON T.id = C.template_id ';
 
 	// Join the meta table to filter groups already started
-	$query .= ' LEFT JOIN ( 
-					SELECT object_id as group_category_id, IFNULL( NULLIF( meta_value, -1 ), %d ) as started_groups_bookable
-					FROM ' . BOOKACTI_TABLE_META . ' 
-					WHERE object_type = "group_category" 
-					AND meta_key = "started_groups_bookable" 
-				) as M ON M.group_category_id = G.category_id ';
+	$query .= ' LEFT JOIN ( '
+	       .     ' SELECT object_id as group_category_id, IFNULL( NULLIF( meta_value, -1 ), %d ) as started_groups_bookable '
+	       .     ' FROM ' . BOOKACTI_TABLE_META
+	       .     ' WHERE object_type = "group_category" '
+	       .     ' AND meta_key = "started_groups_bookable" '
+	       . ' ) as M ON M.group_category_id = G.category_id ';
 
 	$started_groups_bookable = bookacti_get_setting_value( 'bookacti_general_settings', 'started_groups_bookable' );
 	$variables[] = $started_groups_bookable;
 
 	// Join the groups events table to filter groups already started
-	$query .= ' LEFT JOIN ( 
-					SELECT group_id, MIN( event_start ) as start, MAX( event_end ) as end, COUNT( id ) as nb_events, ABS( DATEDIFF( MAX( event_start ), MIN( event_start ) ) ) as delta_days
-					FROM ' . BOOKACTI_TABLE_GROUPS_EVENTS . ' 
-					GROUP BY group_id
-				) as GE ON GE.group_id = G.id ';
+	$query .= ' LEFT JOIN ( '
+	       .     ' SELECT group_id, MIN( event_start ) as start, MAX( event_end ) as end, COUNT( id ) as nb_events, ABS( DATEDIFF( MAX( event_start ), MIN( event_start ) ) ) as delta_days '
+	       .     ' FROM ' . BOOKACTI_TABLE_GROUPS_EVENTS
+	       .     ' GROUP BY group_id '
+	       . ' ) as GE ON GE.group_id = G.id ';
 
 	$query .= ' WHERE GE.start IS NOT NULL '
 	       . ' AND GE.end IS NOT NULL '
@@ -688,9 +687,9 @@ function bookacti_get_groups_of_events( $raw_args = array() ) {
 		}
 	}
 
-	$query = apply_filters( 'bookacti_get_groups_of_events_query', $wpdb->prepare( $query, $variables ), $args );
+	$query = apply_filters( 'bookacti_get_groups_of_events_query', $wpdb->prepare( $query, $variables ), $args ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
-	$groups = $wpdb->get_results( $query, OBJECT );
+	$groups = $wpdb->get_results( $query, OBJECT ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	// Transform raw groups from database to array of individual group
 	$groups_array = bookacti_get_groups_of_events_array_from_db_groups_of_events( $groups, $args );
@@ -706,7 +705,7 @@ function bookacti_get_groups_of_events( $raw_args = array() ) {
 /**
  * Get the grouped events per group
  * @since 1.1.0
- * @version 1.14.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param array $raw_args
  * @return array
@@ -772,8 +771,8 @@ function bookacti_get_groups_events( $raw_args = array() ) {
 
 	$query .= ' ORDER BY GE.group_id, GE.event_start ';
 
-	if( $variables ) { $query = $wpdb->prepare( $query, $variables ); }
-	$events = $wpdb->get_results( $query, ARRAY_A );
+	if( $variables ) { $query = $wpdb->prepare( $query, $variables ); } // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$events = $wpdb->get_results( $query, ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 	// Order by groups
 	$groups_events = array();
@@ -795,7 +794,7 @@ function bookacti_get_groups_events( $raw_args = array() ) {
 /**
  * Retrieve group categories data by id
  * @since 1.1.0
- * @version 1.15.6
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param array $raw_args {
  *  @type array $templates
@@ -852,11 +851,11 @@ function bookacti_get_group_categories( $raw_args = array() ) {
 		}
 	}
 
-	if( $variables ) { $query = $wpdb->prepare( $query, $variables ); }
+	if( $variables ) { $query = $wpdb->prepare( $query, $variables ); } // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	$query = apply_filters( 'bookacti_get_group_categories_query', $query, $args );
 	
-	$categories = $wpdb->get_results( $query, ARRAY_A );
+	$categories = $wpdb->get_results( $query, ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	// Get group categories meta
 	$retrieved_category_ids = array();
@@ -878,7 +877,7 @@ function bookacti_get_group_categories( $raw_args = array() ) {
 /**
  * Retrieve group category ids by template ids
  * @since 1.1.0
- * @version 1.15.6
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param array $template_ids
  * @param boolean $check_roles
@@ -894,17 +893,17 @@ function bookacti_get_group_category_ids_by_template( $template_ids = array(), $
 
 	// Join the meta table to filter by roles
 	if( $check_roles && ! is_super_admin() ) {
-		$query .= ' LEFT JOIN ( 
-						SELECT meta_value as roles, object_id as group_category_id 
-						FROM ' . BOOKACTI_TABLE_META . ' 
-						WHERE object_type = "group_category" 
-						AND meta_key = "allowed_roles" 
-					) as M ON M.group_category_id = C.id ';
-		$query .= ' LEFT JOIN ( 
-						SELECT user_id as manager_id, object_id as group_category_id
-						FROM ' . BOOKACTI_TABLE_PERMISSIONS . ' 
-						WHERE object_type = "group_category"
-					) as P ON P.group_category_id = C.id ';
+		$query .= ' LEFT JOIN ( '
+		       .     ' SELECT meta_value as roles, object_id as group_category_id '
+		       .     ' FROM ' . BOOKACTI_TABLE_META
+		       .     ' WHERE object_type = "group_category" '
+		       .     ' AND meta_key = "allowed_roles" '
+		       . ' ) as M ON M.group_category_id = C.id ';
+		$query .= ' LEFT JOIN ( '
+		       .     ' SELECT user_id as manager_id, object_id as group_category_id '
+		       .     ' FROM ' . BOOKACTI_TABLE_PERMISSIONS 
+		       .     ' WHERE object_type = "group_category" '
+		       . ' ) as P ON P.group_category_id = C.id ';
 	}
 
 	$query .= ' WHERE C.active = 1 '
@@ -959,8 +958,8 @@ function bookacti_get_group_category_ids_by_template( $template_ids = array(), $
 		}
 	}
 
-	if( $variables ) { $query = $wpdb->prepare( $query, $variables ); }
-	$categories = $wpdb->get_results( $query, OBJECT );
+	if( $variables ) { $query = $wpdb->prepare( $query, $variables ); } // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$categories = $wpdb->get_results( $query, OBJECT ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 	$category_ids = array();
 	foreach( $categories as $category ) { $category_ids[] = intval( $category->id ); }
@@ -975,7 +974,7 @@ function bookacti_get_group_category_ids_by_template( $template_ids = array(), $
 
 /**
  * Get managers
- * @version 1.9.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param string $object_type
  * @param int|array $object_id
@@ -1015,8 +1014,8 @@ function bookacti_get_managers( $object_type, $object_id ) {
 		$variables = array_merge( $variables, $object_id );
 	}
 
-	$query = $wpdb->prepare( $query, $variables );
-	$managers = $wpdb->get_results( $query, OBJECT );
+	$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$managers = $wpdb->get_results( $query, OBJECT ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 	if( is_null( $managers ) ) { return array(); }
 
@@ -1036,7 +1035,6 @@ function bookacti_get_managers( $object_type, $object_id ) {
 
 /**
  * Update managers
- * 
  * @version 1.2.2
  * @param string $object_type
  * @param int $object_id
@@ -1073,6 +1071,7 @@ function bookacti_update_managers( $object_type, $object_id, $managers_array ) {
 /**
  * Update managers' user id
  * @since 1.16.21
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $old_user_id
  * @param int $new_user_id
@@ -1085,8 +1084,8 @@ function bookacti_update_managers_user_id( $old_user_id, $new_user_id ) {
 	       . ' SET user_id = %d '
 	       . ' WHERE user_id = %d ';
 	
-	$query   = $wpdb->prepare( $query, $new_user_id, $old_user_id );
-	$updated = $wpdb->query( $query );
+	$query   = $wpdb->prepare( $query, $new_user_id, $old_user_id ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$updated = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	return $updated;
 }
@@ -1094,7 +1093,7 @@ function bookacti_update_managers_user_id( $old_user_id, $new_user_id ) {
 
 /**
  * Insert managers
- * 
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param string $object_type
  * @param int $object_id
@@ -1128,8 +1127,8 @@ function bookacti_insert_managers( $object_type, $object_id, $managers_array ) {
 		$insert_variables_array[] = intval( $object_id );
 		$insert_variables_array[] = intval( $new_manager_id );
 	}
-	$insert_query_prep = $wpdb->prepare( $insert_managers_query, $insert_variables_array );
-	$inserted = $wpdb->query( $insert_query_prep );
+	$insert_query_prep = $wpdb->prepare( $insert_managers_query, $insert_variables_array ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$inserted = $wpdb->query( $insert_query_prep ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 	return $inserted;
 }
@@ -1137,7 +1136,7 @@ function bookacti_insert_managers( $object_type, $object_id, $managers_array ) {
 
 /**
  * Delete managers
- * 
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param string $object_type
  * @param int $object_id
@@ -1169,8 +1168,8 @@ function bookacti_delete_managers( $object_type, $object_id, $managers_array ) {
 		}
 		$delete_variables_array[] = $old_manager_id;
 	}
-	$delete_query_prep = $wpdb->prepare( $delete_managers_query, $delete_variables_array );
-	$deleted = $wpdb->query( $delete_query_prep );
+	$delete_query_prep = $wpdb->prepare( $delete_managers_query, $delete_variables_array ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$deleted = $wpdb->query( $delete_query_prep ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 	return $deleted;
 }

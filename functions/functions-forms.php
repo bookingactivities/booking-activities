@@ -206,7 +206,7 @@ function bookacti_sanitize_form_data( $raw_form_data ) {
 
 /**
  * Display a booking form
- * @version 1.19.7
+ * @version 1.19.9
  * @param int $form_id
  * @param string $instance_id
  * @param string $context
@@ -220,7 +220,7 @@ function bookacti_display_form( $form_id, $instance_id = '', $context = 'display
 	$form_action = 'bookactiSubmitBookingForm';
 	
 	// Set the form unique CSS selector
-	$form_css_id = ! empty( $form[ 'css_id' ] ) ? esc_attr( $form[ 'css_id' ] ) : ( $instance_id ? esc_attr( $instance_id ) : esc_attr( ( $context === 'login_form' ? 'login-form-' : 'form-' ) . $form[ 'id' ] . '-' . rand() ) );
+	$form_css_id = ! empty( $form[ 'css_id' ] ) ? $form[ 'css_id' ] : ( $instance_id ? $instance_id : ( $context === 'login_form' ? 'login-form-' : 'form-' ) . $form[ 'id' ] . '-' . wp_rand() );
 	if( ! $instance_id ) { $instance_id = $form_css_id; }
 	
 	$fields = bookacti_get_form_fields_data( $form_id );
@@ -276,19 +276,19 @@ function bookacti_display_form( $form_id, $instance_id = '', $context = 'display
 	// Convert $form_attributes array to inline attributes
 	$form_attributes_str = '';
 	foreach( $form_attributes as $form_attribute_key => $form_attribute_value ) {
-		if( $form_attribute_value !== '' ) { $form_attributes_str .= $form_attribute_key . '="' . $form_attribute_value . '" '; }
+		if( $form_attribute_value !== '' ) { $form_attributes_str .= sanitize_title_with_dashes( $form_attribute_key ) . '="' . esc_attr( $form_attribute_value ) . '" '; }
 	}
 	
 	ob_start();
 	
 	// Add form container only if there is a "submit" button
 	if( $is_form ) { ?>
-		<form <?php echo $form_attributes_str; ?>>
+		<form <?php echo $form_attributes_str; /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?>>
 	<?php } else { ?>
-		<div <?php echo $form_attributes_str; ?>>
+		<div <?php echo $form_attributes_str; /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?>>
 	<?php } ?>
-			<input type='hidden' name='form_id' value='<?php echo $form_id; ?>'/>
-			<input type='hidden' name='action' value='<?php echo apply_filters( 'bookacti_form_action_field_value', $form_action, $form, $instance_id, $context, $displayed_form_fields ); ?>'/>
+			<input type='hidden' name='form_id' value='<?php echo esc_attr( $form_id ); ?>'/>
+			<input type='hidden' name='action' value='<?php echo esc_attr( apply_filters( 'bookacti_form_action_field_value', $form_action, $form, $instance_id, $context, $displayed_form_fields ) ); ?>'/>
 		<?php
 			do_action( 'bookacti_form_before', $form, $instance_id, $context, $displayed_form_fields );
 
@@ -309,7 +309,7 @@ function bookacti_display_form( $form_id, $instance_id = '', $context = 'display
 	
 	$html = apply_filters( 'bookacti_form_html', ob_get_clean(), $form, $instance_id, $context, $displayed_form_fields );
 	if( ! $echo ) { return $html; }
-	echo $html;
+	echo $html; /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */
 }
 
 
@@ -1278,7 +1278,7 @@ function bookacti_get_form_field_update_data( $field, $sanitized_data, $switch_l
 /**
  * Display a form field
  * @since 1.5.0
- * @version 1.14.0
+ * @version 1.19.9
  * @param array $field
  * @param string $instance_id
  * @param string $context
@@ -1288,8 +1288,8 @@ function bookacti_get_form_field_update_data( $field, $sanitized_data, $switch_l
 function bookacti_display_form_field( $field, $instance_id = '', $context = 'display', $echo = true ) {
 	if( empty( $field[ 'name' ] ) ) { return ''; }
 	
-	if( ! $instance_id ) { $instance_id = rand(); }
-	$field_id       = ! empty( $field[ 'id' ] ) ? esc_attr( $field[ 'id' ] ) : esc_attr( 'bookacti-form-field-' . $field[ 'type' ] . '-' . $field[ 'field_id' ] . '-' . $instance_id );
+	if( ! $instance_id ) { $instance_id = wp_rand(); }
+	$field_id       = ! empty( $field[ 'id' ] ) ? $field[ 'id' ] : 'bookacti-form-field-' . $field[ 'type' ] . '-' . $field[ 'field_id' ] . '-' . $instance_id;
 	$field_class    = 'bookacti-form-field-container';
 	$field_css_data = '';
 	if( ! empty( $field[ 'name' ] ) )     { $field_class .= ' bookacti-form-field-name-' . sanitize_title_with_dashes( esc_attr( $field[ 'name' ] ) ); $field_css_data .= ' data-field-name="' . esc_attr( $field[ 'name' ] ) . '"'; } 
@@ -1298,12 +1298,12 @@ function bookacti_display_form_field( $field, $instance_id = '', $context = 'dis
 	if( ! empty( $field[ 'class' ] ) )    { $field_class .= ' ' . esc_attr( $field[ 'class' ] ); }
 	ob_start();
 ?>
-	<div class='<?php echo $field_class; ?>' id='<?php echo $field_id; ?>' <?php echo trim( $field_css_data ); ?>>
+	<div class='<?php echo esc_attr( $field_class ); ?>' id='<?php echo esc_attr( $field_id ); ?>' <?php echo trim( $field_css_data ); /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?>>
 	<?php if( ! empty( $field[ 'label' ] ) && is_string( $field[ 'label' ] ) ) { ?>
 		<div class='bookacti-form-field-label' >
 			<label>
 			<?php
-				echo $field[ 'label' ];
+				echo esc_html( $field[ 'label' ] );
 				if( $field[ 'required' ] ) {
 					echo '<span class="bookacti-required-field-indicator" title="' . esc_attr__( 'Required field', 'booking-activities' ) . '"></span>';
 				}
@@ -1321,14 +1321,14 @@ function bookacti_display_form_field( $field, $instance_id = '', $context = 'dis
 <?php
 	$html = apply_filters( 'bookacti_html_form_field_' . $field[ 'type' ], ob_get_clean(), $field, $instance_id, $context );
 	if( ! $echo ) { return $html; }
-	echo $html;
+	echo $html; /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */
 }
 
 
 /**
  * Display a form field for the form editor
  * @since 1.5.0
- * @version 1.15.0
+ * @version 1.19.9
  * @param array $field
  * @param boolean $echo
  * @return string|void
@@ -1344,10 +1344,10 @@ function bookacti_display_form_field_for_editor( $field, $echo = true ) {
 	if( ! $field[ 'unique' ] ) { $field[ 'id' ] .= '-' . esc_attr( $field[ 'field_id' ] ); }
 	if( ! $echo ) { ob_start(); }
 	?>
-	<div id='bookacti-form-editor-field-<?php echo esc_attr( $field[ 'field_id' ] ); ?>' class='<?php echo $field_class; ?>' data-field-id='<?php echo esc_attr( $field[ 'field_id' ] ); ?>' data-field-name='<?php echo esc_attr( $field[ 'name' ] ); ?>' >
+	<div id='<?php echo esc_attr( 'bookacti-form-editor-field-' . $field[ 'field_id' ] ); ?>' class='<?php echo esc_attr( $field_class ); ?>' data-field-id='<?php echo esc_attr( $field[ 'field_id' ] ); ?>' data-field-name='<?php echo esc_attr( $field[ 'name' ] ); ?>' >
 		<div class='bookacti-form-editor-field-header' >
 			<div class='bookacti-form-editor-field-title' >
-				<h3><?php echo apply_filters( 'bookacti_form_editor_field_title', wp_kses_post( $field[ 'title' ] ), $field ); ?></h3>
+				<h3><?php echo wp_kses_post( apply_filters( 'bookacti_form_editor_field_title', $field[ 'title' ], $field ) ); ?></h3>
 			</div>
 			<div class='bookacti-form-editor-field-actions' >
 			<?php do_action( 'bookacti_form_editor_field_actions_before', $field ); ?>
@@ -2206,13 +2206,13 @@ function bookacti_display_form_publish_meta_box( $form_edit ) {
 /**
  * Display 'integration tuto' metabox content for forms
  * @since 1.5.0
- * @version 1.18.2
+ * @version 1.19.9
  * @param array $form_edit
  */
 function bookacti_display_form_integration_tuto_meta_box( $form_edit ) {
-	$shortcode = '[bookingactivities_form form="' . $form_edit[ 'id' ] . '"]';
+	$shortcode = '[bookingactivities_form form="' . intval( $form_edit[ 'id' ] ) . '"]';
 ?>
-	<h4><?php _e( 'Integrate in a post, page, or text widget', 'booking-activities' ) ?></h4>
+	<h4><?php esc_html_e( 'Integrate in a post, page, or text widget', 'booking-activities' ) ?></h4>
 	<div>
 		<p><em><label for='bookacti-form-shortcode'><?php esc_html_e( 'Copy this shortcode and paste it into your post, page, or text widget content:', 'booking-activities' ); ?></label></em></p>
 		<p class='shortcode wp-ui-highlight'>

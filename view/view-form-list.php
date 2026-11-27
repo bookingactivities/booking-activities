@@ -2,7 +2,7 @@
 /**
  * Form list page
  * @since 1.5.0
- * @version 1.19.8
+ * @version 1.19.9
  */
 
 // Exit if accessed directly
@@ -49,7 +49,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	<div id='bookacti-forms-filters-container' >
 		<form id='bookacti-forms-filters-form' action=''>
 			<input type='hidden' name='page' value='bookacti_forms'/>
-			<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_get_form_list' ); ?>'/>
+			<input type='hidden' name='nonce' value='<?php echo esc_attr( wp_create_nonce( 'bookacti_get_form_list' ) ); ?>'/>
 			<?php
 				// Status
 				$status = ! empty( $_REQUEST[ 'status' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'status' ] ) : '';
@@ -66,7 +66,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						if( $i === 0 ) {
 							echo '<input type="hidden" name="orderby" value="' . esc_attr( $column_name ) . '" />';
 						}
-						echo '<input type="hidden" name="order_by[' . $i . ']" value="' . esc_attr( $column_name ) . '" />';
+						echo '<input type="hidden" name="' . esc_attr( 'order_by[' . $i . ']' ) . '" value="' . esc_attr( $column_name ) . '" />';
 						++$i;
 					}
 				}

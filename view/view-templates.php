@@ -1,7 +1,7 @@
 <?php
 /**
  * Calendar editor page
- * @version 1.19.8
+ * @version 1.19.9
  */
 
 // Exit if accessed directly
@@ -36,7 +36,7 @@ $templates = bookacti_get_templates_data();
 </div>
 
 <div id='bookacti-template-container'>
-	<input type='hidden' id='bookacti-edit-template-nonce' value='<?php echo wp_create_nonce( 'bookacti_edit_template' ); ?>'/>
+	<input type='hidden' id='bookacti-edit-template-nonce' value='<?php echo esc_attr( wp_create_nonce( 'bookacti_edit_template' ) ); ?>'/>
     <div id='bookacti-template-sidebar' class='<?php if( ! $templates ) { echo 'bookacti-no-template'; } ?>'>
         
         <div id='bookacti-template-templates-container' class='bookacti-templates-box'>
@@ -55,7 +55,7 @@ $templates = bookacti_get_templates_data();
 							foreach ( $templates as $template ) {
 								$selected = selected( $default_template, $template[ 'id' ], false );
 								if( $selected ) { $default_template_found = true; }
-								echo '<option value="' . esc_attr( $template[ 'id' ] ) . '" ' . $selected . '>' . esc_html( $template[ 'title' ] ) . '</option>';
+								echo '<option value="' . esc_attr( $template[ 'id' ] ) . '" ' . selected( $default_template, $template[ 'id' ], false ) . '>' . esc_html( $template[ 'title' ] ) . '</option>';
 							}
 
 							if ( ! $default_template_found ) { 
@@ -161,7 +161,7 @@ $templates = bookacti_get_templates_data();
 	<?php 
 		$template_id = '';
 		$activity_ids = array();
-		$new_form_basic_url = esc_url( admin_url( 'admin.php' ) );
+		$new_form_basic_url = admin_url( 'admin.php' );
 		$initial_parameters = http_build_query( array( 
 			'page' => 'bookacti_forms',
 			'action' => 'new',
@@ -173,21 +173,23 @@ $templates = bookacti_get_templates_data();
 	?>
 	<input type='hidden' name='page' value='bookacti_forms'/>
 	<input type='hidden' name='action' value='new'/>
-	<input type='hidden' name='calendar_field[calendars]' value='<?php echo $template_id; ?>'/>
+	<input type='hidden' name='calendar_field[calendars]' value='<?php echo esc_attr( $template_id ); ?>'/>
 	<input type='hidden' name='calendar_field[activities]' value='all'/>
 	<input type='hidden' name='calendar_field[group_categories]' value='all'/>
 	<h3><?php esc_html_e( 'Integrate this calendar to your site', 'booking-activities' ); ?></h3>
 	<ol>
 		<li>
 		<?php if( current_user_can( 'bookacti_create_forms' ) ) { ?>
-			<a href='<?php echo $new_form_initial_url; ?>' id='bookacti-create-form-link' data-base-url='<?php echo $new_form_basic_url; ?>'>
+			<a href='<?php echo esc_url( $new_form_initial_url ); ?>' id='bookacti-create-form-link' data-base-url='<?php echo esc_url( $new_form_basic_url ); ?>'>
 				<?php esc_html_e( 'Click here to create a booking form with this calendar', 'booking-activities' ); ?>
 			</a>
 		<?php } else { ?>
 			<em><?php esc_html_e( 'You are not allowed to create booking forms.', 'booking-activities' ); ?></em>
 		<?php } ?>
+		</li>
 		<li>
-			<?php echo apply_filters( 'bookacti_calendar_integration_tuto', esc_html__( 'Copy and paste the booking form shortcode into the desired page or post', 'booking-activities' ), $template_id ); ?>
+			<?php echo wp_kses_post( apply_filters( 'bookacti_calendar_integration_tuto', esc_html__( 'Copy and paste the booking form shortcode into the desired page or post', 'booking-activities' ), $template_id ) ); ?>
+		</li>
 	</ol>
 </div>
 

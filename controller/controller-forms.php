@@ -555,14 +555,14 @@ add_filter( 'bookacti_default_form_fields_meta', 'bookacti_remove_unused_total_p
 /**
  * Display the form field "Total price"
  * @since 1.12.4
- * @version 1.19.8
+ * @version 1.19.9
  * @param string $html
  * @param array $field
  * @param string $instance_id
  * @param string $context
  */
 function bookacti_display_form_field_total_price( $html, $field, $instance_id = '', $context = '' ) {
-	if( ! $instance_id ) { $instance_id = rand(); }
+	if( ! $instance_id ) { $instance_id = wp_rand(); }
 	$field_id = ! empty( $field[ 'id' ] ) ? $field[ 'id' ] : 'bookacti-form-field-' . $field[ 'type' ] . '-' . $field[ 'field_id' ] . '-' . $instance_id;
 	
 	$field_class    = 'bookacti-form-field-container';
@@ -734,7 +734,7 @@ add_action( 'wp_ajax_nopriv_bookactiForgottenPassword', 'bookacti_controller_for
 /**
  * AJAX Controller - Check if login form is correct and then register / log the user in
  * @since 1.8.0
- * @version 1.16.45
+ * @version 1.19.8
  */
 function bookacti_controller_validate_login_form() {
 	$return_array = array(
@@ -757,9 +757,10 @@ function bookacti_controller_validate_login_form() {
 	}
 	
 	// Check form
-	$form_id = ! empty( $_POST[ 'form_id' ] ) ? intval( $_POST[ 'form_id' ] ) : 0;
+	$form_id     = ! empty( $_POST[ 'form_id' ] ) ? intval( $_POST[ 'form_id' ] ) : 0;
+	$form        = $form_id ? bookacti_get_form_data( $form_id ) : array();
 	$fields_data = $form_id ? bookacti_get_form_fields_data( $form_id, true, true ) : array();
-	if( ! $fields_data ) {
+	if( ! $fields_data || ! ( $form && ! empty( $form[ 'active' ] ) && $form[ 'status' ] === 'publish' ) ) {
 		$return_array[ 'error' ] = 'invalid_form_id';
 		$return_array[ 'messages' ][ 'invalid_form_id' ] = esc_html__( 'Invalid form ID.', 'booking-activities' ) . ' ' . esc_html__( 'Please reload the page and try again.', 'booking-activities' );
 		$return_array[ 'message' ] = implode( '</li><li>', $return_array[ 'messages' ] );
@@ -1895,7 +1896,7 @@ add_action( 'bookacti_form_editor_field_actions_after', 'bookacti_add_login_fiel
 /**
  * AJAX Controller - Reset form export events URL
  * @since 1.6.0
- * @version 1.15.5
+ * @version 1.19.9
  */
 function bookacti_controller_reset_form_export_events_url() {
 	$form_id = $_POST[ 'form_id' ];
@@ -1909,7 +1910,7 @@ function bookacti_controller_reset_form_export_events_url() {
 	}
 	
 	// Update form secret key
-	$new_secret_key = md5( microtime().rand() );
+	$new_secret_key = md5( wp_rand() );
 	$old_secret_key = bookacti_get_metadata( 'form', $form_id, 'secret_key', true );
 	$updated        = bookacti_update_metadata( 'form', $form_id, array( 'secret_key' => $new_secret_key ) );
 	

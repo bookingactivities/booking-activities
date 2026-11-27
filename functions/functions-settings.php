@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Get default settings values
  * @since 1.3.0 (was bookacti_define_default_settings_constants)
- * @version 1.17.0
+ * @version 1.19.9
  */
 function bookacti_get_default_settings() {
 	$date = new DateTime(); 
@@ -20,6 +20,7 @@ function bookacti_get_default_settings() {
 		'default_booking_state'             => 'pending',
 		'default_payment_status'            => 'none',
 		'timezone'                          => $tz,
+		'calendar_localization'             => 'default',
 		'default_calendar_view_threshold'   => 640,
 		'display_private_columns'           => 0,
 		'delete_data_on_uninstall'          => 0,
@@ -35,8 +36,7 @@ function bookacti_get_default_settings() {
 		'admin_reschedule_scope'            => 'all_self',
 		'notifications_from_name'           => wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ),
 		'notifications_from_email'          => '', // Use the default sender email address (wordpress@...)
-		'notifications_async'               => true,
-		'calendar_localization'             => 'default'
+		'notifications_async'               => true
 	);
 	
 	return apply_filters( 'bookacti_default_settings', $default );
@@ -108,7 +108,8 @@ function bookacti_settings_section_bookings_callback() {}
 
 /**
  * Display a description in the Licenses settings tab
- * @version 1.9.0 (was bookacti_display_licenses_settings_description)
+ * @since 1.9.0 (was bookacti_display_licenses_settings_description)
+ * @version 1.19.9
  */
 function bookacti_settings_section_licenses_callback() {
 	$active_add_ons = bookacti_get_active_add_ons();
@@ -131,13 +132,13 @@ function bookacti_settings_section_licenses_callback() {
 	if( $active_add_ons ) {
 		$active_add_ons_titles = array();
 		foreach( $active_add_ons as $prefix => $add_on_data ) {
-			$active_add_ons_titles[] = $add_on_data[ 'title' ];
+			$active_add_ons_titles[] = esc_html( $add_on_data[ 'title' ] );
 		}
 		?>
 		<div class='bookacti-licenses-settings-description'>
 			<p>
 				<em><?php esc_html_e( 'The following add-ons are installed on your site:', 'booking-activities' ); ?></em>
-				<strong><?php echo implode( '</strong>, <strong>', $active_add_ons_titles ); ?></strong>
+				<strong><?php echo implode( '</strong>, <strong>', $active_add_ons_titles ); /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?></strong>
 			</p>
 			<h3>
 				<?php 
@@ -230,7 +231,7 @@ function bookacti_display_forms_screen_options() {
 /**
  * Display Timezone setting
  * @since 1.1.0
- * @version 1.15.16
+ * @version 1.19.9
  */
 function bookacti_settings_field_timezone_callback() {
 	$regions = array(
@@ -264,16 +265,16 @@ function bookacti_settings_field_timezone_callback() {
 	// Display selectbox
 	echo '<select name="bookacti_general_settings[timezone]" class="bookacti-select2-no-ajax">';
 	foreach( $timezones as $region => $list ) {
-		echo '<optgroup label="' . $region . '" >';
+		echo '<optgroup label="' . esc_attr( $region ) . '" >';
 		foreach( $list as $timezone => $name ) {
-			echo '<option value="' . $timezone . '" ' . selected( $selected_timezone, $timezone ) . '>' . $name . '</option>';
+			echo '<option value="' . esc_attr( $timezone ) . '" ' . selected( $selected_timezone, $timezone ) . '>' . esc_html( $name ) . '</option>';
 		}
 		echo '</optgroup>';
 	}
 	echo '</select>';
 
 	// Display the help tip 
-	$tip = __( 'Pick the timezone corresponding to where your business takes place.', 'booking-activities' );
+	$tip = esc_html__( 'Pick the timezone corresponding to where your business takes place.', 'booking-activities' );
 	bookacti_help_tip( $tip );
 }
 
@@ -772,7 +773,7 @@ function bookacti_settings_field_notifications_from_name_callback() {
 
 /**
  * Notification from email setting field
- * @version 1.15.0
+ * @version 1.19.9
  * @global PHPMailer\PHPMailer\PHPMailer $phpmailer
  */
 function bookacti_settings_field_notifications_from_email_callback() {
@@ -799,10 +800,10 @@ function bookacti_settings_field_notifications_from_email_callback() {
 	$message = esc_html__( 'You must create an email address at your webhost and use it here.', 'booking-activities' );
 	if( $smtp_host !== 'localhost' ) {
 		/* translators: %s is the SMTP server name ($phpmailer->Host). */
-		$message = sprintf( esc_html__( 'You have configured your site to use a specific SMTP server (%s). You must use an email address corresponding to that SMTP server.', 'booking-activities' ), $smtp_host );
+		$message = sprintf( esc_html__( 'You have configured your site to use a specific SMTP server (%s). You must use an email address corresponding to that SMTP server.', 'booking-activities' ), esc_html( $smtp_host ) );
 	} else if( $from_email !== $default_from_email ) {
 		/* translators: %s is an email address. */
-		$message = sprintf( esc_html__( 'A third party plugin is overriding the default sender to %s. It is recommended to use the same (leave the field empty).', 'booking-activities' ), '<strong>' . $from_email . '</strong>' );
+		$message = sprintf( esc_html__( 'A third party plugin is overriding the default sender to %s. It is recommended to use the same (leave the field empty).', 'booking-activities' ), '<strong>' . esc_html( $from_email ) . '</strong>' );
 	}
 	
 	$args = array(
@@ -818,7 +819,7 @@ function bookacti_settings_field_notifications_from_email_callback() {
 	<br/>
 	<span class='bookacti-warning bookacti-from-email-warning'>
 		<span class='dashicons dashicons-warning'></span>
-		<span><em><?php echo $message ?></em></span>
+		<span><em><?php echo $message /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?></em></span>
 	</span>
 <?php
 }
@@ -847,12 +848,11 @@ function bookacti_settings_field_notifications_async_callback() {
 /**
  * Settings section callback - Messages (displayed before settings)
  * @since 1.2.0
+ * @version 1.19.9
  */
 function bookacti_settings_section_messages_callback() {
 ?>
-	<p>
-		<?php _e( 'Edit messages used in the following situations.', 'booking-activities' ); ?>
-	</p>
+	<p><?php esc_html_e( 'Edit messages used in the following situations.', 'booking-activities' ); ?></p>
 <?php
 }
 
@@ -1070,11 +1070,11 @@ function bookacti_get_message( $message_id, $raw = false ) {
 
 /**
  * Sanitize General settings
- * @since 1.17.0
+ * @since 1.19.9 (was bookacti_sanitize_settings_general)
  * @param array $settings_raw
  * @return array
  */
-function bookacti_sanitize_settings_general( $settings_raw ) {
+function bookacti_sanitize_general_settings( $settings_raw ) {
 	$defaults = bookacti_get_default_settings();
 	
 	$keys_by_type = array( 
@@ -1090,9 +1090,106 @@ function bookacti_sanitize_settings_general( $settings_raw ) {
 	// Sanitize Days off
 	$settings[ 'days_off' ] = bookacti_sanitize_days_off( $settings[ 'days_off' ] );
 	
-	$settings = apply_filters( 'bookacti_sanitized_settings_general', $settings, $settings_raw, $defaults );
+	return apply_filters( 'bookacti_sanitized_general_settings', $settings, $settings_raw, $defaults );
+}
+
+
+/**
+ * Sanitize Cancellation settings
+ * @since 1.19.9
+ * @param array $settings_raw
+ * @return array
+ */
+function bookacti_sanitize_cancellation_settings( $settings_raw ) {
+	$defaults = bookacti_get_default_settings();
 	
-	return $settings;
+	$keys_by_type = array( 
+		'int'           => array( 'booking_changes_deadline' ),
+		'str_id'        => array( 'admin_reschedule_scope' ),
+		'bool'          => array( 'allow_customers_to_cancel', 'allow_customers_to_reschedule' ),
+		'array_str_ids' => array( 'refund_actions_after_cancellation' )
+	);
+	
+	$settings = bookacti_sanitize_values( $defaults, $settings_raw, $keys_by_type );
+	
+	return apply_filters( 'bookacti_sanitized_cancellation_settings', $settings, $settings_raw, $defaults );
+}
+
+
+/**
+ * Sanitize Notifications settings
+ * @since 1.19.9
+ * @param array $settings_raw
+ * @return array
+ */
+function bookacti_sanitize_notifications_settings( $settings_raw ) {
+	$defaults = bookacti_get_default_settings();
+	
+	$keys_by_type = array( 
+		'bool'  => array( 'notifications_async' ),
+		'str'   => array( 'notifications_from_name' ),
+		'email' => array( 'notifications_from_email' )
+	);
+	
+	$settings = bookacti_sanitize_values( $defaults, $settings_raw, $keys_by_type );
+	
+	return apply_filters( 'bookacti_sanitized_notifications_settings', $settings, $settings_raw, $defaults );
+}
+
+
+/**
+ * Sanitize Messages settings
+ * @since 1.19.9
+ * @param array $settings_raw
+ * @return array
+ */
+function bookacti_sanitize_messages_settings( $settings_raw ) {
+	$default_messages = bookacti_get_default_messages();
+	$defaults         = array();
+	$keys_by_type     = array( 
+		'str'      => array(),
+		'str_html' => array()
+	);
+	
+	foreach( $default_messages as $message_key => $default_message ) {
+		$defaults[ $message_key ] = isset( $default_message[ 'value' ] ) ? $default_message[ 'value' ] : '';
+		
+		if( isset( $default_message[ 'input_type' ] ) && $default_message[ 'input_type' ] === 'textarea' ) {
+			$keys_by_type[ 'str_html' ][] = $message_key;
+		} else {
+			$keys_by_type[ 'str' ][] = $message_key;
+		}
+	}
+	
+	$settings = bookacti_sanitize_values( $defaults, $settings_raw, $keys_by_type );
+	
+	return apply_filters( 'bookacti_sanitized_messages_settings', $settings, $settings_raw, $defaults );
+}
+
+
+/**
+ * Sanitize Licenses settings
+ * @since 1.19.9
+ * @param array $settings_raw
+ * @return array
+ */
+function bookacti_sanitize_licenses_settings( $settings_raw ) {
+	$add_ons_data = bookacti_get_add_ons_data();
+	$field_names  = array();
+	$defaults     = array( 'release_channel' => 'stable' );
+	foreach( $add_ons_data as $prefix => $add_on_data ) {
+		$field_name              = $prefix . '_license_key';
+		$field_names[]           = $field_name;
+		$defaults[ $field_name ] = '';
+	}
+	
+	$keys_by_type = array( 
+		'str_id' => array_merge( $field_names, array( 'release_channel' ) )
+	);
+	
+	$settings = bookacti_sanitize_values( $defaults, $settings_raw, $keys_by_type );
+	
+	return apply_filters( 'bookacti_sanitized_licenses_settings', $settings, $settings_raw, $defaults );
 }
 
 
@@ -1221,7 +1318,7 @@ function bookacti_unset_role_and_cap() {
 /**
  * Display a promotional area for Display Pack add-on
  * @since 1.2.0
- * @version 1.16.46
+ * @version 1.19.9
  */
 function bookacti_display_badp_promo() {
 	$is_plugin_active = bookacti_is_plugin_active( 'ba-display-pack/ba-display-pack.php' );
@@ -1255,11 +1352,13 @@ function bookacti_display_badp_promo() {
 	else if( $license_status !== 'valid' ) {
 		?>
 		<div class='bookacti-addon-promo'>
-			<?php 
-			$addon_link = '<strong><a href="https://booking-activities.fr/en/downloads/display-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=display-pack&utm_content=encart-promo-calendar" target="_blank">Display&nbsp;Pack</a></strong>';
-			/* translators: %s is the placeholder for Display Pack add-on link */
-			echo sprintf( esc_html__( 'Get more customization options with the %s add-on!', 'booking-activities' ), $addon_link ); 
-			?>
+		<?php 
+			echo sprintf( 
+				/* translators: %s is the placeholder for Display Pack add-on link */
+				esc_html__( 'Get more customization options with the %s add-on!', 'booking-activities' ),
+				'<strong><a href="https://booking-activities.fr/en/downloads/display-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=display-pack&utm_content=encart-promo-calendar" target="_blank">Display&nbsp;Pack</a></strong>'
+			); 
+		?>
 			<div><a href='https://booking-activities.fr/en/downloads/display-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=display-pack&utm_content=encart-promo-calendar' class='button' target='_blank'><?php esc_html_e( 'Learn more', 'booking-activities' ); ?></a></div>
 		</div>
 		<?php
@@ -1270,7 +1369,7 @@ function bookacti_display_badp_promo() {
 /**
  * Display a promotional area for Notification Pack add-on
  * @since 1.2.0
- * @version 1.16.46
+ * @version 1.19.9
  */
 function bookacti_display_banp_promo() {
 	$is_plugin_active = bookacti_is_plugin_active( 'ba-notification-pack/ba-notification-pack.php' );
@@ -1305,11 +1404,13 @@ function bookacti_display_banp_promo() {
 	else if( $license_status !== 'valid' ) {
 		?>
 		<div id='bookacti-banp-promo' class='bookacti-addon-promo'>
-			<?php 
-			$addon_link = '<strong><a href="https://booking-activities.fr/en/downloads/notification-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=notification-pack&utm_content=encart-promo-settings" target="_blank">Notification&nbsp;Pack</a></strong>';
-			/* translators: %1$s is the placeholder for Notification Pack add-on link */
-			echo sprintf( esc_html__( 'You can send all these notifications and booking reminders via email, SMS and Push with %1$s add-on!', 'booking-activities' ), $addon_link ); 
-			?>
+		<?php 
+			echo sprintf( 
+				/* translators: %1$s is the placeholder for Notification Pack add-on link */
+				esc_html__( 'You can send all these notifications and booking reminders via email, SMS and Push with %1$s add-on!', 'booking-activities' ), 
+				'<strong><a href="https://booking-activities.fr/en/downloads/notification-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=notification-pack&utm_content=encart-promo-settings" target="_blank">Notification&nbsp;Pack</a></strong>'
+			); 
+		?>
 			<div><a href='https://booking-activities.fr/en/downloads/notification-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=notification-pack&utm_content=encart-promo-settings' class='button' target='_blank'><?php esc_html_e( 'Learn more', 'booking-activities' ); ?></a></div>
 		</div>
 		<?php
@@ -1320,20 +1421,22 @@ function bookacti_display_banp_promo() {
 /**
  * Display the admin message field to promote the Notification Pack add-on
  * @since 1.10.0
+ * @version 1.19.9
  */
 function bookacti_display_banp_promo_admin_message() {
 	$is_plugin_active = bookacti_is_plugin_active( 'ba-notification-pack/ba-notification-pack.php' );
 	if( $is_plugin_active ) { return; }
-	
-	$addon_link  = '<strong><a href="https://booking-activities.fr/en/downloads/notification-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=notification-pack&utm_content=admin-message" target="_blank" >Notification Pack</a></strong>';
-	/* translators: %s = the add-on name "Notification Pack" */
-	$label       = sprintf( esc_html__( 'Add a message for your customers thanks to the %s add-on', 'booking-activities' ), $addon_link );
-	$placeholder = esc_html__( 'This message will be displayed in your notification where the {admin_message} tag will be.', 'booking-activities' );
-	
 	?>
 		<div class='bookacti-field-container bookacti-addon-promo bookacti-banp-promo-admin-message'>
-			<label class='bookacti-fullwidth-label'><?php echo $label; ?></label>
-			<textarea placeholder='<?php echo $placeholder; ?>'></textarea>
+			<label class='bookacti-fullwidth-label'>
+			<?php
+				echo sprintf(
+					/* translators: %s = the add-on name "Notification Pack" */
+					esc_html__( 'Add a message for your customers thanks to the %s add-on', 'booking-activities' ), 
+					'<strong><a href="https://booking-activities.fr/en/downloads/notification-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=notification-pack&utm_content=admin-message" target="_blank" >Notification Pack</a></strong>'
+				); ?>
+			</label>
+			<textarea placeholder='<?php esc_attr_e( 'This message will be displayed in your notification where the {admin_message} tag will be.', 'booking-activities' ); ?>'></textarea>
 		</div>
 	<?php
 }
@@ -1342,7 +1445,7 @@ function bookacti_display_banp_promo_admin_message() {
 /**
  * Display a promotional area for Advanced Forms add-on
  * @since 1.5.4
- * @version 1.16.46
+ * @version 1.19.9
  */
 function bookacti_display_baaf_promo() {
 	$is_plugin_active = bookacti_is_plugin_active( 'ba-advanced-forms/ba-advanced-forms.php' );
@@ -1376,11 +1479,13 @@ function bookacti_display_baaf_promo() {
 	else if( $license_status !== 'valid' ) {
 		?>
 		<div id='bookacti-baaf-promo' class='bookacti-addon-promo'>
-			<?php 
-			$addon_link = '<strong><a href="https://booking-activities.fr/en/downloads/advanced-forms/?utm_source=plugin&utm_medium=plugin&utm_campaign=advanced-forms&utm_content=encart-promo-form-dialog" target="_blank" >Advanced&nbsp;Forms</a></strong>';
-			/* translators: %1$s is the placeholder for Advanced Forms add-on link */
-			echo sprintf( esc_html__( 'Create any kind of custom fields to get any information from your customers (text, number, file, checkboxes, selectbox, etc.) with %1$s add-on!', 'booking-activities' ), $addon_link ); 
-			?>
+		<?php 
+			echo sprintf( 
+				/* translators: %1$s is the placeholder for Advanced Forms add-on link */
+				esc_html__( 'Create any kind of custom fields to get any information from your customers (text, number, file, checkboxes, selectbox, etc.) with %1$s add-on!', 'booking-activities' ), 
+				'<strong><a href="https://booking-activities.fr/en/downloads/advanced-forms/?utm_source=plugin&utm_medium=plugin&utm_campaign=advanced-forms&utm_content=encart-promo-form-dialog" target="_blank" >Advanced&nbsp;Forms</a></strong>'
+			); 
+		?>
 			<div><a href='https://booking-activities.fr/en/downloads/advanced-forms/?utm_source=plugin&utm_medium=plugin&utm_campaign=advanced-forms&utm_content=encart-promo-form-dialog' class='button' target='_blank'><?php esc_html_e( 'Learn more', 'booking-activities' ); ?></a></div>
 		</div>
 		<?php
@@ -1391,7 +1496,7 @@ function bookacti_display_baaf_promo() {
 /**
  * Display a promotional area for Resource Availability add-on
  * @since 1.15.11
- * @version 1.16.46
+ * @version 1.19.9
  * @param string $type "activity" or "group-category"
  */
 function bookacti_display_bara_promo( $type ) {
@@ -1404,8 +1509,11 @@ function bookacti_display_bara_promo( $type ) {
 		<div class='bookacti-addon-promo'>
 			<p>
 			<?php 
-				/* translators: %s = add-on name */
-				echo sprintf( esc_html__( 'Thank you for purchasing %s add-on!', 'booking-activities' ), '<strong>Resource&nbsp;Availability</strong>' ); 
+				echo sprintf(
+					/* translators: %s = add-on name */
+					esc_html__( 'Thank you for purchasing %s add-on!', 'booking-activities' ), 
+					'<strong>Resource&nbsp;Availability</strong>'
+				); 
 			?>
 			</p>
 			<p>
@@ -1413,7 +1521,7 @@ function bookacti_display_bara_promo( $type ) {
 			</p>
 			<p>
 				<strong>
-					<a href='https://booking-activities.fr/en/docs/user-documentation/get-started-with-resource-availability-add-on/prerequisite-installation-license-activation-of-resource-availability-add-on/?utm_source=plugin&utm_medium=plugin&utm_content=encart-promo-<?php echo $type; ?>' target='_blank'>
+					<a href='<?php echo esc_url( 'https://booking-activities.fr/en/docs/user-documentation/get-started-with-resource-availability-add-on/prerequisite-installation-license-activation-of-resource-availability-add-on/?utm_source=plugin&utm_medium=plugin&utm_content=encart-promo-' . $type ); ?>' target='_blank'>
 						<?php 
 							/* translators: %s = add-on name */
 							echo sprintf( esc_html__( 'How to activate %s license?', 'booking-activities' ), 'Resource&nbsp;Availability' ); 
@@ -1429,19 +1537,22 @@ function bookacti_display_bara_promo( $type ) {
 			<legend><?php esc_html_e( 'Resources', 'booking-activities' ); ?></legend>
 			<div class='bookacti-addon-promo'>
 				<?php
+					$message = '';
 					if( $type === 'group-category' ) {
 						/* translators: %s is the placeholder for Resource Availability add-on link */
-						$message = esc_html__( 'Create your resources, set their availability, and allocate them to your groups with %s add-on !', 'booking-activities' );
+						$message = __( 'Create your resources, set their availability, and allocate them to your groups with %s add-on !', 'booking-activities' );
 					} else {
 						/* translators: %s is the placeholder for Resource Availability add-on link */
-						$message = esc_html__( 'Create your resources, set their availability, and allocate them to your activities with %s add-on !', 'booking-activities' );
+						$message = __( 'Create your resources, set their availability, and allocate them to your activities with %s add-on !', 'booking-activities' );
 					}
 					
-					$addon_link = '<strong><a href="https://booking-activities.fr/en/downloads/resource-availability/?utm_source=plugin&utm_medium=plugin&utm_medium=plugin&utm_campaign=resource-availability&utm_content=encart-promo-' . $type . '" target="_blank">Resource&nbsp;Availability</a></strong>';
-					echo sprintf( $message, $addon_link );
+					echo sprintf( 
+						esc_html( $message ), 
+						'<strong><a href="' . esc_url( 'https://booking-activities.fr/en/downloads/resource-availability/?utm_source=plugin&utm_medium=plugin&utm_medium=plugin&utm_campaign=resource-availability&utm_content=encart-promo-' . $type ) . '" target="_blank">Resource&nbsp;Availability</a></strong>'
+					);
 				?>
 				<div>
-					<a href='https://booking-activities.fr/en/downloads/resource-availability/?utm_source=plugin&utm_medium=plugin&utm_medium=plugin&utm_campaign=resource-availability&utm_content=encart-promo-<?php echo $type; ?>' class='button' target='_blank'>
+					<a href='<?php echo esc_url( 'https://booking-activities.fr/en/downloads/resource-availability/?utm_source=plugin&utm_medium=plugin&utm_medium=plugin&utm_campaign=resource-availability&utm_content=encart-promo-' . $type ); ?>' class='button' target='_blank'>
 						<?php esc_html_e( 'Learn more', 'booking-activities' ); ?>
 					</a>
 				</div>
@@ -1455,7 +1566,7 @@ function bookacti_display_bara_promo( $type ) {
 /**
  * Display a promotional area for Waiting List add-on
  * @since 1.16.46
- * @since 1.19.0
+ * @version 1.19.9
  */
 function bookacti_display_bawl_promo() {
 	$is_plugin_active = bookacti_is_plugin_active( 'ba-waiting-list/ba-waiting-list.php' );
@@ -1492,10 +1603,11 @@ function bookacti_display_bawl_promo() {
 			<legend><?php esc_html_e( 'Waiting List', 'booking-activities' ); ?></legend>
 			<div class='bookacti-addon-promo bookacti-bawl-addon-promo'>
 				<?php
-					/* translators: %s is the placeholder for Waiting List add-on link */
-					$message    = esc_html__( 'Allow customers to wait-list for sold-out events and automatically notify / book them with the %s add-on !', 'booking-activities' );
-					$addon_link = '<strong><a href="https://booking-activities.fr/en/downloads/waiting-list/?utm_source=plugin&utm_medium=plugin&utm_medium=plugin&utm_campaign=waiting-list&utm_content=encart-promo-calendar-calendar" target="_blank">Waiting&nbsp;List</a></strong>';
-					echo sprintf( $message, $addon_link );
+					echo sprintf(
+						/* translators: %s is the placeholder for Waiting List add-on link */
+						esc_html__( 'Allow customers to wait-list for sold-out events and automatically notify / book them with the %s add-on !', 'booking-activities' ),
+						'<strong><a href="https://booking-activities.fr/en/downloads/waiting-list/?utm_source=plugin&utm_medium=plugin&utm_medium=plugin&utm_campaign=waiting-list&utm_content=encart-promo-calendar-calendar" target="_blank">Waiting&nbsp;List</a></strong>'
+					);
 				?>
 				
 				<div class='bookacti-promo-events-examples'>
@@ -1767,6 +1879,7 @@ function bookacti_privacy_eraser_user_data( $email_address, $page = 1 ) {
 /**
  * Erase bookings user metadata with WP privacy erase tool
  * @since 1.7.0
+ * @version 1.19.9
  * @param string $email_address
  * @param int $page
  * @return array
@@ -1784,7 +1897,7 @@ function bookacti_privacy_eraser_bookings_data( $email_address, $page = 1 ) {
 	);
 	
 	// Get bookings either by email or id if the user is registered
-	$anonymized_user_id = 'anon_' . md5( microtime().rand() );
+	$anonymized_user_id = 'anon_' . md5( wp_rand() );
 	$user_ids = array( $email_address );
 	if( $user instanceof WP_User ) {
 		$user_ids[] = $user->ID;

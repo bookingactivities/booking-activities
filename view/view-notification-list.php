@@ -2,6 +2,7 @@
 /**
  * Notification list page
  * @since 1.18.0
+ * @version 1.19.9
  */
 
 // Exit if accessed directly
@@ -16,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	<div id='bookacti-notifications-filters-container'>
 		<form id='bookacti-notifications-filters-form' action=''>
 			<input type='hidden' name='page' value='bookacti_notifications'/>
-			<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_get_notification_list' ); ?>'/>
+			<input type='hidden' name='nonce' value='<?php echo esc_attr( wp_create_nonce( 'bookacti_get_notification_list' ) ); ?>'/>
 			<?php
 				// Status
 				$status = ! empty( $_GET[ 'status' ] ) ? sanitize_title_with_dashes( $_GET[ 'status' ] ) : '';
@@ -33,7 +34,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						if( $i === 0 ) {
 							echo '<input type="hidden" name="orderby" value="' . esc_attr( $column_name ) . '" />';
 						}
-						echo '<input type="hidden" name="order_by[' . $i . ']" value="' . esc_attr( $column_name ) . '" />';
+						echo '<input type="hidden" name="' . esc_attr( 'order_by[' . $i . ']' ) . '" value="' . esc_attr( $column_name ) . '" />';
 						++$i;
 					}
 				}

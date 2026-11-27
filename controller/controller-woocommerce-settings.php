@@ -86,7 +86,7 @@ add_action( 'bookacti_settings_tab_content', 'bookacti_add_cart_tab_content' );
 /**
  * Add WC settings section
  * @since 1.7.16
- * @version 1.15.15
+ * @version 1.19.9
  */
 function bookacti_add_woocommerce_settings_section() {
 	/* WC products settings Section */
@@ -180,9 +180,21 @@ function bookacti_add_woocommerce_settings_section() {
 		'bookacti_settings_section_cart'
 	);
 	
-	register_setting( 'bookacti_woocommerce_settings', 'bookacti_products_settings' );
-	register_setting( 'bookacti_woocommerce_settings', 'bookacti_account_settings' );
-	register_setting( 'bookacti_woocommerce_settings', 'bookacti_cart_settings' );
+	register_setting( 'bookacti_woocommerce_settings', 'bookacti_products_settings', array( 
+		'type'              => 'array',
+		'sanitize_callback' => 'bookacti_wc_sanitize_products_settings',
+		'default'           => array()
+	) );
+	register_setting( 'bookacti_woocommerce_settings', 'bookacti_account_settings', array( 
+		'type'              => 'array',
+		'sanitize_callback' => 'bookacti_wc_sanitize_account_settings',
+		'default'           => array()
+	) );
+	register_setting( 'bookacti_woocommerce_settings', 'bookacti_cart_settings', array( 
+		'type'              => 'array',
+		'sanitize_callback' => 'bookacti_wc_sanitize_cart_settings',
+		'default'           => array()
+	) );
 }
 add_action( 'bookacti_add_settings', 'bookacti_add_woocommerce_settings_section' );
 
@@ -195,15 +207,73 @@ add_action( 'bookacti_add_settings', 'bookacti_add_woocommerce_settings_section'
  * @return array
  */
 function bookacti_wc_default_settings( $settings ) {
-	$settings[ 'is_cart_expiration_active' ]				= true;
-	$settings[ 'is_cart_expiration_per_product' ]			= false;
-	$settings[ 'cart_timeout' ]								= 30;
-	$settings[ 'reset_cart_timeout_on_change' ]				= false;
-	$settings[ 'wc_product_pages_booking_form_location' ]	= 'form_below';
-	$settings[ 'wc_my_account_bookings_page_id' ]			= 0;
+	$settings[ 'is_cart_expiration_active' ]              = true;
+	$settings[ 'is_cart_expiration_per_product' ]         = false;
+	$settings[ 'cart_timeout' ]                           = 30;
+	$settings[ 'reset_cart_timeout_on_change' ]           = false;
+	$settings[ 'wc_product_pages_booking_form_location' ] = 'form_below';
+	$settings[ 'wc_my_account_bookings_page_id' ]         = 0;
 	return $settings;
 }
 add_filter( 'bookacti_default_settings', 'bookacti_wc_default_settings' );
+
+
+/**
+ * Sanitize WC Products settings
+ * @since 1.19.9
+ * @param array $settings_raw
+ * @return array
+ */
+function bookacti_wc_sanitize_products_settings( $settings_raw ) {
+	$defaults = bookacti_get_default_settings();
+	
+	$keys_by_type = array( 
+		'str_id' => array( 'wc_product_pages_booking_form_location' )
+	);
+	
+	$settings = bookacti_sanitize_values( $defaults, $settings_raw, $keys_by_type );
+	
+	return apply_filters( 'bookacti_wc_sanitized_products_settings', $settings, $settings_raw, $defaults );
+}
+
+
+/**
+ * Sanitize WC Account settings
+ * @since 1.19.9
+ * @param array $settings_raw
+ * @return array
+ */
+function bookacti_wc_sanitize_account_settings( $settings_raw ) {
+	$defaults = bookacti_get_default_settings();
+	
+	$keys_by_type = array( 
+		'int' => array( 'wc_my_account_bookings_page_id' )
+	);
+	
+	$settings = bookacti_sanitize_values( $defaults, $settings_raw, $keys_by_type );
+	
+	return apply_filters( 'bookacti_wc_sanitized_account_settings', $settings, $settings_raw, $defaults );
+}
+
+
+/**
+ * Sanitize WC Cart settings
+ * @since 1.19.9
+ * @param array $settings_raw
+ * @return array
+ */
+function bookacti_wc_sanitize_cart_settings( $settings_raw ) {
+	$defaults = bookacti_get_default_settings();
+	
+	$keys_by_type = array(
+		'absint' => array( 'cart_timeout' ),
+		'bool'   => array( 'is_cart_expiration_active', 'is_cart_expiration_per_product', 'reset_cart_timeout_on_change' )
+	);
+	
+	$settings = bookacti_sanitize_values( $defaults, $settings_raw, $keys_by_type );
+	
+	return apply_filters( 'bookacti_wc_sanitized_cart_settings', $settings, $settings_raw, $defaults );
+}
 
 
 /**

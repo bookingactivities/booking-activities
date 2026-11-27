@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Get array of woocommerce products and product variations titles ordered by ids
  * @since 1.7.10
- * @version 1.16.38
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param string $product_search
  * @return array
@@ -52,10 +52,10 @@ function bookacti_get_products_titles( $search = '' ) {
 		$sanitized_search = $search_product_id ? $search_product_id : '%' . $wpdb->esc_like( $search ) . '%';
 		$variables = $search_product_id ? array( $sanitized_search, $sanitized_search ) : array( $sanitized_search, $sanitized_search, $sanitized_search, $sanitized_search );
 	
-		$query = $wpdb->prepare( $query, $variables );
+		$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	}
 	
-	$products = $wpdb->get_results( $query, OBJECT );
+	$products = $wpdb->get_results( $query, OBJECT ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	$products_array = array();
 	if( $products ) {
@@ -89,6 +89,7 @@ function bookacti_get_products_titles( $search = '' ) {
 /**
  * Get the form ID bound to the first available activity variation of a variable product
  * @since 1.18.6
+ * @version 1.19.9
  * @param int $product_id
  * @return int
  */
@@ -107,8 +108,8 @@ function bookacti_get_variable_product_form_id( $product_id ) {
 	       . ' AND ( M3.meta_value IS NULL OR M3.meta_value = "" OR M3.meta_value = "instock" ) '
 	       . ' LIMIT 1 ';
 	
-	$query  = $wpdb->prepare( $query, $product_id );
-	$result = $wpdb->get_var( $query );
+	$query  = $wpdb->prepare( $query, $product_id ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$result = $wpdb->get_var( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	$form_id = $result && is_numeric( $result ) ? intval( $result ) : 0;
 	
@@ -119,6 +120,7 @@ function bookacti_get_variable_product_form_id( $product_id ) {
 /**
  * Check if variable product has at least one available variation that is activity
  * @since 1.18.6
+ * @version 1.19.9
  * @param int $product_id
  * @return int
  */
@@ -137,8 +139,8 @@ function bookacti_variable_product_is_activity( $product_id ) {
 	       . ' AND ( M3.meta_value IS NULL OR M3.meta_value = "" OR M3.meta_value = "instock" ) '
 	       . ' LIMIT 1 ';
 	
-	$query  = $wpdb->prepare( $query, $product_id );
-	$result = $wpdb->get_var( $query );
+	$query  = $wpdb->prepare( $query, $product_id ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$result = $wpdb->get_var( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	$variation_id = $result && is_numeric( $result ) ? intval( $result ) : 0;
 	
@@ -149,6 +151,7 @@ function bookacti_variable_product_is_activity( $product_id ) {
 /**
  * Get product / variation IDs bound to the booking form
  * @since 1.18.7
+ * @version 1.19.9
  * @return array
  */
 function bookacti_wc_get_booking_forms_product_ids() {
@@ -171,7 +174,7 @@ function bookacti_wc_get_booking_forms_product_ids() {
 	       . ' AND M3.meta_value IS NOT NULL AND M3.meta_value != "" '
 	       . ' AND ( M4.meta_value IS NULL OR M4.meta_value = "" OR M4.meta_value = "instock" ) ';
 	
-	$results = $wpdb->get_results( $query );
+	$results = $wpdb->get_results( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	$product_ids_by_form_id = array();
 	foreach( $results as $result ) {
@@ -196,7 +199,7 @@ function bookacti_wc_get_booking_forms_product_ids() {
 /**
  * Update all in cart bookings to "removed"
  * @since 1.9.0
- * @version 1.16.4
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $user_id
  * @return int
@@ -210,10 +213,10 @@ function bookacti_wc_update_in_cart_bookings_to_removed( $user_id = 0 ) {
 	
 	if( $user_id ) {
 		$query_bookings .= ' AND user_id = %s ';
-		$query_bookings = $wpdb->prepare( $query_bookings, $user_id );
+		$query_bookings = $wpdb->prepare( $query_bookings, $user_id ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	}
 	
-	$updated_bookings = $wpdb->query( $query_bookings );
+	$updated_bookings = $wpdb->query( $query_bookings ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	$query_booking_groups = 'UPDATE ' . BOOKACTI_TABLE_BOOKING_GROUPS
 	                      . ' SET state = "removed", active = 0 '
@@ -221,10 +224,10 @@ function bookacti_wc_update_in_cart_bookings_to_removed( $user_id = 0 ) {
 	
 	if( $user_id ) {
 		$query_booking_groups .= ' AND user_id = %s ';
-		$query_booking_groups = $wpdb->prepare( $query_booking_groups, $user_id );
+		$query_booking_groups = $wpdb->prepare( $query_booking_groups, $user_id ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	}
 	
-	$updated_booking_groups = $wpdb->query( $query_booking_groups );
+	$updated_booking_groups = $wpdb->query( $query_booking_groups ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	return intval( $updated_bookings ) + intval( $updated_booking_groups );
 }
@@ -233,6 +236,7 @@ function bookacti_wc_update_in_cart_bookings_to_removed( $user_id = 0 ) {
 /**
  * Update in cart bookings to "removed" for a certain event
  * @since 1.9.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $event_id
  * @return int|false
@@ -245,8 +249,8 @@ function bookacti_wc_update_event_in_cart_bookings_to_removed( $event_id ) {
 	       . ' WHERE B.event_id = %d '
 	       . ' AND B.state = "in_cart" ';
 	
-	$query   = $wpdb->prepare( $query, $event_id );
-	$removed = $wpdb->query( $query );
+	$query   = $wpdb->prepare( $query, $event_id ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$removed = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 	return $removed;
 }
@@ -255,6 +259,7 @@ function bookacti_wc_update_event_in_cart_bookings_to_removed( $event_id ) {
 /** 
  * Update in cart bookings to "removed" for a certain group of events (both booking groups and their bookings)
  * @since 1.9.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $event_group_id
  * @return int
@@ -269,8 +274,8 @@ function bookacti_wc_update_group_of_events_in_cart_bookings_to_removed( $event_
 	       . ' WHERE B.state = "in_cart" '
 	       . ' AND G.event_group_id = %d ';
 
-	$query    = $wpdb->prepare( $query, $event_group_id );
-	$removed1 = $wpdb->query( $query );
+	$query    = $wpdb->prepare( $query, $event_group_id ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$removed1 = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	// Booking Groups
 	$query = 'UPDATE ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' as B '
@@ -278,8 +283,8 @@ function bookacti_wc_update_group_of_events_in_cart_bookings_to_removed( $event_
 	       . ' WHERE B.state = "in_cart" '
 	       . ' AND B.event_group_id = %d ';
 
-	$query    = $wpdb->prepare( $query, $event_group_id );
-	$removed2 = $wpdb->query( $query );
+	$query    = $wpdb->prepare( $query, $event_group_id ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$removed2 = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	return intval( $removed1 ) + intval( $removed2 );
 }
@@ -287,6 +292,7 @@ function bookacti_wc_update_group_of_events_in_cart_bookings_to_removed( $event_
 
 /**
  * Get booking order id
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $booking_id
  * @return string|null
@@ -295,8 +301,8 @@ function bookacti_get_booking_order_id( $booking_id ) {
 	global $wpdb;
 
 	$query    = 'SELECT order_id FROM ' . BOOKACTI_TABLE_BOOKINGS . ' WHERE id = %d';
-	$prep     = $wpdb->prepare( $query, $booking_id );
-	$order_id = $wpdb->get_var( $prep );
+	$prep     = $wpdb->prepare( $query, $booking_id ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$order_id = $wpdb->get_var( $prep ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 	return $order_id;
 }
@@ -304,7 +310,7 @@ function bookacti_get_booking_order_id( $booking_id ) {
 
 /**
  * Reset bookings expiration dates that are currently in cart
- * @version 1.16.40
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int|string $user_id
  * @param array $booking_id_array
@@ -334,8 +340,8 @@ function bookacti_update_in_cart_bookings_expiration_date( $user_id, $booking_id
 	$first_variables = array( $expiration_date, $user_id );
 	$variables_array = array_merge( $first_variables, $booking_id_array );
 
-	$query   = $wpdb->prepare( $query, $variables_array );
-	$updated = $wpdb->query( $query );
+	$query   = $wpdb->prepare( $query, $variables_array ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$updated = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 	return $updated;
 }
@@ -343,7 +349,7 @@ function bookacti_update_in_cart_bookings_expiration_date( $user_id, $booking_id
 
 /**
  * Get cart expiration of a specified user. Return null if there is no activity in cart
- * @version 1.16.40
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int|string $user_id
  * @return string|null
@@ -356,8 +362,8 @@ function bookacti_get_cart_expiration_date_per_user( $user_id ) {
 	       . ' AND ( state = "in_cart" OR state = "pending" ) ' 
 	       . ' ORDER BY expiration_date DESC ' 
 	       . ' LIMIT 1 ';
-	$query    = $wpdb->prepare( $query, $user_id );
-	$exp_date = $wpdb->get_var( $query );
+	$query    = $wpdb->prepare( $query, $user_id ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$exp_date = $wpdb->get_var( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 	return $exp_date;
 }
@@ -365,7 +371,7 @@ function bookacti_get_cart_expiration_date_per_user( $user_id ) {
 
 /**
  * Deactivate expired bookings
- * @version 1.12.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @return array|string|false
  */
@@ -387,7 +393,7 @@ function bookacti_deactivate_expired_bookings() {
 		       // Expired with WC session expiration system
 		       . ' OR ( S.session_expiry IS NULL OR S.session_expiry <= UNIX_TIMESTAMP( UTC_TIMESTAMP() ) ) )';
 
-		$expired_bookings = $wpdb->get_results( $query );
+		$expired_bookings = $wpdb->get_results( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 		$last_error = $wpdb->last_error;
 	}
 	
@@ -401,7 +407,7 @@ function bookacti_deactivate_expired_bookings() {
 		       . ' WHERE B.state = "in_cart" '
 		       . ' AND B.expiration_date <= UTC_TIMESTAMP() '
 		       . ' AND B.active = 1 ';
-		$expired_bookings = $wpdb->get_results( $query );
+		$expired_bookings = $wpdb->get_results( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 		$last_error = $wpdb->last_error;
 	}
 	
@@ -431,8 +437,8 @@ function bookacti_deactivate_expired_bookings() {
 			$query .= ', %d';
 		}
 		$query .= ' ) ';
-		$query  = $wpdb->prepare( $query, $expired_ids );
-		$deactivated = $wpdb->query( $query );
+		$query  = $wpdb->prepare( $query, $expired_ids ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		$deactivated = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 		
 		if( $deactivated === false ) { $return = false; }
 		
@@ -452,8 +458,8 @@ function bookacti_deactivate_expired_bookings() {
 			$query .= ', %d';
 		}
 		$query .= ' ) ';
-		$query = $wpdb->prepare( $query, $expired_group_ids );
-		$deactivated = $wpdb->query( $query );
+		$query = $wpdb->prepare( $query, $expired_group_ids ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		$deactivated = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 		
 		if( $deactivated === false ) { $return = false; }
 		
@@ -469,7 +475,7 @@ function bookacti_deactivate_expired_bookings() {
 /**
  * Delete expired bookings few days after their expiration date
  * @since 1.7.4
- * @version 1.16.29
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $delay
  * @return array|false
@@ -483,8 +489,8 @@ function bookacti_delete_expired_bookings( $delay = 10 ) {
 	       . ' WHERE ( expiration_date <= DATE_SUB( UTC_TIMESTAMP(), INTERVAL %d DAY ) OR expiration_date IS NULL ) '
 	       . ' AND state IN ( "expired", "removed" ) '
 	       . ' AND active = 0 ';
-	$query = $wpdb->prepare( $query, $delay );
-	$expired_bookings = $wpdb->get_results( $query );
+	$query = $wpdb->prepare( $query, $delay ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$expired_bookings = $wpdb->get_results( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	$expired_ids = array();
 	$expired_group_ids = array();
@@ -506,8 +512,8 @@ function bookacti_delete_expired_bookings( $delay = 10 ) {
 		
 		// Delete expired bookings
 		$query = 'DELETE FROM ' . BOOKACTI_TABLE_BOOKINGS . ' WHERE id IN( ' . $ids_placeholder_list . ' );';
-		$query = $wpdb->prepare( $query, $expired_ids );
-		$deleted = $wpdb->query( $query );
+		$query = $wpdb->prepare( $query, $expired_ids ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		$deleted = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 		
 		if( $deleted === false ) { $return = false; }
 		
@@ -527,8 +533,8 @@ function bookacti_delete_expired_bookings( $delay = 10 ) {
 		
 		// Delete expired booking groups
 		$query = 'DELETE FROM ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' WHERE id IN ( ' . $ids_placeholder_list . ' );';
-		$query = $wpdb->prepare( $query, $expired_group_ids );
-		$deleted = $wpdb->query( $query );
+		$query = $wpdb->prepare( $query, $expired_group_ids ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		$deleted = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 		
 		if( $deleted === false ) { $return = false; }
 		
@@ -545,6 +551,7 @@ function bookacti_delete_expired_bookings( $delay = 10 ) {
 /**
  * Turn all 'in_cart' bookings to 'removed'
  * @since 1.7.3 (was bookacti_cancel_in_cart_bookings)
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @return int|false
  */
@@ -552,7 +559,7 @@ function bookacti_turn_in_cart_bookings_to_removed() {
 	global $wpdb;
 
 	$query   = 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS . ' SET active = 0, state = "removed" WHERE state = "in_cart";';
-	$updated = $wpdb->query( $query );
+	$updated = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 	return $updated;
 }
@@ -560,7 +567,7 @@ function bookacti_turn_in_cart_bookings_to_removed() {
 
 /**
  * Get booking group order id
- * @version 1.16.40
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $booking_group_id
  * @return int|null
@@ -569,8 +576,8 @@ function bookacti_get_booking_group_order_id( $booking_group_id ) {
 	global $wpdb;
 
 	$query    = 'SELECT order_id FROM ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' WHERE id = %d';
-	$query    = $wpdb->prepare( $query, $booking_group_id );
-	$order_id = $wpdb->get_var( $query );
+	$query    = $wpdb->prepare( $query, $booking_group_id ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$order_id = $wpdb->get_var( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 	return $order_id;
 }
@@ -579,7 +586,7 @@ function bookacti_get_booking_group_order_id( $booking_group_id ) {
 /**
  * Delete all booking meta from a WC order item
  * @since 1.7.6
- * @version 1.9.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $item_id
  * @return int|false
@@ -594,8 +601,8 @@ function bookacti_delete_order_item_booking_meta( $item_id ) {
 	
 	$variables = array( $item_id, 'bookacti_bookings', '%' . $wpdb->esc_like( 'bookacti' ) . '%' );
 	
-	$query   = $wpdb->prepare( $query, $variables );
-	$deleted = $wpdb->query( $query );
+	$query   = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$deleted = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	return apply_filters( 'bookacti_delete_wc_order_item_booking_meta', $deleted, $item_id );
 }

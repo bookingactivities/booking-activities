@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Book an event
- * @version 1.18.2
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param array $booking_data Sanitized with bookacti_sanitize_booking_data
  * @return int
@@ -27,13 +27,13 @@ function bookacti_insert_booking( $booking_data ) {
 		$booking_data[ 'quantity' ],
 		$booking_data[ 'status' ],
 		$booking_data[ 'payment_status' ],
-		date( 'Y-m-d H:i:s' ),
+		gmdate( 'Y-m-d H:i:s' ),
 		$booking_data[ 'expiration_date' ],
 		$booking_data[ 'active' ]
 	);
 	
-	$query = $wpdb->prepare( $query, $variables );
-	$wpdb->query( $query );
+	$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	$booking_id = ! empty( $wpdb->insert_id ) ? $wpdb->insert_id : 0;
 	
@@ -49,7 +49,7 @@ function bookacti_insert_booking( $booking_data ) {
 /**
  * Update a booking
  * @since 1.9.0
- * @version 1.18.2
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param array $booking_data Sanitized with bookacti_sanitize_booking_data
  * @param array $where
@@ -102,8 +102,8 @@ function bookacti_update_booking( $booking_data, $where = array() ) {
 		$variables = array_merge( $variables, $where[ 'status__in' ] );
 	}
 	
-	$query = apply_filters( 'bookacti_update_booking_query', $wpdb->prepare( $query, $variables ), $booking_data, $where );
-	$updated = $wpdb->query( $query );
+	$query = apply_filters( 'bookacti_update_booking_query', $wpdb->prepare( $query, $variables ), $booking_data, $where ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$updated = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	if( $updated ) {
 		do_action( 'bookacti_booking_updated', $booking_data, $where );
@@ -115,7 +115,7 @@ function bookacti_update_booking( $booking_data, $where = array() ) {
 
 /**
  * Get bookings according to filters
- * @version 1.18.2
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param array $filters Use bookacti_format_booking_filters() before
  * @return array
@@ -148,7 +148,7 @@ function bookacti_get_bookings( $filters ) {
 	            . ' LEFT JOIN ' . BOOKACTI_TABLE_TEMPLATES . ' as T ON E.template_id = T.id '
 	            . ' LEFT JOIN ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' as BG ON B.group_id = BG.id '
 	            . ' LEFT JOIN ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as EG ON BG.event_group_id = EG.id ';
-		
+	
 	$query = $query_select . $query_join . ' WHERE TRUE ';
 	
 	$variables = array();
@@ -534,12 +534,12 @@ function bookacti_get_bookings( $filters ) {
 	}
 	
 	if( $variables ) {
-		$query = $wpdb->prepare( $query, $variables );
+		$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	}
 	
 	$query = apply_filters( 'bookacti_get_bookings_query', $query, $filters );
 	
-	$bookings = $wpdb->get_results( $query, OBJECT );
+	$bookings = $wpdb->get_results( $query, OBJECT ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	$bookings_array    = array();
 	$booking_ids       = array();
@@ -579,7 +579,7 @@ function bookacti_get_bookings( $filters ) {
 /**
  * Get the total amount of booking rows according to filters
  * @since 1.3.1
- * @version 1.18.2
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param array $filters Use bookacti_format_booking_filters() before
  * @return int
@@ -980,12 +980,12 @@ function bookacti_get_number_of_booking_rows( $filters ) {
 	$query .= ' ) as C ';
 	
 	if( $variables ) {
-		$query = $wpdb->prepare( $query, $variables );
+		$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	}
 	
 	$query = apply_filters( 'bookacti_get_number_of_booking_rows_query', $query, $filters );
 	
-	$count = $wpdb->get_var( $query );
+	$count = $wpdb->get_var( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	if( ! $count ) { $count = 0; }
 
@@ -995,7 +995,7 @@ function bookacti_get_number_of_booking_rows( $filters ) {
 
 /**
  * Get number of bookings of a specific event or a specific occurrence
- * @version 1.16.45
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param array $filters Use bookacti_format_booking_filters() before
  * @return int
@@ -1403,11 +1403,11 @@ function bookacti_get_number_of_bookings( $filters ) {
 	
 	$query .= ' ) as Q'; // Close the first SELECT FROM
 	
-	$query = $wpdb->prepare( $query, $variables );
+	$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	$query = apply_filters( 'bookacti_get_number_of_bookings_query', $query, $filters );
 	
-	$bookings = $wpdb->get_var( $query );
+	$bookings = $wpdb->get_var( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 	if( ! $bookings ) { $bookings = 0; }
 
@@ -1418,7 +1418,7 @@ function bookacti_get_number_of_bookings( $filters ) {
 /**
  * Get number of bookings per event
  * @since 1.12.0 (was bookacti_get_number_of_bookings_for_booking_system)
- * @version 1.17.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param array $raw_args {
  *  @type array $templates Array of template IDs
@@ -1519,11 +1519,11 @@ function bookacti_get_number_of_bookings_per_event( $raw_args = array() ) {
 	$query .= ' GROUP BY B.event_id, B.event_start, B.event_end '
 	        . ' ORDER BY B.event_id, B.event_start, B.event_end ';
 	
-	if( $variables ) { $query = $wpdb->prepare( $query, $variables ); }
+	if( $variables ) { $query = $wpdb->prepare( $query, $variables ); } // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	$query = apply_filters( 'bookacti_get_number_of_bookings_per_event_query', $query, $args );
 	
-	$events_booking_data = $wpdb->get_results( $query );
+	$events_booking_data = $wpdb->get_results( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	// Order the array by event id
 	$return_array = array();
@@ -1546,7 +1546,7 @@ function bookacti_get_number_of_bookings_per_event( $raw_args = array() ) {
 /**
  * Get number of bookings for the desired events, per event and per user, with the total availability
  * @since 1.9.2
- * @version 1.15.10
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param array $events [ [ 'id' => int, 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' ], ... ]
  * @return array
@@ -1585,10 +1585,10 @@ function bookacti_get_number_of_bookings_per_event_per_user( $events ) {
 	       . ' GROUP BY E.id, B.event_start, B.event_end, B.user_id  '
 	       . ' ORDER BY E.id, B.event_start, B.event_end, B.user_id  ';
 	
-	if( $variables ) { $query = $wpdb->prepare( $query, $variables ); }
+	if( $variables ) { $query = $wpdb->prepare( $query, $variables ); } // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	$query = apply_filters( 'bookacti_number_of_bookings_per_event_per_user_query', $query, $events );
-	$events_booking_data = $wpdb->get_results( $query );
+	$events_booking_data = $wpdb->get_results( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	// Order the array by event id
 	$return_events = array();
@@ -1624,7 +1624,7 @@ function bookacti_get_number_of_bookings_per_event_per_user( $events ) {
 /**
  * Get bookings made without account
  * @since 1.16.0
- * @version 1.18.2
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param array $filters
  * @param boolean $like Use the LIKE %...% operator instead of =
@@ -1690,16 +1690,16 @@ function bookacti_get_bookings_without_account( $filters = array() ) {
 		$query .= 'GROUP BY B.user_id';	
 	}
 	
-	$query = $wpdb->prepare( $query, $variables );
+	$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
-	return $wpdb->get_results( $query );
+	return $wpdb->get_results( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 }
 
 
 /**
  * Cancel all bookings of an event
  * @since 1.9.0
- * @version 1.15.6
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $event_id
  * @param array $filters
@@ -1740,8 +1740,8 @@ function bookacti_cancel_event_bookings( $event_id, $filters = array() ) {
 		$variables = array_merge( $variables, $filters[ 'in__booking_id' ] );
 	}
 	
-	$query = $wpdb->prepare( $query, $variables );
-	$cancelled = $wpdb->query( $query );
+	$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$cancelled = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	return $cancelled;
 }
@@ -1750,7 +1750,7 @@ function bookacti_cancel_event_bookings( $event_id, $filters = array() ) {
 /** 
  * Cancel all bookings of a group of events (both booking groups and their bookings)
  * @since 1.9.0
- * @version 1.15.6
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $event_group_id
  * @param array $filters
@@ -1780,8 +1780,8 @@ function bookacti_cancel_group_of_events_bookings( $event_group_id, $filters = a
 		$variables[] = $from;
 	}
 	
-	$query = $wpdb->prepare( $query, $variables );
-	$cancelled1 = $wpdb->query( $query );
+	$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$cancelled1 = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	// Single Bookings
 	$query = 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS . ' as B '
@@ -1800,8 +1800,8 @@ function bookacti_cancel_group_of_events_bookings( $event_group_id, $filters = a
 		$variables[] = $from;
 	}
 	
-	$query		= $wpdb->prepare( $query, $variables );
-	$cancelled2	= $wpdb->query( $query );
+	$query      = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$cancelled2 = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	return intval( $cancelled1 ) + intval( $cancelled2 );
 }
@@ -1809,7 +1809,7 @@ function bookacti_cancel_group_of_events_bookings( $event_group_id, $filters = a
 
 /** 
  * Replace all bookings (groups) user_id with another ID
- * @version 1.13.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int|string $user_id
  * @param int|string $old_user_id
@@ -1832,15 +1832,15 @@ function bookacti_update_bookings_user_id( $user_id, $old_user_id, $expiration_d
 		$variables[] = intval( $expiration_date_delay );
 	}
 	
-	$query		= $wpdb->prepare( $query, $variables );
-	$updated1	= $wpdb->query( $query );
+	$query    = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$updated1 = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	// Booking Groups
 	$query = 'UPDATE ' . BOOKACTI_TABLE_BOOKING_GROUPS 
 	       . ' SET user_id = %s '
 	       . ' WHERE user_id = %s ';
-	$query = $wpdb->prepare( $query, $user_id, $old_user_id );
-	$updated2 = $wpdb->query( $query );
+	$query = $wpdb->prepare( $query, $user_id, $old_user_id ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$updated2 = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	if( $updated1 === false || $updated2 === false ) { return false; }
 	
@@ -1851,7 +1851,7 @@ function bookacti_update_bookings_user_id( $user_id, $old_user_id, $expiration_d
 /** 
  * Update bookings event_id 
  * @since 1.10.0
- * @version 1.15.6
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $old_event_id
  * @param int $new_event_id
@@ -1890,8 +1890,8 @@ function bookacti_update_bookings_event_id( $old_event_id, $new_event_id, $event
 		$variables[] = $to;
 	}
 	
-	$query = $wpdb->prepare( $query, $variables );
-	$updated = $wpdb->query( $query );
+	$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$updated = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	return $updated;
 }
@@ -1900,6 +1900,7 @@ function bookacti_update_bookings_event_id( $old_event_id, $new_event_id, $event
 /**
  * Update bookings status
  * @since 1.16.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $booking_id
  * @param string $state
@@ -1929,8 +1930,8 @@ function bookacti_update_bookings_status( $booking_ids, $new_status, $active = '
 	$query .= ') ';
 	$variables = array_merge( $variables, $booking_ids );
 	
-	$query   = $wpdb->prepare( $query, $variables );
-	$updated = $wpdb->query( $query );
+	$query   = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$updated = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	return $updated;
 }
@@ -1939,6 +1940,7 @@ function bookacti_update_bookings_status( $booking_ids, $new_status, $active = '
 /**
  * Update bookings payment status
  * @since 1.16.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $booking_id
  * @param string $state
@@ -1963,8 +1965,8 @@ function bookacti_update_bookings_payment_status( $booking_ids, $new_status ) {
 	$query .= ') ';
 	$variables = array_merge( $variables, $booking_ids );
 	
-	$query   = $wpdb->prepare( $query, $variables );
-	$updated = $wpdb->query( $query );
+	$query   = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$updated = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	return $updated;
 }
@@ -1973,6 +1975,7 @@ function bookacti_update_bookings_payment_status( $booking_ids, $new_status ) {
 /**
  * Update bookings quantity (do not check availability)
  * @since 1.16.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param array $booking_ids
  * @param int $new_quantity
@@ -1996,8 +1999,8 @@ function bookacti_update_bookings_quantity( $booking_ids, $new_quantity ) {
 	$query .= ') ';
 	$variables = array_merge( $variables, $booking_ids );
 	
-	$query   = $wpdb->prepare( $query, $variables );
-	$updated = $wpdb->query( $query );
+	$query   = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$updated = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	return $updated;
 }
@@ -2006,6 +2009,7 @@ function bookacti_update_bookings_quantity( $booking_ids, $new_quantity ) {
 /**
  * Reschedule bookings
  * @since 1.16.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $booking_id
  * @param int $event_id
@@ -2031,8 +2035,8 @@ function bookacti_reschedule_bookings( $booking_ids, $event_id, $event_start, $e
 	$query .= ') ';
 	$variables = array_merge( $variables, $booking_ids );
 	
-	$query   = $wpdb->prepare( $query, $variables );
-	$updated = $wpdb->query( $query );
+	$query   = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$updated = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	return $updated;
 }
@@ -2040,7 +2044,7 @@ function bookacti_reschedule_bookings( $booking_ids, $event_id, $event_start, $e
 
 /**
  * Update specific bookings dates with a relative amount of seconds
- * @version 1.14.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param array $booking_ids
  * @param int $delta_seconds_start
@@ -2066,8 +2070,8 @@ function bookacti_shift_bookings_dates( $booking_ids, $delta_seconds_start = 0, 
 	}
 	$query .= ' ) ';
 	
-	$query = $wpdb->prepare( $query, $variables );
-	$updated = $wpdb->query( $query );
+	$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$updated = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 	return $updated;   
 }
@@ -2076,6 +2080,7 @@ function bookacti_shift_bookings_dates( $booking_ids, $delta_seconds_start = 0, 
 /**
  * Delete bookings
  * @since 1.16.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param array $booking_ids
  * @return int|false
@@ -2094,8 +2099,8 @@ function bookacti_delete_bookings( $booking_ids ) {
 	}
 	$query .= ') ';
 	
-	$query   = $wpdb->prepare( $query, $booking_ids );
-	$deleted = $wpdb->query( $query );
+	$query   = $wpdb->prepare( $query, $booking_ids ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$deleted = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	// Delete booking metadata
 	if( $deleted ) {
@@ -2113,7 +2118,7 @@ function bookacti_delete_bookings( $booking_ids ) {
 /**
  * Insert a booking group
  * @since 1.1.0
- * @version 1.12.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param array $booking_group_data Sanitized with bookacti_sanitize_booking_group_data
  * @return int
@@ -2125,8 +2130,8 @@ function bookacti_insert_booking_group( $booking_group_data ) {
 	$category_id = $booking_group_data[ 'category_id' ];
 	if( ! $category_id && $booking_group_data[ 'event_group_id' ] ) {
 		$query = 'SELECT category_id FROM ' . BOOKACTI_TABLE_EVENT_GROUPS . ' WHERE id = %d;';
-		$query = $wpdb->prepare( $query, $booking_group_data[ 'event_group_id' ] );
-		$category_id = $wpdb->get_var( $query );
+		$query = $wpdb->prepare( $query, $booking_group_data[ 'event_group_id' ] ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		$category_id = $wpdb->get_var( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 		if( ! $category_id ) { $category_id = $booking_group_data[ 'category_id' ]; }
 	}
 
@@ -2146,8 +2151,8 @@ function bookacti_insert_booking_group( $booking_group_data ) {
 		$booking_group_data[ 'active' ]
 	);
 
-	$query = $wpdb->prepare( $query, $variables );
-	$wpdb->query( $query );
+	$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	$booking_group_id = ! empty( $wpdb->insert_id ) ? $wpdb->insert_id : 0;
 
@@ -2161,7 +2166,7 @@ function bookacti_insert_booking_group( $booking_group_data ) {
 
 /**
  * Update booking group
- * @version 1.12.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param array $booking_group_data Sanitized with bookacti_sanitize_booking_group_data
  * @param array $where
@@ -2207,8 +2212,8 @@ function bookacti_update_booking_group( $booking_group_data, $where = array() ) 
 		$query .= ') ';
 	}
 	
-	$query = apply_filters( 'bookacti_update_booking_group_query', $wpdb->prepare( $query, $variables ), $booking_group_data, $where );
-	$updated = $wpdb->query( $query );
+	$query = apply_filters( 'bookacti_update_booking_group_query', $wpdb->prepare( $query, $variables ), $booking_group_data, $where ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$updated = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	if( $updated ) {
 		do_action( 'bookacti_booking_group_updated', $booking_group_data, $where );
@@ -2221,7 +2226,7 @@ function bookacti_update_booking_group( $booking_group_data, $where = array() ) 
 /** 
  * Update booking groups event_group_id 
  * @since 1.12.0
- * @version 1.15.6
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $old_event_group_id
  * @param int $new_event_group_id
@@ -2254,8 +2259,8 @@ function bookacti_update_booking_groups_event_group_id( $old_event_group_id, $ne
 		$variables[] = $to;
 	}
 	
-	$query = $wpdb->prepare( $query, $variables );
-	$updated = $wpdb->query( $query );
+	$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$updated = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	return $updated;
 }
@@ -2264,6 +2269,7 @@ function bookacti_update_booking_groups_event_group_id( $old_event_group_id, $ne
 /**
  * Update booking groups status
  * @since 1.16.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $booking_group_id
  * @param string $new_status
@@ -2303,16 +2309,16 @@ function bookacti_update_booking_groups_status( $group_ids, $new_status, $active
 			$query .= ' AND BG.state = B.state';
 		}
 		
-		$query = $wpdb->prepare( $query, $variables );
-		$wpdb->query( $query );
+		$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		$wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	}
 	
 	$query = 'UPDATE ' . BOOKACTI_TABLE_BOOKING_GROUPS
 	       . ' SET state = %s, active = IFNULL( NULLIF( %d, -1 ), active ) '
 	       . ' WHERE id IN ( ' . $group_ids_placeholders . ')';
 	
-	$query   = $wpdb->prepare( $query, $variables );
-	$updated = $wpdb->query( $query );
+	$query   = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$updated = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	return $updated;
 }
@@ -2321,6 +2327,7 @@ function bookacti_update_booking_groups_status( $group_ids, $new_status, $active
 /**
  * Update booking groups payment status
  * @since 1.16.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $booking_group_id
  * @param string $new_status
@@ -2354,16 +2361,16 @@ function bookacti_update_booking_groups_payment_status( $group_ids, $new_status,
 			$query .= ' AND BG.payment_status = B.payment_status';
 		}
 		
-		$query = $wpdb->prepare( $query, $variables );
-		$wpdb->query( $query );
+		$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		$wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	}
 	
 	$query = 'UPDATE ' . BOOKACTI_TABLE_BOOKING_GROUPS
 	       . ' SET payment_status = %s '
 	       . ' WHERE id IN ( ' . $group_ids_placeholders . ')';
 	
-	$query   = $wpdb->prepare( $query, $variables );
-	$updated = $wpdb->query( $query );
+	$query   = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$updated = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	return $updated;
 }
@@ -2372,6 +2379,7 @@ function bookacti_update_booking_groups_payment_status( $group_ids, $new_status,
 /**
  * Update booking group bookings
  * @since 1.9.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param array $booking_group_data Sanitized with bookacti_sanitize_booking_group_data
  * @param array $where
@@ -2416,8 +2424,8 @@ function bookacti_update_booking_group_bookings( $booking_group_data, $where = a
 		$variables = array_merge( $variables, $where[ 'status__in' ] );
 	}
 	
-	$query = apply_filters( 'bookacti_update_booking_group_bookings_query', $wpdb->prepare( $query, $variables ), $booking_group_data, $where );
-	$updated = $wpdb->query( $query );
+	$query = apply_filters( 'bookacti_update_booking_group_bookings_query', $wpdb->prepare( $query, $variables ), $booking_group_data, $where ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$updated = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	if( $updated ) {
 		do_action( 'bookacti_booking_group_bookings_updated', $booking_group_data, $where );
@@ -2430,6 +2438,7 @@ function bookacti_update_booking_group_bookings( $booking_group_data, $where = a
 /**
  * Update booking groups bookings quantity (do not check availability)
  * @since 1.16.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param array $group_ids
  * @param int $new_quantity
@@ -2453,8 +2462,8 @@ function bookacti_update_booking_groups_bookings_quantity( $group_ids, $new_quan
 	$query .= ') ';
 	$variables = array_merge( $variables, $group_ids );
 
-	$query   = $wpdb->prepare( $query, $variables );
-	$updated = $wpdb->query( $query );
+	$query   = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$updated = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	return $updated;
 }
@@ -2463,7 +2472,7 @@ function bookacti_update_booking_groups_bookings_quantity( $group_ids, $new_quan
 /**
  * Get booking groups according to filters
  * @since 1.3.0 (was bookacti_get_booking_groups_by_group_of_events)
- * @version 1.16.45
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param array $filters Use bookacti_format_booking_filters() before
  * @return array
@@ -2783,12 +2792,12 @@ function bookacti_get_booking_groups( $filters ) {
 	}
 	
 	if( $variables ) {
-		$query = $wpdb->prepare( $query, $variables );
+		$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	}
 
 	$query = apply_filters( 'bookacti_get_booking_groups_query', $query, $filters );
 
-	$booking_groups = $wpdb->get_results( $query, OBJECT );
+	$booking_groups = $wpdb->get_results( $query, OBJECT ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 	$booking_groups_array = array();
 	$booking_group_ids = array();
@@ -2818,6 +2827,7 @@ function bookacti_get_booking_groups( $filters ) {
 /**
  * Get ids of bookings included in a booking group
  * @since 1.1.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $booking_group_id
  * @return array
@@ -2828,8 +2838,8 @@ function bookacti_get_booking_group_bookings_ids( $booking_group_id ) {
 	$query = 'SELECT id FROM ' . BOOKACTI_TABLE_BOOKINGS
 	       . ' WHERE group_id = %d '
 	       . ' ORDER BY id DESC';
-	$prep  = $wpdb->prepare( $query, $booking_group_id );
-	$bookings = $wpdb->get_results( $prep, OBJECT );
+	$prep  = $wpdb->prepare( $query, $booking_group_id ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$bookings = $wpdb->get_results( $prep, OBJECT ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 	$booking_ids = array();
 	foreach( $bookings as $booking ) {
@@ -2843,6 +2853,7 @@ function bookacti_get_booking_group_bookings_ids( $booking_group_id ) {
 /**
  * Delete booking groups 
  * @since 1.16.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param array $booking_group_ids
  * @return int|false
@@ -2862,8 +2873,8 @@ function bookacti_delete_booking_groups( $booking_group_ids ) {
 	}
 	$query .= ') ';
 	
-	$query   = $wpdb->prepare( $query, $booking_group_ids );
-	$deleted = $wpdb->query( $query );
+	$query   = $wpdb->prepare( $query, $booking_group_ids ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$deleted = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	// Delete booking group metadata
 	if( $deleted ) {
@@ -2881,6 +2892,7 @@ function bookacti_delete_booking_groups( $booking_group_ids ) {
 /**
  * Retrieve exports from database
  * @since 1.8.0
+ * @version 1.19.9
  * @param array $raw_filters
  * @return array
  */
@@ -2947,10 +2959,10 @@ function bookacti_get_exports( $raw_filters = array() ) {
 	}
 	
 	if( $variables ) {
-		$query = $wpdb->prepare( $query, $variables );
+		$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	}
 	
-	$results = $wpdb->get_results( $query, ARRAY_A );
+	$results = $wpdb->get_results( $query, ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	if( ! $results ) { return $exports; }
 	
@@ -2987,6 +2999,7 @@ function bookacti_get_export( $export_id, $filters = array() ) {
 /**
  * Insert a new export
  * @since 1.8.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param array $raw_args
  * @return int|false
@@ -2997,8 +3010,8 @@ function bookacti_insert_export( $raw_args = array() ) {
 	$default_args = array(
 		'type'            => '',
 		'user_id'         => 0,
-		'creation_date'   => date( 'Y-m-d H:i:s' ),
-		'expiration_date' => date( 'Y-m-d H:i:s', strtotime( '+' . $expiration_delay . ' days' ) ),
+		'creation_date'   => gmdate( 'Y-m-d H:i:s' ),
+		'expiration_date' => gmdate( 'Y-m-d H:i:s', strtotime( '+' . $expiration_delay . ' days' ) ),
 		'sequence'        => 0,
 		'args'            => array(),
 		'active'          => 1
@@ -3021,8 +3034,8 @@ function bookacti_insert_export( $raw_args = array() ) {
 		$args[ 'active' ]
 	);
 	
-	$query = $wpdb->prepare( $query, $variables );
-	$inserted = $wpdb->query( $query );
+	$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$inserted = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	if( ! $inserted ) { return false; }
 	
@@ -3035,6 +3048,7 @@ function bookacti_insert_export( $raw_args = array() ) {
 /**
  * Update an export
  * @since 1.8.0
+ * @version 1.19.9
  * @param array $args
  * @return int|false
  */
@@ -3044,7 +3058,7 @@ function bookacti_update_export( $export_id, $raw_args = array() ) {
 		'type'            => false,
 		'user_id'         => false,
 		'creation_date'   => false,
-		'expiration_date' => date( 'Y-m-d H:i:s', strtotime( '+' . $expiration_delay . ' days' ) ),
+		'expiration_date' => gmdate( 'Y-m-d H:i:s', strtotime( '+' . $expiration_delay . ' days' ) ),
 		'sequence_inc'    => 1,
 		'args'            => false,
 		'active'          => false
@@ -3073,8 +3087,8 @@ function bookacti_update_export( $export_id, $raw_args = array() ) {
 	$query .= ' WHERE id = %d ';
 	$variables[] = $export_id;
 
-	$query = $wpdb->prepare( $query, $variables );
-	$updated = $wpdb->query( $query );
+	$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$updated = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	return $updated;
 }
@@ -3083,6 +3097,7 @@ function bookacti_update_export( $export_id, $raw_args = array() ) {
 /**
  * Update exports' user ID
  * @since 1.16.21
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param int $old_user_id
  * @param int $new_user_id
@@ -3095,8 +3110,8 @@ function bookacti_update_exports_user_id( $old_user_id, $new_user_id ) {
 	       . ' SET user_id = %d '
 	       . ' WHERE user_id = %d ';
 	
-	$query   = $wpdb->prepare( $query, $new_user_id, $old_user_id );
-	$updated = $wpdb->query( $query );
+	$query   = $wpdb->prepare( $query, $new_user_id, $old_user_id ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$updated = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	return $updated;
 }
@@ -3105,6 +3120,7 @@ function bookacti_update_exports_user_id( $old_user_id, $new_user_id ) {
 /**
  * Delete expired exports
  * @since 1.8.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param array $args_raw
  * @return array|false
@@ -3171,9 +3187,9 @@ function bookacti_delete_exports( $raw_filters = array() ) {
 		$query .= ' AND XP.active = 0 ';
 	}
 	
-	$query = $wpdb->prepare( $query, $variables );
+	$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
-	$expired_exports = $wpdb->get_results( $query );
+	$expired_exports = $wpdb->get_results( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	$expired_ids = array();
 	foreach( $expired_exports as $expired_export ) {
@@ -3192,8 +3208,8 @@ function bookacti_delete_exports( $raw_filters = array() ) {
 		
 		// Delete expired exports
 		$query = 'DELETE FROM ' . BOOKACTI_TABLE_EXPORTS . ' WHERE id IN( ' . $ids_placeholder_list . ' );';
-		$query = $wpdb->prepare( $query, $expired_ids );
-		$deleted = $wpdb->query( $query );
+		$query = $wpdb->prepare( $query, $expired_ids ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		$deleted = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 		
 		if( $deleted === false ) { $return = false; }
 		
@@ -3210,6 +3226,7 @@ function bookacti_delete_exports( $raw_filters = array() ) {
 /**
  * Get the booking id corresponding to a secret key
  * @since 1.12.0
+ * @version 1.19.9
  * @param string $secret_key
  * @return array [ "id" => int, "type" => string ]
  */
@@ -3219,7 +3236,7 @@ function bookacti_get_booking_id_by_secret_key( $secret_key ) {
 	       . ' WHERE meta_key = "secret_key" '
 	       . ' AND object_type IN ( "booking", "booking_group" )'
 	       . ' AND meta_value = %s;';
-	$query = $wpdb->prepare( $query, $secret_key );
-	$booking = $wpdb->get_row( $query );
+	$query = $wpdb->prepare( $query, $secret_key ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$booking = $wpdb->get_row( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	return $booking ? array( 'id' => intval( $booking->object_id ), 'type' => $booking->object_type === 'booking_group' ? 'group' : 'single' ) : array();
 }

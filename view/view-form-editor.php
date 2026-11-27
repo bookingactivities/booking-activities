@@ -2,7 +2,7 @@
 /**
  * Form editor page
  * @since 1.5.0
- * @version 1.19.8
+ * @version 1.19.9
  */
 
 // Exit if accessed directly
@@ -79,9 +79,9 @@ if( ! $form_edit ) { return; }
 	<div id='bookacti-form-editor-page-container'>
 		<?php
 			do_action( 'bookacti_form_editor_page_before', $form_edit );
-			$redirect_url = 'admin.php?page=bookacti_forms&action=edit&form_id=' . $form_id;
+			$redirect_url = admin_url( 'admin.php?page=bookacti_forms&action=edit&form_id=' . $form_id );
 		?>
-		<form name='post' action='<?php echo $redirect_url; ?>' method='post' id='bookacti-form-editor-page-form' novalidate>
+		<form name='post' action='<?php echo esc_url( $redirect_url ); ?>' method='post' id='bookacti-form-editor-page-form' novalidate>
 			<?php
 			/* Used to save closed meta boxes and their order */
 			wp_nonce_field( 'meta-box-order', 'meta-box-order-nonce', false );
@@ -89,9 +89,9 @@ if( ! $form_edit ) { return; }
 			?>
 			<input type='hidden' name='page' value='bookacti_forms'/>
 			<input type='hidden' name='action' value='bookactiUpdateForm'/>
-			<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_update_form' ); ?>'/>
-			<input type='hidden' name='is_active' value='<?php echo $form_edit[ 'active' ]; ?>'/>
-			<input type='hidden' name='form_id' value='<?php echo $form_id; ?>' id='bookacti-form-id'/>
+			<input type='hidden' name='nonce' value='<?php echo esc_attr( wp_create_nonce( 'bookacti_update_form' ) ); ?>'/>
+			<input type='hidden' name='is_active' value='<?php echo esc_attr( $form_edit[ 'active' ] ); ?>'/>
+			<input type='hidden' name='form_id' value='<?php echo esc_attr( $form_id ); ?>' id='bookacti-form-id'/>
 			
 			<div id='bookacti-form-editor-page-lang-switcher' class='bookacti-lang-switcher' ></div>
 			
@@ -100,9 +100,8 @@ if( ! $form_edit ) { return; }
 					<div id='post-body-content'>
 						<div id='titlediv'>
 							<div id='titlewrap'>
-								<?php $title_placeholder = esc_html__( 'Enter form title here', 'booking-activities' ); ?>
-								<label class='screen-reader-text' id='title-prompt-text' for='title'><?php echo $title_placeholder; ?></label>
-								<input type='text' name='form_title' size='30' value='<?php echo esc_attr( $form_edit[ 'title' ] ); ?>' id='title' class='bookacti-translatable' spellcheck='true' autocomplete='off' placeholder='<?php echo $title_placeholder; ?>' required/>
+								<label class='screen-reader-text' id='title-prompt-text' for='title'><?php esc_html_e( 'Enter form title here', 'booking-activities' ); ?></label>
+								<input type='text' name='form_title' size='30' value='<?php echo esc_attr( $form_edit[ 'title' ] ); ?>' id='title' class='bookacti-translatable' spellcheck='true' autocomplete='off' placeholder='<?php esc_html_e( 'Enter form title here', 'booking-activities' ); ?>' required/>
 							</div>
 						</div>
 						
@@ -118,12 +117,10 @@ if( ! $form_edit ) { return; }
 							} else {
 								$templates = bookacti_fetch_templates();
 								if( ! $templates ) {
-									$editor_path   = 'admin.php?page=bookacti_calendars';
-									$editor_url    = admin_url( $editor_path );
 									$error_message = sprintf(
 										/* translators: %s is a link to "Calendar Editor" page. */
 										esc_html__( 'Welcome! It seems you don\'t have any calendar yet. Go to %s to create your first calendar', 'booking-activities' ),
-										'<a href="' . esc_url( $editor_url ) . '" >' . esc_html__( 'Calendar Editor', 'booking-activities' ) . '</a>'
+										'<a href="' . esc_url( admin_url( 'admin.php?page=bookacti_calendars' ) ) . '" >' . esc_html__( 'Calendar Editor', 'booking-activities' ) . '</a>'
 									);
 								}
 							}
@@ -131,7 +128,7 @@ if( ! $form_edit ) { return; }
 							// Form editor not available error message
 							if( $error_message ) {
 							?>
-								<div id='bookacti-form-editor-not-available'><h2><?php echo $error_message; ?></h2></div>
+								<div id='bookacti-form-editor-not-available'><h2><?php echo $error_message; /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?></h2></div>
 							<?php
 							
 							// FORM EDITOR
@@ -161,12 +158,17 @@ if( ! $form_edit ) { return; }
 									<div id='bookacti-form-editor-description'>
 										<p>
 										<?php 
-											/* translators: the placeholders are icons related to the action */
-											echo sprintf( __( 'Click on %1$s to add, %2$s to edit, %3$s to remove and %4$s to preview your form fields.<br/>Drag and drop fields to switch their positions.', 'booking-activities' ),
+											echo sprintf( 
+												/* translators: the placeholders are icons related to the action */
+												esc_html__( 'Click on %1$s to add, %2$s to edit, %3$s to remove and %4$s to preview your form fields.', 'booking-activities' ),
 											    '<span class="dashicons dashicons-plus-alt"></span>',
 											    '<span class="dashicons dashicons-admin-generic"></span>',
 											    '<span class="dashicons dashicons-trash"></span>',
-											    '<span class="dashicons dashicons-arrow-down"></span>' ); 
+											    '<span class="dashicons dashicons-arrow-down"></span>'
+											)
+											. '<br/>' 
+											. esc_html__( 'Drag and drop fields to switch their positions', 'booking-activities' );
+											
 											do_action( 'bookacti_form_editor_description_after', $form_edit );
 										?>
 										</p>
@@ -202,14 +204,16 @@ if( ! $form_edit ) { return; }
 										// START ADVANCED FORMS ADD-ON PROMO
 										$is_plugin_active = bookacti_is_plugin_active( 'ba-advanced-forms/ba-advanced-forms.php' );
 										if( ! $is_plugin_active ) {
-											$addon_link = '<strong><a href="https://booking-activities.fr/en/downloads/advanced-forms/?utm_source=plugin&utm_medium=plugin&utm_campaign=advanced-forms&utm_content=form-editor-fields" target="_blank" >Advanced Forms</a></strong>';
-											?>
+										?>
 											<hr/>
 											<div class='bookacti-addon-promo'>
 												<p>
 												<?php 
-													/* translators: %1$s is the placeholder for Advanced Forms add-on link */
-													echo sprintf( esc_html__( 'Add any custom fields to your booking form thanks to the %1$s add-on:', 'booking-activities' ), $addon_link ); 
+													echo sprintf( 
+														/* translators: %1$s is the placeholder for Advanced Forms add-on link */
+														esc_html__( 'Add any custom fields to your booking form thanks to the %1$s add-on:', 'booking-activities' ), 
+														'<strong><a href="https://booking-activities.fr/en/downloads/advanced-forms/?utm_source=plugin&utm_medium=plugin&utm_campaign=advanced-forms&utm_content=form-editor-fields" target="_blank" >Advanced Forms</a></strong>'
+													); 
 												?>
 												</p>
 												<div id='bookacti-form-editor-promo-field-height' class='bookacti-form-editor-field bookacti-form-editor-promo-field'>
@@ -226,8 +230,11 @@ if( ! $form_edit ) { return; }
 															<div class='bookacti-form-field-label'>
 																<label><?php esc_html_e( 'Your height:', 'booking-activities' ); ?></label>
 																<?php 
-																	/* translators: %1$s is the placeholder for Advanced Forms add-on link */
-																	$tip = sprintf( esc_html__( 'In this example, a number field has been added to the form in order to ask the customer\'s height. Thanks to the %1$s add-on, you can add any kind of field and ask any information to your customers.', 'booking-activities' ), $addon_link );
+																	$tip = sprintf(
+																		/* translators: %1$s is the placeholder for Advanced Forms add-on link */
+																		esc_html__( 'In this example, a number field has been added to the form in order to ask the customer\'s height. Thanks to the %1$s add-on, you can add any kind of field and ask any information to your customers.', 'booking-activities' ), 
+																		'<strong><a href="https://booking-activities.fr/en/downloads/advanced-forms/?utm_source=plugin&utm_medium=plugin&utm_campaign=advanced-forms&utm_content=form-editor-fields" target="_blank" >Advanced Forms</a></strong>'
+																	);
 																	bookacti_help_tip( $tip ); 
 																?>
 															</div>

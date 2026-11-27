@@ -427,7 +427,7 @@ function bookacti_sanitize_event_data( $raw_data ) {
 /**
  * Sanitize (group of) events repeat data
  * @since 1.12.0
- * @version 1.16.7
+ * @version 1.19.9
  * @param array $object_data see bookacti_get_group_of_events_default_data or bookacti_get_event_default_data
  * @param string $object_type "event" or "group"
  * @return array
@@ -480,7 +480,7 @@ function bookacti_sanitize_repeat_data( $object_data, $object_type = 'event' ) {
 	if( $data[ 'repeat_freq' ] !== 'none' ) {
 		if( $object_type === 'group' ) {
 			// Get the occurrences
-			$group_i = $data[ 'id' ] ? $data[ 'id' ] : ( rand() * -1 );
+			$group_i = $data[ 'id' ] ? $data[ 'id' ] : ( wp_rand() * -1 );
 			$groups_occurrences = bookacti_get_occurrences_of_repeated_groups_of_events( array( $group_i => $data ), array( 'past_events' => true, 'skip_exceptions' => false ) );
 			$group_occurrences = ! empty( $groups_occurrences[ $group_i ] ) ? $groups_occurrences[ $group_i ] : array();
 

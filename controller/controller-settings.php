@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Init Booking Activities settings
- * @version 1.17.0
+ * @version 1.19.9
  */
 function bookacti_init_settings() { 
 	/* General settings Section - 1 - Misc */
@@ -310,13 +310,29 @@ function bookacti_init_settings() {
 	
 	register_setting( 'bookacti_general_settings', 'bookacti_general_settings', array( 
 		'type'              => 'array',
-		'sanitize_callback' => 'bookacti_sanitize_settings_general',
+		'sanitize_callback' => 'bookacti_sanitize_general_settings',
 		'default'           => array()
 	) );
-	register_setting( 'bookacti_cancellation_settings', 'bookacti_cancellation_settings' );
-	register_setting( 'bookacti_notifications_settings', 'bookacti_notifications_settings' );
-	register_setting( 'bookacti_messages_settings', 'bookacti_messages_settings' );
-	register_setting( 'bookacti_licenses_settings', 'bookacti_licenses_settings' );
+	register_setting( 'bookacti_cancellation_settings', 'bookacti_cancellation_settings', array( 
+		'type'              => 'array',
+		'sanitize_callback' => 'bookacti_sanitize_cancellation_settings',
+		'default'           => array()
+	) );
+	register_setting( 'bookacti_notifications_settings', 'bookacti_notifications_settings', array( 
+		'type'              => 'array',
+		'sanitize_callback' => 'bookacti_sanitize_notifications_settings',
+		'default'           => array()
+	) );
+	register_setting( 'bookacti_messages_settings', 'bookacti_messages_settings', array( 
+		'type'              => 'array',
+		'sanitize_callback' => 'bookacti_sanitize_messages_settings',
+		'default'           => array()
+	) );
+	register_setting( 'bookacti_licenses_settings', 'bookacti_licenses_settings', array( 
+		'type'              => 'array',
+		'sanitize_callback' => 'bookacti_sanitize_licenses_settings',
+		'default'           => array()
+	) );
 	
 	/* Allow plugins to add settings and sections */
 	do_action( 'bookacti_add_settings' );

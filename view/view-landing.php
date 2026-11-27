@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking Activities landing page
- * @version 1.16.46
+ * @version 1.19.9
  */
 
 // Exit if accessed directly
@@ -114,16 +114,20 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 								if( $color1 && $color2 ) {
 								?>
 									<style>
-										#bookacti-add-on-image-<?php echo $add_on_slug; ?>:before {
-											background: <?php echo $color1; ?>;
-											background: -moz-radial-gradient(center, ellipse cover, <?php echo $color1; ?> 35%, <?php echo $color2; ?> 135%);
-											background: -webkit-radial-gradient(center, ellipse cover, <?php echo $color1; ?> 35%, <?php echo $color2; ?> 135%);
-											background: radial-gradient(ellipse at center, <?php echo $color1; ?> 35%, <?php echo $color2; ?> 135%);
-											filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='<?php echo $color1; ?>', endColorstr='<?php echo $color2; ?>',GradientType=1 );
-										}
-										#bookacti-add-on-image-<?php echo $add_on_slug; ?> {
-											background: <?php echo $color2; ?>;
-										}
+									<?php
+										echo esc_html(
+											"#bookacti-add-on-image-$add_on_slug:before {
+												background: $color1;
+												background: -moz-radial-gradient(center, ellipse cover, $color1 35%, $color2 135%);
+												background: -webkit-radial-gradient(center, ellipse cover, $color1 35%, $color2 135%);
+												background: radial-gradient(ellipse at center, $color1 35%, $color2 135%);
+												filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='$color1', endColorstr='$color2',GradientType=1 );
+											}
+											#bookacti-add-on-image-$add_on_slug {
+												background: $color2;
+											}"
+										);
+									?>
 									</style>
 								<?php
 								}

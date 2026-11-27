@@ -30,7 +30,7 @@ if( ! defined( 'BOOKACTI_TABLE_NOTIFICATION_CHANNELS' ) ) { define( 'BOOKACTI_TA
 /**
  * Delete a user meta for all users
  * @since 1.3.0
- * @version 1.11.5
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param string $meta_key
  * @param string $meta_value
@@ -54,8 +54,8 @@ function bookacti_delete_user_meta( $meta_key, $user_id = 0, $meta_value = '' ) 
 		$variables[] = $meta_value;
 	}
 	
-	$query = $wpdb->prepare( $query, $variables );
-	$deleted = $wpdb->query( $query );
+	$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$deleted = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	return $deleted;
 }
@@ -64,15 +64,15 @@ function bookacti_delete_user_meta( $meta_key, $user_id = 0, $meta_value = '' ) 
 /**
  * Get the user id corresponding to a secret key
  * @since 1.9.0
- * @version 1.11.5
+ * @version 1.19.9
  * @param string $secret_key
  * @return int User ID or 0 if not found
  */
 function bookacti_get_user_id_by_secret_key( $secret_key ) {
 	global $wpdb;
 	$query = 'SELECT user_id FROM ' . $wpdb->usermeta . ' WHERE meta_key = "bookacti_secret_key" AND meta_value = %s;';
-	$query = $wpdb->prepare( $query, $secret_key );
-	$user_id = $wpdb->get_var( $query );
+	$query = $wpdb->prepare( $query, $secret_key ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$user_id = $wpdb->get_var( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	return $user_id ? intval( $user_id ) : 0;
 }
 
@@ -83,7 +83,7 @@ function bookacti_get_user_id_by_secret_key( $secret_key ) {
 
 /**
  * Get metadata
- * @version 1.18.8
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param string $object_type
  * @param int|array $object_id
@@ -104,8 +104,8 @@ function bookacti_get_metadata( $object_type, $object_id, $meta_key = '', $singl
 	
 	if( ! $object_id ) { return false; }
 	
-	$query	= 'SELECT object_id, meta_key, meta_value FROM ' . BOOKACTI_TABLE_META
-			. ' WHERE object_type = %s';
+	$query = 'SELECT object_id, meta_key, meta_value FROM ' . BOOKACTI_TABLE_META
+	       . ' WHERE object_type = %s';
 
 	$variables = array( $object_type );
 	
@@ -130,15 +130,15 @@ function bookacti_get_metadata( $object_type, $object_id, $meta_key = '', $singl
 		$variables[] = $meta_key;
 	}
 
-	$query = $wpdb->prepare( $query, $variables );
+	$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 	if( $single ) {
-		$metadata   = $wpdb->get_row( $query );
+		$metadata   = $wpdb->get_row( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 		$meta_value = isset( $metadata->meta_value ) ? ( is_serialized( $metadata->meta_value ) ? unserialize( trim( $metadata->meta_value ), array( 'allowed_classes' => false ) ) : $metadata->meta_value ) : false;
 		return gettype( $meta_value ) !== 'object' ? $meta_value : false;
 	}
 
-	$metadata = $wpdb->get_results( $query );
+	$metadata = $wpdb->get_results( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 	if( is_null( $metadata ) ) { return false; }
 
@@ -161,7 +161,7 @@ function bookacti_get_metadata( $object_type, $object_id, $meta_key = '', $singl
 
 /**
  * Update metadata
- * @version 1.16.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param string $object_type
  * @param int|array $object_id
@@ -233,8 +233,8 @@ function bookacti_update_metadata( $object_type, $object_id, $metadata_array ) {
 				$meta_key
 			);
 
-			$query_n   = $wpdb->prepare( $query_n, $variables );
-			$updated_n = $wpdb->query( $query_n );
+			$query_n   = $wpdb->prepare( $query_n, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+			$updated_n = $wpdb->query( $query_n ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 			if( is_int( $updated_n ) && is_int( $updated ) ) {
 				$updated += $updated_n;
@@ -254,7 +254,7 @@ function bookacti_update_metadata( $object_type, $object_id, $metadata_array ) {
 
 /**
  * Insert metadata
- * @version 1.16.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param string $object_type
  * @param int|array $object_id
@@ -300,8 +300,8 @@ function bookacti_insert_metadata( $object_type, $object_id, $metadata_array ) {
 	
 	$query .= ';';
 	
-	$query    = $wpdb->prepare( $query, $variables );
-	$inserted = $wpdb->query( $query );
+	$query    = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$inserted = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 	return $inserted;
 }
@@ -309,7 +309,7 @@ function bookacti_insert_metadata( $object_type, $object_id, $metadata_array ) {
 
 /**
  * Duplicate metadata
- * 
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param string $object_type
  * @param int $source_id
@@ -321,17 +321,17 @@ function bookacti_duplicate_metadata( $object_type, $source_id, $recipient_id ) 
 	
 	if( ! $object_type || ! is_numeric( $source_id ) || ! is_numeric( $recipient_id ) ) { return false; }
 	
-	$source_id		= absint( $source_id );
-	$recipient_id	= absint( $recipient_id );
+	$source_id    = absint( $source_id );
+	$recipient_id = absint( $recipient_id );
 	if( ! $source_id || ! $recipient_id ) { return false; }
 	
-	$query		= 'INSERT INTO ' . BOOKACTI_TABLE_META . ' ( object_type, object_id, meta_key, meta_value ) '
-				. ' SELECT object_type, %d, meta_key, meta_value '
-				. ' FROM ' . BOOKACTI_TABLE_META
-				. ' WHERE object_type = %s ' 
-				. ' AND object_id = %d';
-	$query_prep	= $wpdb->prepare( $query, $recipient_id, $object_type, $source_id );
-	$inserted	= $wpdb->query( $query_prep );
+	$query = 'INSERT INTO ' . BOOKACTI_TABLE_META . ' ( object_type, object_id, meta_key, meta_value ) '
+	       . ' SELECT object_type, %d, meta_key, meta_value '
+	       . ' FROM ' . BOOKACTI_TABLE_META
+	       . ' WHERE object_type = %s ' 
+	       . ' AND object_id = %d';
+	$query    = $wpdb->prepare( $query, $recipient_id, $object_type, $source_id ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$inserted = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	return $inserted;
 }
@@ -339,7 +339,7 @@ function bookacti_duplicate_metadata( $object_type, $source_id, $recipient_id ) 
 
 /**
  * Delete metadata
- * @version 1.16.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param string $object_type
  * @param int|array $object_id
@@ -386,8 +386,8 @@ function bookacti_delete_metadata( $object_type, $object_id, $metadata_key_array
 		$query .= ' ) ';
 		$variables = array_merge( $variables, array_values( $metadata_key_array ) );
 	}
-	$query = $wpdb->prepare( $query, $variables );
-	$deleted = $wpdb->query( $query );
+	$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$deleted = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	return $deleted;
 }

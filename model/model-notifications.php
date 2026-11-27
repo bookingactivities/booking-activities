@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Get notifications data from database
- * @version 1.18.0
+ * @version 1.19.9
  * @param array $filters
  * @return array
  */
@@ -131,9 +131,9 @@ function bookacti_get_notifications( $filters = array() ) {
 	}
 	
 	if( $variables ) {
-		$query = $wpdb->prepare( $query, $variables );
+		$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	}
-	$results = $wpdb->get_results( $query, ARRAY_A );
+	$results = $wpdb->get_results( $query, ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	// Get notifications IDs
 	$notification_db_ids = array();
@@ -169,6 +169,7 @@ function bookacti_get_notifications( $filters = array() ) {
 /**
  * Get notification channels data from database
  * @since 1.18.0
+ * @version 1.19.9
  * @param array $notification_db_ids
  * @return array
  */
@@ -195,9 +196,9 @@ function bookacti_get_notification_channels( $notification_db_ids = array() ) {
 	}
 	
 	if( $variables ) {
-		$query = $wpdb->prepare( $query, $variables );
+		$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	}
-	$results = $wpdb->get_results( $query, ARRAY_A );
+	$results = $wpdb->get_results( $query, ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	$notification_channels = array();
 	if( $results ) {
@@ -223,6 +224,7 @@ function bookacti_get_notification_channels( $notification_db_ids = array() ) {
 /**
  * Get the total number of notification rows according to filters
  * @since 1.18.0
+ * @version 1.19.9
  * @param array $filters
  * @return array
  */
@@ -331,10 +333,10 @@ function bookacti_get_number_of_notification_rows( $filters = array() ) {
 	}
 	
 	if( $variables ) {
-		$query = $wpdb->prepare( $query, $variables );
+		$query = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	}
 	
-	$count = $wpdb->get_var( $query );
+	$count = $wpdb->get_var( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	return is_numeric( $count ) ? intval( $count ) : 0;
 }
@@ -343,6 +345,7 @@ function bookacti_get_number_of_notification_rows( $filters = array() ) {
 /**
  * Insert a new notification to the database
  * @since 1.18.0
+ * @version 1.19.9
  * @param array $notification_data
  * @return int|false
  */
@@ -369,8 +372,8 @@ function bookacti_insert_notification( $notification_data ) {
 		$notification_data[ 'active' ]
 	);
 	
-	$query   = $wpdb->prepare( $query, $variables );
-	$created = $wpdb->query( $query );
+	$query   = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$created = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	return $created ? intval( $wpdb->insert_id ) : $created;
 }
@@ -379,6 +382,7 @@ function bookacti_insert_notification( $notification_data ) {
 /**
  * Insert a new notification channel to the database
  * @since 1.18.0
+ * @version 1.19.9
  * @param int $notification_db_id
  * @param array $channel_data
  * @return int|false
@@ -402,8 +406,8 @@ function bookacti_insert_notification_channel( $notification_db_id, $channel_dat
 		$channel_data[ 'active' ]
 	);
 	
-	$query   = $wpdb->prepare( $query, $variables );
-	$created = $wpdb->query( $query );
+	$query   = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$created = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	return $created ? intval( $wpdb->insert_id ) : $created;
 }
@@ -412,6 +416,7 @@ function bookacti_insert_notification_channel( $notification_db_id, $channel_dat
 /**
  * Update a notification
  * @since 1.18.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param array $notification_data
  * @return int|false
@@ -447,8 +452,8 @@ function bookacti_update_notification( $notification_data ) {
 		$notification_data[ 'db_id' ]
 	);
 	
-	$query   = $wpdb->prepare( $query, $variables );
-	$updated = $wpdb->query( $query );
+	$query   = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$updated = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	return $updated;
 }
@@ -457,6 +462,7 @@ function bookacti_update_notification( $notification_data ) {
 /**
  * Update a notification channel
  * @since 1.18.0
+ * @version 1.19.9
  * @global wpdb $wpdb
  * @param array $channel_data
  * @return int|false
@@ -484,8 +490,8 @@ function bookacti_update_notification_channel( $channel_data ) {
 		$channel_data[ 'channel_db_id' ]
 	);
 	
-	$query   = $wpdb->prepare( $query, $variables );
-	$updated = $wpdb->query( $query );
+	$query   = $wpdb->prepare( $query, $variables ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$updated = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	return $updated;
 }
@@ -498,6 +504,7 @@ function bookacti_update_notification_channel( $channel_data ) {
 /**
  * Get legacy notifications data from wp_options table
  * @since 1.18.0 (was bookacti_get_notifications)
+ * @version 1.19.9
  * @param boolean $raw
  * @return array
  */
@@ -508,8 +515,8 @@ function bookacti_get_legacy_notifications() {
 	       . ' FROM ' . $wpdb->options
 	       . ' WHERE option_name LIKE %s ';
 	
-	$query   = $wpdb->prepare( $query, $wpdb->esc_like( 'bookacti_notifications_settings_' ) . '%' );
-	$results = $wpdb->get_results( $query );
+	$query   = $wpdb->prepare( $query, $wpdb->esc_like( 'bookacti_notifications_settings_' ) . '%' ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	$results = $wpdb->get_results( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	
 	$notifications = array();
 	if( $results ) {

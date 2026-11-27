@@ -2,7 +2,7 @@
 /**
  * Form editor dialogs
  * @since 1.5.0
- * @version 1.19.8
+ * @version 1.19.9
  */
 
 // Exit if accessed directly
@@ -17,10 +17,10 @@ foreach( $fields_default as $field_name => $field_data ) {
 ?>
 
 <!-- Add a new field dialog -->
-<div id='bookacti-insert-form-field-dialog' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php esc_html_e( 'Add a field to the form', 'booking-activities' ); ?>' >
-	<form id='bookacti-insert-form-field-form' >
+<div id='bookacti-insert-form-field-dialog' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php esc_html_e( 'Add a field to the form', 'booking-activities' ); ?>'>
+	<form id='bookacti-insert-form-field-form'>
 		<input type='hidden' name='action' value='bookactiInsertFormField'/>
-		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_insert_form_field' ); ?>'/>
+		<input type='hidden' name='nonce' value='<?php echo esc_attr( wp_create_nonce( 'bookacti_insert_form_field' ) ); ?>'/>
 		<?php 
 			do_action( 'bookacti_insert_form_field_dialog_before', $form_edit, $form_fields_edit );
 		?>
@@ -36,9 +36,9 @@ foreach( $fields_default as $field_name => $field_data ) {
 				// Display available fields options
 				foreach( $fields_default as $field_default ) {
 					// Add the field if it isn't already in the form, or if it is not unique
-					$disabled = in_array( $field_default[ 'name' ], $field_already_added, true ) && $field_default[ 'unique' ] ? 'disabled' : '';
+					$is_disabled = in_array( $field_default[ 'name' ], $field_already_added, true ) && $field_default[ 'unique' ];
 					if( ! $field_default[ 'compulsory' ] ) {
-						echo '<option value="' . $field_default[ 'name' ] . '" data-unique="' . $field_default[ 'unique' ] . '" ' . $disabled . '>' . $field_default[ 'title' ] . '</option>';
+						echo '<option value="' . esc_attr( $field_default[ 'name' ] ) . '" data-unique="' . esc_attr( $field_default[ 'unique' ] ) . '" ' . ( $is_disabled ? 'disabled' : '' ) . '>' . esc_html( $field_default[ 'title' ] ) . '</option>';
 					}
 				}
 			?>
@@ -53,21 +53,21 @@ foreach( $fields_default as $field_name => $field_data ) {
 
 
 <!-- Remove field dialog -->
-<div id='bookacti-remove-form-field-dialog' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php esc_html_e( 'Remove this field from the form', 'booking-activities' ); ?>' >
-	<form id='bookacti-remove-form-field-form' >
-		<input type='hidden' name='action' value='bookactiRemoveFormField' />
-		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_remove_form_field' ); ?>'/>
+<div id='bookacti-remove-form-field-dialog' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php esc_html_e( 'Remove this field from the form', 'booking-activities' ); ?>'>
+	<form id='bookacti-remove-form-field-form'>
+		<input type='hidden' name='action' value='bookactiRemoveFormField'/>
+		<input type='hidden' name='nonce' value='<?php echo esc_attr( wp_create_nonce( 'bookacti_remove_form_field' ) ); ?>'/>
 		<div><?php esc_html_e( 'Are you sure to delete this field permanently?', 'booking-activities' ); ?></div>
 	</form>
 </div>
 
 
 <!-- Edit form meta dialog -->
-<div id='bookacti-form-meta-dialog' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php esc_html_e( 'Form options', 'booking-activities' ); ?>' >
-	<form id='bookacti-update-form-meta-form' >
-		<input type='hidden' name='action' value='bookactiUpdateFormMeta' />
-		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_update_form' ); ?>' />
-		<input type='hidden' name='form_id' value='<?php $form_id ?>' />
+<div id='bookacti-form-meta-dialog' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php esc_html_e( 'Form options', 'booking-activities' ); ?>'>
+	<form id='bookacti-update-form-meta-form'>
+		<input type='hidden' name='action' value='bookactiUpdateFormMeta'/>
+		<input type='hidden' name='nonce' value='<?php echo esc_attr( wp_create_nonce( 'bookacti_update_form' ) ); ?>'/>
+		<input type='hidden' name='form_id' value='<?php esc_attr( $form_id ) ?>'/>
 		<?php
 			do_action( 'bookacti_form_meta_dialog_before', $form_edit, $form_fields_edit );
 		?>
@@ -120,13 +120,13 @@ foreach( $fields_default as $field_name => $field_data ) {
 
 
 <!-- Calendar field dialog -->
-<div id='bookacti-form-field-dialog-calendar' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php /* translators: Title of the Update field dialog. %s is the field title. */ echo sprintf( esc_html__( '%s options', 'booking-activities' ), strip_tags( $fields_default[ 'calendar' ][ 'title' ] ) ); ?>' >
-	<form id='bookacti-form-field-form-calendar' >
-		<input type='hidden' name='action' value='bookactiUpdateFormField' />
-		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_update_form_field' ); ?>' />
-		<input type='hidden' name='field_id' value='' />
+<div id='bookacti-form-field-dialog-calendar' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php /* translators: Title of the Update field dialog. %s is the field title. */ echo esc_attr( sprintf( __( '%s options', 'booking-activities' ), wp_strip_all_tags( $fields_default[ 'calendar' ][ 'title' ] ) ) ); ?>'>
+	<form id='bookacti-form-field-form-calendar'>
+		<input type='hidden' name='action' value='bookactiUpdateFormField'/>
+		<input type='hidden' name='nonce' value='<?php echo esc_attr( wp_create_nonce( 'bookacti_update_form_field' ) ); ?>'/>
+		<input type='hidden' name='field_id' value=''/>
 		
-		<div id='bookacti-form-field-dialog-calendar-lang-switcher' class='bookacti-lang-switcher' ></div>
+		<div id='bookacti-form-field-dialog-calendar-lang-switcher' class='bookacti-lang-switcher'></div>
 		
 		<?php
 		
@@ -365,7 +365,7 @@ foreach( $fields_default as $field_name => $field_data ) {
 		/**
 		 * Display the content of the "Calendar" tab of the "Calendar" dialog
 		 * @since 1.5.0
-		 * @version 1.16.46
+		 * @version 1.19.9
 		 * @param array $params
 		 */
 		function bookacti_fill_calendar_dialog_calendar_tab( $params ) {
@@ -386,8 +386,8 @@ foreach( $fields_default as $field_name => $field_data ) {
 		?>
 		
 		<div class='bookacti-show-hide-advanced-options bookacti-show-advanced-options' 
-			 data-show-title='<?php esc_html_e( 'Show advanced options', 'booking-activities' ); ?>'
-			 data-hide-title='<?php esc_html_e( 'Hide advanced options', 'booking-activities' ); ?>'>
+			 data-show-title='<?php esc_attr_e( 'Show advanced options', 'booking-activities' ); ?>'
+			 data-hide-title='<?php esc_attr_e( 'Hide advanced options', 'booking-activities' ); ?>'>
 			<?php esc_html_e( 'Show advanced options', 'booking-activities' ); ?>
 	   </div>
 	</form>
@@ -395,13 +395,13 @@ foreach( $fields_default as $field_name => $field_data ) {
 
 
 <!-- Login field dialog -->
-<div id='bookacti-form-field-dialog-login' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php /* translators: Title of the Update field dialog. %s is the field title. */ echo sprintf( esc_html__( '%s options', 'booking-activities' ), strip_tags( $fields_default[ 'login' ][ 'title' ] ) ); ?>' >
+<div id='bookacti-form-field-dialog-login' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php /* translators: Title of the Update field dialog. %s is the field title. */ echo esc_attr( sprintf( __( '%s options', 'booking-activities' ), wp_strip_all_tags( $fields_default[ 'login' ][ 'title' ] ) ) ); ?>'>
 	<form id='bookacti-form-field-form-login' >
-		<input type='hidden' name='action' value='bookactiUpdateFormField' />
-		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_update_form_field' ); ?>' />
-		<input type='hidden' name='field_id' value='' />
+		<input type='hidden' name='action' value='bookactiUpdateFormField'/>
+		<input type='hidden' name='nonce' value='<?php echo esc_attr( wp_create_nonce( 'bookacti_update_form_field' ) ); ?>'/>
+		<input type='hidden' name='field_id' value=''/>
 		
-		<div id='bookacti-form-field-dialog-login-lang-switcher' class='bookacti-lang-switcher' ></div>
+		<div id='bookacti-form-field-dialog-login-lang-switcher' class='bookacti-lang-switcher'></div>
 		
 		<?php
 		$login_field_id = 0;
@@ -447,14 +447,14 @@ foreach( $fields_default as $field_name => $field_data ) {
 		/**
 		 * Display the content of the "Fields" tab of the "Login" dialog
 		 * @since 1.6.0
-		 * @version 1.14.0
+		 * @version 1.19.9
 		 * @param array $params
 		 */
 		function bookacti_fill_login_dialog_fields_tab( $params ) {
 			do_action( 'bookacti_login_dialog_fields_tab_before', $params );
 		?>
 			<fieldset>
-				<legend><?php _e( 'Email address', 'booking-activities' ); ?></legend>
+				<legend><?php esc_html_e( 'Email address', 'booking-activities' ); ?></legend>
 				<div>
 					<label for='bookacti-email-label'><?php esc_html_e( 'Label', 'booking-activities' ); ?></label>
 					<?php 
@@ -658,7 +658,7 @@ foreach( $fields_default as $field_name => $field_data ) {
 		/**
 		 * Get the login types edit fields HTML
 		 * @since 1.6.0
-		 * @version 1.16.45
+		 * @version 1.19.9
 		 * @param array $keys
 		 * @return string
 		 */
@@ -671,13 +671,15 @@ foreach( $fields_default as $field_name => $field_data ) {
 				<fieldset>
 					<legend>
 					<?php 
-						$login_type_title = ! empty( $login_type[ 'title' ] ) ? $login_type[ 'title' ] : $login_type_name;
-						/* translators: %s is the login option short title (e.g.: "New Account") */
-						echo sprintf( esc_html__( 'Login type: %s', 'booking-activities' ), $login_type_title ); 
+						echo esc_html( sprintf( 
+							/* translators: %s is the login option short title (e.g.: "New Account") */
+							__( 'Login type: %s', 'booking-activities' ), 
+							! empty( $login_type[ 'title' ] ) ? $login_type[ 'title' ] : $login_type_name
+						) ); 
 					?>
 					</legend>
 					<div>
-						<label for='bookacti-displayed_fields-<?php echo $login_type_name; ?>'><?php esc_html_e( 'Allowed', 'booking-activities' ); ?></label>
+						<label for='<?php echo esc_attr( 'bookacti-displayed_fields-' . $login_type_name ); ?>'><?php esc_html_e( 'Allowed', 'booking-activities' ); ?></label>
 						<?php 
 							$args = array(
 								'type'  => 'checkbox',
@@ -690,7 +692,7 @@ foreach( $fields_default as $field_name => $field_data ) {
 						?>
 					</div>
 					<div>
-						<label for='bookacti-label-<?php echo $login_type_name; ?>'><?php esc_html_e( 'Label', 'booking-activities' ); ?></label>
+						<label for='<?php echo esc_attr( 'bookacti-label-' . $login_type_name ); ?>'><?php esc_html_e( 'Label', 'booking-activities' ); ?></label>
 						<?php 
 							$args = array(
 								'type'  => 'text',
@@ -702,8 +704,8 @@ foreach( $fields_default as $field_name => $field_data ) {
 							bookacti_display_field( $args );
 						?>
 					</div>
-					<div class='bookacti-hidden-field' >
-						<label for='bookacti-tip-<?php echo $login_type_name; ?>'><?php esc_html_e( 'Tooltip', 'booking-activities' ); ?></label>
+					<div class='bookacti-hidden-field'>
+						<label for='<?php echo esc_attr( 'bookacti-tip-' . $login_type_name ); ?>'><?php esc_html_e( 'Tooltip', 'booking-activities' ); ?></label>
 						<?php 
 							$args = array(
 								'type'  => 'text',
@@ -946,11 +948,11 @@ foreach( $fields_default as $field_name => $field_data ) {
 
 
 <!-- Quantity field dialog -->
-<div id='bookacti-form-field-dialog-quantity' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php /* translators: Title of the Update field dialog. %s is the field title. */ echo sprintf( esc_html__( '%s options', 'booking-activities' ), strip_tags( $fields_default[ 'quantity' ][ 'title' ] ) ); ?>' >
-	<form id='bookacti-form-field-form-quantity' >
-		<input type='hidden' name='action' value='bookactiUpdateFormField' />
-		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_update_form_field' ); ?>' />
-		<input type='hidden' name='field_id' value='' />
+<div id='bookacti-form-field-dialog-quantity' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php /* translators: Title of the Update field dialog. %s is the field title. */ echo esc_attr( sprintf( __( '%s options', 'booking-activities' ), wp_strip_all_tags( $fields_default[ 'quantity' ][ 'title' ] ) ) ); ?>'>
+	<form id='bookacti-form-field-form-quantity'>
+		<input type='hidden' name='action' value='bookactiUpdateFormField'/>
+		<input type='hidden' name='nonce' value='<?php echo esc_attr( wp_create_nonce( 'bookacti_update_form_field' ) ); ?>'/>
+		<input type='hidden' name='field_id' value=''/>
 		<?php 
 			do_action( 'bookacti_quantity_dialog_before', $form_edit, $form_fields_edit );
 		?>
@@ -1008,15 +1010,15 @@ foreach( $fields_default as $field_name => $field_data ) {
 
 
 <!-- Submit button dialog -->
-<div id='bookacti-form-field-dialog-submit' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php /* translators: Title of the Update field dialog. %s is the field title. */ echo sprintf( __( '%s options', 'booking-activities' ), strip_tags( $fields_default[ 'submit' ][ 'title' ] ) ); ?>' >
-	<form id='bookacti-form-field-form-submit' >
-		<input type='hidden' name='action' value='bookactiUpdateFormField' />
-		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_update_form_field' ); ?>' />
-		<input type='hidden' name='field_id' value='' />
+<div id='bookacti-form-field-dialog-submit' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php /* translators: Title of the Update field dialog. %s is the field title. */ echo esc_attr( sprintf( __( '%s options', 'booking-activities' ), wp_strip_all_tags( $fields_default[ 'submit' ][ 'title' ] ) ) ); ?>'>
+	<form id='bookacti-form-field-form-submit'>
+		<input type='hidden' name='action' value='bookactiUpdateFormField'/>
+		<input type='hidden' name='nonce' value='<?php echo esc_attr( wp_create_nonce( 'bookacti_update_form_field' ) ); ?>'/>
+		<input type='hidden' name='field_id' value=''/>
 		<?php 
 			do_action( 'bookacti_submit_dialog_before', $form_edit, $form_fields_edit );
 		?>
-		<div id='bookacti-form-field-dialog-submit-lang-switcher' class='bookacti-lang-switcher' ></div>
+		<div id='bookacti-form-field-dialog-submit-lang-switcher' class='bookacti-lang-switcher'></div>
 		<div>
 			<label for='bookacti-submit-value'><?php esc_html_e( 'Button text', 'booking-activities' ); ?></label>
 			<?php 
@@ -1038,15 +1040,15 @@ foreach( $fields_default as $field_name => $field_data ) {
 
 
 <!-- Free text field dialog -->
-<div id='bookacti-form-field-dialog-free_text' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php /* translators: Title of the Update field dialog. %s is the field title. */ echo sprintf( esc_html__( '%s options', 'booking-activities' ), strip_tags( $fields_default[ 'free_text' ][ 'title' ] ) ); ?>' >
-	<form id='bookacti-form-field-form-free_text' >
-		<input type='hidden' name='action' value='bookactiUpdateFormField' />
-		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_update_form_field' ); ?>' />
-		<input type='hidden' name='field_id' value='' />
+<div id='bookacti-form-field-dialog-free_text' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php /* translators: Title of the Update field dialog. %s is the field title. */ echo esc_attr( sprintf( __( '%s options', 'booking-activities' ), wp_strip_all_tags( $fields_default[ 'free_text' ][ 'title' ] ) ) ); ?>'>
+	<form id='bookacti-form-field-form-free_text'>
+		<input type='hidden' name='action' value='bookactiUpdateFormField'/>
+		<input type='hidden' name='nonce' value='<?php echo esc_attr( wp_create_nonce( 'bookacti_update_form_field' ) ); ?>'/>
+		<input type='hidden' name='field_id' value=''/>
 		<?php 
 			do_action( 'bookacti_free_text_dialog_before', $form_edit, $form_fields_edit );
 		?>
-		<div id='bookacti-form-field-dialog-free_text-lang-switcher' class='bookacti-lang-switcher' ></div>
+		<div id='bookacti-form-field-dialog-free_text-lang-switcher' class='bookacti-lang-switcher'></div>
 		<div>
 			<label for='bookacti-free_text-title'><?php esc_html_e( 'Title', 'booking-activities' ); ?></label>
 			<?php 
@@ -1061,7 +1063,7 @@ foreach( $fields_default as $field_name => $field_data ) {
 			?>
 		</div>
 		<div>
-			<label for='bookacti-free_text-value' class='bookacti-fullwidth-label' ><?php esc_html_e( 'Free text', 'booking-activities' ); ?></label>
+			<label for='bookacti-free_text-value' class='bookacti-fullwidth-label'><?php esc_html_e( 'Free text', 'booking-activities' ); ?></label>
 			<?php 
 				$args = array(
 					'type'  => 'editor',
@@ -1080,10 +1082,10 @@ foreach( $fields_default as $field_name => $field_data ) {
 
 
 <!-- Total price field dialog -->
-<div id='bookacti-form-field-dialog-total_price' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php /* translators: Title of the Update field dialog. %s is the field title. */ echo sprintf( esc_html__( '%s options', 'booking-activities' ), isset( $fields_default[ 'total_price' ][ 'title' ] ) ? strip_tags( $fields_default[ 'total_price' ][ 'title' ] ) : '' ); ?>' >
-	<form id='bookacti-form-field-form-total_price' >
+<div id='bookacti-form-field-dialog-total_price' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php /* translators: Title of the Update field dialog. %s is the field title. */ echo esc_attr( sprintf( __( '%s options', 'booking-activities' ), isset( $fields_default[ 'total_price' ][ 'title' ] ) ? wp_strip_all_tags( $fields_default[ 'total_price' ][ 'title' ] ) : '' ) ); ?>'>
+	<form id='bookacti-form-field-form-total_price'>
 		<input type='hidden' name='action' value='bookactiUpdateFormField'/>
-		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_update_form_field' ); ?>'/>
+		<input type='hidden' name='nonce' value='<?php echo esc_attr( wp_create_nonce( 'bookacti_update_form_field' ) ); ?>'/>
 		<input type='hidden' name='field_id' value=''/>
 		<?php 
 			do_action( 'bookacti_total_price_dialog_before', $form_edit, $form_fields_edit );
@@ -1135,11 +1137,11 @@ foreach( $fields_default as $field_name => $field_data ) {
 
 
 <!-- Terms field dialog -->
-<div id='bookacti-form-field-dialog-terms' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php /* translators: Title of the Update field dialog. %s is the field title. */ echo sprintf( esc_html__( '%s options', 'booking-activities' ), strip_tags( $fields_default[ 'terms' ][ 'title' ] ) ); ?>' >
+<div id='bookacti-form-field-dialog-terms' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php /* translators: Title of the Update field dialog. %s is the field title. */ echo esc_attr( sprintf( __( '%s options', 'booking-activities' ), wp_strip_all_tags( $fields_default[ 'terms' ][ 'title' ] ) ) ); ?>'>
 	<form id='bookacti-form-field-form-terms' >
-		<input type='hidden' name='action' value='bookactiUpdateFormField' />
-		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_update_form_field' ); ?>' />
-		<input type='hidden' name='field_id' value='' />
+		<input type='hidden' name='action' value='bookactiUpdateFormField'/>
+		<input type='hidden' name='nonce' value='<?php echo esc_attr( wp_create_nonce( 'bookacti_update_form_field' ) ); ?>'/>
+		<input type='hidden' name='field_id' value=''/>
 		<?php 
 			do_action( 'bookacti_terms_dialog_before', $form_edit, $form_fields_edit );
 		?>
@@ -1175,19 +1177,19 @@ foreach( $fields_default as $field_name => $field_data ) {
 
 
 <!-- Export events dialog -->
-<div id='bookacti-export-events-dialog' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php esc_html_e( 'Export events from this calendar', 'booking-activities' ); ?>'>
+<div id='bookacti-export-events-dialog' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php esc_attr_e( 'Export events from this calendar', 'booking-activities' ); ?>'>
 	<form id='bookacti-export-events-form'>
 		<input type='hidden' name='action' value=''/>
-		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_export_events_url' ); ?>'/>
+		<input type='hidden' name='nonce' value='<?php echo esc_attr( wp_create_nonce( 'bookacti_export_events_url' ) ); ?>'/>
 		<?php
 			$lang = bookacti_get_current_lang_code();
 			$secret_key = bookacti_get_metadata( 'form', $form_id, 'secret_key', true );
 			if( ! $secret_key ) {
-				$secret_key = md5( microtime().rand() );
+				$secret_key = md5( wp_rand() );
 				bookacti_update_metadata( 'form', $form_id, array( 'secret_key' => $secret_key ) );
 			}
 			
-			$ical_url = esc_url( home_url( '?action=bookacti_export_form_events&filename=booking-activities-events-form-' . $form_id . '&form_id=' . $form_id . '&key=' . $secret_key . '&past_events=auto&locale=' . $lang ) );
+			$ical_url = home_url( '?action=bookacti_export_form_events&filename=booking-activities-events-form-' . $form_id . '&form_id=' . $form_id . '&key=' . $secret_key . '&past_events=auto&locale=' . $lang );
 			
 			$gcal_import_ical = '<a href="https://support.google.com/calendar/answer/37118" target="_blank">' . esc_html_x( 'import', 'verb', 'booking-activities' ) . '</a>';
 			$gcal_sync_ical   = '<a href="https://support.google.com/calendar/answer/37100" target="_blank">' . esc_html_x( 'sync', 'verb', 'booking-activities' ) . '</a>';
@@ -1197,13 +1199,13 @@ foreach( $fields_default as $field_name => $field_data ) {
 		
 		<div class='bookacti-info'>
 			<span class='dashicons dashicons-info'></span>
-			<span><?php echo '<strong>' . esc_html__( 'Types of use:', 'booking-activities' ) . '</strong> Google Calendar (' . implode( ', ', array( $gcal_import_ical, $gcal_sync_ical ) ) . '), Outlook.com (' . $outlook_com_ical . '), MS Outlook (' . $outlook_ms_ical . ')...'; ?></span>
+			<span><?php echo '<strong>' . esc_html__( 'Types of use:', 'booking-activities' ) . '</strong> Google Calendar (' . implode( ', ', array( $gcal_import_ical, $gcal_sync_ical ) ) . '), Outlook.com (' . $outlook_com_ical . '), MS Outlook (' . $outlook_ms_ical . ')...'; /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?></span>
 		</div>
 		
 		<div>
 			<p><strong><?php esc_html_e( 'Secret address in iCal format', 'booking-activities' ); ?></strong></p>
 			<div class='bookacti_export_url'>
-				<div class='bookacti_export_url_field'><input type='text' id='bookacti_export_events_url_secret' data-value='<?php echo $ical_url; ?>' value='<?php echo $ical_url; ?>' readonly onfocus='this.select(); document.execCommand("Copy");'/></div>
+				<div class='bookacti_export_url_field'><input type='text' id='bookacti_export_events_url_secret' data-value='<?php echo esc_url( $ical_url ); ?>' value='<?php echo esc_url( $ical_url ); ?>' readonly onfocus='this.select(); document.execCommand("Copy");'/></div>
 				<div class='bookacti_export_button'><input type='button' value='<?php echo esc_attr_x( 'Export', 'action', 'booking-activities' ); ?>' class='button button-primary button-large'/></div>
 			</div>
 			<p>
@@ -1242,7 +1244,7 @@ foreach( $fields_default as $field_name => $field_data ) {
 
 <!-- Calendar help dialog -->
 <div id='bookacti-calendar-field-help-dialog' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php esc_attr_e( 'Need help?', 'booking-activities' ); ?>'>
-	<?php echo bookacti_display_calendar_field_help(); ?>
+	<?php echo bookacti_display_calendar_field_help(); /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?>
 </div>
 
 
